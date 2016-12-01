@@ -168,7 +168,6 @@
     </Build>
     <Build Include="dbo\Tables\EmailTemplate.sql" />
     <Build Include="dbo\Tables\RelatedArtifact.sql" />
-    <Build Include="dbo\Tables\DomainType.sql" />
     <Build Include="dbo\Tables\Comment.sql" />
     <Build Include="dbo\Tables\CommentRelation.sql" />
     <Build Include="dbo\Tables\WorkflowResourceNotification.sql" />
@@ -207,15 +206,12 @@
     <Build Include="reporting\Tables\Global_Resource.sql" />
     <Build Include="dbo\Tables\Policy.sql" />
     <Build Include="dbo\Tables\WorkflowResource.sql" />
-    <Build Include="dbo\Tables\Domain.sql" />
     <Build Include="dbo\Tables\ResponsibilityTypeRelation.sql" />
     <Build Include="dbo\Tables\ResponsibilityTypeObjectClaim.sql" />
     <Build Include="dbo\Tables\Rule.sql" />
     <Build Include="dbo\Tables\AttributeTypeCategory.sql" />
     <Build Include="dbo\Tables\ResponsibilityType.sql" />
-    <Build Include="dbo\Tables\DomainItem.sql" />
     <Build Include="dbo\Tables\ResponsibilityTypeClaim.sql" />
-    <Build Include="dbo\Tables\DomainGroup.sql" />
     <Build Include="dbo\Tables\Taxonomy.sql" />
     <Build Include="dbo\Tables\ResponsibilityContextItem.sql" />
     <Build Include="dbo\Tables\FusionAttributeType.sql" />
@@ -232,8 +228,6 @@
     <Build Include="dbo\Tables\Lookup.sql" />
     <Build Include="dbo\Tables\IntersectTypeRole.sql" />
     <Build Include="dbo\Tables\LoadItemColumn.sql" />
-    <Build Include="dbo\Tables\IntersectTypeNode.sql" />
-    <Build Include="dbo\Tables\IntersectNode.sql" />
     <Build Include="dbo\Views\StatisticTypeCheckOption.sql" />
     <Build Include="dbo\Views\FieldLookupValue.sql" />
     <Build Include="dbo\Views\ResponsibilityDetail.sql">
@@ -407,7 +401,6 @@
     <Build Include="fusion\Stored Procedures\ProcessEagleMCToBBMnemonic.sql" />
     <Build Include="Security\relation.sql" />
     <Build Include="dbo\Tables\FieldTypeFusionLookupDisplayField.sql" />
-    <Build Include="dbo\Tables\IntersectTypePredicate_1.sql" />
     <Build Include="utility\Functions\GetVerticalResponsibilityList.sql" />
     <Build Include="utility\Functions\GetHierarchyAssignedResponsibilityList.sql" />
     <Build Include="utility\Functions\GetDirectlyAssignedResponsibilityList.sql" />
@@ -420,10 +413,7 @@
     <Build Include="dbo\Tables\RuleDimension.sql" />
     <Build Include="dbo\Functions\EventCountByObject.sql" />
     <Build Include="dbo\Functions\EventsByObject.sql" />
-    <Build Include="dbo\Tables\Language_1.sql" />
-    <Build Include="dbo\Tables\DomainSourceType_1.sql" />
-    <Build Include="dbo\Tables\DomainItemXref_1.sql" />
-    <Build Include="dbo\Tables\DomainClassification_1.sql" />
+    <Build Include="dbo\Tables\Language.sql" />
     <Build Include="dbo\Views\WorkflowIssue_1.sql" />
     <Build Include="dbo\Views\WorkflowChallenge_1.sql" />
     <Build Include="dbo\Views\IntersectDetail.sql" />
@@ -461,7 +451,7 @@
     <Build Include="dbo\Stored Procedures\GetTechnicalMapping_1.sql" />
     <Build Include="dbo\Stored Procedures\GetLineage.sql" />
     <Build Include="dbo\Tables\FusionOwner.sql" />
-    <Build Include="dbo\Tables\Favorite_1.sql" />
+    <Build Include="dbo\Tables\Favorite.sql" />
     <Build Include="quality\Tables\RuleResult.sql" />
     <Build Include="dbo\Views\MapRuleItemDetail.sql" />
     <Build Include="quality\Functions\CalculatePassed.sql" />
@@ -522,12 +512,8 @@
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject.sql" />
     <None Include="dbo\User Defined Types\RelationshipTypeTable.sql" />
-    <None Include="dbo\Tables\IntersectTypePredicate.sql" />
     <None Include="ToDeployToClientDev.sql" />
     <None Include="utility\User Defined Types\DiagramRelationshipTable.sql" />
-    <None Include="dbo\Tables\DomainItemXref.sql" />
-    <None Include="dbo\Tables\DomainSourceType.sql" />
-    <None Include="dbo\Tables\DomainClassification.sql" />
     <None Include="dbo\Views\WorkflowIssue.sql" />
     <None Include="dbo\Views\WorkflowChallenge.sql" />
     <None Include="fusion\Stored Procedures\Rules.sql" />

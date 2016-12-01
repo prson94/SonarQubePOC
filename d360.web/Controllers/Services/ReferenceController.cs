@@ -333,7 +333,7 @@ for json path";
         [Route("{typeID:int}/responsibilities"), HttpGet]
         public IQueryable<dynamic> GetResponsibilitiesForDomainType(int typeID)
         {
-            return GetResponsibilities(SystemObjects.DomainType, typeID);
+            return GetResponsibilities(SystemObjects.ReferenceItemType, typeID);
         }
 
         /// <summary>

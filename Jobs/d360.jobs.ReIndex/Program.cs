@@ -325,49 +325,21 @@ namespace d360.jobs.ReIndex
             }
         }
 
-        private static void LoadDomainGroups(SqlConnection context, int companyID, ElasticSearchSource source)
-        {
-            var list = new List<AddToIndexModel>();
-
-            var sql = @"select
-                            dg.Name,
-	                        dg.ID,
-	                        dg.DomainTypeID,
-	                        dt.name as DomainType
-                        from[dbo].[domaingroup] dg
-                           inner join[dbo].[domaintype] dt on (dg.domaintypeid = dt.id)";
-
-            foreach (var a in context.Query(sql))
-            {
-                var item = new AddToIndexModel { Group = "DomainGroup", CompanyID = companyID, ID = a.ID, Type = a.DomainType, RelativeUrl = string.Format("#/domains/{0}/{1}", a.DomainTypeID, a.ID) };
-                item.Fields = new Dictionary<string, string>();
-                item.Fields.Add("Name", a.Name);
-                item.Fields.Add("Description", a.Description);
-                item.Fields.Add("Type", a.DomainType);
-                list.Add(item);
-            }
-
-            source.AddToIndex(list);
-        }
-
         private static IEnumerable<AddToIndexModel> LoadDomains(SqlConnection context, int companyID, ElasticSearchSource source)
         {            
             var sql = @"select
                             d.ID,
 	                        d.Name,
-	                        d.[Description],
-	                        dt.id as DomainTypeID,
-	                        dt.Name as DomainType
-                        from domain d
-                            inner join domaintype dt on d.domaintypeid = dt.id";
+	                        d.[Description]
+                        from ReferenceItemType";
 
             foreach (var a in context.Query(sql))
             {
-                var item = new AddToIndexModel { Group = "Domain", CompanyID = companyID, ID = a.ID, Type = a.DomainType, RelativeUrl = string.Format("#/domains/{0}/{1}", a.DomainTypeID, a.ID) };
+                var item = new AddToIndexModel { Group = "Reference", CompanyID = companyID, ID = a.ID, Type = "Reference List", RelativeUrl = string.Format("/reference/{0}", a.ID) };
                 item.Fields = new Dictionary<string, string>();
                 item.Fields.Add("Name", a.Name);
                 item.Fields.Add("Description", a.Description);
-                item.Fields.Add("Type", a.DomainType);
+                item.Fields.Add("Type", "Reference List");
                 yield return item;
             }
         }

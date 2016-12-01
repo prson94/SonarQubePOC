@@ -78,7 +78,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
             contextItems.push({
                 ResponsibiltyID: 0,
                 ObjectID: parseInt(c),
-                ObjectType: "DomainType"
+                ObjectType: "ReferenceItemType"
             });
         });
                 

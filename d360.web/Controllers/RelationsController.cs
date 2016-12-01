@@ -111,28 +111,6 @@ namespace d360.web.Controllers
 
         #region Json
 
-        //[Route("contexts")]
-        //public JsonResult IntersectContexts()
-        //{
-        //    var model = (
-        //                from d in Company.Table<Domain>()
-        //                from i in d.Items
-        //                where d.Items.Count > 0
-        //                orderby d.DomainType.Name
-        //                orderby i.Name
-        //                select new
-        //                {
-        //                    i.Code,
-        //                    i.Name,
-        //                    i.ID,
-        //                    List = d.Name,
-        //                    Type = d.DomainType.Name
-        //                })
-        //                 .ToList();
-
-        //    return Json(model, JsonRequestBehavior.AllowGet);
-        //}
-
         [HttpGet, Route("Classifications")]
         public JsonResult Classifications()
         {
@@ -251,14 +229,6 @@ from	(
 				NULL as SubMenu
 		FROM	TaxonomyType T
 		union
-		SELECT	4 as SortOrder,
-				'DomainType' as [Type],
-				ID,
-				Name as Name,
-				'Reference' as Menu,
-				NULL as SubMenu
-		FROM	DomainType
-		union
 		SELECT	5 as SortOrder,
 				'FusionAttributeType' as [Type],
 				T.ID,
@@ -359,7 +329,6 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
         public JsonNetResult PossibleRelationshipsByIntersect(int id)
         {
             var list = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList().Select(i => new ContextToolbarItem {
-                Context = ContextList.ActionRelate,
                 Icon = "plus",
                 Title = i.TargetName,
                 Type = "local",
@@ -449,160 +418,6 @@ from[Intersect] O
                     return new JArray(i);
                 }
             }
-        }
-
-        [HttpGet, Route("{type}/{id:int}/RelationshipTypeTree.json")]
-        public JsonNetResult RelationshipTypeTree(SystemObjects type, int id)
-        {
-            var sql = $@"
-select	IntersectTypeID,
-		TargetObjectType,
-		TargetObjectID,
-		OD.TextPath,
-        1 as [Level],
-		(
-		select	    IntersectTypeID,
-				    TargetObjectType,
-				    TargetObjectID,
-				    ID.TextPath,
-                    2 as [Level]
-		from	    IntersectType I
-				    inner join cache.ObjectDetails ID on ( 
-                        (ID.[Object] = I.Object and ID.ObjectID = I.ObjectID and I.Subject = 'IntersectType' and I.SubjectID = O.IntersectTypeID) OR
-                        (ID.[Object] = I.Subject and ID.ObjectID = I.SubjectID and I.Object = 'IntersectType' and I.ObjectID = O.IntersectTypeID)
-                    )
-        order by    ID.TextPath
-		for         xml path('relationships'), TYPE
-		),
-		(
-		select	    P.*
-		from	    IntersectTypePredicate IP
-				    inner join Predicate P on P.[Type] = IP.PredicateType and IP.IntersectTypeID = O.IntersectTypeID
-		order by    P.Name
-        for         xml path('predicates'), TYPE
-		)
-from	    IntersectType O
-		    inner join cache.ObjectDetails OD on (
-                (OD.[Object] = O.Object and OD.ObjectID = O.ObjectID and O.Subject = @type and O.SubjectID = @id) OR
-                (OD.[Object] = O.Subject and OD.ObjectID = O.SubjectID and O.Object = @type and O.ObjectID = @id)
-            )
-order by    OD.TextPath
-for		    xml path('relationship'), root('item')
-";
-            var xmls = Company.Query<string>(sql, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
-            var xml = string.Join<string>("", xmls);
-            //var doc = XElement.Parse(xml);
-            //var obj = JObject.Parse(JsonConvert.SerializeXNode(XElement.Parse(xml)));
-            if (string.IsNullOrEmpty(xml))
-            {
-                return new JsonNetResult { Data = JArray.Parse("[]"), Formatting = Formatting.None };
-            }
-            else
-            {
-                try
-                {
-                    var rels = JObject.Parse(JsonConvert.SerializeXNode(XElement.Parse(xml)))["item"]["relationship"].Children().Select(i => new {
-                        IntersectTypeID = i["IntersectTypeID"].Value<int>(),
-                        TargetObjectType = i["TargetObjectType"],
-                        TargetObjectID = i["TargetObjectID"].Value<int>(),
-                        TextPath = i["TextPath"],
-                        Level = i["Level"].Value<int>(),
-                        relationships = convertList(i["relationships"]),
-                        predicates = convertList(i["predicates"])
-                    });
-                    return new JsonNetResult
-                    {
-                        Data = rels,//.SelectTokens("item.relationship"), //The SelectTokens method adds an extra [] hierarchy at the top. 
-                        Formatting = Formatting.None
-                    };
-                }
-                catch
-                {
-                    return new JsonNetResult { Data = JArray.Parse("[]"), Formatting = Formatting.None };
-                }
-            }
-        }
-
-        #endregion
-
-        #region Partials
-
-        [Route("AggregateRelationOverlay")]
-        public ActionResult AggregateRelationOverlay(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly = false)
-        {
-            var source = Company.GetObjectDetail(type, id);
-            var target = Company.GetObjectDetail(targetType, targetID);
-
-            ViewData.Add("Title", 
-                string.Format("{0}{1} Relationships For {2}", 
-                    (criticalOnly ? "Critical " : ""), 
-                    ((target != null) ? target.Name : targetType.ToString()), 
-                    ((source != null) ? source.Name : type.ToString())
-                )
-            );
-            ViewData.Add("criticalOnly", criticalOnly);
-            ViewData.Add("source", source.Name);
-            ViewData.Add("type", type);
-            ViewData.Add("id", id);
-            ViewData.Add("targetType", targetType);
-            ViewData.Add("targetID", targetID);
-            ViewData.Add("intersectTypeID", intersectTypeID);
-            return PartialView();
-        }
-
-        [Route("Impact")]
-        public ActionResult Impact(SystemObjects type, int id)
-        {
-            try
-            {
-                ViewBag.Object = type.ToString();
-                ViewBag.ObjectID = id;
-            }
-            catch
-            {
-            }
-            return PartialView();
-        }
-
-        [Route("Lineage")]
-        public ActionResult Lineage(SystemObjects type, int id)
-        {
-            try
-            {
-                ViewBag.Object = type.ToString();
-                ViewBag.ObjectID = id;
-            }
-            catch
-            {
-            }
-            //var model = Company.GetObjectDetail(type, id);
-            return PartialView();
-        }
-
-        [Route("RelationOverlay")]
-        public ActionResult RelationOverlay(SystemObjects type, int id)
-        {
-            try 
-	        {	        
-                ViewData.Add("CanCreateRelationships", Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship));
-	        }
-	        catch
-	        {
-                ViewData.Add("CanCreateRelationships", false);
-	        }
-            ViewData.Add("Object", type.ToString());
-            ViewData.Add("ObjectID", id.ToString());
-            var model = Company.GetObjectDetail(type, id);
-            return PartialView(model);
-        }
-
-        [Route("ImpactAnalysisOverlay")]
-        public ActionResult ImpactAnalysisOverlay(SystemObjects type, int id)
-        {
-            ViewData.Add("Object", type.ToString());
-            ViewData.Add("ObjectID", id.ToString());
-            var model = Company.GetObjectDetail(type, id);
-            return PartialView(model);
         }
 
         #endregion

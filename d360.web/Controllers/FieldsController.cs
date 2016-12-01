@@ -128,7 +128,7 @@ namespace d360.web.Controllers
 
             Response.StatusCode = (int)code;
             Response.StatusDescription = message;
-            return Json(new { type = "confirm", title = "Success!", action = "update", message = message.Replace("\n", "  "), id = id, context = ContextList.FieldType, custom = new { commandname = "FieldMove" } });
+            return Json(new { type = "confirm", title = "Success!", action = "update", message = message.Replace("\n", "  "), id = id, custom = new { commandname = "FieldMove" } });
         }
 
         #endregion

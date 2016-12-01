@@ -302,7 +302,7 @@ from	(
 					else cast(0 as bit)
 				end as AllowAttributes
 		from	AttributeTypeRelation
-		where	ObjectType = 'DomainType' and ObjectID = @id
+		where	ObjectType = 'ReferenceItemType' and ObjectID = @id
 		) A";
 
         public static string ExecutionErrorList = @"
@@ -1074,7 +1074,7 @@ from	TaxonomyType T
 					from	(
 								select	IT.ID
 								from	IntersectType IT
-										inner join IntersectTypePredicate ITP on ITP.IntersectTypeID = IT.ID and ITP.PredicateType = 6 -- Synonym
+										inner join [Predicate] ITP on ITP.ID = IT.PredicateID and ITP.Type = 6 -- Synonym
 								where	(IT.Subject = 'TaxonomyType' and IT.SubjectID = @id) OR (IT.Object = 'TaxonomyType' and IT.ObjectID = @id)
 							) O
 					) S
@@ -1092,7 +1092,7 @@ where	T.ID = @id";
             where 
 	            od.[textpath] != utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/')
 		            and
-	            od.[object] in ('Artifact','Taxonomy', 'Policy', 'Domain')
+	            od.[object] in ('Artifact','Taxonomy', 'Policy')
 ";
 
         public static string SimilarItems = @"

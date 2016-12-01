@@ -162,13 +162,7 @@ UNION ALL
 
 SELECT	'#Domains' as MenuID,
 		0 as Feature,
-		(
-		SELECT	name, 
-				dbo.GenerateObjectUrl('DomainType', ID, 0)  As url,
-				0 as feature
-		FROM	DomainType
-		FOR XML PATH('nav'), TYPE				
-		) AS Items
+		null AS Items
 
 UNION ALL
 

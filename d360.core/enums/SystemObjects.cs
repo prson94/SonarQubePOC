@@ -19,14 +19,14 @@ namespace d360.core
         Attribute = 5,
         [Description("Attribute Group")]
         AttributeType = 6,
-        [Description("Domain List")]
-        Domain = 7,
-        [Description("Domain List Group"), AllowOwnership(false)]
-        DomainGroup = 8,
-        [Description("Domain List Item"), AllowOwnership(false)]
-        DomainItem = 9,
-        [Description("Domain List Type"), AllowSurvey(true)]
-        DomainType = 10,
+        [Description("D_omain List")]
+        D_omain = 7,
+        [Description("D_omain List Group"), AllowOwnership(false)]
+        D_omainGroup = 8,
+        [Description("D_omain List Item"), AllowOwnership(false)]
+        D_omainItem = 9,
+        [Description("D_omain List Type"), AllowSurvey(true)]
+        D_omainType = 10,
         [Description("Email Template"), AllowOwnership(false)]
         EmailTemplate = 11,
         [Description("Event")]

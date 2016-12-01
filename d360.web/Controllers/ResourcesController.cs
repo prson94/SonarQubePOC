@@ -135,26 +135,6 @@ from	Artifact A
         {joins}";
                         break;
                     #endregion
-                    case "Domain":
-                    case "DomainType":
-                        #region
-                        followOrOwnSql = (follow) ?
-                            $"inner join FollowDetail FD on FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID" :
-                            $"inner join ResponsibilityDetailForResource FD on FD.ResponsibleObjectType = 'Resource' and FD.ResponsibleObjectID = {resourceID} and FD.ObjectType = '{type.Replace("'", "''")}' and FD.ObjectTypeID = {id} and FD.ObjectID = A.ID";
-
-                        sql = $@"
-select	A.ID,
-		A.Name,
-		A.Description,
-		A.Code,
-        {columns}
-        FD.CurrentScore,
-        {lastColumn}
-from	Domain A 
-        {followOrOwnSql} and A.DomainTypeID = {id} 
-        {joins}";
-                        break;
-                    #endregion
                     case "Taxonomy":
                     case "TaxonomyType":
                         #region

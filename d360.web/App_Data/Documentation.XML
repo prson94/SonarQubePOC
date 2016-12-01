@@ -2245,12 +2245,6 @@
         <member name="M:d360.web.Controllers.FormController.EmailTemplate_EditFields(System.Int32)">
             <param name="id">EmailTemplateID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Event_EditFields(System.Int32)">
-            <param name="id">EventID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.EventGroup_EditFields(System.Int32)">
-            <param name="id">EventGroupID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.FieldType_ComplexLookup_ChildItems(d360.core.SystemObjects,System.Int32)">
             <summary>
             Used to get the child types of a specific parent type.
@@ -2434,19 +2428,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.LookupType_EditFields(System.Int32)">
             <param name="id">LookupTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.AddMapRule">
-            <summary>
-            
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.AddMapRuleItem(System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">The ID of the Map Rule we are adding this item to.</param>
-            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Policy_DeleteFields(System.Int32)">
             <param name="id">PolicyID</param>

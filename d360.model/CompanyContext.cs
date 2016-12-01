@@ -442,8 +442,6 @@ end", new { ss = source, tt = target });
             var list = Database.Connection.Query<AllocationPossibility>(@"
 			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
 			union
-			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Reference :: ' + Name as Name from DomainType
-			union
 			select	'TaxonomyType' as ObjectType, T.ID as ObjectTypeID, 'Models :: ' + C.Name  +' :: ' + T.Name as Name from TaxonomyType T inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
 			union
 			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
@@ -466,7 +464,7 @@ end", new { ss = source, tt = target });
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
 			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
-			union			
+			union
 			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Models :: ' + Name as Name from TaxonomyType
 			union
 			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
@@ -495,8 +493,6 @@ end", new { ss = source, tt = target });
             var list = Database.Connection.Query<AllocationPossibility>(@"
 select A.* from (
 			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
-			union
-			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Reference :: ' + Name as Name from DomainType
 			union
 			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Models :: ' + Name as Name from TaxonomyType
 			union
@@ -644,19 +640,7 @@ select 'TaxonomyType' as PromotionObjectType,
 		ID as PromotionObjectID, 
 		'Information Model: ' + Name as Name, 
 		ID as ParentObjectTypeID
-from	TaxonomyType 
-union
-select	'DomainType' as PromotionObjectType, 
-		ID as PromotionObjectID, 
-		'Reference: ' + Name + ' List' as Name, 
-		NULL as ParentObjectTypeID 
-from	DomainType 
-union
-select	'DomainType' as PromotionObjectType, 
-		ID as PromotionObjectID, 
-		'Reference:' + Name + ' List Item' as Name, 
-		ID as ParentObjectTypeID 
-from	DomainType
+from	TaxonomyType
 ").OrderBy(i => i.Name).ToList();
         }
 
@@ -1066,8 +1050,6 @@ order by	ColumnIndex", new { id });
                     switch (type)
                     {
                         case SystemObjects.ArtifactType:
-                        case SystemObjects.DomainGroup:
-                        case SystemObjects.DomainType:
                         case SystemObjects.PolicyType:
                         case SystemObjects.ResourceType:
                         case SystemObjects.TaxonomyType:
@@ -1185,16 +1167,14 @@ from	(
 				'Artifact : ' + Name as Name
 		FROM	ArtifactType
 		UNION
-		SELECT	'Domain' as LookupObjectType,
-				ID as LookupObjectID,
-				'Reference : ' + Name as Name
-		FROM	DomainType
+		SELECT	'ReferenceItemType' as LookupObjectType,
+				0 as LookupObjectID,
+				'Reference List' as Name
 		UNION
-		SELECT	'DomainItem' as LookupObjectType,
-				O.ID as LookupObjectID,
-				'Reference Items : ' + T.Name + ' : ' + O.Name as Name
-		FROM	Domain O
-                inner join DomainType T on T.ID = O.DomainTypeID
+		SELECT	'ReferenceItem' as LookupObjectType,
+				ID as LookupObjectID,
+				'Reference Items : ' + Name as Name
+		FROM	ReferenceItemType
         UNION
 		SELECT	'Resource' as LookupObjectType,
 				1 as LookupObjectID,
@@ -1528,11 +1508,6 @@ where	R.SourceObject = 'FusionAttribute'
 						'Artifacts :: ' + Name AS Name,
 						'ArtifactType' AS Type
 				FROM	ArtifactType
-				UNION
-				SELECT	ID,
-						'Reference :: ' + Name AS Name,
-						'DomainType' AS Type
-				FROM	DomainType
 				UNION
 				SELECT	A.ID,
 						'Fusion Attributes :: ' + A.TextPath AS Name,

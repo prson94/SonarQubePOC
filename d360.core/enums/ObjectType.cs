@@ -27,17 +27,17 @@ namespace d360.core
         [Description("Claim")]
         public const int ClaimObject = 6;
 
-        [Description("Domain")]
-        public const int Domain = 7;
+        //[Description("Dom ain")]
+        //public const int Dom ain = 7;
 
-        [Description("Domain Group")]
-        public const int DomainGroup = 8;
+        //[Description("Dom ain Group")]
+        //public const int Do mainGroup = 8;
 
-        [Description("Domain Item")]
-        public const int DomainItem = 9;
+        //[Description("Dom ain Item")]
+        //public const int Do mainItem = 9;
 
-        [Description("Domain Type")]
-        public const int DomainType = 10;
+        //[Description("Dom ain Type")]
+        //public const int Do mainType = 10;
 
         [Description("Email Template")]
         public const int EmailTemplate = 11;

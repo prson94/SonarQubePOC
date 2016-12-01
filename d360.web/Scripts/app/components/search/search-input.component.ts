@@ -107,7 +107,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
         { title: "Glossary", value: "Artifact" },
         { title: "Group", value: "Group" },
         { title: "Model", value: "Taxonomy" },
-        { title: "Reference", value: "Domain" },
+        { title: "Reference", value: "Reference" },
         { title: "User", value: "Users" },
         { title: "Synonym", value: "Synonym" },
     ];
@@ -119,7 +119,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
         { value: "Artifact", label: "Glossary" },
         { value: "Group", label: "Group" },
         { value: "Taxonomy", label: "Model" },
-        { value: "Domain", label: "Reference" },
+        { value: "Reference", label: "Reference" },
         { value: "Users", label: "User" },
         { value: "Synonym", label: "Synonym" },
     ];

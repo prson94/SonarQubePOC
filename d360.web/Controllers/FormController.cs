@@ -242,16 +242,11 @@ namespace d360.web.Controllers
             };
         }
 
-        JsonResult jsonSuccess(string message, string id, string context, string action, HttpStatusCode statusCode, dynamic customdata)
+        JsonResult jsonSuccess(string message, string id, string action, HttpStatusCode statusCode, dynamic customdata = null)
         {
             Response.StatusCode = (int)statusCode;
             Response.StatusDescription = message.Replace("\n", "  ");
-            return Json(new { type = "confirm", title = "Success!", action = action, message = message.Replace("\n", "  "), id = id, context = context, custom = customdata }, JsonRequestBehavior.AllowGet);
-        }
-
-        JsonResult jsonSuccess(string message, string id, string context, string action, HttpStatusCode statusCode)
-        {
-            return jsonSuccess(message, id, context, action, statusCode, null);
+            return Json(new { type = "confirm", title = "Success!", action = action, message = message.Replace("\n", "  "), id = id, custom = customdata }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion
@@ -863,23 +858,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("artifacts/{typeID:int}/add/{parentID:int=0}")]
-        public ActionResult AddArtifact(int typeID, int parentID)
-        {
-            var type = Company.GetById<ArtifactType>(typeID);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Artifact,
-                FieldUri = string.Format("/form/Artifact_AddFields?at={0}&p={1}", typeID, parentID),
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, type.Name),
-                FormUri = "/form/AddArtifact",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [Route("AddArtifact"), ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false)]
         public JsonResult AddArtifact(FormCollection form)
         {
@@ -916,7 +894,7 @@ namespace d360.web.Controllers
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Artifact>(model, fields);
 
-                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
+                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
             }
             catch (BaseException ex)
             {
@@ -927,24 +905,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("artifacts/{typeID:int}/{id:int}/delete")]
-        public ActionResult DeleteArtifact(int typeID, int id, string context = "")
-        {
-            var a = Company.GetById<Artifact>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Artifact,
-                FieldUri = string.Format("/form/Artifact_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteArtifact",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [Route("DeleteArtifact"), HttpDelete]
@@ -963,7 +923,7 @@ namespace d360.web.Controllers
 
                 Company.Delete(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
             }
             catch (BaseException ex)
             {
@@ -974,27 +934,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("artifacts/{typeID:int}/{id:int}/edit")]
-        public ActionResult EditArtifact(int typeID, int id)
-        {
-            var a = Company.GetById<Artifact>(id, i => i.ArtifactType);
-            if (a == null) return HttpNotFound();
-
-            var model = new EditableForm
-            {
-                Context = ContextList.Artifact,
-                FieldUri = string.Format("/form/Artifact_EditFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, a.ArtifactType.Name),
-                FormUri = "/form/EditArtifact",
-                FormMethod = "PUT"
-            };
-
-            //if (a.Locked) model.FormDescription = string.Format("NOTE: {0} was promoted via Fusion. Certain fields may not be editable.", a.Name);
-
-            return PartialView("EditableForm", model);
         }
 
         [Route("EditArtifact"), HttpPut, ValidateInput(false)]
@@ -1105,7 +1044,7 @@ namespace d360.web.Controllers
 
                 #endregion
 
-                return jsonSuccess(model.ArtifactType.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
+                return jsonSuccess(model.ArtifactType.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
             }
             catch (BaseException ex)
             {
@@ -1117,43 +1056,6 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [Route("Challenge")]
-        public ActionResult Challenge(int id)
-        {
-            var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-            if (artifact == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "Challenge",
-                FieldUri = string.Format("/form/Artifact_Challenge?id={0}", id),
-                FormTitle = string.Format("Challenge {0}", artifact.Name),
-                FormDescription = string.Format("This {0} challenge will be sent to the owner for further review.", artifact.ArtifactType.Name.ToLower()),
-                FormUri = "/form/Challenge",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [Route("RaiseIssue")]
-        public ActionResult RaiseIssue(int id)
-        {
-            var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-            if (artifact == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "Issue",
-                FieldUri = string.Format("/form/Artifact_RaiseIssue?id={0}", id),
-                FormTitle = string.Format("Raise issue for {0}", artifact.Name),
-                FormDescription = string.Format("This {0} issue will be sent to the owner for further review.", artifact.ArtifactType.Name.ToLower()),
-                FormUri = "/form/RaiseIssue",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("Challenge")]
         public JsonResult Challenge(FormCollection form)
@@ -1206,7 +1108,7 @@ namespace d360.web.Controllers
                     processor.CreateNewWorkflowInstance(WorkflowVersionMap.ChallengeArtifact_vCurrent, dictionary);
                 }
 
-                return jsonSuccess("Request successfully created.", "", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -1259,7 +1161,7 @@ namespace d360.web.Controllers
                     processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
                 }
 
-                return jsonSuccess("Request successfully created.", "", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -1270,24 +1172,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("RequestCertification")]
-        public ActionResult RequestCertification(int id)
-        {
-            var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-            if (artifact == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "RequestCertification",
-                FieldUri = string.Format("/form/Artifact_RequestCertification?id={0}", id),
-                FormTitle = string.Format("Request Certification for {0}", artifact.Name),
-                FormDescription = string.Format("This {0} will be sent to the appropriate people for certification.", artifact.ArtifactType.Name.ToLower()),
-                FormUri = "/form/RequestCertification",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, Route("RequestCertification")]
@@ -1350,7 +1234,7 @@ namespace d360.web.Controllers
                 });
                 processor.CreateNewWorkflowInstance(WorkflowVersionMap.CertifyArtifactIdentity_vCurrent, dictionary);
 
-                return jsonSuccess("Request successfully created.", "", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -1361,24 +1245,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("SuggestNewArtifact")]
-        public ActionResult SuggestNewArtifact(int typeID, int parentID)
-        {
-            var type = Company.GetById<ArtifactType>(typeID);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "Suggest",
-                FieldUri = string.Format("/form/Artifact_SuggestFields?at={0}&p={1}", typeID, parentID),
-                FormTitle = string.Format("Suggest a new {0}", type.Name),
-                FormDescription = "Your request will be sent to the appropriate people for approval.",
-                FormUri = "/form/SuggestNewArtifact",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("SuggestNewArtifact")]
@@ -1429,7 +1295,7 @@ namespace d360.web.Controllers
                 else
                     processor.CreateNewWorkflowInstance(WorkflowVersionMap.SuggestNewArtifactIdentity_vCurrent, dictionary);
 
-                return jsonSuccess("Request successfully created.", "", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -1466,23 +1332,6 @@ namespace d360.web.Controllers
         #endregion
 
         #region Form Get/Post
-
-        [Route("AddArtifactType")]
-        public ActionResult AddArtifactType(int parentID)
-        {
-            var model = new ArtifactTypeEditorModel
-            {
-                FormName = Resources.FormInfo.Add_ArtifactType_Title,
-                FormDescription = Resources.FormInfo.Add_ArtifactType_Directions,
-                FormUri = "/form/AddArtifactType",
-                FormMethod = "POST",
-                ArtifactType = new ArtifactType { ParentID = parentID, AllowHierarchy = false, AllowRelatedArtifacts = false, CanOwnFusion = false },
-                IconBackColor = "#000",
-                IconForeColor = "#FFF"
-            };
-
-            return PartialView("ArtifactTypeEditForm", model);
-        }
 
         [HttpGet, ActionName("ArtifactType"), Route("ArtifactType")]
         public JsonNetResult GetArtifactType(int? id, int? parentID)
@@ -1562,7 +1411,7 @@ namespace d360.web.Controllers
                     //Context = "", // form["_context"]
                 };
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), null, "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -1604,7 +1453,7 @@ namespace d360.web.Controllers
                     //Context = form["_context"]
                 };
 
-                return jsonSuccess(existing.Name + " successfully updated.", id.ToString(), null, "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(existing.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -1644,7 +1493,7 @@ namespace d360.web.Controllers
                    // Context = form["_context"]
                 };
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), null, "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -1693,7 +1542,7 @@ namespace d360.web.Controllers
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -1704,24 +1553,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeleteArtifactType")]
-        public ActionResult DeleteArtifactType(int id)
-        {
-            var a = Company.GetById<ArtifactType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ArtifactType,
-                FieldUri = string.Format("/form/ArtifactType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteArtifactType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteArtifactType")]
@@ -1751,7 +1582,7 @@ namespace d360.web.Controllers
                     Context = form["_context"]
                 };
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -1762,28 +1593,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("EditArtifactType")]
-        public ActionResult EditArtifactType(int id)
-        {
-            var at = Company.GetById<ArtifactType>(id);
-            if (at == null) return HttpNotFound();
-            var style = Company.GetObjectStyle(SystemObjects.ArtifactType, id);
-
-            var model = new ArtifactTypeEditorModel
-            {
-                FormName = Resources.FormInfo.Edit_ArtifactType_Title,
-                FormDescription = Resources.FormInfo.Edit_ArtifactType_Directions,
-                FormUri = "/form/EditArtifactType",
-                FormMethod = "PUT",
-                ArtifactType = at,
-                IconBackColor = ((style != null) ? style.IconBackColor : "#000"),
-                IconForeColor = ((style != null) ? style.IconForeColor : "#FFF")
-            };
-
-            return PartialView("ArtifactTypeEditForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditArtifactType")]
@@ -1818,7 +1627,7 @@ namespace d360.web.Controllers
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -1887,23 +1696,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddAttribute")]
-        public ActionResult AddAttribute(int typeID, string objectType, int objectID, int? parentID)
-        {
-            var type = Company.GetById<AttributeType>(typeID);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Attribute,
-                FieldUri = string.Format("/form/Attribute_AddFields?at={0}&ot={1}&oid={2}&p={3}", typeID, objectType, objectID, parentID.HasValue ? parentID.Value : 0),
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, type.Name),
-                FormUri = "/form/AddAttribute",
-                FormMethod = "POST"
-            };
-
-            return PartialView("AttributeEditForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttribute")]
         public JsonResult AddAttribute(FormCollection form)
         {
@@ -1945,7 +1737,7 @@ namespace d360.web.Controllers
                     Name = Company.GetById<AttributeDetail>(a.ID).FormattedValue
                 };
 
-                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -1956,24 +1748,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteAttribute")]
-        public ActionResult DeleteAttribute(int id)
-        {
-            var a = Company.GetById<d360.core.entities.Attribute>(id, i => i.AttributeType);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Attribute,
-                FieldUri = string.Format("/form/Attribute_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.AttributeType.Name),
-                FormUri = "/form/DeleteAttribute",
-                FormDescription = Resources.FormInfo.Delete_Attribute_Description,
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("AttributeDeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteAttributeById")]
@@ -1994,7 +1768,7 @@ namespace d360.web.Controllers
                 var id = parseIntField(form, "ID");
                 Company.Delete<core.entities.Attribute>(i => i.ID == id);
 
-                return jsonSuccess(Resources.FormInfo.Delete_Attribute_Confirmation, id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Delete_Attribute_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -2005,24 +1779,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditAttribute")]
-        public ActionResult EditAttribute(int id)
-        {
-            var a = Company.GetById<d360.core.entities.Attribute>(id, i => i.AttributeType);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Attribute,
-                FieldUri = string.Format("/form/Attribute_EditFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, a.AttributeType.Name),
-                FormDescription = Resources.FormInfo.Edit_Attribute_Description,
-                FormUri = "/form/EditAttribute",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("AttributeEditForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditAttribute")]
@@ -2052,7 +1808,7 @@ namespace d360.web.Controllers
                     Name = Company.GetById<AttributeDetail>(id).FormattedValue
                 };
 
-                return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -2092,29 +1848,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddAttributeType")]
-        public ActionResult AddAttributeType(int? parentID)
-        {
-            //if (!Company.HasPermission(SystemObjects.AttributeType, 0, Claim.Create))
-            //    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var model = new AttributeTypeEditorModel()
-            {
-                FormUri = "/Form/AddAttributeType",
-                FormMethod = "POST",
-                Tokens = new List<SelectListItem>(),
-                FormName = Resources.FormInfo.Add_AttributeType_Title,
-                AttributeType = new AttributeType { ParentID = parentID, ShowNameInTree = true },
-                AttributeTypeCategories = (parentID.HasValue) ? new List<SelectListItem>() : Company.Table<AttributeTypeCategory>().OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList()
-            };
-            if (!parentID.HasValue)
-            {
-                model.AttributeTypeCategories.Insert(0, new SelectListItem { Text = "Enterprise-wide", Value = "0" });
-            }
-
-            return PartialView("AttributeTypeEditForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeType")]
         public JsonResult AddAttributeType(FormCollection form)
         {
@@ -2150,7 +1883,7 @@ namespace d360.web.Controllers
 
                 Company.SaveOrUpdate<AttributeType>(a);
 
-                return jsonSuccess(Resources.FormInfo.Add_AttributeType_Confirmation, a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ParentID = a.ParentID, Context = form["_context"], Name = a.Name });
+                return jsonSuccess(Resources.FormInfo.Add_AttributeType_Confirmation, a.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = a.ParentID, Name = a.Name });
             }
             catch (BaseException ex)
             {
@@ -2161,23 +1894,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteAttributeType")]
-        public ActionResult DeleteAttributeType(int id)
-        {
-            var a = Company.GetById<AttributeType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "attributetypeform",
-                FieldUri = string.Format("/form/AttributeType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteAttributeType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteAttributeType")]
@@ -2196,7 +1912,7 @@ namespace d360.web.Controllers
                                 
                 Company.Delete("AttributeType", id);//Company.Delete<AttributeType>(model);
 
-                return jsonSuccess(Resources.FormInfo.Delete_AttributeType_Confirmation, id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Delete_AttributeType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -2207,38 +1923,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditAttributeType")]
-        public ActionResult EditAttributeType(int id)
-        {
-            //if (!Company.HasPermission(SystemObjects.AttributeType, id, ObjectPermission.Update))
-            //    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var a = Company.GetById<AttributeType>(id);
-            if (a == null) return HttpNotFound();
-            //var used = FieldService.GetFieldRelations().Any(i => i.FieldTypeID == id);
-            var model = new AttributeTypeEditorModel
-            {
-                FormUri = "/Form/EditAttributeType",
-                Tokens = Company.GetFieldTypeRelationsByObject(SystemObjects.AttributeType, id)
-                .Select(i => new SelectListItem
-                {
-                    Text = i.FriendlyName,
-                    Value = "{" + i.Name + "}"
-                }).ToList(),
-                FormMethod = "PUT",
-                FormName = Resources.FormInfo.Edit_AttributeType_Title,
-                FormDescription = Resources.FormInfo.Edit_AttributeType_Directions,
-                AttributeType = a,
-                AttributeTypeCategories = (a.ParentID.HasValue) ? new List<SelectListItem>() : Company.Table<AttributeTypeCategory>().OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = (a.AttributeTypeCategoryID == i.ID) }).ToList()
-            };
-            if (!a.ParentID.HasValue)
-            {
-                model.AttributeTypeCategories.Insert(0, new SelectListItem { Text = "Enterprise-wide", Value = "0", Selected = !a.AttributeTypeCategoryID.HasValue });
-            }
-
-            return PartialView("AttributeTypeEditForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditAttributeType")]
@@ -2271,7 +1955,7 @@ namespace d360.web.Controllers
 
                 Company.SaveOrUpdate<AttributeType>(model);
 
-                return jsonSuccess(Resources.FormInfo.Edit_AttributeType_Confirmation, id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Context = form["_context"], Name = model.Name });
+                return jsonSuccess(Resources.FormInfo.Edit_AttributeType_Confirmation, id.ToString(), "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -2342,22 +2026,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddAttributeTypeCategory")]
-        public ActionResult AddAttributeTypeCategory()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.AttributeTypeCategory,
-                FieldUri = "/form/AttributeTypeCategory_AddFields",
-                FormTitle = Resources.FormInfo.Add_AttributeTypeCategory_Title,
-                FormDescription = Resources.FormInfo.AttributeTypeCategory_Directions,
-                FormUri = "/form/AddAttributeTypeCategory",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeTypeCategory")]
         public JsonResult AddAttributeTypeCategory(FormCollection form)
         {
@@ -2383,7 +2051,7 @@ namespace d360.web.Controllers
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -2394,23 +2062,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteAttributeTypeCategory")]
-        public ActionResult DeleteAttributeTypeCategory(int id)
-        {
-            var a = Company.GetById<AttributeTypeCategory>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.AttributeTypeCategory,
-                FieldUri = string.Format("/form/AttributeTypeCategory_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteAttributeTypeCategory",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteAttributeTypeCategory")]
@@ -2436,7 +2087,7 @@ namespace d360.web.Controllers
                     Context = form["_context"]
                 };
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -2447,23 +2098,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditAttributeTypeCategory")]
-        public ActionResult EditAttributeTypeCategory(int id)
-        {
-            if (!Company.Exists<ArtifactType>(id)) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.AttributeTypeCategory,
-                FieldUri = string.Format("/form/AttributeTypeCategory_EditFields?id={0}", id),
-                FormTitle = Resources.FormInfo.Edit_AttributeTypeCategory_Title,
-                FormDescription = Resources.FormInfo.AttributeTypeCategory_Directions,
-                FormUri = "/form/EditAttributeTypeCategory",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditAttributeTypeCategory")]
@@ -2492,7 +2126,7 @@ namespace d360.web.Controllers
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -2582,23 +2216,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddAttributeTypeRelation")]
-        public ActionResult AddAttributeTypeRelation(int id)
-        {
-            var type = Company.GetById<AttributeType>(id);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.AttributeTypeRelation,
-                FieldUri = string.Format("/form/AttributeTypeRelation_AddFields?at={0}", id),
-                FormTitle = "Allocating " + type.Name,
-                FormUri = "/form/AddAttributeTypeRelation",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeTypeRelation")]
         public JsonResult AddAttributeTypeRelation(FormCollection form)
         {
@@ -2623,7 +2240,7 @@ namespace d360.web.Controllers
                         ObjectID = int.Parse(value[1])
                     });
 
-                    return jsonSuccess(type.Name + " successfully allocated.", typeID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                    return jsonSuccess(type.Name + " successfully allocated.", typeID.ToString(), "add", HttpStatusCode.Created);
                 }
                 else
                 {
@@ -2639,24 +2256,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteAttributeTypeRelation")]
-        public ActionResult DeleteAttributeTypeRelation(int id, string objectType, int objectTypeID)
-        {
-            var sType = objectType.ToString();
-            var a = Company.Filter<AttributeTypeRelationDetail>(i => i.AttributeTypeID == id && i.ObjectID == objectTypeID && i.ObjectType == sType).SingleOrDefault();
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.AttributeTypeRelation,
-                FieldUri = string.Format("/form/AttributeTypeRelation_DeleteFields?at={0}&ot={1}&oid={2}", a.AttributeTypeID, a.ObjectType, a.ObjectID),
-                FormTitle = "Are you sure you want to de-allocate " + a.ObjectName + "?",
-                FormUri = "/form/DeleteAttributeTypeRelation",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         /// <summary>
@@ -2688,7 +2287,7 @@ namespace d360.web.Controllers
                 var ot = form["ObjectType"];
                 var oid = parseIntField(form, "ObjectID");
                 if (Company.Delete<AttributeTypeRelation>(i => i.AttributeTypeID == at && i.ObjectType == ot && i.ObjectID == oid))
-                    return jsonSuccess("Allocation successfully removed.", ot.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                    return jsonSuccess("Allocation successfully removed.", ot.ToString(), "delete", HttpStatusCode.OK);
                 else
                     return jsonException("Allocation does not exist.", HttpStatusCode.NotFound);
             }
@@ -2701,24 +2300,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditAttributeTypeRelation")]
-        public ActionResult EditAttributeTypeRelation(int id, string objectType, int objectTypeID)
-        {
-            var sType = objectType.ToString();
-            var a = Company.Filter<AttributeTypeRelationDetail>(i => i.AttributeTypeID == id && i.ObjectID == objectTypeID && i.ObjectType == sType).SingleOrDefault();
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.AttributeTypeRelation,
-                FieldUri = string.Format("/form/AttributeTypeRelation_EditFields?at={0}&ot={1}&oid={2}", a.AttributeTypeID, a.ObjectType, a.ObjectID),
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Allocation"),
-                FormUri = "/form/EditAttributeTypeRelation",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, Route("EditAttributeTypeRelation")]
@@ -2737,7 +2318,7 @@ namespace d360.web.Controllers
                 }
                 model.AllowMultipleEntries = parseBooleanField(form, "AllowMultipleEntries");
                 if (Company.Update<AttributeTypeRelation>(model))
-                    return jsonSuccess("Allocation successfully updated.", ot.ToString(), form["_context"], "update", HttpStatusCode.OK);
+                    return jsonSuccess("Allocation successfully updated.", ot.ToString(), "update", HttpStatusCode.OK);
                 else
                     return jsonException("Allocation does not exist.", HttpStatusCode.NotFound);
             }
@@ -3046,7 +2627,7 @@ namespace d360.web.Controllers
 
                 #endregion
 
-                return jsonSuccess("Settings successfully updated.", "0", "CompanySettings", "edit", HttpStatusCode.OK);
+                return jsonSuccess("Settings successfully updated.", "0", "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -3153,21 +2734,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("templates/email/add")]
-        public ActionResult AddEmailTemplate()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.EmailTemplate,
-                FieldUri = "/form/EmailTemplate_AddFields",
-                FormTitle = "Add Email Template",
-                FormUri = "/form/AddEmailTemplate",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddEmailTemplate")]
         public JsonResult AddEmailTemplate(FormCollection form)
         {
@@ -3186,7 +2752,7 @@ namespace d360.web.Controllers
 
                 Company.Add<EmailTemplate>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -3197,24 +2763,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("templates/email/{id:int}/delete")]
-        public ActionResult DeleteEmailTemplate(int id)
-        {
-            var a = Company.GetById<EmailTemplate>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.EmailTemplate,
-                FieldUri = string.Format("/form/EmailTemplate_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteEmailTemplate",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteEmailTemplate")]
@@ -3227,7 +2775,7 @@ namespace d360.web.Controllers
                 var id = parseIntField(form, "ID");
                 Company.Delete<EmailTemplate>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -3238,24 +2786,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("templates/email/{id:int}/edit")]
-        public ActionResult EditEmailTemplate(int id)
-        {
-            var a = Company.GetById<EmailTemplate>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.EmailTemplate,
-                FieldUri = string.Format("/form/EmailTemplate_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditEmailTemplate",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditEmailTemplate")]
@@ -3277,178 +2807,7 @@ namespace d360.web.Controllers
 
                 Company.Update<EmailTemplate>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region Event
-
-        #region Field Generation
-
-        /// <param name="id">EventID</param>
-        [Route("Event_EditFields")]
-        public JsonResult Event_EditFields(int id)
-        {
-            var a = Company.GetById<Event>(id, i => i.EventGroup);
-
-            if (a == null)
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.NotFound);
-
-            if (!Company.HasPermission(SystemObjects.Rule, a.EventGroup.RuleID.Value, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            var criticalities = EventCriticality.Critical.GetAsList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Criticality", Name = "Name", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Criticality).ToString(), Items = criticalities });
-            list = loadStatusField(list, SystemObjects.Event, a.Status, 1, 2);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [Route("EditEvent")]
-        public ActionResult EditEvent(int id)
-        {
-            var a = Company.GetById<Event>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Event,
-                FieldUri = string.Format("/form/Event_EditFields?id={0}", id),
-                FormTitle = "Edit Event",
-                FormUri = "/form/EditEvent",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditEvent")]
-        public JsonResult EditEvent(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("event");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Event>(id);
-                if (model == null) throw new NotFoundException("event");
-
-                if (!Company.HasPermission(SystemObjects.Domain, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Criticality = (EventCriticality)Enum.Parse(typeof(EventCriticality), form["Criticality"]);
-                model.Status = parseTextField(form, "Status");
-
-                Company.Update<Event>(model);
-
-                return jsonSuccess("Event successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region EventGroup
-
-        #region Field Generation
-
-        /// <param name="id">EventGroupID</param>
-        [Route("EventGroup_EditFields")]
-        public JsonResult EventGroup_EditFields(int id)
-        {
-            var a = Company.GetById<EventGroup>(id);
-
-            if (a == null)
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.NotFound);
-
-            if (!Company.HasPermission(SystemObjects.Rule, a.RuleID.Value, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            var criticalities = EventCriticality.Critical.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList();
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Criticality", Name = "Name", FieldType = DataType.Lookup.ToString(), Items = criticalities });
-            list = loadStatusField(list, SystemObjects.Event, "", 1, 2);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [Route("EditEventGroup")]
-        public ActionResult EditEventGroup(int id)
-        {
-            var a = Company.GetById<Event>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Event,
-                FieldUri = string.Format("/form/EventGroup_EditFields?id={0}", id),
-                FormTitle = "Edit Event Group",
-                FormDescription = "You can set properties for all events under this group, including updating the status.",
-                FormUri = "/form/EditEventGroup",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditEventGroup")]
-        public JsonResult EditEventGroup(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("event group");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<EventGroup>(id, i => i.Events);
-                if (model == null) throw new NotFoundException("event group");
-
-                if (!Company.HasPermission(SystemObjects.Rule, model.RuleID.Value, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var criticality = (EventCriticality)Enum.Parse(typeof(EventCriticality), form["Criticality"]);
-                var status = parseTextField(form, "Status");
-                foreach (var e in model.Events)
-                {
-                    e.Criticality = criticality;
-                    e.Status = status;
-                }
-                Company.SaveChanges();
-
-                return jsonSuccess("Event group successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { });
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -3700,19 +3059,10 @@ namespace d360.web.Controllers
         [Route("FieldType_Lookup_Tokens")]
         public JsonNetResult FieldType_Lookup_Tokens(SystemObjects type, int id)
         {
-            Dictionary<string, string> list;
-
-            if (type != SystemObjects.DomainItem)
-            {
-                list = Company.GetFieldTypeRelationsByObject(type, id)
-                    .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
-                    .Select(i => new { i.ID, i.Name })
-                    .ToDictionary(i => i.Name, i => i.Name);
-            }
-            else
-            {
-                list = new Dictionary<string, string>();
-            }
+            var list = Company.GetFieldTypeRelationsByObject(type, id)
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Select(i => new { i.ID, i.Name })
+                .ToDictionary(i => i.Name, i => i.Name);
 
             switch (type)
             {
@@ -3722,11 +3072,9 @@ namespace d360.web.Controllers
                     list.Add("Description", "Description");
                     list.Add("TextPath", "TextPath");
                     break;
-                case SystemObjects.DomainItem:
-                case SystemObjects.DomainType:
-                    list.Add("Name", "Name");
+                case SystemObjects.ReferenceItem:
+                case SystemObjects.ReferenceItemType:
                     list.Add("Code", "Code");
-                    list.Add("Description", "Description");
                     break;
                 case SystemObjects.PolicyType:
                     list.Add("Name", "Name");
@@ -3751,9 +3099,6 @@ namespace d360.web.Controllers
                     list.Add("Name", "Name");
                     list.Add("Description", "Description");
                     list.Add("TextPath", "TextPath");
-                    break;
-                case SystemObjects.ReferenceItemType:
-                    if (list.Count == 0) list.Add("Code", "Code");
                     break;
                 //default:
                 //    list.Add("Name", "Name");
@@ -3948,16 +3293,6 @@ namespace d360.web.Controllers
             var nameUpper = name.ToUpper();
 
             if (nameUpper == "STATUS" || nameUpper == "NAME" || nameUpper == "DESCRIPTION" || nameUpper == "PARENTID" || nameUpper == "DATELASTCERTIFIED" || nameUpper == "TAXONOMYTYPEID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
-        }
-
-        [Route("AddFieldType")]
-        public ActionResult AddFieldType(SystemObjects type, int id)
-        {
-            var model = new FieldTypeEditorModel
-            {
-                FieldType = new FieldType { Object = type.ToString(), ObjectID = id, Pattern = "", Type = DataType.Text.ToString(), MinimumLength = 0, MaximumLength = 1000, IsListable = true, IsRequired = true },
-            };
-            return PartialView("FieldTypeEditForm", model);
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFieldType")]
@@ -4179,7 +3514,7 @@ namespace d360.web.Controllers
                         break;
                 }
 
-                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.FieldType.ID.ToString(), ContextList.FieldType, "add", HttpStatusCode.Created);
+                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.FieldType.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -4190,23 +3525,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteFieldType")]
-        public ActionResult DeleteFieldType(int id)
-        {
-            var a = Company.GetById<FieldType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.FieldType,
-                FieldUri = string.Format("/form/FieldType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteFieldType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteFieldType")]
@@ -4221,7 +3539,7 @@ namespace d360.web.Controllers
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
                 Company.Delete("FieldType", id);//Company.Delete<FieldType>(model);
 
-                return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -4266,28 +3584,6 @@ namespace d360.web.Controllers
             };
 
         }
-
-        [Route("EditFieldType")]
-        public ActionResult EditFieldType(int id)
-        {
-            var a = Company.GetById<FieldType>(id);
-            if (a == null) return HttpNotFound();
-            var used = Company.Any<Field>(i => i.FieldTypeID == id);
-            var qry = Company.Table<FieldTypeLookupValue>().OrderBy(i => i.LookupObjectType).ThenBy(i => i.Name).AsQueryable();
-
-            var fusDef = a.FieldTypeFusionLookupDefinitions.FirstOrDefault();
-
-            if (!a.IsRequired) a.MinimumLength = 0;
-
-            var model = new FieldTypeEditorModel
-            {
-                FieldIsUsed = used,
-                FieldType = a
-            };
-
-            return PartialView("FieldTypeEditForm", model);
-        }
-
 
         [HttpPut, ValidateInput(false), Route("EditFieldType")]
         public JsonResult EditFieldType(FieldTypeEditorModel model)
@@ -4701,7 +3997,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FieldType>(ft);
 
-                return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, ft.ID.ToString(), ContextList.FieldType, "edit", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, ft.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -4810,24 +4106,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddFusion")]
-        public ActionResult AddFusion(int typeID)
-        {
-            var type = Company.GetById<FusionType>(typeID);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.Fusion,
-                FieldUri = string.Format("/form/Fusion_AddFields?ft={0}", typeID),
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, type.Name),
-                FormUri = "/form/AddFusion",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusion")]
         public JsonResult AddFusion(FormCollection form)
         {
@@ -4866,7 +4144,7 @@ namespace d360.web.Controllers
 
                 Company.SaveOrUpdate<Fusion>(model, fields);
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -4877,36 +4155,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("AddFusionSpreadsheetImport")]
-        public ActionResult AddFusionSpreadsheetImport(int typeID, int id)//, int attributeTypeID)
-        {
-            var fusion = Company.GetById<Fusion>(id, i => i.FusionType.FusionAttributeTypes);
-            //ViewData.Add("FusionAttributeTypeID", attributeTypeID);
-
-            ViewBag.FusionTypeID = typeID;
-            ViewBag.FusionID = id;
-
-            return PartialView(fusion.FusionType.FusionAttributeTypes.ToList());
-        }
-
-
-        [Route("DeleteFusion")]
-        public ActionResult DeleteFusion(int id)
-        {
-            var a = Company.GetById<Fusion>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Fusion,
-                FieldUri = string.Format("/form/Fusion_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteFusion",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteFusion")]
@@ -4920,7 +4168,7 @@ namespace d360.web.Controllers
                 if (model == null) throw new NotFoundException("configuration");
 
                 Company.Delete<Fusion>(model);
-                return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -4939,24 +4187,6 @@ namespace d360.web.Controllers
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteFusion(form);
-        }
-
-        [Route("EditFusion")]
-        public ActionResult EditFusion(int id)
-        {
-            var a = Company.GetById<Fusion>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.Fusion,
-                FieldUri = string.Format("/form/Fusion_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditFusion",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditFusion")]
@@ -5016,7 +4246,7 @@ namespace d360.web.Controllers
 
                 Company.SaveOrUpdate<Fusion>(model, fields);
 
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -5101,22 +4331,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddFusionFilter")]
-        public ActionResult AddFusionFilter(int f)
-        {
-            if (!Company.Exists<Fusion>(f)) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionFilter,
-                FieldUri = string.Format("/form/FusionFilter_AddFields?f={0}", f),
-                FormTitle = "Add Filter",
-                FormUri = "/form/AddFusionFilter",
-                FormMethod = "POST"
-            };
-
-            return PartialView("OverlayEditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionFilter")]
         public JsonResult AddFusionFilter(FormCollection form)
         {
@@ -5138,7 +4352,7 @@ namespace d360.web.Controllers
                 };
 
                 Company.Add<FusionFilter>(model);
-                return jsonSuccess("Filter successfully created.", a.ToString(), form["_context"], "add", HttpStatusCode.Created, new { Type = "FusionFilter", Context = form["_context"] });
+                return jsonSuccess("Filter successfully created.", a.ToString(), "add", HttpStatusCode.Created, new { Type = "FusionFilter", Context = form["_context"] });
             }
             catch (BaseException ex)
             {
@@ -5172,7 +4386,7 @@ namespace d360.web.Controllers
                 };
 
                 Company.Add<FusionFilter>(model);
-                return jsonSuccess("Filter successfully created.", f.FusionAttributeTypeID.ToString(), null, "add", HttpStatusCode.Created, new { Type = "FusionFilter", Context = "FusionFilter" });
+                return jsonSuccess("Filter successfully created.", f.FusionAttributeTypeID.ToString(), "add", HttpStatusCode.Created, new { Type = "FusionFilter", Context = "FusionFilter" });
             }
             catch (BaseException ex)
             {
@@ -5183,23 +4397,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteFusionFilter")]
-        public ActionResult DeleteFusionFilter(int f, int a)
-        {
-            var o = Company.Filter<FusionFilter>(i => i.FusionID == f && i.FusionAttributeTypeID == a).SingleOrDefault();
-            if (o == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionFilter,
-                FieldUri = string.Format("/form/FusionFilter_DeleteFields?f={0}&a={1}", f, a),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Filter"),
-                FormUri = "/form/DeleteFusionFilter",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteFusionFilter")]
@@ -5217,7 +4414,7 @@ namespace d360.web.Controllers
 
                 Company.Delete<FusionFilter>(i => i.FusionAttributeTypeID == a && i.FusionID == f);
 
-                return jsonSuccess("Filter successfully removed.", a.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Filter successfully removed.", a.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -5240,23 +4437,6 @@ namespace d360.web.Controllers
             return DeleteFusionFilter(form);
         }
 
-        [Route("EditFusionFilter")]
-        public ActionResult EditFusionFilter(int f, int a)
-        {
-            var o = Company.Filter<FusionFilter>(i => i.FusionID == f && i.FusionAttributeTypeID == a).SingleOrDefault();
-            if (o == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionFilter,
-                FieldUri = string.Format("/form/FusionFilter_EditFields?f={0}&a={1}", f, a),
-                FormTitle = "Edit Filter",
-                FormUri = "/form/EditFusionFilter",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("OverlayEditableForm", model);
-        }
-
         [HttpPut, ValidateInput(false), Route("EditFusionFilter")]
         public JsonResult EditFusionFilter(FormCollection form)//(int typeID, int id, FusionAttributeType model)
         {
@@ -5277,7 +4457,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FusionFilter>(o);
 
-                return jsonSuccess("Filter successfully updated.", a.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { Type = "FusionFilter", Context = form["_context"] });
+                return jsonSuccess("Filter successfully updated.", a.ToString(), "edit", HttpStatusCode.OK, new { Type = "FusionFilter", Context = form["_context"] });
             }
             catch (BaseException ex)
             {
@@ -5310,7 +4490,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FusionFilter>(o);
 
-                return jsonSuccess("Filter successfully updated.", f.FusionAttributeTypeID.ToString(), null, "edit", HttpStatusCode.OK, new { Type = "FusionFilter", Context = "FusionFilter" });
+                return jsonSuccess("Filter successfully updated.", f.FusionAttributeTypeID.ToString(), "edit", HttpStatusCode.OK, new { Type = "FusionFilter", Context = "FusionFilter" });
             }
             catch (BaseException ex)
             {
@@ -5330,23 +4510,6 @@ namespace d360.web.Controllers
         #region FusionRule
 
         #region Form Get/Post
-
-        [Route("fusion/{typeID:int}/configurations/{fusionID:int}/rule/add")]
-        public ActionResult AddFusionRule(int typeID, int fusionID)
-        {
-            var model = new FusionRuleEditorModel
-            {
-                FusionID = fusionID,
-                FusionTypeID = typeID,
-                FormUri = "/Form/AddFusionRule",
-                FormMethod = "POST",
-                FormName = "Add Fusion Rule",
-                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).ToList(),
-                Rule = new FusionRule { FusionID = fusionID, Enabled = true }
-            };
-            return PartialView("FusionRuleEditForm", model);
-
-        }
 
         [HttpGet, Route("GetAddFusionRule")]
         public JsonNetResult GetAddFusionRule(int typeID)
@@ -5376,7 +4539,7 @@ namespace d360.web.Controllers
 
                 Company.Add<FusionRule>(item);
 
-                return jsonSuccess("Items marked for auto-promotion", "0", ContextList.FusionRule, "add", HttpStatusCode.Created);
+                return jsonSuccess("Items marked for auto-promotion", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -5407,7 +4570,7 @@ namespace d360.web.Controllers
 
                 Company.Add<FusionRule>(item);
 
-                return jsonSuccess("Items marked for auto-promotion", "0", ContextList.FusionRule, "add", HttpStatusCode.Created);
+                return jsonSuccess("Items marked for auto-promotion", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -5420,24 +4583,6 @@ namespace d360.web.Controllers
             }
         }
 
-        [Route("DeleteFusionRule")]
-        public ActionResult DeleteFusionRule(int id)
-        {
-            var a = Company.GetById<FusionRule>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionRule,
-                FieldUri = string.Format("/form/FusionRule_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this promotion rule"),
-                FormUri = "/form/DeleteFusionRule",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
-        }
-
         [HttpDelete, Route("DeleteFusionRule")]
         public JsonResult DeleteFusionRule(FormCollection form)
         {
@@ -5446,7 +4591,7 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
                 Company.Delete<FusionRule>(i => i.ID == id);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -5512,7 +4657,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FusionRule>(model);
 
-                return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), null , "edit", HttpStatusCode.OK);
+                return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -5523,25 +4668,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditFusionRule")]
-        public ActionResult EditFusionRule(int id)
-        {
-            var a = Company.GetById<FusionRule>(id);
-            if (a == null) return HttpNotFound();
-
-            var model = new FusionRuleEditorModel
-            {
-                FusionID = a.Fusion.ID,
-                FusionTypeID = a.Fusion.FusionTypeID,
-                FormUri = "/Form/EditFusionRule",
-                FormMethod = "PUT",
-                FormName = "Edit Fusion Rule",
-                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).ToList(),
-                Rule = a
-            };
-            return PartialView("FusionRuleEditForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditFusionRule")]
@@ -5565,7 +4691,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FusionRule>(model);
 
-                return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -5617,29 +4743,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddFusionRuleItem")]
-        public ActionResult AddFusionRuleItem(int id)
-        {
-            var rule = Company.GetById<FusionRule>(id);
-
-            if (rule == null)
-                return jsonException("Rule not found", HttpStatusCode.NotFound);
-
-            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionRuleItemEditorModel
-            {
-                FormUri = "/Form/AddFusionRuleItem",
-                FormMethod = "POST",
-                FormName = "Add Promotion Target Item",
-                FusionID = rule.FusionID,
-                TargetFusionAttributeTypeID = rule.ObjectID,
-                Item = new FusionRuleItem { RuleID = id }
-            };
-            return PartialView("FusionRuleItemEditForm", editorModel);
-        }
-
         [HttpGet, Route("GetAddFusionRuleItem")]
         public JsonNetResult GetAddFusionRuleItem(int id)
         {
@@ -5667,8 +4770,7 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-
+        
         [HttpPost, ValidateInput(false),ValidateHttpAntiForgeryToken, Route("PostAddFusionRuleItem")]
         public JsonResult PostAddFusionRuleItem(FusionAddItemModel form)
         {
@@ -5713,7 +4815,7 @@ namespace d360.web.Controllers
 
                 Company.SaveChanges();
 
-                return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);
+                return jsonSuccess("Target item(s) successfully created.", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -5762,7 +4864,7 @@ namespace d360.web.Controllers
                 }
                 Company.SaveChanges();
 
-                return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);
+                return jsonSuccess("Target item(s) successfully created.", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -5773,25 +4875,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeleteFusionRuleItem")]
-        public ActionResult DeleteFusionRuleItem(int id)
-        {
-            var a = Company.GetById<FusionRuleItem>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionPromotionRuleItem,
-                FieldUri = string.Format("/form/FusionRuleItem_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this target item"),
-                FormUri = "/form/DeleteFusionRuleItem",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteFusionRuleItem")]
@@ -5813,7 +4896,7 @@ namespace d360.web.Controllers
                     Company.FusionRuleItem.Remove(item);
                     Company.SaveChanges();
                 }
-                return jsonSuccess("Target item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Target item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -5841,27 +4924,6 @@ namespace d360.web.Controllers
         #region FusionRuleStep
 
         #region Form Get/Post
-
-        [Route("fusion/rule/{ruleID:int}/step/add")]
-        public ActionResult AddFusionRuleStep(int ruleID)
-        {
-            if (ruleID <= 0) return new HttpNotFoundResult();
-
-            var rule = Company.GetById<FusionRule>(ruleID);
-
-            if (rule == null) return new HttpNotFoundResult();
-
-            return PartialView("FusionRuleStepEditForm",
-                new FusionRuleStepEditorModel
-                {
-                    FormUri = "/form/AddFusionRuleStep",
-                    FormMethod = "POST",
-                    RuleStep = new FusionRuleStep { Action = "promote", Step = rule.FusionRuleSteps.Count + 1, RuleID = ruleID, FusionRule = rule },
-                    FormName = "Add Fusion Rule Step",
-                    FusionID = rule.FusionID,
-                    FusionTypeID = rule.Fusion.FusionTypeID
-                });
-        }
 
         [HttpGet, Route("GetAddFusionRuleStep")]
         public JsonNetResult GetAddFusionRuleStep(int ruleID)
@@ -5930,50 +4992,7 @@ namespace d360.web.Controllers
                 }
                 Company.SaveChanges();
 
-                return jsonSuccess("New Fusion Rule Step Added", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRuleStep")]
-        public ActionResult AddFusionRuleStep(FormCollection form)
-        {
-            try
-            {
-                var ruleID = parseIntField(form, "RuleID");
-
-                if (ruleID <= 0) return new HttpNotFoundResult();
-
-                var rule = Company.GetById<FusionRule>(ruleID);
-
-                var item = new FusionRuleStep
-                {
-                    Action = parseTextField(form, "Action"),
-                    Description = parseTextField(form, "Description"),
-                    Step = parseIntField(form, "Step"),
-                    RuleID = rule.ID
-                };
-
-                rule.FusionRuleSteps.Add(item);
-                if (rule != null)
-                {
-                    rule.UpdatedBy = Company.CurrentResourceID;
-                    rule.UpdatedOn = DateTime.UtcNow;
-                }
-
-                AddPromotionStepSettings(item, form);
-
-                Company.SaveChanges();
-
-                return jsonSuccess("New Fusion Rule Step Added", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Created);
+                return jsonSuccess("New Fusion Rule Step Added", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -6598,27 +5617,6 @@ namespace d360.web.Controllers
 
         }
 
-        [Route("fusion/rule/{ruleID:int}/step/edit/{ruleStepID:int}")]
-        public ActionResult EditFusionRuleStep(int ruleID, int ruleStepID)
-        {
-            var rule = Company.GetById<FusionRule>(ruleID);
-            if (rule == null) return new HttpNotFoundResult();
-
-            var step = rule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
-            if (step == null) return new HttpNotFoundResult();
-
-            return PartialView("FusionRuleStepEditForm",
-                new FusionRuleStepEditorModel
-                {
-                    FormUri = "/form/EditFusionRuleStep",
-                    FormMethod = "PUT",
-                    RuleStep = step,
-                    FormName = "Edit Fusion Rule Step",
-                    FusionID = rule.FusionID,
-                    FusionTypeID = rule.Fusion.FusionTypeID
-                });
-        }
-
         [HttpGet, Route("GetEditFusionRuleStep")]
         public JsonNetResult GetEditFusionRuleStep(int ruleID, int ruleStepID)
         {
@@ -6723,7 +5721,7 @@ namespace d360.web.Controllers
                 }
                 Company.SaveChanges();
 
-                return jsonSuccess("Step updated", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Accepted);
+                return jsonSuccess("Step updated", "0", "add", HttpStatusCode.Accepted);
             }
             catch (BaseException ex)
             {
@@ -6734,204 +5732,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditFusionRuleStep")]
-        public ActionResult EditFusionRuleStep(FormCollection form)
-        {
-            try
-            {
-                var ruleID = parseIntField(form, "RuleID");
-                var ruleStepID = parseIntField(form, "RuleStepID");
-
-                if (ruleID <= 0 || ruleStepID <= 0) return new HttpNotFoundResult();
-
-                var rule = Company.GetById<FusionRule>(ruleID);
-
-                if (rule == null) return new HttpNotFoundResult();
-
-                var step = rule.FusionRuleSteps.First(x => x.ID == ruleStepID);
-
-                if (step == null) return new HttpNotFoundResult();
-
-                step.Description = parseTextField(form, "Description");
-                step.Step = parseIntField(form, "Step");
-                step.Action = parseTextField(form, "Action");
-                
-                rule.UpdatedBy = Company.CurrentResourceID;
-                rule.UpdatedOn = DateTime.UtcNow;
-
-                //remove old step settings                
-                for (int i = step.FusionRuleStepSettings.Count - 1; i >= 0; i--)
-                {
-                    Company.ObjectContext.DeleteObject(step.FusionRuleStepSettings.ElementAt(i));
-                }
-
-                AddPromotionStepSettings(step, form);
-
-                Company.SaveChanges();
-
-                return jsonSuccess("Step updated", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Accepted);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [Route("fusion/rule/{ruleID:int}/step/delete/{ruleStepID:int}")]
-        public ActionResult DeleteFusionRuleStep(int ruleID, int ruleStepID)
-        {
-            var rule = Company.GetById<FusionRule>(ruleID);
-            if (rule == null) return new HttpNotFoundResult();
-
-            var step = rule.FusionRuleSteps.FirstOrDefault(x => x.ID == ruleStepID);
-            if (step == null) return new HttpNotFoundResult();
-
-            return PartialView("OverlayDeleteForm", new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionRule,
-                FieldUri = $"/form/FusionRuleStep_DeleteFields?id={ruleID}&ruleStepID={ruleStepID}",
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this promotion rule step"),
-                FormUri = "/form/DeleteFusionRuleStep",
-                FormMethod = "DELETE"
-            });
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleStep")]
-        public ActionResult DeleteFusionRuleStep(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                var ruleStepID = parseIntField(form, "RuleStepID");
-                var currentRule = Company.GetById<FusionRule>(id);//, i => i.FusionRuleSteps);
-                var itemToRemove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
-
-                if (itemToRemove == null) return new HttpNotFoundResult();
-
-                //foreach (var step in currentRule.FusionRuleSteps)
-                //{
-                //    var resultFromStepSetting = step.FusionRuleStepSettings.Single(s => s.Value == "ResultFromStep")
-                //}
-
-                Company.ObjectContext.DeleteObject(itemToRemove);
-
-                if (currentRule != null)
-                {
-                    currentRule.UpdatedBy = Company.CurrentResourceID;
-                    currentRule.UpdatedOn = DateTime.UtcNow;
-                }
-
-                Company.SaveChanges();
-
-                //update the step numbers 
-                var steps = currentRule.FusionRuleSteps.OrderBy(x => x.Step);
-
-                for (int i = 0; i < steps.Count(); i++)
-                {
-                    steps.ElementAt(i).Step = (i + 1);
-                }
-
-                Company.SaveChanges();
-
-                return jsonSuccess("Step successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleStepByID")]
-        public ActionResult DeleteFusionRuleStepByID(int ruleID, int ruleStepID)
-        {
-            var form = new FormCollection();
-            form.Add("ID", ruleID.ToString());
-            form.Add("RuleStepID", ruleStepID.ToString());
-
-
-            return DeleteFusionRuleStep(form);
-        }
-
-        [Route("fusion/rule/{ruleID:int}/step/move/{direction}/{ruleStepID:int}")]
-        public ActionResult MoveFusionRuleStep(int ruleID, string direction, int ruleStepID)
-        {
-            var rule = Company.GetById<FusionRule>(ruleID);
-            if (rule == null) return new HttpNotFoundResult();
-
-            var step = rule.FusionRuleSteps.FirstOrDefault(x => x.ID == ruleStepID);
-            if (step == null) return new HttpNotFoundResult();
-
-            return PartialView("OverlayEditableForm", new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionRule,
-                FieldUri = $"/form/FusionRuleStep_MoveFields?id={ruleID}&ruleStepID={ruleStepID}&direction={direction}",
-                FormTitle = string.Format("Move this promotion rule step " + direction),
-                FormUri = "/form/MoveFusionRuleStep",
-                FormMethod = "POST"
-            });
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("MoveFusionRuleStep")]
-        public ActionResult MoveFusionRuleStep(FormCollection form)
-        {
-            var ruleID = parseIntField(form, "ID");
-            var ruleStepID = parseIntField(form, "RuleStepID");
-            var direction = parseTextField(form, "Direction");
-            var currentRule = Company.GetById<FusionRule>(ruleID);
-            var itemToMove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
-            int currentStepNumber = itemToMove.Step;
-
-            if (currentRule != null)
-            {
-                currentRule.UpdatedBy = Company.CurrentResourceID;
-                currentRule.UpdatedOn = DateTime.UtcNow;
-            }
-
-            if (string.Compare(direction, "UP", true) == 0)
-            {
-                //swap item to move and the item above it                
-                var itemBeforeSelected = currentRule.FusionRuleSteps.OrderBy(x => x.Step).TakeWhile(x => x.ID != ruleStepID).LastOrDefault();
-
-                if (itemBeforeSelected != null)
-                {
-                    itemToMove.Step = itemBeforeSelected.Step;
-                    itemBeforeSelected.Step = currentStepNumber;
-                    Company.Entry(itemToMove).Property(u => u.Step).IsModified = true;
-                    Company.Entry(itemBeforeSelected).Property(u => u.Step).IsModified = true;
-                    Company.SaveChanges();
-                }
-            }
-            else if (string.Compare(direction, "DOWN", true) == 0)
-            {
-                var itemAfterSelected = currentRule.FusionRuleSteps.OrderBy(x => x.Step).SkipWhile(p => p.ID != ruleStepID)
-                                  .ElementAt(1); //Zero-indexed, means second
-
-                if (itemAfterSelected != null)
-                {
-                    itemToMove.Step = itemAfterSelected.Step;
-                    itemAfterSelected.Step = currentStepNumber;
-                    Company.Entry(itemToMove).Property(u => u.Step).IsModified = true;
-                    Company.Entry(itemAfterSelected).Property(u => u.Step).IsModified = true;
-                    Company.SaveChanges();
-                }
-            }
-
-            return jsonSuccess("Step successfully moved", ruleID.ToString(), ContextList.FusionRuleStep, "move", HttpStatusCode.OK);
         }
 
         #endregion
@@ -7123,16 +5923,9 @@ namespace d360.web.Controllers
 
             switch (promotionType)
             {
-                case "DomainType":
-                    if (!targetFieldNames.Contains("Name"))
-                        targetFields.Add(new SelectListItem { Text = "Name", Value = "Name|0" });
-                    if (promotionObjectType == "Domain")
-                    {
-                        if (!targetFieldNames.Contains("Code"))
-                            targetFields.Add(new SelectListItem { Text = "Code", Value = "Code|0" });
-                    }
-                    if (!targetFieldNames.Contains("Description"))
-                        targetFields.Add(new SelectListItem { Text = "Description", Value = "Description|0" });
+                case "ReferenceItemType":
+                    if (!targetFieldNames.Contains("Code"))
+                        targetFields.Add(new SelectListItem { Text = "Code", Value = "Code|0" });
                     break;
                 case "ArtifactType":
                 case "TaxonomyType":
@@ -7181,29 +5974,6 @@ namespace d360.web.Controllers
             });
 
             return targetFields;
-        }
-
-        [Route("AddFusionRuleStepMapping")]
-        public ActionResult AddFusionRuleStepMapping(int id)
-        {
-            var ruleStep = Company.GetById<FusionRuleStep>(id);
-
-            if (ruleStep == null)
-                return jsonException("Rule step not found", HttpStatusCode.NotFound);
-
-            if (!Company.HasPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionRuleStepMappingEditorModel
-            {
-                FormUri = "/Form/AddFusionRuleStepMapping",
-                FormMethod = "POST",
-                FormName = "Add Promotion Field Mapping",
-                Item = new FusionRuleStepMapping { RuleStepID = id, FusionRuleStep = ruleStep },
-                SourceFields = loadSourceItemOptions(ruleStep),
-                TargetFields = loadTargetItemOptions(ruleStep)
-            };
-            return PartialView("FusionRuleStepMappingEditForm", editorModel);
         }
 
         [HttpGet, Route("GetAddFusionRuleStepMapping")]
@@ -7288,7 +6058,7 @@ namespace d360.web.Controllers
                     Company.SaveChanges();
                 }
 
-                return jsonSuccess("Field mapping successfully created.", "0", ContextList.FusionPromotionRuleMapping, "add", HttpStatusCode.Created);
+                return jsonSuccess("Field mapping successfully created.", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -7356,7 +6126,7 @@ namespace d360.web.Controllers
                     Company.SaveChanges();
                 }
 
-                return jsonSuccess("Field mapping successfully created.", "0", ContextList.FusionPromotionRuleMapping, "add", HttpStatusCode.Created);
+                return jsonSuccess("Field mapping successfully created.", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -7369,25 +6139,6 @@ namespace d360.web.Controllers
             }
         }
 
-
-        [Route("DeleteFusionRuleStepMapping")]
-        public ActionResult DeleteFusionRuleStepMapping(int id)
-        {
-            var a = Company.GetById<FusionRuleStepMapping>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionPromotionRuleMapping,
-                FieldUri = string.Format("/form/FusionRuleStepMapping_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this field mapping"),
-                FormUri = "/form/DeleteFusionRuleStepMapping",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
-        }
-
         [HttpDelete, Route("DeleteFusionRuleStepMapping")]
         public JsonResult DeleteFusionRuleStepMapping(FormCollection form)
         {
@@ -7396,7 +6147,7 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
                 Company.Delete<FusionRuleStepMapping>(i => i.ID == id);
-                return jsonSuccess("Mapping successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Mapping successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -7415,25 +6166,6 @@ namespace d360.web.Controllers
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteFusionRuleStepMapping(form);
-        }
-
-        [Route("EditFusionRuleStepMapping")]
-        public ActionResult EditFusionRuleStepMapping(int id)
-        {
-            var a = Company.GetById<FusionRuleStepMapping>(id);
-            if (a == null) return HttpNotFound();
-
-            var editorModel = new FusionRuleStepMappingEditorModel
-            {
-                FormUri = "/Form/EditFusionAttributePromotionRuleMapping",
-                FormMethod = "PUT",
-                FormName = "Update Promotion Field Mapping",
-                Item = a,
-                SourceFields = loadSourceItemOptions(a.FusionRuleStep, a),
-                TargetFields = loadTargetItemOptions(a.FusionRuleStep, a)
-            };
-
-            return PartialView("FusionRuleStepMappingEditForm", editorModel);
         }
 
         [Route("GetEditFusionRuleStepMapping")]
@@ -7505,7 +6237,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FusionRuleStepMapping>(model);
 
-                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), ContextList.FusionPromotionRuleMapping, "edit", HttpStatusCode.OK);
+                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -7565,7 +6297,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FusionRuleStepMapping>(model);
 
-                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), ContextList.FusionPromotionRuleMapping, "edit", HttpStatusCode.OK);
+                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -7640,22 +6372,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddFusionType")]
-        public ActionResult AddFusionType()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionType,
-                FieldUri = "/form/FusionType_AddFields",
-                FormTitle = "Add Type",
-                FormUri = "/form/AddFusionType",
-                FormMethod = "POST",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionType")]
         public JsonResult AddFusionType(FormCollection form)
         {
@@ -7676,7 +6392,7 @@ namespace d360.web.Controllers
 
                 upsertObjectStyle(SystemObjects.FusionType, model.ID, form, model.Name);
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Context = form["_context"], Name = model.Name });
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -7688,8 +6404,7 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-
+        
         [ActionName("FusionType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("FusionType")]
         public JsonResult PostFusionType(FusionType fusion, ObjectStyle style = null)
         {
@@ -7711,7 +6426,7 @@ namespace d360.web.Controllers
                 if (style != null)
                     upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), null, "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -7722,23 +6437,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteFusionType")]
-        public ActionResult DeleteFusionType(int id)
-        {
-            var a = Company.GetById<FusionType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionType,
-                FieldUri = string.Format("/form/FusionType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteFusionType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteFusionType")]
@@ -7760,7 +6458,7 @@ namespace d360.web.Controllers
                 Company.Delete<FusionType>(model);
                 deleteObjectStyle(SystemObjects.FusionType, model.ID);
 
-                return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -7780,24 +6478,6 @@ namespace d360.web.Controllers
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteFusionType(form);
-        }
-
-        [Route("EditFusionType")]
-        public ActionResult EditFusionType(int id)
-        {
-            var a = Company.GetById<FusionType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionType,
-                FieldUri = string.Format("/form/FusionType_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditFusionType",
-                FormMethod = "PUT",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditFusionType")]
@@ -7820,7 +6500,7 @@ namespace d360.web.Controllers
 
                 upsertObjectStyle(SystemObjects.FusionType, model.ID, form, model.Name);
 
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Context = form["_context"], Name = model.Name });
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -7853,7 +6533,7 @@ namespace d360.web.Controllers
                 if (style != null)
                     upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
 
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -7930,29 +6610,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddFusionAttributeType")]
-        public ActionResult AddFusionAttributeType(int typeID, int parentID = 0)
-        {
-            var type = Company.GetById<FusionType>(typeID);
-            if (type == null) return HttpNotFound();
-            FusionAttributeType at = null;
-            if (parentID > 0)
-            {
-                at = Company.GetById<FusionAttributeType>(parentID);
-                if (at == null) return HttpNotFound();
-            }
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionAttributeType,
-                FieldUri = string.Format("/form/FusionAttributeType_AddFields?ft={0}&p={1}", typeID, parentID),
-                FormTitle = string.Format("Add attribute type to {0}{1}", type.Name, ((at != null) ? " : " + at.Name : "")),
-                FormUri = "/form/AddFusionAttributeType",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionAttributeType")]
         public JsonResult AddFusionAttributeType(FormCollection form)
         {
@@ -7980,7 +6637,7 @@ namespace d360.web.Controllers
                 };
 
                 Company.Add<FusionAttributeType>(model);
-                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = form["_context"], Name = model.Name });
+                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = model.ParentID, Type = "FusionAttributeType", Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -8015,7 +6672,7 @@ namespace d360.web.Controllers
                 };
 
                 Company.Add<FusionAttributeType>(model);
-                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), null, "add", HttpStatusCode.Created, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
+                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -8026,23 +6683,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteFusionAttributeType")]
-        public ActionResult DeleteFusionAttributeType(int id)
-        {
-            var a = Company.GetById<FusionAttributeType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionAttributeType,
-                FieldUri = string.Format("/form/FusionAttributeType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteFusionAttributeType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteFusionAttributeType")]
@@ -8062,7 +6702,7 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.FusionAttributeType_Remove, HttpStatusCode.Conflict);
 
                 Company.Delete<FusionAttributeType>(model);
-                return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -8083,23 +6723,6 @@ namespace d360.web.Controllers
             return DeleteFusionAttributeType(form);
         }
 
-        [Route("EditFusionAttributeType")]
-        public ActionResult EditFusionAttributeType(int id)
-        {
-            var a = Company.GetById<FusionAttributeType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionAttributeType,
-                FieldUri = string.Format("/form/FusionAttributeType_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditFusionAttributeType",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [HttpPut, ValidateInput(false), Route("EditFusionAttributeType")]
         public JsonResult EditFusionAttributeType(FormCollection form)//(int typeID, int id, FusionAttributeType model)
         {
@@ -8117,7 +6740,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FusionAttributeType>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = form["_context"], Name = model.Name });
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -8145,7 +6768,7 @@ namespace d360.web.Controllers
 
                 Company.Update<FusionAttributeType>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
             }
             catch (BaseException ex)
             {
@@ -8176,7 +6799,7 @@ namespace d360.web.Controllers
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Add, "You do not have permission to relate this artifact.");
 
                 Company.AddRelatedArtifact(s, t);
-                return jsonSuccess("Relationship successfully created.", "0", "action", "add", HttpStatusCode.Created, new { commandname = "RelatedArtifactAdded" });
+                return jsonSuccess("Relationship successfully created.", "0", "add", HttpStatusCode.Created, new { commandname = "RelatedArtifactAdded" });
             }
             catch (BaseException ex)
             {
@@ -8201,7 +6824,7 @@ namespace d360.web.Controllers
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Delete, "You do not have permission to remove this related artifact.");
 
                 Company.DeleteRelatedArtifact(s, t);
-                return jsonSuccess("Relationship successfully removed.", "0", "action", "delete", HttpStatusCode.OK, new { commandname = "RelatedArtifactDeleted" });
+                return jsonSuccess("Relationship successfully removed.", "0", "delete", HttpStatusCode.OK, new { commandname = "RelatedArtifactDeleted" });
             }
             catch (BaseException ex)
             {
@@ -8294,21 +6917,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddIntersectRole")]
-        public ActionResult AddIntersectRole()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.IntersectRole,
-                FieldUri = "/form/IntersectRole_AddFields",
-                FormTitle = "Add role",
-                FormUri = "/form/AddIntersectRole",
-                FormMethod = "POST"
-            };
-
-            return PartialView("OverlayEditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIntersectRole")]
         public JsonResult AddIntersectRole(FormCollection form)
         {
@@ -8327,7 +6935,7 @@ namespace d360.web.Controllers
 
                 Company.Add<IntersectRole>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", string.Format("IntersectRole|{0}", a.ID), form["_context"], "add", HttpStatusCode.Created, new { });
+                return jsonSuccess(a.Name + " successfully created.", string.Format("IntersectRole|{0}", a.ID), "add", HttpStatusCode.Created, new { });
             }
             catch (BaseException ex)
             {
@@ -8338,23 +6946,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteIntersectRole")]
-        public ActionResult DeleteIntersectRole(int id)
-        {
-            var a = Company.GetById<IntersectRole>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.IntersectRole,
-                FieldUri = string.Format("/form/IntersectRole_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteIntersectRole",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteIntersectRole")]
@@ -8372,7 +6963,7 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete<IntersectRole>(model);
-                return jsonSuccess("Item successfully removed.", null, form["_context"], "delete", HttpStatusCode.OK, new { });
+                return jsonSuccess("Item successfully removed.", null, "delete", HttpStatusCode.OK, new { });
             }
             catch (BaseException ex)
             {
@@ -8383,23 +6974,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditIntersectRole")]
-        public ActionResult EditIntersectRole(int id)
-        {
-            var a = Company.GetById<IntersectRole>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.IntersectRole,
-                FieldUri = string.Format("/form/IntersectRole_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditIntersectRole",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("OverlayEditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditIntersectRole")]
@@ -8421,7 +6995,7 @@ namespace d360.web.Controllers
 
                 Company.Update<IntersectRole>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
+                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), "edit", HttpStatusCode.OK, new { });
             }
             catch (BaseException ex)
             {
@@ -8539,13 +7113,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [Route("AddIntersectType")]
-        public ActionResult AddIntersectType()
-        {
-            ViewBag.ID = 0;
-            return PartialView("IntersectTypeEditForm");
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIntersectType")]
         public JsonResult AddIntersectType(FormCollection form)
         {
@@ -8594,7 +7161,7 @@ namespace d360.web.Controllers
                 Company.Add<IntersectType>(model);
                 var id = model.ID;
 
-                return jsonSuccess(model.Name + " successfully created.", id.ToString(), ContextList.IntersectType, "add", HttpStatusCode.Created);
+                return jsonSuccess(model.Name + " successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -8605,24 +7172,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeleteIntersectType")]
-        public ActionResult DeleteIntersectType(int id)
-        {
-            var type = Company.GetById<IntersectType>(id);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.IntersectType,
-                FieldUri = string.Format("/form/IntersectType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, type.Name),
-                FormUri = "/form/DeleteIntersectType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteIntersectType")]
@@ -8644,7 +7193,7 @@ namespace d360.web.Controllers
 
                 Company.Delete<IntersectType>(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -8655,14 +7204,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("EditIntersectType")]
-        public ActionResult EditIntersectType(int id)
-        {
-            ViewBag.ID = id;
-            return PartialView("IntersectTypeEditForm");
         }
 
         [HttpPut, ValidateInput(false), Route("EditIntersectType")]
@@ -8721,7 +7262,7 @@ namespace d360.web.Controllers
 
                 Company.Update<IntersectType>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -8860,22 +7401,6 @@ namespace d360.web.Controllers
 
         #region Group : Add
 
-        [Route("AddGroup")]
-        public ActionResult AddGroup()
-        {
-            var model = new EditableForm
-            {
-                Context = "groupform",
-                FormSize = "small",
-                FieldUri = "/form/Group_AddFields",
-                FormTitle = "Add Group",
-                FormUri = "/form/AddGroup",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddGroup")]
         public JsonResult AddGroup(FormCollection form)
         {
@@ -8909,7 +7434,7 @@ namespace d360.web.Controllers
                 {
                 }
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -8926,23 +7451,6 @@ namespace d360.web.Controllers
 
         #region Group : Add User
 
-        [Route("AddGroupUser")]
-        public ActionResult AddGroupUser(int id)
-        {
-            var g = Company.GetById<Group>(id);
-            if (g == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ResourceGroup,
-                FieldUri = string.Format("/form/Group_AddGroupUserFields?id={0}", id),
-                FormTitle = "Add User to " + ((g != null) ? g.Name : "group"),
-                FormUri = "/form/AddGroupUser",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddGroupUser")]
         public JsonResult AddGroupUser(FormCollection form)
         {
@@ -8956,7 +7464,7 @@ namespace d360.web.Controllers
 
                 Company.Add<ResourceGroup>(new ResourceGroup { GroupID = id, ResourceID = resourceID, IsOwner = owner });
 
-                return jsonSuccess("User successfully assigned.", resourceID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("User successfully assigned.", resourceID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -8975,7 +7483,7 @@ namespace d360.web.Controllers
             try
             {
                 Company.Add(model);
-                return jsonSuccess("User successfully assigned.", model.ResourceID.ToString(), null, "add", HttpStatusCode.Created);
+                return jsonSuccess("User successfully assigned.", model.ResourceID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -9007,27 +7515,6 @@ namespace d360.web.Controllers
 
         #region Group : Delete User
 
-        [Route("DeleteGroupUser")]
-        public ActionResult DeleteGroupUser(int groupID, int resourceID)
-        {
-            //var g = Company.GetById<Group>(groupID);            
-            //if (g == null || !Company.Filter<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID).Any()) return HttpNotFound();
-
-            var g = Company.GetById<Group>(groupID);
-            var r = Community.GetById<Resource>(resourceID);
-
-            var model = new EditableForm
-            {
-                Context = ContextList.ResourceGroup,
-                FieldUri = string.Format("/form/Group_DeleteGroupUserFields?groupID={0}&resourceID={1}", groupID, resourceID),
-                FormTitle = string.Format("Are you sure you want to remove {0} from {1}?", ((r != null) ? r.FormatDisplayName() : "this user"), ((g != null) ? g.Name : "group")),
-                FormUri = "/form/DeleteGroupUser",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
         [HttpPut, Route("DeleteGroupUser")]
         public JsonResult DeleteGroupUser(FormCollection form)
         {
@@ -9043,7 +7530,7 @@ namespace d360.web.Controllers
 
                 var rg = Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
 
-                return jsonSuccess("User successfully removed from group.", resourceID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("User successfully removed from group.", resourceID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -9066,7 +7553,7 @@ namespace d360.web.Controllers
 
                 var rg = Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
 
-                return jsonSuccess("User successfully removed from group.", resourceID.ToString(), null, "delete", HttpStatusCode.OK);
+                return jsonSuccess("User successfully removed from group.", resourceID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -9083,24 +7570,6 @@ namespace d360.web.Controllers
 
         #region Group : Delete
 
-        [Route("DeleteGroup")]
-        public ActionResult DeleteGroup(int id)
-        {
-            var a = Company.GetById<Group>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "groupform",
-                FormSize = "small",
-                FieldUri = string.Format("/form/Group_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteGroup",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
         [HttpDelete, Route("DeleteGroup")]
         public JsonResult DeleteGroup(FormCollection form)
         {
@@ -9114,7 +7583,7 @@ namespace d360.web.Controllers
 
                 Company.Delete<Group>(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -9138,24 +7607,6 @@ namespace d360.web.Controllers
         #endregion
 
         #region Group : Edit
-
-        [Route("EditGroup")]
-        public ActionResult EditGroup(int id)
-        {
-            var a = Company.GetById<Group>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "groupform",
-                FormSize = "small",
-                FieldUri = string.Format("/form/Group_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditGroup",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
 
         [HttpPut, ValidateInput(false), Route("EditGroup")]
         public JsonResult EditGroup(FormCollection form)
@@ -9192,7 +7643,7 @@ namespace d360.web.Controllers
                     }
                 }
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -9204,8 +7655,7 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-
+        
         [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group"), Route("Group")]
         public JsonResult PostGroup(Group model)
         {
@@ -9226,7 +7676,7 @@ namespace d360.web.Controllers
                 {
                 }
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), null, "add", HttpStatusCode.Created);
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -9274,7 +7724,7 @@ namespace d360.web.Controllers
                     }
                 }
 
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -9421,157 +7871,6 @@ namespace d360.web.Controllers
             return new JsonNetResult
             {
                 Data = targets.ToList().OrderBy(i => i.label),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [Route("Lineage_IntersectSharedObjects")]
-        public JsonNetResult Lineage_IntersectSharedObjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
-        {
-            var sql = @"select
-	i.ID as SourceIntersectID,
-	i.Object as Source,
-	i.ObjectID as SourceID,
-	d.Name as SourceName,
-	i2.ID as ObjectIntersectID,
-	i2.Object as Object,
-	i2.ObjectID as ObjectID,
-	d2.Name as ObjectName
- from [intersect] i
- join [intersect] i2 on 
-	i2.subject = @target 
-	and i2.subjectid = @targetID
-	and i2.object = i.object 
-	and i2.objectid = i.objectid 
-	and i.id != i2.id 
-	and i2.intersecttypeid in (
-	 select t.id from intersecttype t
- join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
- where t.subject = @targetType and t.subjectid = @targetTypeID
-
-	)
- join cache.objectdetails d on
-	d.object = i.Object and d.objectid = i.objectid
- join cache.objectdetails d2 on
-	d2.object = i2.object and d2.objectid = i2.objectid
- where 
-	i.subject = @source
-	and i.subjectid = @sourceID 
-	and i.intersecttypeid in ( select t.id from intersecttype t
- join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
- where t.subject = @sourceType and t.subjectid = @sourceTypeID
-)";
-
-            var results = Company.Query<dynamic>(sql, new { sourceType, sourceTypeID, targetType, targetTypeID, source, target, sourceID, targetID }).ToList();
-
-            return new JsonNetResult
-            {
-                Data = results,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-
-        [Route("Lineage_IntersectSubjects")]
-        public JsonNetResult Lineage_IntersectSubjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
-        {
-            var sql = @"select i.ID as SourceIntersectID,
- i.IntersectTypeID as SourceIntersectTypeID,
- i.Object as Source,
-i.ObjectID as SourceID,
-d.Name as SourceName
-from [intersect] i
-join intersecttype t on i.intersecttypeid = t.id and t.subject = @sourceType and t.subjectid = @sourceTypeID
-join intersecttypepredicate p on p.intersecttypeid = t.id and p.predicatetype = 1
-join cache.objectdetails d on d.object = i.object and d.objectid = i.objectid
-where  i.subject = @source and i.subjectid = @sourceID
-and i.id not in (
- select
-	i.ID
- from [intersect] i
- join [intersect] i2 on 
-	i2.subject = @target 
-	and i2.subjectid = @targetID
-	--and (i2.object + '|' + cast(i2.objectid as varchar(50))) != (i.object + '|' + cast(i.objectid as varchar(50)))
-	and i2.object = i.object 
-	and i2.objectid = i.objectid 
-	and i.id != i2.id 
-	and i2.intersecttypeid in (
-	 select t.id from intersecttype t
- join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
- where t.subject = @targetType and t.subjectid = @targetTypeID
-
-	)
- join cache.objectdetails d on
-	d.object = i.Object and d.objectid = i.objectid
- join cache.objectdetails d2 on
-	d2.object = i2.object and d2.objectid = i2.objectid
- where 
-	i.subject = @source
-	and i.subjectid = @sourceID 
-	and i.intersecttypeid in ( select t.id from intersecttype t
- join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
- where t.subject = @sourceType and t.subjectid = @sourceTypeID
-)
-)";
-
-            var results = Company.Query<dynamic>(sql, new { sourceType, sourceTypeID, targetType, targetTypeID, source, target, sourceID, targetID }).ToList();
-
-            return new JsonNetResult
-            {
-                Data = results,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [Route("Lineage_IntersectObjects")]
-        public JsonNetResult Lineage_IntersectObjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
-        {
-            var sql = @"select i.ID as SourceIntersectID,
- i.IntersectTypeID as SourceIntersectTypeID,
- i.Object as Source,
-i.ObjectID as SourceID,
-d.Name as SourceName
-from [intersect] i
-join intersecttype t on i.intersecttypeid = t.id and t.subject = @targetType and t.subjectid = @targetTypeID
-join intersecttypepredicate p on p.intersecttypeid = t.id and p.predicatetype = 1
-join cache.objectdetails d on d.object = i.object and d.objectid = i.objectid
-where  i.subject = @target and i.subjectid = @targetID
-and i.id not in (
- select
-	i2.ID
- from [intersect] i
- join [intersect] i2 on 
-	i2.subject = @target 
-	and i2.subjectid = @targetID
-	--and (i2.object + '|' + cast(i2.objectid as varchar(50))) != (i.object + '|' + cast(i.objectid as varchar(50)))
-	and i2.object = i.object 
-	and i2.objectid = i.objectid 
-	and i.id != i2.id 
-	and i2.intersecttypeid in (
-	 select t.id from intersecttype t
- join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
- where t.subject = @targetType and t.subjectid = @targetTypeID
-
-	)
- join cache.objectdetails d on
-	d.object = i.Object and d.objectid = i.objectid
- join cache.objectdetails d2 on
-	d2.object = i2.object and d2.objectid = i2.objectid
- where 
-	i.subject = @source
-	and i.subjectid = @sourceID 
-	and i.intersecttypeid in ( select t.id from intersecttype t
- join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
- where t.subject = @sourceType and t.subjectid = @sourceTypeID
-)
-)";
-
-            var results = Company.Query<dynamic>(sql, new { sourceType, sourceTypeID, targetType, targetTypeID, source, target, sourceID, targetID }).ToList();
-
-            return new JsonNetResult
-            {
-                Data = results,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -10206,14 +8505,6 @@ for json path");
                             case "ArtifactType":
                                 fieldTypeNames.Insert(1, "Subject Area");
                                 break;
-                                //case "DomainType":
-                                //    break;
-                                //case "FusionType":
-                                //    break;
-                                //case "PolicyType":
-                                //    break;
-                                //case "TaxonomyType":
-                                //    break;
                         }
                     }
 
@@ -10243,7 +8534,7 @@ select 'TaxonomyType|0' as value, 'Model' as title
 union
 select 'PolicyType|0' as value, 'Policy' as title
 union
-select 'DomainType|0' as value, 'Reference' as title
+select 'ReferenceItemType|0' as value, 'Reference' as title
 ) O order by title";
                     break;
                 #endregion
@@ -10510,7 +8801,7 @@ from ArtifactType A
                 else if (type == "Synonym" && lowerColName.In("source object type", "target object type"))
                 {
                     var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-                    var typesList = new List<string> { "Artifact", "Domain", "Policy", "Rule", "Taxonomy" };
+                    var typesList = new List<string> { "Artifact", "Policy", "Rule", "Taxonomy" };
 
                     CreateExcelList(lookupColumns++, document, "Lookups", dv, typesList.OrderBy(x => x));
 
@@ -10566,9 +8857,7 @@ from ArtifactType A
 
             if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != "description" && columnName != parentColumnName))
                 required = false;
-            else if (type == "Domain" && (columnName != "name" && columnName != "code"))
-                required = false;
-            else if (type == "DomainType" && (columnName != "name" && columnName != "domain group"))
+            else if (type == "ReferenceItemType" && (columnName != "code"))
                 required = false;
             else if (type == "Lineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
                 required = false;
@@ -10621,12 +8910,6 @@ from ArtifactType A
             //add a column to the given lookup worksheet with the specified values
             string range = SLConvert.ToCellRange(lookupWorksheetName, 1, numLookupColumns, rowNum, numLookupColumns, true);
             dataValidation.AllowList($"={range}", true, true);
-        }
-
-        [Route("AddLoad")]
-        public ActionResult AddLoad()
-        {
-            return PartialView();
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, Route("AddLoad")]
@@ -10741,7 +9024,7 @@ from ArtifactType A
                     Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 #endif
 
-                    json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
+                    json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), "A", HttpStatusCode.Created);
                 }
                 else
                 {
@@ -10873,23 +9156,6 @@ from ArtifactType A
 
         #region Form Get/Post
         
-        [Route("AddLookup")]
-        public ActionResult AddLookup(int id)
-        {
-            var a = Company.GetById<LookupType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Lookup,
-                FieldUri = string.Format("/form/Lookup_AddFields?id={0}", id),
-                FormTitle = "Add item to " + a.Name,
-                FormUri = "/form/AddLookup",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddLookup")]
         public JsonResult AddLookup(FormCollection form)
         {
@@ -10913,7 +9179,7 @@ from ArtifactType A
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Lookup>(a, fields);
 
-                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -10924,31 +9190,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [HttpDelete, Route("DeleteLookupByIdRaw")]
-        public ActionResult DeleteLookupByIdRaw(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteLookup(form);
-        }
-
-        [Route("DeleteLookup")]
-        public ActionResult DeleteLookup(int id)
-        {
-            var a = Company.GetById<Lookup>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Lookup,
-                FieldUri = string.Format("/form/Lookup_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this item"),
-                FormUri = "/form/DeleteLookup",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteLookup")]
@@ -10967,7 +9208,7 @@ from ArtifactType A
 
                 Company.Delete<Lookup>(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -10978,25 +9219,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-
-        [Route("EditLookup")]
-        public ActionResult EditLookup(int id)
-        {
-            var a = Company.GetById<Lookup>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Lookup,
-                FieldUri = string.Format("/form/Lookup_EditFields?id={0}", id),
-                FormTitle = "Edit item",
-                FormUri = "/form/EditLookup",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditLookup")]
@@ -11017,7 +9239,7 @@ from ArtifactType A
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, model.LookupTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Lookup>(model, fields);
 
-                return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -11100,22 +9322,6 @@ from ArtifactType A
             return AddLookupType(form);
         }
 
-        [Route("AddLookupType")]
-        public ActionResult AddLookupType()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.LookupType,
-                FieldUri = "/form/LookupType_AddFields",
-                FormTitle = "Add New Lookup",
-                FormUri = "/form/AddLookupType",
-                FormMethod = "POST",
-                FormSize = "small"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddLookupType")]
         public JsonResult AddLookupType(FormCollection form)
         {
@@ -11150,7 +9356,7 @@ from ArtifactType A
                     });
                 }
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -11161,32 +9367,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [HttpDelete, Route("lookuptype/{lookupTypeId:int}")]
-        public ActionResult DeleteLookupTypeById(int lookupTypeId)
-        {
-            var form = new FormCollection();
-            form.Add("ID", lookupTypeId.ToString());
-            return DeleteLookupType(form);
-        }
-
-        [HttpGet, Route("DeleteLookupType")]
-        public ActionResult DeleteLookupType(int id)
-        {
-            var a = Company.GetById<LookupType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LookupType,
-                FieldUri = string.Format("/form/LookupType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteLookupType",
-                FormMethod = "DELETE",
-                FormSize = "small"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteLookupType")]
@@ -11203,7 +9383,7 @@ from ArtifactType A
 
                 Company.Delete<LookupType>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -11226,24 +9406,6 @@ from ArtifactType A
             return EditLookupType(form);
         }
 
-        [Route("EditLookupType")]
-        public ActionResult EditLookupType(int id)
-        {
-            var a = Company.GetById<LookupType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LookupType,
-                FieldUri = string.Format("/form/LookupType_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditLookupType",
-                FormMethod = "PUT",
-                FormSize = "small"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [HttpPut, ValidateInput(false), Route("EditLookupType")]
         public JsonResult EditLookupType(FormCollection form)
         {
@@ -11262,7 +9424,7 @@ from ArtifactType A
 
                 Company.Update<LookupType>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -11322,25 +9484,6 @@ from ArtifactType A
 
         #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        [Route("AddMapRule")]
-        public ActionResult AddMapRule()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.MapRule,
-                FieldUri = $"/form/MapRule_AddFields",
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Rule"),
-                FormUri = "/form/AddMapRule",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddMapRule")]
         public JsonResult AddMapRule(FormCollection form)
         {
@@ -11357,7 +9500,7 @@ from ArtifactType A
 
                 Company.SaveOrUpdate<MapRule>(model);
 
-                return jsonSuccess("successfully created rule.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("successfully created rule.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -11368,23 +9511,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteMapRule")]
-        public ActionResult DeleteMapRule(int id)
-        {
-            var a = Company.GetById<MapRule>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.MapRule,
-                FieldUri = $"/form/MapRule_DeleteFields?id={id}",
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Rule"),
-                FormUri = "/form/DeleteMapRule",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteMapRule")]
@@ -11406,7 +9532,7 @@ from ArtifactType A
                 //delete the map rule item
                 Company.Delete<MapRule>(model);
 
-                return jsonSuccess("Rule successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Rule successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -11417,24 +9543,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditMapRule")]
-        public ActionResult EditMapRule(int id)
-        {
-            var a = Company.GetById<MapRule>(id);
-            if (a == null) return HttpNotFound();
-
-            var model = new EditableForm
-            {
-                Context = ContextList.MapRule,
-                FieldUri = $"/form/MapRule_EditFields?id={id}",
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Rule"),
-                FormUri = "/form/EditMapRule",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditMapRule")]
@@ -11452,7 +9560,7 @@ from ArtifactType A
 
                 Company.SaveOrUpdate<MapRule>(model);
 
-                return jsonSuccess("Successfully updated rule.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Successfully updated rule.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -11531,26 +9639,6 @@ from ArtifactType A
 
         #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id">The ID of the Map Rule we are adding this item to.</param>
-        /// <returns></returns>
-        [Route("AddMapRuleItem")]
-        public ActionResult AddMapRuleItem(int id)
-        {            
-            var model = new EditableForm
-            {
-                Context = ContextList.MapRuleItem,
-                FieldUri = $"/form/MapRuleItem_AddFields?id={id}",
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Rule Item"),
-                FormUri = "/form/AddMapRuleItem",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-        
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddMapRuleItem")]
         public JsonResult AddMapRuleItem(FormCollection form)
         {
@@ -11590,7 +9678,7 @@ from ArtifactType A
                     Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = rule });
                 }                
 
-                return jsonSuccess("successfully created mapping.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("successfully created mapping.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -11601,23 +9689,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteMapRuleItem")]
-        public ActionResult DeleteMapRuleItem(int id)
-        {
-            var a = Company.GetById<MapRuleItem>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.MapRuleItem,
-                FieldUri = $"/form/MapRuleItem_DeleteFields?id={id}",
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Rule Item"),
-                FormUri = "/form/DeleteMapRuleItem",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteMapRuleItem")]
@@ -11638,7 +9709,7 @@ from ArtifactType A
 
                 //delete the map rule item
                 Company.Delete<MapRuleItem>(model);
-                return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -11649,24 +9720,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditMapRuleItem")]
-        public ActionResult EditMapRuleItem(int id)
-        {
-            var a = Company.GetById<MapRuleItem>(id);
-            if (a == null) return HttpNotFound();
-
-            var model = new EditableForm
-            {
-                Context = ContextList.MapRuleItem,
-                FieldUri = $"/form/MapRuleItem_EditFields?id={id}",
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Rule Item"),
-                FormUri = "/form/EditMapRuleItem",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditMapRuleItem")]
@@ -11725,7 +9778,7 @@ from ArtifactType A
                 //    Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = rule });
                 //}
 
-                return jsonSuccess("Successfully updated rule item.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Successfully updated rule item.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -11814,24 +9867,6 @@ from ArtifactType A
 
         #region Form Get/Post
 
-        [Route("AddPolicy")]
-        public ActionResult AddPolicy(int typeID, int? parentID)
-        {
-            var type = Company.GetById<PolicyType>(typeID);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Policy,
-                FieldUri = "/form/Policy_AddFields?typeID=" + typeID + ((parentID.HasValue) ? "&parentID=" + parentID.Value : ""),
-                FormTitle = string.Format(Resources.FormInfo.Add_Policy_Title, type.Name),
-                FormDescription = string.Format(Resources.FormInfo.Add_Policy_Directions, type.Name),
-                FormUri = "/form/AddPolicy",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicy")]
         public JsonResult AddPolicy(FormCollection form)
         {
@@ -11867,7 +9902,7 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -11878,24 +9913,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeletePolicy")]
-        public ActionResult DeletePolicy(int id)
-        {
-            var a = Company.GetById<Policy>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Policy,
-                FieldUri = string.Format("/form/Policy_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeletePolicy",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeletePolicy")]
@@ -11921,7 +9938,7 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -11940,23 +9957,6 @@ from ArtifactType A
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeletePolicy(form);
-        }
-
-        [Route("EditPolicy")]
-        public ActionResult EditPolicy(int id)
-        {
-            if (!Company.Exists<Policy>(id)) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Policy,
-                FieldUri = string.Format("/form/Policy_EditFields?id={0}", id),
-                FormTitle = Resources.FormInfo.Edit_Policy_Title,
-                FormDescription = Resources.FormInfo.Edit_Policy_Directions,
-                FormUri = "/form/EditPolicy",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditPolicy")]
@@ -11989,7 +9989,7 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -12070,22 +10070,6 @@ from ArtifactType A
 
         #region Form Get/Post
 
-        [Route("AddPolicyType")]
-        public ActionResult AddPolicyType()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyType,
-                FieldUri = "/form/PolicyType_AddFields",
-                FormTitle = "Add Policy Type",
-                FormUri = "/form/AddPolicyType",
-                FormMethod = "POST",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicyType")]
         public JsonResult AddPolicyType(FormCollection form)
         {
@@ -12114,7 +10098,7 @@ from ArtifactType A
 
                 upsertObjectStyle(SystemObjects.PolicyType, a.ID, form, a.Name);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -12125,26 +10109,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeletePolicyType")]
-        public ActionResult DeletePolicyType(int id)
-        {
-            var a = Company.GetById<PolicyType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyType,
-                FieldUri = "/form/PolicyType_DeleteFields?id=" + id,
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormDescription = Resources.FormInfo.PolicyType_Remove,
-                FormUri = "/form/DeletePolicyType",
-                FormMethod = "DELETE",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeletePolicyType")]
@@ -12164,7 +10128,7 @@ from ArtifactType A
                 Company.Delete<PolicyType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.PolicyType, id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -12175,25 +10139,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("EditPolicyType")]
-        public ActionResult EditPolicyType(int id)
-        {
-            var a = Company.GetById<PolicyType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyType,
-                FieldUri = "/form/PolicyType_EditFields?id=" + id,
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditPolicyType",
-                FormMethod = "PUT",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditPolicyType")]
@@ -12238,7 +10183,7 @@ from ArtifactType A
 
                 upsertObjectStyle(SystemObjects.PolicyType, model.ID, form, model.Name);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -12307,22 +10252,6 @@ from ArtifactType A
 
         #region Form Get/Post
 
-        [Route("AddPolicyTypeClass")]
-        public ActionResult AddPolicyTypeClass()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyTypeClass,
-                FieldUri = "/form/PolicyTypeClass_AddFields",
-                FormTitle = "Add Policy Class",
-                FormUri = "/form/AddPolicyTypeClass",
-                FormMethod = "POST",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("OverlayEditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicyTypeClass")]
         public JsonResult AddPolicyTypeClass(FormCollection form)
         {
@@ -12340,7 +10269,7 @@ from ArtifactType A
 
                 Company.Add<PolicyTypeClass>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -12351,26 +10280,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeletePolicyTypeClass")]
-        public ActionResult DeletePolicyTypeClass(int id)
-        {
-            var a = Company.GetById<PolicyTypeClass>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyTypeClass,
-                FieldUri = "/form/PolicyTypeClass_DeleteFields?id=" + id,
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormDescription = Resources.FormInfo.PolicyType_Remove,
-                FormUri = "/form/DeletePolicyTypeClass",
-                FormMethod = "DELETE",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("OverlayDeleteForm", model);
         }
 
         [HttpDelete, Route("DeletePolicyTypeClass")]
@@ -12389,7 +10298,7 @@ from ArtifactType A
 
                 Company.Delete<PolicyTypeClass>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -12400,25 +10309,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("EditPolicyTypeClass")]
-        public ActionResult EditPolicyTypeClass(int id)
-        {
-            var a = Company.GetById<PolicyTypeClass>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyTypeClass,
-                FieldUri = "/form/PolicyTypeClass_EditFields?id=" + id,
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditPolicyTypeClass",
-                FormMethod = "PUT",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("OverlayEditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditPolicyTypeClass")]
@@ -12439,7 +10329,7 @@ from ArtifactType A
 
                 Company.Update<PolicyTypeClass>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -12537,24 +10427,6 @@ from ArtifactType A
 
         #region Form Get/Post
 
-        [Route("AddPolicyTypeLevel")]
-        public ActionResult AddPolicyTypeLevel(int id)
-        {
-            var type = Company.GetById<PolicyType>(id);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyTypeLevel,
-                FieldUri = string.Format("/form/PolicyTypeLevel_AddFields?id={0}", id),
-                FormTitle = string.Format("Add {0} Level", type.Name),
-                FormUri = "/form/AddPolicyTypeLevel",
-                FormMethod = "POST"
-            };
-            type = null;
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicyTypeLevel")]
         public JsonResult AddPolicyTypeLevel(FormCollection form)
         {
@@ -12578,7 +10450,7 @@ from ArtifactType A
 
                 Company.Add<PolicyTypeLevel>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.PolicyTypeID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.PolicyTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -12589,33 +10461,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("PolicyType/{policyTypeId:int}/levels/{policyTypeLevelId:int}")]
-        public ActionResult DeletePolicyTypeLevelById(int policyTypeId, int policyTypeLevelId)
-        {
-            var form = new FormCollection();
-            form.Add("Level", policyTypeLevelId.ToString());
-            form.Add("ID", policyTypeId.ToString());
-            return DeletePolicyTypeLevel(form);
-        }
-
-        [Route("DeletePolicyTypeLevel")]
-        public ActionResult DeletePolicyTypeLevel(int id, int level)
-        {
-            var a = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyTypeLevel,
-                FieldUri = string.Format("/form/PolicyTypeLevel_DeleteFields?id={0}&level={1}", id, level),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormDescription = Resources.FormInfo.PolicyTypeLevel_Remove,
-                FormUri = "/form/DeletePolicyTypeLevel",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeletePolicyTypeLevel")]
@@ -12632,7 +10477,7 @@ from ArtifactType A
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -12643,23 +10488,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditPolicyTypeLevel")]
-        public ActionResult EditPolicyTypeLevel(int id, int level)
-        {
-            var a = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.PolicyTypeLevel,
-                FieldUri = string.Format("/form/PolicyTypeLevel_EditFields?id={0}&level={1}", id, level),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditPolicyTypeLevel",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditPolicyTypeLevel")]
@@ -12682,7 +10510,7 @@ from ArtifactType A
 
                 Company.Update<PolicyTypeLevel>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -12754,21 +10582,6 @@ from ArtifactType A
 
         #region Form Get/Post
 
-        [Route("AddPredicate")]
-        public ActionResult AddPredicate()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.Predicate,
-                FieldUri = "/form/Predicate_AddFields",
-                FormTitle = "Add predicate",
-                FormUri = "/form/AddPredicate",
-                FormMethod = "POST"
-            };
-
-            return PartialView("OverlayEditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPredicate")]
         public JsonResult AddPredicate(FormCollection form)
         {
@@ -12800,7 +10613,7 @@ from ArtifactType A
 
                 Company.Add<Predicate>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", string.Format("Predicate|{0}", a.ID), form["_context"], "add", HttpStatusCode.Created, new { });
+                return jsonSuccess(a.Name + " successfully created.", string.Format("Predicate|{0}", a.ID), "add", HttpStatusCode.Created, new { });
             }
             catch (BaseException ex)
             {
@@ -12811,23 +10624,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeletePredicate")]
-        public ActionResult DeletePredicate(int id)
-        {
-            var a = Company.GetById<Predicate>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Predicate,
-                FieldUri = string.Format("/form/Predicate_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeletePredicate",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
         }
 
         [HttpDelete, Route("DeletePredicate")]
@@ -12845,7 +10641,7 @@ from ArtifactType A
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete<Predicate>(model);
-                return jsonSuccess("Item successfully removed.", null, form["_context"], "delete", HttpStatusCode.OK, new { });
+                return jsonSuccess("Item successfully removed.", null, "delete", HttpStatusCode.OK, new { });
             }
             catch (BaseException ex)
             {
@@ -12856,23 +10652,6 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditPredicate")]
-        public ActionResult EditPredicate(int id)
-        {
-            var a = Company.GetById<Predicate>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Predicate,
-                FieldUri = string.Format("/form/Predicate_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditPredicate",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("OverlayEditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditPredicate")]
@@ -12902,7 +10681,7 @@ from ArtifactType A
 
                 Company.Update<Predicate>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
+                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), "edit", HttpStatusCode.OK, new { });
             }
             catch (BaseException ex)
             {
@@ -13182,23 +10961,6 @@ order by D.TextPath";
 
         #region Form Get/Post
 
-        [Route("AddRelationship")]
-        public ActionResult AddRelationship(int intersectTypeID, string type, int id)
-        {
-            var intersectType = Company.GetById<IntersectType>(intersectTypeID);
-            if (intersectType == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Intersect,
-                FieldUri = $"/form/Relationship_AddFields?it={intersectTypeID}&type={type}&id={id}",
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Relationships"),
-                FormUri = "/form/AddRelationship",
-                FormMethod = "POST"
-            };
-
-            return PartialView("AddRelationship", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRelationship")]
         public JsonResult AddRelationship(FormCollection form)
         {
@@ -13243,7 +11005,7 @@ order by D.TextPath";
                     }
                 });
 
-                return jsonSuccess(relationshipType.Name + " successfully created.", "0", form["_context"], "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
+                return jsonSuccess(relationshipType.Name + " successfully created.", "0", "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
             }
             catch (BaseException ex)
             {
@@ -13254,73 +11016,6 @@ order by D.TextPath";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        ////[Route("relationships/{id:int}/delete")]
-        //public ActionResult DeleteRelationship(int id)
-        //{
-        //    var a = Company.GetById<Intersect>(id);
-        //    if (a == null) return HttpNotFound();
-        //    var model = new EditableForm
-        //    {
-        //        Context = ContextList.Intersect,
-        //        FieldUri = string.Format("/form/Intersect_DeleteFields?id={0}", id),
-        //        FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Relationship"),
-        //        FormUri = "/form/DeleteRelationship",
-        //        FormMethod = "DELETE"
-        //    };
-
-        //    return PartialView("DeleteForm", model);
-        //}
-
-        //[HttpDelete]
-        //public JsonResult DeleteRelationship(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!form.HasKeys()) throw new NoFormDataException("relationship");
-
-        //        var id = parseIntField(form, "ID");
-        //        var model = Company.GetById<Intersect>(id);
-        //        if (model == null) throw new NotFoundException("relationship");
-
-        //        //if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Delete, ClaimObject.Root))
-        //        //    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-        //        Company.DeleteRelationship(id);
-
-        //        return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = id });
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-
-        //[Route("relationships/{id:int}/edit")]
-        [Route("EditRelationship")]
-        public ActionResult EditRelationship(int id)
-        {
-            var a = Company.GetById<Intersect>(id, i => i.IntersectType);
-            if (a == null) return HttpNotFound();
-
-            var model = new EditableForm
-            {
-                Context = ContextList.Intersect,
-                FormDescription = "Please provide as much detail as possible in the form below.  You may select one or more relationships by clicking/highlighting the items in the list below.",
-                FieldUri = string.Format("/form/Relationship_EditFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Relationship"),
-                FormUri = "/form/EditRelationship",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditRelationship", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditRelationship")]
@@ -13350,7 +11045,7 @@ order by D.TextPath";
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
-                return jsonSuccess("Relationship successfully updated.", intersect.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
+                return jsonSuccess("Relationship successfully updated.", intersect.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
             }
             catch (BaseException ex)
             {
@@ -13362,7 +11057,6 @@ order by D.TextPath";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
 
         #endregion
 
@@ -13599,14 +11293,6 @@ from        (
                         'Artifact Type : ' + Name as Text
             from        ArtifactType
             union
-            select      'Domain|' + cast(ID as varchar(15)) as Value,
-                        'Domain Instance : ' + Name as Text
-            from        DomainType
-            union
-            select      'DomainType|' + cast(ID as varchar(15)) as Value,
-                        'Domain Type : ' + Name as Text
-            from        DomainType
-            union
             select      'Resource|1' as Value,
                         'Resource' as Text
             union
@@ -13639,23 +11325,6 @@ select      cast(ID as varchar(15)) as Value,
 from        ReportLayout
 order by    Name
 ").ToList();
-        }
-
-        [Route("AddReport")]
-        public ActionResult AddReport()
-        {
-
-            var o = new ReportEditorModel
-            {
-                FormUri = "/Form/AddReport",
-                FormMethod = "POST",
-                FormName = Resources.FormInfo.Add_Report_Title,
-                FormDirections = Resources.FormInfo.Add_Report_Directions,
-                Report = new Report { },
-                ReportTypes = new List<SelectListItem> { new SelectListItem { Text = "Default", Value = "legacy", Selected = true }, new SelectListItem { Text = "PowerBI", Value = "powerbi" } }
-            };
-            loadReportEditorModel(o);
-            return PartialView("ReportEditForm", o);
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReport")]
@@ -13705,7 +11374,7 @@ order by    Name
 
                     Company.Add<Report>(model);
 
-                    return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                    return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.ID.ToString(), "add", HttpStatusCode.Created);
                 }
                 else
                 {
@@ -13721,23 +11390,6 @@ order by    Name
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteReport")]
-        public ActionResult DeleteReport(int id)
-        {
-            var a = Company.GetById<Report>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Report,
-                FieldUri = string.Format("/form/Report_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteReport",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteReport")]
@@ -13771,7 +11423,7 @@ order by    Name
 
                 Company.Delete<Report>(model);
 
-                return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -13782,23 +11434,6 @@ order by    Name
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("AddPowerBICredentials")]
-        public ActionResult AddPowerBICredentials()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.PowerBICredentialsSet,
-                FieldUri = "/form/PowerBICredentials_AddFields",
-                FormTitle = Resources.FormInfo.Add_PowerBI_Credentials_Title,
-                FormDescription = Resources.FormInfo.Add_PowerBI_Credentials_Directions,
-                FormUri = "/form/AddPowerBICredentials",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPowerBICredentials")]
@@ -13834,7 +11469,7 @@ order by    Name
                 //save password in this workspace for all ds's
                 await PowerBI.UpdateConnectionCredentials(accessKey, workspaceCollectionName, workspaceId, user, pwd);
 
-                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, "", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, "", "add", HttpStatusCode.Created);
                 
             }
             catch (BaseException ex)
@@ -13846,34 +11481,6 @@ order by    Name
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("EditReport")]
-        public ActionResult EditReport(int id)
-        {
-            var o = Company.GetById<Report>(id);
-            if (o == null) return HttpNotFound();
-            var model = new ReportEditorModel
-            {
-                FormUri = "/Form/EditReport",
-                FormMethod = "PUT",
-                FormName = Resources.FormInfo.Edit_Report_Title,
-                FormDirections = Resources.FormInfo.Edit_Report_Directions,
-                Report = o,
-                ReportTypes = new List<SelectListItem> { new SelectListItem { Text = "Default", Value = "legacy", Selected = (o.ReportType != "powerbi") }, new SelectListItem { Text = "PowerBI", Value = "powerbi", Selected = ( o.ReportType == "powerbi") } }
-            };
-            loadReportEditorModel(model);
-
-            var selectedObjectType = model.ObjectTypes.SingleOrDefault(i => i.Value == string.Format("{0}|{1}", model.Report.ObjectType, model.Report.ObjectID));
-            if (selectedObjectType != null)
-                selectedObjectType.Selected = true;
-
-            var selectedReportLayout = model.ReportLayouts.SingleOrDefault(i => i.Value == model.Report.ReportLayoutID.ToString());
-            if (selectedReportLayout != null)
-                selectedReportLayout.Selected = true;
-
-            return PartialView("ReportEditForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditReport")]
@@ -13934,7 +11541,7 @@ order by    Name
 
                     Company.Update<Report>(model);
 
-                    return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                    return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, id.ToString(), "edit", HttpStatusCode.OK);
                 }
                 else
                 {
@@ -14065,37 +11672,7 @@ order by    Name
             return list;
         }
 
-        [Route("AddReportTile")]
-        public ActionResult AddReportTile(int reportID)
-        {
-            var report = Company.GetById<Report>(reportID, i => i.ReportLayout, i => i.ReportTiles);
-            if (report == null) return HttpNotFound();
-
-            var o = new ReportTileEditorModel
-            {
-                FormUri = "/Form/AddReportTile",
-                FormMethod = "POST",
-                FormName = "Add Tile to Report",//Resources.FormInfo.Add_Report_Title,
-                FormDirections = Resources.FormInfo.Add_Report_Directions,
-                ReportBaseUri = SecProvider.CompanyPrefix,
-                ReportTile = new ReportTile { Report = report, ReportID = reportID },
-                ReportTileTypes = ReportTileType.Area.GetReportTileTypeEnumList().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
-                ContentAreaNumbers = new List<SelectListItem>(),
-                //SchemaItems = Company.GetReportingSchema(),
-                ObjectTypes = getReportTilePreviewObjects(report.ObjectType, report.ObjectID)
-            };
-
-            var existingTiles = report.ReportTiles.ToList();
-            for (var i = 1; i <= report.ReportLayout.NumberOfContentAreas; i++)
-            {
-                o.ContentAreaNumbers.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString(), Disabled = existingTiles.Any(t => t.ContentAreaNumber == i) });
-            }
-            existingTiles = null;
-
-            return PartialView("ReportTileEditForm", o);
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReportTile")]
+        [HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false), Route("AddReportTile")]
         public JsonResult AddReportTile(FormCollection form, bool isNg = false)
         {
             try
@@ -14138,7 +11715,7 @@ order by    Name
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
 
-                return jsonSuccess(Resources.FormInfo.Add_ReportTile_Confirmation, model.ID.ToString(), ContextList.ReportTile, "add", HttpStatusCode.Created);
+                return jsonSuccess(Resources.FormInfo.Add_ReportTile_Confirmation, model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -14149,23 +11726,6 @@ order by    Name
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteReportTile")]
-        public ActionResult DeleteReportTile(int id)
-        {
-            var a = Company.GetById<ReportTile>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ReportTile,
-                FieldUri = string.Format("/form/ReportTile_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteReportTile",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteReportTile")]
@@ -14180,7 +11740,7 @@ order by    Name
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
                 Company.Delete<ReportTile>(model);
 
-                return jsonSuccess(Resources.FormInfo.Delete_ReportTile_Confirmation, id.ToString(), ContextList.ReportTile, "delete", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Delete_ReportTile_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -14191,39 +11751,6 @@ order by    Name
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditReportTile")]
-        public ActionResult EditReportTile(int id)
-        {
-            var o = Company.GetById<ReportTile>(id, i => i.Report, i => i.Report.ReportLayout, i => i.Report.ReportTiles);
-            if (o == null) return HttpNotFound();
-            var model = new ReportTileEditorModel
-            {
-                FormUri = "/Form/EditReportTile",
-                FormMethod = "PUT",
-                FormName = string.Format("Edit {0}", o.Name),
-                FormDirections = Resources.FormInfo.Edit_Report_Directions,
-                ReportBaseUri = SecProvider.CompanyPrefix,
-                ReportTile = o,
-                ReportTileTypes = ReportTileType.Area.GetReportTileTypeEnumList().OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
-                ContentAreaNumbers = new List<SelectListItem>(),
-                SchemaItems = Company.GetReportingSchema(),
-                ObjectTypes = getReportTilePreviewObjects(o.Report.ObjectType, o.Report.ObjectID)
-            };
-
-            var selectedTileType = model.ReportTileTypes.SingleOrDefault(i => i.Value == model.ReportTile.ReportTileType.ToString());
-            if (selectedTileType != null)
-                selectedTileType.Selected = true;
-
-            var existingTiles = o.Report.ReportTiles.ToList();
-            for (var i = 1; i <= o.Report.ReportLayout.NumberOfContentAreas; i++)
-            {
-                model.ContentAreaNumbers.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString(), Selected = (o.ContentAreaNumber == i), Disabled = (existingTiles.Any(t => t.ContentAreaNumber == i) && o.ContentAreaNumber != i) });
-            }
-            existingTiles = null;
-
-            return PartialView("ReportTileEditForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditReportTile")]
@@ -14271,7 +11798,7 @@ order by    Name
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
 
-                return jsonSuccess(Resources.FormInfo.Edit_ReportTile_Confirmation, id.ToString(), ContextList.ReportTile, "edit", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Edit_ReportTile_Confirmation, id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -14319,7 +11846,7 @@ order by    Name
                     var IDs = form["Context"].Split(',').Select(i => int.Parse(i)).ToList();
                     IDs.ForEach(id =>
                     {
-                        contexts.Add(new ResponsibilityContextItem { ObjectID = id, ObjectType = "DomainItem", ResponsibilityID = responsibilityID });
+                        contexts.Add(new ResponsibilityContextItem { ObjectID = id, ObjectType = "ReferenceItem", ResponsibilityID = responsibilityID });
                     });
                 }
             }
@@ -14337,7 +11864,7 @@ order by    Name
 
             IDs.ForEach(id =>
             {
-                ctx.Add(new ResponsibilityContextItem { ObjectID = id, ObjectType = "DomainItem", ResponsibilityID = responsibilityID });
+                ctx.Add(new ResponsibilityContextItem { ObjectID = id, ObjectType = "ReferenceItem", ResponsibilityID = responsibilityID });
             });
 
             return ctx;
@@ -14381,11 +11908,10 @@ order by    Name
         {
             if (contextIDs == null) contextIDs = new List<int>();
 
-            var sql = @"select	D.Name + ' : ' + I.Name as [Text], I.ID as Value, I.ID  
-from	DomainItem I
-		inner join Domain D on D.ID = I.DomainID
-		inner join DomainType T on T.ID = D.DomainTypeID
-order by	D.Name, I.Name";
+            var sql = @"select	T.Name + ' : ' + I.DisplayValue as [Text], I.ID as Value, I.ID  
+from	ReferenceItem I
+		inner join ReferenceItemType T on T.ID = I.ReferenceItemTypeID
+order by	T.Name, I.DisplayValue";
 
             return Company.Query<dynamic>(sql)
                 .ToList()
@@ -14440,24 +11966,6 @@ order by	D.Name, I.Name";
             return list;
         }
 
-        [Route("AddResponsibility")]
-        public ActionResult AddResponsibility(SystemObjects type, int id)
-        {
-            var model = new PeopleResponsibilityEditorModel
-            {
-                FormName = string.Format("Add Responsibility"),
-                FormUri = "/form/AddResponsibility",
-                FormMethod = "POST",
-                Contexts = getContextSelectList(),
-                FormDescription = "",
-                Resources = getResponsibilityResources(),
-                ResponsibilityTypes = getResponsibilityTypeSelectList(type, id, ResponsibilityTypeGroup.People),
-                Responsibility = new Responsibility { ObjectType = type.ToString(), ObjectID = id, Visible = true }
-            };
-
-            return PartialView("ResponsibilityEditForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, Route("AddResponsibility")]
         public JsonResult AddResponsibility(FormCollection form)
         {
@@ -14506,7 +12014,7 @@ order by	D.Name, I.Name";
 
                 Company.Update<Responsibility>(o);  //Call this again so we can re-cache via trigger.
 
-                return jsonSuccess("Item successfully created.", o.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ObjectType = o.ObjectType.ToString(), ObjectID = o.ObjectID.ToString() });
+                return jsonSuccess("Item successfully created.", o.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = o.ObjectType.ToString(), ObjectID = o.ObjectID.ToString() });
             }
             catch (BaseException ex)
             {
@@ -14517,24 +12025,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeleteResponsibility")]
-        public ActionResult DeleteResponsibility(int id)
-        {
-            var responsibility = Company.GetById<Responsibility>(id, i => i.ResponsibilityType);
-
-            var model = new EditableForm
-            {
-                Context = ContextList.PeopleResponsibility,
-                FieldUri = string.Format("/form/Responsibility_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this owner"),
-                FormUri = "/form/DeleteResponsibility",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteResponsibility")]
@@ -14549,7 +12039,7 @@ order by	D.Name, I.Name";
                 if (model == null) throw new NotFoundException("responsibility");
 
                 Company.Delete<Responsibility>(model);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
             }
             catch (BaseException ex)
             {
@@ -14568,27 +12058,6 @@ order by	D.Name, I.Name";
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteResponsibility(form);
-        }
-
-        [Route("EditResponsibility")]
-        public ActionResult EditResponsibility(int id)
-        {
-            var r = Company.GetById<Responsibility>(id, i => i.ResponsibilityType, i => i.ResponsibilityContextItems);
-            if (r == null) return HttpNotFound();
-
-            var model = new PeopleResponsibilityEditorModel
-            {
-                FormName = "Edit Responsibility",
-                FormUri = "/form/EditResponsibility",
-                FormMethod = "PUT",
-                Contexts = getContextSelectList(r.ResponsibilityContextItems.Select(i => i.ObjectID).ToList()),
-                FormDescription = "",
-                Resources = getResponsibilityResources(string.Format("{0}|{1}", r.ResponsibleObjectType, r.ResponsibleObjectID)),
-                Responsibility = r,
-                ResponsibilityTypes = getResponsibilityTypeSelectList((SystemObjects)Enum.Parse(typeof(SystemObjects), r.ObjectType), r.ObjectID, ResponsibilityTypeGroup.People, r.ResponsibilityTypeID)
-            };
-
-            return PartialView("ResponsibilityEditForm", model);
         }
 
         [HttpGet, Route("Responsibility")]
@@ -14669,7 +12138,7 @@ order by	D.Name, I.Name";
                 processContextFormFieldForResponsibility(id, form, false);
                 Company.Update<Responsibility>(model);  //Do this after context so the trigger will properly re-cache with the contextxs.
 
-                return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
             }
             catch (BaseException ex)
             {
@@ -14801,9 +12270,8 @@ order by	D.Name, I.Name";
             }
             //processContextFormFieldForResponsibility(id, form, false);
 
-            return jsonSuccess("Item successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
+            return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
         }
-
 
         #endregion
 
@@ -14866,22 +12334,6 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
-        [Route("AddResponsibilityType")]
-        public ActionResult AddResponsibilityType(ResponsibilityTypeGroup Group)
-        {
-            var pModel = new EditableForm
-            {
-                Context = ContextList.ResponsibilityType,
-                FieldUri = string.Format("/form/ResponsibilityType_AddFields?Group={0}", ((int)Group).ToString()),
-                FormSize = "small",
-                FormTitle = "Add Responsibility Type",
-                FormUri = "/form/AddResponsibilityType",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", pModel);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResponsibilityType")]
         public JsonResult AddResponsibilityType(FormCollection form)
         {
@@ -14918,7 +12370,7 @@ order by	D.Name, I.Name";
                 }
                 Company.SaveChanges();
 
-                return jsonSuccess("Item successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -14929,23 +12381,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("")]
-        public ActionResult DeleteResponsibilityType(int id)
-        {
-            var a = Company.GetById<ResponsibilityType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponsibilityType,
-                FieldUri = string.Format("/form/ResponsibilityType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this type"),
-                FormUri = "/form/DeleteResponsibilityType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteResponsibilityType")]
@@ -14962,7 +12397,7 @@ order by	D.Name, I.Name";
                 Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id);
                 Company.Delete<ResponsibilityType>(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -14981,25 +12416,6 @@ order by	D.Name, I.Name";
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteResponsibilityType(form);
-        }
-
-        [Route("EditResponsibilityType")]
-        public ActionResult EditResponsibilityType(int id)
-        {
-            var model = Company.GetById<ResponsibilityType>(id);
-            if (model == null) return HttpNotFound();
-
-            var pModel = new EditableForm
-            {
-                Context = ContextList.ResponsibilityType,
-                FieldUri = string.Format("/form/ResponsibilityType_EditFields?id={0}", id),
-                FormSize = "small",
-                FormTitle = "Edit Responsibility Type",
-                FormUri = "/form/EditResponsibilityType",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", pModel);
         }
 
         [HttpGet, ActionName("ResponsibilityType"), Route("ResponsibilityType")]
@@ -15072,7 +12488,7 @@ order by	D.Name, I.Name";
 
                 Company.SaveChanges();
 
-                return jsonSuccess("Item successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15094,7 +12510,7 @@ order by	D.Name, I.Name";
                 Company.Add(model);
                 Company.SaveChanges();
 
-                return jsonSuccess("Item successfully created.", model.ID.ToString(), null, "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15145,7 +12561,7 @@ order by	D.Name, I.Name";
                 }
                 Company.SaveChanges();
 
-                return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15183,18 +12599,6 @@ order by	D.Name, I.Name";
                 });
         }
 
-        [Route("AddResponsibilityTypeClaims")]
-        public ActionResult AddResponsibilityTypeClaims(SystemObjects type, int id)
-        {
-            var model = new ClaimsMatrixEditorModel
-            {
-                Items = new List<ClaimsMatrixEditorItemModel>(),
-                ObjectID = id,
-                ObjectType = type.ToString()
-            };
-            return PartialView(model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, Route("AddResponsibilityTypeClaims")]
         public JsonResult AddResponsibilityTypeClaims(FormCollection form)
         {
@@ -15226,7 +12630,7 @@ order by	D.Name, I.Name";
                 Company.ResponsibilityTypeObjectClaims.AddRange(list);
                 Company.SaveChanges();
 
-                return jsonSuccess("Item successfully created.", "0", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully created.", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15237,22 +12641,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditResponsibilityTypeClaims")]
-        public ActionResult EditResponsibilityTypeClaims(SystemObjects type, int id, int responsibilityTypeID)
-        {
-            var sType = type.ToString();
-            var model = new ClaimsMatrixEditorModel
-            {
-                Items = Company.Filter<ResponsibilityTypeObjectClaim>(i => i.ObjectID == id && i.ObjectType == sType && i.ResponsibilityTypeID == responsibilityTypeID)
-                .Select(i => new ClaimsMatrixEditorItemModel { Claim = i.Claim, ClaimObject = i.ClaimObject, ID = i.ID })
-                .ToList(),
-                ObjectID = id,
-                ObjectType = type.ToString(),
-                ResponsibilityTypeID = responsibilityTypeID
-            };
-            return PartialView(model);
         }
 
         [HttpPut, Route("EditResponsibilityTypeClaims")]
@@ -15308,7 +12696,7 @@ order by	D.Name, I.Name";
 
                 Company.SaveChanges();
 
-                return jsonSuccess("Item successfully created.", "0", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully created.", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15354,7 +12742,7 @@ order by	D.Name, I.Name";
 
                 Company.SaveChanges();
 
-                return jsonSuccess("Item successfully created.", "0", null, "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully created.", "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15475,24 +12863,6 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
-        [Route("resources/{typeID:int}/add")]
-        public ActionResult AddResource(int typeID)
-        {
-            var type = Community.GetById<ResourceType>(typeID);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "resourceform",
-                FormSize = "small",
-                FieldUri = string.Format("/form/Resource_AddFields?id={0}", typeID),
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Resource"),
-                FormUri = "/form/AddResource",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResource")]
         public JsonResult AddResource(FormCollection form)
         {
@@ -15576,7 +12946,7 @@ order by	D.Name, I.Name";
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, typeID).ToList(), form, Server);
                 Company.AddOrUpdateFields(fields);
 
-                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15620,7 +12990,7 @@ order by	D.Name, I.Name";
                 //email user 
                 extensions.mail.TemplateMessage.SendMessage("Data3Sixty Password Reset", model.Email, model.FormatDisplayName(), templateValues, "forms-password-reset");
 
-                return jsonSuccess("Users password has been successfully updated!", id.ToString(), form["_context"], "reset", HttpStatusCode.OK);
+                return jsonSuccess("Users password has been successfully updated!", id.ToString(), "reset", HttpStatusCode.OK);
 
             }
             catch (BaseException ex)
@@ -15632,24 +13002,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("resources/{typeID:int}/{id:int}/delete")]
-        public ActionResult DeleteResource(int typeID, int id)
-        {
-            var a = Community.GetById<Resource>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "resourceform",
-                FormSize = "small",
-                FieldUri = string.Format("/form/Resource_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.FormatDisplayName()),
-                FormUri = "/form/DeleteResource",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteResource")]
@@ -15665,7 +13017,7 @@ order by	D.Name, I.Name";
 
                 Community.Delete<CompanyResource>(model);
                 Company.Delete<GlobalReportingResource>(x => x.ResourceID == id);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15684,24 +13036,6 @@ order by	D.Name, I.Name";
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteResource(form);
-        }
-
-        [Route("resources/{typeID:int}/{id:int}/edit")]
-        public ActionResult EditResource(int typeID, int id)
-        {
-            var a = Community.GetById<Resource>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "resourceform",
-                FormSize = "small",
-                FieldUri = string.Format("/form/Resource_EditFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Resource"),
-                FormUri = "/form/EditResource",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditResource")]
@@ -15751,7 +13085,7 @@ order by	D.Name, I.Name";
                     //SecurityService.EditResourceImage(model.ID, Request.InputStream);
                 }
 
-                return jsonSuccess("Resource successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess("Resource successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15762,25 +13096,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("resources/me/edit")]
-        public ActionResult EditMyInfo()
-        {
-            var a = Community.GetById<Resource>(Company.CurrentResourceID);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "resourceform",
-                FormSize = "small",
-                FieldUri = "/form/Resource_EditMyInfoFields",
-                FormTitle = "Edit Your Bio",
-                FormUri = "/form/EditMyInfo",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditMyInfo")]
@@ -15804,7 +13119,7 @@ order by	D.Name, I.Name";
 
                 Community.Update<Resource>(model);
 
-                return jsonSuccess("Info successfully updated.", Company.CurrentResourceID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess("Info successfully updated.", Company.CurrentResourceID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15815,25 +13130,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("resources/me/changepassword")]
-        public ActionResult ChangeMyPassword()
-        {
-            var a = Community.GetById<Resource>(Company.CurrentResourceID);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "resourceform",
-                FormSize = "small",
-                FieldUri = "/form/Resource_ChangeMyPasswordFields",
-                FormTitle = "Change Your Password",
-                FormUri = "/form/ChangeMyPassword",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("ChangeMyPassword")]
@@ -15860,7 +13156,7 @@ order by	D.Name, I.Name";
 
                 Community.ChangePassword(Company.CurrentResourceID, currentpassword, password1);
 
-                return jsonSuccess("Password successfully updated.", Company.CurrentResourceID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess("Password successfully updated.", Company.CurrentResourceID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15871,24 +13167,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("resources/{typeID:int}/{id:int}/password")]
-        public ActionResult ChangeUserPassword(int typeID, int id)
-        {
-            var a = Community.GetById<Resource>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "resourceform",
-                FormSize = "small",
-                FieldUri = string.Format("/form/Resource_ChangeUserPasswordFields?id={0}", id),
-                FormTitle = string.Format("Change Password for {0}", a.FormatDisplayName()),
-                FormUri = "/form/ChangeUserPassword",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("ChangeUserPassword")]
@@ -15915,7 +13193,7 @@ order by	D.Name, I.Name";
 
                 Community.ChangePassword(id, "", password1);
 
-                return jsonSuccess("Password successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess("Password successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -16004,14 +13282,6 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
-        [Route("AddQuestionType")]
-        public ActionResult AddQuestionType(int surveyTypeID)
-        {
-            ViewBag.ID = 0;
-            ViewBag.SurveyTypeID = surveyTypeID;
-            return PartialView("QuestionTypeEditForm");
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddQuestionType")]
         public JsonResult AddQuestionType(QuestionTypeEditorModel model)
         {
@@ -16044,7 +13314,7 @@ order by	D.Name, I.Name";
 
                 Company.Add(qt);
 
-                return jsonSuccess("Survey question successfully created.", qt.ID.ToString(), ContextList.QuestionType.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess("Survey question successfully created.", qt.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -16055,24 +13325,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [HttpGet, Route("DeleteQuestionType")]
-        public ActionResult DeleteQuestionType(int id)
-        {
-            var a = Company.GetById<QuestionType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.QuestionType,
-                FieldUri = string.Format("/form/QuestionType_DeleteFields?id={0}", a.ID),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteQuestionType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteQuestionType")]
@@ -16085,7 +13337,7 @@ order by	D.Name, I.Name";
                 var id = parseIntField(form, "ID");
                 Company.Delete<QuestionType>(i => i.ID == id);
 
-                return jsonSuccess("Survey question successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Survey question successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -16096,17 +13348,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [HttpGet, Route("EditQuestionType")]
-        public ActionResult EditQuestionType(int id)
-        {
-            var a = Company.GetById<QuestionType>(id);
-            if (a == null) return HttpNotFound();
-            ViewBag.ID = id;
-            ViewBag.SurveyTypeID = a.SurveyTypeID;
-            return PartialView("QuestionTypeEditForm");
         }
 
         [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditQuestionType")]
@@ -16169,7 +13410,7 @@ order by	D.Name, I.Name";
 
                 Company.Update(qt);
 
-                return jsonSuccess("Survey question successfully updated.", qt.ID.ToString(), ContextList.QuestionType.ToString(), "update", HttpStatusCode.OK);
+                return jsonSuccess("Survey question successfully updated.", qt.ID.ToString(), "update", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -16281,22 +13522,6 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
-        [Route("AddRule")]
-        public ActionResult AddRule()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.Rule,
-                FieldUri = "/form/Rule_AddFields",
-                FormTitle = Resources.FormInfo.Add_Rule_Title,
-                FormDescription = Resources.FormInfo.Add_Rule_Directions,
-                FormUri = "/form/AddRule",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRule")]
         public JsonResult AddRule(FormCollection form)
         {
@@ -16333,7 +13558,7 @@ order by	D.Name, I.Name";
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -16344,24 +13569,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeleteRule")]
-        public ActionResult DeleteRule(int id)
-        {
-            var a = Company.GetById<Rule>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Rule,
-                FieldUri = string.Format("/form/Rule_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteRule",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteRule")]
@@ -16387,7 +13594,7 @@ order by	D.Name, I.Name";
                     Context = form["_context"]
                 };
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -16398,23 +13605,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditRule")]
-        public ActionResult EditRule(int id)
-        {
-            if (!Company.Exists<Rule>(id)) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Rule,
-                FieldUri = string.Format("/form/Rule_EditFields?id={0}", id),
-                FormTitle = Resources.FormInfo.Edit_Rule_Title,
-                FormDescription = Resources.FormInfo.Edit_Rule_Directions,
-                FormUri = "/form/EditRule",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditRule")]
@@ -16456,7 +13646,7 @@ order by	D.Name, I.Name";
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -16525,22 +13715,6 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        [Route("AddRuleDimension")]
-        public ActionResult AddRuleDimension()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.RuleDimension,
-                FieldUri = "/form/RuleDimension_AddFields",
-                FormTitle = Resources.FormInfo.Add_Rule_Dimension_Title,
-                FormDescription = Resources.FormInfo.Add_Rule_Dimension_Directions,
-                FormUri = "/form/AddRuleDimension",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRuleDimension")]
         public JsonResult AddRuleDimension(FormCollection form)
         {
@@ -16568,7 +13742,7 @@ order by	D.Name, I.Name";
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -16579,25 +13753,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeleteRuleDimension")]
-        public ActionResult DeleteRuleDimension(int id)
-        {
-            var a = Company.GetById<RuleDimension>(id);
-            if (a == null) return HttpNotFound();
-
-            var model = new EditableForm
-            {
-                Context = ContextList.RuleDimension,
-                FieldUri = string.Format("/form/RuleDimension_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteRuleDimension",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteRuleDimension")]
@@ -16628,7 +13783,7 @@ order by	D.Name, I.Name";
                     Context = form["_context"]
                 };
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -16639,23 +13794,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditRuleDimension")]
-        public ActionResult EditRuleDimension(int id)
-        {
-            if (!Company.Exists<RuleDimension>(id)) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.RuleDimension,
-                FieldUri = string.Format("/form/RuleDimension_EditFields?id={0}", id),
-                FormTitle = Resources.FormInfo.Edit_Rule_Dimension_Title,
-                FormDescription = Resources.FormInfo.Edit_Rule_Dimension_Directions,
-                FormUri = "/form/EditRuleDimension",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditRuleDimension")]
@@ -16687,7 +13825,7 @@ order by	D.Name, I.Name";
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -16699,7 +13837,6 @@ order by	D.Name, I.Name";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
 
         #endregion
 
@@ -16813,7 +13950,7 @@ order by	D.Name, I.Name";
                     Company.SaveOrUpdate<MapSequence>(mapSequence);
                 });
 
-                return jsonSuccess("Source Conditions successfully created.", "0", "MapSequence", "add", HttpStatusCode.Created, null);
+                return jsonSuccess("Source Conditions successfully created.", "0", "add", HttpStatusCode.Created, null);
             }
             catch (BaseException ex)
             {
@@ -16849,7 +13986,7 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        #region Form Get/Post
+        #region JSON Feeds
 
         [Route("StatisticType_FormData")]
         public JsonNetResult StatisticType_FormData(int id)
@@ -16982,9 +14119,7 @@ from    [IntersectType] RT
                             models.Add(new KnockoutListItem("Description", "Description"));
                             models.Add(new KnockoutListItem("Status", "Status"));
                             break;
-                        case SystemObjects.DomainType:
-                            models.Add(new KnockoutListItem("Name", "Name"));
-                            models.Add(new KnockoutListItem("Description", "Description"));
+                        case SystemObjects.ReferenceItemType:
                             models.Add(new KnockoutListItem("Code", "Code"));
                             break;
                         case SystemObjects.TaxonomyType:
@@ -17038,22 +14173,10 @@ from    [IntersectType] RT
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
+        
+        #endregion
 
-        [Route("AddStatisticType")]
-        public ActionResult AddStatisticType()
-        {
-            var model = new EditableForm
-            {
-                FormDescription = Resources.FormInfo.Add_AnalyticType_Directions,
-                FormMethod = "POST",
-                FormTitle = Resources.FormInfo.Add_AnalyticType_Title,
-                FormUri = "/Form/AddStatisticType"
-            };
-
-            ViewBag.ID = 0;
-
-            return PartialView("StatisticTypeEditForm", model);
-        }
+        #region Form Get/Post
 
         string getXmlConfigurationFromFormFields(FormCollection form, StatisticCheckType checkType)
         {
@@ -17136,7 +14259,7 @@ from    [IntersectType] RT
 
                 Company.Add<StatisticType>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), ContextList.StatisticType, "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -17147,23 +14270,6 @@ from    [IntersectType] RT
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteStatisticType")]
-        public ActionResult DeleteStatisticType(int id)
-        {
-            var a = Company.GetById<StatisticType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.StatisticType,
-                FieldUri = string.Format("/form/StatisticType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteStatisticType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteStatisticType")]
@@ -17182,7 +14288,7 @@ from    [IntersectType] RT
 
                 Company.Delete<StatisticType>(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), ContextList.StatisticType, "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -17193,24 +14299,6 @@ from    [IntersectType] RT
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("EditStatisticType")]
-        public ActionResult EditStatisticType(int id)
-        {
-            var a = Company.GetById<StatisticType>(id);
-            if (a == null) return HttpNotFound();
-
-            var model = new EditableForm {
-                FormDescription = Resources.FormInfo.Add_AnalyticType_Directions,
-                FormMethod = "PUT",
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, a.Name),
-                FormUri = "/Form/EditStatisticType"
-            };
-
-            ViewBag.ID = id;
-
-            return PartialView("StatisticTypeEditForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditStatisticType")]
@@ -17237,7 +14325,7 @@ from    [IntersectType] RT
 
                 Company.Update<StatisticType>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), ContextList.StatisticType, "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -17314,21 +14402,6 @@ from    [IntersectType] RT
 
         #region Form Get/Post
 
-        [Route("AddSurveyType")]
-        public ActionResult AddSurveyType()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.SurveyType,
-                FieldUri = "/form/SurveyType_AddFields",
-                FormTitle = "Add Type",
-                FormUri = "/form/AddSurveyType",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddSurveyType")]
         public JsonResult AddSurveyType(FormCollection form)
         {
@@ -17349,7 +14422,7 @@ from    [IntersectType] RT
                 };
                 Company.Add<SurveyType>(model);
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -17360,24 +14433,6 @@ from    [IntersectType] RT
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeleteSurveyType")]
-        public ActionResult DeleteSurveyType(int id)
-        {
-            var a = Company.GetById<SurveyType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.SurveyType,
-                FieldUri = string.Format("/form/SurveyType_DeleteFields?id={0}", a.ID),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteSurveyType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteSurveyType")]
@@ -17396,7 +14451,7 @@ from    [IntersectType] RT
                 Company.Delete<QuestionType>(i => i.SurveyTypeID == id);
                 Company.Delete<SurveyType>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -17407,24 +14462,6 @@ from    [IntersectType] RT
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("EditSurveyType")]
-        public ActionResult EditSurveyType(int id)
-        {
-            var a = Company.GetById<SurveyType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.SurveyType,
-                FieldUri = string.Format("/form/SurveyType_EditFields?id={0}", a.ID),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditSurveyType",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditSurveyType")]
@@ -17443,7 +14480,7 @@ from    [IntersectType] RT
 
                 Company.Update<SurveyType>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -17569,22 +14606,6 @@ from    [IntersectType] RT
 
         #region Form Get/Post
 
-        [Route("AddSynonym")]
-        public ActionResult AddSynonym(SystemObjects type, int id)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.Synonym,
-                FieldUri = $"/form/Synonym_AddFields?type={type.ToString()}&id={id}",
-                FormTitle = "Add Synonym",
-                FormUri = "/form/AddSynonym",
-                FormMethod = "POST",
-                FormSize = "small"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, Route("AddSynonym")]
         public JsonResult AddSynonym(SynonymEditModel model)
         {
@@ -17619,7 +14640,7 @@ from    [IntersectType] RT
                     if (intersect == null)
                         throw new ApplicationException("Failed to create synonym relationship.");
 
-                    return jsonSuccess("Synonym assigned.", intersect.ID.ToString(), ContextList.Synonym, "add", HttpStatusCode.Created, new { });
+                    return jsonSuccess("Synonym assigned.", intersect.ID.ToString(), "add", HttpStatusCode.Created, new { });
                 }
                 else
                 {
@@ -17635,21 +14656,6 @@ from    [IntersectType] RT
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteSynonym")]
-        public ActionResult DeleteSynonym(int id)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.Synonym,
-                FieldUri = $"/form/Synonym_DeleteFields?id={id}",
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Synonym"),
-                FormUri = "/form/DeleteSynonym",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteSynonym")]
@@ -17676,7 +14682,7 @@ from    [IntersectType] RT
                     Context = form["_context"]
                 };
 
-                return jsonSuccess("Synonym successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Synonym successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -17696,6 +14702,7 @@ from    [IntersectType] RT
             form.Add("IntersectID", id.ToString());
             return DeleteSynonym(form);
         }
+
         #endregion
 
         #endregion
@@ -17819,38 +14826,6 @@ order by TextPath
 
         #region Form Get/Post
 
-        [Route("taxonomy/{typeID:int}/{parentID:int=0}/add")]
-        public ActionResult AddTaxonomy(int typeID, int parentID)
-        {
-            var type = Company.GetById<TaxonomyType>(typeID);
-            if (type == null) return HttpNotFound();
-
-            var levelName = "";
-            var levels = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == typeID).ToList();
-            if (parentID > 0)
-            {
-                var parent = Company.GetById<Taxonomy>(parentID);
-                if (parent == null) return HttpNotFound();
-                levelName = (levels.Any(i => i.Level == parent.Level + 1)) ? levels.Single(i => i.Level == parent.Level + 1).Name : string.Format("{0} {1}", type.Name, "Model");
-            }
-            else
-            {
-                levelName = (levels.Any(i => i.Level == 1)) ? levels.Single(i => i.Level == 1).Name : string.Format("{0} {1}", type.Name, "Model");
-            }
-            levels = null;
-
-            var model = new EditableForm
-            {
-                Context = ContextList.Taxonomy,
-                FieldUri = string.Format("/form/Taxonomy_AddFields?t={0}&p={1}", typeID, parentID),
-                FormTitle = string.Format("Add {0}", levelName),
-                FormUri = "/form/AddTaxonomy",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomy")]
         public JsonResult AddTaxonomy(FormCollection form)
         {
@@ -17889,7 +14864,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -17900,23 +14875,6 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("taxonomy/{typeID:int}/{id:int}/delete")]
-        public ActionResult DeleteTaxonomy(int typeID, int id)
-        {
-            var a = Company.GetById<Taxonomy>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Taxonomy,
-                FieldUri = "/form/Taxonomy_DeleteFields?id=" + id,
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteTaxonomy",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteTaxonomy")]
@@ -17943,7 +14901,7 @@ order by TextPath
 
                 Company.Delete(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -17954,23 +14912,6 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("taxonomy/{typeID:int}/{id:int}/edit")]
-        public ActionResult EditTaxonomy(int typeID, int id)
-        {
-            var a = Company.GetById<Taxonomy>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.Taxonomy,
-                FieldUri = "/form/Taxonomy_EditFields?id=" + id,
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditTaxonomy",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditTaxonomy")]
@@ -18005,7 +14946,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -18099,8 +15040,7 @@ order by TextPath
         #endregion
 
         #region Form Get/Post
-
-
+        
         [HttpPost, ValidateInput(false), Route("AddTaxonomyTypeRaw")]
         public JsonResult AddTaxonomyTypeRaw(TaxonomyTypeModel taxonomyType)
         {
@@ -18113,22 +15053,6 @@ order by TextPath
             form.Add("IconForeColor", taxonomyType.IconForeColor);            
 
             return AddTaxonomyType(form);            
-        }
-
-        [Route("catalogs/add")]
-        public ActionResult AddTaxonomyType()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyType,
-                FieldUri = "/form/TaxonomyType_AddFields",
-                FormTitle = "Add Model",
-                FormUri = "/form/AddTaxonomyType",
-                FormMethod = "POST",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomyType")]
@@ -18159,7 +15083,7 @@ order by TextPath
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, a.ID, form, a.Name);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -18170,33 +15094,6 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("catalogs/{taxonomyTypeId:int}")]
-        public ActionResult DeleteTaxonomyById(int taxonomyTypeId)
-        {
-            var form = new FormCollection();
-            form.Add("ID", taxonomyTypeId.ToString());
-            return DeleteTaxonomyType(form);
-        }
-
-        [Route("catalogs/{id:int}/delete")]
-        public ActionResult DeleteTaxonomyType(int id)
-        {
-            var a = Company.GetById<TaxonomyType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyType,
-                FieldUri = "/form/TaxonomyType_DeleteFields?id=" + id,
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormDescription = Resources.FormInfo.TaxonomyType_Remove,
-                FormUri = "/form/DeleteTaxonomyType",
-                FormMethod = "DELETE",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteTaxonomyType")]
@@ -18216,7 +15113,7 @@ order by TextPath
                 Company.Delete<TaxonomyType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.TaxonomyType, id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -18228,8 +15125,7 @@ order by TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-
+        
         [HttpPut, ValidateInput(false), Route("EditTaxonomyTypeRaw")]
         public JsonResult EditTaxonomyTypeRaw(TaxonomyTypeModel taxonomyType)
         {
@@ -18243,24 +15139,6 @@ order by TextPath
             form.Add("ID", taxonomyType.ID);
 
             return EditTaxonomyType(form);
-        }
-
-        [Route("catalogs/{id:int}/edit")]
-        public ActionResult EditTaxonomyType(int id)
-        {
-            var a = Company.GetById<TaxonomyType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyType,
-                FieldUri = "/form/TaxonomyType_EditFields?id=" + id,
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditTaxonomyType",
-                FormMethod = "PUT",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditTaxonomyType")]
@@ -18304,7 +15182,7 @@ order by TextPath
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, model.ID, form, model.Name);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -18373,22 +15251,6 @@ order by TextPath
 
         #region Form Get/Post
 
-        [Route("AddTaxonomyTypeClass")]
-        public ActionResult AddTaxonomyTypeClass()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyTypeClass,
-                FieldUri = "/form/TaxonomyTypeClass_AddFields",
-                FormTitle = "Add Model Class",
-                FormUri = "/form/AddTaxonomyTypeClass",
-                FormMethod = "POST",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("OverlayEditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomyTypeClass")]
         public JsonResult AddTaxonomyTypeClass(FormCollection form)
         {
@@ -18406,7 +15268,7 @@ order by TextPath
 
                 Company.SaveOrUpdate<TaxonomyTypeClass>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -18417,26 +15279,6 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("DeleteTaxonomyTypeClass")]
-        public ActionResult DeleteTaxonomyTypeClass(int id)
-        {
-            var a = Company.GetById<TaxonomyTypeClass>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyTypeClass,
-                FieldUri = "/form/TaxonomyTypeClass_DeleteFields?id=" + id,
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormDescription = Resources.FormInfo.TaxonomyType_Remove,
-                FormUri = "/form/DeleteTaxonomyTypeClass",
-                FormMethod = "DELETE",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("OverlayDeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteTaxonomyTypeClass")]
@@ -18455,7 +15297,7 @@ order by TextPath
 
                 Company.Delete<TaxonomyTypeClass>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -18466,25 +15308,6 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("EditTaxonomyTypeClass")]
-        public ActionResult EditTaxonomyTypeClass(int id)
-        {
-            var a = Company.GetById<TaxonomyTypeClass>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyTypeClass,
-                FieldUri = "/form/TaxonomyTypeClass_EditFields?id=" + id,
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditTaxonomyTypeClass",
-                FormMethod = "PUT",
-                FormSize = EditableForm.FormSize_Small
-            };
-
-            return PartialView("OverlayEditableForm", model);
         }
 
         [HttpPut, ValidateInput(false), Route("EditTaxonomyTypeClass")]
@@ -18505,7 +15328,7 @@ order by TextPath
 
                 Company.SaveOrUpdate<TaxonomyTypeClass>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -18611,24 +15434,6 @@ order by TextPath
             public string TaxonomyTypeID { get; set; }
         }
                 
-        [Route("AddTaxonomyTypeLevel")]
-        public ActionResult AddTaxonomyTypeLevel(int id)
-        {
-            var type = Company.GetById<TaxonomyType>(id);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyTypeLevel,
-                FieldUri = string.Format("/form/TaxonomyTypeLevel_AddFields?id={0}", id),
-                FormTitle = string.Format("Add {0} Level", type.Name),
-                FormUri = "/form/AddTaxonomyTypeLevel",
-                FormMethod = "POST"
-            };
-            type = null;
-
-            return PartialView("EditableForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomyTypeLevel")]
         public JsonResult AddTaxonomyTypeLevel(FormCollection form)
         {
@@ -18652,7 +15457,7 @@ order by TextPath
 
                 Company.Add<TaxonomyTypeLevel>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.TaxonomyTypeID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.TaxonomyTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -18663,34 +15468,6 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("TaxonomyType/{taxonomyTypeId:int}/levels/{taxonomyTypeLevelId:int}")]
-        public ActionResult DeleteTaxonomyTypeLevelById(int taxonomyTypeId, int taxonomyTypeLevelId)
-        {
-            var form = new FormCollection();
-            form.Add("Level", taxonomyTypeLevelId.ToString());
-            form.Add("ID", taxonomyTypeId.ToString());
-            return DeleteTaxonomyTypeLevel(form);
-        }
-
-        [Route("DeleteTaxonomyTypeLevel")]
-        public ActionResult DeleteTaxonomyTypeLevel(int id, int level)
-        {
-            var a = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyTypeLevel,
-                FieldUri = string.Format("/form/TaxonomyTypeLevel_DeleteFields?id={0}&level={1}", id, level),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormDescription = Resources.FormInfo.TaxonomyType_Remove,
-                FormUri = "/form/DeleteTaxonomyTypeLevel",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteTaxonomyTypeLevel")]
@@ -18707,7 +15484,7 @@ order by TextPath
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -18720,24 +15497,6 @@ order by TextPath
             }
         }
         
-
-        [Route("EditTaxonomyTypeLevel")]
-        public ActionResult EditTaxonomyTypeLevel(int id, int level)
-        {
-            var a = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TaxonomyTypeLevel,
-                FieldUri = string.Format("/form/TaxonomyTypeLevel_EditFields?id={0}&level={1}", id, level),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditTaxonomyTypeLevel",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
         [HttpPut, ValidateInput(false), Route("EditTaxonomyTypeLevel")]
         public JsonResult EditTaxonomyTypeLevel(FormCollection form)
         {
@@ -18758,7 +15517,7 @@ order by TextPath
 
                 Company.Update<TaxonomyTypeLevel>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -18839,7 +15598,6 @@ order by TextPath
 
         #region Form Get/Post
 
-
         [HttpPost, ValidateInput(false), Route("AddTooltipTemplateRaw")]
         public JsonResult AddTooltipTemplateRaw(TemplateModel template)
         {
@@ -18850,21 +15608,6 @@ order by TextPath
             form.Add("Action", template.Action);
 
             return AddTooltipTemplate(form);
-        }
-
-        [Route("templates/tooltip/add")]
-        public ActionResult AddTooltipTemplate()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.TooltipTemplate,
-                FieldUri = "/form/TooltipTemplate_AddFields",
-                FormTitle = "Add Tooltip Template",
-                FormUri = "/form/AddTooltipTemplate",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTooltipTemplate")]
@@ -18884,7 +15627,7 @@ order by TextPath
 
                 Company.Add<TooltipTemplate>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -18896,34 +15639,7 @@ order by TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-
-        [Route("templates/tooltip/{id:int}/delete")]
-        public ActionResult DeleteTooltipTemplate(int id)
-        {
-            var a = Company.GetById<TooltipTemplate>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TooltipTemplate,
-                FieldUri = string.Format("/form/TooltipTemplate_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteTooltipTemplate",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-                
-        [Route("templates/tooltip/{templateId:int}")]
-        public ActionResult DeleteTooltipTemplateById(int templateId)
-        {
-            var form = new FormCollection();
-            form.Add("ID", templateId.ToString());
-            return DeleteTooltipTemplate(form);
-        }
-
-
+ 
         [HttpDelete, Route("DeleteTooltipTemplate")]
         public JsonResult DeleteTooltipTemplate(FormCollection form)
         {
@@ -18934,7 +15650,7 @@ order by TextPath
                 var id = parseIntField(form, "ID");
                 Company.Delete<TooltipTemplate>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -18945,24 +15661,6 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-
-        [Route("templates/tooltip/{id:int}/edit")]
-        public ActionResult EditTooltipTemplate(int id)
-        {
-            var a = Company.GetById<TooltipTemplate>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.TooltipTemplate,
-                FieldUri = string.Format("/form/TooltipTemplate_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditTooltipTemplate",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
         }
 
         public class TemplateModel
@@ -18988,7 +15686,6 @@ order by TextPath
             return EditTooltipTemplate(form);
         }
 
-
         [HttpPut, ValidateInput(false), Route("EditTooltipTemplate")]
         public JsonResult EditTooltipTemplate(FormCollection form)
         {
@@ -19007,7 +15704,7 @@ order by TextPath
 
                 Company.Update<TooltipTemplate>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -19091,27 +15788,6 @@ order by TextPath
             return xml;
         }
 
-        [Route("AddWorkflowAllocation")]
-        public ActionResult AddWorkflowAllocation(WorkflowType workflowType)
-        {
-            var desc = Resources.FormInfo.Allocate_Workflow_Description;
-            if (workflowType == WorkflowType.ChallengeArtifact)
-                desc = Resources.FormInfo.Allocate_Workflow_Challenge_Description;
-
-            var model = new WorkflowTypeRelationEditorModel
-            {
-                FormDescription = desc,
-                FormMethod = "POST",
-                FormName = Resources.FormInfo.Allocate_Workflow_Title,
-                FormUri = "/form/AddWorkflowAllocation",
-                ObjectTypes = Company.GetWorkflowObjectTypeOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) }).ToList(),
-                WorkflowType = workflowType,
-                WorkflowTypeRelation = new WorkflowTypeRelation { Enabled = true }
-            };
-
-            return PartialView("WorkflowTypeRelationEditForm", model);
-        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddWorkflowAllocation")]
         public JsonResult AddWorkflowAllocation(FormCollection form)
         {
@@ -19161,7 +15837,7 @@ order by TextPath
                 model.FieldsXml = getWorkflowTypRelationFields(workflowType, form).ToString();
                 Company.Add<WorkflowTypeRelation>(model);
 
-                return jsonSuccess(string.Format(Resources.FormInfo.Allocate_Workflow_Confirmation, workflowType.GetWorkflowTypeDisplayName()), "0", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(Resources.FormInfo.Allocate_Workflow_Confirmation, workflowType.GetWorkflowTypeDisplayName()), "0", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -19172,21 +15848,6 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        [Route("DeleteWorkflowAllocation")]
-        public ActionResult DeleteWorkflowAllocation(int id)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.WorkflowTypeRelation,
-                FieldUri = string.Format("/form/WorkflowAllocation_DeleteFields?id={0}", id),
-                FormTitle = Resources.FormInfo.DeAllocate_Workflow_Title,
-                FormUri = "/form/DeleteWorkflowAllocation",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
         }
 
         [HttpDelete, Route("DeleteWorkflowAllocation")]
@@ -19206,7 +15867,7 @@ order by TextPath
 
                 Company.Delete<WorkflowTypeRelation>(model);
 
-                return jsonSuccess(Resources.FormInfo.DeAllocate_Workflow_Confirmation, "0", form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.DeAllocate_Workflow_Confirmation, "0", "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -19225,49 +15886,6 @@ order by TextPath
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteWorkflowAllocation(form);
-        }
-
-        [Route("EditWorkflowAllocation")]
-        public ActionResult EditWorkflowAllocation(int id)
-        {
-            var relation = Company.GetById<WorkflowTypeRelation>(id);
-            
-            var parentTypes = Company.GetWorkflowParentTypeOptions((int)relation.WorkflowType, relation.Object, relation.ObjectID, true);
-            var responsibilityTypes = Company.GetWorkflowResponsibilityTypeOptions(relation.Object, relation.ObjectID);
-
-            var desc = Resources.FormInfo.Allocate_Workflow_Description;
-            if (relation.WorkflowType == WorkflowType.ChallengeArtifact)
-                desc = Resources.FormInfo.Allocate_Workflow_Challenge_Description;
-
-            var model = new WorkflowTypeRelationEditorModel
-            {
-                FormDescription = desc,
-                FormMethod = "PUT",
-                FormName = Resources.FormInfo.Allocate_Workflow_Title,
-                FormUri = "/form/EditWorkflowAllocation",
-                ObjectTypes = Company.GetWorkflowObjectTypeOptions().Select(i => new SelectListItem { 
-                    Text = i.Name, 
-                    Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID), 
-                    Selected = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) == string.Format("{0}|{1}", relation.Object, relation.ObjectID) 
-                }).ToList(),
-                ParentTypes = parentTypes.Select(i => new SelectListItem
-                {
-                    Text = i.Name,
-                    Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
-                    Selected = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) == string.Format("{0}|{1}", relation.Parent, relation.ParentID)
-                }).ToList(),
-                ResponsibilityTypes = responsibilityTypes.Select(i => new SelectListItem
-                {
-                    Text = i.Name,
-                    Value = i.ID.ToString(),
-                    Selected = (i.ID == relation.ResponsibilityTypeID)
-                }).ToList(),
-                Enabled = relation.Enabled,
-                WorkflowType = relation.WorkflowType,
-                WorkflowTypeRelation = relation
-            };
-
-            return PartialView("WorkflowTypeRelationEditForm", model);
         }
 
         [HttpGet, Route("WorkflowAllocation")]
@@ -19389,7 +16007,7 @@ order by TextPath
                 else
                     Company.Add<WorkflowTypeRelation>(model);
 
-                return jsonSuccess(Resources.FormInfo.Edit_Workflow_Allocation_Confirmation, model.ID.ToString(), null, "edit", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Edit_Workflow_Allocation_Confirmation, model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -19458,7 +16076,7 @@ order by TextPath
 
                 Company.Update<WorkflowTypeRelation>(model);
 
-                return jsonSuccess(Resources.FormInfo.Edit_Workflow_Allocation_Confirmation, "0", form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Edit_Workflow_Allocation_Confirmation, "0", "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -19507,7 +16125,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -19544,7 +16162,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -19604,7 +16222,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -19682,7 +16300,7 @@ order by TextPath
 
                 Company.Delete<ReferenceItem>(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -19725,7 +16343,7 @@ order by TextPath
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<ReferenceItem>(a, fields);
 
-                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -19759,7 +16377,7 @@ order by TextPath
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<ReferenceItem>(model, fields);
 
-                return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

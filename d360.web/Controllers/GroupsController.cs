@@ -19,7 +19,7 @@ namespace d360.web.Controllers
         public JsonResult JoinGroup(int id)
         { 
             return Json(new {
-                title = "Request Sent!", message = "Sent request to join this group.", id = id, context = ContextList.ActionCommand
+                title = "Request Sent!", message = "Sent request to join this group.", id = id
             });
         }
     }

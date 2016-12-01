@@ -8,7 +8,7 @@
   </SourceModelProvider>
   <TargetModelProvider>
     <ConnectionBasedModelProvider>
-      <ConnectionString>Data Source=d3sdev.database.windows.net;Initial Catalog=D3S_15;Persist Security Info=True;User ID=d3s_user;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False</ConnectionString>
+      <ConnectionString>Data Source=d3sdeveast1.database.windows.net;Initial Catalog=D3S_38;Persist Security Info=False;User ID=d3s_user;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False</ConnectionString>
     </ConnectionBasedModelProvider>
   </TargetModelProvider>
   <SchemaCompareSettingsService>
