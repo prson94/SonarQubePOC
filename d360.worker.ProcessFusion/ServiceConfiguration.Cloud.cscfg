@@ -7,7 +7,7 @@
       <Setting name="QueueMessageVisibilityTime" value="3600" />
       <Setting name="QueueName" value="fusion-queue" />
       <Setting name="QueueCheckFrequency" value="60000" />
-      <Setting name="DBExecuteQueryTimeout" value="5400" />
+      <Setting name="DBExecuteQueryTimeout" value="10800" />
       <Setting name="DBReadQueryTimeout" value="600" />
       <Setting name="DBBulkCopyTimeout" value="600" />
       <Setting name="MaximumRetries" value="3" />

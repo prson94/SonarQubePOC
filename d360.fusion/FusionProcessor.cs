@@ -401,35 +401,9 @@ namespace d360.fusion
                 await bulkCopy.WriteToServerAsync(table);
             }
 
-
-            // delete any relations that already exist from the temp table
-            // delete from temp table where 
-            var rowsDeleted = await companyConnection.ExecuteAsync(@"
-delete  #tempResolvedRel 
-where 	[ID] in (
-                select  sr.id
-				from    #tempResolvedRel sr 
-                        inner join [Intersect] I on I.Subject = 'FusionAttribute' and 
-                                                    I.Object = 'FusionAttribute' and 
-                                                    (
-                                                        ( I.SubjectID = sr.startfusionattributeid and I.ObjectID = sr.endfusionattributeid ) OR
-                                                        ( I.SubjectID = sr.endfusionattributeid and I.ObjectID = sr.startfusionattributeid  )
-                                                    )
-                );", commandTimeout: ExecuteQueryTimeout);
-
-            Trace.TraceInformation("DELETED {0} RELATIONS FROM TEMPRESOLVEDREL TABLE AS PRE-EXISTING RELATIONSHIPS.", rowsDeleted);
-
-            if(_workArea.Relationships.ResolvedRelationshipData.Count == rowsDeleted)
-            {
-                Trace.TraceInformation("NO NEW RELATIONS TO INSERT EXITING");
-                return;
-            }
-
-            // do the 3 inserts into the db using the temp table
+            // insert relations
             await companyConnection.ExecuteAsync(@"
-declare @Intersects IDTable;
 declare @objectType varchar(50) = 'FusionAttribute';			
-Declare @IDList Table(IntersectID int, StageID Int);
 			
 MERGE
 	INTO    [Intersect] d
@@ -438,32 +412,19 @@ MERGE
 					ID,
 					StartFusionAttributeID,
 					EndFusionAttributeID
-			FROM	[fusion].stagingrelation
-			where	ExecutionID = @executionID 
-					and IntersectID is null
+			FROM	#tempResolvedRel
 			) S
-	ON      (1 = 0)
+	ON      (d.Subject = 'FusionAttribute' and 
+                                                    d.Object = 'FusionAttribute' and 
+                                                    (
+                                                        ( d.SubjectID = S.startfusionattributeid and d.ObjectID = S.endfusionattributeid ) OR
+                                                        ( d.SubjectID = S.endfusionattributeid and d.ObjectID = S.startfusionattributeid  )
+                                                    ))
 	WHEN NOT MATCHED THEN
 	INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
-	VALUES  (S.IntersectTypeID, 2, NULL, @objectType, StartFusionAttributeID, @objectType, EndFusionAttributeID)
-	OUTPUT  INSERTED.ID, S.ID into @IDList;
+	VALUES  (S.IntersectTypeID, 2, NULL, @objectType, S.StartFusionAttributeID, @objectType, S.EndFusionAttributeID);
 	
---update StagingRelation to have the id's we used in intersect table.
-UPDATE	T
-SET		T.IntersectID = S.IntersectID
-from	[fusion].[StagingRelation] T
-		inner join @IDList S on T.ExecutionID = @executionID and T.ID = S.StageID;
-
-insert into @Intersects 
-	select	IntersectID 
-	from	@IDList;
-	
-declare @IntersectCount int
-select @IntersectCount = count(1) from @Intersects
-if @IntersectCount > 0 
-begin
-	EXEC cache.SynchronizeRelationships @Intersects
-end", new { executionID = ExecutionID }, commandTimeout: ExecuteQueryTimeout);
+", new { executionID = ExecutionID }, commandTimeout: ExecuteQueryTimeout);
         }
 
         /// <summary>
