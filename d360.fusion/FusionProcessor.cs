@@ -345,7 +345,7 @@ namespace d360.fusion
             GenerateRelationshipInsertData(relationships);
             
             // insert unresolved relations to the stagingrelationunresolved table
-            await DoUnresolvedRelationsInsert(companyConnection);
+         //   await DoUnresolvedRelationsInsert(companyConnection);
 
             // determine which relations already exist and remove them
             await DoResolvedRelationsInsert(companyConnection);
@@ -625,7 +625,7 @@ end", new { executionID = ExecutionID }, commandTimeout: ExecuteQueryTimeout);
                 {                    
                     Trace.TraceInformation("FOUND UNRESOLVED RELATIONSHIP BETWEEN START SOURCEID:[{0}] AND END SOURCEID:[{1}]", item.StartID, item.EndID);
 
-                    _workArea.Relationships.UnresolvedRelationshipData.Add(relData);
+                    //_workArea.Relationships.UnresolvedRelationshipData.Add(relData);
                 }
             }
         }
