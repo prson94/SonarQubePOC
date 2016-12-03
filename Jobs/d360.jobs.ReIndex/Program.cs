@@ -328,9 +328,9 @@ namespace d360.jobs.ReIndex
         private static IEnumerable<AddToIndexModel> LoadDomains(SqlConnection context, int companyID, ElasticSearchSource source)
         {            
             var sql = @"select
-                            d.ID,
-	                        d.Name,
-	                        d.[Description]
+                            ID,
+	                        Name,
+	                        [Description]
                         from ReferenceItemType";
 
             foreach (var a in context.Query(sql))
