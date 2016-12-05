@@ -1255,13 +1255,16 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                 //iterate through models
                 // for each additonal field we need to add a new fusionfieldtemptablevalue
                 string actionString = string.Empty;
+                string name = string.Empty;
 
                 var sourceID = x[SourceIDAttribute];
-                var name = x[NameAttribute];
-                var fusionTypeIDString = x[FusionAttributeTypeIDAttribute];
                 
+                x.TryGetValue(NameAttribute, out name);
+                var fusionTypeIDString = x[FusionAttributeTypeIDAttribute];
 
-                if(string.IsNullOrEmpty(fusionTypeIDString))
+                if (string.IsNullOrEmpty(name)) name = FUSION_ATTRIBUTE_MISSING_NAME_NAME;
+
+                if (string.IsNullOrEmpty(fusionTypeIDString))
                 {
                     Trace.TraceInformation("INVALID KEY IN MODEL KEY VALUE COLLECTION");
 
@@ -1439,12 +1442,13 @@ when not matched then
                 {
                     string actionString = string.Empty;
 
-                    var sourceID = x[SourceIDAttribute];
-                    var name = x[NameAttribute];
+                    var sourceID = x[SourceIDAttribute];                    
                     var fusionTypeID = Convert.ToInt32(x[FusionAttributeTypeIDAttribute]);
 
+                    string name = string.Empty;
                     string parentSourceID = string.Empty;
 
+                    x.TryGetValue(NameAttribute, out name);
                     x.TryGetValue(ParentSourceIDAttribute, out parentSourceID);
                     x.TryGetValue(ActionAttribute, out actionString);
 
