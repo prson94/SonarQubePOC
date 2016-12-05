@@ -6139,6 +6139,62 @@ namespace d360.web.Controllers
             }
         }
 
+        [HttpDelete, Route("DeleteFusionRuleStep")]
+        public JsonResult DeleteFusionRuleStep(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+                var id = parseIntField(form, "ID");
+                var ruleStepID = parseIntField(form, "RuleStepID");
+                var currentRule = Company.GetById<FusionRule>(id);//, i => i.FusionRuleSteps);
+                var itemToRemove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
+
+                if (itemToRemove == null) throw new Exception("Fusion Rule Step not found.");                                
+
+                Company.ObjectContext.DeleteObject(itemToRemove);
+
+                if (currentRule != null)
+                {
+                    currentRule.UpdatedBy = Company.CurrentResourceID;
+                    currentRule.UpdatedOn = DateTime.UtcNow;
+                }
+
+                Company.SaveChanges();
+
+                //update the step numbers 
+                var steps = currentRule.FusionRuleSteps.OrderBy(x => x.Step);
+
+                for (int i = 0; i < steps.Count(); i++)
+                {
+                    steps.ElementAt(i).Step = (i + 1);
+                }
+
+                Company.SaveChanges();
+
+                return jsonSuccess("Step successfully removed.", id.ToString(), form["_context"], HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, Route("DeleteFusionRuleStepByID")]
+        public JsonResult DeleteFusionRuleStepByID(int ruleID, int ruleStepID)
+        {
+            var form = new FormCollection();
+            form.Add("ID", ruleID.ToString());
+            form.Add("RuleStepID", ruleStepID.ToString());
+            
+            return DeleteFusionRuleStep(form);
+        }
+
         [HttpDelete, Route("DeleteFusionRuleStepMapping")]
         public JsonResult DeleteFusionRuleStepMapping(FormCollection form)
         {
