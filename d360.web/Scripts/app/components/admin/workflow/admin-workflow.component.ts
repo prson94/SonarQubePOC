@@ -47,12 +47,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
         items.push({
             icon: null,
             label: 'Work Issue'
-        });
-
-        items.push({
-            icon: null,
-            label: 'Challenge'
-        });
+        });        
 
         items.push({
             icon: null,
@@ -100,10 +95,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
                 break;
             case 'Work Issue':
                 this.addingRow.WorkflowType = WorkflowType.WorkIssue
-                break;
-            case 'Challenge':
-                this.addingRow.WorkflowType = WorkflowType.ChallengeArtifact
-                break;
+                break;            
             case 'Propose new Artifact (Multi-approval)':
                 this.addingRow.WorkflowType = WorkflowType.SuggestNewArtifactMulti
                 break;
@@ -142,6 +134,5 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
         this.messages.push({ severity: 'info', summary: e.message, detail: '' });
         this.isAdding = false;
         this.load();
-    }
-    
+    }    
 }
