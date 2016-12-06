@@ -7,12 +7,6 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 
 import * as _ from 'lodash';
-/*
-contextfield
-objectfield
-objectidfield
-urlfield
-*/
 
 @Component({
     selector: 'd3s-dynamic-lookup-grid',

@@ -2156,6 +2156,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 
                 FieldType ft = null;
 
+                if (i.FieldTypeName.Contains("."))
+                    i.FieldTypeName = i.FieldTypeName.Replace('.', '~');
+
                 var dataField = $"H{pos}_{i.FieldTypeName}";
                 
                 // As long as field type is NOT null, you can go ahead and add the field.
@@ -2170,7 +2173,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
 
                         // Determine the join syntax for the eventual query.
-                        if ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || i.FieldTypeName.StartsWith("Relation."))
+                        if ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || i.FieldTypeName.StartsWith("Relation~"))
                             join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = 'Intersect' and {tbPrefix}.ObjectID = {intersectIDColumn}";
                         else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
                             join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}";
