@@ -447,7 +447,10 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     html += user;
                 }
             }
-            
+
+            //replace angular special characters
+            html = (html ?? "").Replace('{', '(').Replace('}', ')');
+
             return Content(html, "text/html");
         }
 
