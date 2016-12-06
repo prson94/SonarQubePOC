@@ -491,11 +491,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {
                     this.isLoading = false;
-                    if (r.isError) {
-                        this.messagesService.showError(r.title, r.message);
-                    }
-                    else {
-                        this.messagesService.showInfoMessage("Success", "Field Definition Edited");
+                    this.showMessageForResult(this.messagesService, r);
+                    if (r.type != 'error') {
                         this.onComplete.emit({ action: 'edit', field: this.model });
                     }
                 });
