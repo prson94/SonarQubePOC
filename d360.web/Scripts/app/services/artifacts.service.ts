@@ -5,7 +5,7 @@ import { BaseService } from './base.service';
 import { Artifacts, Artifact } from '../models/artifacts.model';
 import { ArtifactType } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
+import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
 
@@ -13,8 +13,8 @@ import { JsonResult } from '../models/jsonresult.model';
 export class ArtifactService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-    
-    getArtifacts(artifactTypeId: number, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?:string ): Promise<Artifacts> {
+
+    getArtifacts(artifactTypeId: number, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string, owner?: GridOwnerFilter): Promise<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/ArtifactsByType?id=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
@@ -64,6 +64,10 @@ export class ArtifactService extends BaseService {
             uri += `&filter=${encodeURIComponent(simpleFilter)}`;
         }
 
+        if (owner != undefined) {            
+            uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
+        }
+
         return this.http.get(uri)        
             .toPromise()
             .then(response => <Artifacts>response.json())
@@ -80,7 +84,7 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getArtifactsXls(artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string) {                
+    getArtifactsXls(artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string, owner?: GridOwnerFilter) {                
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/download/excel/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
         if (filters != undefined) {
@@ -127,6 +131,10 @@ export class ArtifactService extends BaseService {
 
         if (simpleFilter != undefined) {
             uri += `&filter=${encodeURIComponent(simpleFilter)}`;
+        }
+
+        if (owner != undefined) {
+            uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
 
         window.location.assign(uri);        

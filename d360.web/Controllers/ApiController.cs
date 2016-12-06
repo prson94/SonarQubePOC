@@ -954,10 +954,24 @@ where   h.ID <> @t order by h.[Level] desc;
             return list;//.AsQueryable();
         }
 
+        [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
+        public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
+        {
+            var sql = "select distinct responsibleobjectID as 'ID', CASE WHEN responsibleobjecttype = 'Group' Then '[Group] ' + responsibleObjectName else '[User] ' + responsibleObjectName end  as 'Name', responsibleobjecttype as 'Type' from [dbo].[responsibilitydetail] where objecttypeid = @id and objecttype = 'Artifact' order by 'Name'";
+
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(
+                    sql,
+                    new { id = artifactTypeId }
+                )
+            );
+        }
+
         #endregion
 
         #region Followers
-        
+
         [HttpGet, Route("followinfo/{type}/{id:int}")]
         public dynamic GetFollowInfo(int id, SystemObjects type)
         {
@@ -2587,7 +2601,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         #region Relationships
 
         [HttpGet, Route("RelationshipObjectsByType")]
-        public List<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id)//, SystemObjects targetObject)
+        public IEnumerable<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id)//, SystemObjects targetObject)
         {
             var sql = "";
 
@@ -2646,7 +2660,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     break;
             }
 
-            return Company.Query<FilterObjectItem>(sql, new { id = id }).ToList();
+            if (string.IsNullOrEmpty(sql)) return null;
+
+            return Company.Query<FilterObjectItem>(sql, new { id = id });
         }
 
         /// <summary>

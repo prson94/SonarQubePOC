@@ -1,8 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem  } from 'primeng/primeng';
-import { ArtifactService, RelationshipsService, AttributeTypeService } from '../../services/index';
+import { ArtifactService, RelationshipsService, AttributeTypeService, ArtifactTypeService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
-import { GridFilterExpression, GridFilterColumn, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
+import { GridFilterExpression, GridFilterColumn, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridFilterFieldType, GridOwnerFilter } from '../../models/grid-definition.model';
 import { ObjectRelationship, RelatedItem } from '../../models/relationship.model';
 import { AttributeType } from '../../models/attribute-type.model';
 import { FilterField, FilterFieldType, FilterExpression } from '../../models/filter-field.model';
@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-artifact-column-filter',
-    providers: [RelationshipsService, AttributeTypeService],
+    providers: [RelationshipsService, AttributeTypeService, ArtifactTypeService],
     styles: [`
         div.filter {
             padding-bottom:5px;
@@ -23,20 +23,23 @@ import * as _ from 'lodash';
     template: ` 
                 <form (ngSubmit)="onSubmit()" #filterForm="ngForm">
                     <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index" class="row filter">
-                        <div class="col s1 FieldName">Filter:</div>                        
-                        <div class="col s4"><select [name]="'FilterField_' + index" required [ngModel]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">                                            
+                        <div class="col s1 FieldName">Filter:</div>
+                        <div class="col s4"><select [name]="'FilterField_' + index" required [ngModel]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
                                                         <option *ngFor="let p of availableFilters" [ngValue]="p">{{p.Name}}</option></select>
                         </div>
                         <div [ngSwitch]="filter.Type" class="col s4">
-                            <span *ngSwitchCase="filterFieldType.Relationship">            
+                            <span *ngSwitchCase="filterFieldType.Relationship">
                                 <p-multiSelect name="predicates" [options]="relationshipValues" [style]="{width:'100%'}" [ngModel]="filter?.Data?.objectIds" (ngModelChange)="filter.Data.objectIds = $event"></p-multiSelect>
-                                <p-selectButton name="relationIncludeType" [options]="connectors" [ngModel]="filter?.Data?.includeType" (ngModelChange)="filter.Data.includeType = $event;"></p-selectButton>                                
+                                <p-selectButton name="relationIncludeType" [options]="connectors" [ngModel]="filter?.Data?.includeType" (ngModelChange)="filter.Data.includeType = $event;"></p-selectButton>
                             </span>
-                            <span *ngSwitchCase="filterFieldType.Attribute">                                                                
-                                <select name="attributeValue" style="width:100%;" placeholder="Choose a value" [ngModel]="filter?.Data?.attributeSearchValue" (ngModelChange)="filter.Data.attributeSearchValue = $event">                                            
+                            <span *ngSwitchCase="filterFieldType.Attribute">
+                                <select name="attributeValue" style="width:100%;" placeholder="Choose a value" [ngModel]="filter?.Data?.attributeSearchValue" (ngModelChange)="filter.Data.attributeSearchValue = $event">
                                       <option></option>
                                       <option *ngFor="let p of attributeValues" [value]="p">{{p}}</option>
-                                </select>                                
+                                </select>
+                            </span>
+                            <span *ngSwitchCase="filterFieldType.Owner">
+                                <p-multiSelect name="owners" [options]="ownerValues" [style]="{width:'100%'}" [ngModel]="filter?.Data" (ngModelChange)="filter.Data = $event"></p-multiSelect>                                
                             </span>
                             <span *ngSwitchDefault>
                                 <span  [ngSwitch]="filter.Field?.Data?.columntype">
@@ -63,8 +66,9 @@ import * as _ from 'lodash';
                     <div class="row">
                         <div *ngIf="hasMultipleAttributes()" class="red-text center" style="font-weight:bold">**Warning: Only a single attribute filter is supported at a time!</div>
                         <div *ngIf="hasMultipleRelationships()" class="red-text center"  style="font-weight:bold">**Warning: Only a single relationship filter is supported at a time!</div>
+                        <div *ngIf="hasMultipleOwners()" class="red-text center"  style="font-weight:bold">**Warning: Only a single owner filter is supported at a time!</div>
                         <div class="col s12 buttons">
-                            <button pButton *ngIf="internalFilters.length > 0 || relationshipFilter || attributeFilter" type="submit" [disabled]="!filterForm.form.valid || hasMultipleAttributes() || hasMultipleRelationships()" style="width: '150px';" label="Filter Results"></button>
+                            <button pButton *ngIf="internalFilters.length > 0 || relationshipFilter || attributeFilter" type="submit" [disabled]="!filterForm.form.valid || hasMultipleAttributes() || hasMultipleRelationships() || hasMultipleOwners()" style="width: '150px';" label="Filter Results"></button>
                             <button pButton *ngIf="internalFilters.length || relationshipFilter || attributeFilter" type="button" style="width: '150px';" label="Clear all Filters" (click)="resetFilters()"></button>                        
                         </div>
                     </div>
@@ -87,6 +91,9 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     @Input() attributeFilter: GridAttributeFilterExpression = null;
     @Output() attributeFilterChange = new EventEmitter();
 
+    @Input() ownerFilter: GridOwnerFilter = null;
+    @Output() ownerFilterChange = new EventEmitter();
+
     relationshipTypes: ObjectRelationship[];    
     relationshipValues: SelectItem[] = [];
     
@@ -94,6 +101,8 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         
     attributeTypes: AttributeType[];
     attributeValues: string[];
+
+    ownerValues: SelectItem[] = [];
 
     filterFieldType = FilterFieldType;
 
@@ -103,14 +112,24 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
     private selectedFilter: any;
 
-    constructor(private relationshipsService: RelationshipsService, private attributeTypeService: AttributeTypeService) {        
+    private ownerShipFilter: FilterField = {
+        Data: null,
+        Name: 'Owned by',
+        Type: FilterFieldType.Owner
+    };
+
+    constructor(private relationshipsService: RelationshipsService, private attributeTypeService: AttributeTypeService, private artifactTypeService: ArtifactTypeService) {        
         
     }
 
     ngOnInit() {        
 
         if (this.attributeFilter && this.attributeFilter.attributeType)
-            this.attributeSelected(this.attributeFilter.attributeType);                
+            this.attributeSelected(this.attributeFilter.attributeType);       
+
+        if (this.ownerFilter && (this.ownerFilter.ownerGroups || this.ownerFilter.ownerUsers)) {            
+            this.ownerSelected();
+        }
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -141,37 +160,58 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             else this.addRelationshipTypesToAvailable(this.relationshipTypes)
 
             if (this.relationshipFilter && this.relationshipFilter.relationshipType && this.relationshipValues.length == 0)
-                this.loadRelationshipValues(this.relationshipFilter.relationshipType);                             
+                this.loadRelationshipValues(this.relationshipFilter.relationshipType);   
+
+            this.availableFilters.push(this.ownerShipFilter);
         }
          
     }
 
     private onSubmit() {
-        
+        let hasAttributeFilter = false;
+        let hasRelationFilter = false;
+        let hasOwnerFilter = false;
+
         this.filters = [];
+        this.ownerFilter = null;
         for (let internalFilter of this.internalFilters) {
             if (internalFilter.Type == FilterFieldType.Field) {
                 this.filters.push(internalFilter.Data);
             }
             else if (internalFilter.Type == FilterFieldType.Attribute) {
                 this.attributeFilter = internalFilter.Data;
+                hasAttributeFilter = true;
             }
             else if (internalFilter.Type == FilterFieldType.Relationship) {
                 this.relationshipFilter = internalFilter.Data;
+                hasRelationFilter = true;
+            }
+            else if (internalFilter.Type == FilterFieldType.Owner) {
+                this.ownerFilter = new GridOwnerFilter();
+                this.ownerFilter.ownerUsers = [];
+                this.ownerFilter.ownerGroups = [];                
+                for (let owner of internalFilter.Data) {
+                    if (owner.Type.toUpperCase() == 'RESOURCE') {
+                        this.ownerFilter.ownerUsers.push(owner.ID);
+                    }
+                    else {
+                        this.ownerFilter.ownerGroups.push(owner.ID);
+                    }
+                }    
+                hasOwnerFilter = true;                            
             }
         }
 
-        if (this.attributeFilter) {
-            this.attributeFilterChange.emit(this.attributeFilter);
-        }
+        if (!hasOwnerFilter && this.ownerFilter) this.ownerFilter = null;
+        if (!hasRelationFilter && this.relationshipFilter) this.relationshipFilter = null;
+        if (!hasAttributeFilter && this.attributeFilter) this.attributeFilter = null;
 
-        if (this.relationshipFilter) {
-            this.relationshipFilterChange.emit(this.relationshipFilter);
-        }
+        this.attributeFilterChange.emit(this.attributeFilter);
+        this.relationshipFilterChange.emit(this.relationshipFilter);
+        this.ownerFilterChange.emit(this.ownerFilter);
 
         this.filtersChange.emit(this.filters);
-        
-                
+                        
         this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilter, attributes: this.attributeFilter });
     }
 
@@ -187,12 +227,15 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         this.attributeFilter = null;
         this.attributeFilterChange.emit(this.attributeFilter);
 
+        this.ownerFilter = null;
+        this.ownerFilterChange.emit(this.ownerFilter);
+
         this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilter });
     }
     
 
     private changeFilterField(target, filter) {             
-
+        
         if (target.Type == FilterFieldType.Field) {
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
@@ -225,8 +268,18 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             filter.Data.attributeType = target.Data.ID;
             filter.Type = FilterFieldType.Attribute;
 
-            this.attributeSelected(target.Data.ID);            
+            this.attributeSelected(target.Data.ID);
         }
+        else if (target.Type == FilterFieldType.Owner) {
+            filter.Data = [];                         
+            filter.Type = FilterFieldType.Owner;
+
+            this.ownerSelected();
+        }
+    }
+
+    private hasMultipleOwners() {
+        return this.internalFilters.filter(x => x.Type == FilterFieldType.Owner).length > 1;
     }
 
     private hasMultipleRelationships() {
@@ -271,6 +324,43 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Relationship &&  x.Data.IntersectTypeID == this.relationshipFilter.relationshipType.IntersectTypeID)[0],
             });            
         }        
+    }
+
+    private ownerSelected() {
+        if (this.ownerValues.length > 0) return; //already loaded owners
+        this.artifactTypeService.getPossibleArtifactOwners(this.artifactType.ID)
+            .then(result => {
+                
+                for (let item of result) {
+                    this.ownerValues.push({ label: item.Name, value: item });
+                }
+
+                //add an internal filter in case we need to init the ui this way
+                if (this.ownerFilter) {                                        
+                    var owners = [];                    
+                    for (let group of this.ownerFilter.ownerGroups) {
+                        //find a group in results with type group and id matching
+                        let indx = result.findIndex(x => x.ID == group && x.Type == "Group");
+                        if (indx >= 0 && indx < result.length) {
+                            owners.push(result[indx]);                            
+                        }
+                    }
+
+                    for (let user of this.ownerFilter.ownerUsers) {
+                        let indx = result.findIndex(x => x.ID == user && x.Type == "Resource");
+                        if (indx >= 0 && indx < result.length) {
+                            owners.push(result[indx]);
+                        }
+                    }
+                    var filter = new FilterExpression();
+                    filter.Type = FilterFieldType.Owner;
+                    filter.Data = owners;
+                    filter.Field = this.ownerShipFilter;
+                    
+                    this.internalFilters.push(filter);                    
+                }
+
+            });
     }
 
     private attributeSelected(target) {        

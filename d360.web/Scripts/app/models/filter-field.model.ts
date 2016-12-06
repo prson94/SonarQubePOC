@@ -2,7 +2,8 @@
 export enum FilterFieldType {
     Field = 0,
     Relationship,
-    Attribute
+    Attribute,
+    Owner,
 }
 
 export class FilterField {

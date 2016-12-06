@@ -27,13 +27,7 @@ namespace d360.web.Controllers
         #region Exports
 
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
-        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter)
-        {
-            return ToExcel(id, null, sortDataField, sortOrder, filter);
-        }
-
-        [Route("{id:int}.xls"), FileDownload, HttpPost]
-        public FileResult ToExcel(int id, ArtifactListFilterModel model, string sortDataField, string sortOrder, string filter)
+        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "")        
         {
             var joins = "";
             var columns = "";
@@ -43,6 +37,8 @@ namespace d360.web.Controllers
             var dbArgs = new Dapper.DynamicParameters();
 
             dbArgs.Add("id", id);
+
+            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
 
             var sql = string.Format(@"
 select	A.ID,
@@ -201,13 +197,13 @@ from	Artifact A
         }
 
         [HttpGet, Route("artifactsbytype")]
-        public JsonNetResult ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
+        public JsonNetResult ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
         {
-            return ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter);
+            return ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter, ownerUsers, ownerGroups);
         }
 
         [HttpPost, Route("bytype")]
-        public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
+        public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
         {
             Trace.TraceInformation("Calling ArtifactsController.ByType : {0}", id);
 
@@ -218,7 +214,9 @@ from	Artifact A
             var joins = "";
             var columns = "";            
             getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
-           
+
+            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
+
             var querySql = string.Format(@"select	A.ID,
 		A.Name,
 		A.Description,
@@ -241,6 +239,7 @@ where    A.ArtifactTypeID = @id", columns, joins);
             {                
                 querySql = $"{querySql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name","A.Status","T.Name", "P.TextPath" }, "Artifact", id, filter, dbArgs)}";
             }
+                        
 
             
             querySql = applyRelationFilteringExists(querySql, Request,dbArgs);
@@ -260,6 +259,30 @@ where    A.ArtifactTypeID = @id", columns, joins);
             var query = Company.Query<dynamic>(sql, dbArgs);
 
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        private string addOwnershipJoinCriteria(string joins, string ownerUsers, string ownerGroups)
+        {
+            int index = 0;
+            if (!string.IsNullOrEmpty(ownerUsers))
+            {
+                foreach (var user in ownerUsers.Split(','))
+                {
+                    joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'resource' and RD{index}.ResponsibleObjectID = {int.Parse(user)} )";
+                    index++;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(ownerGroups))
+            {
+                foreach (var group in ownerGroups.Split(','))
+                {
+                    joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'group' and RD{index}.ResponsibleObjectID = {int.Parse(group)})";
+                    index++;
+                }                
+            }
+
+            return joins;
         }
 
         [Route("types")]

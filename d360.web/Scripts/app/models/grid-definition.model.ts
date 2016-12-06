@@ -24,6 +24,11 @@ export class GridAttributeFilterExpression {
     attributeSearchValue: string;
 }
 
+export class GridOwnerFilter {
+    ownerUsers: number[];
+    ownerGroups: number[];
+}
+
 export enum GridFilterFieldType {
     Normal,
     Hidden,
