@@ -2,53 +2,12 @@
 import { FormMode, FormHelper } from '../../models/form.model';
 import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
-import { TreeNode } from 'primeng/primeng';
-import { MenuPartItem } from '../shared/menu.part';
-import { ActionBarItem } from '../shared/action-bar.part'; 
+import { TreeNode, MenuItem } from 'primeng/primeng';
 import * as _ from 'lodash';
 
 
 @Component({
     selector: 'd3s-attributes-tile',
-    styles: [
-        `
-        .menu-bar-item {
-            font-size:1.3em;
-            padding:5px;
-            cursor:pointer;
-        }
-
-        .menu-bar-item:hover {
-            background-color:white;
-        }
-
-        .menu-bar {
-            background-color:#ccc;
-            padding: 2px;
-        }
-
-        .menu-item {
-            cursor: pointer;
-            padding:5px 10px 5px 10px;
-            border:1px solid #aaa;
-            display: inline-block;   
-            background-color: #ddd;
-            transition: all .5s;     
-        }
-
-        .menu-item:hover {
-            background-color: #fff;
-        }
-
-        .menu-item.disabled:hover {
-            background-color: #ddd;
-        }
-
-        .menu-item.disabled {
-            cursor: default;
-        }
-        `
-    ],
     template: `
 <div *ngIf="isLoading">
     <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
@@ -70,9 +29,9 @@ import * as _ from 'lodash';
             </p-treeTable>
         </div>
         <div *ngIf="!readonly" class="col s6">
-            <div style="float:right">
-                <d3s-action-bar [items]="actions" (onClick)="action($event)" (onMenuClick)="menuAction($event)"></d3s-action-bar>
-            </div>        
+            <header>
+                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
+            </header>   
             
             <div [ngSwitch]="formMode">
                 <div *ngSwitchDefault>
@@ -83,7 +42,7 @@ import * as _ from 'lodash';
                                     [objectID]="0"
                                     [objectType]="'Attribute'"
                                     [title]="'Attribute'"
-                                    [createUri]="'dynamiceditor/new/' + objectType"
+                                    [createUri]="'form/dynamicedit/create/attribute'"
                                     [createParams]="createParams"
                                     [editUri]="null"
                                     (closeClick)="formMode = FormMode.Default;"
@@ -95,7 +54,7 @@ import * as _ from 'lodash';
                                     [objectType]="'Attribute'"
                                     [title]="'Attribute'"
                                     [createUri]="null"
-                                    [editUri]="'dynamiceditor/edit/' + objectType + '/' + attributeID"
+                                    [editUri]="'form/dynamicedit/edit/attribute'"
                                     (closeClick)="formMode = FormMode.Default;"
                                     (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
                 </div> 
@@ -105,7 +64,7 @@ import * as _ from 'lodash';
                         [method]="'delete'"
                         [prompt]="'Are you sure you want to remove this attribute?'"
                         (onCancel)="formMode = FormMode.Default"
-                        (onDeleteSuccess)="formMode = FormMode.Default">
+                        (onDeleteSuccess)="formMode = FormMode.Default; load();">
                     </d3s-delete-form>
                 </div>
             </div>
@@ -141,7 +100,8 @@ export class AttributesTile implements OnInit {
     private attributeID: number = null;
     private selectedRowCopy = null;
 
-    private actions: ActionBarItem[] = new Array<ActionBarItem>();
+    private menuItems: MenuItem[] = [];
+    private menuItemParams: MenuItemParams[] = [];
 
     constructor(private objectDetailService: ObjectDetailService) {
     }
@@ -149,7 +109,6 @@ export class AttributesTile implements OnInit {
     ngOnInit() {
         this.load();
     }
-
 
     load(): void {
 
@@ -181,15 +140,6 @@ export class AttributesTile implements OnInit {
 
     delete() {
         this.formMode = FormMode.Deleting;
-    }
-
-    save() {
-        if (this.formMode == FormMode.Adding) {
-
-        } else if (this.formMode == FormMode.Editing) {
-
-        }
-        this.formMode = FormMode.Default;
     }
 
     loadMenu() {
@@ -224,76 +174,77 @@ export class AttributesTile implements OnInit {
     }
 
     setMenuItems(items: any[]) {
-        //console.log(items);
-        this.actions = new Array<ActionBarItem>();
 
-        let disable = (this.selectedRow == null);
+        this.menuItems = [];
+        this.menuItemParams = [];
 
         items.forEach(i => {
-            let action = new ActionBarItem();
-            action.icon = i.Icon;
-            action.key = i.Action;
-            action.title = i.Title;
-            action.data = i.Params;
-            action.disabled = ((action.key || '').toLowerCase() == 'add') ? false : disable;
-
-            if (i.Items.length > 0) {
-                action.disabled = false;
-                action.menu = new Array<MenuPartItem>();
-                i.Items.forEach(j => {
-                    let sub = new MenuPartItem();
-                    sub.icon = j.Icon;
-                    sub.data = {
-                        action: j.Action,
-                        params: j.Params
-                    };
-                    sub.text = j.Title;
-
-                    action.menu.push(sub);
-                });
-            }
-            // only add permissible actions
-            if ((i.Action != 'edit' && i.Action != 'delete' && i.Action != 'add') || (i.Action == 'edit' && this.hasEdit) || (i.Action == 'delete' && this.hasDelete) || (i.Action == 'add' && this.hasAdd))
-                this.actions.push(action);
+            this.addMenuItem(i);
         });
     }
 
-    action(item: ActionBarItem) {        
-        switch ((item.key || '').toLowerCase().trim()) {
+    addMenuItem(item: any) {
+        let i = new MenuItemParams();
+        i.action = item.Action;
+        i.menuItem = {
+            icon: 'fa-' + item.Icon,
+            disabled: ((item.Action || '').toLowerCase() == 'add') ? false : (this.selectedRow == null),
+        };
+        i.params = item.Params;
+
+        if (item.Items.length > 0) {
+            i.menuItem.disabled = false;
+            item.Items.forEach(j => {
+                let k = new MenuItemParams();
+                k.action = j.Action;
+                k.menuItem = {
+                    icon: 'fa-' + j.Icon,
+                    label: j.Title
+                };
+                k.params = j.Params;
+                i.menuItem.items = [];
+                i.menuItem.items.push(k.menuItem);
+                this.menuItemParams.push(k);
+                //this.menuItems.push(k.menuItem);
+            });
+        }
+        if ((item.Action != 'edit' && item.Action != 'delete' && item.Action != 'add') || (item.Action == 'edit' && this.hasEdit) || (item.Action == 'delete' && this.hasDelete) || (item.Action == 'add' && this.hasAdd)) {
+            this.menuItemParams.push(i);
+            this.menuItems.push(i.menuItem);
+        }
+
+    }
+
+    menuClick(e: MenuItem) {
+        let p = this.menuItemParams.find(m => m.menuItem == e);
+
+        switch (p.action) {
+            case 'add':
+                this.createParams = [];
+                this.createParams.push(p.params.typeID);
+                this.createParams.push(this.objectType);
+                this.createParams.push(this.objectID);
+                this.createParams.push(p.params.parentID);
+                this.add();
+                break;
             case 'edit':
-                this.attributeID = item.data.attributeID;
+                this.attributeID = p.params.attributeID;
                 this.selectedRowCopy = _.cloneDeep(this.selectedRow.data);
                 this.selectedRowCopy.ID = this.selectedRowCopy.ID.split('|')[1];
                 this.edit();
                 break;
             case 'delete':
-                this.attributeID = item.data.attributeID;
+                this.attributeID = p.params.attributeID;
                 this.delete();
-                break;
-            default:
                 break;
         }
     }
 
-    menuAction(item: MenuPartItem) {
-        this.createParams = [];
-        this.createParams = _.concat(
-            item.data.params.typeID,
-            item.data.params.objectType,
-            item.data.params.typeID,
-            item.data.params.parentID);
-
-        if (item.data.action == 'add')
-            this.add();
-    }
 }
 
-export class MenuBarItem {
-    icon: string;
+export class MenuItemParams {
+    menuItem: MenuItem;
     action: string;
-    text: string;
-    menuItems: MenuPartItem[] = new Array<MenuPartItem>();
-    isMenu: boolean = false;
     params: any;
 }
 

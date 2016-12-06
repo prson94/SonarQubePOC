@@ -2,7 +2,6 @@
 import { HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../../services/index';
 import { WorkflowItem, WorkflowType } from '../../../models/workflow.model';
 import { MenuItem } from 'primeng/primeng';
-import { ActionBarItem } from '../../../models/action-bar.model';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { AdminBaseComponent} from '../admin-base.component';
 import { Title } from '@angular/platform-browser';

@@ -514,7 +514,9 @@ namespace d360.web.Controllers
                 case "RELATIONSHIPROLE":
                     return EditIntersectRole(form);
                 case "POLICYTYPELEVEL":
-                    return EditPolicyTypeLevel(form);                
+                    return EditPolicyTypeLevel(form);
+                case "ATTRIBUTE":
+                    return EditAttribute(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -643,7 +645,7 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPELEVEL":
                     return AddTaxonomyTypeLevel(form);
                 case "POLICYTYPELEVEL":
-                    return AddPolicyTypeLevel(form);                
+                    return AddPolicyTypeLevel(form);
             }
 
             throw new Exception("Invalid / unsupported create type");

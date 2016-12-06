@@ -3,8 +3,8 @@ import { HierarchyModel, PredicateType, HierarchyArtifactsModel, HierarchyArtifa
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { TreeNode } from 'primeng/primeng';
 import { RelationshipsService } from '../../services/relationships.service';
-import { ActionBarItem } from '../shared/action-bar.part';
-import { MenuPartItem } from '../shared/menu.part';
+//import { ActionBarItem } from '../shared/action-bar.part';
+//import { MenuPartItem } from '../shared/menu.part';
 import { FormHelper } from '../../models/form.model';
 
 
@@ -46,7 +46,9 @@ import { FormHelper } from '../../models/form.model';
                             </div>
                             <div [ngSwitch]="formMode" *ngIf="!isEditorLoading">
                                 <div *ngSwitchDefault>
-                                    <d3s-action-bar [items]="actions" (onClick)="action($event)"></d3s-action-bar>
+                                    TODO: replace this with new menu (d3s-tile-actions)
+                                    <!-- replace with d3s-tile-actions -->
+                                   <!-- <d3s-action-bar [items]="actions" (onClick)="action($event)"></d3s-action-bar> -->
                                 </div>
                                 <div *ngSwitchCase="FormMode.Delete">
                                     <div>
@@ -97,7 +99,7 @@ export class StructureTile implements OnChanges {
     items: TreeNode[] = [];
     selectedRow: TreeNode;
 
-    actions: ActionBarItem[] = [];
+    actions: any[] = [];
 
     constructor(private objectDetailService: ObjectDetailService, private relationshipService: RelationshipsService) {
 

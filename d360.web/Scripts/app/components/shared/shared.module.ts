@@ -32,12 +32,10 @@ import { SharedDeleteFormModule } from './delete.form';
 import { SimpleAccordionModule } from './simple-accordion.part';
 import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
 
-import { ActionBar } from './action-bar.part';
 import { AttributesTile } from './attributes.tile';
 import { FollowerGridComponent } from './follower-grid.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
-import { MenuPart } from './menu.part';
 import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectFollowersComponent } from './object-followers.component';
@@ -50,13 +48,11 @@ import { UserListComponent } from './user-list.component';
 
 
 @NgModule({
-    declarations: [
-        ActionBar,        
+    declarations: [     
         AttributesTile,                                                                            
         FollowerGridComponent,                 
         FusionFiltersComponent,        
-        GroupMembersComponent,                         
-        MenuPart,        
+        GroupMembersComponent,                            
         MessagesBarComponent,                                        
         ObjectDefinitionTile,        
         ObjectFollowersComponent,                          
