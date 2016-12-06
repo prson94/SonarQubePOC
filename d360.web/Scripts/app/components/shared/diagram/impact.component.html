@@ -4,7 +4,6 @@
         <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
         <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)"></d3s-tile-actions>
     </header>
-
     <div style="position:relative;left: 100%; display: inline; width: 1px;">
         <d3s-overlay-window width="500" maxHeight="400" padding="15" [(visible)]="isWindowVisible" [headerText]="headerText">
             <ul class="tab-menu">

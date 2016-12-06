@@ -11,6 +11,7 @@ export class LinkModel {
     to: string;
     visible: boolean = true;
     category: string;
+    isTreeLink: boolean = true;
 }
 
 export class NodeModel {

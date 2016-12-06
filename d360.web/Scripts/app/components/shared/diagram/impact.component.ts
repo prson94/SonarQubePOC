@@ -106,6 +106,16 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
+        //the readonly property disallows dragging, so we need to manually disable everything else here instead to prevent keyboard shortcuts
+        let dt = this.myDiagram.toolManager.diagram
+        dt.allowDelete = false;
+        dt.allowClipboard = false;
+        dt.allowCopy = false;
+        dt.allowInsert = false;
+        dt.allowLink = false;
+        dt.allowRelink = false;
+        dt.allowGroup = false;
+        dt.allowTextEdit = false;
 
         this.populateDiagram();
 
@@ -139,6 +149,11 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
                 });
 
+                this.model.links.forEach(l => {
+                    l.isTreeLink = true;
+                });
+
+                this.aggregatePredicates(this.model.nodes, this.model.links);
                 this.addCategoryLayer(focal, this.model.nodes, this.model.links, false);
 
                 this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
@@ -178,6 +193,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     }
 
     private addCategoryLayer(root: NodeModel, nodes: NodeModel[], links: LinkModel[], append: boolean = true) {
+        //console.log('addCategoryLayer', root, _.cloneDeep(links));
         let categories: any[] = [];
         let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
 
@@ -219,6 +235,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             link.from = root.key
             link.to = node.key;
             link.category = 'Category';
+            link.isTreeLink = true;
 
             nodes.filter(n => n.typeId == c.id && n.type == c.type).forEach(n => {
                 if (n.key == root.key)
@@ -238,6 +255,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             this.model.nodes.push(node);
             this.model.links.push(link);
 
+            
             if (append) {
                 this.myDiagram.startTransaction("addCategoryLayer");
                 diagramModel.addNodeData(node);
@@ -251,6 +269,13 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             nodes.forEach(n => { this.model.nodes.push(n); diagramModel.addNodeData(n); });
             links.forEach(l => { this.model.links.push(l); diagramModel.addLinkData(l); });
         }
+
+        //this.aggregatePredicates(this.model.nodes, this.model.links);
+
+        this.myDiagram.links.each(l => {
+            let k = this.model.links.find(i => i.to == l.data.to && i.from == l.data.from);
+            if (k) l.isTreeLink = k.isTreeLink;
+        });
         this.refreshFilters();
 
     }
@@ -263,11 +288,13 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         let nodes = [];
         let links = [];
 
+        let promise = Promise.resolve();
+
         if (!data.everExpanded) {
             // only create children once per node
             diagram.model.setDataProperty(data, "everExpanded", true);
 
-            this.diagramService.getImpactDiagram(data.obj, data.objid)
+            promise = this.diagramService.getImpactDiagram(data.obj, data.objid)
                 .then(r => {
                     let hasChildren = false;
 
@@ -293,6 +320,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
                     r.links.forEach(l => {
                         let addLink = true;
+                        l.isTreeLink = true;
+
                         if (l.to == this.objectType + this.objectID.toString())
                             addLink = false;
 
@@ -306,6 +335,12 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                                     }
                                 }
                             });
+                        
+                        //if there's already a link to this node, add the link as a non-tree link to avoid breaking collapse/expand
+                        let to = this.myDiagram.findNodeForKey(l.to);
+                        if (to) {
+                            l.isTreeLink = false;
+                        }
 
                         let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
                         if (addLink) {
@@ -319,30 +354,33 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                         node.findObject('TREEBUTTON').visible = false;
                     } else {
                         this.addCategoryLayer(node.data, nodes, links);
-                        this.filterView();
+                        //this.filterView();
                     }
 
                 })
-                .then(() => {
-                    if (node.isTreeExpanded) {
-                        diagram.commandHandler.collapseTree(node);
-                    } else {
-                        diagram.commandHandler.expandTree(node);
-                    }
-                    diagram.commitTransaction("CollapseExpandTree");
-                    this.refreshFilters();
-                    this.myDiagram.zoomToFit();
-                });
-        } else {
+        }
+
+        promise.then(() => {
             if (node.isTreeExpanded) {
                 diagram.commandHandler.collapseTree(node);
+                //need to hide/show non-tree links manually here to workaround issue with child nodes having multiple parents
+                this.myDiagram.links.each(l => {
+                    if (l.data.from == node.data.key && !l.isTreeLink) {
+                        l.visible = false;
+                    }
+                });
             } else {
                 diagram.commandHandler.expandTree(node);
+                this.myDiagram.links.each(l => {
+                    if (l.data.from == node.data.key && !l.isTreeLink)
+                        l.visible = true;
+                });
             }
             diagram.commitTransaction("CollapseExpandTree");
             this.refreshFilters();
-            this.myDiagram.zoomToFit();
-        }
+            this.zoomToFit();
+        });
+
     }
 
     private menuAction(e: MenuItem) {
@@ -388,6 +426,16 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             this.filters.forEach(f => {
                 switch (f.type) {
                     case FilterType.Category:
+                        let from = this.myDiagram.findNodeForKey(l.data.from);
+                        let to = this.myDiagram.findNodeForKey(l.data.to);
+
+                        if (from == null || from.category == '' || to == null || to.category == '') return;
+                       
+                        if ((from.data.type + '|' + from.data.typeId) == f.key && !f.selected)
+                            visible = false;
+
+                        if (visible && (to.data.type + '|' + to.data.typeId) == f.key && !f.selected)
+                            visible = false;
                         break;
                     case FilterType.Predicate:
                         if ((l.data.predicateid || '').toString() == f.key && !f.selected)
@@ -400,30 +448,30 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
         this.calculateCategoryNumbers();
         this.myDiagram.commitTransaction("filterView");
-        this.myDiagram.zoomToFit();
+        this.zoomToFit();
     }
 
     private calculateCategoryNumbers() {
         let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
         this.myDiagram.startTransaction("calculateCategoryNumbers");
         this.myDiagram.nodes.each(n => {
-            if (n.data.category != 'Category')
+            if (n.category != 'Category')
                 return;
 
             
             let children = [];
             let name = '';
 
-            //get nodes connected to this category
-            diagramModel.linkDataArray.filter((l: LinkModel) => l.from == n.data.key).forEach((l: LinkModel) => {
-
-                let node = this.myDiagram.findNodeForKey(l.to);
-                if (node && node.visible) {
-                    if (children.length == 0)
-                        name = node.data.typeName;
-                    else
-                        name = node.data.typeNamePlural;
-                    children.push(node);
+            this.myDiagram.links.each(l => {
+                if (l.isTreeLink && l.data.from == n.data.key) {
+                    let node = this.myDiagram.findNodeForKey(l.data.to);
+                    if (node && node.visible) {
+                        if (children.length == 0)
+                            name = node.data.typeName;
+                        else
+                            name = node.data.typeNamePlural;
+                        children.push(node);
+                    }
                 }
             });
 
@@ -439,6 +487,35 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         });
         this.myDiagram.commitTransaction("calculateCategoryNumbers");
     }
+
+    private aggregatePredicates(nodes: NodeModel[], links: LinkModel[]) {
+        links.forEach(l => {
+            links.forEach(k => {
+                if (k.to == l.to && k.from == l.from && k.intersectid != l.intersectid) {
+                    l.text = l.text + ', ' + k.text;
+                    let i = this.model.links.findIndex(j => j.intersectid == k.intersectid);
+                    this.model.links.splice(i, 1);
+                }
+            });
+        });
+
+        nodes.forEach(n => {
+            nodes.forEach(m => {
+                if (n.obj == m.obj && n.objid == m.objid && n.intersectid != m.intersectid) {
+                    let i = this.model.nodes.findIndex(j => j.key == m.key);
+                    this.model.nodes.splice(i, 1);
+                }
+            });
+        });
+    }
+
+    private zoomToFit() {
+        if (this.myDiagram.animationManager.isAnimating)
+            this.myDiagram.animationManager.stopAnimation();
+        this.myDiagram.zoomToFit();
+    }
+
+
 
     //#region events
 
@@ -490,6 +567,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     }
 
     private ObjectDoubleClicked(e: any) {
+        if (e.diagram == null || e.diagram.selection == null || e.diagram.selection.first() == null)
+            return;
         var obj = e.diagram.selection.first().data;
         if (obj != null) {
             if (obj.key != null) {
@@ -505,17 +584,16 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             case 'user': this.headerText = 'Responsibilities'; break;
             case 'fusion': this.headerText = 'Fusion Relationships'; break;
             case 'filter': this.headerText = 'Filter'; break;
-            case 'relations': this.headerText = 'Relationships'; break;
             default: this.headerText = ''; break;
         }
         this.tab = val;
     }
 
     private InitialLayoutCompleted() {
-        console.log('initial layout complete');
-        this.myDiagram.zoomToFit();
+        this.zoomToFit();
         this.refreshFilters();
     }
+
     //#endregion
 
     //#region templates
