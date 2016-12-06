@@ -7,7 +7,7 @@
     </div>
     <div class="col l4 m12 s12">
         <div class="FieldName" style="display:block">Subject Search Type</div>
-        <select [(ngModel)]="settings.SubjectSearch" style="width:100%">
+        <select [(ngModel)]="settings.SubjectSearch" style="width:100%" (ngModelChange)="changeSubjectSearch()">
             <option *ngFor="let i of searchTypes" [value]="i.value">{{i.text}}</option>
         </select>
         <div *ngIf="settings.SubjectSearch == 'ResultFromStep'">
@@ -25,7 +25,7 @@
     </div>
     <div class="col l4 m12 s12">
         <div class="FieldName" style="display:block">Object Search Type</div>
-        <select [(ngModel)]="settings.ObjectSearch" style="width:100%">
+        <select [(ngModel)]="settings.ObjectSearch" style="width:100%" (ngModelChange)="changeObjectSearch()">
             <option *ngFor="let i of searchTypes" [value]="i.value">{{i.text}}</option>
         </select>
         <div *ngIf="settings.ObjectSearch == 'ResultFromStep'">

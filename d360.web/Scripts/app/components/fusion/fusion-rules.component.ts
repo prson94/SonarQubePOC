@@ -66,45 +66,52 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.loadRules();
     }
 
-    loadRules() {
-        this.fusionService.getFusionRules(this.fusionID)
+    loadRules(): Promise<any> {
+        return this.fusionService.getFusionRules(this.fusionID)
             .then(r => {
                 this.fusionRules = r;
                 if (this.fusionRules.length > 0) {
                     this.selectedFusionRule = this.fusionRules[0];
-                    this.loadSteps();
+                } else {
+                    this.selectedFusionRule = null;
                 }
-            });
+            }).then(() => this.loadSteps());
     }
 
-    loadSteps() {
+    loadSteps(): Promise<any> {
         if (this.selectedFusionRule == null) {
             this.fusionRuleSteps = [];
-            return;
+            return this.loadMappings();
         }
-            
-        this.fusionService.getFusionRuleSteps(this.selectedFusionRule.ID)
+
+        let promises = [];
+
+        promises.push(this.fusionService.getFusionRuleSteps(this.selectedFusionRule.ID)
             .then(r => {
                 this.fusionRuleSteps = r;
                 if (this.fusionRuleSteps.length > 0) {
                     this.selectedFusionRuleStep = this.fusionRuleSteps[0];
-                    this.loadMappings();
+                } else {
+                    this.selectedFusionRuleStep = null;
                 }
-            });
-        this.fusionService.getFusionRuleItems(this.selectedFusionRule.ID)
+                
+            }).then(() => this.loadMappings()));
+        promises.push(this.fusionService.getFusionRuleItems(this.selectedFusionRule.ID)
             .then(r => {
                 this.fusionRuleItems = r;
-            });
+            }));
+
+        return Promise.all(promises);
 
 
     }
 
-    loadMappings() {
+    loadMappings(): Promise<any> {
         if (this.selectedFusionRuleStep == null) {
             this.fusionRuleMappings = [];
-            return;
+            return Promise.resolve();
         }
-        this.fusionService.getFusionRuleStepMappings(this.selectedFusionRuleStep.ID)
+        return this.fusionService.getFusionRuleStepMappings(this.selectedFusionRuleStep.ID)
             .then(r => {
                 var saItem = r.find(i => i.TargetFieldName == "TaxonomyTypeID");
                 if (saItem != undefined) {
@@ -160,8 +167,8 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
             .then(r => {
                 this.formMode = FormMode.Default;
                 this.showMessageForResult(this.messagesService, r);
-                this.isLoading = false;
-                this.loadRules();
+                this.loadRules()
+                    .then(() => this.isLoading = false);
             });
     }
 

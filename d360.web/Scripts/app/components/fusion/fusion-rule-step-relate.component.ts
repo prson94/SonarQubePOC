@@ -58,5 +58,32 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
                     });
             });
     }
+
+    changeObjectSearch() {
+        this.changeSearch('Object');
+    }
+
+    changeSubjectSearch() {
+        this.changeSearch('Subject');
+    }
+
+    changeSearch(prefix: string) {
+        if (prefix != null && this.settings[prefix] == null)
+            this.settings[prefix] = {};
+        switch (this.settings[`${prefix}Search`]) {
+            case 'Self': 
+                this.settings[prefix] = 'Self';
+                break;
+            case 'FusionOwner': 
+                this.settings[prefix] = 'Owner';
+                break;
+            case 'ResultFromStep':
+                this.settings[prefix] = 'Step';
+                break;
+        }
+        this.settingsChange.emit(this.settings);
+
+    }
+
 };
 
