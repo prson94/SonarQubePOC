@@ -17,12 +17,13 @@ import { StringConstants } from '../../static/string-constants';
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions() && !hasSuggest" [hasSuggest]="hasSuggest" (suggestClick)="add()" [hasExport]="true" (addClick)="add()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;resetFilters();"></d3s-tile-actions>                            
                 </header>           
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>                
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
                     <div class="col s12" *ngIf="stateService.artifactTypeFilters.showSimpleFilter">                                                
                         <input type="text" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                     </div>                                        
                     <d3s-artifact-column-filter [hidden]="stateService.artifactTypeFilters.showSimpleFilter" [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
+                    <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
                     <div class="col s12">
                        <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
@@ -92,6 +93,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
+    isGridFilterLoading: boolean = false;
     
     totalRecords: number;
         
@@ -144,6 +146,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     public filterGridData(filterData) {
+        this.isGridFilterLoading = true;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
     }
@@ -178,7 +181,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.items = result.results;
                 this.totalRecords = result.total;                
                 if (this.items.length > 0) this.selected = this.items[0]; 
-                this.simpleSearchID = 0;               
+                this.simpleSearchID = 0;
+                this.isGridFilterLoading = false;              
             });
     }
 
@@ -246,7 +250,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         }
     }
 
-    private doSimpleSearch(dt: DataTable) {        
+    private doSimpleSearch(dt: DataTable) {
+        this.isGridFilterLoading = true;
         if (dt) dt.reset();      
     }    
 }
