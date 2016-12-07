@@ -14,41 +14,43 @@ import { TreeNode, Column } from 'primeng/primeng';
 
     </div>
     <div *ngIf="!isLoading">
-        <div class="row" style="margin-bottom: 20px">
-            <div class="col l6 m6 s12">
-                <div class="FieldName" style="display:block">Description</div>
-                <input type="text" style="width:100%" [(ngModel)]="model.RuleStep.Description"/>
+        <form #ruleStepForm="ngForm" (ngSubmit)="save()">
+            <div class="row" style="margin-bottom: 20px">
+                <div class="col l6 m6 s12">
+                    <div class="FieldName" style="display:block">Description</div>
+                    <input type="text" style="width:100%" [(ngModel)]="model.RuleStep.Description" name="description" />
+                </div>
+                <div class="col l6 m6 s12">
+                    <div class="FieldName" style="display:block">Action</div>
+                    <select [(ngModel)]="model.RuleStep.Action" style="width:100%" name="action" required>
+                        <option *ngFor="let i of actionTypes" [value]="i.value">{{i.text}}</option>
+                    </select>
+                </div>
             </div>
-            <div class="col l6 m6 s12">
-                <div class="FieldName" style="display:block">Action</div>
-                <select [(ngModel)]="model.RuleStep.Action" style="width:100%">
-                    <option *ngFor="let i of actionTypes" [value]="i.value">{{i.text}}</option>
-                </select>
+            <div [ngSwitch]="model.RuleStep.Action">
+                <div *ngSwitchCase="'promote'">
+                    <d3s-fusion-rule-step-promote [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-promote>
+                </div>
+                <div *ngSwitchCase="'find'">
+                    <d3s-fusion-rule-step-find [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-find>
+                </div>
+                <div *ngSwitchCase="'lineage'">
+                    <d3s-fusion-rule-step-lineage [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-lineage>
+                </div>
+                <div *ngSwitchCase="'relate'">
+                    <d3s-fusion-rule-step-relate [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-relate>
+                </div>
+                <div *ngSwitchCase="'findrelation'"> 
+                    <d3s-fusion-rule-step-findviarelation [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-findviarelation>
+                </div>
+            </div> 
+            <div class="row" style="margin-top: 20px">
+                <div class="col s12">
+                    <button type="submit" label="Save" pButton [disabled]="isLoading || !ruleStepForm.form.valid"></button>
+                    <button type="button" label="Cancel" pButton (click)="onClose.emit()"></button>
+                </div>
             </div>
-        </div>
-        <div [ngSwitch]="model.RuleStep.Action">
-            <div *ngSwitchCase="'promote'">
-                <d3s-fusion-rule-step-promote [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-promote>
-            </div>
-            <div *ngSwitchCase="'find'">
-                <d3s-fusion-rule-step-find [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-find>
-            </div>
-            <div *ngSwitchCase="'lineage'">
-                <d3s-fusion-rule-step-lineage [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-lineage>
-            </div>
-            <div *ngSwitchCase="'relate'">
-                <d3s-fusion-rule-step-relate [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-relate>
-            </div>
-            <div *ngSwitchCase="'findrelation'"> 
-                <d3s-fusion-rule-step-findviarelation [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-findviarelation>
-            </div>
-        </div> 
-        <div class="row" style="margin-top: 20px">
-            <div class="col s12">
-                <button type="button" label="Save" pButton (click)="save();" [disabled]="isLoading"></button>
-                <button type="button" label="Cancel" pButton (click)="onClose.emit()"></button>
-            </div>
-        </div>
+        </form>
     </div>
 </div>`,
     providers: [FusionService] 
