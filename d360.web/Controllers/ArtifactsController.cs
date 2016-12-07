@@ -27,14 +27,8 @@ namespace d360.web.Controllers
         #region Exports
 
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
-        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter)
-        {
-            return ToExcel(id, null, sortDataField, sortOrder, filter);
-        }
-
-        [Route("{id:int}.xls"), FileDownload, HttpPost]
-        public FileResult ToExcel(int id, ArtifactListFilterModel model, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "")
-        {
+        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "")
+        { 
             var joins = "";
             var columns = "";
 
