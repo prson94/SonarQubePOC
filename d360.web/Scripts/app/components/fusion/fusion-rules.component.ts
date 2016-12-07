@@ -81,6 +81,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     loadSteps(): Promise<any> {
         if (this.selectedFusionRule == null) {
             this.fusionRuleSteps = [];
+            this.selectedFusionRuleStep = null;
             return this.loadMappings();
         }
 
@@ -93,8 +94,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
                     this.selectedFusionRuleStep = this.fusionRuleSteps[0];
                 } else {
                     this.selectedFusionRuleStep = null;
-                }
-                
+                }               
             }).then(() => this.loadMappings()));
         promises.push(this.fusionService.getFusionRuleItems(this.selectedFusionRule.ID)
             .then(r => {
@@ -108,6 +108,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
 
     loadMappings(): Promise<any> {
         if (this.selectedFusionRuleStep == null) {
+            this.selectedFusionRuleMapping = null;
             this.fusionRuleMappings = [];
             return Promise.resolve();
         }
@@ -420,6 +421,14 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         if (node) {
             node.data.selected = event;
         }
+    }
+
+    move(row: FusionRuleStep, moveUp: boolean) {
+        this.selectedFusionRuleStep = row;
+        if (this.selectedFusionRuleStep == null)
+            return;
+        this.fusionService.putMoveFusionRuleStep(this.selectedFusionRuleStep.RuleID, this.selectedFusionRuleStep.ID, moveUp)
+            .then(() => this.loadSteps());
     }
 };
 

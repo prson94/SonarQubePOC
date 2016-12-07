@@ -545,4 +545,12 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    putMoveFusionRuleStep(ruleID: number, ruleStepID: number, moveUp: boolean) {
+
+        return this.http.put(`form/MoveFusionRuleStep?ruleID=${ruleID}&ruleStepID=${ruleStepID}&moveUp=${moveUp}`, null)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

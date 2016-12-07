@@ -5498,6 +5498,52 @@ namespace d360.web.Controllers
             }
         }
 
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("MoveFusionRuleStep")]
+        public ActionResult MoveFusionRuleStep(int ruleID, int ruleStepID, bool moveUp)
+        {
+            var direction = moveUp ? "UP" : "DOWN";
+            var currentRule = Company.GetById<FusionRule>(ruleID);
+            var itemToMove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
+            int currentStepNumber = itemToMove.Step;
+
+            if (currentRule != null)
+            {
+                currentRule.UpdatedBy = Company.CurrentResourceID;
+                currentRule.UpdatedOn = DateTime.UtcNow;
+            }
+
+            if (string.Compare(direction, "UP", true) == 0)
+            {
+                //swap item to move and the item above it                
+                var itemBeforeSelected = currentRule.FusionRuleSteps.OrderBy(x => x.Step).TakeWhile(x => x.ID != ruleStepID).LastOrDefault();
+
+                if (itemBeforeSelected != null)
+                {
+                    itemToMove.Step = itemBeforeSelected.Step;
+                    itemBeforeSelected.Step = currentStepNumber;
+                    Company.Entry(itemToMove).Property(u => u.Step).IsModified = true;
+                    Company.Entry(itemBeforeSelected).Property(u => u.Step).IsModified = true;
+                    Company.SaveChanges();
+                }
+            }
+            else if (string.Compare(direction, "DOWN", true) == 0)
+            {
+                var itemAfterSelected = currentRule.FusionRuleSteps.OrderBy(x => x.Step).SkipWhile(p => p.ID != ruleStepID)
+                                  .ElementAt(1); //Zero-indexed, means second
+
+                if (itemAfterSelected != null)
+                {
+                    itemToMove.Step = itemAfterSelected.Step;
+                    itemAfterSelected.Step = currentStepNumber;
+                    Company.Entry(itemToMove).Property(u => u.Step).IsModified = true;
+                    Company.Entry(itemAfterSelected).Property(u => u.Step).IsModified = true;
+                    Company.SaveChanges();
+                }
+            }
+
+            return jsonSuccess("Step successfully moved", ruleID.ToString(), "move", HttpStatusCode.OK);
+        }
+
         #endregion
 
         #region Field Generation

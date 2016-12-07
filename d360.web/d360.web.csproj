@@ -1142,9 +1142,7 @@
     <TypeScriptCompile Include="Scripts\app\components\model\model.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims-matrix.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\menu.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-field.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item.component.ts" />

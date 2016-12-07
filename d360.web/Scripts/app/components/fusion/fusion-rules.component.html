@@ -29,7 +29,7 @@
                 </div>
                 <div class="col l4 m6 s12">
                     <div class="tile tile-detail">
-                        <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="addItem();"></d3s-tile-actions></header>                        
+                        <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="addItem();"></d3s-tile-actions></header>
                         <p-dataTable #dt [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
@@ -55,10 +55,12 @@
                             <p-column header="Action" field="Action" [style]="{width:'15%'}" [filter]="!showRuleStepsFilter"></p-column>
                             <p-column header="Description" field="Description" [filter]="!showRuleStepsFilter"></p-column>
                             <p-column header="" [style]="{width:'15%'}">
-                                <template pTemplate type="body" let-row="rowData">
+                                <template pTemplate type="body" let-row="rowData" let-i="rowIndex">
                                     <div class="RowTools">
                                         <a (click)="editStep(row);"><i class="fa fa-pencil"></i></a>
                                         <a (click)="deleteStep(row);"><i class="fa fa-trash-o"></i></a>
+                                        <a *ngIf="i > 0" (click)="move(row, true);"><i class="fa fa-caret-up"></i></a>
+                                        <a *ngIf="i < (fusionRuleSteps.length - 1)" (click)="move(row, false);"><i class="fa fa-caret-down"></i></a>
                                     </div>
                                 </template>
                             </p-column>
@@ -270,10 +272,10 @@
         <div *ngSwitchCase="FormMode.DeleteMapping">
             <div class="tile tile-detail">
                 <d3s-delete-form [uri]="'form/DeleteFusionRuleStepMappingByID?id=' + selectedFusionRuleMapping?.ID"
-                             [method]="'delete'"
-                             [prompt]="'Are you sure you want to delete this fusion rule step mapping?'"
-                             (onCancel)="formMode = FormMode.Default;"
-                             (onDeleteComplete)="confirmDeleteMapping()"></d3s-delete-form>
+                                 [method]="'delete'"
+                                 [prompt]="'Are you sure you want to delete this fusion rule step mapping?'"
+                                 (onCancel)="formMode = FormMode.Default;"
+                                 (onDeleteComplete)="confirmDeleteMapping()"></d3s-delete-form>
             </div>
         </div>
 
