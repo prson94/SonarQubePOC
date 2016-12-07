@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, ResponseContentType, Response } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
@@ -107,9 +107,24 @@ export class RulesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getResultsByRuleExcel(id: number) {
-        window.location.assign(`internal/monitor/ExportResultsByRule?id=${id}`);
+    getResultsByRuleExcel(id: number) {        
+        this.http.get(`internal/monitor/ExportResultsByRule?id=${id}`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data));
     }
+
+    downloadFile(data: Response) {
+        var filename = `Rule Data ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
+    }
+
 
     deleteDimension(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'ruledimension', id);

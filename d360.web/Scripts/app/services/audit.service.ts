@@ -1,6 +1,5 @@
-﻿
-import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+﻿import { Injectable } from '@angular/core';
+import { Headers, Http, Response, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { Audit, AuditResults } from '../models/audit.model';
@@ -33,7 +32,22 @@ export class AuditService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    exportToExcel(objectID: number, objectType: string) {
-        window.location.assign(`overlays/${objectType}/${objectID}/download/excel/audit.xls`)
+    exportToExcel(objectID: number, objectType: string, name: string) {        
+        this.http.get(`overlays/${objectType}/${objectID}/download/excel/audit.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));
     }
+
+    downloadFile(data: Response, name: string) {
+        var filename = `${name} Audit Data ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
+    }
+
 }

@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, Response, ResponseContentType } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { FusionAttributePagedResults, FusionAttributeValueDetails, FusionAttributeFilter } from '../models/fusion-attribute.model';
@@ -75,7 +75,7 @@ export class FusionAttributeService extends BaseService {
             }
         }
 
-        window.location.assign(url);
+        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data));
     }
 
     getFusionQueryAttributeExcel(fusionId: number, fusionQueryAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]) {
@@ -95,7 +95,22 @@ export class FusionAttributeService extends BaseService {
                 index++;
             }
         }
-        window.location.assign(url);
+
+        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data));
+    }
+
+    downloadFile(data: Response) {
+        var filename = `Fusion Data ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
     
     getFusionAttributeDetails(fusionAttributeId: number): Promise<FusionAttributeValueDetails> {

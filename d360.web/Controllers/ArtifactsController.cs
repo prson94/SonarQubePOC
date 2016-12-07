@@ -128,7 +128,7 @@ where A.ArtifactTypeID = @id ", columns, joins);
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", string.Format("Filtered {0} List for {1}.xlsx", type.Name, DateTime.Now.ToShortDateString()));
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", string.Format("Filtered {0} List for {1}.xlsx", type.Name, DateTime.Now.ToShortDateString()));
         }
 
         #endregion
