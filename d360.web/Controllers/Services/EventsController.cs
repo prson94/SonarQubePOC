@@ -33,35 +33,45 @@ namespace d360.web.Controllers.Services
 
         #region Models
 
-        public class CreateEventsModelRequest
-        {
-            public CreateEventsModelRequest()
-            {
-                Events = new List<CreateEventModelRequest>();
-            }
+        //public class CreateEventsModelRequest
+        //{
+        //    public CreateEventsModelRequest()
+        //    {
+        //        Events = new List<CreateEventModelRequest>();
+        //    }
 
-            public string GroupKey { get; set; }
-            public int? EventCount { get; set; }
+        //    public string GroupKey { get; set; }
+        //    public int? EventCount { get; set; }
+        //    public string Name { get; set; }
+
+        //    public List<CreateEventModelRequest> Events { get; set; }
+        //}
+
+        public class ResultQualifierModel
+        {
             public string Name { get; set; }
-
-            public List<CreateEventModelRequest> Events { get; set; }
+            public string Value { get; set; }
+            public string ResultObject { get; set; }
+            public int? ResultObjectID { get; set; }
         }
 
-        public class CreateEventModelRequest : Dictionary<string, string>
+        public class ResultModel
         {
-            //public EventCriticality? Criticality { get; set; }
-            //public DateTime? DateCreated { get; set; }
-            //public string SourceID { get; set; }
-            //public EventStatus? Status { get; set; }
+            public DateTime EffectiveDate { get; set; }
+            public int RowsPassed { get; set; }
+            public int RowsFailed { get; set; }
+            public int? FusionID { get; set; }
+            public List<string> FusionAttributes { get; set; }
+            public List<ResultQualifierModel> Qualifiers { get; set; }
         }
 
-        public class CreateEventModelResponse
-        {
-            public int ID { get; set; }
-            public string SourceID { get; set; }
-            public string ResponseCode { get; set; }
-            public string ResponseMessage { get; set; }
-        }
+        //public class CreateEventModelResponse
+        //{
+        //    public int ID { get; set; }
+        //    public string SourceID { get; set; }
+        //    public string ResponseCode { get; set; }
+        //    public string ResponseMessage { get; set; }
+        //}
 
         #endregion
 
@@ -192,13 +202,17 @@ namespace d360.web.Controllers.Services
         /// <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
         /// <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
         /// <returns></returns>
-        [Route("sourcerules/{sourceID}/events"), HttpPost]
-        public HttpResponseMessage AddSourceRuleEvents(string sourceID, CreateEventsModelRequest model)
+        [
+            Route("sourcerules/{sourceID}/events"),
+            Route("sourcerules/{sourceID}/results"), 
+            HttpPost
+        ]
+        public HttpResponseMessage AddSourceRuleEvents(string sourceID, List<ResultModel> models)
         {
             var rule = Company.Filter<RuleMap>(m => m.SourceID == sourceID).Select(m => m.Rule).FirstOrDefault();
             if (rule != null)
             {
-                return AddRuleEvents(rule.ID, model);
+                return AddRuleResults(rule.ID, models);
             }
             else
             {
@@ -210,17 +224,19 @@ namespace d360.web.Controllers.Services
         /// Add one or more events to a rule.
         /// </summary>
         /// <param name="id">The ID of the rule to add events to.</param>
-        /// <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
+        /// <param name="models">A collection of aggregated rule results.</param>
         /// <returns></returns>
-        [Route("rules/{id:int}/events"), HttpPost]
-        public HttpResponseMessage AddRuleEvents(int id, CreateEventsModelRequest model)
+        [
+            Route("rules/{id:int}/results"), 
+            Route("rules/{id:int}/events"), 
+            HttpPost
+        ]
+        public HttpResponseMessage AddRuleResults(int id, List<ResultModel> models)
         {
             if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
-                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add events to this rule.");
+                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add results to this rule.");
 
-            var responseModels = new List<CreateEventModelResponse>();
-
-            if (model == null)
+            if (models == null)
             {
                 var msg = new HttpResponseMessage(HttpStatusCode.BadRequest);
                 msg.ReasonPhrase = "Request body is invalid.  Please reformat your request.";
@@ -229,163 +245,127 @@ namespace d360.web.Controllers.Services
 
             var rule = Company.GetById<Rule>(id);
 
-            EventGroup eventGroup = null;
-
-            if (string.IsNullOrEmpty(model.GroupKey))
-            {
-                model.GroupKey = Guid.NewGuid().ToString();
-            }
-            else
-            {
-                eventGroup = Company.Filter<EventGroup>(i => i.RuleID == id && i.PublicID == model.GroupKey).FirstOrDefault();
-            }
-
             try
             {
-                var sType = SystemObjects.Rule.ToString();
-                var fieldTypes = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).ToList();
-
-                if (eventGroup == null)
+                foreach (var model in models)
                 {
-                    eventGroup = new EventGroup { PublicID = model.GroupKey, RuleID = id, Name = string.IsNullOrEmpty(model.Name) ? "Event for " + model.GroupKey : model.Name };
-
-                }
-
-                if (rule.RuleType == RuleType.Metric || rule.RuleType == RuleType.Profile)
-                {
-                    if (model.EventCount.HasValue)
-                        eventGroup.EventCount = model.EventCount.Value;
-                }
-                Company.SaveOrUpdate<EventGroup>(eventGroup);
-
-                var sourceIDs = model.Events.Where(i => i.ContainsKey("SourceID")).Select(i => i["SourceID"]).ToList();
-                var events = Company.Filter<Event>(i => i.EventGroupID == eventGroup.ID && sourceIDs.Contains(i.SourceID));
-
-                foreach (var log in model.Events)
-                {
-                    var logResponse = new CreateEventModelResponse();
-                    var errorDetailMessage = "";
                     try
                     {
+                        var result = new RuleResult { EffectiveDate = model.EffectiveDate, RowsFailed = model.RowsFailed, RowsPassed = model.RowsPassed, RuleID = id };
+                        Company.Add<RuleResult>(result);
+
                         #region Add fields that do not yet exists in D3S
 
-                        try
-                        {
-                            foreach (var key in log.Keys)
-                            {
-                                if (key != "Criticality"
-                                    && key != "DateCreated"
-                                    && key != "SourceID"
-                                    && key != "Status"
-                                    && !fieldTypes.Any(i => i.Name == key))
-                                {
-                                    var newFieldType = new FieldType { Object = sType, ObjectID = id, IsRequired = false, IsListable = true, SortOrder = fieldTypes.Count + 1, FriendlyName = key, Name = key, DisplayDescription = "", FormDescription = "", Type = "Text" };
-                                    Company.Add<FieldType>(newFieldType);
-                                    fieldTypes.Add(newFieldType);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                        }
+                        //try
+                        //{
+                        //    foreach (var key in log.Keys)
+                        //    {
+                        //        if (key != "Criticality"
+                        //            && key != "DateCreated"
+                        //            && key != "SourceID"
+                        //            && key != "Status"
+                        //            && !fieldTypes.Any(i => i.Name == key))
+                        //        {
+                        //            var newFieldType = new FieldType { Object = sType, ObjectID = id, IsRequired = false, IsListable = true, SortOrder = fieldTypes.Count + 1, FriendlyName = key, Name = key, DisplayDescription = "", FormDescription = "", Type = "Text" };
+                        //            Company.Add<FieldType>(newFieldType);
+                        //            fieldTypes.Add(newFieldType);
+                        //        }
+                        //    }
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //}
 
                         #endregion
 
+                        #region
 
-                        var fields = new List<Field>();
-                        fieldTypes.ForEach(f =>
-                        {
-                            if (log.ContainsKey(f.Name))
-                            {
-                                var fld = new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Event.ToString() };
-                                if (log[f.Name] == null)
-                                {
-                                    if (f.IsRequired)
-                                    {
-                                        errorDetailMessage += string.Format("ERROR: Event does not contain required field {0}.  ", f.Name);
-                                        throw new MissingPropertiesException("Event");
-                                    }
-                                }
-                                else
-                                {
-                                    fld.Value = log[f.Name];
-                                    fields.Add(fld);
-                                }
-                            }
-                            else
-                            {
-                                errorDetailMessage += string.Format("{0}: Event does not contain {1} field {2}.  ", f.IsRequired ? "ERROR" : "WARNING", f.IsRequired ? "required" : "optional", f.Name);
-                                if (f.IsRequired)
-                                {
-                                    throw new MissingPropertiesException("Event");
-                                }
-                            }
-                        });
+                        //var fields = new List<Field>();
+                        //fieldTypes.ForEach(f =>
+                        //{
+                        //    if (log.ContainsKey(f.Name))
+                        //    {
+                        //        var fld = new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Event.ToString() };
+                        //        if (log[f.Name] == null)
+                        //        {
+                        //            if (f.IsRequired)
+                        //            {
+                        //                errorDetailMessage += string.Format("ERROR: Event does not contain required field {0}.  ", f.Name);
+                        //                throw new MissingPropertiesException("Event");
+                        //            }
+                        //        }
+                        //        else
+                        //        {
+                        //            fld.Value = log[f.Name];
+                        //            fields.Add(fld);
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        errorDetailMessage += string.Format("{0}: Event does not contain {1} field {2}.  ", f.IsRequired ? "ERROR" : "WARNING", f.IsRequired ? "required" : "optional", f.Name);
+                        //        if (f.IsRequired)
+                        //        {
+                        //            throw new MissingPropertiesException("Event");
+                        //        }
+                        //    }
+                        //});
+
+                        #endregion
 
                         #region If you made it this far in loop, fields for this event are valid.
 
-                        Event evt = null;
-                        var sourceID = "";
-                        if (log.ContainsKey("SourceID"))
-                        {
-                            sourceID = log["SourceID"];
-                            evt = events.SingleOrDefault(i => i.SourceID == sourceID);
-                        }
+                        //Event evt = null;
+                        //var sourceID = "";
+                        //if (log.ContainsKey("SourceID"))
+                        //{
+                        //    sourceID = log["SourceID"];
+                        //    evt = events.SingleOrDefault(i => i.SourceID == sourceID);
+                        //}
 
-                        var responseCode = "";
+                        //var responseCode = "";
 
-                        var dateCreated = DateTime.UtcNow;
-                        var criticality = EventCriticality.Negligible;
-                        var status = "Open";
+                        //var dateCreated = DateTime.UtcNow;
+                        //var criticality = EventCriticality.Negligible;
+                        //var status = "Open";
 
-                        if (log.ContainsKey("Criticality")) Enum.TryParse(log["Criticality"], out criticality);
-                        if (log.ContainsKey("DateCreated")) DateTime.TryParse(log["DateCreated"], out dateCreated);
-                        if (log.ContainsKey("Status")) status = log["Status"];
+                        //if (log.ContainsKey("Criticality")) Enum.TryParse(log["Criticality"], out criticality);
+                        //if (log.ContainsKey("DateCreated")) DateTime.TryParse(log["DateCreated"], out dateCreated);
+                        //if (log.ContainsKey("Status")) status = log["Status"];
 
-                        if (evt == null)
-                        {
-                            responseCode = HttpStatusCode.Created.ToString();
+                        //if (evt == null)
+                        //{
+                        //    responseCode = HttpStatusCode.Created.ToString();
 
-                            evt = new Event { Criticality = criticality, Status = status.ToString(), Date = dateCreated, EventGroupID = eventGroup.ID, SourceID = sourceID };
-                            Company.SaveOrUpdate<Event>(evt);
-                        }
-                        else
-                        {
-                            responseCode = HttpStatusCode.OK.ToString();
+                        //    evt = new Event { Criticality = criticality, Status = status.ToString(), Date = dateCreated, EventGroupID = eventGroup.ID, SourceID = sourceID };
+                        //    Company.SaveOrUpdate<Event>(evt);
+                        //}
+                        //else
+                        //{
+                        //    responseCode = HttpStatusCode.OK.ToString();
 
-                            evt.Criticality = criticality;
-                            evt.Status = status.ToString();
-                            Company.SaveOrUpdate<Event>(evt);
-                        }
+                        //    evt.Criticality = criticality;
+                        //    evt.Status = status.ToString();
+                        //    Company.SaveOrUpdate<Event>(evt);
+                        //}
 
-                        fields.ForEach(f =>
-                        {
-                            f.ObjectID = evt.ID;
-                        });
+                        //fields.ForEach(f =>
+                        //{
+                        //    f.ObjectID = evt.ID;
+                        //});
 
                         #endregion
 
-                        Company.AddOrUpdateFields(fields);
-
-                        logResponse.ID = evt.ID;
-                        logResponse.SourceID = evt.SourceID;
-                        logResponse.ResponseCode = responseCode;
-                        logResponse.ResponseMessage = errorDetailMessage;
+                        //Company.AddOrUpdateFields(fields);
                     }
                     catch (Exception ex)
                     {
-                        logResponse.ID = -1;
-                        logResponse.ResponseCode = "500";
-                        logResponse.ResponseMessage = (ex.InnerException == null) ? ex.Message.Replace(System.Environment.NewLine, "") : ex.InnerException.Message.Replace(System.Environment.NewLine, "");
-                        logResponse.ResponseMessage += errorDetailMessage;
+                        return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData(), ex);
                     }
-
-                    responseModels.Add(logResponse);
                 }
+                // Save the results.
+                Company.SaveChanges();
 
-                //response.ID = eventGroup.ID;
-
-                return Request.CreateResponse<List<CreateEventModelResponse>>(HttpStatusCode.OK, responseModels);
+                return Request.CreateResponse(HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {

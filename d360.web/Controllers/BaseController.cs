@@ -1,19 +1,18 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.model;
+using d360.web.Models;
+using Microsoft.ApplicationInsights;
 using Newtonsoft.Json;
+using Resources;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
-using System.Net.Http;
-using Microsoft.ApplicationInsights;
-using d360.web.Models.Attributes;
-using d360.web.Models;
-using d360.core;
-using Resources;
 
 namespace System.Net.Http
 {
@@ -424,6 +423,16 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
             }
             return hideData3SixtyUsers;
         }
+
+        internal JsonNetResult jsonNetException(Exception ex)
+        {
+            return new JsonNetResult
+            {
+                Data = new { type = "error", title = "Error Occurred!", message = ex.GetFullExceptionData() },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
 
         protected override JsonResult Json(object data, string contentType, System.Text.Encoding contentEncoding, JsonRequestBehavior behavior)
         {

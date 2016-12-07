@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.model;
+using d360.web.Models.Attributes;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
@@ -23,25 +24,25 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = Company.GetSocialDataForCurrentResource(), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("GroupSocial")]
+        [Route("GroupSocial"), NonNullableParameters]
         public JsonNetResult GroupSocial(int id)
         {
             return new JsonNetResult { Data = Company.GetSocialDataForGroup(id), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("ProfileSocial")]
+        [Route("ProfileSocial"), NonNullableParameters]
         public JsonNetResult ProfileSocial(int id)
         {
             return new JsonNetResult { Data = Company.GetSocialDataForResource(id), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("RelationshipAggregates")]
+        [Route("RelationshipAggregates"), NonNullableParameters]
         public JsonNetResult RelationshipAggregates(SystemObjects type, int id)
         {
             return new JsonNetResult { Data = Company.GetAggregateRelationshipBreakdownsByObject(type, id), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("FollowingBreakdownByResource")]
+        [Route("FollowingBreakdownByResource"), NonNullableParameters]
         public async Task<JsonNetResult> FollowingBreakdownByResource(int id)
         {
             var query = await Company.QueryAsync<dynamic>(@"select  		                
@@ -69,7 +70,7 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("ResponsibilityBreakdownByResource")]
+        [Route("ResponsibilityBreakdownByResource"), NonNullableParameters]
         public async Task<JsonNetResult> ResponsibilityBreakdownByResource(int id)
         {            
             var query = await Company.QueryAsync<dynamic>(
@@ -100,7 +101,7 @@ namespace d360.web.Controllers
                     return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("ResponsibilityBreakdownByGroup")]
+        [Route("ResponsibilityBreakdownByGroup"), NonNullableParameters]
         public async Task<JsonNetResult> ResponsibilityBreakdownByGroup(int id)
         {
             var query = await Company.QueryAsync<dynamic>(

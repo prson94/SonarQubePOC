@@ -3,6 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { AdminLookupsComponent } from './admin-lookups.component';
 
 const routes: Routes = [
+    { path: ':lookupTypeId', component: AdminLookupsComponent },
+    { path: ':lookupTypeId/:lookupId', component: AdminLookupsComponent },
     { path: '', component: AdminLookupsComponent },
 ];
 

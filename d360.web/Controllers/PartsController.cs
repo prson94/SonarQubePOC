@@ -4,6 +4,7 @@ using System.Web.Mvc;
 using d360.web.Models;
 using d360.core.entities;
 using d360.model;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -16,7 +17,7 @@ namespace d360.web.Controllers
 
         #endregion
 
-        [HttpGet, Route("ClaimsMatrix")]
+        [HttpGet, Route("ClaimsMatrix"), NonNullableParameters]
         public JsonNetResult ClaimsMatrix(SystemObjects type, int id, int responsibilityTypeID)
         {
             var sType = type.ToString();

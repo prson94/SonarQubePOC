@@ -40,7 +40,7 @@ namespace d360.web.Controllers
 
         #region Partials
 
-        [Route("_FusionExecutionRawLog")]
+        [Route("_FusionExecutionRawLog"), NonNullableParameters]
         public ContentResult _FusionExecutionRawLog(int id)
         {
             var execution = Company.Query<dynamic>(@"select * from fusion.Execution where ID = @id", new { id = id }).SingleOrDefault();
@@ -327,7 +327,7 @@ namespace d360.web.Controllers
 
         #region Json
 
-        [Route("RelationshipAggregates")]
+        [Route("RelationshipAggregates"), NonNullableParameters]
         public JsonResult RelationshipAggregates(SystemObjects type, int id, int parentAttributeID = 0)
         {
             var sql = "";
@@ -446,7 +446,7 @@ FROM	    (
                 JsonRequestBehavior.AllowGet);
         }
 
-        [Route("TreeNodes")]
+        [Route("TreeNodes"), NonNullableParameters]
         public JsonNetResult TreeNodes(int typeID, int fusionID)
         {
             var types = Company.Query<dynamic>(@"
@@ -488,7 +488,7 @@ from	h", new { id = fusionID });
             return new JsonNetResult { Data = new { Types = types, Attributes = attributes }, Formatting = Formatting.None };
         }
 
-        [Route("ItemsByParent")]
+        [Route("ItemsByParent"), NonNullableParameters]
         public JsonNetResult ItemsByParent(int fusionTypeID, int fusionID, SystemObjects parentType, int? parentID, int? parentFusionAttributeTypeID, int? parentFusionAttributeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
             string sql = "";
@@ -617,7 +617,7 @@ from	    FusionAttributeType T
             public int JoinOrder { get; set; }
         }
 
-        [Route("ExportItemsByAttributeType"), FileDownload]
+        [Route("ExportItemsByAttributeType"), FileDownload, NonNullableParameters]
         public FileResult ExportItemsByAttributeType(int fusionID, int fusionAttributeTypeID, string sortDataField, string sortOrder)
         {
             var type = "FusionAttributeType";
@@ -810,7 +810,7 @@ where   A.FusionID = @f
             return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
         }
 
-        [Route("ItemsByAttributeType")]
+        [Route("ItemsByAttributeType"), NonNullableParameters]
         public JsonNetResult ItemsByAttributeType(int fusionID, int fusionAttributeTypeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
             var joins = "";
@@ -958,7 +958,7 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Formatting.None };
         }
 
-        [Route("ExportQueryItemsByAttributeType"), FileDownload]
+        [Route("ExportQueryItemsByAttributeType"), FileDownload, NonNullableParameters]
         public FileResult ExportQueryItemsByAttributeType(int fusionID, int fusionQueryAttributeTypeID, string sortDataField, string sortOrder)
         {
             var type = "FusionQueryAttributeType";
@@ -1052,7 +1052,7 @@ where   A.FusionQueryAttributeTypeID = @t
             return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
         }
 
-        [Route("QueryItemsByAttributeType")]
+        [Route("QueryItemsByAttributeType"), NonNullableParameters]
         public JsonNetResult QueryItemsByAttributeType(int fusionID, int fusionQueryAttributeTypeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
             var joins = "";

@@ -34,7 +34,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                                     <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
                                 </template>
                             </p-column>
-                            <p-column field="TextPath" header="Fusion" [sortable]="true" [style]="{width:'25%'}"></p-column>
+                            <p-column field="FusionAttribute" header="Fusion" [sortable]="true" [style]="{width:'25%'}"></p-column>
                         </p-dataTable>
                 </span>                
                 `,

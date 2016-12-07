@@ -114,6 +114,12 @@ namespace d360.web.Controllers
                     
                     string returnUrl = Request.QueryString["ReturnUrl"];
 
+                    Uri testUri;
+                    Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out testUri);
+
+                    if (testUri.IsAbsoluteUri)
+                        returnUrl = "/home";
+
                     string relayState = null;
                     if (!string.IsNullOrWhiteSpace(returnUrl))
                         relayState = RelayStateCache.Add(new RelayState(returnUrl, null));
@@ -447,11 +453,17 @@ namespace d360.web.Controllers
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
                     if (!string.IsNullOrEmpty(ReturnUrl))
                     {
+                        Uri testUri;
+                        Uri.TryCreate(ReturnUrl, UriKind.RelativeOrAbsolute, out testUri);
+
+                        if (testUri.IsAbsoluteUri)
+                            ReturnUrl = "/home";
+
                         return Redirect(Server.UrlDecode(ReturnUrl));
                     }
                     else
                     {
-                        return Redirect("/#");
+                        return Redirect("/home");
                     }
                 }
                 else

@@ -2,6 +2,7 @@
 using System.Web.Mvc;
 using d360.core.entities;
 using d360.model;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -19,7 +20,7 @@ namespace d360.web.Controllers
 
         #region JSON
 
-        [HttpGet, Route("ModelHierarchy")]
+        [HttpGet, Route("ModelHierarchy"), NonNullableParameters]
         public JsonNetResult ModelHierarchy(int id)
         {
             var models = Company.Query<TaxonomyDetail>(
@@ -36,7 +37,7 @@ where T.TaxonomyTypeID = @id", new { id = id }).Select(i => new { i.HasChildren,
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [HttpGet, Route("ModelHierarchyDetailed")]
+        [HttpGet, Route("ModelHierarchyDetailed"), NonNullableParameters]
         public JsonNetResult ModelHierarchyDetailed(int id)
         {
             var models = Company.Query<TaxonomyDetail>(

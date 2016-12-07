@@ -2168,7 +2168,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             var multiFieldReferencePosition = 1;
             fields.ForEach(i => {
                 
-                FieldType ft = null;
+                FieldType ft = (i.FieldTypeID > 0) ? fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID) : null;
 
                 if (i.FieldTypeName.Contains("."))
                     i.FieldTypeName = i.FieldTypeName.Replace('.', '~');
@@ -2195,7 +2195,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         //Create the column/field to display the visible column cell.
                         var fc = new ComplexColumnModel
                         {
-                            DisplayColumn = $"{tbPrefix}.FormattedValue",
+                            DisplayColumn = (ft.Type == "Boolean") ? $"lower({tbPrefix}.FormattedValue)" : $"{tbPrefix}.FormattedValue",
                             text = i.OverrideDisplayName ?? ft.FriendlyName,
                             datafield = $"{dataField}",
                             OutputColumn = true
@@ -2257,20 +2257,31 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     {
                         #region ObjectType field
 
+                        string objectDisplayColumn = $"A{pos}.{i.FieldTypeName}";
+                        if (ft != null)
+                        {
+                            if (ft.Type == "Boolean")
+                                objectDisplayColumn = $"lower(A{pos}.{i.FieldTypeName}) as {i.FieldTypeName}";
+                        }
+
+                        var objectFriendlyName = i.OverrideDisplayName ?? i.FieldTypeName;
+                        var objectSortColumn = (i.SortOrder > 0) ? $"A{pos}.{i.FieldTypeName}" : string.Empty;
+
                         switch (i.Object)
                         {
                             case "ArtifactType":
+                                #region ArtifactType
                                 //Create the column/field to display the visible column cell.
                                 var ac = new ComplexColumnModel
                                 {
-                                    DisplayColumn = $"A{pos}.{i.FieldTypeName}",
-                                    text = i.OverrideDisplayName ?? i.FieldTypeName,
+                                    DisplayColumn = objectDisplayColumn,
+                                    text = objectFriendlyName,
                                     datafield = $"{dataField}",
                                     OutputColumn = true,
                                     contextfield = $"{dataField}_Context",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
-                                    SortColumn = (i.SortOrder > 0) ? $"A{pos}.{i.FieldTypeName}" : string.Empty,
+                                    SortColumn = objectSortColumn,
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, ac);
@@ -2282,15 +2293,17 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Artifact'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Artifact', A{pos}.ArtifactTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                #endregion
                                 break;
                             case "FusionAttributeType":
+                                #region FusionAttributeType
                                 var oc = new ComplexColumnModel
                                 {
-                                    DisplayColumn = $"A{pos}.{i.FieldTypeName}",
-                                    text = i.OverrideDisplayName ?? i.FieldTypeName,
+                                    DisplayColumn = objectDisplayColumn,
+                                    text = objectFriendlyName,
                                     datafield = $"{dataField}",
                                     OutputColumn = true,
-                                    SortColumn = (i.SortOrder > 0) ? $"A{pos}.{i.FieldTypeName}" : string.Empty,
+                                    SortColumn = objectSortColumn,
                                     contextfield = $"{dataField}_Context",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
@@ -2305,18 +2318,73 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'FusionAttribute'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('FusionAttribute', A{pos}.FusionAttributeTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                #endregion
+                                break;
+                            case "PolicyType":
+                                #region PolicyType
+                                //Create the column/field to display the visible column cell.
+                                var pc = new ComplexColumnModel
+                                {
+                                    DisplayColumn = objectDisplayColumn,
+                                    text = objectFriendlyName,
+                                    datafield = $"{dataField}",
+                                    OutputColumn = true,
+                                    contextfield = $"{dataField}_Context",
+                                    objectfield = $"{dataField}_Object",
+                                    objectidfield = $"{dataField}_ObjectID",
+                                    SortColumn = objectSortColumn,
+                                    urlfield = $"{dataField}_Url"
+                                };
+                                setColumnTypeInfo(ft, i, pc);
+                                pc.datafieldtype = "lookup"; //must be done after function call above.
+                                columnModels.Add(pc);
+
+                                // Add the fields that you need to create link in Angular component.
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Policy'", datafield = $"{dataField}_Object" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Policy', A{pos}.PolicyTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                #endregion
+                                break;
+                            case "RuleType":
+                                #region RuleType
+                                //Create the column/field to display the visible column cell.
+                                var rc = new ComplexColumnModel
+                                {
+                                    DisplayColumn = objectDisplayColumn,
+                                    text = objectFriendlyName,
+                                    datafield = $"{dataField}",
+                                    OutputColumn = true,
+                                    contextfield = $"{dataField}_Context",
+                                    objectfield = $"{dataField}_Object",
+                                    objectidfield = $"{dataField}_ObjectID",
+                                    SortColumn = objectSortColumn,
+                                    urlfield = $"{dataField}_Url"
+                                };
+                                setColumnTypeInfo(ft, i, rc);
+                                rc.datafieldtype = "lookup"; //must be done after function call above.
+                                columnModels.Add(rc);
+
+                                // Add the fields that you need to create link in Angular component.
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Rule'", datafield = $"{dataField}_Object" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleType, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                #endregion
                                 break;
                             default:
+                                #region Default
                                 var dc = new ComplexColumnModel
                                 {
-                                    DisplayColumn = $"A{pos}.{i.FieldTypeName}",
-                                    text = i.OverrideDisplayName ?? i.FieldTypeName,
+                                    DisplayColumn = objectDisplayColumn,
+                                    text = objectFriendlyName,
                                     datafield = $"{dataField}",
-                                    SortColumn = (i.SortOrder > 0) ? $"A{pos}.{i.FieldTypeName}" : string.Empty,
+                                    SortColumn = objectSortColumn,
                                     OutputColumn = true
                                 };
                                 setColumnTypeInfo(ft, i, dc);
                                 columnModels.Add(dc);
+                                #endregion
                                 break;
                         }
 
@@ -2503,7 +2571,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                     break;
                             }
                             objColumn = $"'{currentObj}'";
-                            objIDColumn = $"I{i}.ID";
+                            objIDColumn = $"A{i}.ID";
                             break;
                             #endregion
                         case ComplexLookupRelationType.ParentItem:
@@ -2524,7 +2592,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                     break;
                             }
                             objColumn = $"'{currentObj}'";
-                            objIDColumn = $"I{i}.ID";
+                            objIDColumn = $"A{i}.ID";
                             break;
                         #endregion
                         default:
@@ -5038,7 +5106,7 @@ from    (
             return Company.GetFollowersByObject(type, id);
         }
 
-        [Route("{type}/{id:int}/ownership")]
+        [Route("{type}/{id:int}/ownership/{showHidden:bool=false}")]
         public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = false)
         {
             return Company.GetResponsibilitiesByObject(type, id, showHidden);
@@ -5135,48 +5203,48 @@ from    (
             });
         }
 
-        [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}")]
-        public IEnumerable<dynamic> GetRelationshipsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
-        {
-            var IDs = Company.Query<int>(
-                QueryConstants.ObjectRelationshipTypeIDs,
-                new
-                {
-                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
-                    objid,
-                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
-                    objtypeid = targettypeid
-                }
-            ).ToList();
+//        [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}")]
+//        public IEnumerable<dynamic> GetRelationshipsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
+//        {
+//            var IDs = Company.Query<int>(
+//                QueryConstants.ObjectRelationshipTypeIDs,
+//                new
+//                {
+//                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
+//                    objid,
+//                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
+//                    objtypeid = targettypeid
+//                }
+//            ).ToList();
             
-            var sql = QueryConstants.ObjectInjectableRelationships;
+//            var sql = QueryConstants.ObjectInjectableRelationships;
 
-            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && IDs.Contains(i.ObjectID) && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+//            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && IDs.Contains(i.ObjectID) && i.IsListable).OrderBy(i => i.SortOrder).ToList();
 
-            var columns = "";
-            var joins = "";
+//            var columns = "";
+//            var joins = "";
 
-            foreach (var f in fields)
-            {
-                var pfx = $"Field{f.ID}_T";
-                columns += $", {pfx}.FormattedValue as [Field{f.ID}]";
-                joins += $@" 
-left join Field {pfx} on {pfx}.ObjectType = 'Intersect' and {pfx}.ObjectID = A.ID and {pfx}.FieldTypeID = {f.ID} 
-left join FieldType {pfx}T on {pfx}T.ID = {pfx}T.FieldTypeID and {pfx}T.IsListable = 1";
-            }
+//            foreach (var f in fields)
+//            {
+//                var pfx = $"Field{f.ID}_T";
+//                columns += $", {pfx}.FormattedValue as [Field{f.ID}]";
+//                joins += $@" 
+//left join Field {pfx} on {pfx}.ObjectType = 'Intersect' and {pfx}.ObjectID = A.ID and {pfx}.FieldTypeID = {f.ID} 
+//left join FieldType {pfx}T on {pfx}T.ID = {pfx}T.FieldTypeID and {pfx}T.IsListable = 1";
+//            }
 
-            sql = string.Format(sql, columns, joins);
+//            sql = string.Format(sql, columns, joins);
 
-            return Company.Query<dynamic>(
-                sql, 
-                new {
-                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
-                    objid,
-                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
-                    objtypeid = targettypeid
-                }
-            );
-        }
+//            return Company.Query<dynamic>(
+//                sql, 
+//                new {
+//                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
+//                    objid,
+//                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
+//                    objtypeid = targettypeid
+//                }
+//            );
+//        }
 
         #endregion
 

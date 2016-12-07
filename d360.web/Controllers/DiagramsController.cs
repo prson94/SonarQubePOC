@@ -9,6 +9,7 @@ using d360.web.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data.Entity.Design.PluralizationServices;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -23,7 +24,7 @@ namespace d360.web.Controllers
 
         #region Model Diagram
 
-        [Route("InformationCatalogDiagramData")]
+        [Route("{id:int}/InformationCatalogDiagramData")]
         public JsonNetResult InformationCatalogDiagramData(int id)
         {
             return new JsonNetResult {
@@ -54,7 +55,7 @@ namespace d360.web.Controllers
 
         #region Impact Analysis Diagram
 
-        [Route("ImpactAnalysis")]
+        [Route("{type}/{id:int}/ImpactAnalysis")]
         public JsonNetResult ImpactAnalysis(SystemObjects type, int id)
         {
 

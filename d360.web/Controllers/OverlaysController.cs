@@ -1,17 +1,16 @@
 ﻿using d360.core;
-using System.Linq;
-using System.Web.Mvc;
-using d360.web.Models;
 using d360.core.entities;
 using d360.model;
-using System.Diagnostics;
-using SpreadsheetLight;
-using System.IO;
 using d360.web.Models.Attributes;
+using SpreadsheetLight;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Web.Mvc;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("overlays"), Authorize]
+    [RoutePrefix("overlays"), Authorize, AiHandleError]
     public class OverlaysController : BaseController
     {
         #region DI
@@ -50,7 +49,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Route("ArtifactListMetricsDashboard")]
+        [Route("ArtifactListMetricsDashboard"), NonNullableParameters]
         public ActionResult ArtifactListMetricsDashboard(int id)
         {
             var model = Company.GetById<ArtifactType>(id);
@@ -67,7 +66,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
-        [Route("FusionConfigurationFilters")]
+        [Route("FusionConfigurationFilters"), NonNullableParameters]
         public ActionResult FusionConfigurationFilters(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;
@@ -75,7 +74,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
-        [Route("FusionConfigurationHistory")]
+        [Route("FusionConfigurationHistory"), NonNullableParameters]
         public ActionResult FusionConfigurationHistory(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;
@@ -83,7 +82,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
-        [Route("FusionConfigurationOwnershipRules")]
+        [Route("FusionConfigurationOwnershipRules"), NonNullableParameters]
         public ActionResult FusionConfigurationOwnershipRules(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;
@@ -91,7 +90,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
-        [Route("FusionRules")]
+        [Route("FusionRules"), NonNullableParameters]
         public ActionResult FusionRules(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;
@@ -124,9 +123,11 @@ namespace d360.web.Controllers
         [Route("{type}/{id:int}/auditcombined.json")]
         public JsonNetResult AuditCombined(SystemObjects type, int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
-            Trace.TraceInformation("Calling OverlaysController.AuditCombined : {0}", id);
+            try
+            {
+                Trace.TraceInformation("Calling OverlaysController.AuditCombined : {0}", id);
 
-            var querySql = @"select 	                            
+                var querySql = @"select 	                            
 	                                 ga.*,
                                      R.FirstName + ' ' + R.LastName as ResourceName, 
                                      fa.FieldName as Field, 
@@ -140,25 +141,30 @@ namespace d360.web.Controllers
 			
                             from reporting.global_fieldaudit fa
 	                            inner join reporting.global_audit ga on ( fa.auditid = ga.id) 
-                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId";	                            
+                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId";
 
-            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
-            var sql = string.Format(@"select * from ({0}) A", querySql);
+                var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+                var sql = string.Format(@"select * from ({0}) A", querySql);
 
-            var dbArgs = new Dapper.DynamicParameters();
-            dbArgs.Add("objType", type.ToString());
-            dbArgs.Add("objId", id);
+                var dbArgs = new Dapper.DynamicParameters();
+                dbArgs.Add("objType", type.ToString());
+                dbArgs.Add("objId", id);
 
-            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
-            int total = Company.Query<int>(countSql, dbArgs).First();
+                countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+                int total = Company.Query<int>(countSql, dbArgs).First();
 
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
-            sql = applySortSuffix(sql, sortDataField, sortOrder, "Date", "desc");
-            sql = applyPagingSuffix(sql, pagenum, pagesize);
+                sql = applyFilteringSuffixBind(sql, Request, dbArgs);
+                sql = applySortSuffix(sql, sortDataField, sortOrder, "Date", "desc");
+                sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-            var query = Company.Query<dynamic>(sql, dbArgs);
+                var query = Company.Query<dynamic>(sql, dbArgs);
 
-            return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
+            }
+            catch (System.Exception ex)
+            {
+                return jsonNetException(ex);
+            }
         }
 
         
@@ -355,7 +361,7 @@ where A.AuditID = {0}", auditID);
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
 
-        [Route("LookupTypeUsage")]
+        [Route("LookupTypeUsage"), NonNullableParameters]
         public ActionResult LookupTypeUsage(int id)
         {
             var detail = Company.GetById<LookupType>(id);

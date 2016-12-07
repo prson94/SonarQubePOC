@@ -74,14 +74,14 @@ export class DiagramService extends BaseService {
     }
 
     public getImpactDiagram(object: string, objectId: number): Promise<ImpactDiagramModel> {
-        return this.http.get(`diagrams/ImpactAnalysis?type=${object}&id=${objectId}`)
+        return this.http.get(`diagrams/${object}/${objectId}/ImpactAnalysis`)
             .toPromise()
             .then(response => <ImpactDiagramModel>response.json())
             .catch(err => this.handleError(err));
     }
 
     public getCatalogDiagram(id: number): Promise<HierarchyDiagramModel[]> {
-        return this.http.get(`diagrams/InformationCatalogDiagramData?id=${id}`)
+        return this.http.get(`diagrams/${id}/InformationCatalogDiagramData`)
             .toPromise()
             .then(response => <HierarchyDiagramModel[]>response.json())
             .catch(err => this.handleError(err));

@@ -22,7 +22,7 @@
         $("#UserName").jqxInput({ width: '95%', theme: 'd3s', minLength: 10 });
         $("#Password").jqxInput({ width: '95%', theme: 'd3s', minLength: 6 });
         $("#LoginButton").jqxButton({ width: '95%', theme: 'd3s' });
-        $("#Username").focus();
+        $("#UserName").focus();
         $('input').keypress(function (e) {
             if (e.which == 13) {
                 $('#LoginButton').submit();
@@ -38,10 +38,10 @@
         @using (Html.BeginForm())
         {
             <div class="FieldNameRequired">@Html.LabelFor(m => m.UserName)</div>
-            @Html.TextBoxFor(m => m.UserName)
+            <input type="text" id="UserName" name="UserName" />
             @Html.ValidationMessageFor(m => m.UserName)
             <div class="FieldNameRequired">@Html.LabelFor(m => m.Password)</div>
-            @Html.PasswordFor(m => m.Password)
+            <input type="password" id="Password" name="Password" autocomplete="off" />
             @Html.ValidationMessageFor(m => m.Password)
             <br /><br />
             <input id="LoginButton" type="submit" value="Login!" tabindex="3" />

@@ -1,19 +1,19 @@
-﻿using System;
+﻿using d360.core.entities;
+using d360.model;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+using SpreadsheetLight;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Web.Mvc;
-using d360.core.entities;
-using d360.web.Models;
-using d360.model;
-using System.IO;
-using d360.web.Models.Attributes;
-using System.Diagnostics;
-using SpreadsheetLight;
-using System.Data;
-using System.Collections.Generic;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("internal/artifacts"), Authorize]
+    [RoutePrefix("internal/artifacts"), Authorize, AiHandleError]
     public class ArtifactsController : BaseController
     {
         #region DI
@@ -27,7 +27,13 @@ namespace d360.web.Controllers
         #region Exports
 
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
-        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "")        
+        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter)
+        {
+            return ToExcel(id, null, sortDataField, sortOrder, filter);
+        }
+
+        [Route("{id:int}.xls"), FileDownload, HttpPost]
+        public FileResult ToExcel(int id, ArtifactListFilterModel model, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "")
         {
             var joins = "";
             var columns = "";
@@ -135,13 +141,13 @@ where A.ArtifactTypeID = @id ", columns, joins);
 
         #region Json
 
-        [HttpGet, Route("artifactsbyparent")]
+        [HttpGet, Route("artifactsbyparent"), NonNullableParameters]
         public JsonNetResult ArtifactsByParent(int parentID, int childArtifactTypeID, string sortDataField, string sortOrder, string filter, int pagenum = 0 , int pagesize = 20)
         {            
             return ByParent(parentID, sortDataField, sortOrder, filter, pagenum, pagesize, childArtifactTypeID);
         }
 
-        [HttpPost, Route("byparent")]
+        [HttpPost, Route("byparent"), NonNullableParameters]
         public JsonNetResult ByParent(int parentID, string sortDataField, string sortOrder, string filter, int pagenum = 0, int pagesize = 20, int childArtifactTypeID = 0)
         {
             Trace.TraceInformation("Calling ArtifactsController.ByParent : {0}, {1}", parentID, childArtifactTypeID);
@@ -196,20 +202,22 @@ from	Artifact A
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };        
         }
 
-        [HttpGet, Route("artifactsbytype")]
+        [HttpGet, Route("artifactsbytype"), NonNullableParameters]
         public JsonNetResult ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
         {
             return ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter, ownerUsers, ownerGroups);
         }
 
-        [HttpPost, Route("bytype")]
+        [HttpPost, Route("bytype"), NonNullableParameters]
         public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
         {
-            Trace.TraceInformation("Calling ArtifactsController.ByType : {0}", id);
+            try
+            {
+                Trace.TraceInformation("Calling ArtifactsController.ByType : {0}", id);
 
-            var dbArgs = new Dapper.DynamicParameters();
+                var dbArgs = new Dapper.DynamicParameters();
 
-            dbArgs.Add("id", id);
+                dbArgs.Add("id", id);
 
             var joins = "";
             var columns = "";            
@@ -244,21 +252,26 @@ where    A.ArtifactTypeID = @id", columns, joins);
             
             querySql = applyRelationFilteringExists(querySql, Request,dbArgs);
             
-            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
-            var sql = string.Format(@"select * from ({0}) A", querySql);
+                var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+                var sql = string.Format(@"select * from ({0}) A", querySql);
 
             
-            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs,true);
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs, true);
+                countSql = applyFilteringSuffixBind(countSql, Request, dbArgs,true);
+                sql = applyFilteringSuffixBind(sql, Request, dbArgs, true);
                         
 
-            sql = applySortSuffix(sql, sortDataField, sortOrder);
-            sql = applyPagingSuffix(sql, pagenum, pagesize);
+                sql = applySortSuffix(sql, sortDataField, sortOrder);
+                sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-            int total = Company.Query<int>(countSql, dbArgs).First();
-            var query = Company.Query<dynamic>(sql, dbArgs);
+                int total = Company.Query<int>(countSql, dbArgs).First();
+                var query = Company.Query<dynamic>(sql, dbArgs);
 
-            return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
+            }
+            catch (Exception ex)
+            {
+                return jsonNetException(ex);
+            }
         }
 
         private string addOwnershipJoinCriteria(string joins, string ownerUsers, string ownerGroups)

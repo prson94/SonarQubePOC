@@ -84,7 +84,7 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getArtifactsXls(artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string, owner?: GridOwnerFilter) {                
+    getArtifactsXls(artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string, owner?: GridOwnerFilter) {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/download/excel/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
         if (filters != undefined) {

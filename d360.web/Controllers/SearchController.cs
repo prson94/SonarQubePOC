@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using d360.extensions;
+using d360.model;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.Mvc;
-using System.Diagnostics;
-using d360.model;
-using d360.extensions;
-using d360.web.Models;
 
 namespace d360.web.Controllers
 {
@@ -28,7 +29,7 @@ namespace d360.web.Controllers
 
         #region Json
 
-        [HttpPost, Route("Results")]
+        [HttpPost, Route("Results"), NonNullableParameters]
         public JsonResult Results(string search, int? size, int? from, string group, string type, string adv)
         {
             var o = new SearchResultsViewModel();
@@ -41,7 +42,7 @@ namespace d360.web.Controllers
             return Json(o);
         }
 
-        [HttpGet, Route("AutoComplete")]
+        [HttpGet, Route("AutoComplete"), NonNullableParameters]
         public JsonResult AutoComplete(string search)
         {
             var sw = new Stopwatch();
@@ -57,17 +58,24 @@ namespace d360.web.Controllers
             return Json(results, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet, Route("Typeahead")]
-        public JsonResult Typeahead(string q, string t, int? num)
+        [HttpGet, Route("Typeahead"), NonNullableParameters]
+        public JsonNetResult Typeahead(string q, string t, int? num)
         {
-            if (!string.IsNullOrEmpty(q))
+            try
             {
-                IEnumerable<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, num.GetValueOrDefault(7), t);
+                if (!string.IsNullOrEmpty(q))
+                {
+                    IEnumerable<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, num.GetValueOrDefault(7), t);
 
-                return Json(res, JsonRequestBehavior.AllowGet);
+                    return new JsonNetResult { Data = res, Formatting = Newtonsoft.Json.Formatting.None };
+                }
+
+                return new JsonNetResult { Data = null };
             }
-
-            return Json(null, JsonRequestBehavior.AllowGet);
+            catch (System.Exception ex)
+            {
+                return jsonNetException(ex);
+            }
         }
         
         #endregion

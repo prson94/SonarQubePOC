@@ -6,6 +6,7 @@ using d360.core.entities;
 using d360.web.Models;
 using d360.core.enums;
 using d360.model;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -45,7 +46,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("AttributesForIntersect")]
+        [Route("AttributesForIntersect"), NonNullableParameters]
         public JsonResult AttributesForIntersect(int id, int? parentID = null)
         {
             var sType = SystemObjects.Intersect.ToString();
@@ -59,113 +60,113 @@ namespace d360.web.Controllers
 
         #region Json
 
-        /// <summary>
-        /// Gets the list of columns for the relationship overlay grid based on the input owner
-        /// </summary>        
-        /// <param name="intersectTypeID">The object ID to get list of attributes for.</param>        
-        /// <returns></returns>
-        [Route("RelationshipAttributesFieldList")]
-        public JsonNetResult RelationshipAttributesFieldList(int intersectTypeID)
-        {         
-            var permissions = Company.GetPermissions(SystemObjects.IntersectType, intersectTypeID).ToList();
+        ///// <summary>
+        ///// Gets the list of columns for the relationship overlay grid based on the input owner
+        ///// </summary>        
+        ///// <param name="intersectTypeID">The object ID to get list of attributes for.</param>        
+        ///// <returns></returns>
+        //[Route("RelationshipAttributesFieldList")]
+        //public JsonNetResult RelationshipAttributesFieldList(int intersectTypeID)
+        //{         
+        //    var permissions = Company.GetPermissions(SystemObjects.IntersectType, intersectTypeID).ToList();
 
-            if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Read, ClaimObject.Attribute))
-            {
-                return new JsonNetResult
-                {
-                    Data = Company.Query<GridDynamicAttributeField>(QueryConstants.RelationshipAttributesFieldList, new { intersectTypeID }),
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-            else
-            {
-                return new JsonNetResult
-                {
-                    Data = new { message = "You do not have permissions to see this" },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-        }
+        //    if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Read, ClaimObject.Attribute))
+        //    {
+        //        return new JsonNetResult
+        //        {
+        //            Data = Company.Query<GridDynamicAttributeField>(QueryConstants.RelationshipAttributesFieldList, new { intersectTypeID }),
+        //            Formatting = Newtonsoft.Json.Formatting.None
+        //        };
+        //    }
+        //    else
+        //    {
+        //        return new JsonNetResult
+        //        {
+        //            Data = new { message = "You do not have permissions to see this" },
+        //            Formatting = Newtonsoft.Json.Formatting.None
+        //        };
+        //    }
+        //}
 
-        /// <summary>
-        /// Gets list of allowed actions that you can take on the selected attribute or node.
-        /// </summary>
-        /// <param name="type">The object type to get actions for.</param>
-        /// <param name="id">The object ID to get actions for.</param>
-        /// <param name="owner">The type of the object that owns this attribute.</param>
-        /// <param name="ownerID">The ID of the object that owns this attribute.</param>
-        /// <param name="attributeID">The current or new parent attribute ID.</param>
-        /// <returns>A list of available actions as JSON.</returns>
-        [Route("AttributeActions")]
+        ///// <summary>
+        ///// Gets list of allowed actions that you can take on the selected attribute or node.
+        ///// </summary>
+        ///// <param name="type">The object type to get actions for.</param>
+        ///// <param name="id">The object ID to get actions for.</param>
+        ///// <param name="owner">The type of the object that owns this attribute.</param>
+        ///// <param name="ownerID">The ID of the object that owns this attribute.</param>
+        ///// <param name="attributeID">The current or new parent attribute ID.</param>
+        ///// <returns>A list of available actions as JSON.</returns>
+        //[Route("AttributeActions")]
+        //public JsonResult AttributeActions(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID = null)
+        //{
+        //    Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
+
+        //    var permissions = Company.GetPermissions(owner, ownerID).ToList();
+
+        //    var list = new List<ToolbarItem>();
+
+        //    if (attributeID.HasValue)
+        //    {
+        //        if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Update, ClaimObject.Attribute))
+        //            list.Add(new ToolbarItem { Title = "", Icon = "pencil", Uri = string.Format("/form/EditAttribute?id={0}", attributeID.Value) });
+        //        if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Delete, ClaimObject.Attribute))
+        //            list.Add(new ToolbarItem { Title = "", Icon = "trash-o", Uri = string.Format("/form/DeleteAttribute?id={0}", attributeID.Value) });
+        //    }
+
+        //    IQueryable<AttributeType> types = null;
+        //    if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Create, ClaimObject.Attribute))
+        //    {
+        //        if (type == SystemObjects.Attribute)
+        //        {
+        //            types = Company.GetById<core.entities.Attribute>(id, i => i.AttributeType).AttributeType.Children.OrderBy(i => i.Name).AsQueryable();
+        //            //types= (
+        //            //       from t in Company.AttributeTypes
+        //            //       join a in Company.Attributes on t.ParentID equals a.AttributeTypeID
+        //            //       where a.ID == id
+        //            //       select t
+        //            //       ).OrderBy(i => i.Name).AsQueryable();
+        //        }
+        //        else
+        //        {
+        //            var detail = Company.GetObjectDetail(type, id);
+        //            var sType = type.ToString();
+        //            int _id = id;
+
+        //            if (detail != null)
+        //            {
+        //                _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
+        //            }
+
+
+        //            var usedIDs = Company.Filter<core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
+
+        //            if (!sType.EndsWith("Type")) sType += "Type";
+        //            types = Company.Filter<AttributeTypeRelation>(r => r.ObjectType == sType && r.ObjectID == _id && (r.AllowMultipleEntries || !usedIDs.Contains(r.AttributeTypeID))).Select(r => r.AttributeType).OrderBy(t => t.Name);
+        //        }
+
+        //        if (types.Count() > 0)
+        //        {
+        //            var addItem = new ToolbarItem { Context = "nullform", Icon = "plus", Title = "" };
+        //            foreach (var t in types)
+        //            {
+        //                var uri = string.Format("/form/AddAttribute?typeID={0}&objectType={1}&objectID={2}", t.ID, owner, ownerID);
+        //                if (attributeID.HasValue) uri += "&parentID=" + attributeID.Value;
+        //                var a = new ToolbarItem { Title = "Add " + t.Name, Icon = "plus", Uri = uri };
+        //                addItem.Items.Add(a);
+        //            }
+        //            if (addItem.Items.Count > 0)
+        //            {
+        //                list.Add(addItem);
+        //            }
+        //        }            
+        //    }
+
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
+
+        [Route("actions/{type}/{id:int}/{owner}/{ownerID:int}/{attributeID:int?}")]
         public JsonResult AttributeActions(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID = null)
-        {
-            Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
-
-            var permissions = Company.GetPermissions(owner, ownerID).ToList();
-
-            var list = new List<ToolbarItem>();
-
-            if (attributeID.HasValue)
-            {
-                if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Update, ClaimObject.Attribute))
-                    list.Add(new ToolbarItem { Title = "", Icon = "pencil", Uri = string.Format("/form/EditAttribute?id={0}", attributeID.Value) });
-                if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Delete, ClaimObject.Attribute))
-                    list.Add(new ToolbarItem { Title = "", Icon = "trash-o", Uri = string.Format("/form/DeleteAttribute?id={0}", attributeID.Value) });
-            }
-
-            IQueryable<AttributeType> types = null;
-            if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Create, ClaimObject.Attribute))
-            {
-                if (type == SystemObjects.Attribute)
-                {
-                    types = Company.GetById<core.entities.Attribute>(id, i => i.AttributeType).AttributeType.Children.OrderBy(i => i.Name).AsQueryable();
-                    //types= (
-                    //       from t in Company.AttributeTypes
-                    //       join a in Company.Attributes on t.ParentID equals a.AttributeTypeID
-                    //       where a.ID == id
-                    //       select t
-                    //       ).OrderBy(i => i.Name).AsQueryable();
-                }
-                else
-                {
-                    var detail = Company.GetObjectDetail(type, id);
-                    var sType = type.ToString();
-                    int _id = id;
-
-                    if (detail != null)
-                    {
-                        _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
-                    }
-
-
-                    var usedIDs = Company.Filter<core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
-
-                    if (!sType.EndsWith("Type")) sType += "Type";
-                    types = Company.Filter<AttributeTypeRelation>(r => r.ObjectType == sType && r.ObjectID == _id && (r.AllowMultipleEntries || !usedIDs.Contains(r.AttributeTypeID))).Select(r => r.AttributeType).OrderBy(t => t.Name);
-                }
-
-                if (types.Count() > 0)
-                {
-                    var addItem = new ToolbarItem { Context = "nullform", Icon = "plus", Title = "" };
-                    foreach (var t in types)
-                    {
-                        var uri = string.Format("/form/AddAttribute?typeID={0}&objectType={1}&objectID={2}", t.ID, owner, ownerID);
-                        if (attributeID.HasValue) uri += "&parentID=" + attributeID.Value;
-                        var a = new ToolbarItem { Title = "Add " + t.Name, Icon = "plus", Uri = uri };
-                        addItem.Items.Add(a);
-                    }
-                    if (addItem.Items.Count > 0)
-                    {
-                        list.Add(addItem);
-                    }
-                }            
-            }
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("AttributeActionsNg")]
-        public JsonResult AttributeActionsNg(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID = null)
         {
             Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
 

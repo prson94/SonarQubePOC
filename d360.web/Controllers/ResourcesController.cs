@@ -17,6 +17,7 @@ using d360.core.enums;
 using d360.core.entities.Views;
 using SpreadsheetLight;
 using System.IO;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Models
 {
@@ -464,7 +465,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
         #region Json
 
-        [HttpGet, Route("_GroupsByResourceID")]
+        [HttpGet, Route("_GroupsByResourceID"), NonNullableParameters]
         public JsonResult _GroupsByResourceID(int id)
         {
             return Json(
@@ -479,7 +480,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             );
         }
 
-        [HttpGet, Route("_Lookups")]
+        [HttpGet, Route("_Lookups"), NonNullableParameters]
         public JsonResult _Lookups(string sortDataField, string sortOrder, int pagenum = 0, int pagesize = 10)
         {
             var list = Company.Table<LookupType>();
@@ -605,7 +606,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             return Json(Company.GetReferenceItemsAsDictionary(typeID), JsonRequestBehavior.AllowGet);
         }
 
-        [HttpPost, Route("UpdateFollowStatus")]
+        [HttpPost, Route("UpdateFollowStatus"), NonNullableParameters]
         public JsonResult UpdateFollowStatus(SystemObjects type, int id, bool includeChildren = false)
         {
             try

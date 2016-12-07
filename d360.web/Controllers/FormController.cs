@@ -29,7 +29,7 @@ using System.Xml.Linq;
 namespace d360.web.Controllers
 {
     [ValidateHttpAntiForgeryToken]
-    [RoutePrefix("form"), Authorize]
+    [RoutePrefix("form"), Authorize, AiHandleError, NonNullableParameters]
     public class FormController : BaseController
     {
         #region DI
@@ -659,7 +659,7 @@ namespace d360.web.Controllers
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
-        [Route("Artifact_AddFields")]
+        [Route("Artifact_AddFields"), NonNullableParameters]
         public JsonResult Artifact_AddFields(int at, int p)
         {
             if (!Company.HasPermission(SystemObjects.ArtifactType, at, Claim.Create, ClaimObject.Root))
@@ -720,7 +720,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
-        [Route("Artifact_DeleteFields")]
+        [Route("Artifact_DeleteFields"), NonNullableParameters]
         public JsonResult Artifact_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Delete, ClaimObject.Root))
@@ -734,7 +734,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
-        [Route("Artifact_EditFields")]
+        [Route("Artifact_EditFields"), NonNullableParameters]
         public JsonResult Artifact_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Update, ClaimObject.Root))
@@ -771,7 +771,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ID</param>
-        [Route("Artifact_RequestCertification")]
+        [Route("Artifact_RequestCertification"), NonNullableParameters]
         public JsonResult Artifact_RequestCertification(int id)
         {
             var list = new List<EditableField>();
@@ -787,7 +787,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ID</param>
-        [Route("Artifact_Challenge")]
+        [Route("Artifact_Challenge"), NonNullableParameters]
         public JsonResult Artifact_Challenge(int id)
         {
             var list = new List<EditableField>();
@@ -799,7 +799,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ID</param>
-        [Route("Artifact_RaiseIssue")]
+        [Route("Artifact_RaiseIssue"), NonNullableParameters]
         public JsonResult Artifact_RaiseIssue(int id)
         {
             var list = new List<EditableField>();
@@ -812,7 +812,7 @@ namespace d360.web.Controllers
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
-        [Route("Artifact_SuggestFields")]
+        [Route("Artifact_SuggestFields"), NonNullableParameters]
         public JsonResult Artifact_SuggestFields(int at, int p)
         {
             var list = new List<EditableField>();
@@ -844,7 +844,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet, Route("Aritfact_SimilarItems")]
+        [HttpGet, Route("Aritfact_SimilarItems"), NonNullableParameters]
         public JsonNetResult Aritfact_SimilarItems(int typeID, string query)
         {
             //escape wildcards
@@ -1319,7 +1319,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">ArtifactID</param>
-        [Route("ArtifactType_DeleteFields")]
+        [Route("ArtifactType_DeleteFields"), NonNullableParameters]
         public JsonResult ArtifactType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
@@ -1336,47 +1336,53 @@ namespace d360.web.Controllers
         #region Form Get/Post
 
         [HttpGet, ActionName("ArtifactType"), Route("ArtifactType")]
-        public JsonNetResult GetArtifactType(int? id, int? parentID)
+        public JsonNetResult GetArtifactType(int? id = null, int? parentID = null)
         {
-            var model = new ArtifactTypeEditorModel();
-
-            if (parentID == null)
+            try
             {
-                var at = Company.GetById<ArtifactType>((int)id);
-                //if (at == null) return HttpNotFound();
-                var style = Company.GetObjectStyle(SystemObjects.ArtifactType, (int)id);
+                var model = new ArtifactTypeEditorModel();
 
-                model = new ArtifactTypeEditorModel
+                if (parentID == null)
                 {
-                    FormName = Resources.FormInfo.Edit_ArtifactType_Title,
-                    FormDescription = Resources.FormInfo.Edit_ArtifactType_Directions,
-                    FormUri = "/form/EditArtifactType",
-                    FormMethod = "PUT",
-                    ArtifactType = at,
-                    IconBackColor = ((style != null) ? style.IconBackColor : "#000"),
-                    IconForeColor = ((style != null) ? style.IconForeColor : "#FFF")
-                };
-            } 
-            else
-            {
-                model = new ArtifactTypeEditorModel
+                    var at = Company.GetById<ArtifactType>((int)id);
+                    //if (at == null) return HttpNotFound();
+                    var style = Company.GetObjectStyle(SystemObjects.ArtifactType, (int)id);
+
+                    model = new ArtifactTypeEditorModel
+                    {
+                        FormName = Resources.FormInfo.Edit_ArtifactType_Title,
+                        FormDescription = Resources.FormInfo.Edit_ArtifactType_Directions,
+                        FormUri = "/form/EditArtifactType",
+                        FormMethod = "PUT",
+                        ArtifactType = at,
+                        IconBackColor = ((style != null) ? style.IconBackColor : "#000"),
+                        IconForeColor = ((style != null) ? style.IconForeColor : "#FFF")
+                    };
+                } 
+                else
                 {
-                    FormName = Resources.FormInfo.Add_ArtifactType_Title,
-                    FormDescription = Resources.FormInfo.Add_ArtifactType_Directions,
-                    FormUri = "/form/AddArtifactType",
-                    FormMethod = "POST",
-                    ArtifactType = new ArtifactType { ParentID = parentID, AllowHierarchy = false, AllowRelatedArtifacts = false, CanOwnFusion = false },
-                    IconBackColor = "#000",
-                    IconForeColor = "#FFF"
+                    model = new ArtifactTypeEditorModel
+                    {
+                        FormName = Resources.FormInfo.Add_ArtifactType_Title,
+                        FormDescription = Resources.FormInfo.Add_ArtifactType_Directions,
+                        FormUri = "/form/AddArtifactType",
+                        FormMethod = "POST",
+                        ArtifactType = new ArtifactType { ParentID = parentID, AllowHierarchy = false, AllowRelatedArtifacts = false, CanOwnFusion = false },
+                        IconBackColor = "#000",
+                        IconForeColor = "#FFF"
+                    };
+                }
+
+                return new JsonNetResult
+                {
+                    Data = model,
+                    Formatting = Newtonsoft.Json.Formatting.None
                 };
             }
-
-
-            return new JsonNetResult
+            catch (Exception ex)
             {
-                Data = model,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
+                return jsonNetException(ex);
+            }
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("ArtifactType"), Route("ArtifactType")]
@@ -1468,7 +1474,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("ArtifactType"), Route("ArtifactType")]
+        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("ArtifactType"), Route("ArtifactType"), NonNullableParameters]
         public JsonResult DeleteArtifactType2(int id)
         {
             try
@@ -1654,7 +1660,7 @@ namespace d360.web.Controllers
         /// <param name="ot">ObjectType</param>
         /// <param name="oid">ObjectID</param>
         /// <param name="p">ParentID</param>
-        [Route("Attribute_AddFields")]
+        [Route("Attribute_AddFields"), NonNullableParameters]
         public JsonResult Attribute_AddFields(int at, string ot, int oid, int p)
         {
             var list = new List<EditableField>();
@@ -1670,7 +1676,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeID</param>
-        [Route("Attribute_DeleteFields")]
+        [Route("Attribute_DeleteFields"), NonNullableParameters]
         public JsonResult Attribute_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -1679,7 +1685,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeID</param>
-        [Route("Attribute_EditFields")]
+        [Route("Attribute_EditFields"), NonNullableParameters]
         public JsonResult Attribute_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -1752,7 +1758,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteAttributeById")]
+        [HttpDelete, Route("DeleteAttributeById"), NonNullableParameters]
         public JsonResult DeleteAttributeById(int id)
         {
             var form = new FormCollection();
@@ -1832,7 +1838,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">AttributeTypeID</param>
-        [Route("AttributeType_DeleteFields")]
+        [Route("AttributeType_DeleteFields"), NonNullableParameters]
         public JsonResult AttributeType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Delete))
@@ -1995,7 +2001,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeTypeCategoryID</param>
-        [Route("AttributeTypeCategory_DeleteFields")]
+        [Route("AttributeTypeCategory_DeleteFields"), NonNullableParameters]
         public JsonResult AttributeTypeCategory_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
@@ -2008,7 +2014,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeTypeCategoryID</param>
-        [Route("AttributeTypeCategory_EditFields")]
+        [Route("AttributeTypeCategory_EditFields"), NonNullableParameters]
         public JsonResult AttributeTypeCategory_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
@@ -2150,7 +2156,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="at">AttributeTypeID</param>
-        [Route("AttributeTypeRelation_AddFields")]
+        [Route("AttributeTypeRelation_AddFields"), NonNullableParameters]
         public JsonResult AttributeTypeRelation_AddFields(int at)
         {
             var list = new List<EditableField>();
@@ -2183,7 +2189,7 @@ namespace d360.web.Controllers
         /// <param name="at">AttributeTypeID</param>
         /// <param name="ot">ObjectType</param>
         /// <param name="oid">ObjectID</param>
-        [Route("AttributeTypeRelation_DeleteFields")]
+        [Route("AttributeTypeRelation_DeleteFields"), NonNullableParameters]
         public JsonResult AttributeTypeRelation_DeleteFields(int at, string ot, int oid)
         {
             var list = new List<EditableField>();
@@ -2198,7 +2204,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="at">AttributeTypeID</param>
-        [Route("AttributeTypeRelation_EditFields")]
+        [Route("AttributeTypeRelation_EditFields"), NonNullableParameters]
         public JsonResult AttributeTypeRelation_EditFields(int at, string ot, int oid)
         {
             var list = new List<EditableField>();
@@ -2268,7 +2274,7 @@ namespace d360.web.Controllers
         /// <param name="ObjectType"></param>
         /// <param name="ObjectID"></param>
         /// <returns></returns>
-        [HttpDelete, Route("DeleteAttributeTypeRelationWithUri")]
+        [HttpDelete, Route("DeleteAttributeTypeRelationWithUri"), NonNullableParameters]
         public JsonResult DeleteAttributeTypeRelationWithUri(int AttributeTypeID, string ObjectType, int ObjectID)
         {
             var form = new FormCollection();
@@ -2642,7 +2648,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpGet, Route("GetSiteNavFolderItems")]
+        [HttpGet, Route("GetSiteNavFolderItems"), NonNullableParameters]
         public JsonNetResult GetSiteNavFolderItems(int id)
         {
             var sql = @"SELECT v.ID
@@ -2700,7 +2706,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">EmailTemplateID</param>
-        [Route("EmailTemplate_DeleteFields")]
+        [Route("EmailTemplate_DeleteFields"), NonNullableParameters]
         public JsonResult EmailTemplate_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -2712,7 +2718,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">EmailTemplateID</param>
-        [Route("EmailTemplate_EditFields")]
+        [Route("EmailTemplate_EditFields"), NonNullableParameters]
         public JsonResult EmailTemplate_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -2836,7 +2842,7 @@ namespace d360.web.Controllers
         /// <param name="type">The Type></param>
         /// <param name="id">The Type ID></param>
         /// <returns>A list of child realtionship types</returns>
-        [Route("FieldType_ComplexLookup_ChildItems")]
+        [Route("FieldType_ComplexLookup_ChildItems"), NonNullableParameters]
         public JsonNetResult FieldType_ComplexLookup_ChildItems(SystemObjects type, int id)
         {
             dynamic list = null;
@@ -2870,7 +2876,7 @@ namespace d360.web.Controllers
         /// <param name="type">The Type></param>
         /// <param name="id">The Type ID></param>
         /// <returns>A list of child realtionship types</returns>
-        [Route("FieldType_ComplexLookup_ParentItems")]
+        [Route("FieldType_ComplexLookup_ParentItems"), NonNullableParameters]
         public JsonNetResult FieldType_ComplexLookup_ParentItems(SystemObjects type, int id)
         {
             dynamic list = null;
@@ -2904,7 +2910,7 @@ namespace d360.web.Controllers
         /// <param name="type">The Type></param>
         /// <param name="id">The Type ID></param>
         /// <returns>A list of relationship types</returns>
-        [Route("FieldType_ComplexLookup_IntersectTypes")]
+        [Route("FieldType_ComplexLookup_IntersectTypes"), NonNullableParameters]
         public JsonNetResult FieldType_ComplexLookup_IntersectTypes(SystemObjects type, int id)
         {
             var intersectTypes = Company.Query<dynamic>($@"select value, title from utility.GetIntersectTypesByType('{type.ToString()}', {id}) order by title");
@@ -2924,7 +2930,7 @@ namespace d360.web.Controllers
         /// <param name="listType">The type of list to pull fields for.</param>
         /// <param name="listID">The type Id of the list to pull fields for.</param>
         /// <returns>A list of relevant fusion attribute types.</returns>
-        [Route("FieldType_FilteredLookup_DisplayFields")]
+        [Route("FieldType_FilteredLookup_DisplayFields"), NonNullableParameters]
         public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
         {
             var list = Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, listID)
@@ -2950,7 +2956,7 @@ namespace d360.web.Controllers
         /// </summary>
         /// <param name="id">The Source FusionAttributeType ID</param>
         /// <returns>A list of relevant fusion attribute types.</returns>
-        [Route("FieldType_FusionLookup_DisplayFields")]
+        [Route("FieldType_FusionLookup_DisplayFields"), NonNullableParameters]
         public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
         {
             var list = Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, id)
@@ -2973,7 +2979,7 @@ namespace d360.web.Controllers
         /// <param name="s">The Source FusionAttributeType ID</param>
         /// <param name="r">The Reference Type we are checking</param>
         /// <returns>A list of relevant fusion attribute types.</returns>
-        [Route("FieldType_FusionLookup_TargetAttributeTypes")]
+        [Route("FieldType_FusionLookup_TargetAttributeTypes"), NonNullableParameters]
         public JsonNetResult FieldType_FusionLookup_TargetAttributeTypes(int s, int r)
         {
             IQueryable<FusionAttributeType> qry = null;
@@ -3018,7 +3024,7 @@ namespace d360.web.Controllers
         /// </summary>
         /// <param name="id">IntersectTypeID></param>
         /// <returns>A list of child relationship types</returns>
-        [Route("FieldType_RelationLookup_ChildIntersectTypes")]
+        [Route("FieldType_RelationLookup_ChildIntersectTypes"), NonNullableParameters]
         public JsonNetResult FieldType_RelationLookup_ChildIntersectTypes(int id)
         {
             var intersectTypes = Company.Query<dynamic>($@"select value, title from utility.GetIntersectTypesByType('IntersectType', {id}) order by title");
@@ -3030,7 +3036,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Route("FieldType_RelationLookup_DisplayFields")]
+        [Route("FieldType_RelationLookup_DisplayFields"), NonNullableParameters]
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypeRelationsByObject(type, id)
@@ -3058,7 +3064,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Route("FieldType_Lookup_Tokens")]
+        [Route("FieldType_Lookup_Tokens"), NonNullableParameters]
         public JsonNetResult FieldType_Lookup_Tokens(SystemObjects type, int id)
         {
             var list = Company.GetFieldTypeRelationsByObject(type, id)
@@ -3115,7 +3121,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Route("FieldType_Lookups")]
+        [Route("FieldType_Lookups"), NonNullableParameters]
         public JsonNetResult FieldType_Lookups(SystemObjects type, int id, bool isNg = false)
         {
             #region Load static lists
@@ -3167,7 +3173,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Route("FieldType_FormData")]
+        [Route("FieldType_FormData"), NonNullableParameters]
         public JsonNetResult FieldType_FormData(int id)
         {
             FieldType ft = null;
@@ -3269,7 +3275,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">ID of the object</param>
-        [Route("FieldType_DeleteFields")]
+        [Route("FieldType_DeleteFields"), NonNullableParameters]
         public JsonResult FieldType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.FieldType, id, Claim.Delete))
@@ -3554,7 +3560,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteFieldTypeByID")]
+        [HttpDelete, Route("DeleteFieldTypeByID"), NonNullableParameters]
         public JsonResult DeleteFieldTypeByID(int id)
         {
             var form = new FormCollection();
@@ -3562,7 +3568,7 @@ namespace d360.web.Controllers
             return DeleteFieldType(form);
         }
 
-        [HttpGet, ActionName("FieldType"), Route("FieldType")]
+        [HttpGet, ActionName("FieldType"), Route("FieldType"), NonNullableParameters]
         public JsonNetResult GetFieldType(int id)
         {
             var a = Company.GetById<FieldType>(id);
@@ -4022,7 +4028,7 @@ namespace d360.web.Controllers
 
         /// <param name="fat">FusionTypeID</param>
         /// <param name="p">ParentID</param>
-        [Route("Fusion_AddFields")]
+        [Route("Fusion_AddFields"), NonNullableParameters]
         public JsonResult Fusion_AddFields(int ft)
         {
             var list = new List<EditableField>();
@@ -4055,7 +4061,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
-        [Route("Fusion_DeleteFields")]
+        [Route("Fusion_DeleteFields"), NonNullableParameters]
         public JsonResult Fusion_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -4067,7 +4073,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
-        [Route("Fusion_EditFields")]
+        [Route("Fusion_EditFields"), NonNullableParameters]
         public JsonResult Fusion_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -4183,7 +4189,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteFusionByID")]
+        [HttpDelete, Route("DeleteFusionByID"), NonNullableParameters]
         public JsonResult DeleteFusionByID(int id)
         {
             var form = new FormCollection();
@@ -4265,255 +4271,11 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region FusionFilter
-
-        #region Field Generation
-
-        [Route("FusionFilter_AddFields")]
-        public JsonResult FusionFilter_AddFields(int f)
-        {
-            if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var fusion = Company.GetById<Fusion>(f);
-            var types = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == fusion.FusionTypeID && !i.ParentID.HasValue).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "FusionID", FieldType = DataType.Hidden.ToString(), Value = f.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FusionAttributeTypeID", Name = "Fusion Attribute Type", FieldType = DataType.Lookup.ToString(), Items = types });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "FilterValue", Name = "Filter", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "FilterValue", true, @"^([A-Za-z0-9]{2,})(\,[A-Za-z0-9]{2,})*$", 2, 500, "may only contain letters and numbers,  with each segment separated by a comma (i.e.  xxx,yyy)") }); //, "may only contain letters and numbers,  with each segment separated by a comma (i.e.  xxx,yyy)"
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("GetFusionAttributeTypes")]
-        public JsonNetResult GetFusionAttributeTypes(int fusionID)
-        {
-            var fusion = Company.GetById<Fusion>(fusionID);
-            var types = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == fusion.FusionTypeID && !i.ParentID.HasValue).OrderBy(i => i.Name).ToList();
-            return new JsonNetResult
-            {
-                Data = types,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [Route("FusionFilter_DeleteFields")]
-        public JsonResult FusionFilter_DeleteFields(int f, int a)
-        {
-            var list = new List<EditableField>();
-
-            if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "FusionID", FieldType = DataType.Hidden.ToString(), Value = f.ToString() });
-            list.Add(new EditableField { FieldName = "FusionAttributeTypeID", FieldType = DataType.Hidden.ToString(), Value = a.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("FusionFilter_EditFields")]
-        public JsonResult FusionFilter_EditFields(int f, int a)
-        {
-            var list = new List<EditableField>();
-            var o = Company.Filter<FusionFilter>(i => i.FusionID == f && i.FusionAttributeTypeID == a).SingleOrDefault();
-
-            if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "FusionID", FieldType = DataType.Hidden.ToString(), Value = f.ToString() });
-            list.Add(new EditableField { FieldName = "FusionAttributeTypeID", FieldType = DataType.Hidden.ToString(), Value = a.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FilterValue", Name = "Filter", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "FilterValue", true, @"^([A-Za-z0-9]{2,})(\,[A-Za-z0-9]{2,})*$", 2, 500, "may only contain letters and numbers,  with each segment separated by a comma (i.e.  xxx,yyy)"), Value = o.Filter });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionFilter")]
-        public JsonResult AddFusionFilter(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion filter");
-
-                int f = parseIntField(form, "FusionID");
-                int a = parseIntField(form, "FusionAttributeTypeID");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var model = new FusionFilter
-                {
-                    FusionID = f,
-                    FusionAttributeTypeID = a,
-                    Filter = parseTextField(form, "FilterValue")
-                };
-
-                Company.Add<FusionFilter>(model);
-                return jsonSuccess("Filter successfully created.", a.ToString(), "add", HttpStatusCode.Created, new { Type = "FusionFilter", Context = form["_context"] });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ActionName("FusionFilter"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("FusionFilter")]
-        public JsonResult PostFusionFilter(FusionFilter f)
-        {
-            try
-            {
-             //   if (!form.HasKeys()) throw new NoFormDataException("fusion filter");
-
-               // int f = parseIntField(form, "FusionID");
-                //int a = parseIntField(form, "FusionAttributeTypeID");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, f.FusionID, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var model = new FusionFilter
-                {
-                    FusionID = f.FusionID,
-                    FusionAttributeTypeID = f.FusionAttributeTypeID,
-                    Filter = f.Filter  //parseTextField(form, "FilterValue")
-                };
-
-                Company.Add<FusionFilter>(model);
-                return jsonSuccess("Filter successfully created.", f.FusionAttributeTypeID.ToString(), "add", HttpStatusCode.Created, new { Type = "FusionFilter", Context = "FusionFilter" });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionFilter")]
-        public JsonResult DeleteFusionFilter(FormCollection form)//(int typeID, int id)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion filter");
-
-                int f = parseIntField(form, "FusionID");
-                int a = parseIntField(form, "FusionAttributeTypeID");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<FusionFilter>(i => i.FusionAttributeTypeID == a && i.FusionID == f);
-
-                return jsonSuccess("Filter successfully removed.", a.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionFilterByID")]
-        public JsonResult DeleteFusionFilterByID(int fusionID, int fusionAttributeTypeID)
-        {
-            var form = new FormCollection();
-            form.Add("FusionID", fusionID.ToString());
-            form.Add("FusionAttributeTypeID", fusionAttributeTypeID.ToString());
-
-            return DeleteFusionFilter(form);
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditFusionFilter")]
-        public JsonResult EditFusionFilter(FormCollection form)//(int typeID, int id, FusionAttributeType model)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion filter");
-
-                int f = parseIntField(form, "FusionID");
-                int a = parseIntField(form, "FusionAttributeTypeID");
-
-                var o = Company.Filter<FusionFilter>(i => i.FusionID == f && i.FusionAttributeTypeID == a).SingleOrDefault();
-                if (o == null) throw new NotFoundException("fusion filter");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                o.Filter = parseTextField(form, "FilterValue");
-
-                Company.Update<FusionFilter>(o);
-
-                return jsonSuccess("Filter successfully updated.", a.ToString(), "edit", HttpStatusCode.OK, new { Type = "FusionFilter", Context = form["_context"] });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ActionName("FusionFilter"), HttpPut, ValidateInput(false), Route("FusionFilter")]
-        public JsonResult PutFusionFilter(FusionFilter f)
-        {
-            try
-            {
-             //   if (!form.HasKeys()) throw new NoFormDataException("fusion filter");
-
-               // int f = parseIntField(form, "FusionID");
-                //int a = parseIntField(form, "FusionAttributeTypeID");
-
-                var o = Company.Filter<FusionFilter>(i => i.FusionID == f.FusionID && i.FusionAttributeTypeID == f.FusionAttributeTypeID).SingleOrDefault();
-                if (o == null) throw new NotFoundException("fusion filter");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, f.FusionID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                o.Filter = f.Filter; //parseTextField(form, "FilterValue");
-
-                Company.Update<FusionFilter>(o);
-
-                return jsonSuccess("Filter successfully updated.", f.FusionAttributeTypeID.ToString(), "edit", HttpStatusCode.OK, new { Type = "FusionFilter", Context = "FusionFilter" });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region FusionRule
 
         #region Form Get/Post
 
-        [HttpGet, Route("GetAddFusionRule")]
+        [HttpGet, Route("GetAddFusionRule"), NonNullableParameters]
         public JsonNetResult GetAddFusionRule(int typeID)
         {
             return new JsonNetResult
@@ -4606,7 +4368,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteFusionRuleById")]
+        [HttpDelete, Route("DeleteFusionRuleById"), NonNullableParameters]
         public JsonResult DeleteFusionRuleById(int id)
         {
             var form = new FormCollection();
@@ -4614,7 +4376,7 @@ namespace d360.web.Controllers
             return DeleteFusionRule(form);
         }
 
-        [HttpGet, Route("GetEditFusionRule")]
+        [HttpGet, Route("GetEditFusionRule"), NonNullableParameters]
         public JsonNetResult GetEditFusionRule(int id)
         {
             var a = Company.GetById<FusionRule>(id);
@@ -4711,7 +4473,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">RuleID</param>
-        [Route("FusionRule_DeleteFields")]
+        [Route("FusionRule_DeleteFields"), NonNullableParameters]
         public ActionResult FusionRule_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -4731,7 +4493,7 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        [Route("FusionRuleItem_DeleteFields")]
+        [Route("FusionRuleItem_DeleteFields"), NonNullableParameters]
         public JsonResult FusionRuleItem_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -4745,7 +4507,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [HttpGet, Route("GetAddFusionRuleItem")]
+        [HttpGet, Route("GetAddFusionRuleItem"), NonNullableParameters]
         public JsonNetResult GetAddFusionRuleItem(int id)
         {
             var rule = Company.GetById<FusionRule>(id);
@@ -4911,7 +4673,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteFusionRuleItemByID")]
+        [HttpDelete, Route("DeleteFusionRuleItemByID"), NonNullableParameters]
         public JsonResult DeleteFusionRuleItemByID(int id)
         {
             var form = new FormCollection();
@@ -4927,7 +4689,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [HttpGet, Route("GetAddFusionRuleStep")]
+        [HttpGet, Route("GetAddFusionRuleStep"), NonNullableParameters]
         public JsonNetResult GetAddFusionRuleStep(int ruleID)
         {
             if (ruleID <= 0) return null;
@@ -5619,7 +5381,7 @@ namespace d360.web.Controllers
 
         }
 
-        [HttpGet, Route("GetEditFusionRuleStep")]
+        [HttpGet, Route("GetEditFusionRuleStep"), NonNullableParameters]
         public JsonNetResult GetEditFusionRuleStep(int ruleID, int ruleStepID)
         {
             var rule = Company.GetById<FusionRule>(ruleID);
@@ -5741,7 +5503,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">RuleID</param>
-        [Route("FusionRuleStep_AddFields")]
+        [Route("FusionRuleStep_AddFields"), NonNullableParameters]
         public ActionResult FusionRuleStep_AddFields(int id)
         {
             var list = new List<EditableField>();
@@ -5756,7 +5518,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("FusionRuleStep_EditFields")]
+        [Route("FusionRuleStep_EditFields"), NonNullableParameters]
         public ActionResult FusionRuleStep_EditFields(int id, int ruleStepID)
         {
             var list = new List<EditableField>();
@@ -5776,7 +5538,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("FusionRuleStep_DeleteFields")]
+        [Route("FusionRuleStep_DeleteFields"), NonNullableParameters]
         public ActionResult FusionRuleStep_DeleteFields(int id, int ruleStepID)
         {
             var list = new List<EditableField>();
@@ -5792,7 +5554,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("FusionRuleStep_MoveFields")]
+        [Route("FusionRuleStep_MoveFields"), NonNullableParameters]
         public ActionResult FusionRuleStep_MoveFields(int id, int ruleStepID, string direction)
         {
             var list = new List<EditableField>();
@@ -5818,7 +5580,7 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        [Route("FusionRuleStepMapping_DeleteFields")]
+        [Route("FusionRuleStepMapping_DeleteFields"), NonNullableParameters]
         public JsonResult FusionRuleStepMapping_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -5978,7 +5740,7 @@ namespace d360.web.Controllers
             return targetFields;
         }
 
-        [HttpGet, Route("GetAddFusionRuleStepMapping")]
+        [HttpGet, Route("GetAddFusionRuleStepMapping"), NonNullableParameters]
         public JsonNetResult GetAddFusionRuleStepMapping(int id)
         {
             var ruleStep = Company.GetById<FusionRuleStep>(id);
@@ -6218,7 +5980,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteFusionRuleStepMappingByID")]
+        [HttpDelete, Route("DeleteFusionRuleStepMappingByID"), NonNullableParameters]
         public JsonResult DeleteFusionRuleStepMappingByID(int id)
         {
             var form = new FormCollection();
@@ -6226,7 +5988,7 @@ namespace d360.web.Controllers
             return DeleteFusionRuleStepMapping(form);
         }
 
-        [Route("GetEditFusionRuleStepMapping")]
+        [Route("GetEditFusionRuleStepMapping"), NonNullableParameters]
         public JsonNetResult GetEditFusionRuleStepMapping(int id)
         {
             var a = Company.GetById<FusionRuleStepMapping>(id);
@@ -6392,7 +6154,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">FusionTypeID</param>
-        [Route("FusionType_DeleteFields")]
+        [Route("FusionType_DeleteFields"), NonNullableParameters]
         public JsonResult FusionType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -6407,7 +6169,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">FusionTypeID</param>
-        [Route("FusionType_EditFields")]
+        [Route("FusionType_EditFields"), NonNullableParameters]
         public JsonResult FusionType_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -6530,7 +6292,7 @@ namespace d360.web.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteFusionTypeByID")]
+        [Route("DeleteFusionTypeByID"), NonNullableParameters]
         public JsonResult DeleteFusionTypeByID(int id)
         {
             var form = new FormCollection();
@@ -6614,7 +6376,7 @@ namespace d360.web.Controllers
 
         /// <param name="fat">FusionTypeID</param>
         /// <param name="p">ParentID</param>
-        [Route("FusionAttributeType_AddFields")]
+        [Route("FusionAttributeType_AddFields"), NonNullableParameters]
         public JsonResult FusionAttributeType_AddFields(int ft, int p)
         {
             if (!Company.HasPermission(SystemObjects.FusionType, ft, Claim.Create))
@@ -6634,7 +6396,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
-        [Route("FusionAttributeType_DeleteFields")]
+        [Route("FusionAttributeType_DeleteFields"), NonNullableParameters]
         public JsonResult FusionAttributeType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -6649,7 +6411,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
-        [Route("FusionAttributeType_EditFields")]
+        [Route("FusionAttributeType_EditFields"), NonNullableParameters]
         public JsonResult FusionAttributeType_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -6743,7 +6505,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteFusionAttributeType")]
+        [HttpDelete, Route("DeleteFusionAttributeType"), NonNullableParameters]
         public JsonResult DeleteFusionAttributeType(FormCollection form)//(int typeID, int id)
         {
             try
@@ -6773,7 +6535,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteFusionAttributeTypeByID")]
+        [HttpDelete, Route("DeleteFusionAttributeTypeByID"), NonNullableParameters]
         public JsonResult DeleteFusionAttributeTypeByID(int id)
         {
             var form = new FormCollection();
@@ -6895,7 +6657,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteIntersect")]
+        [HttpDelete, Route("DeleteIntersect"), NonNullableParameters]
         public JsonResult DeleteIntersect(int id)
         {
             try
@@ -6941,7 +6703,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">IntersectRoleID</param>
-        [Route("IntersectRole_DeleteFields")]
+        [Route("IntersectRole_DeleteFields"), NonNullableParameters]
         public JsonResult IntersectRole_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -6955,7 +6717,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">IntersectRoleID</param>
-        [Route("IntersectRole_EditFields")]
+        [Route("IntersectRole_EditFields"), NonNullableParameters]
         public JsonResult IntersectRole_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -7075,7 +6837,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">IntersectTypeID</param>
-        [Route("IntersectType_DeleteFields")]
+        [Route("IntersectType_DeleteFields"), NonNullableParameters]
         public JsonResult IntersectType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Delete))
@@ -7096,56 +6858,70 @@ namespace d360.web.Controllers
 
         #region Json Feeds To Support Editing
 
-        [Route("IntersectType_FormData")]
+        [Route("IntersectType_FormData"), NonNullableParameters]
         public JsonNetResult IntersectType_FormData(int id)
         {
-            var type = Company.GetById<IntersectType>(id);
-            if (type == null) return new JsonNetResult { Data = null };
+            try
+            {
+                var type = Company.GetById<IntersectType>(id);
+                if (type == null) return new JsonNetResult { Data = null };
 
-            var currentIntersects = Company.Filter<Intersect>(i => i.IntersectTypeID == id).Any();
+                var currentIntersects = Company.Filter<Intersect>(i => i.IntersectTypeID == id).Any();
 
-            var model = new Dictionary<string, object> {
-                { "ID", id },
-                { "LimitedChangesOnly", currentIntersects },
-                { "Side1", $"{type.Subject}|{type.SubjectID}" },
-                { "Side2", $"{type.Object}|{type.ObjectID}" },
-                { "Predicate", type.PredicateID }
-            };
+                var model = new Dictionary<string, object> {
+                    { "ID", id },
+                    { "LimitedChangesOnly", currentIntersects },
+                    { "Side1", $"{type.Subject}|{type.SubjectID}" },
+                    { "Side2", $"{type.Object}|{type.ObjectID}" },
+                    { "Predicate", type.PredicateID }
+                };
 
-            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+            }
+            catch (Exception ex)
+            {
+                return jsonNetException(ex);
+            }
         }
 
-        [Route("IntersectType_PredicateOptions")]
-        public JsonNetResult IntersectType_PredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
+        [Route("IntersectType_PredicateOptions"), NonNullableParameters]
+        public JsonNetResult IntersectType_PredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int objectID = 0, int predicateID = 0)
         {
-            var usedPredicateIDs = new List<int>();
-
-            var sSubject = subject.ToString();
-            if (@object.HasValue && objectID.HasValue)
+            try
             {
-                var sObject = @object.Value.ToString();
-                usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
-            }
-            //else
-            //{
-            //    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
-            //}
+                var usedPredicateIDs = new List<int>();
 
-            if (predicateID.HasValue)
+                var sSubject = subject.ToString();
+                if (@object.HasValue && objectID > 0)
+                {
+                    var sObject = @object.Value.ToString();
+                    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
+                }
+                //else
+                //{
+                //    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
+                //}
+
+                if (predicateID > 0)
+                {
+                    usedPredicateIDs.Remove(predicateID);
+                }
+
+                var models = Company.Table<Predicate>()
+                    .ToList()
+                    .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && !usedPredicateIDs.Contains(i.ID))
+                    .Select(i => new {
+                        title = $"{i.Name} ({i.Type.AsInfoModel().Name})",
+                        value = i.ID
+                    })
+                    .OrderBy(i => i.title);
+
+                return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+            }
+            catch (Exception ex)
             {
-                usedPredicateIDs.Remove(predicateID.Value);
+                return jsonNetException(ex);
             }
-
-            var models = Company.Table<Predicate>()
-                .ToList()
-                .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && !usedPredicateIDs.Contains(i.ID))
-                .Select(i => new {
-                    title = $"{i.Name} ({i.Type.AsInfoModel().Name})",
-                    value = i.ID
-                })
-                .OrderBy(i => i.title);
-
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [Route("IntersectType_Side1Options")]
@@ -7157,14 +6933,21 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("IntersectType_Side2Options")]
+        [Route("IntersectType_Side2Options"), NonNullableParameters]
         public JsonNetResult IntersectType_Side2Options(SystemObjects type, int id, SystemObjects? side2Type = null, int? side2ID = null, int? predicateID = null)
         {
-            var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID)
-                .Where(i => i.Type != "IntersectType")
-                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
+            try
+            {
+                var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID)
+                    .Where(i => i.Type != "IntersectType")
+                    .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+            }
+            catch (Exception ex)
+            {
+                return jsonNetException(ex);
+            }
         }
 
         #endregion
@@ -7367,7 +7150,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Group_AddGroupUserFields")]
+        [Route("Group_AddGroupUserFields"), NonNullableParameters]
         public JsonResult Group_AddGroupUserFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update)) return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
@@ -7390,7 +7173,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">GroupID</param>
-        [Route("Group_DeleteFields")]
+        [Route("Group_DeleteFields"), NonNullableParameters]
         public JsonResult Group_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Delete))
@@ -7404,7 +7187,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Group_DeleteGroupUserFields")]
+        [Route("Group_DeleteGroupUserFields"), NonNullableParameters]
         public JsonResult Group_DeleteGroupUserFields(int groupID, int resourceID)
         {
             if (!Company.HasPermission(SystemObjects.Group, groupID, Claim.Update)) return jsonException("You do not have permissions to remove users.", HttpStatusCode.Forbidden);
@@ -7423,7 +7206,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">GroupID</param>
-        [Route("Group_EditFields")]
+        [Route("Group_EditFields"), NonNullableParameters]
         public JsonResult Group_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update))
@@ -7554,7 +7337,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpGet, Route("GetGroupUserList")]
+        [HttpGet, Route("GetGroupUserList"), NonNullableParameters]
         public JsonResult GetGroupUserList(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update)) return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
@@ -7601,7 +7384,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, ValidateHttpAntiForgeryToken, ActionName("ResourceGroup"), Route("ResourceGroup")]
+        [HttpDelete, ValidateHttpAntiForgeryToken, ActionName("ResourceGroup"), Route("ResourceGroup"), NonNullableParameters]
         public JsonResult DeleteResourceGroup(int groupID, int resourceID)
         {
             try
@@ -7654,7 +7437,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteGroupByID")]
+        [HttpDelete, Route("DeleteGroupByID"), NonNullableParameters]
         public JsonResult DeleteGroupByID(int id)
         {
             var form = new FormCollection();
@@ -7795,7 +7578,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpGet, ActionName("Group"), Route("Group")]
+        [HttpGet, ActionName("Group"), Route("Group"), NonNullableParameters]
         public JsonNetResult GetGroup(int id)
         {
             var group = new Group();
@@ -7911,7 +7694,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [Route("Lineage_IntersectTypeTargets")]
+        [Route("Lineage_IntersectTypeTargets"), NonNullableParameters]
         public JsonNetResult Lineage_IntersectTypeTargets(string type, int id)
         {
             var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.Lineage).Select(i => i.ID).Distinct().ToList();
@@ -7938,7 +7721,7 @@ namespace d360.web.Controllers
         /// </summary>
         /// <param name="id">The Intersect Type's ID</param>
         /// <returns>A list of name/value pairs.</returns>
-        [Route("Lineage_MapSubjects")]
+        [Route("Lineage_MapSubjects"), NonNullableParameters]
         public JsonNetResult Lineage_MapSubjects(int id)//, SystemObjects o, int oid)
         {
             var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
@@ -7961,7 +7744,7 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
         /// </summary>
         /// <param name="id">The Intersect Type's ID</param>
         /// <returns>A list of name/value pairs.</returns>
-        [Route("Lineage_MapObjects")]
+        [Route("Lineage_MapObjects"), NonNullableParameters]
         public JsonNetResult Lineage_MapObjects(int id)//, SystemObjects o, int oid)
         {
             var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
@@ -7986,7 +7769,7 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
         /// <param name="intersectID">The intersectID we are searching under.</param>
         /// <param name="phrase">Part of the text path to search for.</param>
         /// <returns>A list of name/value pairs.</returns>
-        [Route("")]
+        [Route(""), NonNullableParameters]
         public JsonNetResult MapRule_FindFusion(int intersectID, string phrase)
         {
             var intersect = Company.Filter<IntersectDetail>(i => i.ID == intersectID).FirstOrDefault();
@@ -8482,9 +8265,10 @@ for json path");
                                     .Filter<FieldType>(i => 
                                         i.Object == type && 
                                         i.ObjectID == id &&
+                                        i.Type != "Attribute" &&
                                         i.Type != "FilteredLookup" &&
                                         i.Type != "FusionLookup" &&
-                                        i.Type != "RelationLookup"
+                                        i.Type != "ComplexRelationLookup"
                                     )
                                     .OrderBy(i => i.SortOrder)
                                     .Select(i => i.Name)
@@ -8573,7 +8357,7 @@ for json path");
             return fieldTypeNames;
         }
 
-        [Route("Load_TypeOptions")]
+        [Route("Load_TypeOptions"), NonNullableParameters]
         public JsonNetResult Load_TypeOptions(string act)
         {
             IEnumerable<OptionModel> models = null;
@@ -8641,13 +8425,13 @@ from ArtifactType A
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("Load_ExpectedColumns")]
+        [Route("Load_ExpectedColumns"), NonNullableParameters]
         public JsonNetResult Load_ExpectedColumns(string type, int id)
         {
             return new JsonNetResult { Data = getFieldNamesByType(type, id), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [FileDownload, Route("Load_ExpectedColumns_ToExcel")]
+        [FileDownload, Route("Load_ExpectedColumns_ToExcel"), NonNullableParameters]
         public FileResult Load_ExpectedColumns_ToExcel(string type, int id)
         {
             var document = new SLDocument();
@@ -9164,7 +8948,7 @@ from ArtifactType A
         #region Field Generation
 
         /// <param name="id">LookupTypeID</param>
-        [Route("Lookup_AddFields")]
+        [Route("Lookup_AddFields"), NonNullableParameters]
         public JsonResult Lookup_AddFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Create))
@@ -9180,7 +8964,7 @@ from ArtifactType A
         }
 
         /// <param name="id">LookupID</param>
-        [Route("Lookup_DeleteFields")]
+        [Route("Lookup_DeleteFields"), NonNullableParameters]
         public JsonResult Lookup_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -9195,7 +8979,7 @@ from ArtifactType A
         }
 
         /// <param name="id">LookupID</param>
-        [Route("Lookup_EditFields")]
+        [Route("Lookup_EditFields"), NonNullableParameters]
         public JsonResult Lookup_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -9332,7 +9116,7 @@ from ArtifactType A
         }
 
         /// <param name="id">LookupTypeID</param>
-        [Route("LookupType_DeleteFields")]
+        [Route("LookupType_DeleteFields"), NonNullableParameters]
         public JsonResult LookupType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Delete))
@@ -9346,7 +9130,7 @@ from ArtifactType A
         }
 
         /// <param name="id">LookupTypeID</param>
-        [Route("LookupType_EditFields")]
+        [Route("LookupType_EditFields"), NonNullableParameters]
         public JsonResult LookupType_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Update))
@@ -9503,7 +9287,7 @@ from ArtifactType A
 
         #region Field Generation
 
-        [Route("MapRule_DeleteFields")]
+        [Route("MapRule_DeleteFields"), NonNullableParameters]
         public JsonResult MapRule_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -9516,7 +9300,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("MapRule_EditFields")]
+        [Route("MapRule_EditFields"), NonNullableParameters]
         public JsonResult MapRule_EditFields(int id)
         {
             var a = Company.GetById<MapRule>(id);
@@ -9637,7 +9421,7 @@ from ArtifactType A
 
         #region Field Generation
 
-        [Route("MapRuleItem_DeleteFields")]
+        [Route("MapRuleItem_DeleteFields"), NonNullableParameters]
         public JsonResult MapRuleItem_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -9650,7 +9434,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("MapRuleItem_EditFields")]
+        [Route("MapRuleItem_EditFields"), NonNullableParameters]
         public JsonResult MapRuleItem_EditFields(int id)
         {
             var a = Company.GetById<MapRuleItem>(id);
@@ -9675,7 +9459,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("MapRuleItem_AddFields")]
+        [Route("MapRuleItem_AddFields"), NonNullableParameters]
         public JsonResult MapRuleItem_AddFields(int id)
         {
             var list = new List<EditableField>();
@@ -9855,7 +9639,7 @@ from ArtifactType A
 
         #region Field Generation
 
-        [Route("Policy_AddFields")]
+        [Route("Policy_AddFields"), NonNullableParameters]
         public JsonResult Policy_AddFields(int typeID, int? parentID)
         {
             var model = new Policy();
@@ -9877,7 +9661,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyID</param>
-        [Route("Policy_DeleteFields")]
+        [Route("Policy_DeleteFields"), NonNullableParameters]
         public JsonResult Policy_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Delete))
@@ -9890,7 +9674,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyID</param>
-        [Route("Policy_EditFields")]
+        [Route("Policy_EditFields"), NonNullableParameters]
         public JsonResult Policy_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update))
@@ -9911,7 +9695,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Policy_SimilarItems")]
+        [Route("Policy_SimilarItems"), NonNullableParameters]
         public JsonNetResult Policy_SimilarItems(int typeID, string query)
         {
             return new JsonNetResult
@@ -10009,7 +9793,7 @@ from ArtifactType A
             }
         }
         
-        [HttpDelete, Route("DeletePolicyByID")]
+        [HttpDelete, Route("DeletePolicyByID"), NonNullableParameters]
         public JsonResult DeletePolicyByID(int id)
         {
             var form = new FormCollection();
@@ -10017,7 +9801,7 @@ from ArtifactType A
             return DeletePolicy(form);
         }
 
-        [HttpPut, ValidateInput(false), Route("EditPolicy")]
+        [HttpPut, ValidateInput(false), Route("EditPolicy"), NonNullableParameters]
         public JsonResult EditPolicy(FormCollection form)
         {
             try
@@ -10088,7 +9872,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeID</param>
-        [Route("PolicyType_DeleteFields")]
+        [Route("PolicyType_DeleteFields"), NonNullableParameters]
         public JsonResult PolicyType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
@@ -10103,7 +9887,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeID</param>
-        [Route("PolicyType_EditFields")]
+        [Route("PolicyType_EditFields"), NonNullableParameters]
         public JsonResult PolicyType_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
@@ -10276,7 +10060,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeClassID</param>
-        [Route("PolicyTypeClass_DeleteFields")]
+        [Route("PolicyTypeClass_DeleteFields"), NonNullableParameters]
         public JsonResult PolicyTypeClass_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Delete))
@@ -10291,7 +10075,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeClassID</param>
-        [Route("PolicyTypeClass_EditFields")]
+        [Route("PolicyTypeClass_EditFields"), NonNullableParameters]
         public JsonResult PolicyTypeClass_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Update))
@@ -10408,7 +10192,7 @@ from ArtifactType A
 
         #region Field Generation
 
-        [Route("PolicyTypeLevel_AddFields")]
+        [Route("PolicyTypeLevel_AddFields"), NonNullableParameters]
         public JsonResult PolicyTypeLevel_AddFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Create))
@@ -10449,7 +10233,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeID</param>
-        [Route("PolicyTypeLevel_DeleteFields")]
+        [Route("PolicyTypeLevel_DeleteFields"), NonNullableParameters]
         public JsonResult PolicyTypeLevel_DeleteFields(int id, int level)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
@@ -10464,7 +10248,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeID</param>
-        [Route("PolicyTypeLevel_EditFields")]
+        [Route("PolicyTypeLevel_EditFields"), NonNullableParameters]
         public JsonResult PolicyTypeLevel_EditFields(int id, int level)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
@@ -10605,7 +10389,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PredicateID</param>
-        [Route("Predicate_DeleteFields")]
+        [Route("Predicate_DeleteFields"), NonNullableParameters]
         public JsonResult Predicate_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -10619,7 +10403,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PredicateID</param>
-        [Route("Predicate_EditFields")]
+        [Route("Predicate_EditFields"), NonNullableParameters]
         public JsonResult Predicate_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -10763,7 +10547,7 @@ from ArtifactType A
         /// <param name="it">IntersectTypeID</param>
         /// <param name="type">Object</param>
         /// <param name="id">ObjectID</param>
-        [Route("Relationship_AddFields")]
+        [Route("Relationship_AddFields"), NonNullableParameters]
         public JsonResult Relationship_AddFields(int it, SystemObjects type, int id, bool isNg = false)
         {
             if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
@@ -10983,7 +10767,7 @@ order by D.TextPath";
         }
 
         /// <param name="id">RelationshipID</param>
-        [Route("Relationship_DeleteFields")]
+        [Route("Relationship_DeleteFields"), NonNullableParameters]
         public JsonResult Relationship_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Intersect, id, Claim.Delete, ClaimObject.Root))
@@ -10997,7 +10781,7 @@ order by D.TextPath";
         }
 
         /// <param name="id">RelationshipID</param>
-        [Route("Relationship_EditFields")]
+        [Route("Relationship_EditFields"), NonNullableParameters]
         public JsonResult Relationship_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Intersect, id, Claim.Create, ClaimObject.Relationship))
@@ -11120,7 +10904,7 @@ order by D.TextPath";
 
         #region DataTable Select Source
 
-        [HttpGet, Route("Relationship_DataTable")]
+        [HttpGet, Route("Relationship_DataTable"), NonNullableParameters]
         public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
         {
             var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
@@ -11306,7 +11090,7 @@ order by D.TextPath";
         #region Field Generation
 
         /// <param name="id">ID of the object</param>
-        [Route("Report_DeleteFields")]
+        [Route("Report_DeleteFields"), NonNullableParameters]
         public JsonResult Report_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Report, id, Claim.Delete))
@@ -11338,52 +11122,52 @@ order by D.TextPath";
 
         #region Form Get/Post
 
-        void loadReportEditorModel(ReportEditorModel model)
-        {
-            model.ObjectTypes = Company.Query<SelectListItem>(@"
-select      *
-from        (
-            select      'Artifact|' + cast(ID as varchar(15)) as Value,
-                        'Artifact Instance : ' + Name as Text
-            from        ArtifactType
-            union
-            select      'ArtifactType|' + cast(ID as varchar(15)) as Value,
-                        'Artifact Type : ' + Name as Text
-            from        ArtifactType
-            union
-            select      'Resource|1' as Value,
-                        'Resource' as Text
-            union
-            select      'Taxonomy|' + cast(ID as varchar(15)) as Value,
-                        'Model Instance : ' + Name as Text
-            from        TaxonomyType
-            union
-            select      'TaxonomyType|' + cast(ID as varchar(15)) as Value,
-                        'Model Type : ' + Name as Text
-            from        TaxonomyType
-            union
-            select      'Policy|' + cast(ID as varchar(15)) as Value,
-                        'Policy Instance : ' + Name as Text
-            from        PolicyType
-            union
-            select      'PolicyType|' + cast(ID as varchar(15)) as Value,
-                        'Policy Type : ' + Name as Text
-            from        PolicyType
-) O
-order by    Text
+//        void loadReportEditorModel(ReportEditorModel model)
+//        {
+//            model.ObjectTypes = Company.Query<SelectListItem>(@"
+//select      *
+//from        (
+//            select      'Artifact|' + cast(ID as varchar(15)) as Value,
+//                        'Artifact Instance : ' + Name as Text
+//            from        ArtifactType
+//            union
+//            select      'ArtifactType|' + cast(ID as varchar(15)) as Value,
+//                        'Artifact Type : ' + Name as Text
+//            from        ArtifactType
+//            union
+//            select      'Resource|1' as Value,
+//                        'Resource' as Text
+//            union
+//            select      'Taxonomy|' + cast(ID as varchar(15)) as Value,
+//                        'Model Instance : ' + Name as Text
+//            from        TaxonomyType
+//            union
+//            select      'TaxonomyType|' + cast(ID as varchar(15)) as Value,
+//                        'Model Type : ' + Name as Text
+//            from        TaxonomyType
+//            union
+//            select      'Policy|' + cast(ID as varchar(15)) as Value,
+//                        'Policy Instance : ' + Name as Text
+//            from        PolicyType
+//            union
+//            select      'PolicyType|' + cast(ID as varchar(15)) as Value,
+//                        'Policy Type : ' + Name as Text
+//            from        PolicyType
+//) O
+//order by    Text
 
-").ToList();
+//").ToList();
 
-            model.ObjectTypes.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = string.Format("Rule Instance : {0}", i.Name), Value = string.Format("Rule|{0}", (int)i.ID) }));
-            //model.ObjectTypes.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = string.Format("Rule Type : {0}", i.Name), Value = string.Format("RuleType|{0}", (int)i.ID) }));
+//            model.ObjectTypes.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = string.Format("Rule Instance : {0}", i.Name), Value = string.Format("Rule|{0}", (int)i.ID) }));
+//            //model.ObjectTypes.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = string.Format("Rule Type : {0}", i.Name), Value = string.Format("RuleType|{0}", (int)i.ID) }));
 
-            model.ReportLayouts = Company.Query<SelectListItem>(@"
-select      cast(ID as varchar(15)) as Value,
-            Name as Text
-from        ReportLayout
-order by    Name
-").ToList();
-        }
+//            model.ReportLayouts = Company.Query<SelectListItem>(@"
+//select      cast(ID as varchar(15)) as Value,
+//            Name as Text
+//from        ReportLayout
+//order by    Name
+//").ToList();
+//        }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReport")]
         public async Task<JsonResult> AddReport(FormCollection form)
@@ -11680,7 +11464,7 @@ order by    Name
         #region Field Generation
 
         /// <param name="id">ID of the object</param>
-        [Route("ReportTile_DeleteFields")]
+        [Route("ReportTile_DeleteFields"), NonNullableParameters]
         public JsonResult ReportTile_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -11698,37 +11482,37 @@ order by    Name
 
         #region Form Get/Post
 
-        private List<SelectListItem> getReportTilePreviewObjects(string objectType, int objectID)
-        {
-            var list = new List<SelectListItem>();
+        //private List<SelectListItem> getReportTilePreviewObjects(string objectType, int objectID)
+        //{
+        //    var list = new List<SelectListItem>();
 
-            switch (objectType)
-            {
-                case "Artifact":
-                    list = Company.Filter<Artifact>(i => i.ArtifactTypeID == objectID)
-                        .OrderBy(i => i.Name)
-                        .ToList()
-                        .Select(i => new SelectListItem { Text = i.Name, Value = string.Format("Artifact|{0}", i.ID) })
-                        .ToList();
-                    break;
-                case "Resource":
-                    list = Company.Table<GlobalReportingResource>()
-                        .OrderBy(i => i.LastName).ThenBy(i => i.FirstName)
-                        .ToList()
-                        .Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = string.Format("Resource|{0}", i.ResourceID) })
-                        .ToList();
-                    break;
-                case "Taxonomy":
-                    list = Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == objectID)
-                        .OrderBy(i => i.TextPath)
-                        .ToList()
-                        .Select(i => new SelectListItem { Text = i.TextPath, Value = string.Format("Taxonomy|{0}", i.ID) })
-                        .ToList();
-                    break;
-            }
+        //    switch (objectType)
+        //    {
+        //        case "Artifact":
+        //            list = Company.Filter<Artifact>(i => i.ArtifactTypeID == objectID)
+        //                .OrderBy(i => i.Name)
+        //                .ToList()
+        //                .Select(i => new SelectListItem { Text = i.Name, Value = string.Format("Artifact|{0}", i.ID) })
+        //                .ToList();
+        //            break;
+        //        case "Resource":
+        //            list = Company.Table<GlobalReportingResource>()
+        //                .OrderBy(i => i.LastName).ThenBy(i => i.FirstName)
+        //                .ToList()
+        //                .Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = string.Format("Resource|{0}", i.ResourceID) })
+        //                .ToList();
+        //            break;
+        //        case "Taxonomy":
+        //            list = Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == objectID)
+        //                .OrderBy(i => i.TextPath)
+        //                .ToList()
+        //                .Select(i => new SelectListItem { Text = i.TextPath, Value = string.Format("Taxonomy|{0}", i.ID) })
+        //                .ToList();
+        //            break;
+        //    }
 
-            return list;
-        }
+        //    return list;
+        //}
 
         [HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false), Route("AddReportTile")]
         public JsonResult AddReportTile(FormCollection form, bool isNg = false)
@@ -11878,7 +11662,7 @@ order by    Name
         #region Field Generation
 
         /// <param name="id">ResponsibilityID</param>
-        [Route("Responsibility_DeleteFields")]
+        [Route("Responsibility_DeleteFields"), NonNullableParameters]
         public JsonResult Responsibility_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -12024,75 +11808,97 @@ order by	T.Name, I.DisplayValue";
             return list;
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddResponsibility")]
-        public JsonResult AddResponsibility(FormCollection form)
+        //[ValidateHttpAntiForgeryToken, HttpPost, Route("AddResponsibility")]
+        //public JsonResult AddResponsibility(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("responsibility");
+
+        //        var objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), form["ObjectType"]);
+        //        var responsibleParty = form["ResponsibleObject"].Split('|');
+        //        var o = new Responsibility
+        //        {
+        //            ResponsibilityTypeID = parseIntField(form, "ResponsibilityType"),
+        //            ObjectType = objectType.ToString(),
+        //            ObjectID = parseIntField(form, "ObjectID"),
+        //            ResponsibleObjectType = responsibleParty[0],
+        //            ResponsibleObjectID = int.Parse(responsibleParty[1]),
+        //            Visible = parseBooleanField(form, "IsVisible", true)
+        //        };
+
+        //        #region Existence check
+
+        //        var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == o.ResponsibilityTypeID && i.ObjectType == o.ObjectType && i.ObjectID == o.ObjectID, i => i.ResponsibilityContextItems).FirstOrDefault();
+        //        if (existing != null)
+        //        {
+        //            var newContexts = getContextFormFieldForResponsibility(0, form);
+        //            var existingContexts = existing.ResponsibilityContextItems.ToList();
+        //            var matchingCount = 0;
+        //            existingContexts.ForEach(ec =>
+        //            {
+        //                if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
+        //                {
+        //                    matchingCount++;
+        //                }
+        //            });
+        //            if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
+        //            {
+        //                throw new ArgumentException("A responsibility with these settings already exists for the item.");
+        //            }
+        //        }
+
+        //        #endregion
+
+        //        Company.Add<Responsibility>(o);
+
+        //        processContextFormFieldForResponsibility(o.ID, form);
+
+        //        Company.Update<Responsibility>(o);  //Call this again so we can re-cache via trigger.
+
+        //        return jsonSuccess("Item successfully created.", o.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = o.ObjectType.ToString(), ObjectID = o.ObjectID.ToString() });
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
+
+        //[HttpDelete, Route("DeleteResponsibility")]
+        //public JsonResult DeleteResponsibility(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("responsibility");
+
+        //        var id = parseIntField(form, "ID");
+        //        var model = Company.GetById<Responsibility>(id);
+        //        if (model == null) throw new NotFoundException("responsibility");
+
+        //        Company.Delete<Responsibility>(model);
+        //        return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
+
+        [HttpDelete, Route("DeleteResponsibilityByID"), NonNullableParameters]
+        public JsonResult DeleteResponsibilityByID(int id)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("responsibility");
-
-                var objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), form["ObjectType"]);
-                var responsibleParty = form["ResponsibleObject"].Split('|');
-                var o = new Responsibility
-                {
-                    ResponsibilityTypeID = parseIntField(form, "ResponsibilityType"),
-                    ObjectType = objectType.ToString(),
-                    ObjectID = parseIntField(form, "ObjectID"),
-                    ResponsibleObjectType = responsibleParty[0],
-                    ResponsibleObjectID = int.Parse(responsibleParty[1]),
-                    Visible = parseBooleanField(form, "IsVisible", true)
-                };
-
-                #region Existence check
-
-                var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == o.ResponsibilityTypeID && i.ObjectType == o.ObjectType && i.ObjectID == o.ObjectID, i => i.ResponsibilityContextItems).FirstOrDefault();
-                if (existing != null)
-                {
-                    var newContexts = getContextFormFieldForResponsibility(0, form);
-                    var existingContexts = existing.ResponsibilityContextItems.ToList();
-                    var matchingCount = 0;
-                    existingContexts.ForEach(ec =>
-                    {
-                        if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
-                        {
-                            matchingCount++;
-                        }
-                    });
-                    if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
-                    {
-                        throw new ArgumentException("A responsibility with these settings already exists for the item.");
-                    }
-                }
-
-                #endregion
-
-                Company.Add<Responsibility>(o);
-
-                processContextFormFieldForResponsibility(o.ID, form);
-
-                Company.Update<Responsibility>(o);  //Call this again so we can re-cache via trigger.
-
-                return jsonSuccess("Item successfully created.", o.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = o.ObjectType.ToString(), ObjectID = o.ObjectID.ToString() });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteResponsibility")]
-        public JsonResult DeleteResponsibility(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("responsibility");
-
-                var id = parseIntField(form, "ID");
                 var model = Company.GetById<Responsibility>(id);
                 if (model == null) throw new NotFoundException("responsibility");
 
@@ -12110,15 +11916,7 @@ order by	T.Name, I.DisplayValue";
             }
         }
 
-        [HttpDelete, Route("DeleteResponsibilityByID")]
-        public JsonResult DeleteResponsibilityByID(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteResponsibility(form);
-        }
-
-        [HttpGet, Route("Responsibility")]
+        [HttpGet, Route("Responsibility"), NonNullableParameters]
         public JsonNetResult Responsibility(int? id, SystemObjects? type, int? responsibilityID)
         {
             List<SelectListItem> contexts;
@@ -12153,61 +11951,61 @@ order by	T.Name, I.DisplayValue";
             };
         }
 
-        [HttpPut, Route("EditResponsibility")]
-        public JsonResult EditResponsibility(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("responsibility");
+        //[HttpPut, Route("EditResponsibility")]
+        //public JsonResult EditResponsibility(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("responsibility");
 
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Responsibility>(id);
-                if (model == null) throw new NotFoundException("responsibility");
-                var responsibleParty = form["ResponsibleObject"].Split('|');
+        //        var id = parseIntField(form, "ID");
+        //        var model = Company.GetById<Responsibility>(id);
+        //        if (model == null) throw new NotFoundException("responsibility");
+        //        var responsibleParty = form["ResponsibleObject"].Split('|');
 
-                model.ResponsibleObjectType = responsibleParty[0];
-                model.ResponsibleObjectID = int.Parse(responsibleParty[1]);
-                model.ResponsibilityTypeID = parseIntField(form, "ResponsibilityType");
-                model.Visible = parseBooleanField(form, "IsVisible", true);
+        //        model.ResponsibleObjectType = responsibleParty[0];
+        //        model.ResponsibleObjectID = int.Parse(responsibleParty[1]);
+        //        model.ResponsibilityTypeID = parseIntField(form, "ResponsibilityType");
+        //        model.Visible = parseBooleanField(form, "IsVisible", true);
 
-                #region Existence check
+        //        #region Existence check
 
-                var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == model.ResponsibilityTypeID && i.ObjectType == model.ObjectType && i.ObjectID == model.ObjectID && i.ID != model.ID, i => i.ResponsibilityContextItems).FirstOrDefault();
-                if (existing != null)
-                {
-                    var newContexts = getContextFormFieldForResponsibility(0, form);
-                    var existingContexts = existing.ResponsibilityContextItems.ToList();
-                    var matchingCount = 0;
-                    existingContexts.ForEach(ec =>
-                    {
-                        if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
-                        {
-                            matchingCount++;
-                        }
-                    });
-                    if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
-                    {
-                        throw new ArgumentException("A responsibility with these settings already exists for the item.");
-                    }
-                }
+        //        var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == model.ResponsibilityTypeID && i.ObjectType == model.ObjectType && i.ObjectID == model.ObjectID && i.ID != model.ID, i => i.ResponsibilityContextItems).FirstOrDefault();
+        //        if (existing != null)
+        //        {
+        //            var newContexts = getContextFormFieldForResponsibility(0, form);
+        //            var existingContexts = existing.ResponsibilityContextItems.ToList();
+        //            var matchingCount = 0;
+        //            existingContexts.ForEach(ec =>
+        //            {
+        //                if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
+        //                {
+        //                    matchingCount++;
+        //                }
+        //            });
+        //            if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
+        //            {
+        //                throw new ArgumentException("A responsibility with these settings already exists for the item.");
+        //            }
+        //        }
 
-                #endregion
+        //        #endregion
 
-                processContextFormFieldForResponsibility(id, form, false);
-                Company.Update<Responsibility>(model);  //Do this after context so the trigger will properly re-cache with the contextxs.
+        //        processContextFormFieldForResponsibility(id, form, false);
+        //        Company.Update<Responsibility>(model);  //Do this after context so the trigger will properly re-cache with the contextxs.
 
-                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //        return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
         [HttpPost, Route("Responsibility")]
         public JsonResult Responsibility(Responsibility r)
@@ -12354,7 +12152,7 @@ order by	T.Name, I.DisplayValue";
         }
 
         /// <param name="id">ResponsibilityTypeID</param>
-        [Route("ResponsibilityType_DeleteFields")]
+        [Route("ResponsibilityType_DeleteFields"), NonNullableParameters]
         public JsonResult ResponsibilityType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -12366,7 +12164,7 @@ order by	T.Name, I.DisplayValue";
         }
 
         /// <param name="id">ResponsibilityTypeID</param>
-        [Route("ResponsibilityType_EditFields")]
+        [Route("ResponsibilityType_EditFields"), NonNullableParameters]
         public JsonResult ResponsibilityType_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -12392,63 +12190,87 @@ order by	T.Name, I.DisplayValue";
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResponsibilityType")]
-        public JsonResult AddResponsibilityType(FormCollection form)
+        //[ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResponsibilityType")]
+        //public JsonResult AddResponsibilityType(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("ownership type");
+
+        //        if (string.IsNullOrEmpty(form["AllocationType"]))
+        //        {
+        //            throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
+        //        }
+
+        //        var a = new ResponsibilityType
+        //        {
+        //            Name = parseTextField(form, "Name"),
+        //            ResponsibilityTypeGroup = (ResponsibilityTypeGroup)Enum.Parse(typeof(ResponsibilityTypeGroup), form["ResponsibilityTypeGroup"]),
+        //            Description = parseTextField(form, "Description")
+        //        };
+
+        //        Company.Add<ResponsibilityType>(a);
+
+        //        var items = form["AllocationType"].Split(',')
+        //            .Select(i => i.Split('|'))
+        //            .Select(i => new ObjectModel
+        //            {
+        //                ObjectType = i[0],
+        //                ObjectID = int.Parse(i[1])
+        //            }).ToList();
+
+        //        foreach (var o in items)
+        //        {
+        //            var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = a.ID };
+        //            Company.Set<ResponsibilityTypeRelation>().Add(r);
+        //        }
+        //        Company.SaveChanges();
+
+        //        return jsonSuccess("Item successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
+
+        //[HttpDelete, Route("DeleteResponsibilityType")]
+        //public JsonResult DeleteResponsibilityType(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("ownership type");
+
+        //        var id = parseIntField(form, "ID");
+        //        var model = Company.GetById<ResponsibilityType>(id);
+        //        if (model == null) throw new NotFoundException("ownership type");
+
+        //        Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id);
+        //        Company.Delete<ResponsibilityType>(model);
+
+        //        return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
+
+        [HttpDelete, ValidateHttpAntiForgeryToken, Route("DeleteResponsibilityTypeByID"), NonNullableParameters]
+        public JsonResult DeleteResponsibilityTypeByID(int id)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("ownership type");
-
-                if (string.IsNullOrEmpty(form["AllocationType"]))
-                {
-                    throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
-                }
-
-                var a = new ResponsibilityType
-                {
-                    Name = parseTextField(form, "Name"),
-                    ResponsibilityTypeGroup = (ResponsibilityTypeGroup)Enum.Parse(typeof(ResponsibilityTypeGroup), form["ResponsibilityTypeGroup"]),
-                    Description = parseTextField(form, "Description")
-                };
-
-                Company.Add<ResponsibilityType>(a);
-
-                var items = form["AllocationType"].Split(',')
-                    .Select(i => i.Split('|'))
-                    .Select(i => new ObjectModel
-                    {
-                        ObjectType = i[0],
-                        ObjectID = int.Parse(i[1])
-                    }).ToList();
-
-                foreach (var o in items)
-                {
-                    var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = a.ID };
-                    Company.Set<ResponsibilityTypeRelation>().Add(r);
-                }
-                Company.SaveChanges();
-
-                return jsonSuccess("Item successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteResponsibilityType")]
-        public JsonResult DeleteResponsibilityType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ownership type");
-
-                var id = parseIntField(form, "ID");
                 var model = Company.GetById<ResponsibilityType>(id);
                 if (model == null) throw new NotFoundException("ownership type");
 
@@ -12468,15 +12290,7 @@ order by	T.Name, I.DisplayValue";
             }
         }
 
-        [HttpDelete, ValidateHttpAntiForgeryToken, Route("DeleteResponsibilityTypeByID")]
-        public JsonResult DeleteResponsibilityTypeByID(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteResponsibilityType(form);
-        }
-
-        [HttpGet, ActionName("ResponsibilityType"), Route("ResponsibilityType")]
+        [HttpGet, ActionName("ResponsibilityType"), Route("ResponsibilityType"), NonNullableParameters]
         public JsonNetResult GetResponsibilityType(int id, ResponsibilityTypeGroup group = ResponsibilityTypeGroup.People)
         {
 
@@ -12581,56 +12395,56 @@ order by	T.Name, I.DisplayValue";
             }
         }
 
-        [HttpPut, ValidateInput(false), Route("EditResponsibilityType")]
-        public JsonResult EditResponsibilityType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ownership type");
+        //[HttpPut, ValidateInput(false), Route("EditResponsibilityType")]
+        //public JsonResult EditResponsibilityType(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("ownership type");
 
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ResponsibilityType>(id);
-                if (model == null) throw new NotFoundException("ownership type");
+        //        var id = parseIntField(form, "ID");
+        //        var model = Company.GetById<ResponsibilityType>(id);
+        //        if (model == null) throw new NotFoundException("ownership type");
 
-                if (string.IsNullOrEmpty(form["AllocationType"]))
-                {
-                    throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
-                }
+        //        if (string.IsNullOrEmpty(form["AllocationType"]))
+        //        {
+        //            throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
+        //        }
 
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
+        //        model.Name = parseTextField(form, "Name");
+        //        model.Description = parseTextField(form, "Description");
 
-                Company.Update<ResponsibilityType>(model);
+        //        Company.Update<ResponsibilityType>(model);
 
-                Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == model.ID);
+        //        Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == model.ID);
 
-                var items = form["AllocationType"].Split(',')
-                    .Select(i => i.Split('|'))
-                    .Select(i => new ObjectModel
-                    {
-                        ObjectType = i[0],
-                        ObjectID = int.Parse(i[1])
-                    }).ToList();
+        //        var items = form["AllocationType"].Split(',')
+        //            .Select(i => i.Split('|'))
+        //            .Select(i => new ObjectModel
+        //            {
+        //                ObjectType = i[0],
+        //                ObjectID = int.Parse(i[1])
+        //            }).ToList();
 
-                foreach (var o in items)
-                {
-                    var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = id };
-                    Company.Set<ResponsibilityTypeRelation>().Add(r);
-                }
-                Company.SaveChanges();
+        //        foreach (var o in items)
+        //        {
+        //            var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = id };
+        //            Company.Set<ResponsibilityTypeRelation>().Add(r);
+        //        }
+        //        Company.SaveChanges();
 
-                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //        return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
         #endregion
 
@@ -12767,7 +12581,7 @@ order by	T.Name, I.DisplayValue";
             }
         }
 
-        [HttpPut, Route("EditClaimsMatrix")]
+        [HttpPut, Route("EditClaimsMatrix"), NonNullableParameters]
         public JsonResult EditClaimsMatrix(List<ResponsibilityTypeObjectClaim> claims, int objectID, string objectType, int responsibilityTypeID)
         {
             try
@@ -12825,7 +12639,7 @@ order by	T.Name, I.DisplayValue";
         #region Field Generation
 
         /// <param name="id">ResourceTypeID</param>
-        [Route("Resource_AddFields")]
+        [Route("Resource_AddFields"), NonNullableParameters]
         public JsonResult Resource_AddFields(int id)
         {
             var list = new List<EditableField>();
@@ -12845,7 +12659,7 @@ order by	T.Name, I.DisplayValue";
         }
 
         /// <param name="id">ResourceID</param>
-        [Route("Resource_DeleteFields")]
+        [Route("Resource_DeleteFields"), NonNullableParameters]
         public JsonResult Resource_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -12857,7 +12671,7 @@ order by	T.Name, I.DisplayValue";
         }
 
         /// <param name="id">ResourceID</param>
-        [Route("Resource_EditFields")]
+        [Route("Resource_EditFields"), NonNullableParameters]
         public JsonResult Resource_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -12904,7 +12718,7 @@ order by	T.Name, I.DisplayValue";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Resource_ChangeUserPasswordFields")]
+        [Route("Resource_ChangeUserPasswordFields"), NonNullableParameters]
         public JsonResult Resource_ChangeUserPasswordFields(int id)
         {
             var list = new List<EditableField>();
@@ -13088,7 +12902,7 @@ order by	T.Name, I.DisplayValue";
             }
         }
 
-        [HttpDelete, Route("DeleteResourceByID")]
+        [HttpDelete, Route("DeleteResourceByID"), NonNullableParameters]
         public JsonResult DeleteResourceByID(int id)
         {
             var form = new FormCollection();
@@ -13272,7 +13086,7 @@ order by	T.Name, I.DisplayValue";
 
         #region JSON Feeds
 
-        [Route("QuestionType_FormData")]
+        [Route("QuestionType_FormData"), NonNullableParameters]
         public JsonNetResult QuestionType_FormData(int surveyTypeID, int id = 0)
         {
             QuestionType qt = null;
@@ -13328,7 +13142,7 @@ order by	T.Name, I.DisplayValue";
         #region Field Generation
 
         /// <param name="id">ResponseTypeID</param>
-        [Route("QuestionType_DeleteFields")]
+        [Route("QuestionType_DeleteFields"), NonNullableParameters]
         public JsonResult QuestionType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -13515,7 +13329,7 @@ order by	T.Name, I.DisplayValue";
         }
 
         /// <param name="id">RuleID</param>
-        [Route("Rule_DeleteFields")]
+        [Route("Rule_DeleteFields"), NonNullableParameters]
         public JsonResult Rule_DeleteFields(int id)
         {
             var model = Company.GetById<Rule>(id);
@@ -13530,7 +13344,7 @@ order by	T.Name, I.DisplayValue";
         }
 
         /// <param name="id">RuleID</param>
-        [Route("Rule_EditFields")]
+        [Route("Rule_EditFields"), NonNullableParameters]
         public JsonResult Rule_EditFields(int id)
         {
             var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
@@ -13565,7 +13379,7 @@ order by	T.Name, I.DisplayValue";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Rule_SimilarItems")]
+        [Route("Rule_SimilarItems"), NonNullableParameters]
         public JsonNetResult Rule_SimilarItems(string query)
         {
             return new JsonNetResult
@@ -13742,7 +13556,7 @@ order by	T.Name, I.DisplayValue";
         }
 
         /// <param name="id">RuleID</param>
-        [Route("RuleDimension_DeleteFields")]
+        [Route("RuleDimension_DeleteFields"), NonNullableParameters]
         public JsonResult RuleDimension_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
@@ -13755,7 +13569,7 @@ order by	T.Name, I.DisplayValue";
         }
 
         /// <param name="id">RuleID</param>
-        [Route("RuleDimension_EditFields")]
+        [Route("RuleDimension_EditFields"), NonNullableParameters]
         public JsonResult RuleDimension_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
@@ -14028,7 +13842,7 @@ order by	T.Name, I.DisplayValue";
         #region Field Generation
 
         /// <param name="id">StatisticTypeID</param>
-        [Route("StatisticType_DeleteFields")]
+        [Route("StatisticType_DeleteFields"), NonNullableParameters]
         public JsonResult StatisticType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.StatisticType, id, Claim.Delete))
@@ -14046,7 +13860,7 @@ order by	T.Name, I.DisplayValue";
 
         #region JSON Feeds
 
-        [Route("StatisticType_FormData")]
+        [Route("StatisticType_FormData"), NonNullableParameters]
         public JsonNetResult StatisticType_FormData(int id)
         {
             var type = Company.GetById<StatisticType>(id);
@@ -14126,7 +13940,7 @@ order by	T.Name, I.DisplayValue";
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("StatisticType_CheckObjectOptions")]
+        [Route("StatisticType_CheckObjectOptions"), NonNullableParameters]
         public JsonNetResult StatisticType_CheckObjectOptions(SystemObjects type, int id, StatisticCheckType check)
         {
             var models = new List<KnockoutListItem>();
@@ -14434,7 +14248,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">SurveyTypeID</param>
-        [Route("SurveyType_DeleteFields")]
+        [Route("SurveyType_DeleteFields"), NonNullableParameters]
         public JsonResult SurveyType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -14443,7 +14257,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">SurveyTypeID</param>
-        [Route("SurveyType_EditFields")]
+        [Route("SurveyType_EditFields"), NonNullableParameters]
         public JsonResult SurveyType_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -14559,7 +14373,7 @@ from    [IntersectType] RT
 
         #region Json
 
-        [HttpGet, Route("SynonymTypes")]
+        [HttpGet, Route("SynonymTypes"), NonNullableParameters]
         public JsonNetResult SynonymTypes(string type, int id)
         {
             var items = Company.Query<dynamic>(QueryConstants.SynonymTypes, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
@@ -14571,7 +14385,7 @@ from    [IntersectType] RT
             };
         }
 
-        [HttpGet, Route("SynonymsOptions")]
+        [HttpGet, Route("SynonymsOptions"), NonNullableParameters]
         public JsonResult SynonymsOptions(string type, int typeId, string obj, int objId, string query = "")
         {
             query = query.Replace("_", "[_]").Replace("%", "[%]");
@@ -14623,7 +14437,7 @@ from    [IntersectType] RT
 
         #region Field Generation
 
-        [Route("Synonym_AddFields")]
+        [Route("Synonym_AddFields"), NonNullableParameters]
         public JsonResult Synonym_AddFields(string type, int id)
         {
             //if (!Company.HasPermission(SystemObjects.TaxonomyType, t, Claim.Create))
@@ -14645,7 +14459,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">Object's ID</param>
-        [Route("Synonym_DeleteFields")]
+        [Route("Synonym_DeleteFields"), NonNullableParameters]
         public JsonResult Synonym_DeleteFields(int id)
         {
             var detail = Company.GetById<Intersect>(id);
@@ -14753,7 +14567,7 @@ from    [IntersectType] RT
             }
         }
 
-        [HttpDelete, Route("DeleteSynonymByID")]
+        [HttpDelete, Route("DeleteSynonymByID"), NonNullableParameters]
         public JsonResult DeleteSynonymByID(int id)
         {
             var form = new FormCollection();
@@ -14771,7 +14585,7 @@ from    [IntersectType] RT
 
         /// <param name="t">TaxonomyTypeID</param>
         /// <param name="p">ParentID</param>
-        [Route("Taxonomy_AddFields")]
+        [Route("Taxonomy_AddFields"), NonNullableParameters]
         public JsonResult Taxonomy_AddFields(int t, int p)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, t, Claim.Create))
@@ -14790,7 +14604,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">TaxonomyID</param>
-        [Route("Taxonomy_DeleteFields")]
+        [Route("Taxonomy_DeleteFields"), NonNullableParameters]
         public JsonResult Taxonomy_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Delete))
@@ -14804,7 +14618,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">TaxonomyID</param>
-        [Route("Taxonomy_EditFields")]
+        [Route("Taxonomy_EditFields"), NonNullableParameters]
         public JsonResult Taxonomy_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Update))
@@ -14850,7 +14664,7 @@ order by TextPath
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Taxonomy_SimilarItems")]
+        [Route("Taxonomy_SimilarItems"), NonNullableParameters]
         public JsonNetResult Taxonomy_SimilarItems(int typeID, int id, string query)
         {
 
@@ -15056,7 +14870,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeID</param>
-        [Route("TaxonomyType_DeleteFields")]
+        [Route("TaxonomyType_DeleteFields"), NonNullableParameters]
         public JsonResult TaxonomyType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
@@ -15071,7 +14885,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeID</param>
-        [Route("TaxonomyType_EditFields")]
+        [Route("TaxonomyType_EditFields"), NonNullableParameters]
         public JsonResult TaxonomyType_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
@@ -15275,7 +15089,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeClassID</param>
-        [Route("TaxonomyTypeClass_DeleteFields")]
+        [Route("TaxonomyTypeClass_DeleteFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeClass_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Delete))
@@ -15290,7 +15104,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeClassID</param>
-        [Route("TaxonomyTypeClass_EditFields")]
+        [Route("TaxonomyTypeClass_EditFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeClass_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Update))
@@ -15407,7 +15221,7 @@ order by TextPath
 
         #region Field Generation
 
-        [Route("TaxonomyTypeLevel_AddFields")]
+        [Route("TaxonomyTypeLevel_AddFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeLevel_AddFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Create))
@@ -15448,7 +15262,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeID</param>
-        [Route("TaxonomyTypeLevel_DeleteFields")]
+        [Route("TaxonomyTypeLevel_DeleteFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeLevel_DeleteFields(int id, int level)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
@@ -15463,7 +15277,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeID</param>
-        [Route("TaxonomyTypeLevel_EditFields")]
+        [Route("TaxonomyTypeLevel_EditFields"), NonNullableParameters]
         public JsonResult TaxonomyTypeLevel_EditFields(int id, int level)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
@@ -15617,7 +15431,7 @@ order by TextPath
         }
 
         /// <param name="id">TooltipTemplateID</param>
-        [Route("TooltipTemplate_DeleteFields")]
+        [Route("TooltipTemplate_DeleteFields"), NonNullableParameters]
         public JsonResult TooltipTemplate_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -15629,7 +15443,7 @@ order by TextPath
         }
 
         /// <param name="id">TooltipTemplateID</param>
-        [Route("TooltipTemplate_EditFields")]
+        [Route("TooltipTemplate_EditFields"), NonNullableParameters]
         public JsonResult TooltipTemplate_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -15783,7 +15597,7 @@ order by TextPath
 
         #region Field Generation
 
-        [Route("WorkflowAllocation_DeleteFields")]
+        [Route("WorkflowAllocation_DeleteFields"), NonNullableParameters]
         public JsonResult WorkflowAllocation_DeleteFields(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -15938,7 +15752,7 @@ order by TextPath
             }
         }
 
-        [HttpDelete, Route("DeleteWorkflowAllocationByID")]
+        [HttpDelete, Route("DeleteWorkflowAllocationByID"), NonNullableParameters]
         public JsonResult DeleteWorkflowAllocationByID(int id)
         {
             var form = new FormCollection();
@@ -15946,7 +15760,7 @@ order by TextPath
             return DeleteWorkflowAllocation(form);
         }
 
-        [HttpGet, Route("WorkflowAllocation")]
+        [HttpGet, Route("WorkflowAllocation"), NonNullableParameters]
         public JsonNetResult WorkflowAllocation(int? id, WorkflowType? workflowType)
         {
             var model = new WorkflowTypeRelationEditorModel();
@@ -16295,7 +16109,7 @@ order by TextPath
 
 
         /// <param name="id">LookupTypeID</param>
-        [Route("ReferenceItem_AddFields")]
+        [Route("ReferenceItem_AddFields"), NonNullableParameters]
         public JsonResult ReferenceItem_AddFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Create))
@@ -16311,7 +16125,7 @@ order by TextPath
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("ReferenceItem_DeleteFields")]
+        [Route("ReferenceItem_DeleteFields"), NonNullableParameters]
         public JsonResult ReferenceItem_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -16326,7 +16140,7 @@ order by TextPath
         }
 
         /// <param name="id">LookupID</param>
-        [Route("ReferenceItem_EditFields")]
+        [Route("ReferenceItem_EditFields"), NonNullableParameters]
         public JsonResult ReferenceItem_EditFields(int id)
         {
             var list = new List<EditableField>();

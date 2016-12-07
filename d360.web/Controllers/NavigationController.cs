@@ -10,6 +10,7 @@ using d360.core.enums;
 using System.Text;
 using System.Security.Cryptography;
 using System;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -23,38 +24,7 @@ namespace d360.web.Controllers
         { }
 
         #endregion
-
-        [Authorize, Route("top")]
-        public ActionResult Top()
-        {
-            var resource = Community.GetById<Resource>(Company.CurrentResourceID);
-
-            var md5Hasher = MD5.Create();
-
-            // Convert the input string to a byte array and compute the hash.  
-            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes(resource.Email));
-
-            // Create a new Stringbuilder to collect the bytes and create a string.  
-            var sBuilder = new StringBuilder();
-
-            // Loop through each byte of the hashed data and format each one as a hexadecimal string.  
-            for (int i = 0; i < data.Length; i++)
-            {
-                sBuilder.Append(data[i].ToString("x2"));
-            }
-
-            var navigation = new TopNavigation 
-            {
-                ResourceID = Company.CurrentResourceID,
-                ResourceName = resource.FormatDisplayName(),
-                ResourceImageUrl = string.Format("https://secure.gravatar.com/avatar/{0}?s={1}", sBuilder.ToString(), 150),
-                ResourceUrl = string.Format("#/resources/{0}", Company.CurrentResourceID),
-                LastLoggedInDate = resource.DateLastLoggedIn.HasValue ? resource.DateLastLoggedIn.Value.ToShortDateString() : "",
-                NavigationItems = GetSiteNavigation()
-            };
-            return PartialView(navigation);
-        }
-        
+      
         [Route("sitemenu")]
         public JsonNetResult SiteMenu()
         {
@@ -481,7 +451,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpPost, Route("RemoveFolderItem")]
+        [Authorize, HttpPost, Route("RemoveFolderItem"), NonNullableParameters]
         public JsonNetResult RemoveFolderItem(int id)
         {
             var success = true;
@@ -508,7 +478,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpPost, Route("RemoveFolder")]
+        [Authorize, HttpPost, Route("RemoveFolder"), NonNullableParameters]
         public JsonNetResult RemoveFolder(int id)
         {
             var success = true;
@@ -574,7 +544,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpPut, Route("MoveUp")]
+        [Authorize, HttpPut, Route("MoveUp"), NonNullableParameters]
         public JsonNetResult MoveUp(int id)
         {
             var success = true;
@@ -608,7 +578,7 @@ SELECT	'#Admin' as MenuID,
             };
         }
 
-        [Authorize, HttpPut, Route("MoveDown")]
+        [Authorize, HttpPut, Route("MoveDown"), NonNullableParameters]
         public JsonNetResult MoveDown(int id)
         {
             var success = true;
@@ -750,7 +720,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpPut, Route("MoveFavorite")]
+        [Authorize, HttpPut, Route("MoveFavorite"), NonNullableParameters]
         public JsonNetResult MoveFavorite(string route, bool moveUp = false, bool admin = false)
         {
             var success = true;

@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
+import { Router, ActivatedRoute }       from '@angular/router';
 import { MessagesService, HeaderBreadcrumbService, LookupService, RightSidebarService  } from '../../../services/index';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Lookup } from '../../../models/lookup.model';
@@ -69,13 +70,21 @@ import { Title } from '@angular/platform-browser';
 })
 
 export class AdminLookupsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
+    private sub: any;
     lookups: Lookup[] = [];
     selectedLookup: Lookup;
+    private selectedLookupTypeId: number = 0;
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(rightSidebarService: RightSidebarService, private lookupService: LookupService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(private route: ActivatedRoute,
+        private router: Router,
+        rightSidebarService: RightSidebarService,
+        private lookupService: LookupService,
+        protected messagesService: MessagesService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);                
         this.areaName = "Lookup Types";
         this.setCommonItems();
@@ -84,7 +93,15 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
 
     ngOnInit() {
         this.theDeleteCallback = this.deleteLookup.bind(this);
-        this.getLookups();
+        this.getLookups().then(result => {
+            this.sub = this.route.params.subscribe(params => {
+                this.selectedLookupTypeId = +params['lookupTypeId']; // (+) converts string 'id' to a number
+                let preselected = this.lookups.find(i => i.ID === this.selectedLookupTypeId);
+                if (preselected) {
+                    this.selectedLookup = preselected;
+                }
+            });
+        });
     }
 
     ngOnDestroy() {
@@ -93,7 +110,7 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
 
     getLookups() {
         this.isLoading = true;
-        this.lookupService.getLookups()
+        return this.lookupService.getLookups()
             .then(result => {
                 this.lookups = result;
                 this.isLoading = false;

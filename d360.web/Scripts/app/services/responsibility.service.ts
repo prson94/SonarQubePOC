@@ -12,7 +12,7 @@ export class ResponsibilityService extends BaseService implements IResponsibilit
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getResponsibilityDetail(objectID: number, objectType: string, showHidden: boolean = true): Promise<ResponsibilityItem[]> {
-        return this.http.get(`api/${objectType}/${objectID}/ownership?showHidden=${showHidden}`)
+        return this.http.get(`api/${objectType}/${objectID}/ownership/${showHidden}`)
             .toPromise()
             .then(response => <ResponsibilityItem[]>response.json())
             .then(r => {

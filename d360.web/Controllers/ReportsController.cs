@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.model;
 using d360.web.Models;
+using d360.web.Models.Attributes;
 using Microsoft.PowerBI.Api;
 using Microsoft.PowerBI.Api.V1;
 using Microsoft.PowerBI.Security;
@@ -30,7 +31,7 @@ namespace d360.web.Controllers
         #endregion
 
 
-        [Route("Overlay")]
+        [Route("Overlay"), NonNullableParameters]
         public ActionResult Overlay(int reportID, string type, int id)
         {
             var report = Company.GetById<Report>(reportID, i => i.ReportLayout);
@@ -75,7 +76,7 @@ namespace d360.web.Controllers
             return PartialView(model);
         }
 
-        [Route("PreviewOverlay")]
+        [Route("PreviewOverlay"), NonNullableParameters]
         public ActionResult PreviewOverlay(int id)
         {
             var report = Company.GetById<Report>(id, i => i.ReportLayout);
@@ -128,7 +129,7 @@ namespace d360.web.Controllers
             return client;
         }
 
-        [Route("PowerBIOverlay")]
+        [Route("PowerBIOverlay"), NonNullableParameters]
         public async Task<ActionResult> PowerBIOverlay(string reportId)
         {
             var companySettings = Community.GetCompanySettings();
@@ -343,11 +344,16 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("data"), HttpPost]
+        [Route("data"), HttpPost, NonNullableParameters]
         public JsonNetResult GetReportTilePreviewData(string sql)
         {
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return new JsonNetResult { Data = new { error = "You must be an administrator." }, Formatting = Newtonsoft.Json.Formatting.None };
+                }
+
                 if (Company.IsValidReportingQuery(sql))
                 {
                     var models = Company.Query<dynamic>(sql, null, 180);

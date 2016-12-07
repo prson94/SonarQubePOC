@@ -1861,7 +1861,7 @@
             <param name="model">A rule</param>
             <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new rule is also returned.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddSourceRuleEvents(System.String,d360.web.Controllers.Services.EventsController.CreateEventsModelRequest)">
+        <member name="M:d360.web.Controllers.Services.EventsController.AddSourceRuleEvents(System.String,System.Collections.Generic.List{d360.web.Controllers.Services.EventsController.ResultModel})">
             <summary>
             Add one or more events to a rule.
             </summary>
@@ -1869,12 +1869,12 @@
             <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddRuleEvents(System.Int32,d360.web.Controllers.Services.EventsController.CreateEventsModelRequest)">
+        <member name="M:d360.web.Controllers.Services.EventsController.AddRuleResults(System.Int32,System.Collections.Generic.List{d360.web.Controllers.Services.EventsController.ResultModel})">
             <summary>
             Add one or more events to a rule.
             </summary>
             <param name="id">The ID of the rule to add events to.</param>
-            <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
+            <param name="models">A collection of aggregated rule results.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.Services.EventsController.AddSourceRuleRelationships(System.String,System.Collections.Generic.List{d360.core.entities.ObjectModel})">
@@ -2149,24 +2149,6 @@
             <param name="type">The type of object</param>
             <param name="id">The ID of the object</param>
             <returns>A list of fields with the name, friendly name, and value.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.AttributesController.RelationshipAttributesFieldList(System.Int32)">
-            <summary>
-            Gets the list of columns for the relationship overlay grid based on the input owner
-            </summary>        
-            <param name="intersectTypeID">The object ID to get list of attributes for.</param>        
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.AttributesController.AttributeActions(d360.core.SystemObjects,System.Int32,d360.core.SystemObjects,System.Int32,System.Nullable{System.Int32})">
-            <summary>
-            Gets list of allowed actions that you can take on the selected attribute or node.
-            </summary>
-            <param name="type">The object type to get actions for.</param>
-            <param name="id">The object ID to get actions for.</param>
-            <param name="owner">The type of the object that owns this attribute.</param>
-            <param name="ownerID">The ID of the object that owns this attribute.</param>
-            <param name="attributeID">The current or new parent attribute ID.</param>
-            <returns>A list of available actions as JSON.</returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">
             <param name="at">ArtifactTypeID</param>
@@ -2584,6 +2566,13 @@
             This is the new model that corresponds to GetHierarchyByPredicateType stored procedure.
             </summary>
         </member>
+        <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">
+            <summary>
+            If the current response is a FileResult (an MVC base class for files) then write a
+            cookie to inform jquery.fileDownload that a successful file download has occured
+            </summary>
+            <param name="filterContext"></param>
+        </member>
         <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.ColumnStatement">
             <summary>
             Generated when it comes time to create a dynamic SQL query.
@@ -2603,13 +2592,6 @@
             <summary>
             Generated when it comes time to create a dynamic SQL query.
             </summary>
-        </member>
-        <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">
-            <summary>
-            If the current response is a FileResult (an MVC base class for files) then write a
-            cookie to inform jquery.fileDownload that a successful file download has occured
-            </summary>
-            <param name="filterContext"></param>
         </member>
         <member name="T:d360.web.Models.AddItemsToDiagramModel">
             <summary>

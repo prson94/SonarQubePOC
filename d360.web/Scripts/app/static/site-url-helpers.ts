@@ -99,7 +99,6 @@
     // CURRENT USES mainly used by search as elastic search stores the url of the results but doesnt store the parent type
     // of objects making it not posible to get the object url by building it
     static convertClassicUrl(url) : string {
-        console.log("convert", url);
         if (url.startsWith('#/artifacts'))
             return url.replace('#/artifacts', SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT);
         else if (url.startsWith('#/resources'))
@@ -135,7 +134,9 @@
             return url;
         }
         else {
-            console.log('[ERROR] - CANNOT CONVERT CLASSIC URL TO NEW URL', url);
+            if (url.startsWith('#'))
+                console.log('[ERROR] - CANNOT CONVERT CLASSIC URL TO NEW URL', url);
+
             return url;
         }
     }

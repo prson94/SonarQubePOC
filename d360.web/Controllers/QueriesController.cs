@@ -1,18 +1,12 @@
 ﻿using d360.core;
-using d360.core.entities;
 using d360.model;
-using d360.web.Models.Formatters;
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
+using d360.web.Models.Attributes;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using System.Web.Script.Serialization;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("queries"), Authorize]
+    [RoutePrefix("queries"), Authorize, AiHandleError]
     public class QueriesController : BaseController
     {
         #region DI
@@ -85,7 +79,7 @@ order by	Status ", new { id = id });
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
         
-        [Route("FollowingByResourceByType")]
+        [Route("FollowingByResourceByType"), NonNullableParameters]
         public JsonNetResult GetFollowingByResourceByType(int resourceID, string type, int id)
         {
             var query = Company.Query<dynamic>(@"select ObjectType, ObjectID, Name, ID, Url, CurrentScore, OpenEventCount
@@ -95,7 +89,7 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
         
-        [Route("ResponsibilityTypeBreakdown")]
+        [Route("ResponsibilityTypeBreakdown"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeBreakdown()
         {
             var query = Company.Query<dynamic>(@"select O.ResponsibilityType, O.ResponsibilityTypeID, count(1) as [Count]
@@ -308,7 +302,7 @@ from	Comment C
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("RelatedArtifacts")]
+        [Route("RelatedArtifacts"), NonNullableParameters]
         public JsonNetResult RelatedArtifacts(int artifactID)
         {
             var query = Company.Query<dynamic>(@"select TA.*, 
@@ -320,7 +314,7 @@ from	RelatedArtifact SR
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("RelatedArtifactOptions")]
+        [Route("RelatedArtifactOptions"), NonNullableParameters]
         public JsonNetResult RelatedArtifactOptions(int typeID, int artifactID)
         {
             var query = Company.Query<dynamic>(@"if not exists(select GroupID from RelatedArtifact where ArtifactID = @a)

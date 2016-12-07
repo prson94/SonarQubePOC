@@ -1,18 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Web.Mvc;
-using d360.model;
-using d360.core;
-using d360.core.enums;
-using d360.web.Models;
+﻿using d360.core;
 using d360.core.entities;
-using System.Collections.Generic;
-using System.Xml.Linq;
-using Resources;
-using d360.web.Filters;
-using d360.core.exceptions;
+using d360.core.enums;
+using d360.model;
+using d360.web.Models;
+using d360.web.Models.Attributes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
 
 namespace d360.web.Controllers
 {
@@ -199,7 +195,7 @@ order by	SD.Name,
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
-        [Route("OptionsToRelate")]
+        [Route("OptionsToRelate"), NonNullableParameters]
         public JsonNetResult OptionsToRelate(SystemObjects type, int id)
         {
             #region SQL
@@ -318,14 +314,14 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             return new JsonNetResult { Data = jsonItems, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("RelationshipTypes")]
+        [Route("RelationshipTypes"), NonNullableParameters]
         public JsonResult RelationshipTypes(string type, int typeID)
         {
             var types = Company.GetAllowedIntersectionTypes(type, typeID);
             return Json(types, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet, Route("PossibleRelationshipsByIntersect")]
+        [HttpGet, Route("PossibleRelationshipsByIntersect"), NonNullableParameters]
         public JsonNetResult PossibleRelationshipsByIntersect(int id)
         {
             var list = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList().Select(i => new ContextToolbarItem {
@@ -337,7 +333,7 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [HttpGet, Route("GetPossibleRelationshipsObjectByIntersect")]
+        [HttpGet, Route("GetPossibleRelationshipsObjectByIntersect"), NonNullableParameters]
         public JsonNetResult GetPossibleRelationshipsObjectByIntersect(int id)
         {
             var list = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList().Select(i => new 
@@ -380,7 +376,7 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
 
         #endregion Hierarchy
 
-        [HttpGet, Route("ChildRelationshipsBySourceAndTarget")]
+        [HttpGet, Route("ChildRelationshipsBySourceAndTarget"), NonNullableParameters]
         public JsonNetResult ChildRelationshipsBySourceAndTarget(SystemObjects s, int sID, SystemObjects t, int tID)
         {
             var sType = s.ToString();

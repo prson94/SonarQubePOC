@@ -6,6 +6,7 @@ using d360.model;
 using d360.web.Models;
 using d360.workflow;
 using d360.workflow.entities;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -67,7 +68,7 @@ namespace d360.web.Controllers
             return PartialView(string.Format("WorkflowActionOverlay_{0}", (int)workflow.WorkflowType));
         }
 
-        [Route("ArtifactTypeWorkflowStatusOverlay")]
+        [Route("ArtifactTypeWorkflowStatusOverlay"), NonNullableParameters]
         public ActionResult ArtifactTypeWorkflowStatusOverlay(int id)
         {
             var type = Company.GetObjectDetail("ArtifactType", id);
@@ -82,7 +83,7 @@ namespace d360.web.Controllers
 
         #region Json
 
-        [Route("ChallengeNotification")]
+        [Route("ChallengeNotification"), NonNullableParameters]
         public JsonNetResult ChallengeNotification(int id)
         {
             var sql = @"select top 1
@@ -112,7 +113,7 @@ order by	W.DateStarted desc";
             }
         }
 
-        [Route("CertificationNotification")]
+        [Route("CertificationNotification"), NonNullableParameters]
         public JsonNetResult CertificationNotification(int id)
         {
             var sql = @"select top 1
@@ -135,7 +136,7 @@ order by	W.DateStarted desc";
             }
         }
 
-        [Route("WorkflowStepBreakdownByArtifactType")]
+        [Route("WorkflowStepBreakdownByArtifactType"), NonNullableParameters]
         public JsonNetResult WorkflowStepBreakdownByArtifactType(int id)
         {
             var sql = @"select		*,
@@ -180,7 +181,7 @@ group by	WorkflowType,
             };
         }
 
-        [Route("WorkflowsByArtifactTypeAndWorkflowTypeAndStep")]
+        [Route("WorkflowsByArtifactTypeAndWorkflowTypeAndStep"), NonNullableParameters]
         public JsonNetResult WorkflowsByArtifactTypeAndWorkflowTypeAndStep(int id, WorkflowType type, int step, bool? isNg = false)
         {
             string sql = "";
@@ -375,13 +376,13 @@ where   W.Data.value('(/fields/ArtifactTypeID)[1]', 'int') = @id
             }
         }
 
-        [Route("WorkflowResponsibilityTypeOptions")]
+        [Route("WorkflowResponsibilityTypeOptions"), NonNullableParameters]
         public JsonNetResult WorkflowResponsibilityTypeOptions(string type, int id)
         {
             return new JsonNetResult { Data = Company.GetWorkflowResponsibilityTypeOptions(type, id).Select(i => new { Text = i.Name, Value = i.ID.ToString() }), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("WorkflowParentTypeOptions")]
+        [Route("WorkflowParentTypeOptions"), NonNullableParameters]
         public JsonNetResult WorkflowParentTypeOptions(WorkflowType workflowType, string type, int id)
         {
             return new JsonNetResult { Data = Company.GetWorkflowParentTypeOptions((int)workflowType, type, id).Select(i => new { Text = i.Name, Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) }), Formatting = Newtonsoft.Json.Formatting.None };

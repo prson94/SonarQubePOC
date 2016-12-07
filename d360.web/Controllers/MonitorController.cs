@@ -24,7 +24,7 @@ namespace d360.web.Controllers
 
         #region Json
 
-        [Route("eventheaders")]
+        [Route("eventheaders"), NonNullableParameters]
         public JsonNetResult EventHeaders(int ruleID, string sortDataField, string sortOrder, int pagenum = 0, int pagesize = 20)
         {
             var querySql = @"select	A.ID,
@@ -60,7 +60,7 @@ inner join [Rule] T on T.ID = A.RuleID and A.RuleID = @id";
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("eventsbyheader")]
+        [Route("eventsbyheader"), NonNullableParameters]
         public JsonNetResult EventsByHeader(int groupID, string sortDataField, string sortOrder, int pagenum = 0, int pagesize = 20)
         {
             var joins = "";
@@ -114,7 +114,7 @@ inner join [Rule] T on T.ID = G.RuleID and A.EventGroupID = @id {1}", columns, j
             }
         }
 
-        [Route("policystatusfordate")]
+        [Route("policystatusfordate"), NonNullableParameters]
         public JsonNetResult PolicyStatusForDate(int id, DateTime date)
         {
             var sql = @"
@@ -204,7 +204,7 @@ where   A.RuleID = @id";
 
         #endregion
 
-        [Route("ExportResultsByRule"), FileDownload]
+        [Route("ExportResultsByRule"), FileDownload, NonNullableParameters]
         public FileResult ExportQueryItemsByAttributeType(int id)
         {
             var detail = Company.GetObjectDetail("Rule", id);

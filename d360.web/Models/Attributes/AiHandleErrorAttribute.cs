@@ -1,4 +1,6 @@
-﻿using Microsoft.ApplicationInsights;
+﻿using d360.core;
+using d360.web.Controllers;
+using Microsoft.ApplicationInsights;
 using System;
 using System.Web.Mvc;
 
@@ -25,7 +27,12 @@ namespace d360.web.Models.Attributes
                     Telemetry.TrackException(filterContext.Exception);
                 }
             }
-            base.OnException(filterContext);
+            filterContext.Result = new JsonNetResult
+            {
+                Data = new { type = "error", title = "Error Occurred!", message = filterContext.Exception.GetFullExceptionData() },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+            //base.OnException(filterContext);
         }
     }
 }

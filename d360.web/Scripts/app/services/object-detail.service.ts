@@ -94,7 +94,11 @@ export class ObjectDetailService extends BaseService {
     }
 
     getAttributeActions(objectID: number, objectType: string, ownerID: number, ownerType: string, attributeID: number = null): Promise<ToolbarItemNg[]> {
-        return this.http.get(`attributes/AttributeActionsNg?id=${objectID}&type=${objectType}&ownerID=${ownerID}&owner=${ownerID}&attributeID=${attributeID}`)
+        let url = `attributes/actions/${objectType}/${objectID}/${ownerType}/${ownerID}/`;
+        if (attributeID != null) {
+            url += `${attributeID}`;
+        }
+        return this.http.get(url)
             .toPromise()
             .then(response => <ToolbarItemNg[]>response.json())
             .catch(err => this.handleError(err));
