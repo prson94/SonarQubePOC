@@ -14,10 +14,21 @@
       "enabled": true
     },
     "sourceMap": false
-  },  
+  },
+  {
+    "outputFile": "Content/styles/typeahead.css",
+    "inputFile": "Content/styles/typeahead.less",
+    "minify": {
+      "enabled": true
+    },
+    "sourceMap": false
+  },
   {
     "outputFile": "Content/styles/angular.css",
     "inputFile": "Content/styles/angular.less",
+    "minify": {
+      "enabled": true
+    },
     "sourceMap": false
   }
 ]

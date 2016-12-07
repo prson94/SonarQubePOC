@@ -497,6 +497,12 @@
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\styles\typeahead.css">
+      <DependentUpon>typeahead.less</DependentUpon>
+    </Content>
+    <Content Include="Content\styles\typeahead.min.css">
+      <DependentUpon>typeahead.css</DependentUpon>
+    </Content>
     <Content Include="Scripts\app\0.chunk.js" />
     <Content Include="Scripts\app\1.chunk.js" />
     <Content Include="Scripts\app\10.chunk.js" />
@@ -798,6 +804,7 @@
     <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\styles\typeahead.less" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - North Central.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Client Development - EU North.pubxml" />
