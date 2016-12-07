@@ -27,6 +27,9 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     @Output() fusionQueryAttributeTypeIdChange = new EventEmitter();
     @Output() fusionAttributeTypeIdChange = new EventEmitter();
 
+    @Input() showFusionQueryConfig: boolean;
+    @Output() showFusionQueryConfigChange = new EventEmitter();
+
     private treeItems: TreeNode[];
     private selected: TreeNode;
 
@@ -38,7 +41,7 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     }
 
     
-    private load() {
+    public load() {
         this.isLoading = true;
         this.fusionService.getFusionFusionAttributeTypes(this.fusion.FusionTypeID).then(res => {
             
@@ -62,7 +65,7 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
                     expanded: true,
                     data: {
                         type: 'FusionQueryAttributeType',
-                        id: 0
+                        id: -1
                     },
                     children: (this.buildQueryTreeNodeArray(this.fusionQueryAttributeTypes)) //recursively find its children
                 };
@@ -155,19 +158,26 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     }
 
     private nodeSelect(event) {
-        //console.log(event.node.data.type + ' ' + event.node.data.id);
+        
         if (!event.node || !event.node.data || !event.node.data.id) {
             console.log("ERROR UNABLE TO DETERMINE SELECTED NODE'S ID.");
             return;
         }
-
+        
+        this.showFusionQueryConfig = false;
         if (event.node.data.type == "FusionAttributeType") {
             this.fusionAttributeTypeId = event.node.data.id;
             this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
-        }
-        else {
-            this.fusionQueryAttributeTypeId = event.node.data.id;
-            this.fusionQueryAttributeTypeIdChange.emit(this.fusionQueryAttributeTypeId);
-        }
+        }        
+        else {            
+            if (event.node.data.id == -1) {
+                this.showFusionQueryConfig = true;
+            }
+            else {
+                this.fusionQueryAttributeTypeId = event.node.data.id;
+                this.fusionQueryAttributeTypeIdChange.emit(this.fusionQueryAttributeTypeId);
+            }
+        }        
+        this.showFusionQueryConfigChange.emit(this.showFusionQueryConfig);
     }
 };

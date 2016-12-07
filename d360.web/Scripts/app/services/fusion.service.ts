@@ -543,7 +543,7 @@ export class FusionService extends BaseService {
             .toPromise()
             .then(response => <AttributeNode[]>response.json())
             .catch(err => this.handleError(err));
-    }
+    }    
 
     putMoveFusionRuleStep(ruleID: number, ruleStepID: number, moveUp: boolean) {
 
@@ -553,4 +553,14 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    deleteFusionQuery(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'FusionQueryAttribute', id);
+    }
+
+    saveQueryAttributeType(query: FusionQueryAttributeType) {
+        if (query.ID == undefined || !query.ID) {
+            return this.postDynamic(this.http, 'fusionqueryattribute', query);
+        }
+        return this.putDynamic(this.http, 'fusionqueryattribute', query);
+    }
 }

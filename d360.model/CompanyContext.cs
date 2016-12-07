@@ -1716,6 +1716,30 @@ exec sp_executesql @commandText", new { id = reportTileID, t = new Dapper.DbStri
             return isValid;
         }
 
+        public List<string> SelectQueryColumns(string statement)
+        {
+            bool isValid = false;
+            List<string> columns = new List<string>();
+
+            var dbv = TDbVendor.DbVMssql;
+            var parser = new TGSqlParser(dbv);
+            parser.SqlText.Text = statement;
+            parser.Parse();
+            isValid = (parser.SqlStatements[0] is TSelectSqlStatement);
+            //TSelectSqlStatement selectStatement
+            //TSqlStatementType.sstMssqlSelect
+
+            if (!isValid) throw new Exception("Non-select statement specified to function that gets columns from select statements.");
+
+            TSelectSqlStatement select = (TSelectSqlStatement)parser.SqlStatements[0];
+            var fields = select.Fields;
+            foreach (var field in select.Fields)
+            {
+                columns.Add(field.AsText);
+            }
+            return columns;
+        }
+
         public List<ReportSchemaModel> GetReportingSchema()
         {
             string k = key(REPORTING_SCHEMA_KEY, CurrentCompanyID);

@@ -41,17 +41,20 @@ import { StringConstants } from '../../static/string-constants';
                     <div class="col l3 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
-                            <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
+                            <d3s-fusion-structure-tree #tree [fusion]="fusion" (showFusionQueryConfigChange)="showQueryConfig($event)" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
                         </div>
                     </div>
-                    <div class="col l9 m12 s12">
-                        <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>
+                    <div class="col l9 m12 s12" *ngIf="!isQueryConfigVisible">
+                        <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>                        
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
                             <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name"></d3s-fusion-attribute-item-details>
                         </div>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
                             <d3s-object-relationships [objectPermissions]="permissions" [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
                         </div>                        
+                    </div>
+                    <div class="col l9 m12 s12" *ngIf="isQueryConfigVisible">
+                        <d3s-fusion-query-list [fusion]="fusion" (treeRequiresUpdate)="updateTree(tree)"></d3s-fusion-query-list>
                     </div>
                 </div>
                 `,
@@ -75,6 +78,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private showFusionRules: boolean = false;
     private isHistoryVisible: boolean = false;
     private isManualLoadVisible: boolean = false;
+    private isQueryConfigVisible: boolean = false;
 
     @ViewChild(FusionStructureTreeComponent) private fusionTreeComponent: FusionStructureTreeComponent;
     
@@ -104,7 +108,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
             this.initialFusionAttributeId = +params['fusionAttributeId'];
             this.selectedFusionQueryAttributeTypeId = +params['fusionQueryAttributeTypeId'];
-            this.initialFusionQueryAttributeId = +params['fusionQueryAttributeId'];            
+            this.initialFusionQueryAttributeId = +params['fusionQueryAttributeId'];
+            this.isQueryConfigVisible = params['showQueryConfig'] == 'true';         
             
             if (!this.fusion || this.fusion.ID != this.fusionId) {
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectFusion , this.fusionId);
@@ -144,6 +149,9 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         else if (this.selectedFusionQueryAttributeTypeId && this.fusionTreeComponent.fusionQueryAttributeTypes) {
             this.addFusionQueryAttributeTypeBreadcrumb(this.selectedFusionQueryAttributeTypeId);
         }
+        else if (this.isQueryConfigVisible) {
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion Query Configuration', `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};showQueryConfig=true`));            
+        }
     }
 
     private addFusionAttributeTypeBreadcrumb(id: number) {
@@ -168,6 +176,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${event}`);
     }   
 
+    private showQueryConfig(val) {
+        if(val) this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};showQueryConfig=true`);
+    }
+
     private changeFusionQueryAttributeTypeId(event) {
         this.selectedFusionAttribute = null;
         this.selectedFusionQueryAttribute = null;
@@ -178,6 +190,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         if (activatedItem.tag == 'fusionhistory') this.isHistoryVisible = !this.isHistoryVisible;
         else if (activatedItem.tag == 'fusionload') this.isManualLoadVisible = !this.isManualLoadVisible;
         else if (activatedItem.tag == 'fusionrules') this.showFusionRules = !this.showFusionRules;  
+    }
+
+    protected updateTree(tree) {
+        tree.load();
     }
 
 };

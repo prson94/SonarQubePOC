@@ -517,6 +517,8 @@ namespace d360.web.Controllers
                     return EditPolicyTypeLevel(form);
                 case "ATTRIBUTE":
                     return EditAttribute(form);
+                case "FUSIONQUERYATTRIBUTE":
+                    return EditFusionQueryAttribute(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -574,6 +576,8 @@ namespace d360.web.Controllers
                     return DeleteTaxonomyTypeLevel(form);
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
+                case "FUSIONQUERYATTRIBUTE":
+                    return DeleteFusionQueryAttribute(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -646,6 +650,8 @@ namespace d360.web.Controllers
                     return AddTaxonomyTypeLevel(form);
                 case "POLICYTYPELEVEL":
                     return AddPolicyTypeLevel(form);
+                case "FUSIONQUERYATTRIBUTE":
+                    return AddFusionQueryAttribute(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -6646,8 +6652,156 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-        
+
         #endregion
+
+        #endregion
+
+        #region FusionQueryAttributeType
+                
+        protected JsonResult EditFusionQueryAttribute(FormCollection form)//(int typeID, int id, FusionAttributeType model)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusion attibute type");
+
+                var model = Company.GetById<FusionQueryAttributeType>(parseIntField(form, "ID"));
+                if (model == null) throw new NotFoundException("fusion attibute type");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                var sql = parseTextField(form, "Query");
+
+                // only allow select
+                var valid = Company.IsValidReportingQuery(sql);
+                if (!valid)
+                {
+                    throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
+                }
+
+                // dont allow * fields
+                if (sql.Contains("*"))
+                {
+                    throw new InvalidFieldException("Command Text", "Wildcards are not supported in Fusion Attribute Query types, the columns must be explicitly specified.");
+                }
+
+                model.Name = parseTextField(form, "Name");
+                model.Query = sql;
+                Company.Update<FusionQueryAttributeType>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public JsonResult AddFusionQueryAttribute(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusion attribute type");
+
+                int fusionID = parseIntField(form, "FusionID");
+                
+                var type = Company.GetById<Fusion>(fusionID);
+                if (type == null) throw new NotFoundException("fusion configuration");
+                                
+                if (!Company.HasPermission(SystemObjects.Fusion, type.ID, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var sql = parseTextField(form, "Query");
+
+                //check if it is a select we only allow selects
+                var valid = Company.IsValidReportingQuery(sql);
+                if (!valid)
+                {
+                    throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
+                }
+                //check if it has any stars in it we dont allow them need the field names
+                if (sql.Contains("*"))
+                {
+                    throw new InvalidFieldException("Command Text", "Wildcards are not supported in Fusion Attribute Query types, the columns must be explicitly specified.");
+                }
+
+                var columns = Company.SelectQueryColumns(sql);
+                                                
+                var model = new FusionQueryAttributeType
+                {
+                    FusionID = fusionID,
+                    Query = sql,                     
+                    Name = parseTextField(form, "Name")
+                };
+
+                Company.Add<FusionQueryAttributeType>(model);
+
+                foreach (var column in columns)
+                {
+                    Company.Add<FieldType>(new FieldType
+                    {
+                        ObjectID = model.ID,
+                        Object = SystemObjects.FusionQueryAttributeType.ToString(),
+                        IsListable = true,
+                        IsRequired = true,
+                        FriendlyName = column,
+                        Name = column,
+                        MaximumLength = 500,
+                        MinimumLength = 1,
+                        SortOrder = 1,
+                        Type = DataType.Text.ToString()
+                    });
+                }
+
+                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        protected JsonResult DeleteFusionQueryAttribute(FormCollection form)//(int typeID, int id)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusion attribute type");
+
+                var model = Company.GetById<FusionQueryAttributeType>(parseIntField(form, "ID"));
+                if (model == null) throw new NotFoundException("fusion query attribute type");
+
+                if (!Company.HasPermission(SystemObjects.FusionQueryAttributeType, model.ID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (Company.Filter<FusionQueryAttribute>(i => i.FusionQueryAttributeTypeID == model.ID).Count() > 0)
+                    return jsonException(FormInfo.FusionAttributeType_Remove, HttpStatusCode.Conflict);
+
+                Company.Delete<FusionQueryAttributeType>(model);
+                return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
 
         #endregion
 

@@ -6,6 +6,8 @@ import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
+import { AceEditorComponent } from 'ng2-ace-editor';
+
 import { ChartModule } from 'angular2-highcharts';
 
 import { CoreModule } from '../shared/core.module';
@@ -18,6 +20,7 @@ import { SharedFusionAttributeItemDetailsModule } from '../shared/fusion-attribu
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
+import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-field-definition.module';
 
 import { FusionRoutingModule } from './fusion.routes';
 
@@ -46,6 +49,8 @@ import { FusionRuleStepFindViaRelationComponent } from './fusion-rule-step-findv
 import { FusionRuleStepLineageComponent } from './fusion-rule-step-lineage.component';
 import { FusionRuleStepPromoteComponent } from './fusion-rule-step-promote.component';
 import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.component';
+import { FusionQueryListComponent } from './fusion-query-list.component';
+import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-editor.component';
 
 import {
     GrowlModule,
@@ -95,11 +100,12 @@ import {
         PipesModule,        
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
+        SharedFieldDefinitionModule,
         SharedFusionAttributeItemDetailsModule,
         SharedGridPagingInfoModule,
         SharedResponsibilitiesModule,
         SharedRelationshipModule,
-        TilesModule,
+        TilesModule,        
     ],
     declarations: [
         FusionAgentErrorsComponent,
@@ -127,6 +133,10 @@ import {
         FusionRuleStepLineageComponent,
         FusionRuleStepPromoteComponent,
         FusionRuleStepRelateComponent,
+        FusionQueryListComponent,
+        FusionQueryAttributeEditorComponent,
+
+        AceEditorComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
