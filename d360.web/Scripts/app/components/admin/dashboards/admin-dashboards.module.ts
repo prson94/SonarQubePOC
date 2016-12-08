@@ -6,8 +6,8 @@ import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
-import { AceEditorComponent } from 'ng2-ace-editor';
 
+import { AceEditorModule } from '../../shared/ace-editor.module';
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
@@ -48,7 +48,8 @@ import {
         SharedModule,
         DataTableModule,
 
-        //d3s        
+        //d3s   
+        AceEditorModule,
         CoreModule,
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
@@ -61,8 +62,7 @@ import {
         AdminDashboardsEditor,
         AdminReportItemsComponent,
         AdminReportTileEditorComponent,
-
-        AceEditorComponent,
+        
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

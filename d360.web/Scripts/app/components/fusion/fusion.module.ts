@@ -6,10 +6,10 @@ import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
-import { AceEditorComponent } from 'ng2-ace-editor';
 
 import { ChartModule } from 'angular2-highcharts';
 
+import { AceEditorModule } from '../shared/ace-editor.module';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
@@ -95,6 +95,7 @@ import {
         ChartModule,
 
         //d3s
+        AceEditorModule,
         CoreModule,
         D3SSharedModule,        
         PipesModule,        
@@ -135,8 +136,7 @@ import {
         FusionRuleStepRelateComponent,
         FusionQueryListComponent,
         FusionQueryAttributeEditorComponent,
-
-        AceEditorComponent,
+        
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
