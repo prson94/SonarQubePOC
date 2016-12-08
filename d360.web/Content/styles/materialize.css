@@ -1721,8 +1721,8 @@ abbr[title] {
 /**
  * Address style set to `bolder` in Firefox 4+, Safari, and Chrome.
  */
-b, strong {
-  font-weight: bold; }
+/*b, strong {
+  font-weight: bold; }*/
 
 /**
  * Address styling not present in Safari and Chrome.
@@ -5198,8 +5198,8 @@ h6 {
 em {
   font-style: italic; }
 
-strong {
-  font-weight: 500; }
+/*strong {
+  font-weight: 500; }*/
 
 small {
   font-size: 75%; }
