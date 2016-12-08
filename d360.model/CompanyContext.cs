@@ -1735,7 +1735,7 @@ exec sp_executesql @commandText", new { id = reportTileID, t = new Dapper.DbStri
             var fields = select.Fields;
             foreach (var field in select.Fields)
             {
-                columns.Add((field.AsText ?? "").Replace("[","").Replace("]",""));
+                columns.Add((field.DisplayName ?? "").Replace("[","").Replace("]","").Replace("'",""));
             }
             return columns;
         }
