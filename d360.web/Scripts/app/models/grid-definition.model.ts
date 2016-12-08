@@ -25,8 +25,8 @@ export class GridAttributeFilterExpression {
 }
 
 export class GridOwnerFilter {
-    ownerUsers: number[];
-    ownerGroups: number[];
+    ownerUsers: string[];
+    ownerGroups: string[];
 }
 
 export enum GridFilterFieldType {

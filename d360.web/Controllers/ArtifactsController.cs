@@ -275,8 +275,12 @@ where    A.ArtifactTypeID = @id", columns, joins);
             {
                 foreach (var user in ownerUsers.Split(','))
                 {
-                    joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'resource' and RD{index}.ResponsibleObjectID = {int.Parse(user)} )";
-                    index++;
+                    var ids = user.Split('|');
+                    if (ids.Length == 2)
+                    {
+                        joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'resource' and RD{index}.ResponsibleObjectID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
+                        index++;
+                    }
                 }
             }
 
@@ -284,8 +288,12 @@ where    A.ArtifactTypeID = @id", columns, joins);
             {
                 foreach (var group in ownerGroups.Split(','))
                 {
-                    joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'group' and RD{index}.ResponsibleObjectID = {int.Parse(group)})";
-                    index++;
+                    var ids = group.Split('|');
+                    if (ids.Length == 2)
+                    {
+                        joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'group' and RD{index}.ResponsibleObjectID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
+                        index++;
+                    }
                 }                
             }
 

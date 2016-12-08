@@ -957,7 +957,7 @@ where   h.ID <> @t order by h.[Level] desc;
         [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
         public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
         {
-            var sql = "select distinct responsibleobjectID as 'ID', CASE WHEN responsibleobjecttype = 'Group' Then '[Group] ' + responsibleObjectName else '[User] ' + responsibleObjectName end  as 'Name', responsibleobjecttype as 'Type' from [dbo].[responsibilitydetail] where objecttypeid = @id and objecttype = 'Artifact' order by 'Name'";
+            var sql = "select distinct cast(responsibilityTypeID as varchar) + '|' + cast(responsibleobjectID as varchar) as 'ID', CASE WHEN responsibleobjecttype = 'Group' Then '[Group] ' + responsibleObjectName + ' Role - ' + [Role] else '[User] ' + responsibleObjectName  + ' Role - ' + [Role] end  as 'Name', responsibleobjecttype as 'Type' from [dbo].[responsibilitydetail] where objecttypeid = 1 and objecttype = 'Artifact' and visible = @id order by 'Name'";
 
             return Request.CreateResponse(
                 HttpStatusCode.OK,
