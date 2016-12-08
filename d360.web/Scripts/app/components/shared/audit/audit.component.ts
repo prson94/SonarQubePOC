@@ -27,12 +27,12 @@ import { BaseComponent } from '../base.component';
                                 <p-column field="Field" header="Field" sortable="true" [style]="{'width':'200px'}" filter="true"></p-column>                                
                                 <p-column field="NewValue" header="New Value" sortable="true" [style]="{'width':'250px'}" filter="true">
                                     <template let-col let-data="rowData" pTemplate type="body">
-                                        <div [innerHtml]="data?.NewValue"></div>
+                                        <div *ngIf="data.NewValue" [innerHtml]="data.NewValue"></div>
                                     </template>                                                        
                                 </p-column>
                                 <p-column field="PreviousValue" header="Previous Value" sortable="true" [style]="{'width':'250px'}" filter="true">
                                     <template let-col let-data="rowData" pTemplate type="body">
-                                        <div [innerHtml]="data?.PreviousValue"></div>
+                                        <div *ngIf="data.PreviousValue" [innerHtml]="data.PreviousValue"></div>
                                     </template>                                                        
                                 </p-column>
                                 <p-column field="ActionObject" header="Object" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>

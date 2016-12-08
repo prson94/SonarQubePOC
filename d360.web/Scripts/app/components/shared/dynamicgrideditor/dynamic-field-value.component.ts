@@ -13,7 +13,9 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                     <i *ngIf="fieldValue == 'True'" class="fa fa-check enabled" title="True"></i>
                     <i *ngIf="fieldValue == 'False'" class="fa fa-times disabled" title="False"></i>
                 </span>
-                <span *ngSwitchDefault [innerHtml]="fieldValue"></span>                                        
+                <template ngSwitchDefault>
+                    <span *ngIf="fieldValue" [innerHtml]="fieldValue"></span>                                        
+                </template>
             </span>
         `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -44,6 +46,10 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         if ((this.fieldType == 'bool') && (typeof this.fieldValue === 'boolean')) {
             this.fieldValue = this.fieldValue ? "True" : "False"; // fix for bools as bools.
         }
+
+       /* if ( this.fieldType == 'string' && this.fieldValue === null) {
+            this.fieldValue = ''; //Internet Explorer likes to actually display the word null vs blank...
+        }*/
     }
 
     private formatAsNumber(): string {

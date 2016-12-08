@@ -56,35 +56,19 @@ export class FusionAttributeService extends BaseService {
             .then(response => <FusionAttributePagedResults>response.json())
             .catch(err => this.handleError(err));
     }
-
-    getFusionAttributeExcel(fusionId: number, fusionAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]) {
-        let sortOrderText = '';
-
-        if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
-        if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
-
-        let url = `internal/fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
-
-        if (filters && filters.length > 0) {
-            url += `&filterscount=${filters.length}`;
-
-            let index = 0;
-            for (let filter of filters) {
-                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${filter.value}`;
-                index++;
-            }
+        
+    getFusionAttributeExcel(type: string, fusionId: number, fusionQueryAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]) {
+        let route = 'ExportItemsByAttributeType';
+        if (type == 'FusionQueryAttributeType') {
+            route = 'ExportQueryItemsByAttributeType';
         }
 
-        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data));
-    }
-
-    getFusionQueryAttributeExcel(fusionId: number, fusionQueryAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]) {
         let sortOrderText = '';
 
         if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
         if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
 
-        let url = `internal/fusion/ExportQueryItemsByAttributeType?fusionID=${fusionId}&fusionQueryAttributeTypeID=${fusionQueryAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
+        let url = `internal/fusion/${route}?fusionID=${fusionId}&${type}ID=${fusionQueryAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;

@@ -20,7 +20,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <span [innerHtml]="item[column.datafield]" class="truncate" style="display:inline-block;width:245px"></span>
+                                    <span *ngIf="item[column.datafield]" [innerHtml]="item[column.datafield]" class="truncate" style="display:inline-block;width:245px"></span>
                                 </template>
                             </p-column>                            
                         </p-dataTable>                   
@@ -159,11 +159,6 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
 
     private doExport() {
-        if (this.fusionObject == "FusionQueryAttributeType") {
-            this.fusionAttributeService.getFusionQueryAttributeExcel(this.fusionId, this.fusionQueryAttributeTypeId, this.sortField, this.sortOrder, this.filters);
-        }
-        else {
-            this.fusionAttributeService.getFusionAttributeExcel(this.fusionId, this.fusionAttributeTypeId, this.sortField, this.sortOrder, this.filters);
-        }
+        this.fusionAttributeService.getFusionAttributeExcel(this.fusionObject, this.fusionId, (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId, this.sortField, this.sortOrder, this.filters);        
     }
 };
