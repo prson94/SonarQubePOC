@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService, MessagesService } from '../../services/index';
 import { FusionConfigurationDetails, FusionQueryAttributeType  } from '../../models/fusion.model';
@@ -52,7 +52,7 @@ import { FusionConfigurationDetails, FusionQueryAttributeType  } from '../../mod
     providers: [FusionService],
 })
 
-export class FusionQueryListComponent extends BaseComponent implements OnInit {
+export class FusionQueryListComponent extends BaseComponent implements OnChanges {
     @Input() fusion: FusionConfigurationDetails;
     @Output() treeRequiresUpdate = new EventEmitter();
 
@@ -68,10 +68,9 @@ export class FusionQueryListComponent extends BaseComponent implements OnInit {
         super();
         this.theDeleteCallback = this.deleteQuery.bind(this);
     }
-
-    ngOnInit() {
-        if (this.fusion) this.load();
         
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes['fusion'] && this.fusion) this.load();
     }
 
     private load() {

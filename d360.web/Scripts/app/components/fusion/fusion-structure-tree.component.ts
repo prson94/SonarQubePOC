@@ -47,16 +47,7 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
             
             this.fusionAttributeTypes = res;            
             this.treeItems = this.buildTreeNodeArray(this.fusionAttributeTypes);            
-            
-            if (this.fusionAttributeTypeId) {                
-                this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);
-            }
-            else if (this.treeItems.length > 0) {                
-                this.fusionAttributeTypeId = this.treeItems[0].data.id;
-                this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);
-                this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
-            }            
-
+                        
             this.fusionService.getFusionQueryAttributeTypes(this.fusion.FusionTypeID, this.fusion.ID).then(res => {
                 this.fusionQueryAttributeTypes = res;
 
@@ -71,13 +62,35 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
                 };
 
                 this.treeItems.push(queriesNode);
+
+                // handle initial selected item
+                if (this.fusionAttributeTypeId) {
+                    this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId, 'FusionAttributeType');
+                    this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
+                }                        
+                else if (this.fusionQueryAttributeTypeId) {
+                    this.selected = this.findSelectedTreeNode(this.fusionQueryAttributeTypeId, 'FusionQueryAttributeType');
+                    this.fusionQueryAttributeTypeIdChange.emit(this.fusionQueryAttributeTypeId);
+                }
+                else if (this.showFusionQueryConfig) {
+                    this.selected = this.findSelectedTreeNode(-1, 'FusionQueryAttributeType');
+                    this.showFusionQueryConfigChange.emit(this.showFusionQueryConfig);
+                }
+                else if (this.treeItems.length > 0) {
+                    this.fusionAttributeTypeId = this.treeItems[0].data.id;
+                    if (!this.fusionQueryAttributeTypeId) {
+                        this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId, 'FusionAttributeType');
+                    }
+                    this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
+                }    
+
                 this.isLoading = false;
             });
         });
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
-        if (changes['fusion'] && this.fusion != null) {
+        if (changes['fusion'] && this.fusion != null) {            
             this.load();
         }        
     }
@@ -126,7 +139,7 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
         return res;
     }
 
-    private findSelectedTreeNode(id: number): TreeNode {
+    private findSelectedTreeNode(id: number, type: string): TreeNode {
         let nodes: TreeNode[] = [];
         
         // add root nodes
@@ -140,7 +153,7 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
         let node = nodes[0];
 
         while (node) {
-            if (node.data.id && node.data.id == id) return node;
+            if (node.data.id && node.data.id == id && node.data.type == type) return node;
 
             //push children
             if (node.children) {

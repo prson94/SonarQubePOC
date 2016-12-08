@@ -41,7 +41,7 @@ import { StringConstants } from '../../static/string-constants';
                     <div class="col l3 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
-                            <d3s-fusion-structure-tree #tree [fusion]="fusion" (showFusionQueryConfigChange)="showQueryConfig($event)" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
+                            <d3s-fusion-structure-tree #tree [fusion]="fusion" [showFusionQueryConfig]="isQueryConfigVisible" (showFusionQueryConfigChange)="showQueryConfig($event)" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
                         </div>
                     </div>
                     <div class="col l9 m12 s12" *ngIf="!isQueryConfigVisible">
