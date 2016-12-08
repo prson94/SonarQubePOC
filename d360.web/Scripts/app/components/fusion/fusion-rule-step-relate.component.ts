@@ -15,6 +15,9 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
     @Input() ruleID: number;
     @Input() ruleStepID: number = 0;
     @Input() settings: any;
+    @Input() showErrors = false;
+    @Input() isValid = false;
+    @Output() isValidChange = new EventEmitter();
 
     @Output() settingsChange = new EventEmitter();
 
@@ -55,6 +58,7 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
                         this.owners.forEach(i => {
                             i.text = i.FusionAttributeName + ' Owned By:' + i.OwnerObject;
                         });
+                        this.validate();
                     });
             });
     }
@@ -81,9 +85,24 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
                 this.settings[prefix] = 'Step';
                 break;
         }
+        this.validate();
         this.settingsChange.emit(this.settings);
 
     }
 
+    validate() {
+        this.isValid = true;
+
+        if (this.settings.IntersectType == null)
+            this.isValid = false;
+        if (this.settings.SubjectSearch == null || this.settings.ObjectSearch == null)
+            this.isValid = false;
+        if (this.settings.SubjectSearch != null && this.settings.SubjectSearch != 'Self' && this.settings.SubjectID == null)
+            this.isValid = false;
+        if (this.settings.ObjectSearch != null && this.settings.ObjectSearch != 'Self' && this.settings.SubjectID == null)
+            this.isValid = false;
+
+        this.isValidChange.emit(this.isValid);
+    }
 };
 

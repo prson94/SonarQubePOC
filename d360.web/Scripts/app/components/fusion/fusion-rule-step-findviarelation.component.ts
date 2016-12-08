@@ -15,6 +15,9 @@ export class FusionRuleStepFindViaRelationComponent extends FusioRuleStepBaseCom
     @Input() ruleID: number;
     @Input() ruleStepID: number = 0;
     @Input() settings: any;
+    @Input() showErrors = false;
+    @Input() isValid = false;
+    @Output() isValidChange = new EventEmitter();
 
     @Output() settingsChange = new EventEmitter();
 
@@ -45,10 +48,19 @@ export class FusionRuleStepFindViaRelationComponent extends FusioRuleStepBaseCom
                     .getPromotionRuleSteps(this.ruleID, this.ruleStepID)
                     .then(r => {
                         this.steps = r;
+                        this.validate();
                     });
             });
     }
 
-    //this.settingsChange.emit();
+    validate() {
+        this.isValid = true;
+        if (this.settings.IntersectType == null || this.settings.Search == null)
+            this.isValid = false;
+        if (this.settings.Search != null && this.settings.Search != 'Self' && this.settings.ID == null) 
+            this.isValid = false;
+        this.isValidChange.emit(this.isValid);
+    }
+
 };
 

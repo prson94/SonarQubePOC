@@ -15,6 +15,9 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     @Input() ruleID: number;
     @Input() ruleStepID: number = 0;
     @Input() settings: any;
+    @Input() showErrors = false;
+    @Input() isValid = false;
+    @Output() isValidChange = new EventEmitter();
 
     @Output() settingsChange = new EventEmitter(); 
 
@@ -85,22 +88,29 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                 this.sourceFields = r;
                 this.sourceFields.push({ ID: 0, FriendlyName: 'Name' });
                 this.sourceFields.push({ ID: -2, FriendlyName: 'ParentID' });
+                this.validate();
             });
+
     }
 
     changeFindSearchType(search): Promise<any> {
 
         //Clear out values
-        //this.findParentSetting = false;
-        
+        delete this.settings.Object;
+        delete this.settings.ObjectID;
+        delete this.settings.FilterField;
+        delete this.settings.TargetField;
+
         switch (search) {
             case 'Glossary':
+                this.validate();
                 return Promise.resolve();
             case 'ResultFromStep':
                 this.steps = [];
                 return this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID)
                     .then(r => {
                         this.steps = r;
+                        this.validate();
                     });
             case 'FusionOwner':
                 return this.loadFusionOwners();
@@ -109,14 +119,17 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                 return this.fusionService.getFindFusionAttributeTypes()
                     .then(r => {
                         this.objects = r;
+                        this.validate();
                     });
             case 'Promotion':
                 this.objects = [];
                 return this.fusionService.getFindAttributeTypes()
                     .then(r => {
                         this.objects = r;
+                        this.validate();
                     });
             default:
+                this.validate();
                 return Promise.resolve();
         }
     }
@@ -124,8 +137,8 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     loadFusionOwners(): Promise<any> {
         return this.fusionService.getPromotionFusionOwnerRules(this.fusionID)
             .then(r => {
-                
                 this.owners = r;
+                this.validate();
             });
     }
 
@@ -135,12 +148,15 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
             return this.fusionService.getFindArtifactTypes()
                 .then(r => {
                     this.objects = r;
+                    this.validate();
                 });
         if (this.settings.Object == 'TaxonomyType')
            return  this.fusionService.getFindModels()
                 .then(r => {
                     this.objects = r;
+                    this.validate();
                 });
+        this.validate();
         return Promise.resolve();
     }
 
@@ -157,6 +173,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                         FriendlyName: 'Name'
                     });
                     this.showTargetField = true;
+                    this.validate();
                 });
         } else if (this.settings.Object == 'TaxonomyType') {
             return this.fusionService.getFindSourceFields('TaxonomyType', this.settings.ObjectID)
@@ -167,11 +184,38 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                         FriendlyName: 'Name'
                     });
                     this.showTargetField = true;
+                    this.validate();
                 });
-        } else
+        } else {
+            this.validate();
             this.showTargetField = false;
+        }
         return Promise.resolve();
 
+    }
+
+    validate() {
+        this.isValid = true;
+        if (this.settings.ObjectSearch == null)
+            this.isValid = false;
+        else if (this.settings.ObjectSearch == 'Fusion') {
+            if (this.settings.FilterField == null || this.settings.ObjectID == null)
+                this.isValid = false;
+        } else if (this.settings.ObjectSearch == 'FusionOwner') {
+            if (this.settings.ObjectID == null)
+                this.isValid = false;
+        } else if (this.settings.ObjectSearch == 'Glossary') {
+            if (this.settings.FilterField == null || this.settings.Object == null || this.settings.ObjectID == null || this.settings.TargetField == null)
+                this.isValid = false;
+        } else if (this.settings.ObjectSearch == 'Promotion') {
+            if (this.settings.FilterField == null || this.settings.ObjectID == null)
+                this.isValid = false;
+        } else if (this.settings.ObjectSearch == 'ResultFromStep') {
+            if (this.settings.ObjectID == null)
+                this.isValid = false;
+        }
+
+        this.isValidChange.emit(this.isValid);
     }
 
 };

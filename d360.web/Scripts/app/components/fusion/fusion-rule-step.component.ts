@@ -14,43 +14,41 @@ import { TreeNode, Column } from 'primeng/primeng';
 
     </div>
     <div *ngIf="!isLoading">
-        <form #ruleStepForm="ngForm" (ngSubmit)="save()">
-            <div class="row" style="margin-bottom: 20px">
-                <div class="col l6 m6 s12">
-                    <div class="FieldName" style="display:block">Description</div>
-                    <input type="text" style="width:100%" [(ngModel)]="model.RuleStep.Description" name="description" />
-                </div>
-                <div class="col l6 m6 s12">
-                    <div class="FieldName" style="display:block">Action</div>
-                    <select [(ngModel)]="model.RuleStep.Action" style="width:100%" name="action" required>
-                        <option *ngFor="let i of actionTypes" [value]="i.value">{{i.text}}</option>
-                    </select>
-                </div>
+        <div class="row" style="margin-bottom: 20px">
+            <div class="col l6 m6 s12">
+                <div class="FieldName" style="display:block">Description</div>
+                <input type="text" style="width:100%" [(ngModel)]="model.RuleStep.Description" name="description" />
             </div>
-            <div [ngSwitch]="model.RuleStep.Action">
-                <div *ngSwitchCase="'promote'">
-                    <d3s-fusion-rule-step-promote [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-promote>
-                </div>
-                <div *ngSwitchCase="'find'">
-                    <d3s-fusion-rule-step-find [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-find>
-                </div>
-                <div *ngSwitchCase="'lineage'">
-                    <d3s-fusion-rule-step-lineage [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-lineage>
-                </div>
-                <div *ngSwitchCase="'relate'">
-                    <d3s-fusion-rule-step-relate [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-relate>
-                </div>
-                <div *ngSwitchCase="'findrelation'"> 
-                    <d3s-fusion-rule-step-findviarelation [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings"></d3s-fusion-rule-step-findviarelation>
-                </div>
-            </div> 
-            <div class="row" style="margin-top: 20px">
-                <div class="col s12">
-                    <button type="submit" label="Save" pButton [disabled]="isLoading || !ruleStepForm.form.valid"></button>
-                    <button type="button" label="Cancel" pButton (click)="onClose.emit()"></button>
-                </div>
+            <div class="col l6 m6 s12">
+                <div class="FieldName" style="display:block">Action</div>
+                <select [(ngModel)]="model.RuleStep.Action" style="width:100%" name="action" required (ngModelChange)="changeAction()">
+                    <option *ngFor="let i of actionTypes" [value]="i.value">{{i.text}}</option>
+                </select>
             </div>
-        </form>
+        </div>
+        <div [ngSwitch]="model.RuleStep.Action">
+            <div *ngSwitchCase="'promote'">
+                <d3s-fusion-rule-step-promote [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings" [showErrors]="showErrors" [(isValid)]="isValid"></d3s-fusion-rule-step-promote>
+            </div>
+            <div *ngSwitchCase="'find'">
+                <d3s-fusion-rule-step-find [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings" [showErrors]="showErrors" [(isValid)]="isValid"></d3s-fusion-rule-step-find>
+            </div>
+            <div *ngSwitchCase="'lineage'">
+                <d3s-fusion-rule-step-lineage [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings" [showErrors]="showErrors" [(isValid)]="isValid"></d3s-fusion-rule-step-lineage>
+            </div>
+            <div *ngSwitchCase="'relate'">
+                <d3s-fusion-rule-step-relate [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings" [showErrors]="showErrors" [(isValid)]="isValid"></d3s-fusion-rule-step-relate>
+            </div>
+            <div *ngSwitchCase="'findrelation'"> 
+                <d3s-fusion-rule-step-findviarelation [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings" [showErrors]="showErrors" [(isValid)]="isValid"></d3s-fusion-rule-step-findviarelation>
+            </div>
+        </div> 
+        <div class="row" style="margin-top: 20px">
+            <div class="col s12">
+                <button type="button" label="Save" pButton (click)="save()" [disabled]="!isValid || model.RuleStep.Action == null"></button>
+                <button type="button" label="Cancel" pButton (click)="onClose.emit()"></button>
+            </div>
+        </div>
     </div>
 </div>`,
     providers: [FusionService] 
@@ -62,6 +60,9 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
      
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
+
+    showErrors = false;
+    isValid = false;
 
     actionTypes: any[] = [
         { text: 'Promote', value: 'promote' },
@@ -252,6 +253,11 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
 
     save() {
         if (this.isLoading) return;
+        this.showErrors = false;
+        if (!this.isValid || this.model.RuleStep.Action == null) {
+            this.showErrors = true;
+            return;
+        }
         //console.log(this.model.RuleStep.Settings);
         if (this.ruleStepID && this.ruleStepID != 0) {
             //edit
@@ -274,5 +280,9 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
         }
     }
 
+    changeAction() {
+        this.showErrors = false;
+        this.isValid = false;
+    }
 };
 

@@ -15,6 +15,9 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     @Input() ruleID: number;
     @Input() ruleStepID: number = 0;
     @Input() settings: any;
+    @Input() showErrors = false;
+    @Input() isValid = false;
+    @Output() isValidChange = new EventEmitter();
 
     @Output() settingsChange = new EventEmitter();
 
@@ -51,6 +54,7 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
                     this.switchParentSearch();
                 });
             });
+        
     }
 
     loadTypes(): Promise<any> {
@@ -59,21 +63,25 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
             return this.fusionService.getFindArtifactTypes()
                 .then(r => {
                     this.promotionObjects = r;
+                    this.validate();
                 });
         if (this.settings.Object == 'TaxonomyType')
             return this.fusionService.getFindModels()
                 .then(r => {
                     this.promotionObjects = r;
+                    this.validate();
                 });
         if (this.settings.Object == 'ReferenceItemType')
             return this.fusionService.getFindReferenceItemTypes()
                 .then(r => {
                     this.promotionObjects = r;
+                    this.validate();
                 });
         return Promise.resolve();
     }
 
     changePromotionObjectType(): Promise<any> {
+        this.showPromotionParent = false;
         return this.loadTypes();
     }
 
@@ -102,6 +110,7 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
 
             }
         }
+        this.validate();
         return Promise.resolve();
     }
 
@@ -124,18 +133,21 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
                 return this.fusionService.getPromotionParents(objid, obj)
                     .then(r => {
                         this.parents = r;
+                        this.validate();
                     });
             case "ResultFromStep":
                 this.settings.ParentObject = "Step"; //need to set this when selecting ResultFromStep.
                 return this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID)
                     .then(r => {
                         this.parents = r;
+                        this.validate();
                     });
             case "FusionOwner":
                 this.settings.ParentObject = "Artifact"; //need to set this when selecting FusionOwner.
                 return this.fusionService.getPromotionFusionOwnerRules(this.fusionID)
                     .then(r => {
                         this.parents = r;
+                        this.validate();
                     });
         }
         return Promise.resolve();
@@ -144,6 +156,17 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     changeParentSearch(): Promise<any> {
         this.settings.ParentObjectID = null;
         return this.switchParentSearch();
+    }
+
+    validate() {
+        this.isValid = true;
+        if (this.settings.Object == null || this.settings.ObjectID == null)
+            this.isValid = false;
+        if (this.showPromotionParent) {
+            if (this.settings.ParentObjectSearch == null || this.settings.ParentObjectID == null)
+                this.isValid = false;
+        }
+        this.isValidChange.emit(this.isValid);
     }
 
 };

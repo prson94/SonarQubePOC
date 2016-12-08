@@ -15,6 +15,9 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
     @Input() ruleID: number;
     @Input() ruleStepID: number = 0;
     @Input() settings: any;
+    @Input() showErrors = false;
+    @Input() isValid = false;
+    @Output() isValidChange = new EventEmitter();
 
     @Output() settingsChange = new EventEmitter();
 
@@ -41,8 +44,19 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
                     .then(r => {
                         this.steps = r.slice(0);            //take a copy of the r array
                         this.technicalsteps = r.slice(0);   //take a copy of the r array
-                        this.technicalsteps.unshift({ID: null, Description: ''});
+                        this.technicalsteps.unshift({ ID: null, Description: '' });
+                        this.validate();
                     });
             });
+    }
+
+    validate() {
+        this.isValid = true;
+        if (this.settings.Role == null
+            || this.settings.SubjectID == null
+            || this.settings.ObjectID == null)
+            this.isValid = false;
+
+        this.isValidChange.emit(this.isValid);
     }
 };

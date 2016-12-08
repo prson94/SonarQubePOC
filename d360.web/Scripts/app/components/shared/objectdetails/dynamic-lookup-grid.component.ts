@@ -88,7 +88,14 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
                 this.data.Values.forEach(v => {
                     v[c.datafield] = this.formatAsNumber(v[c.datafield]);
                 });
-            }      
+            }
+            if (c.type == 'string' || c.type == 'preview' || c.type == 'lookup') {
+                this.data.Values.forEach(v => {
+                    if (v[c.datafield] === null) {
+                        v[c.datafield] = ''; //prevent IE from displaying 'null'
+                    }
+                });
+            }
         });
 
         this.data.Columns.filter(c => c.type == 'hidden').forEach(c => {

@@ -29,7 +29,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     fusionRules: FusionRule[] = [];
     selectedFusionRule: FusionRule;
     fusionRuleSteps: FusionRuleStep[] = [];
-    selectedFusionRuleStep: FusionRuleStep;
+    selectedFusionRuleStep: FusionRuleStep = null;
     fusionRuleMappings: FusionRuleMapping[] = [];
     selectedFusionRuleMapping: FusionRuleMapping;
     fusionRuleItems: FusionRuleItem[] = [];
@@ -429,6 +429,10 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
             return;
         this.fusionService.putMoveFusionRuleStep(this.selectedFusionRuleStep.RuleID, this.selectedFusionRuleStep.ID, moveUp)
             .then(() => this.loadSteps());
+    }
+
+    setFormMode(area: string, mode: FormMode) {
+
     }
 };
 
