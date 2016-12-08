@@ -27,7 +27,9 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
 
     constructor(rightSidebarService : RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        
+    }
+
+    ngOnInit() {
         this.areaName = "Workflow";
         this.setCommonItems();
 
@@ -46,7 +48,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
         items.push({
             icon: null,
             label: 'Work Issue'
-        });        
+        });
 
         items.push({
             icon: null,
@@ -64,7 +66,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
 
         this.load();
     }
-        
+
     load() {
         this.isLoading = true;
 
