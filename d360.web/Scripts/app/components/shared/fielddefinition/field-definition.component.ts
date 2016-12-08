@@ -23,6 +23,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Output() onAdd = new EventEmitter();
     @Output() onDelete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
+    @Output() onFieldsChanged = new EventEmitter();
 
     @Input() isEditing = false;
     @Input() isAdding = false;
@@ -105,7 +106,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.isEditing = false;
         this.onCancel.emit();
         this.load();
-
+        this.onFieldsChanged.emit();
     }
 
     deleteFieldType(id: number) {
@@ -116,16 +117,17 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 let index = this.fieldDefinitions.findIndex(f => f.ID == id);
                 if (index >= 0 && index < this.fieldDefinitions.length)
                     this.fieldDefinitions.splice(index, 1);
+                this.onFieldsChanged.emit();
             }
         });
         
     }
 
     moveUp(field: FieldDefinition) {
-
         this.fieldsService.moveUp(field.ObjectType, parseInt(field.ObjectID), field.ID)
             .then(r => {                
                 this.load();
+                this.onFieldsChanged.emit();
             });
     }
 
@@ -133,6 +135,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.fieldsService.moveDown(field.ObjectType, parseInt(field.ObjectID), field.ID)
             .then(r => {                
                 this.load();
+                this.onFieldsChanged.emit();
             });
     }
 }

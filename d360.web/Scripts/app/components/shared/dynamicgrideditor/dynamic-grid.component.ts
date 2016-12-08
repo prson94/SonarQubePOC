@@ -88,7 +88,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
         if (this.objectID != null && this.objectType != null) this.load();
     }
     
-    load() {
+    public load() {
         this.getFieldsDefinition();        
         this.getData();
     }
