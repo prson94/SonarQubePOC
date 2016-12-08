@@ -20,7 +20,7 @@ BEGIN
 			declare @linkName nvarchar(max),
 					@linkUrl nvarchar(max)
 
-			if charindex('|', @Value, 1) > 0
+			if charindex('|', @Value, 1) > 1
 				begin
 					SELECT @linkName = SUBSTRING(@Value, 1, PATINDEX('%|%', @Value)-1)
 					SELECT @linkUrl = SUBSTRING(@Value, PATINDEX('%|%', @Value)+1, LEN(@Value))
@@ -29,13 +29,21 @@ BEGIN
 				end
 			else
 				begin
-					if @Value <> '' AND @Value IS NOT NULL
+					if @Value <> '' AND @Value <> '|' AND @Value IS NOT NULL
 						begin
-							set @formattedValue = '<a href="' + @Value + '" target="_blank">' + @Value + '</a>'
+							if LEFT(@Value, 1) = '|'
+								begin
+									--no name, default to url
+									set @formattedValue = '<a href="' + SUBSTRING(@Value,2, LEN(@Value)) + '" target="_blank">' + SUBSTRING(@Value,2, LEN(@Value)) + '</a>'
+								end
+							else
+								begin
+									set @formattedValue = '<a href="' + @Value + '" target="_blank">' + @Value + '</a>'
+								end
 						end
 					else
 						begin
-							set @formattedValue = ''
+							set @formattedValue = null
 						end
 				end
 		end
@@ -74,18 +82,6 @@ BEGIN
 								'Artifact' as ObjectType
 						FROM	ArtifactType
 						WHERE	@LookupObjectType = 'Artifact' and ID = @LookupObjectID
-						UNION
-						SELECT	ID,
-								Name,
-								'Domain' as ObjectType
-						FROM	DomainType
-						WHERE	@LookupObjectType = 'Domain' and ID = @LookupObjectID
-						UNION
-						SELECT	ID,
-								Name,
-								'DomainItem' as ObjectType
-						FROM	Domain
-						WHERE	@LookupObjectType = 'DomainItem' and ID = @LookupObjectID
 						UNION
 						SELECT	ID,
 								Name,
@@ -163,45 +159,6 @@ BEGIN
 											) A
 											unpivot	(
 													FieldValue for FieldName in (Name, Description, TextPath)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description
-											FROM	Domain A
-											WHERE	A.ID = @Value
-													and L.ObjectType = 'Domain'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Name, Description)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Code as nvarchar(max)) as Code,
-													CAST(Name as nvarchar(max)) as Name,
-													Description
-											FROM	DomainItem A
-											WHERE	A.ID = @Value
-													and L.ObjectType = 'DomainItem'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Code, Name, Description)
 													) p
 
 									UNION
@@ -308,4 +265,3 @@ BEGIN
 
 	return @formattedValue
 END
-

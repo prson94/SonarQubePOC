@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../../services/index';
 import { WorkflowItem, WorkflowType } from '../../../models/workflow.model';
 import { MenuItem } from 'primeng/primeng';
@@ -12,7 +12,7 @@ import { Title } from '@angular/platform-browser';
     templateUrl: './admin-workflow.component.html'
 }) 
 
-export class AdminWorkflowComponent extends AdminBaseComponent  {
+export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit  {
     messages = new Array<any>();
 
     isEditing = false;
