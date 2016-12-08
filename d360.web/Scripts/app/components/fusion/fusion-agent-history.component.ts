@@ -1,7 +1,9 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
 import { FusionAgentExecutionStats, FusionConfigurationDetails } from '../../models/fusion.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 @Component({
@@ -14,8 +16,12 @@ import * as _ from 'lodash';
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                         <p-dataTable #dt [globalFilter]="gb" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="FusionType" header="Type" sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Fusion" header="Configuration" sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="FusionType" header="Type" sortable="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Fusion" header="Configuration" sortable="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <a (click)="showFusion(item)">{{item.Fusion}}</a>
+                                </template>
+                            </p-column>
                             <p-column field="DateStarted" header="Started" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateStarted | date: 'short'}}</span>
@@ -47,7 +53,7 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
 
     @Input() fusion: FusionConfigurationDetails;
 
-    constructor(private fusionService: FusionService) {
+    constructor(private router: Router, private fusionService: FusionService) {
         super();
     }
 
@@ -72,10 +78,13 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
         this.executions = _.sortBy(this.executions, event.field);
         if (event.order == -1) this.executions.reverse();
     }
+    
+    private showFusion(fusion: FusionAgentExecutionStats) {
+        if (!fusion) {
+            console.log("ERROR NO SELECTED FUSION ITEM TO NAVIGATE TO.");
 
-    private caseInsensitiveSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending        
-        this.executions = _.orderBy(this.executions, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+            return;
+        }
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionType', fusion.FusionID));
     }
 };

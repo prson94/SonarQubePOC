@@ -20,12 +20,12 @@ import * as _ from 'lodash';
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                         <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion(selected);" >
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="Name" header="Name"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                            <p-column field="Name" header="Name"  sortable="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                                 <template let-item="rowData" pTemplate type="body">
                                     <a (click)="showFusion(item)">{{item.Name}}</a>
                                 </template>
                             </p-column>
-                            <p-column field="FusionType" header="Type"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>                            
+                            <p-column field="FusionType" header="Type"  sortable="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>                            
                             <p-column field="Description" header="Description" [sortable]="false" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                                                 <template let-item="rowData" pTemplate type="body">
                                                     <span [innerHtml]="item.Description"></span>
@@ -94,12 +94,5 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
 
     private doExport() {
         this.fusionService.exportFusionConfigurations();
-    }
-
-
-    private caseInsensitiveSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending        
-        this.fusions = _.orderBy(this.fusions, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
-    }
+    }    
 };
