@@ -99,9 +99,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
                 this.addingRow.WorkflowType = WorkflowType.SuggestNewArtifactMulti
                 break;
             default:
-                console.warn(`workflow type defaulted to 'SuggestNewArtifact'. Supplied label was '${e.label}'`);
-                this.addingRow.WorkflowType = WorkflowType.SuggestNewArtifact
-                break;
+                return;
         }
 
         this.isAdding = true;

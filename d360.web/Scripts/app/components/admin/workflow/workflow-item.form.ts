@@ -41,6 +41,7 @@ export class WorkflowItemForm implements OnInit {
     private numDays: number = 14;
     private numMonths: number = 12;
     private dateScheduleCalculation: Date;
+    private responsibilityFinalApproval: number;
 
     private isLoading = false;
     private isSaving = false;
@@ -91,6 +92,12 @@ export class WorkflowItemForm implements OnInit {
                 this.dateScheduleCalculation = null;
             }
 
+            if (this.item.WorkflowType == WorkflowType.SuggestNewArtifactMulti) {
+                this.responsibilityFinalApproval = data.WorkflowTypeRelation.Fields["ResponsibilityFinalApproval"] || this.responsibilityFinalApproval;
+            } else {
+                this.responsibilityFinalApproval = null;
+            }
+
             this.isLoading = false;
             this.onLoadComplete.emit({ item: this.item });
         });
@@ -122,6 +129,12 @@ export class WorkflowItemForm implements OnInit {
             if (this.numMonths != null)
                 this.item.Fields.push({ key: 'MonthsUntilCertification', value: this.numMonths });
         }
+        if (this.item.WorkflowType == WorkflowType.SuggestNewArtifactMulti) {
+            if (this.responsibilityFinalApproval != null)
+                this.item.Fields.push({
+                    key: 'ResponsibilityFinalApproval', value: this.responsibilityFinalApproval
+                });
+        }
 
         this.workflowService.postWorkflow(this.item).then(p => {
             this.isSaving = false;
@@ -135,6 +148,10 @@ export class WorkflowItemForm implements OnInit {
     }
 
     private objectTypeChange() {
+
+        if (this.ObjectType == null || this.ObjectType == '' || this.ObjectType.indexOf('|') == -1)
+            return;
+
         this.isLoadingResponsibility = true;
 
         let val = this.ObjectType;
