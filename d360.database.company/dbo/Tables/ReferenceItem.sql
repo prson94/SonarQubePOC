@@ -5,11 +5,13 @@
     [CreatedBy]           INT            NULL,
     [UpdatedOn]           DATETIME       NULL,
     [UpdatedBy]           INT            NULL,
-    [DisplayValue]        AS             ([utility].[GetFormattedFieldReferenceItemValue]([ID],[ReferenceItemTypeID])),
     [Code]                NVARCHAR (250) NULL,
+    [DisplayValue]        AS             ([utility].[GetFormattedFieldReferenceItemValueWrapper]([ID],[ReferenceItemTypeID])),
     CONSTRAINT [PK_ReferenceItem] PRIMARY KEY NONCLUSTERED ([ID] ASC),
     CONSTRAINT [FK_ReferenceItem_ReferenceItemType] FOREIGN KEY ([ReferenceItemTypeID]) REFERENCES [dbo].[ReferenceItemType] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 

@@ -11,7 +11,7 @@ BEGIN
 	DECLARE @HashThis nvarchar(1000);
 	SELECT @HashThis = coalesce(STUFF((SELECT ';' + cast(DI.ID as nvarchar(10))
 			  FROM ResponsibilityContextItem RCI
-					inner join DomainItem DI on DI.ID = RCI.ObjectID and RCI.ObjectType = 'DomainItem' and RCI.ResponsibilityID = @ID
+					inner join ReferenceItem DI on DI.ID = RCI.ObjectID and RCI.ObjectType = 'ReferenceItem' and RCI.ResponsibilityID = @ID
 			  ORDER BY DI.ID
 			  FOR XML PATH('')), 1, 1, ''), '')
 

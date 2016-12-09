@@ -27,9 +27,6 @@ begin
 	if @Object = 'Artifact'				begin		select @objectName = Name from Artifact where ID = @ObjectID				end
 	if @Object = 'ArtifactType'			begin		select @objectName = Name from ArtifactType where ID = @ObjectID			end
 	if @Object = 'AttributeType'		begin		select @objectName = Name from AttributeType where ID = @ObjectID			end
-	if @Object = 'Domain'				begin		select @objectName = Name from Domain where ID = @ObjectID					end
-	if @Object = 'DomainGroup'			begin		select @objectName = Name from DomainGroup where ID = @ObjectID				end
-	if @Object = 'DomainType'			begin		select @objectName = Name from DomainType where ID = @ObjectID				end
 	if @Object = 'Fusion'				begin		select @objectName = Name from Fusion where ID = @ObjectID					end
 	if @Object = 'FusionAttribute'		begin		select @objectName = TextPath from FusionAttribute where ID = @ObjectID		end
 	if @Object = 'FusionAttributeType'	begin		select @objectName = Name from FusionAttributeType where ID = @ObjectID		end
@@ -40,6 +37,7 @@ begin
 	if @Object = 'LoadType'				begin		select @objectName = Name from LoadType where ID = @ObjectID				end
 	if @Object = 'LookupType'			begin		select @objectName = Name from LookupType where ID = @ObjectID				end
 	if @Object = 'Policy'				begin		select @objectName = Name from Policy where ID = @ObjectID					end
+	if @Object = 'ReferenceItemType'	begin		select @objectName = Name from ReferenceItemType where ID = @ObjectID		end
 	if @Object = 'Report'				begin		select @objectName = Name from Report where ID = @ObjectID					end
 	if @Object = 'ResponsibilityType'	begin		select @objectName = Name from ResponsibilityType where ID = @ObjectID		end
 	if @Object = 'Rule'					begin		select @objectName = Name from [Rule] where ID = @ObjectID					end
@@ -84,7 +82,7 @@ begin
 		insert into @tbl  select 0, 'AllowRelatedArtifacts', AllowRelatedArtifacts, 0, 0 from ArtifactType where ID = @ActionObjectID
 	end
 	
-	-- Relevant ONLY to: Artifact, Domain, Fusion, FusionAttribute, Intersect, Taxonomy
+	-- Relevant ONLY to: Artifact, Fusion, FusionAttribute, Intersect, Taxonomy
 	if @ActionObject = 'Attribute'
 	begin
 		select	@actionObjectTypeName = T.Name,
@@ -109,61 +107,6 @@ begin
 		insert into @tbl  select 0, 'AttributeTypeCategoryID', AttributeTypeCategoryID, 0, 0 from AttributeType where ID = @ActionObjectID
 	end
 
-	-- Relevant ONLY to: Domain
-	if @ActionObject = 'DomainItem'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	DomainItem O
-				inner join Domain T on T.ID = O.DomainID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from DomainItem where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Code', Code, 0, 0 from DomainItem where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from DomainItem where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Domain, DomainGroup, DomainType
-	if @ActionObject = 'Domain'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	Domain O
-				inner join DomainType T on T.ID = O.DomainTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Domain where ID = @ActionObjectID
-		--insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from Domain where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Domain where ID = @ActionObjectID
-		insert into @tbl  select 0, 'DomainGroupID', DomainGroupID, 0, 0 from Domain where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: DomainGroup, DomainType
-	if @ActionObject = 'DomainGroup'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	DomainGroup O
-				inner join DomainType T on T.ID = O.DomainTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from DomainGroup where ID = @ActionObjectID
-		insert into @tbl  select 0, 'MasterListID', MasterListID, 0, 0 from DomainGroup where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from DomainGroup where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: DomainType
-	if @ActionObject = 'DomainType'
-	begin
-		select	@actionObjectTypeName = 'Domain Type',
-				@actionObjectName = O.Name
-		from	DomainType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from DomainType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from DomainType where ID = @ActionObjectID
-	end
-	
 	-- Relevant ONLY to: Rule
 	if @ActionObject = 'EventGroup'
 	begin
@@ -235,7 +178,7 @@ begin
 		insert into @tbl  select 0, 'SecondaryOwnerResourceID', SecondaryOwnerResourceID, 0, 0 from [Group] where ID = @ActionObjectID
 	end
 
-	-- Relevant ONLY to: Artifact, Domain, FusionAttribute, Intersect, Taxonomy, Policy, Rule
+	-- Relevant ONLY to: Artifact, FusionAttribute, Intersect, Taxonomy, Policy, Rule
 	if @ActionObject = 'Intersect'
 	begin
 		select	@actionObjectTypeName = T.Name,
@@ -367,6 +310,31 @@ begin
 		insert into @tbl  select 0, 'Description', Description, 0, 0 from QuestionType where ID = @ActionObjectID
 	end
 
+	-- Relevant ONLY to: ReferenceItem
+	if @ActionObject = 'ReferenceItem'
+	begin
+		select	@actionObjectTypeName = T.Name,
+				@actionObjectName = O.Code 
+		from	ReferenceItem O
+				inner join ReferenceItemType T on T.ID = O.ReferenceItemTypeID
+		where	O.ID = @ActionObjectID
+
+		insert into @tbl  select 0, 'Code', Code, 0, 0 from ReferenceItem where ID = @ActionObjectID
+	end
+
+	-- Relevant ONLY to: ReferenceItemType
+	if @ActionObject = 'ReferenceItemType'
+	begin
+		select	@actionObjectTypeName = 'Reference Item Type',
+				@actionObjectName = O.Name
+		from	ReferenceItemType O
+		where	O.ID = @ActionObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from ReferenceItemType where ID = @ActionObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from ReferenceItemType where ID = @ActionObjectID
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from ReferenceItemType where ID = @ActionObjectID
+	end
+
 	-- Relevant ONLY to: Report
 	if @ActionObject = 'Report'
 	begin
@@ -398,7 +366,7 @@ begin
 		insert into @tbl  select 0, 'Settings', cast(Settings as nvarchar(max)), 0, 0 from ReportTile where ID = @ActionObjectID
 	end
 
-	-- Relevant ONLY to: Artifact, ArtifactType, DomainType, Intersect, Policy, Rule, Taxonomy, TaxonomyType, Vocabulary
+	-- Relevant ONLY to: Artifact, ArtifactType, Intersect, Policy, Rule, Taxonomy, TaxonomyType, Vocabulary
 	if @ActionObject = 'Responsibility'
 	begin
 		select	@actionObjectTypeName = 'Responsibility',
@@ -409,10 +377,10 @@ begin
 		where	O.ID = @ActionObjectID
 
 		insert into @tbl  select 0, 'Context', (
-				select	D.Name + ': ' + I.Code + ' - ' + I.Name + '; '
+				select	D.Name + ': ' + I.Code + '; '
 				from	ResponsibilityContextItem C
-						inner join DomainItem I on C.ObjectType = 'DomainItem' and C.ObjectID = I.ID
-						inner join Domain D on D.ID = I.DomainID
+						inner join ReferenceItem I on C.ObjectType = 'ReferenceItem' and C.ObjectID = I.ID
+						inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
 				where	ResponsibilityID = @ActionObjectID
 				for xml path ('')--, root('items')
 				), 0, 0 from Responsibility where ID = @ActionObjectID

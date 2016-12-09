@@ -2,12 +2,9 @@
 	@executionID int	
 AS
 BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
 	set NOCOUNT, ANSI_PADDING ON;
 	SET ANSI_WARNINGS ON;
 
-	declare @Intersects IDTable;
 	declare @objectType varchar(50) = 'FusionAttribute';
 
     -- delete any relations we already have that was already added from stagingrelation table so we dont duplicate
@@ -46,17 +43,6 @@ BEGIN
 	SET		T.IntersectID = S.IntersectID
 	from	[fusion].[StagingRelation] T
 			inner join @IDList S on T.ExecutionID = @executionID and T.ID = S.StageID;
-
-	insert into @Intersects 
-		select	IntersectID 
-		from	@IDList;
-			
-	declare @IntersectCount int
-	select @IntersectCount = count(1) from @Intersects
-	if @IntersectCount > 0 
-	begin
-		EXEC cache.SynchronizeRelationships @Intersects
-	end
 END
 GO
 

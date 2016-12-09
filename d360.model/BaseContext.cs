@@ -67,6 +67,8 @@ namespace d360.model
         public string CurrentCompanyDomain { get; set; }
         public bool CurrentResourceIsAdmin { get; set; }
 
+        public string CompanyConnectionString { get; set; }
+
         internal ISecurityContextProvider Context;
         internal ICachingProvider Caching;
 
@@ -92,7 +94,7 @@ namespace d360.model
 
         public BaseContext(string connectionString): base(connectionString)
         {
-
+            CompanyConnectionString = connectionString;
         }
 
         #region Generic Repository Methods

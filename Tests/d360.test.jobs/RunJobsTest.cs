@@ -1,22 +1,19 @@
-﻿using System;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using d360.model;
-using d360.extensions.info;
-using d360.core;
-using d360.core.queue;
-using System.Collections.Generic;
-using d360.extensions.caching;
-using d360.extensions.search;
-using d360.extensions.queue;
+﻿using d360.core;
 using d360.core.entities;
-using System.Data.SqlClient;
-using System.Configuration;
-using Dapper;
-using System.IO;
-using SpreadsheetLight;
-using Microsoft.WindowsAzure.Storage;
+using d360.core.queue;
+using d360.extensions.caching;
+using d360.extensions.info;
+using d360.extensions.queue;
+using d360.extensions.search;
 using d360.extensions.storage;
+using d360.model;
+using Dapper;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
 
 namespace d360.test.jobs
 {
@@ -113,12 +110,12 @@ END",
         [TestMethod]
         public void SaveCertificate_Success()
         {
-            var companyID = 31;
+            var companyID = 23;
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("Delaware-2016-STG.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Delaware - 2016 - Staging", File = bytes };
+            var bytes = File.ReadAllBytes("NM-Dev-2017.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Northwestern Mutual - 2017 - Development", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

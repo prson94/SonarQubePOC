@@ -83,8 +83,8 @@
       <HintPath>..\..\packages\Microsoft.Activities.UnitTesting.2.0.6.9\lib\Net45\Microsoft.Activities.UnitTesting.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
+    <Reference Include="Microsoft.Azure.KeyVault.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Azure.KeyVault.Core.2.0.4\lib\net45\Microsoft.Azure.KeyVault.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -106,6 +106,14 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OptimaJet.Workflow.Core, Version=1.5.6.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WorkflowEngine.NET-Core.1.5.6.1\lib\net45\OptimaJet.Workflow.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OptimaJet.Workflow.DbPersistence, Version=1.5.6.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WorkflowEngine.NET-ProviderForMSSQL.1.5.6.1\lib\net45\OptimaJet.Workflow.DbPersistence.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -160,6 +168,15 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SQL\CreatePersistenceObjects.sql" />
+    <Content Include="SQL\CreatePersistenceObjectsForAzureSQL.sql" />
+    <Content Include="SQL\DropPersistenceObjects.sql" />
+    <Content Include="SQL\update_1_3_to_1_4.sql" />
+    <Content Include="SQL\update_1_4_5_to_1_5.sql" />
+    <Content Include="SQL\update_1_4_to_1_4_3.sql" />
+    <Content Include="SQL\update_1_4_to_1_4_4.sql" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

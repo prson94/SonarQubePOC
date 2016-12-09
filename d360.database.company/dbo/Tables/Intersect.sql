@@ -31,6 +31,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID]
     ON [dbo].[Intersect]([IntersectTypeID] ASC);
@@ -221,3 +223,7 @@ BEGIN
 	--	set @current = @current +1
 	--end;
 END
+GO
+CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID_Subject_Object]
+    ON [dbo].[Intersect]([IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC);
+

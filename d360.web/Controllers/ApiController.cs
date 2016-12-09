@@ -2490,6 +2490,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         end ";
             sqlQuery += string.Join(" ", def.Relations.Select(i => i.JoinStatement));
 
+            var whereQuery = string.Join(" AND ", def.Relations.Where(i => !string.IsNullOrEmpty(i.WhereStatement)).Select(i => i.WhereStatement));
+            if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
+            sqlQuery += whereQuery + " ";
+
             return Company.Query<bool>(sqlQuery).First();
         }
 

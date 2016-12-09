@@ -130,6 +130,7 @@
     <Folder Include="bulkload\" />
     <Folder Include="bulkload\Stored Procedures\" />
     <Folder Include="Conversions" />
+    <Folder Include="cache\Functions\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="fusion\Tables\StagingRelation.sql">
@@ -146,9 +147,7 @@
     <Build Include="dbo\Tables\FusionAttributePromotionRuleItem.sql" />
     <Build Include="dbo\Tables\Field.sql" />
     <Build Include="dbo\Tables\EventType.sql" />
-    <Build Include="dbo\Tables\Resolution.sql" />
     <Build Include="reporting\Tables\Global_Audit.sql" />
-    <Build Include="dbo\Tables\ResolutionRelation.sql" />
     <Build Include="reporting\Tables\Global_FieldAudit.sql" />
     <Build Include="dbo\Tables\FusionAttributeOwnerRuleItem.sql" />
     <Build Include="dbo\Tables\FieldType.sql" />
@@ -167,7 +166,6 @@
       <AnsiNulls>Off</AnsiNulls>
     </Build>
     <Build Include="dbo\Tables\EmailTemplate.sql" />
-    <Build Include="dbo\Tables\RelatedArtifact.sql" />
     <Build Include="dbo\Tables\Comment.sql" />
     <Build Include="dbo\Tables\CommentRelation.sql" />
     <Build Include="dbo\Tables\WorkflowResourceNotification.sql" />
@@ -246,8 +244,8 @@
     <Build Include="utility\Views\ResponsibilityHierarchy.sql" />
     <Build Include="dbo\Views\AttributeDetail.sql" />
     <Build Include="dbo\Views\FieldTypeLookupValue.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
+      <AnsiNulls>On</AnsiNulls>
+      <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
     <Build Include="dbo\Views\ResponsibilityDetailForResource.sql" />
     <Build Include="dbo\Views\Relationship.sql" />
@@ -272,8 +270,8 @@
     <Build Include="dbo\Functions\SpaceBeforeCapitalLetter.sql" />
     <Build Include="utility\Functions\GetBreadcrumbStringWrapper.sql" />
     <Build Include="utility\Functions\GetBreadcrumbString.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
+      <AnsiNulls>On</AnsiNulls>
+      <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
     <Build Include="utility\Functions\GetObjectLevel.sql" />
     <Build Include="utility\Functions\GetBreadcrumb.sql" />
@@ -407,8 +405,6 @@
     <Build Include="fusion\Tables\AgentError.sql" />
     <Build Include="fusion\Tables\AgentErrorItem.sql" />
     <Build Include="utility\User Defined Types\DiagramRelationshipTable_1.sql" />
-    <Build Include="dbo\Tables\FieldTypeRelationLookupDisplayField.sql" />
-    <Build Include="dbo\Tables\FieldTypeRelationLookupDefinition.sql" />
     <Build Include="dbo\Stored Procedures\AddSingleIntersect.sql" />
     <Build Include="dbo\Tables\RuleDimension.sql" />
     <Build Include="dbo\Functions\EventCountByObject.sql" />
@@ -500,6 +496,25 @@
     <None Include="Conversions\Old Lineage to New Lineage Conversion.sql" />
     <None Include="Conversions\RelatedArtifact to Intersect Conversion.sql" />
     <None Include="Conversions\RelationshipLookup to ComplexLookup Field Type Conversion.sql" />
+    <Build Include="dbo\Tables\WorkflowScheme.sql" />
+    <Build Include="dbo\Tables\WorkflowRuntime.sql" />
+    <Build Include="dbo\Tables\WorkflowProcessTransitionHistory.sql" />
+    <Build Include="dbo\Tables\WorkflowProcessTimer.sql" />
+    <Build Include="dbo\Tables\WorkflowProcessScheme.sql" />
+    <Build Include="dbo\Tables\WorkflowProcessInstanceStatus.sql" />
+    <Build Include="dbo\Tables\WorkflowProcessInstancePersistence.sql" />
+    <Build Include="dbo\Tables\WorkflowProcessInstance.sql" />
+    <Build Include="dbo\Tables\WorkflowInbox.sql" />
+    <Build Include="dbo\Tables\WorkflowGlobalParameter.sql" />
+    <Build Include="dbo\Tables\RuleResultQualifierType.sql" />
+    <Build Include="dbo\Tables\RuleResultQualifier.sql" />
+    <Build Include="utility\Functions\GetFormattedFieldReferenceItemValueWrapper.sql" />
+    <Build Include="cache\Functions\SynchronizeObjectResponsibilities.sql" />
+    <Build Include="dbo\Stored Procedures\spWorkflowProcessResetRunningStatus.sql" />
+    <Build Include="dbo\Stored Procedures\DropWorkflowProcesses.sql" />
+    <Build Include="dbo\Stored Procedures\DropWorkflowProcess.sql" />
+    <Build Include="dbo\Stored Procedures\DropWorkflowInbox.sql" />
+    <Build Include="dbo\User Defined Types\IdsTableType.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

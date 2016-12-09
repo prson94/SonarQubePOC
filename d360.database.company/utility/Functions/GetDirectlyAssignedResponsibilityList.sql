@@ -61,46 +61,6 @@ BEGIN
 									or (@ObjectID is null)
 								);
 		end
-	if @Object = 'Domain'
-		begin
-			insert into @tbl
-				select	'Domain Direct' as [Source],
-						R.Visible,
-						R.ID,
-						R.ResponsibilityTypeID,
-						@Object as AssigningItemType,
-						T.ID as AssigningItemID,
-						@Object as ObjectType,
-						T.ID as ObjectID,
-						utility.GetResponsibilityContextHash(R.ID),
-						@Priority as [Priority]
-				from	Domain T 
-						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
-							and (
-									(T.ID = @ObjectID and @ObjectID is not null)
-									or (@ObjectID is null)
-								);
-		end
-	if @Object = 'DomainType'
-		begin
-			insert into @tbl
-				select	'Domain Type Direct' as [Source],
-						R.Visible,
-						R.ID,
-						R.ResponsibilityTypeID,
-						@Object as AssigningItemType,
-						T.ID as AssigningItemID,
-						@Object as ObjectType,
-						T.ID as ObjectID,
-						utility.GetResponsibilityContextHash(R.ID),
-						@Priority as [Priority]
-				from	DomainType T 
-						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
-							and (
-									(T.ID = @ObjectID and @ObjectID is not null)
-									or (@ObjectID is null)
-								);
-		end
 	if @Object = 'Fusion'
 		begin
 			insert into @tbl

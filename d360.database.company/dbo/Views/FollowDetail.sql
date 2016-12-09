@@ -26,33 +26,7 @@ AS
 			ResourceID,
 			1 as HardFollow
 	from	Follow
-	where	ObjectType = 'DomainType' and FollowTypeID = 3
-	union all
-	select	P.ID as FollowID,
-			cast('Domain' as varchar(50)) as [Object],
-			C.ID as ObjectID,
-			P.ResourceID,
-			0 as HardFollow
-	from	Domain C
-			inner join Follow P on P.ObjectType = 'DomainType' and P.ObjectID = C.DomainTypeID and P.FollowTypeID = 3
-	),
-	DomainGroups as
-	(
-	select	ID as FollowID,
-			ObjectType as [Object],
-			ObjectID,
-			ResourceID,
-			1 as HardFollow
-	from	Follow
-	where	ObjectType = 'DomainGroup' and FollowTypeID = 3
-	union all
-	select	P.ID as FollowID,
-			cast('Domain' as varchar(50)) as [Object],
-			C.ID as ObjectID,
-			P.ResourceID,
-			0 as HardFollow
-	from	Domain C
-			inner join Follow P on P.ObjectType = 'DomainGroup' and P.ObjectID = C.DomainGroupID and P.FollowTypeID = 3
+	where	ObjectType = 'ReferenceItemType' and FollowTypeID = 3
 	),
 	Groups as
 	(
@@ -192,13 +166,6 @@ AS
 						ResourceID, 
 						HardFollow 
 				from	DomainTypes
-				union
-				select	FollowID,
-						[Object], 
-						ObjectID, 
-						ResourceID, 
-						HardFollow 
-				from	DomainGroups
 				union
 				select	FollowID,
 						[Object], 

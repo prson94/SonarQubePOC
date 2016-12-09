@@ -7,7 +7,7 @@
     [UpdatedBy]       INT            NULL,
     [RuleDimensionID] INT            NULL,
     [Status]          INT            CONSTRAINT [DF_Rule_Status] DEFAULT ((1)) NOT NULL,
-    [Threshold]       DECIMAL (3, 3) CONSTRAINT [DF_Rule_Threshold] DEFAULT ((0)) NOT NULL,
+    [Threshold]       DECIMAL (4, 3) CONSTRAINT [DF_Rule_Threshold] DEFAULT ((0)) NULL,
     [Purpose]         NVARCHAR (MAX) NULL,
     [Measurement]     NVARCHAR (MAX) NULL,
     [Resolution]      NVARCHAR (MAX) NULL,
@@ -16,6 +16,8 @@
     CONSTRAINT [PK_Rule] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY ([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
 );
+
+
 
 
 

@@ -58,30 +58,6 @@ BEGIN
 			WHERE	ID = @id
 	end
 
-	if @type = 'Domain'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, O.DomainTypeID, O.ID),	O.DomainTypeID,	'DomainType',	T.Name
-			FROM	Domain O
-					INNER JOIN DomainType T ON O.DomainTypeID = T.ID and O.ID = @id
-	end
-
-	if @type = 'DomainGroup'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, O.DomainTypeID, O.ID),	O.DomainTypeID,	'DomainType',	T.Name
-			FROM	DomainGroup O
-					INNER JOIN DomainType T ON O.DomainTypeID = T.ID and O.ID = @id
-	end
-
-	if @type = 'DomainType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Domain Type'
-			FROM	DomainType
-			WHERE	ID = @id
-	end
-
 	if @type = 'Group'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
@@ -195,6 +171,14 @@ BEGIN
 			FROM	PolicyType O
 					inner join PolicyTypeClass C on C.ID = O.PolicyTypeClassID
 			WHERE	O.ID = @id
+	end
+
+	if @type = 'ReferenceItemType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Reference Item Type'
+			FROM	ReferenceItemType
+			WHERE	ID = @id
 	end
 
 	if @type = 'Report'

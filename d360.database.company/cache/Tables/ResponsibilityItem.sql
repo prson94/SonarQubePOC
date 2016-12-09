@@ -1,7 +1,7 @@
 ﻿CREATE TABLE [cache].[ResponsibilityItem] (
     [ResponsibilityID]        INT            NOT NULL,
     [ResponsibilityTypeID]    INT            NOT NULL,
-    [ResponsibilityType]      NVARCHAR (250) NOT NULL,
+    [ResponsibilityType]      NVARCHAR (250) NULL,
     [AssigningItem]           VARCHAR (50)   NOT NULL,
     [AssigningItemID]         INT            NOT NULL,
     [Object]                  VARCHAR (50)   NOT NULL,
@@ -14,6 +14,8 @@
     [TargetResponsibilityID]  INT            NULL,
     CONSTRAINT [PK_CacheResponsibilityItem] PRIMARY KEY CLUSTERED ([ResponsibilityID] ASC, [AssigningItem] ASC, [AssigningItemID] ASC, [Object] ASC, [ObjectID] ASC, [ContextHash] ASC)
 );
+
+
 
 
 

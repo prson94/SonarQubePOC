@@ -6,10 +6,7 @@
 RETURNS bit
 AS
 BEGIN
-	DECLARE @Passed bit--,
-			--@Threshold decimal(3,3)
-
-	--SELECT @Threshold = Threshold from quality.[Rule] where ID = @QualityRuleID
+	DECLARE @Passed bit
 
 	select	top 1
 			@Passed = case 

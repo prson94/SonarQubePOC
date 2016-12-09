@@ -1,4 +1,4 @@
-﻿CREATE view dbo.StatisticTypeCheckOption
+﻿CREATE view [dbo].[StatisticTypeCheckOption]
 as
 	select	'ArtifactType' as ObjectType,
 			ID AS ObjectID,
@@ -12,11 +12,10 @@ as
 			'Attribute' as NamePrefix
 	from	AttributeType
 	union
-	select	'DomainType' as ObjectType,
-			ID AS ObjectID,
-			Name,
-			'Domain' as NamePrefix
-	from	DomainType
+	select	'ReferenceItemType' as ObjectType,
+			0 AS ObjectID,
+			'Reference List',
+			'ReferenceItemType' as NamePrefix
 	union
 	select	'IntersectType' as ObjectType,
 			ID AS ObjectID,

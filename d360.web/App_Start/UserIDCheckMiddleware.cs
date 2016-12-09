@@ -1,15 +1,14 @@
 ﻿using d360.core;
+using d360.core.entities;
+using d360.extensions.caching;
+using Dapper;
 using Microsoft.Owin;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Threading.Tasks;
-using Dapper;
-using System.Linq;
-using System.Web.Caching;
-using d360.extensions.caching;
-using d360.core.entities;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.web
 {

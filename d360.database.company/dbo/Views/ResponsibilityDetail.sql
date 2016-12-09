@@ -29,10 +29,10 @@ as
 			left join [reporting].[Global_Resource] RES on RES.ResourceID = RODG.PrimaryOwnerResourceID
 			outer apply (
 						select (
-								select	D.Name + ': ' + I.Code + ' - ' + I.Name + '; '
+								select	D.Name + ': ' + I.Code + '; '
 								from	ResponsibilityContextItem C
-										inner join DomainItem I on C.ObjectType = 'DomainItem' and C.ObjectID = I.ID
-										inner join Domain D on D.ID = I.DomainID
+										inner join ReferenceItem I on C.ObjectType = 'ReferenceItem' and C.ObjectID = I.ID
+										inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
 								where	ResponsibilityID = P.ResponsibilityID
 								for xml path ('')--, root('items')
 								) as ContextItems

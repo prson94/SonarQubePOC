@@ -20,9 +20,14 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionAttributeTypeID]
-    ON [dbo].[FusionAttribute]([FusionAttributeTypeID] ASC);
+    ON [dbo].[FusionAttribute]([FusionAttributeTypeID] ASC)
+    INCLUDE([ID], [Name]);
+
+
 
 
 GO

@@ -74,33 +74,6 @@ BEGIN
 														)
 						inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = R.ResponsibilityTypeID and RTR.ObjectType = 'ArtifactType' and RTR.ObjectID = A.ArtifactTypeID;
 		end
-	if @Object = 'DomainType' OR @Object = 'Domain'
-		begin
-			insert into @tbl
-				select	'Domain Vertical' as [Source],
-						R.Visible,
-						R.ID,
-						R.ResponsibilityTypeID,
-						'DomainType' as AssigningItemType,
-						T.ID as AssigningItemID,
-						'Domain' as ObjectType,
-						A.ID as ObjectID,
-						utility.GetResponsibilityContextHash(R.ID),
-						@Priority as [Priority]
-				from	DomainType T 
-						inner join Responsibility R on R.ObjectType = 'DomainType' and R.ObjectID = T.ID
-						inner join Domain A on A.DomainTypeID = T.ID 
-												and (
-														(
-															(
-															(@Object = 'DomainType' and T.ID = @ObjectID) 
-															OR (@Object = 'Domain' and A.ID = @ObjectID) 
-															)
-															and @ObjectID is not null
-														)
-														or (@ObjectID is null)
-													);
-		end
 	if @Object = 'FusionType' OR @Object = 'Fusion'
 		begin
 			insert into @tbl

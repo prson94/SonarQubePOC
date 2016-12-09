@@ -1,8 +1,6 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using d360.core;
 using Microsoft.ServiceBus.Messaging;
-using System.Configuration;
-using d360.core;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace d360.test.jobs
 {
@@ -12,15 +10,15 @@ namespace d360.test.jobs
         [TestMethod]
         public void ClearQueue_Success()
         {
-            var queueClient = QueueClient.CreateFromConnectionString(constants.SERVICE_BUS_ACTIONS, "company-actions");
+            //var queueClient = QueueClient.CreateFromConnectionString(constants.SERVICE_BUS_ACTIONS, "company-actions");
 
-            while (queueClient.Peek() != null)
-            {
-                var m = queueClient.Receive();
-                if (m != null) m.Complete();
-            }
+            //while (queueClient.Peek() != null)
+            //{
+            //    var m = queueClient.Receive();
+            //    if (m != null) m.Complete();
+            //}
 
-            queueClient = null;
+            //queueClient = null;
         }
     }
 }

@@ -10,7 +10,6 @@ using System;
 using System.Security.Cryptography;
 using System.Deployment.Internal.CodeSigning;
 using d360.core;
-using System.Linq;
 
 namespace d360.web
 {

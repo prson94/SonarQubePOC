@@ -11,8 +11,8 @@ BEGIN
 			@ExecutionID int,
 			@NumberOfRules int,			
 			@NumberOfNewTaxonomies int,
-			@NumberOfNewDomainItems int,
-			@NumberOfNewDomains int,
+			@NumberOfNewReferenceItems int,
+			@NumberOfNewReferences int,
 			@NumberOfNewArtifacts int,
 			@NumberOfAttributesTotal int,
 			@NumberOfNewRelations int,
@@ -20,8 +20,8 @@ BEGIN
 	
 	set	@NumberOfRules = 0;	
 	set @NumberOfNewTaxonomies = 0;
-	set @NumberOfNewDomainItems = 0;
-	set @NumberOfNewDomains = 0;
+	set @NumberOfNewReferenceItems = 0;
+	set @NumberOfNewReferences = 0;
 	set @NumberOfNewArtifacts = 0;
 	set @promotionNeedsToRun = 1;
 
@@ -416,71 +416,30 @@ from	#rules R
 					end
 					--END: IF ArtifactType
 
-					if @ObjectTypeToPromoteTo = 'DomainType'
+					if @ObjectTypeToPromoteTo = 'ReferenceItemType' OR @ObjectTypeToPromoteTo = 'ReferenceItem'
 					begin
-						if @ParentObject is null and @ParentObjectID is null
+						-- You are promoting Reference items to a specific Reference (list)
+						set @ResultObject = 'ReferenceItem'
+
+						if @ResultObject is null and @ResultObjectID is null
 							begin
-								set @ResultObject = 'Domain'
-									
-								-- You are promoting to a Domain (creating a list)
-								if @ResultObjectID is null
-									begin
-										select	@ResultObjectID = ID
-										from	Domain
-										where	DomainTypeID = @ObjectTypeIDToPromoteTo
-												and lower(Name) = lower(@name)
-									end
- 
-								if @ResultObjectID is null
-									begin
-										insert into Domain  ( DomainTypeID, Name, Description ) 
-										values ( @ObjectTypeIDToPromoteTo, @name, @description )
-
-										select @ResultObjectID =  SCOPE_IDENTITY()
-
-										set @NumberOfNewDomains = @NumberOfNewDomains +1;
-									end
-								else
-									begin
-										update	Domain
-										set		Name = @name,
-												Description = @description
-										where	ID = @ResultObjectID
-									end
+								select	@ResultObjectID = ID
+								from	ReferenceItem
+								where	ReferenceItemTypeID = @ParentObjectID
+										and lower(Code) = lower(@code)
 							end
-						else
-							begin
-								-- You are promoting domain items to a specific domain (list)
-								set @ResultObject = 'DomainItem'
-
-								if @ResultObject is null and @ResultObjectID is null
-									begin
-										select	@ResultObjectID = ID
-										from	DomainItem
-										where	DomainID = @ParentObjectID
-												and lower(Code) = lower(@code)
-									end
  
-								if @ResultObjectID is not null
-									begin
-										update	DomainItem
-										set		Name = @name,
-												Code = coalesce(@code, @name),
-												Description = @description
-										where	ID = @ResultObjectID
-									end
-								else
-									begin
-										insert into DomainItem ( DomainID, Name, Code, Description )
-										values ( @ParentObject, @name, coalesce(@code, @name), @description )
+						if @ResultObjectID is null
+							begin
+								insert into ReferenceItem ( ReferenceItemTypeID, Code )
+								values ( @ParentObject, @code )
 
-										select @ResultObjectID =  SCOPE_IDENTITY()
+								select @ResultObjectID =  SCOPE_IDENTITY()
 
-										set @NumberOfNewDomainItems = @NumberOfNewDomainItems +1;
-									end
+								set @NumberOfNewReferenceItems = @NumberOfNewReferenceItems +1;
 							end
 					end
-					--END: IF DomainType
+					--END: IF ReferenceType
 
 					if @ObjectTypeToPromoteTo = 'TaxonomyType'
 					begin
@@ -1116,12 +1075,12 @@ from	#rules R
 								from	Artifact
 								where	ArtifactTypeID = @lookupObjectID and Name = @fieldValue
 							end
-						if @lookupObjectType = 'Domain'
+						if @lookupObjectType = 'ReferenceItemType'
 							begin
 								select	top 1
 										@objectResultID = ID
-								from	DomainItem
-								where	DomainID = @lookupObjectID and Name = @fieldValue
+								from	ReferenceItem
+								where	ReferenceItemTypeID = @lookupObjectID and Code = @fieldValue
 							end
 						if @lookupObjectType = 'Lookup'
 							begin
@@ -1205,10 +1164,10 @@ from	#rules R
 	update	[fusion].[RuleLog]
 	set		DateCompleted = CURRENT_TIMESTAMP, 
 			[PromotedTaxonomies] = @NumberOfNewTaxonomies, 
-			[PromotedDomainItems] = @NumberOfNewDomainItems,  
-			[PromotedDomains] = @NumberOfNewDomains,
+			[PromotedDomainItems] = @NumberOfNewReferenceItems,  
+			[PromotedDomains] = @NumberOfNewReferences,
 			[PromotedArtifacts] = @NumberOfNewArtifacts,
-			[TotalNewPromotions] = (@NumberOfNewTaxonomies + @NumberOfNewDomainItems + @NumberOfNewDomains + @NumberOfNewArtifacts),
+			[TotalNewPromotions] = (@NumberOfNewTaxonomies + @NumberOfNewReferenceItems + @NumberOfNewReferences + @NumberOfNewArtifacts),
 			[AttributesConsidered]= @NumberOfAttributesTotal,
 			[NumberOfRules] = @NumberOfRules ,
 			[RelationshipsAdded] = @NumberOfNewRelations

@@ -28,26 +28,6 @@ BEGIN
 		SELECT @level =	MAX([level]) FROM H
 	END
 
-	IF (@Type = 'Domain')
-	BEGIN
-		WITH H (ParentID, ID, [level])
-		AS
-		(
-			SELECT	ParentID, 
-					ID, 
-					1
-			FROM	Domain
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Domain	P
-					INNER JOIN H AS C ON C.ParentID = P.ID	
-		)
-		SELECT @level =	MAX([level]) FROM H
-	END
-
 	IF (@Type = 'FusionAttribute')
 	BEGIN
 		WITH H (ParentID, ID, [level])

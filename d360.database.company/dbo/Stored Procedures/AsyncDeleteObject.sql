@@ -101,18 +101,10 @@ begin
 				end
 			end
 
-			if @Object = 'DomainType'
-			begin
-				delete DomainItem where DomainID in (select ID from Domain where DomainTypeID = @ObjectID)
-				delete Domain where DomainTypeID = @ObjectID
-				delete DomainGroup where DomainTypeID = @ObjectID
-			end
-
 			if @Object = 'FieldType'
 			begin
 				delete Field where FieldTypeID = @ObjectID
 				delete FieldTypeFusionLookupDisplayField where FieldTypeID = @ObjectID
-				delete FieldTypeRelationLookupDisplayField where FieldTypeID = @ObjectID
 				delete FieldType where ID = @ObjectID
 			end
 
@@ -238,16 +230,6 @@ begin
 			BEGIN CATCH
 
 			END CATCH
-
-			if @Object = 'Artifact'
-			begin
-				delete	RelatedArtifact where ArtifactID = @ObjectID
-			end
-
-			if @Object = 'Domain'
-			begin
-				delete DomainItem where DomainID = @ObjectID
-			end
 
 			if @Object = 'Responsibility'
 			begin

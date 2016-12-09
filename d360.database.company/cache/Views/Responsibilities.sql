@@ -2,7 +2,7 @@
 as
 	SELECT R.[ResponsibilityID]
 		  ,R.[ResponsibilityTypeID]
-		  ,R.[ResponsibilityType]
+		  ,RT.Name as [ResponsibilityType]
 		  ,R.[AssigningItem]
 		  ,R.[AssigningItemID]
 		  ,A.TextPath as [AssigningItemName]
@@ -26,6 +26,7 @@ as
 		  ,R.[Visible]
 		  ,R.[TargetResponsibilityID]
 	FROM	[cache].ResponsibilityItem R
+			inner join ResponsibilityType RT on RT.ID = R.[ResponsibilityTypeID]
 			inner join cache.ObjectDetails A on A.[Object] = R.[AssigningItem] and A.[ObjectID] = R.[AssigningItemID]
 			inner join cache.ObjectDetails O on O.[Object] = R.[Object] and O.[ObjectID] = R.[ObjectID]
 			inner join cache.ObjectDetails RO on RO.[Object] = R.[ResponsibleObject] and RO.[ObjectID] = R.[ResponsibleObjectID]

@@ -25,6 +25,8 @@
 
 
 
+
+
 GO
 CREATE TRIGGER [dbo].[Load_AfterInsert]
 	ON [dbo].[Load]
@@ -32,7 +34,8 @@ CREATE TRIGGER [dbo].[Load_AfterInsert]
 AS
 	SET NOCOUNT ON;
 	insert into [queue].[BulkLoad] (LoadID)
-		select ID from inserted where [File] is not null
+		select ID from inserted
+
 GO
 DISABLE TRIGGER [dbo].[Load_AfterInsert]
     ON [dbo].[Load];

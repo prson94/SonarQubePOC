@@ -34,18 +34,6 @@ begin
 	end;
 
 	begin
-		set @type = 'Domain';
-		insert into #Recache
-			SELECT	@type, ID, 'DomainType', DomainTypeID FROM Domain;
-	end;
-
-	begin
-		set @type = 'DomainType';
-		insert into #Recache
-			SELECT	@type, ID, @type, ID FROM DomainType;
-	end;
-
-	begin
 		set @type = 'Group';
 		insert into #Recache
 			SELECT	@type, ID, 'GroupType', 1 FROM [Group];
@@ -130,6 +118,12 @@ begin
 		set @type = 'PolicyType';
 		insert into #Recache
 			SELECT	@type, ID, 'PolicyType', ID FROM [PolicyType];
+	end;
+
+	begin
+		set @type = 'ReferenceItemType';
+		insert into #Recache
+			SELECT	@type, ID, 'ReferenceItemType', ID FROM ReferenceItemType;
 	end;
 
 	begin

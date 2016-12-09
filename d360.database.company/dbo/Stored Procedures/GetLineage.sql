@@ -5,8 +5,8 @@
 	@view int = 1
 
 --set @type = 'Artifact'
---set @id = 478
---set @view = 1
+--set @id = 2528--6381
+--set @view = 3
 as
 begin
 	declare @links table ([from] varchar(250), [to] varchar(250), category varchar(50))
@@ -648,8 +648,21 @@ begin
 						left join @tItems B on B.MapItemID = J.MapItemID
 				where	cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') not in (select [key] from @nodes)
 
-		--select	* from	@links
-		--select	* from	@nodes
+				--gets rid of dupes
+				delete	@nodes 
+				where	other is null 
+						and (obj + cast([objid] as varchar)) in (
+																select	(obj + cast([objid] as varchar))
+																from	@nodes 
+																where	other is not null
+															  )
+				delete	T
+				from	@links T
+						left join @nodes S on S.[key] = T.[from] or S.[key] = T.[to]
+				where	S.[key] is null
+
+--select	* from	@links
+--select	* from	@nodes
 
 		select	(
 				select	*

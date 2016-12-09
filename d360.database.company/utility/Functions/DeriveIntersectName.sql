@@ -13,8 +13,8 @@ BEGIN
 							left join Artifact SA on I.Subject = 'Artifact' and SA.ID = I.SubjectID
 							left join Artifact OA on I.Object = 'Artifact' and OA.ID = I.ObjectID
 
-							left join Domain SD on I.Subject = 'Domain' and SD.ID = I.SubjectID
-							left join Domain OD on I.Object = 'Domain' and OD.ID = I.ObjectID
+							left join ReferenceItemType SD on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
+							left join ReferenceItemType OD on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
 
 							left join [FusionAttribute] SF on I.Subject = 'FusionAttribute' and SF.ID = I.SubjectID
 							left join [FusionAttribute] [OF] on I.Object = 'FusionAttribute' and [OF].ID = I.ObjectID
@@ -30,8 +30,7 @@ BEGIN
 
 							left join [Taxonomy] ST on I.Subject = 'Taxonomy' and ST.ID = I.SubjectID
 							left join [Taxonomy] OT on I.Object = 'Taxonomy' and OT.ID = I.ObjectID
-							--left join cache.ObjectDetails S on S.[Object] = I.Subject and S.ObjectID = I.SubjectID
-							--left join cache.ObjectDetails O on O.[Object] = I.Object and O.ObjectID = I.ObjectID
+
 					WHERE	I.ID = @id
 					FOR XML PATH('')
 					)

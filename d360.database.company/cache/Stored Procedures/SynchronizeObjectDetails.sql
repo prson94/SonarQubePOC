@@ -40,22 +40,6 @@ begin
 			WHERE	O.ID = @id;
 	end;
 
-	if @type = 'Domain'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'DomainType', O.DomainTypeID
-			FROM	Domain O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'DomainType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, ID, @type, 0
-			FROM	DomainType
-			WHERE	ID = @id;
-	end;
-
 	if @type = 'Group'
 	begin
 		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
@@ -165,6 +149,14 @@ begin
 		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
 			SELECT	@type, T.ID, @type, T.PolicyTypeClassID
 			FROM	PolicyType T
+			WHERE	T.ID = @id;
+	end;
+
+	if @type = 'ReferenceItemType'
+	begin
+		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
+			SELECT	@type, T.ID, @type, 0
+			FROM	ReferenceItemType T
 			WHERE	T.ID = @id;
 	end;
 

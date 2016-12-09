@@ -1,11 +1,10 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Data.SqlClient;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
-using System.Collections.Generic;
-using System.Linq;
 using Dapper;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 
 namespace d360.test.jobs

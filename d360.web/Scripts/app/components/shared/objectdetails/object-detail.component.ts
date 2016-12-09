@@ -145,19 +145,18 @@ export class ObjectDetailComponent implements OnChanges {
             c.rows.forEach(r => {
                 let fcount = r.FirstColumnFields.length;
                 r.FirstColumnFields.forEach(f => {
-                    if (f.Type == DetailFieldType.Lookup)
-                        this.objectDetailService.getLookupGrid(f.LookupGridUrl)
-                            .then(g => {
-                                if (g.Values.length != 0) {
-                                    c.hasData = true;
-                                    f.Data = g;
-                                }
-                                fcount--;
-                                if (fcount <= 0)
-                                    rcount--;
-                                if (rcount <= 0)
-                                    c.loaded = true;
-                            });
+                    if (f.Type == DetailFieldType.Lookup) {
+                        if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
+                            c.hasData = true;
+                        }
+                        fcount--;
+
+                        if (fcount <= 0)
+                            rcount--;
+
+                        if (rcount <= 0)
+                            c.loaded = true;
+                    }
                     else {
                         if (f.Type != DetailFieldType.None)
                             c.hasData = true;

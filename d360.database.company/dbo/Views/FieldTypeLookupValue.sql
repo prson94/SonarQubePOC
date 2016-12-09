@@ -1,14 +1,14 @@
-﻿CREATE VIEW dbo.FieldTypeLookupValue
+﻿CREATE VIEW [dbo].[FieldTypeLookupValue]
 AS
 	SELECT	'Artifact' as LookupObjectType,
 			ID as LookupObjectID,
 			Name--'Artifact : ' + Name as Name
 	FROM	ArtifactType
 	UNION
-	SELECT	'Domain' as LookupObjectType,
+	SELECT	'ReferenceItemType' as LookupObjectType,
 			ID as LookupObjectID,
 			Name --'Domain : ' + Name as Name
-	FROM	DomainType
+	FROM	ReferenceItemType
 	UNION
 	SELECT	'Taxonomy' as LookupObjectType,
 			ID as LookupObjectID,

@@ -1,7 +1,7 @@
 ﻿CREATE procedure [bulkload].[BusinessLineage]
 --declare
 	@id int
---set @id = 271
+--set @id = 237
 as
 begin
 	set nocount on;
@@ -385,13 +385,18 @@ order by I.RowIndex
 
 		-- insert source business relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					SourceIntersectTypeID, 
-					SourceSubject, SourceSubjectID, SourceObject, SourceObjectID,
+			select	SourceIntersectTypeID, 
+					SourceSubject, SourceSubjectID, 
+					SourceObject, SourceObjectID,
 					0, ResourceID, @dt, ResourceID, @dt
-			from	#AddItems
-			where	Status is null 
-					and SourceIntersectID is null
+			from	(
+					select		SourceIntersectTypeID, SourceSubject, SourceSubjectID, SourceObject, SourceObjectID, ResourceID
+					from		#AddItems
+					where		Status is null 
+								and SourceIntersectID is null
+					group by	SourceIntersectTypeID, SourceSubject, SourceSubjectID, SourceObject, SourceObjectID, ResourceID
+					) O
+
 
 		-- update rows with existing source business intersect
 		update	T
@@ -403,6 +408,16 @@ order by I.RowIndex
 											and T.SourceObject = S.Object and T.SourceObjectID = S.ObjectID
 											and T.SourceIntersectID is null
 											and T.Status is null;
+		
+		-- update rows with existing target business intersect
+		update	T
+		set		T.TargetIntersectID = S.ID
+		from	#AddItems T
+				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID 
+											and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID 
+											and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
+											and T.TargetIntersectID is null
+											and T.Status is null;
 
 		/*	END: SOURCE BUSINESS INTERSECT LOGIC */
 
@@ -411,13 +426,17 @@ order by I.RowIndex
 
 		-- insert target business relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					TargetIntersectTypeID, 
-					TargetSubject, TargetSubjectID, TargetObject, TargetObjectID,
+			select	TargetIntersectTypeID, 
+					TargetSubject, TargetSubjectID, 
+					TargetObject, TargetObjectID,
 					0, ResourceID, @dt, ResourceID, @dt
-			from	#AddItems
-			where	Status is null 
-					and TargetIntersectID is null
+			from	(
+					select		TargetIntersectTypeID, TargetSubject, TargetSubjectID, TargetObject, TargetObjectID, ResourceID
+					from		#AddItems
+					where		Status is null 
+								and TargetIntersectID is null
+					group by	TargetIntersectTypeID, TargetSubject, TargetSubjectID, TargetObject, TargetObjectID, ResourceID
+					) O
 
 		-- update rows with existing target business intersect
 		update	T
@@ -437,16 +456,19 @@ order by I.RowIndex
 
 		-- insert source technical relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					SourceFusionIntersectTypeID, 
+			select	SourceFusionIntersectTypeID, 
 					'Intersect', SourceIntersectID, 'FusionAttribute', SourceFusionAttributeID,
 					0, ResourceID, @dt, ResourceID, @dt
-			from	#AddItems
-			where	Status is null
-					and SourceFusionIntersectTypeID is not null
-					and SourceFusionIntersectID is null
-					and SourceIntersectID is not null
-					and SourceFusionAttributeID is not null;
+			from	(
+					select		SourceFusionIntersectTypeID, SourceIntersectID, SourceFusionAttributeID, ResourceID
+					from		#AddItems
+					where		Status is null
+								and SourceFusionIntersectTypeID is not null
+								and SourceFusionIntersectID is null
+								and SourceIntersectID is not null
+								and SourceFusionAttributeID is not null
+					group by	SourceFusionIntersectTypeID, SourceIntersectID, SourceFusionAttributeID, ResourceID
+					) O;
 
 		-- update rows with new source technical intersect
 		update	T
@@ -459,6 +481,16 @@ order by I.RowIndex
 											and T.SourceFusionIntersectID is null 
 											and T.Status is null;
 
+		-- update rows with new target technical intersect
+		update	T
+		set		T.TargetFusionIntersectID = S.ID
+		from	#AddItems T
+				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID 
+											and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID 
+											and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionAttributeID
+											and T.TargetFusionIntersectID is null 
+											and T.Status is null;
+
 		/*	END: SOURCE TECHNICAL INTERSECT LOGIC */
 
 
@@ -466,16 +498,19 @@ order by I.RowIndex
 		
 		-- insert target technical relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					TargetFusionIntersectTypeID, 
+			select	TargetFusionIntersectTypeID, 
 					'Intersect', TargetIntersectID, 'FusionAttribute', TargetFusionAttributeID,
 					0, ResourceID, @dt, ResourceID, @dt
-			from	#AddItems
-			where	Status is null
-					and TargetFusionIntersectTypeID is not null
-					and TargetFusionIntersectID is null
-					and TargetIntersectID is not null
-					and TargetFusionAttributeID is not null;
+			from	(
+					select		TargetFusionIntersectTypeID, TargetIntersectID, TargetFusionAttributeID, ResourceID
+					from		#AddItems
+					where		Status is null
+								and TargetFusionIntersectTypeID is not null
+								and TargetFusionIntersectID is null
+								and TargetIntersectID is not null
+								and TargetFusionAttributeID is not null			
+					group by	TargetFusionIntersectTypeID, TargetIntersectID, TargetFusionAttributeID, ResourceID
+					) O;
 
 		-- update rows with new target technical intersect
 		update	T
@@ -602,6 +637,10 @@ order by I.RowIndex
 	END TRY
 	BEGIN CATCH
 		ROLLBACK TRANSACTION [Tran1]
+		select ERROR_MESSAGE()
+		update	[Load]
+		set		Notes = Notes + '<br/> ' + ERROR_MESSAGE()
+		where	ID = @id;
 	END CATCH
 end
 GO

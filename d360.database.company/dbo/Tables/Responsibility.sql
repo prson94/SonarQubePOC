@@ -20,6 +20,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Responsibility_ObjectType-ObjectID]
     ON [dbo].[Responsibility]([ObjectType] ASC, [ObjectID] ASC);
@@ -31,10 +33,12 @@ CREATE NONCLUSTERED INDEX [IX_Responsibility_ResponsibleObjectType-ResponsibleOb
 
 
 GO
+
 CREATE TRIGGER [dbo].[Responsibility_AfterDelete]
    ON  [dbo].[Responsibility] 
    AFTER DELETE
 AS 
+begin
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Delete', [queue].WriteIndexXml('Removed', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Responsibility', ID from deleted
@@ -43,63 +47,55 @@ AS
 	from	cache.ResponsibilityItem T
 			inner join deleted S on S.ID = T.ResponsibilityID
 
-	declare @tbl table (RowID int identity, [ObjectType] varchar(50), ObjectID int)
-	insert into @tbl 
-		select [ObjectType], ObjectID from deleted
-	declare @c int = 1,
-			@m int,
-			@o varchar(50),
-			@oid int
-	select @m = max(RowID) from @tbl
-
-	while @c <= @m
-	begin
-		select	@o = ObjectType,
-				@oid = ObjectID
-		from	@tbl
-		where	RowID = @c
-		
-		exec [cache].[SynchronizeResponsibilitiesForObject] @o, @oid
-
-		set @c = @c + 1
-	end
+	insert into [cache].[ResponsibilityItem] ([ResponsibilityID], [ResponsibilityTypeID], [AssigningItem], [AssigningItemID], [Object], [ObjectID], [ResponsibleObject], [ResponsibleObjectID], [ContextHash], [ResponsibilityTypeGroup], [Visible])
+		select	distinct
+				J.ResponsibilityID, J.ResponsibilityTypeID, 
+				J.AssigningItem, J.AssigningItemID, 
+				J.[Object], J.ObjectID, 
+				R.ResponsibleObjectType, R.ResponsibleObjectID,  
+				J.ContextHash,
+				1, J.Visible
+		from	deleted I
+				cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
+				inner join [Responsibility] R on R.ID = J.ResponsibilityID;
+end
 
 GO
 CREATE TRIGGER [dbo].[Responsibility_AfterInsert]
    ON  [dbo].[Responsibility] 
    AFTER INSERT
 AS 
+BEGIN
 	SET NOCOUNT ON;
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Add', [queue].WriteIndexXml('', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Responsibility', ID from inserted
 
-	declare @tbl table (RowID int identity, [ObjectType] varchar(50), ObjectID int)
-	insert into @tbl 
-		select [ObjectType], ObjectID from inserted
-	declare @c int = 1,
-			@m int,
-			@o varchar(50),
-			@oid int
-	select @m = max(RowID) from @tbl
-
-	while @c <= @m
-	begin
-		select	@o = ObjectType,
-				@oid = ObjectID
-		from	@tbl
-		where	RowID = @c
-		
-		exec [cache].[SynchronizeResponsibilitiesForObject] @o, @oid
-
-		set @c = @c + 1
-	end
+	insert into [cache].[ResponsibilityItem] (
+		[ResponsibilityID], [ResponsibilityTypeID], 
+		[AssigningItem], [AssigningItemID], 
+		[Object], [ObjectID], 
+		[ResponsibleObject], [ResponsibleObjectID], 
+		[ContextHash], [ResponsibilityTypeGroup], [Visible])
+		select	distinct
+				J.ResponsibilityID, J.ResponsibilityTypeID, 
+				J.AssigningItem, J.AssigningItemID, 
+				J.[Object], J.ObjectID, 
+				R.ResponsibleObjectType, R.ResponsibleObjectID,  
+				J.ContextHash,
+				1, J.Visible
+		from	inserted I
+				cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
+				inner join [Responsibility] R on R.ID = J.ResponsibilityID;
+END
 
 GO
+
 CREATE TRIGGER [dbo].[Responsibility_AfterUpdate]
    ON  [dbo].[Responsibility] 
    AFTER UPDATE
 AS 
+begin
 	SET NOCOUNT ON;
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
@@ -109,23 +105,15 @@ AS
 	from	cache.[ResponsibilityItem] T
 			inner join inserted S on S.ID = T.ResponsibilityID 
 
-	declare @tbl table (RowID int identity, [ObjectType] varchar(50), ObjectID int)
-	insert into @tbl 
-		select [ObjectType], ObjectID from inserted
-	declare @c int = 1,
-			@m int,
-			@o varchar(50),
-			@oid int
-	select @m = max(RowID) from @tbl
-
-	while @c <= @m
-	begin
-		select	@o = ObjectType,
-				@oid = ObjectID
-		from	@tbl
-		where	RowID = @c
-		
-		exec [cache].[SynchronizeResponsibilitiesForObject] @o, @oid
-
-		set @c = @c + 1
-	end
+	insert into [cache].[ResponsibilityItem] ([ResponsibilityID], [ResponsibilityTypeID], [AssigningItem], [AssigningItemID], [Object], [ObjectID], [ResponsibleObject], [ResponsibleObjectID], [ContextHash], [ResponsibilityTypeGroup], [Visible])
+		select	distinct
+				J.ResponsibilityID, J.ResponsibilityTypeID, 
+				J.AssigningItem, J.AssigningItemID, 
+				J.[Object], J.ObjectID, 
+				R.ResponsibleObjectType, R.ResponsibleObjectID,  
+				J.ContextHash,
+				1, J.Visible
+		from	inserted I
+				cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
+				inner join [Responsibility] R on R.ID = J.ResponsibilityID;
+end

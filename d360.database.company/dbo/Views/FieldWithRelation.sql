@@ -31,14 +31,12 @@ AS
 														   )
 			left join cache.ObjectDetails LD on 
 				LD.[Object] = case T.LookupObjectType
-									when 'DomainItem' then 'Domain' 
 									when 'ReferenceItem' then 'ReferenceItemType' 
 									else T.LookupObjectType 
 							  end
 				and LD.ObjectID = case 
-									when T.LookupObjectType = 'DomainItem' then T.LookupObjectID 
-									when T.LookupObjectType = 'Resource' then T.LookupObjectID 
 									when T.LookupObjectType = 'ReferenceItem' then T.LookupObjectID 
+									when T.LookupObjectType = 'Resource' then T.LookupObjectID 
 									when T.LookupObjectType is null then NULL 
 									when dbo.IsInteger(F.Value) = 1 then F.Value
 								end

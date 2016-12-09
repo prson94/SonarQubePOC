@@ -1,4 +1,5 @@
-﻿CREATE FUNCTION [utility].[GetFormattedFieldReferenceItemValue]
+﻿
+CREATE FUNCTION [utility].[GetFormattedFieldReferenceItemValue]
 (
 	@ReferenceItemID int,
 	@ReferenceItemTypeID int	
@@ -28,6 +29,13 @@ BEGIN
 		FROM	FieldWithRelation 
 		WHERE	ObjectType = 'ReferenceItem' 
 				and ObjectID = @ReferenceItemID
+
+				
+	insert into @fieldValues
+		SELECT 'Code',
+				Code
+		FROM	ReferenceItem
+		WHERE	ID = @ReferenceItemID
 
 	declare @current int,
 			@max int

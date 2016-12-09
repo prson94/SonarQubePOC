@@ -5,10 +5,11 @@
 	@ObjectID int,
 	@Priority int
 --set @Object = 'Taxonomy'
---set @ObjectID = 524--226
+--set @ObjectID = 4781
 --set @Priority = 4;
 )
 RETURNS 
+--declare
 @tbl TABLE 
 (
 	[Source] varchar(50), 
@@ -111,18 +112,18 @@ BEGIN
 						O.ContextHash,
 						2 as [Priority]
 				from	@tblModelHierarchy O
-						inner join	(
-									select		ResponsibilityTypeID,
-												[Object],
-												ObjectID,
-												ContextHash,
-												Max([Level]) as [Level]
-									from		@tblModelHierarchy
-									group by	ResponsibilityTypeID,
-												[Object],
-												ObjectID,
-												ContextHash
-									) M on M.ResponsibilityTypeID = O.ResponsibilityTypeID and M.[Object] = O.[Object] and M.ObjectID = O.ObjectID and M.ContextHash = O.ContextHash and M.[Level] = O.[Level];
+						--inner join	(
+						--			select		ResponsibilityTypeID,
+						--						[Object],
+						--						ObjectID,
+						--						ContextHash,
+						--						Max([Level]) as [Level]
+						--			from		@tblModelHierarchy
+						--			group by	ResponsibilityTypeID,
+						--						[Object],
+						--						ObjectID,
+						--						ContextHash
+						--			) M on M.ResponsibilityTypeID = O.ResponsibilityTypeID and M.[Object] = O.[Object] and M.ObjectID = O.ObjectID and M.ContextHash = O.ContextHash and M.[Level] = O.[Level];
 		end
 
 	if @Object = 'Policy'
@@ -187,21 +188,21 @@ BEGIN
 						O.ContextHash,
 						1 as [Priority]
 				from	@tblModelHierarchy O
-						inner join	(
-									select		ResponsibilityTypeID,
-												[Object],
-												ObjectID,
-												ContextHash,
-												Max([Level]) as [Level]
-									from		@tblModelHierarchy
-									group by	ResponsibilityTypeID,
-												[Object],
-												ObjectID,
-												ContextHash
-									) M on M.ResponsibilityTypeID = O.ResponsibilityTypeID and M.[Object] = O.[Object] and M.ObjectID = O.ObjectID and M.ContextHash = O.ContextHash and M.[Level] = O.[Level]
-											and (
-												(O.ObjectID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
-												)
+						--inner join	(
+						--			select		ResponsibilityTypeID,
+						--						[Object],
+						--						ObjectID,
+						--						ContextHash,
+						--						Max([Level]) as [Level]
+						--			from		@tblModelHierarchy
+						--			group by	ResponsibilityTypeID,
+						--						[Object],
+						--						ObjectID,
+						--						ContextHash
+						--			) M on M.ResponsibilityTypeID = O.ResponsibilityTypeID and M.[Object] = O.[Object] and M.ObjectID = O.ObjectID and M.ContextHash = O.ContextHash and M.[Level] = O.[Level]
+						--					and (
+						--						(O.ObjectID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
+						--						)
 		end
 	if @Object = 'Taxonomy'
 		begin
@@ -275,6 +276,8 @@ BEGIN
 						[Level]
 				from	ModelHierarchy;
 
+--select * from @tblModelHierarchy;
+
 			-- Load for taxonomies.
 			insert into @tbl
 				select	'Hierarchy Assigned' as [Source],
@@ -288,21 +291,23 @@ BEGIN
 						O.ContextHash,
 						@Priority as [Priority]
 				from	@tblModelHierarchy O
-						inner join	(
-									select		ResponsibilityTypeID,
-												[Object],
-												ObjectID,
-												ContextHash,
-												Max([Level]) as [Level]
-									from		@tblModelHierarchy
-									group by	ResponsibilityTypeID,
-												[Object],
-												ObjectID,
-												ContextHash
-									) M on M.ResponsibilityTypeID = O.ResponsibilityTypeID and M.[Object] = O.[Object] and M.ObjectID = O.ObjectID and M.ContextHash = O.ContextHash and M.[Level] = O.[Level]
-											and (
-												(O.ObjectID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
-												);
+						--inner join	(
+						--			select		ResponsibilityTypeID,
+						--						[Object],
+						--						ObjectID,
+						--						ContextHash,
+						--						Max([Level]) as [Level]
+						--			from		@tblModelHierarchy
+						--			group by	ResponsibilityTypeID,
+						--						[Object],
+						--						ObjectID,
+						--						ContextHash
+						--			) M on M.ResponsibilityTypeID = O.ResponsibilityTypeID and M.[Object] = O.[Object] and M.ObjectID = O.ObjectID and M.ContextHash = O.ContextHash and M.[Level] = O.[Level]
+						--					and (
+						--						(O.ObjectID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
+						--						)
+						;
+--select * from @tbl;
 			-- Load for artifacts.
 			insert into @tbl
 				select	'Hierarchy Assigned' as [Source],
@@ -327,4 +332,5 @@ BEGIN
 												and A.TaxonomyTypeID = T.TaxonomyTypeID
 		end
 	RETURN 
+--select * from @tbl
 END

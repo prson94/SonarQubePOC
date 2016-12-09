@@ -17,8 +17,8 @@ BEGIN
 							left join ArtifactType SA on I.Subject = 'ArtifactType' and SA.ID = I.SubjectID
 							left join ArtifactType OA on I.Object = 'ArtifactType' and OA.ID = I.ObjectID
 
-							left join DomainType SD on I.Subject = 'DomainType' and SD.ID = I.SubjectID
-							left join DomainType OD on I.Object = 'DomainType' and OD.ID = I.ObjectID
+							left join ReferenceItemType SD on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
+							left join ReferenceItemType OD on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
 
 							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
 							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID

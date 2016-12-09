@@ -1,10 +1,9 @@
 ﻿using d360.core;
 using d360.core.entities;
-using System;
+using Dapper;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using Dapper;
 
 namespace d360.test.jobs
 {
@@ -64,6 +63,25 @@ namespace d360.test.jobs
                 return $"server={db.Server};Database=D3S_{companyID};User ID={db.Username};Password={db.Password}";
             }
             else 
+                return "";
+        }
+
+        internal static string getStaticCompanyConnectionString(int companyID)
+        {
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.Open();
+            var db = cnn.Query<DatabaseServer>(
+                @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",
+                new { id = companyID }
+            ).SingleOrDefault();
+            cnn.Close();
+            cnn.Dispose();
+
+            if (db != null)
+            {
+                return $"server={db.Server};Database=D3S_{companyID};User ID={db.Username};Password={db.Password}";
+            }
+            else
                 return "";
         }
     }

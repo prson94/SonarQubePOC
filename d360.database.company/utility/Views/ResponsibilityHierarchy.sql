@@ -1,37 +1,6 @@
-﻿
-CREATE view [utility].[ResponsibilityHierarchy]
+﻿CREATE view [utility].[ResponsibilityHierarchy]
 as
 	with 
-		DLH as
-		(
-		select	R.ID as ResponsibilityID,
-				R.ResponsibilityTypeID,
-				cast('DomainType' as varchar(25)) as AssigningItemType,
-				T.ID as AssigningItemID,
-				cast('DomainType' as varchar(25)) as ObjectType,
-				T.ID as ObjectID
-		from	DomainType T 
-				inner join Responsibility R on R.ObjectType = 'DomainListType' and R.ObjectID = T.ID
-		union all
-		select	COALESCE(R.ID, P.ResponsibilityID) as ResponsibilityID,
-				COALESCE(R.ResponsibilityTypeID, P.ResponsibilityTypeID) as ResponsibilityTypeID,
-				cast(COALESCE(R.ObjectType, P.AssigningItemType) as varchar(25)) as AssigningItemType,
-				COALESCE(R.ObjectID, P.AssigningItemID) as AssigningItemID,
-				cast('DomainList' as varchar(25)) as ObjectType,
-				C.ID as ObjectID
-		from	Domain C
-				inner join DLH P on P.ObjectType = 'DomainType' and P.ObjectID = C.DomainTypeID
-				outer apply (
-							select	ID,
-									ResponsibilityTypeID,
-									ObjectType,
-									ObjectID
-							from	Responsibility
-							where	ResponsibilityTypeID = P.ResponsibilityTypeID
-									and ObjectType = 'Domain' 
-									and ObjectID = C.ID
-							) R
-		),
 		IMTH as
 		(
 		select	'TaxonomyType' as AssigningItemType,
@@ -139,33 +108,6 @@ as
 									and ObjectID = C.ID
 							) R
 		),
-		--AH as	
-		--(
-		--select	CompanyID,
-		--		'Artifact' as AssigningItemType, 
-		--		T.ID as AssigningItemID,
-		--		ID,
-		--		ParentID,
-		--		ResponsibilityID
-		--from	(
-		--		select	T.CompanyID,
-		--				T.ID,
-		--				T.ParentID,
-		--				R.ID as ResponsibilityID
-		--		from	Artifact T 
-		--				inner join Responsibility R on R.CompanyID = T.CompanyID and R.ObjectType = 'Artifact' and R.ObjectID = T.ID
-		--		) T
-		--union all
-		--select	
-		--		C.CompanyID,
-		--		P.AssigningItemType,
-		--		P.AssigningItemID,
-		--		C.ID,
-		--		C.ParentID,
-		--		P.ResponsibilityID
-		--from	Artifact C
-		--		inner join AH P on C.CompanyID = P.CompanyID and C.ParentID = P.ID
-		--),
 		RH as	
 		(
 		select	'Taxonomy' as AssigningItemType, 
@@ -214,21 +156,6 @@ as
 					RU.ID as ObjectID
 			from	[Rule] RU 
 					inner join Responsibility R on R.ObjectType = 'Rule' and R.ObjectID = RU.ID
-			--union
-			--select	AssigningItemType,
-			--		AssigningItemID,
-			--		ResponsibilityID,
-			--		'Rule' as ObjectType,
-			--		R.ID as ObjectID
-			--from	PolicyHierarchyForRule P
-			--		inner join [Rule] R on R.PolicyID = P.ID
-			union
-			select	AssigningItemType,
-					AssigningItemID,
-					ResponsibilityID,
-					ObjectType,
-					ObjectID
-			from	DLH 
 			union
 			select	AssigningItemType,
 					AssigningItemID,

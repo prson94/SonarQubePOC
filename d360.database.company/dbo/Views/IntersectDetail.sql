@@ -1,4 +1,4 @@
-﻿create view [dbo].[IntersectDetail]
+﻿CREATE view [dbo].[IntersectDetail]
 as
 	select	I.ID,
 			I.IntersectTypeID,
@@ -20,7 +20,8 @@ as
 				case I.Subject
 					when 'Resource' then 1
 					when 'Group' then 1
-					else coalesce(SA.ArtifactTypeID, SD.DomainTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
+					when 'ReferenceItemType' then 0
+					else coalesce(SA.ArtifactTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
 				end,
 				I.SubjectID) as SubjectUrl,
 			case I.Subject
@@ -31,19 +32,21 @@ as
 			case I.Subject
 				when 'Resource' then 1
 				when 'Group' then 1
-				else coalesce(SA.ArtifactTypeID, SD.DomainTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
+				when 'ReferenceItemType' then 0
+				else coalesce(SA.ArtifactTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
 			end as SubjectTypeID,
 			case 
+				when I.Subject = 'ReferenceItemType' then 'Reference List'
 				when I.Subject = 'Rule' and SR.RuleType = 1 then 'Informational Rule'
 				when I.Subject = 'Rule' and SR.RuleType = 2 then 'Quality Check Rule'
 				when I.Subject = 'Rule' and SR.RuleType = 3 then 'Metric Rule'
 				when I.Subject = 'Rule' and SR.RuleType = 4 then 'Profile Rule'
 				when I.Subject = 'Intersect' then utility.DeriveIntersectTypeName(SI.IntersectTypeID)
-				else coalesce(SAT.Name, SDT.Name, SFT.TextPath, SPT.Name, STT.Name) 
+				else coalesce(SAT.Name, SFT.TextPath, SPT.Name, STT.Name) 
 			end as SubjectTypeName,
 			coalesce(SIcon.IconBackColor, '#000') as SubjectIconBackColor,
 			coalesce(SIcon.IconForeColor, '#fff') as SubjectIconForeColor,
-			coalesce(SIcon.IconText, substring(coalesce(SAT.Name, SDT.Name, SFT.TextPath, SPT.Name, STT.Name, ''), 1, 2)) as SubjectIconText,
+			coalesce(SIcon.IconText, substring(coalesce(SAT.Name, SD.Name, SFT.TextPath, SPT.Name, STT.Name, ''), 1, 2)) as SubjectIconText,
 
 			I.Object,
 			I.ObjectID,
@@ -57,12 +60,12 @@ as
 				case I.Object
 					when 'Resource' then 1
 					when 'Group' then 1
-					else coalesce(OA.ArtifactTypeID, OD.DomainTypeID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID)
+					when 'ReferenceItemType' then 0
+					else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID)
 				end,
 				I.ObjectID) as ObjectUrl,
 			case I.Object
 				when 'Artifact' then 'ArtifactType'
-				when 'Domain' then 'DomainType'
 				when 'FusionAttribute' then 'FusionAttributeType'
 				when 'Intersect' then 'IntersectType'
 				when 'Policy' then 'PolicyType'
@@ -73,20 +76,22 @@ as
 			case I.Object
 				when 'Resource' then 1
 				when 'Group' then 1
-				else coalesce(OA.ArtifactTypeID, OD.DomainTypeID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID)
+				when 'ReferenceItemType' then 0
+				else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID)
 			end as ObjectTypeID,
 			case
+				when I.Object = 'ReferenceItemType' then 'Reference List'
 				when I.Object = 'Rule' and [OR].RuleType = 1 then 'Informational Rule'
 				when I.Object = 'Rule' and [OR].RuleType = 2 then 'Quality Check Rule'
 				when I.Object = 'Rule' and [OR].RuleType = 3 then 'Metric Rule'
 				when I.Object = 'Rule' and [OR].RuleType = 4 then 'Profile Rule'
 				when I.Object = 'Intersect' then utility.DeriveIntersectTypeName(OI.IntersectTypeID)
-				else coalesce(OAT.Name, ODT.Name, OFT.TextPath, OPT.Name, OTT.Name) 
+				else coalesce(OAT.Name, OD.Name, OFT.TextPath, OPT.Name, OTT.Name) 
 			end as ObjectTypeName,
 			coalesce(OIcon.IconBackColor, '#000') as ObjectIconBackColor,
 			coalesce(OIcon.IconForeColor, '#fff') as ObjectIconForeColor,
 			--coalesce(OIcon.IconText, 'leaf') as ObjectIconText,
-			coalesce(OIcon.IconText, substring(coalesce(OAT.Name, ODT.Name, OFT.TextPath, OPT.Name, OTT.Name, ''), 1, 2)) as ObjectIconText,
+			coalesce(OIcon.IconText, substring(coalesce(OAT.Name, OD.Name, OFT.TextPath, OPT.Name, OTT.Name, ''), 1, 2)) as ObjectIconText,
 
 			IT.PredicateID,
 			P.Name as [PredicateName],
@@ -96,8 +101,7 @@ as
 			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
 			left join dbo.Artifact SA with(nolock) on I.Subject = 'Artifact' and SA.ID = I.SubjectID
 			left join dbo.ArtifactType SAT with(nolock) on SAT.ID = SA.ArtifactTypeID
-			left join dbo.Domain SD with(nolock) on I.Subject = 'Domain' and SD.ID = I.SubjectID
-			left join dbo.DomainType SDT with(nolock) on SDT.ID = SD.DomainTypeID
+			left join dbo.ReferenceItemType SD with(nolock) on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
 			left join dbo.FusionAttribute SF with(nolock) on I.Subject = 'FusionAttribute' and SF.ID = I.SubjectID
 			left join dbo.FusionAttributeType SFT with(nolock) on SFT.ID = SF.FusionAttributeTypeID
 			left join dbo.[Group] SG with(nolock) on I.Subject = 'Group' and SG.ID = I.SubjectID
@@ -112,8 +116,7 @@ as
 
 			left join dbo.Artifact OA with(nolock) on I.Object = 'Artifact' and OA.ID = I.ObjectID
 			left join dbo.ArtifactType OAT with(nolock) on OAT.ID = OA.ArtifactTypeID
-			left join dbo.Domain OD with(nolock) on I.Object = 'Domain' and OD.ID = I.ObjectID
-			left join dbo.DomainType ODT with(nolock) on ODT.ID = OD.DomainTypeID
+			left join dbo.ReferenceItemType OD with(nolock) on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
 			left join dbo.FusionAttribute [OF] with(nolock) on I.Object = 'FusionAttribute' and [OF].ID = I.ObjectID
 			left join dbo.FusionAttributeType OFT with(nolock) on OFT.ID = [OF].FusionAttributeTypeID
 			left join dbo.[Group] OG with(nolock) on I.Object = 'Group' and OG.ID = I.SubjectID
@@ -134,7 +137,7 @@ as
 														and SIcon.ObjectID =	case I.Subject
 																					when 'Resource' then 1
 																					when 'Group' then 1
-																					else coalesce(SA.ArtifactTypeID, SD.DomainTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
+																					else coalesce(SA.ArtifactTypeID, SD.ID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
 																				end
 			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType =	case I.Object
 																				when 'Group' then 'GroupType'
@@ -144,7 +147,7 @@ as
 														and OIcon.ObjectID =	case I.Object
 																					when 'Resource' then 1
 																					when 'Group' then 1
-																					else coalesce(OA.ArtifactTypeID, OD.DomainTypeID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID) 
+																					else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID) 
 																				end
 
 	where	coalesce(SA.ID, SD.ID, SF.ID, SG.ID, SI.ID, SP.ID, SR.ID, SRE.ResourceID, ST.ID) is not null

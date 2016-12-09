@@ -1,7 +1,7 @@
 ﻿CREATE procedure [bulkload].[Promotions]
 --declare
 	@id int
---set @id = 170
+--set @id = 231
 as
 begin
 	set nocount on;
@@ -110,16 +110,21 @@ begin
 							where	L.ID = @id
 							) S on I.LoadID = S.LoadID and S.RowIndex = I.RowIndex
 
---select * from #FieldValidationRows
-
 	if @Object = 'ArtifactType'
 	begin
 		exec bulkload.UpdateSubjectAreaColumn @id, 3
+
 		-- Mark the rows with invalid subject areas.
 		update	I
 		set		I.StatusMessage = I.StatusMessage + ' Subject area could not be found.'
 		from	LoadItem I
 				inner join LoadItemColumn S on I.LoadID = @id and S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 3 and S.LookupObjectID is null
+
+		-- Mark the rows with invalid names.
+		update	I
+		set		I.StatusMessage = I.StatusMessage + ' Name cannot be empty.'
+		from	LoadItem I
+				inner join LoadItemColumn N on I.LoadID = @id and N.LoadID = I.LoadID and N.RowIndex = I.RowIndex and N.ColumnIndex = 1 and N.Value is null
 
 		if @ParentID is not null
 			begin
@@ -144,10 +149,10 @@ begin
 						inner join LoadItemColumn D on D.LoadID = I.LoadID and D.RowIndex = I.RowIndex and D.ColumnIndex = 2
 						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
 						left join Artifact T on T.ArtifactTypeID = @ObjectID and T.TaxonomyTypeID = S.LookupObjectID and T.ParentID = P.LookupObjectID and T.Name = I.Value
-				where	I.LoadID = @id and I.ColumnIndex = 1;
+				where	I.LoadID = @id and I.ColumnIndex = 1 AND I.Value IS NOT NULL;
 
 				update	T
-				set		T.ParentID = null,
+				set		--T.ParentID = null,
 						T.[Description] = S.[Description],
 						T.[Status] = 'Draft',
 						T.UpdatedBy = @UpdatedBy,
@@ -192,7 +197,7 @@ begin
 						inner join LoadItemColumn D on D.LoadID = I.LoadID and D.RowIndex = I.RowIndex and D.ColumnIndex = 2
 						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
 						left join Artifact T on T.ArtifactTypeID = @ObjectID and T.TaxonomyTypeID = S.LookupObjectID and T.Name = I.Value
-				where	I.LoadID = @id and I.ColumnIndex = 1
+				where	I.LoadID = @id and I.ColumnIndex = 1 AND I.Value IS NOT NULL
 				
 				update	T
 				set		T.ParentID = null,
@@ -285,6 +290,12 @@ begin
 	end
 	else if @Object = 'ReferenceItemType'
 	begin
+		-- Mark the rows with invalid codes.
+		update	I
+		set		I.StatusMessage = I.StatusMessage + ' Code cannot be empty.'
+		from	LoadItem I
+				inner join LoadItemColumn N on I.LoadID = @id and N.LoadID = I.LoadID and N.RowIndex = I.RowIndex and N.ColumnIndex = 1 and N.Value is null
+
 		merge	ReferenceItem T
 		using	(
 				select	I.LoadID,
@@ -292,7 +303,7 @@ begin
 						@ObjectID as ReferenceItemTypeID,
 						C.Value as Code
 				from	[LoadItem] I
-						inner join [LoadItemColumn] C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and C.ColumnIndex = 1
+						inner join [LoadItemColumn] C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and C.ColumnIndex = 1 and C.Value is not null
 						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
 				where	I.LoadID = @id
 				) S
