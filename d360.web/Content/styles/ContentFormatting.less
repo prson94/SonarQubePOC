@@ -370,33 +370,26 @@ ul.hierarchy {
     position: relative;
     margin-bottom: 25px;
     width: 100%;
-    padding: 1px 2px 1px 1px;
-    .jqx-expander-header-plain,
-    .jqx-expander-header-expanded-plain,
+    padding: 0 5px;    
     .header,
     header {
+        font-weight: 600 !important;      
         font-family: @headings-font-family !important;
-        padding: 3px 0px 5px 5px !important;
-        font-size: @font-size-h4 !important;
-        font-weight: 600 !important;
-        color: #000 !important;
+        padding: 3px 0px 15px 5px !important;
+        font-size: @font-size-h4 !important;        
+        text-transform:uppercase;
+        color: @d3s-gray-1 !important;
         background-color: transparent !important;
         border: none !important;
         position: relative;
         .TileTools {
             position: absolute;
             right: 5px;
-            top: -5px;
+            top: 0px;
             z-index: 900;
             color: @d3s-gray-1;
             font-size: 15px;
-            line-height: 16px;
-            /*i {
-                color: @d3s-gray-1;
-                &:hover {
-                    color: @d3s-blue-2;
-                }
-            }*/
+            line-height: 16px;            
         }
     }
     footer {
@@ -450,7 +443,7 @@ ul.hierarchy {
     }
     a:hover {
         text-decoration: underline;
-    }
+    }    
 }
 
 .tile-bordered {
@@ -458,11 +451,12 @@ ul.hierarchy {
 }
 
 .tile-detail {
-    background-color: #fff;
-    border: 1px solid @d3s-gray-2;
-    border-radius: 5px;
-    padding-bottom: 10px;
-}
+  background-color: #fff;
+  border: 0;
+  border-radius: 0;
+  padding-bottom: 10px;
+  box-shadow: 2px 2px 1px 0px rgba(0,0,0,0.15);
+} 
 
 .tile-micro {
     background-color: @d3s-gray-1;

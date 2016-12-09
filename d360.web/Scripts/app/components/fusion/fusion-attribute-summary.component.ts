@@ -11,19 +11,19 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
 @Component({
     selector: 'd3s-fusion-attribute-summary',
     template: `                 
-                <div class="tile tile-detail">
+                <div class="tile tile-detail" style="position:initial">
                     <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
-                        <p-dataTable #dt [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
-                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-dataTable #dt resizableColumns="true" columnResizeMode="expand" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                            
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <span *ngIf="item[column.datafield]" [innerHtml]="item[column.datafield]" class="truncate" style="display:inline-block;width:245px"></span>
+                                    <span *ngIf="item[column.datafield]" [innerHtml]="item[column.datafield]"></span>
                                 </template>
                             </p-column>                            
                         </p-dataTable>                   
+                        <div class="center" style="font-weight:bold"><d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></div>
                     </span>
                 </div>
                 `,

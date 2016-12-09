@@ -11296,38 +11296,29 @@ ul.hierarchy :last-child {
   position: relative;
   margin-bottom: 25px;
   width: 100%;
-  padding: 1px 2px 1px 1px;
+  padding: 0 5px;
 }
-.tile .jqx-expander-header-plain,
-.tile .jqx-expander-header-expanded-plain,
 .tile .header,
 .tile header {
-  font-family: "Roboto", Tahoma !important;
-  padding: 3px 0px 5px 5px !important;
-  font-size: 16px !important;
   font-weight: 600 !important;
-  color: #000 !important;
+  font-family: "Roboto", Tahoma !important;
+  padding: 3px 0px 15px 5px !important;
+  font-size: 16px !important;
+  text-transform: uppercase;
+  color: #5c5e60 !important;
   background-color: transparent !important;
   border: none !important;
   position: relative;
 }
-.tile .jqx-expander-header-plain .TileTools,
-.tile .jqx-expander-header-expanded-plain .TileTools,
 .tile .header .TileTools,
 .tile header .TileTools {
   position: absolute;
   right: 5px;
-  top: -5px;
+  top: 0px;
   z-index: 900;
   color: #5c5e60;
   font-size: 15px;
   line-height: 16px;
-  /*i {
-                color: @d3s-gray-1;
-                &:hover {
-                    color: @d3s-blue-2;
-                }
-            }*/
 }
 .tile footer {
   position: relative;
@@ -11384,9 +11375,10 @@ ul.hierarchy :last-child {
 }
 .tile-detail {
   background-color: #fff;
-  border: 1px solid #818385;
-  border-radius: 5px;
+  border: 0;
+  border-radius: 0;
   padding-bottom: 10px;
+  box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.15);
 }
 .tile-micro {
   background-color: #5c5e60;
@@ -12064,92 +12056,6 @@ d3s-navbar-item.top > div > span.nav-item:hover {
   margin-right: 40px;
 }
 /* end main content*/
-/* grid tiles*/
-.tile {
-  position: relative;
-  margin-bottom: 25px;
-  width: 100%;
-  padding: 0 5px;
-}
-.tile .header,
-.tile header {
-  font-family: "Roboto", Tahoma !important;
-  padding: 3px 0px 15px 5px !important;
-  font-size: 16px !important;
-  text-transform: uppercase;
-  color: #5c5e60 !important;
-  background-color: transparent !important;
-  border: none !important;
-  position: relative;
-}
-.tile .header .TileTools,
-.tile header .TileTools {
-  position: absolute;
-  right: 5px;
-  top: 0px;
-  z-index: 900;
-  color: #5c5e60;
-  font-size: 15px;
-  line-height: 16px;
-}
-.tile footer {
-  position: relative;
-}
-.tile footer .TileTools {
-  position: absolute;
-  right: -5px;
-  bottom: 10px;
-  z-index: 900;
-  color: #5c5e60;
-  font-size: 15px;
-  line-height: 16px;
-}
-.tile .tiletools {
-  width: 100%;
-  position: absolute;
-  top: 3px;
-  right: 5px;
-  text-align: right;
-}
-.tile .tiletools button {
-  color: #b0b2b6;
-  font-size: 16px !important;
-  border: none;
-  background-color: transparent;
-}
-.tile .tiletools button :hover {
-  color: #818385;
-}
-.tile .form-instructions {
-  margin-left: 10px;
-}
-.tile .directions {
-  padding: 3px 0px 5px 5px !important;
-  color: #818385;
-  font-size: .8em;
-}
-.tile .tile-tabs {
-  margin-top: 15px;
-  margin-bottom: 15px;
-  width: 98%;
-}
-.tile .footnote {
-  position: absolute;
-  bottom: 5px;
-  width: 100%;
-  color: #9affff;
-}
-.tile a:hover {
-  text-decoration: underline;
-}
-.tile-detail {
-  background-color: #fff;
-  border: 0;
-  border-radius: 0;
-  padding-bottom: 10px;
-  box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.15);
-}
-/* end grid tiles*/
 /* forms */
 .validation-text {
   font-size: .9em;
