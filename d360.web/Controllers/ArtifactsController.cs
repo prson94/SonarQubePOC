@@ -27,12 +27,12 @@ namespace d360.web.Controllers
         #region Exports
 
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
-        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "")
+        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "", bool listableOnly = true)
         { 
             var joins = "";
             var columns = "";
 
-            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
+            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, true, false, listableOnly);
 
             var dbArgs = new Dapper.DynamicParameters();
 
@@ -73,8 +73,15 @@ where A.ArtifactTypeID = @id ", columns, joins);
             sql = applySortSuffix(sql, sortDataField, sortOrder);
                         
             var results = Company.Query<dynamic>(sql, dbArgs);
-           
-            var fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+
+            List<FieldType> fields = null;
+
+            if(listableOnly) fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+            else fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id && 
+                                        i.Type != "Attribute" &&
+                                        i.Type != "FilteredLookup" &&
+                                        i.Type != "FusionLookup" &&
+                                        i.Type != "ComplexRelationLookup").OrderBy(i => i.SortOrder).ToList();
 
             var settings = Community.GetCompanySettings();
 
