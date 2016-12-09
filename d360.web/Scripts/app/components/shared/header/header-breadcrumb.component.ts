@@ -84,8 +84,13 @@ export class HeaderBreadcrumbComponent {
 
     maxLength(): number {
         let max = 0;
-        for (let breadcrumb of this.breadcrumbs) {
-            max += breadcrumb.text.length * 8; // 8 is based on the font size.
+        //for (let breadcrumb of this.breadcrumbs) {
+        for (var i = 0; i < this.breadcrumbs.length; i++){
+            var last = (this.breadcrumbs.length - 1) == i;
+            if (!last)
+                max += this.breadcrumbs[i].text.length * 10; // 10 is based on the font size.
+            else
+                max += 280; //width of search textbox shown on hoover.
         }
         return max;
     }
