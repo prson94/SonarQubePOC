@@ -382,7 +382,7 @@ BEGIN
 
 	if @Action = 'Preview'
 	begin
-		set @html = '<h3>{Name} <small style="position: absolute; right: 5px;">{Type}</small></h3><div>{Description}</div>'
+		set @html = '<h3>{Name} <small style="right: 5px;">{Type}</small></h3><div>{Description}</div>'
 		set @showIcon = 0
 
 		if @Type = 'Artifact'

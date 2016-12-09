@@ -170,93 +170,10 @@ BEGIN
 	if @Action = 'LookupPreview'
 	begin
 		set @html = '{Items}'
-
-		if @Type = 'Domain' OR @Type = 'DomainItem'
-		begin
-			declare @MyDomainID int
-			if @Type = 'DomainItem'
-				begin
-					select @MyDomainID = DomainID from [DomainItem] where ID = @ID 
-				end
-			else
-				begin
-					set @MyDomainID = @ID
-				end
-
-			-- BUILD Domain LIST HTML -----------------------------------------
-			declare @domainItemsHtml nvarchar(max)
-			declare @HasDescription bit
-
-			select @HasDescription = case Cnt 
-										when 0 then 0
-										else 1
-									 end 
-									 from (
-											select count(1) as Cnt
-											from	(
-												select		top 100 percent 
-															[Description]
-												from		DomainItem
-												where		DomainID = @MyDomainID
-															and [Description] is not null and [Description] <> ''
-												order by	Name asc
-												) D
-											) D
-
-			set @domainItemsHtml = '<table class="hoverable bordered striped" style="width:100%"><thead>'
-			set @domainItemsHtml = @domainItemsHtml + '<th style="margin-right: 15px">Code</th><th style="margin-right: 15px">Name</th>'
-			if @HasDescription = 1
-			begin
-				set @domainItemsHtml = @domainItemsHtml + '<th>Description</th>'
-			end
-			set @domainItemsHtml = @domainItemsHtml + '</thead><tbody>'
-
-			select		top 10 
-						@domainItemsHtml = @domainItemsHtml + '<tr>' + 
-											'<td>' + Code + '</td>' + 
-											'<td>' + Name + '</td>' + 
-											case 
-												when @HasDescription = 1 then 
-													'<td>' + [Description] + '</td>'
-												else ''
-											end
-											+ '</tr>'
-			from		DomainItem
-			where		DomainID = @MyDomainID
-			order by	Name asc
-
-			set @domainItemsHtml = @domainItemsHtml + '</tbody>'
-			set @domainItemsHtml = @domainItemsHtml + '</table>'
- 
-			insert into @tbl values ('Items', @domainItemsHtml)
-			------------------------------------------------------------------
-		end;
-
-		if @Type = 'DomainGroup'
-		begin
-			-- BUILD Domain LIST HTML -----------------------------------------
-			declare @domainsHtml nvarchar(max)
-
-			set @domainsHtml = '<table class="hoverable bordered striped" style="width:100%">'
-			set @domainsHtml = @domainsHtml + '<thead><th style="margin-right: 15px">Name</th></thead>'
-			set @domainsHtml = @domainsHtml + '<tbody>'
-
-			select		top 10 
-						@domainsHtml = @domainsHtml + '<tr>' + '<td>' + Name + '</td>' + '</tr>'             
-			from		Domain
-			where		DomainGroupID = @ID
-			order by	Name desc
-
-			set @domainsHtml = @domainsHtml + '</tbody>'
-			set @domainsHtml = @domainsHtml + '</table>'
- 
-			insert into @tbl values ('Items', @domainsHtml)
-			------------------------------------------------------------------
-		end;
-
+		
 		if @Type = 'FusionAttribute'
 		begin
-			-- BUILD Domain LIST HTML -----------------------------------------
+			-- BUILD LIST HTML -----------------------------------------
 			declare @fusionAttributeItemsHtml nvarchar(max)
 
 			set @fusionAttributeItemsHtml = '<div style="height: 200px; overflow-y: scroll"><table class="hoverable bordered striped" style="width:100%"><thead>'
@@ -406,7 +323,7 @@ BEGIN
 			declare @myReferenceListID int
 
 			select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
-			-- BUILD Domain LIST HTML -----------------------------------------
+			-- BUILD LIST HTML -----------------------------------------
 			declare @referenceItemHtml nvarchar(max)
 
 			set @referenceItemHtml = '<table class="hoverable bordered striped" style="width:100%">'
@@ -434,7 +351,7 @@ BEGIN
 		--	declare @myReferenceListID int
 
 			--select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
-			-- BUILD Domain LIST HTML -----------------------------------------
+			-- BUILD LIST HTML -----------------------------------------
 			declare @referenceItemTypeHtml nvarchar(max)
 
 			set @referenceItemTypeHtml = '<table class="hoverable bordered striped" style="width:100%">'
@@ -465,7 +382,7 @@ BEGIN
 
 	if @Action = 'Preview'
 	begin
-		set @html = '<h3>{Name} <small>{Type}</small></h3><div>{Description}</div>'
+		set @html = '<h3>{Name} <small style="right: 5px;">{Type}</small></h3><div>{Description}</div>'
 		set @showIcon = 0
 
 		if @Type = 'Artifact'
@@ -484,79 +401,6 @@ BEGIN
 			set @html = @html + '<div><b>Path:</b> {Path}</div>'
 
 			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'Domain' OR @Type = 'DomainItem'
-		begin
-			set @html = @html + '{Items}'
-
-			declare @MyPreviewDomainID int
-			if @Type = 'DomainItem'
-				begin
-					select @MyPreviewDomainID = DomainID from [DomainItem] where ID = @ID 
-				end
-			else
-				begin
-					set @MyPreviewDomainID = @ID
-				end
-
-			-- BUILD Domain LIST HTML -----------------------------------------
-			declare @PreviewDomainItemsHtml nvarchar(max)
-			declare @HasPreviewDescription bit
-
-			select @HasPreviewDescription = case Cnt 
-										when 0 then 0
-										else 1
-									 end 
-									 from (
-											select count(1) as Cnt
-											from	(
-												select		top 100 percent 
-															[Description]
-												from		DomainItem
-												where		DomainID = @MyPreviewDomainID
-															and [Description] is not null and [Description] <> ''
-												order by	Name asc
-												) D
-											) D
-
-			set @PreviewDomainItemsHtml = '<table class="hoverable bordered striped" style="width:100%"><thead>'
-			set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '<th style="margin-right: 15px">Code</th><th style="margin-right: 15px">Name</th>'
-			if @HasPreviewDescription = 1
-			begin
-				set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '<th>Description</th>'
-			end
-			set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '</thead><tbody>'
-
-			select		top 10 
-						@PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '<tr>' + 
-											'<td>' + Code + '</td>' + 
-											'<td>' + Name + '</td>' + 
-											case 
-												when @HasPreviewDescription = 1 then 
-													'<td>' + [Description] + '</td>'
-												else ''
-											end
-											+ '</tr>'
-			from		DomainItem
-			where		DomainID = @MyPreviewDomainID
-			order by	Name asc
-
-			set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '</tbody>'
-			set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '</table>'
- 
-			insert into @tbl values ('Items', @PreviewDomainItemsHtml)
-			------------------------------------------------------------------
-		end
-
-		if @Type = 'DomainGroup'
-		begin
-			select	@n = Name,
-					@link = dbo.GenerateObjectUrl('DomainGroup', DomainTypeID, ID)
-			from	DomainGroup
-			where	ID = @ID
-
-			insert into @tbl values ('Name', '<a routerLink="/' + @link + '">' + @n + '</a>')
 		end;
 
 		if @Type = 'Event'
@@ -685,39 +529,6 @@ BEGIN
 				from	[Intersect]
 				where	ID = @ID
 
-			--declare @innerHtml nvarchar(max)
-			---- Loop through context list ---------
-			--declare @contexts table (
-			--	ID int identity,
-			--	ObjectCode nvarchar(50), 
-			--	ObjectName nvarchar(250), 
-			--	ObjectDescription nvarchar(4000),
-			--	ListName nvarchar(250), 
-			--	TypeName nvarchar(250)
-			--)
-
-			--insert into @contexts 
-			--	select	D.Code, D.Name, coalesce(D.Description, ''), L.Name, T.Name
-			--	from	IntersectContextNode C
-			--			inner join DomainItem D on C.ObjectType = 'DomainItem' and D.ID = C.ObjectID
-			--			inner join Domain L on L.ID = D.DomainID
-			--			inner join DomainType T on T.ID = L.DomainTypeID
-
-			--set		@innerHtml = '<h2>Context:</h2>'
-			--set		@current = 1
-			--select	@max = max(ID) from @contexts
-			--while @current <= @max
-			--begin
-			--	select	@innerHtml = @innerHtml + '<b>' + ListName + ' = ' + ObjectName + '</b><br/>' --+ '<div>' + ObjectDescription + '</div>'
-			--	from	@contexts
-			--	where	ID = @current
-
-			--	set @current = @current + 1
-			--end
-
-			--insert into @tbl values ('Contexts', @innerHtml)
-			-------------------------------------------
-
 			set @html = @html + '<div><b>Classification:</b> {Classification}</div>'
 		end;
 
@@ -729,19 +540,18 @@ BEGIN
 			from	Responsibility O
 					inner join ResponsibilityType T on T.ID = O.ResponsibilityTypeID
 			where	O.ID = @ID
-
+			
 			declare @contextsHtml nvarchar(max)
+
 			set @contextsHtml = '<table class="hoverable bordered striped" style="width:100%">' + 
-								'<thead><th>List</th><th>Code</th><th>Name</th><th>Description</th></thead>' + 
+								'<thead><th>List</th><th>Code</th></thead>' + 
 								'<tbody>' + 
 								(
 								select		(select D.Name as 'td' for xml path(''), type),
-											(select I.Code as 'td' for xml path(''), type),
-											(select I.Name as 'td' for xml path(''), type),
-											(select I.[Description] as 'td' for xml path(''), type)
+											(select I.Code as 'td' for xml path(''), type)
 								from		ResponsibilityContextItem R
-											inner join DomainItem I on R.ResponsibilityID = @ID and R.ObjectType = 'DomainItem' and I.ID = R.ObjectID
-											inner join Domain D on D.ID = I.DomainID
+											inner join ReferenceItem I on R.ResponsibilityID = @ID and R.ObjectType = 'ReferenceItem' and I.ID = R.ObjectID
+											inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
 								FOR XML RAW('tr'), ELEMENTS
 								) +
 								'</tbody>' + 
@@ -777,11 +587,19 @@ BEGIN
 		if @Type = 'Rule'
 		begin
 			insert into @tbl
-				select	'TextPath', TextPath
-				from	Taxonomy O
+				select	'Name', Name
+				from	[Rule] O
 				where	ID = @ID
+			insert into @tbl
+				select	'Description', Description
+				from	[Rule] O
+				where	ID = @ID
+			--insert into @tbl
+			--	select	'Status', Status
+			--	from	[Rule] O
+			--	where	ID = @ID
 
-			set @html = @html + '<div><b>Path:</b> {TextPath}</div>'
+			--set @html = @html + '<div><b>Status:</b> {Status}</div>'
 
 			set @hasDynamicFields = 1
 		end;
@@ -848,7 +666,6 @@ BEGIN
 
 		set @hasStats = case @Type
 							when 'Artifact' then 1
-							when 'Domain' then 1
 							when 'Taxonomy' then 1
 							else 0
 						end
@@ -936,5 +753,3 @@ BEGIN
 	select	'' as Title,
 			@html as Body;
 END
-
-
