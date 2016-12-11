@@ -1068,13 +1068,34 @@ SELECT [ResponsibilityID]
                         viewNames.Add(objectName);
 
                         selectSql = @"
-SELECT ID as [IntersectID]
-      ,Subject as [SourceObject]
-      ,SubjectID as [SourceObjectID]
-      ,Object as [TargetObject]
-      ,ObjectID as [TargetObjectID]
-      ,IntersectTypeID 
-  FROM [Intersect]";
+SELECT 
+	I.[ID] as [IntersectID]
+      ,I.[IntersectTypeID]
+      ,I.[Classification]
+      ,I.[Description]
+	  ,I.[Subject] as [SourceObject]
+	  ,I.[SubjectID] as [SourceObjectID]
+	  ,I.[Object] as [TargetObject]
+	 ,I.[ObjectID] as [TargetObjectID]
+      ,I.[Subject]
+      ,I.[SubjectID]
+      ,I.[SubjectName]
+      ,I.[SubjectUrl]
+      ,I.[SubjectType]
+      ,I.[SubjectTypeID]
+      ,I.[SubjectTypeName]
+      ,I.[Object]
+      ,I.[ObjectID]
+      ,I.[ObjectName]
+      ,I.[ObjectUrl]
+      ,I.[ObjectType]
+      ,I.[ObjectTypeID]
+      ,I.[ObjectTypeName]
+      ,I.[PredicateID]
+      ,I.[PredicateName]
+	  ,P.Inverse as PredicateInverse
+  FROM [dbo].[IntersectDetail] I
+		inner join [Predicate] P on P.ID = I.[PredicateID]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
