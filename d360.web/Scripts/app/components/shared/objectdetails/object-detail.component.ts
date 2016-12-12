@@ -130,7 +130,7 @@ export class ObjectDetailComponent implements OnChanges {
 
     private setDetailFieldType(field: DetailField) {
         field.Type = DetailFieldType.Field;
-        if (field.Value == null)
+        if (field.Value == null || field.Value == '')
             field.Type = DetailFieldType.None;
         if (field.TooltipContext != null)
             field.Type = DetailFieldType.Tooltip;

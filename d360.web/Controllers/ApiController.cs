@@ -2454,9 +2454,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                 break;
                         }
                         objColumn = $"'{currentObj}'";
-                        objIDColumn = $"I{i}.ID";
+                        objIDColumn = $"A{i}.ID";
                         if (i == 0)
-                            join.WhereStatement = $"I{i}.ID = {id}";
+                            join.WhereStatement = $"A{i}.ID = {id}";
                         break;
                     #endregion
                     case ComplexLookupRelationType.ParentItem:
@@ -2471,9 +2471,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                 break;
                         }
                         objColumn = $"'{currentObj}'";
-                        objIDColumn = $"I{i}.ID";
+                        objIDColumn = $"A{i}.ID";
                         if (i == 0)
-                            join.WhereStatement = $"I{i}.ID = {id}";
+                            join.WhereStatement = $"A{i}.ID = {id}";
                         break;
                     #endregion
                     default:
