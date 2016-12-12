@@ -1156,6 +1156,93 @@ from	IntersectDetail O
 
                         #endregion
 
+                        #region Rules
+
+                        objectName = $"{SCHEMA}.[Rules_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	R.ID,
+		R.Name,
+		R.RuleDimensionID,
+		D.Name as RuleDimensionName,
+		R.Description,
+		R.Purpose,
+		R.Measurement,
+		R.Resolution,
+		R.Threshold,
+		R.Status,
+		R.CreatedOn,
+		R.CreatedBy,
+		R.UpdatedOn,
+		R.UpdatedBy
+from	[Rule] R
+		left join RuleDimension D on D.ID = R.RuleDimensionID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        objectName = $"{SCHEMA}.[Rules_Results]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	RR.RuleID,
+		R.Name as RuleName,
+		R.RuleDimensionID,
+		D.Name as RuleDimensionName,
+        RR.EffectiveDate,
+		RR.RowsPassed,
+		RR.RowsFailed,
+		RR.PassFraction,
+		RR.FailFraction,
+		R.Threshold,
+		RR.Passed,
+		RR.CreatedOn,
+		RR.FusionAttributeID,
+		FA.TextPath as FusionAttributeName,
+		Q.C as QualifierCount
+from	RuleResult RR
+		inner join [Rule] R on R.ID = RR.RuleID
+        left join RuleDimension D on D.ID = R.RuleDimensionID
+		left join FusionAttribute FA on Fa.ID = RR.FusionAttributeID
+		cross apply (
+					select	count(1) as C
+					from	RuleResultQualifier 
+					where	RuleResultID = RR.ID
+					) Q";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+
+                        #endregion
+
                         #region All Workflows
 
                         objectName = $"{SCHEMA}.[Workflows_All]";
