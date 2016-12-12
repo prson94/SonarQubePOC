@@ -122,6 +122,7 @@ export class ObjectDetailComponent implements OnChanges {
                     }                    
                     this.rows = displayRows;
                     this.loadCategory();
+                    //console.log(this.rows);
                     this.isLoading = false;                    
                 });
         }
@@ -132,8 +133,13 @@ export class ObjectDetailComponent implements OnChanges {
         field.Type = DetailFieldType.Field;
         if (field.Value == null || field.Value == '')
             field.Type = DetailFieldType.None;
-        if (field.TooltipContext != null)
-            field.Type = DetailFieldType.Tooltip;
+        if (field.TooltipContext != null) {
+            if (field.Value != null && field.Value != '')
+                field.Type = DetailFieldType.Tooltip;
+            else
+                field.Type = DetailFieldType.None;
+        }
+           
         if (field.LookupGridUrl != null) {
             field.Type = DetailFieldType.Lookup;
         }

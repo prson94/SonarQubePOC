@@ -218,6 +218,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         });
 
                         let r = item.relationItems.find(f => f.value == item.selectedRelationItemID);
+                        if (i > 0)
+                            r = this.model.RelationItems[i - 1].relationItems.find(f => f.value == this.model.RelationItems[i - 1].selectedRelationItemID);
                         if (r) item.displayValue = r.title;
                     });
 
@@ -352,7 +354,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private loadTokens(objectType: string, objectId: number): Promise<void> {
         if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
             console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD TOKENS FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
-
             return;
         }
 
@@ -675,8 +676,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private changeDisplayOrder(item: FieldTypeItemDisplayFieldEditorModel, parent: FieldTypeRelationItemEditorModel) {
         let other = parent.DisplayFields.find(f => f.DisplayOrder == item.DisplayOrder && f.value != item.value);
-        if (other)
-            other.DisplayOrder = null;
+        if (other) {
+            let sum = (parent.DisplayFields.length * (parent.DisplayFields.length + 1)) / 2;
+            let total = _.sumBy(parent.DisplayFields, i => { return (i == other) ? 0 : (+i.DisplayOrder || 0); });
+            other.DisplayOrder = sum - total;
+        }
+            
     }
 
     private changeLegacyRef(): Promise<any> {
