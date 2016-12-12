@@ -10,7 +10,7 @@ import {
     AutoCompleteModule,    
     TreeModule,
     OverlayPanelModule,
-    SharedModule
+    SharedModule,    
 } from 'primeng/primeng';
 
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -36,9 +36,9 @@ import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 
         //primeng        
         AutoCompleteModule,        
-        SharedModule,        
-        TreeModule,
         OverlayPanelModule,
+        SharedModule,        
+        TreeModule,                
     ],
     declarations: [
         HeaderActionsComponent,

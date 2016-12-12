@@ -25,7 +25,7 @@ import { TreeNode } from 'primeng/primeng';
                             [placeholder]="breadcrumb.text"
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>                    
-                <div *ngIf="!lastItem" class="sep breadcrumb">::</div>                
+                <div *ngIf="!lastItem && showSeperator" class="sep breadcrumb">::</div>                
                 <p-overlayPanel #treePanel>  
                         <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
                         <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':'800px','overflow':'auto','line-height':'25px'}" 
@@ -42,6 +42,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
     @Input() breadcrumb: Breadcrumb;
     @Input() lastItem: boolean;
     @Output() treeClick = new EventEmitter();
+    @Input() showSeperator: boolean = true;
     
     private results: SearchResult[];
     private result: SearchResult;
