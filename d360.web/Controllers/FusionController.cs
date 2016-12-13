@@ -930,6 +930,7 @@ where   A.FusionID = @f
 
             countSql = $@"select count(1) from ({countSql}) A";
             countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            countSql += " OPTION (RECOMPILE)";
             var total = Company.Query<int>(countSql, dbArgs).First();
 
             #endregion
@@ -950,6 +951,8 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
             sql = applyFilteringSuffixBind(sql, Request, dbArgs);
             sql = applySortSuffix(sql, sortDataField, sortOrder);
             sql = applyPagingSuffix(sql, pagenum, pagesize);
+
+            sql += " OPTION (RECOMPILE)";
 
             var query = Company.Query<dynamic>(sql, dbArgs);
 

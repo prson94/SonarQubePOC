@@ -727,7 +727,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
             
 
             // add value to db args
-            dbArgs.Add("simpleFilter", $"%{filterExp}%");
+            dbArgs.Add("simpleFilter", $"{filterExp}%", System.Data.DbType.AnsiString, System.Data.ParameterDirection.Input, 200);
 
             return $"({sb.ToString()})";
         }

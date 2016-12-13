@@ -264,6 +264,9 @@ where    A.ArtifactTypeID = @id", columns, joins);
                 sql = applySortSuffix(sql, sortDataField, sortOrder);
                 sql = applyPagingSuffix(sql, pagenum, pagesize);
 
+                countSql += " OPTION (RECOMPILE)";
+                sql += " OPTION (RECOMPILE)";
+
                 int total = Company.Query<int>(countSql, dbArgs).First();
                 var query = Company.Query<dynamic>(sql, dbArgs);
 
