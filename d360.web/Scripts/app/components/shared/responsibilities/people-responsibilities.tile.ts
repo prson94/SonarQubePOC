@@ -60,6 +60,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
+                console.log(this.responsibilities);
             });
     }
 
@@ -91,6 +92,14 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
     navigate(url: string) {
         this.router.navigateByUrl(url);
+    }
+
+    onDoubleClick(e: any) {
+        if (e == null || e.data == null)
+            return;
+
+        if (e.data.AssigningItemID == e.data.ObjectID && e.data.AssigningItemType == e.data.ObjectType)
+            this.isEditing = true;
     }
 }
 

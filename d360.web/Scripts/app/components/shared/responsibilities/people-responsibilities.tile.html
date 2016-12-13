@@ -11,7 +11,7 @@
     <div *ngIf="!isLoading">
         <div *ngIf="!isEditing && !isDeleting && !isAdding">
             <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" />
-            <p-dataTable #dt [globalFilter]="gb" [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" (onRowDblclick)="isEditing=true;">
+            <p-dataTable #dt [globalFilter]="gb" [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" (onRowDblclick)="onDoubleClick($event)">
                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column field="Role" header="Role" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="ResponsibleObjectName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter">
@@ -31,14 +31,14 @@
                 <p-column field="ContextItems" header="Context" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column [style]="{'width':'28px'}">
                     <template let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
+                        <div *ngIf="item.AssigningItemID == item.ObjectID && item.AssigningItemType == item.ObjectType" class="RowTools">
                             <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
                         </div>
                     </template>
                 </p-column>
                 <p-column [style]="{'width':'28px'}">
                     <template let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">                            
+                        <div *ngIf="item.AssigningItemID == item.ObjectID && item.AssigningItemType == item.ObjectType"  class="RowTools">                            
                             <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </template>
