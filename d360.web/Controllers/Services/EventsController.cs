@@ -58,6 +58,7 @@ namespace d360.web.Controllers.Services
         public class ResultModel
         {
             public DateTime EffectiveDate { get; set; }
+            public DateTime RunDate { get; set; }
             public int RowsPassed { get; set; }
             public int RowsFailed { get; set; }
             public int? FusionID { get; set; }
@@ -200,7 +201,7 @@ namespace d360.web.Controllers.Services
         /// Add one or more events to a rule.
         /// </summary>
         /// <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
-        /// <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
+        /// <param name="models">A collection of aggregated rule results.</param>
         /// <returns></returns>
         [
             Route("sourcerules/{sourceID}/events"),
@@ -243,129 +244,54 @@ namespace d360.web.Controllers.Services
                 throw new HttpResponseException(msg);
             }
 
-            var rule = Company.GetById<Rule>(id);
+            var rule = Company.GetById<Rule>(id, i => i.RuleResultQualifierTypes);
+
+            var errorList = new List<CreateResponse>();
 
             try
             {
+                var qualitifierTypes = rule.RuleResultQualifierTypes.ToList();
+
+                var loop = 1;
                 foreach (var model in models)
                 {
                     try
                     {
-                        var result = new RuleResult { EffectiveDate = model.EffectiveDate, RowsFailed = model.RowsFailed, RowsPassed = model.RowsPassed, RuleID = id };
-                        Company.Add<RuleResult>(result);
+                        var result = new RuleResult { EffectiveDate = model.EffectiveDate, RunDate = model.RunDate, RowsFailed = model.RowsFailed, RowsPassed = model.RowsPassed, RuleID = id };
+                        var isResultValid = true;
 
-                        #region Add fields that do not yet exists in D3S
+                        model.Qualifiers.ForEach(q =>
+                        {
+                            var qt = qualitifierTypes.SingleOrDefault(i => i.Name == q.Name);
+                            if (qt != null)
+                            {
+                                if (result.RuleResultQualifiers == null)
+                                    result.RuleResultQualifiers = new List<RuleResultQualifier>();
 
-                        //try
-                        //{
-                        //    foreach (var key in log.Keys)
-                        //    {
-                        //        if (key != "Criticality"
-                        //            && key != "DateCreated"
-                        //            && key != "SourceID"
-                        //            && key != "Status"
-                        //            && !fieldTypes.Any(i => i.Name == key))
-                        //        {
-                        //            var newFieldType = new FieldType { Object = sType, ObjectID = id, IsRequired = false, IsListable = true, SortOrder = fieldTypes.Count + 1, FriendlyName = key, Name = key, DisplayDescription = "", FormDescription = "", Type = "Text" };
-                        //            Company.Add<FieldType>(newFieldType);
-                        //            fieldTypes.Add(newFieldType);
-                        //        }
-                        //    }
-                        //}
-                        //catch (Exception ex)
-                        //{
-                        //}
+                                result.RuleResultQualifiers.Add(new RuleResultQualifier { RuleResultQualifierTypeID = qt.ID, Value = q.Value });
+                            }
+                            else
+                            {
+                                isResultValid = false;
+                            }
+                        });
 
-                        #endregion
-
-                        #region
-
-                        //var fields = new List<Field>();
-                        //fieldTypes.ForEach(f =>
-                        //{
-                        //    if (log.ContainsKey(f.Name))
-                        //    {
-                        //        var fld = new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Event.ToString() };
-                        //        if (log[f.Name] == null)
-                        //        {
-                        //            if (f.IsRequired)
-                        //            {
-                        //                errorDetailMessage += string.Format("ERROR: Event does not contain required field {0}.  ", f.Name);
-                        //                throw new MissingPropertiesException("Event");
-                        //            }
-                        //        }
-                        //        else
-                        //        {
-                        //            fld.Value = log[f.Name];
-                        //            fields.Add(fld);
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        errorDetailMessage += string.Format("{0}: Event does not contain {1} field {2}.  ", f.IsRequired ? "ERROR" : "WARNING", f.IsRequired ? "required" : "optional", f.Name);
-                        //        if (f.IsRequired)
-                        //        {
-                        //            throw new MissingPropertiesException("Event");
-                        //        }
-                        //    }
-                        //});
-
-                        #endregion
-
-                        #region If you made it this far in loop, fields for this event are valid.
-
-                        //Event evt = null;
-                        //var sourceID = "";
-                        //if (log.ContainsKey("SourceID"))
-                        //{
-                        //    sourceID = log["SourceID"];
-                        //    evt = events.SingleOrDefault(i => i.SourceID == sourceID);
-                        //}
-
-                        //var responseCode = "";
-
-                        //var dateCreated = DateTime.UtcNow;
-                        //var criticality = EventCriticality.Negligible;
-                        //var status = "Open";
-
-                        //if (log.ContainsKey("Criticality")) Enum.TryParse(log["Criticality"], out criticality);
-                        //if (log.ContainsKey("DateCreated")) DateTime.TryParse(log["DateCreated"], out dateCreated);
-                        //if (log.ContainsKey("Status")) status = log["Status"];
-
-                        //if (evt == null)
-                        //{
-                        //    responseCode = HttpStatusCode.Created.ToString();
-
-                        //    evt = new Event { Criticality = criticality, Status = status.ToString(), Date = dateCreated, EventGroupID = eventGroup.ID, SourceID = sourceID };
-                        //    Company.SaveOrUpdate<Event>(evt);
-                        //}
-                        //else
-                        //{
-                        //    responseCode = HttpStatusCode.OK.ToString();
-
-                        //    evt.Criticality = criticality;
-                        //    evt.Status = status.ToString();
-                        //    Company.SaveOrUpdate<Event>(evt);
-                        //}
-
-                        //fields.ForEach(f =>
-                        //{
-                        //    f.ObjectID = evt.ID;
-                        //});
-
-                        #endregion
-
-                        //Company.AddOrUpdateFields(fields);
+                        if (isResultValid)
+                            Company.RuleResults.Add(result);
+                        else
+                            errorList.Add(new CreateResponse { Message = $"Row {loop} contains qualifiers that are not yet defined on the rule." });
                     }
                     catch (Exception ex)
                     {
                         return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData(), ex);
                     }
+
+                    loop++;
                 }
                 // Save the results.
                 Company.SaveChanges();
 
-                return Request.CreateResponse(HttpStatusCode.Created);
+                return Request.CreateResponse(HttpStatusCode.Created, errorList);
             }
             catch (BaseException ex)
             {
@@ -377,146 +303,156 @@ namespace d360.web.Controllers.Services
             }
         }
 
-        /// <summary>
-        /// Add one or more relationships to a rule based on the source ID from an underlying system that originally created the rule.
-        /// </summary>
-        /// <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
-        /// <param name="models">A collection of relationships.</param>
-        /// <returns></returns>
-        [Route("sourcerules/{sourceID}/relationships"), HttpPost]
-        public HttpResponseMessage AddSourceRuleRelationships(string sourceID, List<ObjectModel> models)
-        {
-            var rule = Company.Filter<RuleMap>(m => m.SourceID == sourceID).Select(m => m.Rule).FirstOrDefault();
-            if (rule != null)
-            {
-                return addRuleRelationships(rule.ID, models, rule);
-            }
-            else
-            {
-                return Request.CreateResponse(HttpStatusCode.NotFound, new { Message = $"Rule could not be located based on the Source ID: {sourceID}." });
-            }
-        }
+        ///// <summary>
+        ///// Add one or more relationships to a rule based on the source ID from an underlying system that originally created the rule.
+        ///// </summary>
+        ///// <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
+        ///// <param name="models">A collection of relationships.</param>
+        ///// <returns></returns>
+        //[Route("sourcerules/{sourceID}/relationships"), HttpPost]
+        //public HttpResponseMessage AddSourceRuleRelationships(string sourceID, List<ObjectModel> models)
+        //{
+        //    var rule = Company.Filter<RuleMap>(m => m.SourceID == sourceID).Select(m => m.Rule).FirstOrDefault();
+        //    if (rule != null)
+        //    {
+        //        return addRuleRelationships(rule.ID, models, rule);
+        //    }
+        //    else
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.NotFound, new { Message = $"Rule could not be located based on the Source ID: {sourceID}." });
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Add one or more relationships to a rule.
+        ///// </summary>
+        ///// <param name="id">The ID of the rule to add events to.</param>
+        ///// <param name="models">A collection of relationships.</param>
+        ///// <returns></returns>
+        //[Route("rules/{id:int}/relationships"), HttpPost]
+        //public HttpResponseMessage AddRuleRelationships(int id, List<ObjectModel> models)
+        //{
+        //    return addRuleRelationships(id, models);
+        //}
+
+        //HttpResponseMessage addRuleRelationships(int id, List<ObjectModel> models, Rule rule = null)
+        //{
+        //    try
+        //    {
+        //        if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
+        //            return Request.CreateResponse(HttpStatusCode.Unauthorized, new { Message = "You are not allowed to add relationships to this rule." });
+
+        //        if (models == null)
+        //        {
+        //            throw new MissingPropertiesException("Rule Relationships");
+        //        }
+        //        else
+        //        {
+        //            if (models.Count == 0)
+        //            {
+        //                throw new MissingPropertiesException("Rule Relationships");
+        //            }
+        //        }
+
+        //        if (rule == null) //If no rule sent in, do a lookup.
+        //        {
+        //            rule = Company.GetById<Rule>(id);
+        //        }
+
+        //        if (rule == null)
+        //        {
+        //            throw new NotFoundException("Rule");
+        //        }
+        //        models.ForEach(m =>
+        //        {
+        //            var t = (SystemObjects)Enum.Parse(typeof(SystemObjects), m.ObjectType);
+        //            Company.AddIntersect(SystemObjects.Rule, id, t, m.ObjectID, IntersectClassification.Normal, null, null);
+        //        });
+        //        //Company.AddRelationships(SystemObjects.Rule, id, IntersectClassification.Normal, null, null, models);
+
+        //        return Request.CreateResponse(HttpStatusCode.Created, new { Message = "Relationships created." });
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return Request.CreateResponse(ex.StatusCode, new { Message = ex.StatusMessage });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Request.CreateResponse(HttpStatusCode.InternalServerError, new { Message = $"An unknown error occured.  Please try again later. Error was: {ex.GetFullExceptionData()}" });
+        //    }
+        //}
+
+
+//        /// <summary>
+//        /// 
+//        /// </summary>
+//        /// <param name="id">The ID of the rule to retrieve attributes for.</param>
+//        /// <param name="typeID">The ID of the attribute type to get.</param>
+//        /// <returns></returns>
+//        [Route("rules/{id:int}/attributes/{typeID:int}"), HttpGet]
+//        public HttpResponseMessage GetAttributesByAttributeType(int id, int typeID)
+//        {
+//            HttpResponseMessage response = null;
+
+//            var joins = "";
+//            var columns = "";
+//            getDynamicFieldJoinStatements(typeID, "Attribute", out joins, out columns);
+
+//            var querySql = string.Format(@"select A.ID, {0} T.Name
+//from	Attribute A 
+//inner join AttributeType T on T.ID = A.AttributeTypeID and T.ID = @typeID and A.ObjectType = 'Rule' and A.ObjectID = @id {1}", columns, joins);
+
+//            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+//            var models = Company.Query<dynamic>(sql, new { id = id, typeID = typeID });
+//            response = Request.CreateResponse(HttpStatusCode.OK, models);
+
+//            return response;
+//        }
+
 
         /// <summary>
-        /// Add one or more relationships to a rule.
+        /// Gets all results for a rule.
         /// </summary>
-        /// <param name="id">The ID of the rule to add events to.</param>
-        /// <param name="models">A collection of relationships.</param>
+        /// <param name="id">The ID of the rule to get results from.</param>
         /// <returns></returns>
-        [Route("rules/{id:int}/relationships"), HttpPost]
-        public HttpResponseMessage AddRuleRelationships(int id, List<ObjectModel> models)
+        [
+            Route("rules/{id:int}/events"),
+            Route("rules/{id:int}/results"),
+            HttpGet
+        ]
+        public HttpResponseMessage GetRuleResults(int id)
         {
-            return addRuleRelationships(id, models);
-        }
-
-        HttpResponseMessage addRuleRelationships(int id, List<ObjectModel> models, Rule rule = null)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
-                    return Request.CreateResponse(HttpStatusCode.Unauthorized, new { Message = "You are not allowed to add relationships to this rule." });
-
-                if (models == null)
-                {
-                    throw new MissingPropertiesException("Rule Relationships");
-                }
-                else
-                {
-                    if (models.Count == 0)
-                    {
-                        throw new MissingPropertiesException("Rule Relationships");
-                    }
-                }
-
-                if (rule == null) //If no rule sent in, do a lookup.
-                {
-                    rule = Company.GetById<Rule>(id);
-                }
-
-                if (rule == null)
-                {
-                    throw new NotFoundException("Rule");
-                }
-                models.ForEach(m =>
-                {
-                    var t = (SystemObjects)Enum.Parse(typeof(SystemObjects), m.ObjectType);
-                    Company.AddIntersect(SystemObjects.Rule, id, t, m.ObjectID, IntersectClassification.Normal, null, null);
-                });
-                //Company.AddRelationships(SystemObjects.Rule, id, IntersectClassification.Normal, null, null, models);
-
-                return Request.CreateResponse(HttpStatusCode.Created, new { Message = "Relationships created." });
-            }
-            catch (BaseException ex)
-            {
-                return Request.CreateResponse(ex.StatusCode, new { Message = ex.StatusMessage });
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateResponse(HttpStatusCode.InternalServerError, new { Message = $"An unknown error occured.  Please try again later. Error was: {ex.GetFullExceptionData()}" });
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id">The ID of the rule to retrieve attributes for.</param>
-        /// <param name="typeID">The ID of the attribute type to get.</param>
-        /// <returns></returns>
-        [Route("rules/{id:int}/attributes/{typeID:int}"), HttpGet]
-        public HttpResponseMessage GetAttributesByAttributeType(int id, int typeID)
-        {
-            HttpResponseMessage response = null;
-
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(typeID, "Attribute", out joins, out columns);
 
-            var querySql = string.Format(@"select A.ID, {0} T.Name
-from	Attribute A 
-inner join AttributeType T on T.ID = A.AttributeTypeID and T.ID = @typeID and A.ObjectType = 'Rule' and A.ObjectID = @id {1}", columns, joins);
-
-            var sql = string.Format(@"select * from ({0}) A", querySql);
-
-            var models = Company.Query<dynamic>(sql, new { id = id, typeID = typeID });
-            response = Request.CreateResponse(HttpStatusCode.OK, models);
-
-            return response;
-        }
-
-
-        /// <summary>
-        /// GEts all events for a rule.
-        /// </summary>
-        /// <param name="id">The ID of the rule to get events from.</param>
-        /// <returns></returns>
-        [Route("rules/{id:int}/events"), HttpGet]
-        public HttpResponseMessage GetRuleEvents(int id)
-        {
-            var joins = "";
-            var columns = "";
-
-            var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "Rule" && i.ObjectID == id).OrderBy(i => i.SortOrder).ToList();
+            var fields = Company.Filter<RuleResultQualifierType>(i => i.RuleID == id).OrderBy(i => i.Order).ToList();
 
             foreach (var f in fields)
             {
                 var name = f.Name.Replace("'", "''").Replace("--", "");
-                columns += $"{name}_T.FormattedValue as [{name}], ";
-                joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = 'Event' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID}";
+                columns += $"{name}_T.Value as [{name}], ";
+                joins += $" left join RuleResultQualifier {name}_T on {name}_T.RuleResultID = A.ID and {name}_T.RuleResultQualifierTypeID = {f.ID}";
             }
 
 
             var sql = $@"
 select	A.ID,
-		A.SourceID,
-		A.Status,
-        A.Criticality,
-		V.Name as EventGroup,
-        V.PublicID as PublicID,
+        A.RowsPassed,
+        A.RowsFailed,
+        A.PassFraction,
+        A.FailFraction,
+        A.Passed,
         {columns}
-		A.[Date]
-from	[Event] A inner join EventGroup V on V.ID = A.EventGroupID and V.RuleID = {id} 
-        {joins}";
+        A.FusionAttributeID,
+        F.TextPath as FusionAttributePath,
+        A.EffectiveDate,
+        A.RunDate
+from	RuleResult A  
+        left join FusionAttribute F on F.ID = A.FusionAttributeID
+        {joins} 
+where   A.RuleID = {id} 
+order by A.RunDate desc, A.EffectiveDate desc";
 
             var models = Company.Query<dynamic>(sql);
 

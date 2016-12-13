@@ -80,5 +80,8 @@ namespace d360.core.entities
 
         [ForeignKey("RuleID")]
         public virtual ICollection<RuleMap> Maps { get; set; }
+
+        [ForeignKey("RuleID"), IgnoreDataMember]
+        public virtual ICollection<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
     }
 }

@@ -2,13 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.core.entities
-{    
+{
     [DataContract(Namespace = NAMESPACE)]
     public class RuleResult : BaseCreatedIntObject, IIntObject, ICreatedObject
     {        
@@ -17,6 +14,9 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime EffectiveDate { get; set; }
+
+        [DataMember]
+        public DateTime RunDate { get; set; }
 
         [DataMember]
         public int RowsPassed { get; set; }
@@ -38,5 +38,8 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual Rule Rule { get; set; }
+
+        [ForeignKey("RuleResultID"), IgnoreDataMember]
+        public virtual ICollection<RuleResultQualifier> RuleResultQualifiers { get; set; }
     }
 }

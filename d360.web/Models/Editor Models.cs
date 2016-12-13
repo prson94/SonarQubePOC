@@ -1005,28 +1005,28 @@ namespace d360.web.Models
         public List<SelectListItem> ResponsibilityTypes { get; set; }
     }
 
-    public class DomainItemXrefEditorModel : BaseEditorModel
-    {
-        public int ID { get; set; }
-        public int HouseDomainItemID { get; set; }
-        public int DomainItemID { get; set; }
-        public string HouseCode { get; set; }
-        public string Code { get; set; }
-        public int? SourceArtifactID { get; set; }
-        public string SourceArtifactName { get; set; }
-        public int DomainID { get; set; }
-        public int LanguageID { get; set; }
+    //public class DomainItemXrefEditorModel : BaseEditorModel
+    //{
+    //    public int ID { get; set; }
+    //    public int HouseDomainItemID { get; set; }
+    //    public int DomainItemID { get; set; }
+    //    public string HouseCode { get; set; }
+    //    public string Code { get; set; }
+    //    public int? SourceArtifactID { get; set; }
+    //    public string SourceArtifactName { get; set; }
+    //    public int DomainID { get; set; }
+    //    public int LanguageID { get; set; }
 
-    }
+    //}
 
-    public class DomainEditorModel : BaseEditorModel
-    {
-        public int DomainID { get; set; }
-        public int DomainTypeID { get; set; }
-        public int DomainClassificationID { get; set; }
-        public int? SourceArtifactID { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int? DomainGroupID { get; set; }
-    }
+    //public class DomainEditorModel : BaseEditorModel
+    //{
+    //    public int DomainID { get; set; }
+    //    public int DomainTypeID { get; set; }
+    //    public int DomainClassificationID { get; set; }
+    //    public int? SourceArtifactID { get; set; }
+    //    public string Name { get; set; }
+    //    public string Description { get; set; }
+    //    public int? DomainGroupID { get; set; }
+    //}
 }

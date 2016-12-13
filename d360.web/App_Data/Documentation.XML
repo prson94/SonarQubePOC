@@ -1866,7 +1866,7 @@
             Add one or more events to a rule.
             </summary>
             <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
-            <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
+            <param name="models">A collection of aggregated rule results.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.Services.EventsController.AddRuleResults(System.Int32,System.Collections.Generic.List{d360.web.Controllers.Services.EventsController.ResultModel})">
@@ -1877,35 +1877,11 @@
             <param name="models">A collection of aggregated rule results.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddSourceRuleRelationships(System.String,System.Collections.Generic.List{d360.core.entities.ObjectModel})">
+        <member name="M:d360.web.Controllers.Services.EventsController.GetRuleResults(System.Int32)">
             <summary>
-            Add one or more relationships to a rule based on the source ID from an underlying system that originally created the rule.
+            Gets all results for a rule.
             </summary>
-            <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
-            <param name="models">A collection of relationships.</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddRuleRelationships(System.Int32,System.Collections.Generic.List{d360.core.entities.ObjectModel})">
-            <summary>
-            Add one or more relationships to a rule.
-            </summary>
-            <param name="id">The ID of the rule to add events to.</param>
-            <param name="models">A collection of relationships.</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.GetAttributesByAttributeType(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">The ID of the rule to retrieve attributes for.</param>
-            <param name="typeID">The ID of the attribute type to get.</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.GetRuleEvents(System.Int32)">
-            <summary>
-            GEts all events for a rule.
-            </summary>
-            <param name="id">The ID of the rule to get events from.</param>
+            <param name="id">The ID of the rule to get results from.</param>
             <returns></returns>
         </member>
         <member name="T:d360.web.Controllers.Services.GlossaryController">

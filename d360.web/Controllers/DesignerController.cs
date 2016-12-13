@@ -31,6 +31,7 @@ namespace d360.web.Controllers
         [HttpGet, Route("")]
         public ActionResult Index(string schemeName)
         {
+            ViewBag.SchemeName = schemeName ?? "SimpleWF";
             return View();
         }
 
