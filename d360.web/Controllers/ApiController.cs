@@ -2541,7 +2541,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                             }
                             else
                             {
-                                join.JoinStatement += $" {joinType} join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.JoinStatement += $" {joinType} join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
                                 objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
                             }
