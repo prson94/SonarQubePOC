@@ -80,6 +80,13 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    public getImpactDiagramFusion(object: string, objectId: number): Promise<ImpactDiagramModel> {
+        return this.http.get(`diagrams/${object}/${objectId}/ImpactAnalysisFusion`)
+            .toPromise()
+            .then(response => <ImpactDiagramModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     public getCatalogDiagram(id: number): Promise<HierarchyDiagramModel[]> {
         return this.http.get(`diagrams/${id}/InformationCatalogDiagramData`)
             .toPromise()

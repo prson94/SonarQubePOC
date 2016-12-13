@@ -100,6 +100,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
+        //this.myDiagram.addDiagramListener('SelectionMoved', () => this.SelectionMoved());
 
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -294,67 +295,68 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             // only create children once per node
             diagram.model.setDataProperty(data, "everExpanded", true);
 
-            promise = this.diagramService.getImpactDiagram(data.obj, data.objid)
+            promise = this.diagramService.getImpactDiagramFusion(data.obj, data.objid)
                 .then(r => {
                     let hasChildren = false;
 
-                    r.nodes.forEach(n => {
-                        if (!(n.obj == data.obj && n.objid == data.objid)) {
-                            n.everExpanded = false;
-                            n.category = 'NonFocal';
+                    if (r && r.nodes)
+                        r.nodes.forEach(n => {
+                            if (!(n.obj == data.obj && n.objid == data.objid)) {
+                                n.everExpanded = false;
+                                n.category = 'NonFocal';
 
-                            let allowAdd = true;
+                                let allowAdd = true;
 
-                            diagram.model.nodeDataArray.forEach(d => {
-                                if (d.obj == n.obj && d.objid == n.objid) {
-                                    allowAdd = false;
-                                }
-                            });
-
-                            if (allowAdd) {
-                                nodes.push(n);
-                                hasChildren = true;
-                            }
-                        }
-                    });
-
-                    r.links.forEach(l => {
-                        let addLink = true;
-                        l.isTreeLink = true;
-
-                        if (l.to == this.objectType + this.objectID.toString())
-                            addLink = false;
-
-                        //prevent duplicate links of the same predicate between the same nodes
-                        if (addLink)
-                            this.myDiagram.links.each(k => {
-                                if ((k.data.to == l.to && k.data.from == l.from) || (k.data.to == l.from && k.data.from == l.to)) {
-                                    if (k.data.predicateid == l.predicateid) {
-                                        addLink = false;
-                                        return;
+                                diagram.model.nodeDataArray.forEach(d => {
+                                    if (d.obj == n.obj && d.objid == n.objid) {
+                                        allowAdd = false;
                                     }
-                                }
-                            });
-                        
-                        //if there's already a link to this node, add the link as a non-tree link to avoid breaking collapse/expand
-                        let to = this.myDiagram.findNodeForKey(l.to);
-                        if (to) {
-                            l.isTreeLink = false;
-                        }
+                                });
 
-                        let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
-                        if (addLink) {
-                            hasChildren = true;
-                            links.push(l);
-                        }
-                    });
+                                if (allowAdd) {
+                                    nodes.push(n);
+                                    hasChildren = true;
+                                }
+                            }
+                        });
+
+                    if (r && r.links)
+                        r.links.forEach(l => {
+                            let addLink = true;
+                            l.isTreeLink = true;
+
+                            if (l.to == this.objectType + this.objectID.toString())
+                                addLink = false;
+
+                            //prevent duplicate links of the same predicate between the same nodes
+                            if (addLink)
+                                this.myDiagram.links.each(k => {
+                                    if ((k.data.to == l.to && k.data.from == l.from) || (k.data.to == l.from && k.data.from == l.to)) {
+                                        if (k.data.predicateid == l.predicateid) {
+                                            addLink = false;
+                                            return;
+                                        }
+                                    }
+                                });
+                        
+                            //if there's already a link to this node, add the link as a non-tree link to avoid breaking collapse/expand
+                            let to = this.myDiagram.findNodeForKey(l.to);
+                            if (to) {
+                                l.isTreeLink = false;
+                            }
+
+                            let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+                            if (addLink) {
+                                hasChildren = true;
+                                links.push(l);
+                            }
+                        });
 
                     //if there are no children, hide the expand/collapse button
                     if (!hasChildren) {
                         node.findObject('TREEBUTTON').visible = false;
                     } else {
                         this.addCategoryLayer(node.data, nodes, links);
-                        //this.filterView();
                     }
 
                 })
@@ -516,7 +518,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     }
 
 
-
     //#region events
 
     @HostListener('window:resize', ['$event'])
@@ -592,6 +593,10 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     private InitialLayoutCompleted() {
         this.zoomToFit();
         this.refreshFilters();
+    }
+
+    private SelectionMoved() {
+        this.zoomToFit();
     }
 
     //#endregion

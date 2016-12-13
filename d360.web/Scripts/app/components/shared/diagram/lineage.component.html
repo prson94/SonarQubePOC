@@ -10,7 +10,7 @@
         </div>
     </header>
 
-    <div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px;">
+    <div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
         <d3s-overlay-window width="500" maxHeight="400" padding="15" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''">
             <div *ngIf="!showNodeTabs && !showLinkTabs">Nothing selected</div>
             <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs">

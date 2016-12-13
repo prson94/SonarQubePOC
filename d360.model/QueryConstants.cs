@@ -1190,5 +1190,65 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 			select * from @nodes for json path			
 			) as 'nodes'
 	for json path, WITHOUT_ARRAY_WRAPPER";
+
+        public static string ImpactAnalysisDiagramFusion = @"
+    declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
+    declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateid int, intersectid int)
+
+    declare @typeName varchar(50), @typeId int;
+
+    select @typeName=ObjectType, @typeId=ObjectTypeID from cache.ObjectDetails
+    where object = @type and objectid = @id;
+
+    insert into @nodes
+    select D.Object + cast(D.ObjectID as varchar),
+				    D.Object,
+				    D.ObjectID,
+				    D.ObjectTypeName,
+				    D.ObjectTypeName,
+				    D.ObjectType,
+				    D.ObjectTypeID,
+				    D.TextPath,
+				    D.IconBackColor,
+				    D.IconForeColor,
+				    case 
+					    when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
+					    else coalesce(P.Inverse, 'used in')
+				    end as [Predicate],
+				    P.ID as PredicateID,
+				    I.ID
+    from [Intersect] I
+    inner join IntersectType T on I.IntersectTypeID = T.ID AND
+	    ((T.Subject = @typeName and T.SubjectID = @typeId and T.Object = 'FusionAttributeType') OR
+	     (T.Object = @typeName and T.ObjectID = @typeId and T.Subject ='FusionAttributeTYpe'))
+    inner join cache.ObjectDetails D on D.Object = case 
+												    when I.Subject = @type and I.SubjectID = @id then I.Object
+												    else I.Subject
+											       end 
+									    and
+									    D.ObjectID = case 
+												    when I.Subject = @type and I.SubjectID = @id then I.ObjectID
+												    else I.SubjectID
+											       end
+    left join Predicate P on P.ID = T.PredicateID
+    where
+    (I.Subject = @type AND I.SubjectID = @id) OR (I.Object = @type AND I.ObjectID = @id);
+
+    insert into @links
+	    select	@type + cast(@id as varchar),
+			    [key],
+			    [predicate],
+			    [predicateid],
+			    [intersectid]
+	    from	@nodes;
+
+    select	(
+		    select * from @links for json path			
+		    ) as 'links',
+		    (
+		    select * from @nodes for json path			
+		    ) as 'nodes'
+    for json path, WITHOUT_ARRAY_WRAPPER;
+";
     }
 }
