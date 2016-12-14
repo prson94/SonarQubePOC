@@ -2129,7 +2129,9 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
         private string renderTemplate(string templateType, string action, SystemObjects type, int id)
         {
-            string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}'", templateType, type.ToString(), id, action);
+            var settings = Community.GetCompanySettings();
+            
+            string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}', '{4}'", templateType, type.ToString(), id, action, settings["ArtifactType_TaxonomyTypeID"]);
             var model = Database.SqlQuery<RenderTemplateModel>(query).SingleOrDefault();
             var html = "";
             if (model != null) html = model.Body;

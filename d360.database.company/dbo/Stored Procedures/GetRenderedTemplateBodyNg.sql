@@ -3,7 +3,8 @@
 	@TemplateType varchar(25),
 	@Type varchar(50),
 	@ID int,
-	@Action varchar(50)
+	@Action varchar(50),
+	@SubjectName VARCHAR (200) = 'Governing Domain'
 --set @TemplateType = 'Lookup'
 --set @Type = 'Artifact'
 --set @ID = 7004--16435
@@ -397,6 +398,13 @@ BEGIN
 			from	Artifact
 			where	ID = @ID
 
+			insert into @tbl 
+				select 'GoverningDomain', tt.name
+				from
+					artifact a
+					inner join taxonomytype tt on (a.taxonomytypeid = tt.id and a.id = @ID)
+
+			set @html = @html + '<div><b>' + @SubjectName + ':</b> {GoverningDomain}</div>'
 			set @html = @html + '<div><b>Status:</b> {Status}</div>'
 			set @html = @html + '<div><b>Path:</b> {Path}</div>'
 
@@ -771,5 +779,3 @@ BEGIN
 	select	'' as Title,
 			@html as Body;
 END
-
-
