@@ -240,7 +240,8 @@ order by    W.DateStarted desc
 		    WR.Activity,
 			W.Data.value('(fields/IssueType)[1]', 'int') as IssueType,
             case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName,
-			0 as IssueID
+			0 as IssueID,
+            2 as Criticality
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
@@ -262,7 +263,8 @@ union
 		    WR.Activity,
 			IT.ID as IssueType,
             IT.Name as IssueTypeName,
-			I.ID as IssueID
+			I.ID as IssueID,
+            I.Criticality as Criticality
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
@@ -288,7 +290,8 @@ order by    W.DateStarted desc";
 		    WR.Activity,
             W.Data.value('(fields/IssueType)[1]', 'int') as IssueType,
 			case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName,
-			0 as IssueID
+			0 as IssueID,
+            2 as Criticality
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
@@ -308,7 +311,8 @@ select		W.ID as WorkflowID,
 		    WR.Activity,
             IT.ID as IssueType,
             IT.Name as IssueTypeName,
-			I.ID as IssueID
+			I.ID as IssueID,
+            I.Criticality as Criticality
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')

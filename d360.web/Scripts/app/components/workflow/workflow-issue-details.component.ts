@@ -20,12 +20,13 @@ import * as _ from 'lodash';
                                 <d3s-tooltip *ngIf="data.Activity > 0" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><a (click)="openIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>                                
                             </template>
                         </p-column>
+                        <p-column field="CriticalityName" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'150px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="Issue" header="Issue" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-issue="rowData" pTemplate type="body">
                                 <span [innerHtml]="issue?.Issue"></span>
                             </template>
-                        </p-column>
+                        </p-column>                        
                         <p-column field="ResourceName" header="Reported By" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="DateStarted" header="Created" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">

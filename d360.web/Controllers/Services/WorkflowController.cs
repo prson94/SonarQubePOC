@@ -265,7 +265,8 @@ namespace d360.web.Controllers.Services
                                   Notes = workflows.Comments,
                                   IssueType = workflows.IssueType,
                                   IssueTypeName = workflows.IssueTypeName,
-                                  IssueID = workflows.IssueID
+                                  IssueID = workflows.IssueID,
+                                  Criticality = workflows.CriticalityName
                             };
 
                   return res.Distinct();                  
@@ -394,7 +395,8 @@ namespace d360.web.Controllers.Services
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
                         i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();                        
+                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                        i.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), i.Criticality);                    
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list3);
                 case WorkflowType.ChallengeArtifact:
@@ -424,14 +426,15 @@ namespace d360.web.Controllers.Services
                         if ((int)item.Activity != 0)
                         {
                             item.ActivityDescription = item.Activity.GetReportTileTypeDescription();
-                            item.ActivityName = item.Activity.GetActivityTypeDisplayName();
+                            item.ActivityName = item.Activity.GetActivityTypeDisplayName();                            
                         }
                         else
                         {
                             item.ActivityName = "Waiting on user(s)...";
                         }
                         item.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        item.WorkflowName = workflowType.GetWorkflowTypeDisplayName();                        
+                        item.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                        item.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), item.Criticality);
                     }
                     return Request.CreateResponse(HttpStatusCode.OK, list);             
             }
@@ -486,6 +489,7 @@ namespace d360.web.Controllers.Services
                         model3.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
                         model3.ActivityName = model3.Activity.GetActivityTypeDisplayName();
                         model3.ActivityDescription = model3.Activity.GetReportTileTypeDescription();
+                        model3.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), model3.Criticality);
 
                         return Request.CreateResponse(HttpStatusCode.OK, model3);
                     }
@@ -844,6 +848,7 @@ namespace d360.web.Controllers.Services
                     if (issue != null)
                     {
                         response.Fields.Add(new Property { Name = "Issue Type", Value = issue.IssueType.Name });
+                        response.Fields.Add(new Property { Name = "Criticality", Value = Enum.GetName(typeof(core.enums.IssueCriticality),issue.Criticality) });
                         var fields = Company.GetFieldRelationsByObject(SystemObjects.Issue, IssueID).OrderBy(x => x.SortOrder).ToList();
                         foreach (var field in fields)
                     	{

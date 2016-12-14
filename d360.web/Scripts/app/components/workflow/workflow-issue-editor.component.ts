@@ -17,6 +17,8 @@ import * as _ from 'lodash';
                     <div class="col s12 l6">                        
                         <div class="FieldName">Issue Type</div>
                         <div>{{issue?.IssueTypeName}}</div>                        
+                        <div class="FieldName">Criticality</div>
+                        <div>{{issue?.CriticalityName}}</div>                        
                         <div class="FieldName">Requestor</div>
                         <div>{{issue?.ResourceName}}</div>
                         <div class="FieldName">Date</div>

@@ -252,6 +252,8 @@ namespace d360.web.Models
         public int IssueType { get; set; }
         public string IssueTypeName { get; set; }
         public int IssueID { get; set; }
+        public core.enums.IssueCriticality Criticality { get; set; }
+        public string CriticalityName { get; set; }
     }
     public class WorkflowTask4Model : WorkflowTaskBaseModel
     {

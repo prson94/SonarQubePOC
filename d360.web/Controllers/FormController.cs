@@ -16534,8 +16534,12 @@ order by TextPath
 
             if (type == null) throw new NotFoundException("issuetype");
 
-            list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });            
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IssueType, issueTypeId).ToList(), 1);
+            list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
+
+            var names = Enum.GetNames(typeof(IssueCriticality)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
+
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Criticality", Name = "Criticality", Required = true, FieldType = DataType.Lookup.ToString(), Items = names });            
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -16549,6 +16553,7 @@ order by TextPath
                 var objectId = parseIntField(form, "ObjectID");
                 var objectType = parseTextField(form, "ObjectType");
                 var desc = parseTextField(form, "ProblemDesc");
+                IssueCriticality criticality =  (IssueCriticality)Enum.Parse(typeof(IssueCriticality), parseTextField(form, "Criticality"));
 
                 var issueType = Company.GetById<core.entities.IssueType>(issueTypeId);
 
@@ -16567,6 +16572,7 @@ order by TextPath
                     UpdatedBy = Company.CurrentResourceID,
                     UpdatedOn = DateTime.UtcNow,
                     IssueTypeID = issueTypeId,
+                    Criticality = criticality,
                     Object = objectType,
                     ObjectID = objectId,
                     ObjectType = obj.Type,

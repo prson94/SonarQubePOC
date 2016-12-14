@@ -281,6 +281,7 @@
     <Compile Include="enums\AuthenticationType.cs" />
     <Compile Include="enums\CommentVisibility.cs" />
     <Compile Include="enums\ComplexLookupRelationType.cs" />
+    <Compile Include="enums\IssueCriticality.cs" />
     <Compile Include="enums\IssueType.cs" />
     <Compile Include="enums\QuestionDisplayStyle.cs" />
     <Compile Include="enums\FollowType.cs" />

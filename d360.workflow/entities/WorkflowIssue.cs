@@ -59,5 +59,12 @@ namespace d360.workflow.entities
 
         [DataMember]
         public int IssueID { get; set; }
+
+        [DataMember]
+        public IssueCriticality Criticality { get; set; }
+
+        [DataMember]
+        public string CriticalityName { get; set; }
+        
     }
 }

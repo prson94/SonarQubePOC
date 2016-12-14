@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using d360.core.entities.Contracts;
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -34,5 +35,8 @@ namespace d360.core.entities
         public int ObjectTypeID { get; set; }
 
         public virtual IssueType IssueType { get; set; }
+
+        [DataMember]
+        public IssueCriticality Criticality { get; set; }
     }
 }

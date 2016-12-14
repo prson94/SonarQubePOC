@@ -26,6 +26,7 @@ import * as _ from 'lodash';
                                     <d3s-tooltip *ngIf="data.AllowAction" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><a (click)="handleIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
                                 </template>
                             </p-column>
+                            <p-column field="Criticality" header="Criticality" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="IssueTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
