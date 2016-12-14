@@ -19,7 +19,11 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                     <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                     <p-dataTable #dt [globalFilter]="gb" [value]="items" [selection]="selectedItems" (selectionChange)="selectedItems=$event;handleItemSelection($event);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                         <p-column [style]="{'width':'38px'}" selectionMode="multiple"></p-column>
-                        <p-column field="Text" header="Name"></p-column>                    
+                        <p-column field="Text" header="Name">
+                            <template let-item="rowData" pTemplate type="body">
+                                <d3s-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]" tooltipType="preview">{{item.Text}}</d3s-tooltip>
+                            </template>
+                        </p-column>                    
                         <footer>
                             <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
                             <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">Selected Items:
