@@ -335,7 +335,6 @@
     <Build Include="tile\Stored Procedures\GetSocialStatisticsByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetAttributeAndIntersectHierarchyByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetFieldsWithRelationsByObject.sql" />
-    <Build Include="dbo\Stored Procedures\GetRenderedTemplateBody.sql" />
     <Build Include="dbo\Stored Procedures\GetAllowedResponsibilityTypesByObject.sql">
       <AnsiNulls>Off</AnsiNulls>
       <QuotedIdentifier>Off</QuotedIdentifier>

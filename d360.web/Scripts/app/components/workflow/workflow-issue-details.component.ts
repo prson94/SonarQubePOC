@@ -16,8 +16,8 @@ import * as _ from 'lodash';
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
-                                <span *ngIf="data.Activity <= 0">{{data.ActivityName}}</span>
-                                <a *ngIf="data.Activity > 0" (click)="openIssue(data)">{{data.ActivityName}}</a>
+                                <d3s-tooltip *ngIf="data.Activity <= 0" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>
+                                <d3s-tooltip *ngIf="data.Activity > 0" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><a (click)="openIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>                                
                             </template>
                         </p-column>
                         <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'150px'}" [filter]="!showSimpleFilter"></p-column>

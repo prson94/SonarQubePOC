@@ -8,6 +8,10 @@ import { WorkflowStatusDetails } from '../../models/workflow.model';
     template: `
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div *ngIf="!isLoading">
+                <div class="row">
+                    <div class="col s6"><b>Activity Type</b></div>
+                    <div class="col s6">{{workflowStatusData?.WorkflowTypeName}}</div>
+                </div>
                 <div class="row" *ngFor="let field of workflowStatusData?.Fields">                    
                     <div class="col s6">
                         {{field.Name}}
@@ -55,7 +59,8 @@ export class WorkflowDetailedViewComponent extends BaseComponent implements OnCh
         this.workflowService.getWorkflowStatus(this.workflowId)
             .then(result => {             
                 this.workflowStatusData = result;   
-                this.isLoading = false;                
+                this.isLoading = false;           
+                console.log(result);                     
             });
     }    
 

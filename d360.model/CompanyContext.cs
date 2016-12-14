@@ -2127,10 +2127,9 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
         #region Token Processing Methods
 
-        private string renderTemplate(string templateType, string action, SystemObjects type, int id, bool isNg = false)
+        private string renderTemplate(string templateType, string action, SystemObjects type, int id)
         {
-            string query = isNg? string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}'", templateType, type.ToString(), id, action)
-                            : string.Format("GetRenderedTemplateBody '{0}', '{1}', {2}, '{3}'", templateType, type.ToString(), id, action);
+            string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}'", templateType, type.ToString(), id, action);
             var model = Database.SqlQuery<RenderTemplateModel>(query).SingleOrDefault();
             var html = "";
             if (model != null) html = model.Body;
@@ -2142,9 +2141,9 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             return renderTemplate("Email", action, type, id);
         }
 
-        public string RenderTooltip(string action, SystemObjects type, int id, bool isNg = false)
+        public string RenderTooltip(string action, SystemObjects type, int id)
         {
-            return renderTemplate("Tooltip", action, type, id,isNg);
+            return renderTemplate("Tooltip", action, type, id);
         }
 
         #endregion

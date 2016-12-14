@@ -810,6 +810,19 @@ namespace d360.web.Controllers.Services
                     resource = null;
                 }
 
+                fieldName = "ResourceID";
+                if (response.Fields.Any(i => i.Name == fieldName))
+                {
+                    var resourceID = int.Parse(response.Fields.Single(i => i.Name == fieldName).Value);
+                    var resource = Company.Filter<GlobalReportingResource>(i => i.ResourceID == resourceID).SingleOrDefault();
+                    if (resource != null)
+                    {
+                        response.Fields.Add(new Property { Name = "Requestor", Value = resource.FirstName + " " + resource.LastName });
+                        response.Fields.RemoveAll(i => i.Name == fieldName);
+                    }
+                    resource = null;
+                }
+
                 fieldName = "TaxonomyTypeID";
                 if (response.Fields.Any(i => i.Name == fieldName))
                 {
@@ -821,10 +834,31 @@ namespace d360.web.Controllers.Services
                         response.Fields.RemoveAll(i => i.Name == fieldName);
                     }
                     taxonomyType = null;
-                }                
+                }
+
+                fieldName = "IssueID";
+                if (response.Fields.Any(i => i.Name == fieldName))
+                {
+                    var IssueID = int.Parse(response.Fields.Single(i => i.Name == fieldName).Value);
+                    var issue = Company.GetById<Issue>(IssueID, i=>i.IssueType);
+                    if (issue != null)
+                    {
+                        response.Fields.Add(new Property { Name = "Issue Type", Value = issue.IssueType.Name });
+                        var fields = Company.GetFieldRelationsByObject(SystemObjects.Issue, IssueID).OrderBy(x => x.SortOrder).ToList();
+                        foreach (var field in fields)
+                    	{
+                            response.Fields.Add(new Property { Name = field.FriendlyName, Value = field.FormattedValue });
+                        }   
+                        response.Fields.RemoveAll(i => i.Name == fieldName);
+                        response.Fields.RemoveAll(i => i.Name == "IssueType");
+                    }                    
+                }
                 
+
                 var keysToRemove = new List<string>();
-                foreach(var k in response.Fields)
+                keysToRemove.Add("CompanyID");
+                keysToRemove.Add("CommentID");
+                foreach (var k in response.Fields)
                 {
                     if (k.Name.StartsWith("FieldType_"))
                     {

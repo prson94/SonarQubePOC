@@ -641,6 +641,24 @@ BEGIN
 			set @hasDynamicFields = 1
 		end;
 
+		if @Type = 'Issue'
+		begin
+			insert into @tbl values('Name', '')
+			insert into @tbl values('Description', '')
+					
+			if exists (select id from issue where id = @ID)
+			begin			
+				set @html = @html + '<div><b>Issue Type:</b> {IssueType}</div>'
+						
+				insert into @tbl 
+					select 'IssueType', it.name 
+					from issuetype it inner join issue i on(i.issuetypeid = it.id) 
+					where i.id = @ID
+
+				set @hasDynamicFields = 1
+			end			
+		end;
+
 		-- If required, get dynamic fields to add to list.
 		if @hasDynamicFields = 1
 		begin
@@ -753,3 +771,5 @@ BEGIN
 	select	'' as Title,
 			@html as Body;
 END
+
+

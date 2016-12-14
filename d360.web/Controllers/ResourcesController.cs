@@ -410,7 +410,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             {
                 int id = int.Parse(itemid);
 
-                html = Company.RenderTooltip(templateAction, type, id, isNg);
+                html = Company.RenderTooltip(templateAction, type, id);
                 
                 if (type == SystemObjects.Resource)
                 {
