@@ -12,9 +12,9 @@
     [style.max-width]="maxWidth + 'px'" 
     [style.padding]="padding + 'px'"
     [style.overflow-y]="overflowScroll ? 'auto' : 'initial'">
-    <header>
+    <header style="background-color: #f9f9f9 !important; min-height: 2em">
         {{headerText}}
-        <span *ngIf="hasCloseButton" style="float:right;cursor: pointer"><a style="color:#000;" (click)="visibleChange.emit(!visible)"><i class='fa fa-close'></i></a></span>
+        <span *ngIf="hasCloseButton" style="float:right;cursor: pointer; margin-right: 7px; font-size:1.1em;"><a style="color:#000;" (click)="visibleChange.emit(!visible)"><i class='fa fa-close'></i></a></span>
     </header>
 
     <ng-content></ng-content>
@@ -29,6 +29,7 @@
         display: block;
         box-shadow: 2px 2px 7px 0px rgba(0,0,0,0.5);
         z-index: 999;
+        border: 1px solid #ccc;
 }
 `
     ]

@@ -5,6 +5,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 declare var CurrentResourceID;
+declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-actions',
@@ -38,7 +39,7 @@ export class HeaderActionsComponent {
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
             }
             //dont show raise issue button on raise issue screen or any admin screens            
-            this.hasRaiseIssueButton = (!e.url.toLowerCase().endsWith('workflow/raiseissue') && (e.url.toLowerCase().indexOf('/admin/') == -1));            
+            this.hasRaiseIssueButton = (!e.url.toLowerCase().endsWith('workflow/raiseissue') && (e.url.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');            
         });
     }
 

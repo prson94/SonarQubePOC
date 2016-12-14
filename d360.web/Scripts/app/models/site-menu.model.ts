@@ -8,7 +8,7 @@
 export class SiteMenu {
     MenuID: string;
     NavigationItems: SiteMenuItem[];
-    ShouldDisplay: boolean;
+    ShouldDisplay: boolean = true;
     SortOrder: number;
     isActiveItem: boolean = false;
 

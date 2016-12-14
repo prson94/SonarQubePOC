@@ -11,8 +11,8 @@
     </header>
 
     <div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
-        <d3s-overlay-window width="500" maxHeight="400" padding="15" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''">
-            <div *ngIf="!showNodeTabs && !showLinkTabs">Nothing selected</div>
+        <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''">
+            <div *ngIf="!showNodeTabs && !showLinkTabs" style="padding:10px;">Nothing selected</div>
             <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs">
                 <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showNodeTabs">
                     <i class="fa fa-info-circle fa-2x"></i>
@@ -30,7 +30,7 @@
                     <i class="fa fa-exchange fa-2x"></i>
                 </li>
             </ul>
-            <div [ngSwitch]="tab">
+            <div *ngIf="showNodeTabs || showLinkTabs" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
                 <div *ngSwitchCase="'info'">
                     <d3s-lineage-object-detail *ngIf="target && targetId" [objectType]="target" [objectId]="targetId"></d3s-lineage-object-detail>
                 </div>

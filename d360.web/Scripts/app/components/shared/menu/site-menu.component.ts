@@ -6,13 +6,15 @@ import { Favorite } from '../../../models/favorite.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-site-menu',    
     template: ` 
                 <ul class="left-side-nav">
                     <d3s-site-menu-category *ngIf="favorites" [title]="'My Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
                     <template ngFor let-menu [ngForOf]="siteMenu">
-                        <d3s-site-menu-category [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [menu]="menu"></d3s-site-menu-category>
+                        <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [menu]="menu"></d3s-site-menu-category>
                     </template>                  
                     <d3s-site-menu-category *ngIf="isAdmin" [title]="'Settings'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>                    
                 </ul>
@@ -75,6 +77,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                 // add properties we need to add to the burned in menus
                 for (let menu of result.MenuItems) {
+                    menu.ShouldDisplay = true;
+
                     switch (menu.MenuID) {
                         case '#Glossary':                            
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
@@ -90,6 +94,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                         case '#Monitor':                            
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
+                            menu.ShouldDisplay = (CompanySettings.DisableIssueManagement != 'true');
                             break;
                         case '#Reference':                            
                             menu.NavigationItems = [];
@@ -122,6 +127,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.authenticationService.admin$.complete();
 
                 this.isAdmin = result.IsAdmin;
+
             });
     }
 

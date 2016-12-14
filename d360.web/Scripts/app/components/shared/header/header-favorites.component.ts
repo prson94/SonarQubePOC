@@ -12,8 +12,8 @@ import * as _ from 'lodash';
     selector: 'd3s-header-favorites',    
     template:
     `
-        <span (click)="handleClick()" class="favorite" [ngClass]="{'active':isFavoriteItem}" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
-            <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>        
+        <span *ngIf="visible" (click)="handleClick()" class="favorite" [ngClass]="{'active':isFavoriteItem}" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
+            <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
         </span>
     `,
     providers: [FavoritesService]
@@ -33,6 +33,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     private currentObject: string;
     private currentObjectId: number;
     private name: string;
+    private visible: boolean = true;
     
     constructor(private router: Router,
         private messagesService: MessagesService,
@@ -44,7 +45,8 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     ngOnInit() {        
         this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {            
             this.currentObject = c.type;
-            this.currentObjectId = c.id;            
+            this.currentObjectId = c.id; 
+   
             if (this.favItems == null) {                
                 this.favoritesService.getFavorites()
                     .then(fav => {
@@ -65,12 +67,13 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
                 this.favItems = res;
                 this.checkIsFavorite();
             });
-        });        
+        });
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.uri && changes["uri"]) {
             this.checkIsFavorite();
+            this.visible = this.checkVisible();
         }
     }
 
@@ -84,6 +87,12 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             console.log('ERROR: CANNOT SAVE FAVORITE FOR ADMIN PAGES');
             return;
         }
+
+        if (this.isIssueUri()) {
+            console.log('ERROR: CANNOT SAVE FAVORITE FOR RAISE ISSUE');
+            return;
+        }
+
         this.isLoading = true;
         let f = new Favorite();
         f.ObjectID = this.currentObjectId;
@@ -114,8 +123,16 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         this.subBreadcrumb.unsubscribe();
     }
 
+    checkVisible() {
+        return !this.isAdminUri() && !this.isIssueUri();
+    }
+
     isAdminUri() {                
         return (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
+    }
+
+    isIssueUri() {
+        return (this.uri || '').toUpperCase() == `${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`.toUpperCase();
     }
 }
 

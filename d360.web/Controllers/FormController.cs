@@ -2360,6 +2360,7 @@ namespace d360.web.Controllers
             var model = new CompanySettingsEditorModel();
             model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
             model.DisableIssuePosting = (settings.Any(i => i.SettingID == 5) ? bool.Parse(settings.Single(i => i.SettingID == 5).Value) : false);
+            model.DisableIssueManagement = (settings.Any(i => i.SettingID == 17) ? bool.Parse(settings.Single(i => i.SettingID == 17).Value) : false);
             //model.DisableQuestionPosting = (settings.Any(i => i.SettingID == 6) ? bool.Parse(settings.Single(i => i.SettingID == 6).Value) : false);
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2570,6 +2571,18 @@ namespace d360.web.Controllers
                         subjectAreaNodesSetting.Value = formModel.ArtifactType_TaxonomyTypeIDNodes;
                         Community.SaveChanges();
                     }
+                }
+
+                var issueManagamentSetting = settings.FirstOrDefault(i => i.SettingID == 17);
+                if (issueManagamentSetting == null)
+                {
+                    issueManagamentSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 17, Value = formModel.DisableIssueManagement.ToString().ToLower() };
+                    Community.Add<CompanySetting>(issueManagamentSetting);
+                }
+                else
+                {
+                    issueManagamentSetting.Value = formModel.DisableIssueManagement.ToString().ToLower();
+                    Community.SaveChanges();
                 }
 
                 #endregion

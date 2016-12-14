@@ -275,6 +275,7 @@ namespace d360.web.Models
         public bool DisableCommunityPosting { get; set; }
         public bool DisableIssuePosting { get; set; }
         //public bool DisableQuestionPosting { get; set; }
+        public bool DisableIssueManagement { get; set; }
         public string CompanyLogo { get; set; }
         public bool SetLogoToDefault { get; set; }
         public string CurrentCompanyLogoPath { get; set; }
