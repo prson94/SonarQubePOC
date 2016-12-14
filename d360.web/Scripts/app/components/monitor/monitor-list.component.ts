@@ -45,12 +45,12 @@ import * as _ from 'lodash';
                             </p-column>
                             <p-column field="DateStarted" header="Created On" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.DateStarted | date : 'short'}}</span>
+                                    <span>{{item.DateStarted | date : 'shortDate'}}</span>
                                 </template>
                             </p-column>
                             <p-column field="DateCompleted" header="Closed On" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.DateCompleted | date : 'short'}}</span>
+                                    <span>{{item.DateCompleted | date : 'shortDate'}}</span>
                                 </template>
                             </p-column>                            
                             <p-column field="Notes" header="Closing Notes" [sortable]="true" [filter]="!showSimpleFilter"></p-column>    
