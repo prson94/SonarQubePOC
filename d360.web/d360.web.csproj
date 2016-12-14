@@ -1074,6 +1074,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationship-roles.component.ts" />
@@ -1312,7 +1313,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-details-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-tile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-assignments.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assignments\assignments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detail.component.ts" />

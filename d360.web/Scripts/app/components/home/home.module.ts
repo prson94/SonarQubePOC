@@ -7,11 +7,11 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 
 import { CoreModule } from '../shared/core.module';
 import { SocialModule } from '../shared/social/social.module';
-import { WorkflowModule } from '../workflow/workflow.module';
 import { SearchModule } from '../search/search.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
+import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
 
 import { HomeComponent} from './home.component';
 import { ActivityTile } from './activity-tile.component';
@@ -54,7 +54,7 @@ import {
         CoreModule,
         SearchModule,
         SocialModule,
-        WorkflowModule,
+        SharedAssignmentsModule,
         TilesModule,
         SharedGridPagingInfoModule,
         SharedDashboardModule,

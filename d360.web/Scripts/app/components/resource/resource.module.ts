@@ -11,13 +11,13 @@ import { ResourceRoutingModule } from './resource.routes';
 import { D3SSharedModule } from '../shared/shared.module';
 import { CoreModule } from '../shared/core.module';
 import { SocialModule } from '../shared/social/social.module';
-import { WorkflowModule } from '../workflow/workflow.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
+import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
 
 import { ResourceApiComponent } from './resource-api.component';
 import { ResourceComponent } from './resource.component';
@@ -73,7 +73,7 @@ import {
         D3SSharedModule,          
         CoreModule,   
         SocialModule,
-        WorkflowModule,
+        SharedAssignmentsModule,
         PipesModule,
         TilesModule,
         SharedDynamicGridEditorModule,

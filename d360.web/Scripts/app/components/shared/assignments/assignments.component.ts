@@ -1,12 +1,12 @@
 ﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { WorkflowService, ResourcesService } from '../../services/index';
-import { Count } from '../../models/counts.model';
-import { Resource } from '../../models/resource.model';
-import { WorkflowType } from '../../models/workflow.model';
+import { BaseComponent } from '../base.component';
+import { WorkflowService, ResourcesService } from '../../../services/index';
+import { Count } from '../../../models/counts.model';
+import { Resource } from '../../../models/resource.model';
+import { WorkflowType } from '../../../models/workflow.model';
 
 @Component({
-    selector: 'd3s-workflow-assignments',
+    selector: 'd3s-assignments',
     providers: [WorkflowService, ResourcesService],
     template: `
                 <div class="tile tile-detail">
@@ -30,7 +30,7 @@ import { WorkflowType } from '../../models/workflow.model';
                 `
 })
 
-export class WorkflowAssignmentsComponent extends BaseComponent implements OnInit {
+export class AssignmentsComponent extends BaseComponent implements OnInit {
     @Input() resourceId = -1;
     @Output() showItemDetail = new EventEmitter();
     private counts: Count[] = [];

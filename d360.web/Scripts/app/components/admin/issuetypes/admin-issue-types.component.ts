@@ -12,7 +12,7 @@ import { Title } from '@angular/platform-browser';
                 <div *ngIf="!isAuditVisible" class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor && !showDelete">Issue Types
+                            <header *ngIf="!showEditor && !showDelete">Action Types
                                 <d3s-tile-actions [hasAdd]="true" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" (addClick)="showAdd()"></d3s-tile-actions>                            
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -42,7 +42,7 @@ import { Title } from '@angular/platform-browser';
                                     </p-column>    
                                 </p-dataTable>      
                             </span>
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'IssueType'" [title]="'Issue Type'" [selection]="selected" (saveClick)="saveIssueType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'IssueType'" [title]="'Action Type'" [selection]="selected" (saveClick)="saveIssueType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                             <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
@@ -75,7 +75,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 
     constructor(rightSidebarService: RightSidebarService, private workflowService: WorkflowService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Issue Types";
+        this.areaName = "Action Types";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);
         this.setCommonRightSideBar(true);

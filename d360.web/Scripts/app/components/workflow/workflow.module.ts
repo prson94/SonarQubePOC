@@ -11,7 +11,7 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 
-import { WorkflowAssignmentsComponent } from './workflow-assignments.component';
+
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowDetailComponent } from './workflow-detail.component';
 import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
@@ -68,8 +68,7 @@ import {
         SharedGridPagingInfoModule,
         SharedDynamicGridEditorModule,
     ],
-    declarations: [
-        WorkflowAssignmentsComponent,
+    declarations: [        
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,                 
         WorkflowRaiseIssueComponent,
@@ -83,8 +82,7 @@ import {
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,        
     ],
-    exports: [
-        WorkflowAssignmentsComponent,
+    exports: [        
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,             
         WorkflowRaiseIssueComponent,

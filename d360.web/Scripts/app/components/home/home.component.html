@@ -1,7 +1,7 @@
 ﻿<d3s-dashboard-tab *ngIf="isDashboardVisible" [objectID]="'0'" [objectName]="'Home'" [objectType]="'Home'"></d3s-dashboard-tab>
 <div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && !isDashboardVisible">
     <div class="col l4 s12">
-        <d3s-workflow-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-workflow-assignments>
+        <d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
     </div>
     <div class="col l4 s12">
         <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);" [(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
