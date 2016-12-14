@@ -2,7 +2,7 @@
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
 import { ResourcesService, WorkflowService, MessagesService } from '../../services/index';
-import { Issue } from '../../models/workflow.model';
+import { Issue, IssueInfo } from '../../models/workflow.model';
 import { Resource } from '../../models/resource.model';
 
 import * as _ from 'lodash';
@@ -14,15 +14,17 @@ import * as _ from 'lodash';
                 <header>Work Issue</header>
                 <div id="FormDescription" class="form-instructions">The workflow that is triggered when an issue is reported.  The owner is assigned as a potential resource to work on the issue. They must still choose to work the issue.</div>                
                 <div class="row">                    
-                    <div class="col s12 l6">
-                        <div class="FieldName">Issue</div>
-                        <div [innerHtml]="issue?.Issue"></div>
+                    <div class="col s12 l6">                        
                         <div class="FieldName">Issue Type</div>
                         <div>{{issue?.IssueTypeName}}</div>                        
                         <div class="FieldName">Requestor</div>
                         <div>{{issue?.ResourceName}}</div>
                         <div class="FieldName">Date</div>
                         <div>{{issue?.DateStarted | date: 'medium'}}</div>
+                        <template ngFor let-field [ngForOf]="issueDetails?.Fields">
+                            <div class="FieldName">{{field.FieldName}}</div>
+                            <div [innerHtml]="field.Value"></div>
+                        </template>
                     </div>
                     <div class="col s12 l6">      
                         <div id="PoolMessage">
@@ -72,13 +74,17 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     private comments: string = "";
     private assignToId: string;
     private action: string;
+    private issueDetails: IssueInfo;
 
     constructor(private resourcesService: ResourcesService, private workflowService: WorkflowService, private messagesService: MessagesService) { super(); }
 
     ngOnInit() {
         if (this.resources.length <= 0) {
             this.loadResources();
-        }        
+        }
+        if (this.issue.IssueID > 0) {            
+            this.loadFields();
+        }
     }
 
     loadResources() {
@@ -87,6 +93,16 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
             .then(res => {
                 this.isLoading = false;
                 this.resources = res;
+            });
+    }
+
+    loadFields() {
+        //get the fields / values for this issue
+        this.isLoading = true;
+        this.workflowService.getIssueDetails(this.issue.IssueID)
+            .then(result => {
+                this.issueDetails = result;
+                this.isLoading = false;                
             });
     }
 

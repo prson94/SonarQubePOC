@@ -25,12 +25,4 @@
     </div>
 </div>
 
-<div class="row" *ngIf="showAssignmentDetails && !isDashboardVisible">
-    <div class="col s12">
-        <div class="tile tile-detail">
-            <d3s-workflow-detail [workflowType]="selectedWorkflowType" (close)="showAssignmentDetails=false"></d3s-workflow-detail>
-        </div>
-    </div>
-</div>
-
-<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && !isDashboardVisible"></d3s-home-search>    
+<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails && !isDashboardVisible"></d3s-home-search>    

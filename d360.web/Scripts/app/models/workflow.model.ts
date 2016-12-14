@@ -58,6 +58,7 @@ export class Issue {
     ActivityName: string;
     DateStarted: string;
     WorkflowID: string;
+    IssueID: number;
 }
 
 export class IssueDetail {
@@ -148,4 +149,16 @@ export class WorkflowStatusDetails {
     WorkflowType: WorkflowType;
     WorkflowTypeDescription: string;
     WorkflowTypeName: string;
+}
+
+export class WorkflowIssueType {
+    ID: number;
+    Name: string;
+    Description: string;
+    IsSystem: boolean;
+}
+
+export class IssueInfo {
+    Fields: any[];
+    Issue: any;
 }

@@ -143,6 +143,10 @@ namespace d360.core
         FusionQueryAttributeType = 67,
         [Description("Monitor"), AllowSurvey(false)]
         Monitor = 68,
+        [Description("Issue Type")]
+        IssueType= 69,
+        [Description("Issue")]
+        Issue = 70,
     }
 
     public class SystemObjectInfo

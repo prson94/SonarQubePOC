@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
@@ -7,6 +8,7 @@ import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType } from '../../models/workflow.model';
 import { Subscription }   from 'rxjs/Subscription';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'home',
@@ -31,6 +33,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     constructor(protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,        
         webAnalyticsService: WebAnalyticsService,
+        protected router: Router,
         rightSidebarService: RightSidebarService) {
         super(rightSidebarService, webAnalyticsService);
     }
@@ -59,10 +62,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     private onShowAssignmentDetails(event) {
-        this.showActivityDetails = false;
-        this.showBoardDetails = false;
-        this.showAssignmentDetails = true;
-        this.selectedWorkflowType = event.workflowType;
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${event.workflowType}`);
     }
 
     private onShowBoardDetails(event) {

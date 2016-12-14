@@ -540,6 +540,8 @@
     <None Include="dbo\Stored Procedures\GetSiteNavigation.sql" />
     <None Include="dbo\Views\SiteNavAvailable.sql" />
     <None Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg.sql" />
+    <None Include="dbo\Tables\IssueType.sql" />
+    <None Include="dbo\Tables\Issue.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

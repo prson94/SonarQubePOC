@@ -1,5 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit } from '@angular/core';
+import { FormArray, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { EditorDefinitionService, UriBasedService, MessagesService } from '../../../services/index';
 import { EditorField, EditorRow, FieldValidation, EditorDropDownItem } from '../../../models/editor-field.model';
 import { BaseComponent } from '../base.component';
@@ -8,12 +8,12 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-dynamic-editor',
-    template: ` <header>{{action}} {{title}} <div *ngIf="hasCloseButton" (click)="closeClick.emit()" style="cursor: pointer; float: right; font-size: 1.3em"><i class="fa fa-remove"></i></div></header>
+    template: ` <header *ngIf="hasHeader">{{action}} {{title}} <div *ngIf="hasCloseButton" (click)="closeClick.emit()" style="cursor: pointer; float: right; font-size: 1.3em"><i class="fa fa-remove"></i></div></header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">                                        
                     <form (ngSubmit)="onSubmit()" [formGroup]="form">                        
                         <div class="row" *ngFor="let row of rows">
-                            <div  *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">
+                            <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">
                                 <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
                             </div>
                         </div>
@@ -28,11 +28,11 @@ import * as _ from 'lodash';
     providers: [EditorDefinitionService, UriBasedService],
 })
 
-export class DynamicEditorComponent extends BaseComponent {
+export class DynamicEditorComponent extends BaseComponent implements OnChanges, OnInit {
     @Input() selection: any;
     @Input() rowID: string = 'ID';
     @Input() title: string;
-    @Input() objectID: number;
+    @Input() objectID: number = 0;
     @Input() parentID: number;
     @Input() objectType: string;
     @Input() createUri: string;
@@ -43,6 +43,7 @@ export class DynamicEditorComponent extends BaseComponent {
     @Input() targetTypeID: number;
     @Input() hasCloseButton = false;
     @Input() newActionName: string = "New";
+    @Input() hasHeader = true;
     
 
     @Output() closeClick = new EventEmitter();
@@ -56,22 +57,28 @@ export class DynamicEditorComponent extends BaseComponent {
 
     editedItem: any;
 
-    constructor(private messagesService: MessagesService, private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
+    constructor(private formBuilder: FormBuilder, private messagesService: MessagesService, private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
         super();
     }
 
     ngOnInit() {
+        this.load();
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
+        if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
+            this.load();
+        }
+    }
+
+    private load() {
         if (this.selection != undefined)
             this.editedItem = _.cloneDeep(this.selection);
-        else {            
+        else {
             this.action = this.newActionName;
             this.editedItem = new Object();
         }
-        this.getDefinition();
-        let fb = new FormBuilder();
-        this.form = fb.group({
-            ContentFee: ['0', Validators.required]
-        });
+        this.getDefinition();       
     }
 
     getDefinition() {      
@@ -80,6 +87,7 @@ export class DynamicEditorComponent extends BaseComponent {
         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams)
             .then(result => {
                 this.isLoading = false;
+                this.rows = [];
                 this.fields = result;                
                 this.fields.forEach(f => {
                     if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
@@ -101,6 +109,7 @@ export class DynamicEditorComponent extends BaseComponent {
                 });
                                 
                 this.form = this.toFormGroup(this.fields);
+                
             });
     }   
 

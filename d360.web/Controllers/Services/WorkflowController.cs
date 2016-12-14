@@ -264,7 +264,8 @@ namespace d360.web.Controllers.Services
                                   ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
                                   Notes = workflows.Comments,
                                   IssueType = workflows.IssueType,
-                                  IssueTypeName = (workflows.IssueType == core.enums.IssueType.Challenge ? "Governance Information Incorrect" : "Business Data Incorrect")
+                                  IssueTypeName = workflows.IssueTypeName,
+                                  IssueID = workflows.IssueID
                             };
 
                   return res.Distinct();                  
@@ -393,8 +394,7 @@ namespace d360.web.Controllers.Services
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
                         i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
-                        i.IssueTypeName = (i.IssueType == core.enums.IssueType.Challenge ? "Governance Information Incorrect" : "Business Data Incorrect");
+                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();                        
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list3);
                 case WorkflowType.ChallengeArtifact:
@@ -431,8 +431,7 @@ namespace d360.web.Controllers.Services
                             item.ActivityName = "Waiting on user(s)...";
                         }
                         item.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        item.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
-                        item.IssueTypeName = (item.IssueType == core.enums.IssueType.Challenge ? "Governance Information Incorrect" : "Business Data Incorrect");
+                        item.WorkflowName = workflowType.GetWorkflowTypeDisplayName();                        
                     }
                     return Request.CreateResponse(HttpStatusCode.OK, list);             
             }

@@ -387,7 +387,9 @@ namespace d360.web.Controllers
                 case "MAPRULEITEM":
                     return MapRuleItem_EditFields(ID);
                 case "RELATIONSHIPROLE":
-                    return IntersectRole_EditFields(ID);             
+                    return IntersectRole_EditFields(ID);
+                case "ISSUETYPE":
+                    return IssueType_EditFields(ID);                        
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -433,6 +435,11 @@ namespace d360.web.Controllers
                     return IntersectRole_AddFields();
                 case "ATTRIBUTEALLOCATION":
                     return AttributeTypeRelation_AddFields(parentID.GetValueOrDefault());
+                case "ISSUETYPE":
+                    return IssueType_AddFields();
+                case "ISSUE":
+                    return Issue_AddFields(objectID.GetValueOrDefault());
+                
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -519,6 +526,8 @@ namespace d360.web.Controllers
                     return EditAttribute(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return EditFusionQueryAttribute(form);
+                case "ISSUETYPE":
+                    return EditIssueType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -578,6 +587,8 @@ namespace d360.web.Controllers
                     return DeletePolicyTypeLevel(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return DeleteFusionQueryAttribute(form);
+                case "ISSUETYPE":
+                    return DeleteIssueType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -652,6 +663,10 @@ namespace d360.web.Controllers
                     return AddPolicyTypeLevel(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return AddFusionQueryAttribute(form);
+                case "ISSUETYPE":
+                    return AddIssueType(form);
+                case "ISSUE":
+                    return AddIssue(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -16474,6 +16489,253 @@ order by TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
+
+        #endregion
+
+        #region Issue Types
+
+        [Route("IssueType_EditFields"), NonNullableParameters]
+        public JsonResult IssueType_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<core.entities.IssueType>(id);
+
+            if (!Company.HasPermission(SystemObjects.IssueType, a.ID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        
+        [Route("IssueType_AddFields"), NonNullableParameters]
+        public JsonResult IssueType_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+            
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("Issue_AddFields")]
+        public JsonResult Issue_AddFields(int issueTypeId)
+        {            
+            var list = new List<EditableField>();
+            var type = Company.GetById<core.entities.IssueType>(issueTypeId);
+
+            if (type == null) throw new NotFoundException("issuetype");
+
+            list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });            
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IssueType, issueTypeId).ToList(), 1);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIssue")]
+        public JsonResult AddIssue(FormCollection form)
+        {
+            try
+            {
+                var issueTypeId = parseIntField(form, "IssueTypeID");
+                var objectId = parseIntField(form, "ObjectID");
+                var objectType = parseTextField(form, "ObjectType");
+                var desc = parseTextField(form, "ProblemDesc");
+
+                var issueType = Company.GetById<core.entities.IssueType>(issueTypeId);
+
+                if (issueType == null) throw new NoFormDataException("IssueType");
+
+                //get the object name
+                var obj = Company.GetObjectDetail(objectType, objectId);
+
+                if (obj == null) throw new NoFormDataException("GetObject");
+
+                //insert issue into issue table
+                var model = new Issue
+                {
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow,
+                    IssueTypeID = issueTypeId,
+                    Object = objectType,
+                    ObjectID = objectId,
+                    ObjectType = obj.Type,
+                    ObjectTypeID = obj.TypeID
+                };
+
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IssueType, issueTypeId).ToList(), form, Server);
+                Company.SaveOrUpdate<Issue>(model, fields);
+
+                var relations = new List<CommentRelation>();
+                var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
+                var comment = new Comment();
+
+                relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
+
+                comment.OwnerObjectType = SystemObjects.Resource.ToString();
+                comment.OwnerObjectID = Company.CurrentResourceID;
+                comment.CommentTypeID = CommentType.Issue;
+                comment.Body = desc;
+                
+
+                //add relation to current artifact
+                relations.Add(new CommentRelation { ObjectType = objectType, ObjectID = objectId, Date = DateTime.UtcNow });
+
+                var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
+
+                if (dtl != null)
+                {
+                    var processor = new Processor();
+                    var dictionary = new Dictionary<string, object>();
+                    dictionary.Add("CompanyID", Company.CurrentCompanyID);
+                    dictionary.Add("CommentID", dtl.ID);
+                    dictionary.Add("IssueType", issueTypeId);
+                    dictionary.Add("IssueTypeDesc", issueType.Name);
+                    dictionary.Add("ObjectName", obj.Name);
+                    dictionary.Add("IssueID", model.ID);
+
+                    processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
+                }
+                return jsonSuccess("Successfully created issue.", model.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIssueType")]
+        public JsonResult AddIssueType(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("IssueType");
+
+                var model = new core.entities.IssueType
+                {
+                    Name = parseTextField(form, "Name"),
+                    Description = parseTextField(form, "Description"),  
+                    IsSystem = false,                  
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow                    
+                };
+
+                Company.Add<core.entities.IssueType>(model);
+
+                if (model.ID > 0)
+                {
+                    Company.Add<FieldType>(new FieldType
+                    {
+                        ObjectID = model.ID,
+                        Object = SystemObjects.IssueType.ToString(),
+                        IsListable = true,
+                        IsRequired = true,
+                        FriendlyName = "Problem Description",
+                        Name = "ProblemDesc",                        
+                        SortOrder = 1,
+                        Type = DataType.Html.ToString()
+                    });
+                }
+
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, ValidateInput(false), Route("EditIssueType")]
+        public JsonResult EditIssueType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("issuetype");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.IssueType>(id);
+
+                if (model == null) throw new NotFoundException("issuetype");
+
+                if (!Company.HasPermission(SystemObjects.IssueType, model.ID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = form["Name"];
+                model.Description = form["Description"];
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+
+                Company.SaveOrUpdate<core.entities.IssueType>(model);
+
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+
+        [HttpDelete, Route("DeleteIssueType")]
+        public JsonResult DeleteIssueType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("issue type");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.IssueType>(id);
+                if (model == null) throw new NotFoundException("issue type");
+
+                if (!Company.HasPermission(SystemObjects.IssueType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<core.entities.IssueType>(i => i.ID == id);
+                
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
 
         #endregion
     }

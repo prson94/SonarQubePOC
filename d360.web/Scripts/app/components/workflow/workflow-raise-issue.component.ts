@@ -1,12 +1,11 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { NgForm } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RightSidebarService, WorkflowService, WebAnalyticsService, ObjectDetailService, TagService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
-import { WorkflowType } from '../../models/workflow.model';
+import { WorkflowType, WorkflowIssueType } from '../../models/workflow.model';
 import { Subscription }   from 'rxjs/Subscription';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ObjectDetail } from '../../models/object-detail.model';
@@ -20,8 +19,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <header>Report a problem</header>
-                        <form (ngSubmit)="onSubmit()" #issueForm="ngForm">                        
+                        <header>Report a problem</header>                        
                             <div class="row">
                                 <div class="col s12">
                                     <div class="FieldName">What item would you like to report a problem with?</div>
@@ -46,27 +44,17 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                                 </div>       
                                 <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
                                     <div>&nbsp;</div>
-                                    <div class="FieldName">What type of problem are you reporting?</div>                                    
+                                    <div class="FieldName">What are you reporting?</div>                                    
                                 </div>                 
                                 <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
-                                    <div style="padding-left:20px"><label><input required type="radio" name="issueType" [(ngModel)]="issueType" value="Issue" checked="checked" />Business Data Incorrect</label></div>
-                                </div>
-                                <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
-                                    <div style="padding-left:20px"><label><input required type="radio" name="issueType" [(ngModel)]="issueType" value="Challenge"/>Governance Information Incorrect</label></div>                                    
-                                </div>
-                                <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
-                                    <div>&nbsp;</div>
-                                    <div class="FieldName">What are the details of this problem?</div>
-                                    <div><p-editor name="Issue" [style]="{'height':'400px'}" [(ngModel)]="issue" #issueText="ngModel"></p-editor></div>                                                        
-                                    <div [hidden]="issueText.valid || issueText.pristine">Issue details are required</div>
-                                </div>       
-                                <div class="col s12">&nbsp;</div>
-                                <div class="col s12">
-                                    <button pButton type="submit" [disabled]="!issueForm.form.valid" label="Save"></button>                            
-                                    <button pButton type="button" (click)="cancel();" label="Cancel"></button>
-                                </div>
-                            </div>
-                        </form>
+                                    <div style="padding-left:40px"><select required name="availableTypes" style="width:100%" placeholder="Choose a type" [(ngModel)]="issueType">                                            
+                                          <option></option>
+                                          <option *ngFor="let p of issueTypes" [ngValue]="p">{{p.Name}}</option>
+                                    </select></div>                       
+                                    <p *ngIf="issueType" style="padding-left:40px" [innerHtml]="issueType.Description"></p>                   
+                                </div>                                                          
+                                <d3s-dynamic-editor *ngIf="issueType" [hasHeader]="false" [objectID]="issueType?.ID" objectType="Issue" (saveClick)="save($event)" (closeClick)="cancel()"></d3s-dynamic-editor>                                       
+                            </div>                        
                     </div>
                 </div>
             </div>
@@ -84,7 +72,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private terms: Tag[] = [];
     private term: Tag;
     private selectedOption: string = 'other';
-    private issueType: string;
+    private issueType: WorkflowIssueType;
+    private issueTypes: WorkflowIssueType[] = [];
 
     constructor(
         private tagService: TagService,
@@ -109,6 +98,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
         this.loadDetails(this.objectId, this.objectType);
 
+        this.loadIssueTypes();
+
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
@@ -132,9 +123,20 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
             });
     }
 
-    private onSubmit() {
+    private loadIssueTypes() {
         this.isLoading = true;
-        this.workflowService.raiseIssue(this.selectedObjectId, this.selectedObjectType, this.issue, this.issueType)
+        this.workflowService.getWorkflowIssueTypes()
+            .then(result => {
+                this.issueTypes = result;                
+                this.isLoading = false;
+            });
+    }
+
+    private save(data) {        
+        this.isLoading = true;        
+        data.item.ObjectID = this.selectedObjectId;
+        data.item.ObjectType = this.selectedObjectType;        
+        this.workflowService.raiseIssue(data.item)
             .then(res => {
                 this.isLoading = false;
                 this.location.back();

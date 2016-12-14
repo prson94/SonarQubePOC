@@ -1,22 +1,23 @@
 ﻿import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/index';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-issue-details',
-    template: `
-            <d3s-workflow-issue-editor *ngIf="!isLoading && showEditor" [issue]="selected" (saveClick)="handleSave();" (closeClick)="showEditor=false"></d3s-workflow-issue-editor>
-            <div class="row" *ngIf="!isLoading && issues.length > 0 && !showEditor">
+    template: `            
+            <div class="row" *ngIf="!isLoading && issues.length > 0">
                 <header>Open Issues<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
-                    <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="issues" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
+                    <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="issues" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="openIssue($event.data);" >
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <span *ngIf="data.Activity <= 0">{{data.ActivityName}}</span>
-                                <a *ngIf="data.Activity > 0" (click)="selected=data;showEditor=true">{{data.ActivityName}}</a>
+                                <a *ngIf="data.Activity > 0" (click)="openIssue(data)">{{data.ActivityName}}</a>
                             </template>
                         </p-column>
                         <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'150px'}" [filter]="!showSimpleFilter"></p-column>
@@ -34,7 +35,7 @@ import * as _ from 'lodash';
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-issue="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="issue.Activity > 0">                                
-                                    <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-check-circle-o"></i></a>                                    
+                                    <a style="cursor:pointer;" (click)="openIssue(issue)"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>
                             </template>
                         </p-column>                            
@@ -45,7 +46,7 @@ import * as _ from 'lodash';
                 <h4 *ngIf="objectName">No issues currently exist for <b>{{objectName}}</b>.</h4>
                 <h4 *ngIf="!objectName">No issues assigned.</h4>
             </div>
-            <div style="padding:10px" *ngIf="!showEditor">
+            <div style="padding:10px">
                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>
             </div>  
             
@@ -56,8 +57,7 @@ import * as _ from 'lodash';
 export class WorkflowIssueDetailsComponent extends BaseComponent implements OnInit {
     private issues: any[] = [];
     private selected: any;
-    private loaded: boolean = false;
-    private showEditor: boolean = false;
+    private loaded: boolean = false;    
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -67,7 +67,7 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
     @Output() close = new EventEmitter();
     @Output() countsChanged = new EventEmitter();
 
-    constructor(private workflowService: WorkflowService) {
+    constructor(private workflowService: WorkflowService, protected router: Router) {
         super();
     }
 
@@ -86,20 +86,15 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
                 this.loaded = true;
             });
     }
-
-    private handleSave() {
-        this.showEditor = false;
-        this.loadIssues();
-        this.countsChanged.emit();       
-    }
-
-    private handleRowDblClick() {
-        if (this.selected.Activity > 0) this.showEditor = true;
-    }
+       
 
     private columnSort(event) {
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
         this.issues = _.orderBy(this.issues, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
+
+    private openIssue(issue) {
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
     }
 }

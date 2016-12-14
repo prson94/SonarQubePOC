@@ -33,6 +33,7 @@
     static SITE_URL_WORKFLOW_RAISE_ISSUE = 'raiseissue';
     static SITE_URL_WORKFLOW_VIEW_ITEM = 'work';    
     static SITE_URL_WORKFLOW_VIEW_STATUS = 'status';
+    static SITE_URL_WORKFLOW_LIST = 'workflowlist';
     
     //fusion child routes
     static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute'
@@ -56,8 +57,8 @@
     static SITE_URL_ADMIN_RESOURCES = 'resources';
     static SITE_URL_ADMIN_SETTINGS = 'settings';
     static SITE_URL_ADMIN_TEMPLATES = 'templates';
-    static SITE_URL_ADMIN_WORKFLOW = 'workflow';
-    static SITE_URL_ADMIN_DOMAIN = 'domain';
+    static SITE_URL_ADMIN_WORKFLOW = 'workflow';    
+    static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
 
     // getObjectUrl - Generates the url for an object based on its type
     static getObjectUrl(objectType: string, objectId: number, parentId?: number, objectName?: string) : string {

@@ -231,14 +231,16 @@ order by    W.DateStarted desc
 ";
 
         public static string CurrentUserWorkflow3TaskItem = @"
-select		W.ID as WorkflowID,
+(select		W.ID as WorkflowID,
 		    C.Body as Issue,
 			R.ResourceID,
 			R.FirstName + ' ' + R.LastName as ResourceName,
 			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
 			W.DateStarted,
 		    WR.Activity,
-            W.Data.value('(fields/IssueType)[1]', 'int') as IssueType
+			W.Data.value('(fields/IssueType)[1]', 'int') as IssueType,
+            case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName,
+			0 as IssueID
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
@@ -247,19 +249,46 @@ from	    Workflow W
 				and WR.ResourceID = @r
 				and W.WorkflowType = 3
                 and WR.IsComplete = 0 
-            {0} 
-order by    W.DateStarted desc";
-
-
-        public static string CurrentUserWorkflow3SpecificObjectTaskItem = @"
-select		W.ID as WorkflowID,
+                and W.Data.value('(fields/IssueID)[1]', 'int') is null 
+            {0}
+)			
+union
+(select		W.ID as WorkflowID,
 		    C.Body as Issue,
 			R.ResourceID,
 			R.FirstName + ' ' + R.LastName as ResourceName,
 			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
 			W.DateStarted,
 		    WR.Activity,
-            W.Data.value('(fields/IssueType)[1]', 'int') as IssueType
+			IT.ID as IssueType,
+            IT.Name as IssueTypeName,
+			I.ID as IssueID
+from	    Workflow W
+		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
+			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
+				and W.DateCompleted is null
+				and WR.ResourceID = @r
+				and W.WorkflowType = 3
+                and WR.IsComplete = 0 
+			inner join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
+			inner join IssueType IT on (I.IssueTypeID = IT.ID)			
+            {0}
+)
+order by    W.DateStarted desc";
+        
+
+        public static string CurrentUserWorkflow3SpecificObjectTaskItem = @"
+(select		W.ID as WorkflowID,
+		    C.Body as Issue,
+			R.ResourceID,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
+			W.DateStarted,
+		    WR.Activity,
+            W.Data.value('(fields/IssueType)[1]', 'int') as IssueType,
+			case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName,
+			0 as IssueID
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
@@ -267,8 +296,32 @@ from	    Workflow W
 			left outer join WorkflowResource WR on	WR.WorkflowID = W.ID 											    
                 and WR.ResourceID = @r												
                 and WR.IsComplete = 0 												                        
-            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3
+            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3 and W.Data.value('(fields/IssueID)[1]', 'int') is null) )
+union 
+(
+select		W.ID as WorkflowID,
+		    C.Body as Issue,
+			R.ResourceID,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
+			W.DateStarted,
+		    WR.Activity,
+            IT.ID as IssueType,
+            IT.Name as IssueTypeName,
+			I.ID as IssueID
+from	    Workflow W
+		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
+            inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
+			inner join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
+			inner join IssueType IT on (I.IssueTypeID = IT.ID)			
+			left outer join WorkflowResource WR on	WR.WorkflowID = W.ID 											    
+                and WR.ResourceID = @r												
+                and WR.IsComplete = 0 												                        
+            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3 and W.Data.value('(fields/IssueID)[1]', 'int') is null) 
+)
 order by    W.DateStarted desc";
+
 
         public static string CurrentUserWorkflow4TaskItem = @"
 select		W.ID as WorkflowID,

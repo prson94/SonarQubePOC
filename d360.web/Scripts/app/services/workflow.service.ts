@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { WorkflowStatusDetails, WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, IssueDetail, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown } from '../models/workflow.model';
+import { IssueInfo, WorkflowStatusDetails, WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, IssueDetail, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown, WorkflowIssueType } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -169,15 +169,8 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    raiseIssue(objectId: number, objectType: string, issue: string, type: string): Promise<any> {
-        let headers = new Headers({
-            'Content-Type': 'application/json'
-        });
-        return this.http
-            .post(`/api/issue/raise/${objectType}/${objectId}/${type}`, JSON.stringify(issue), { headers: headers })
-            .toPromise()
-            .then(res => <any>res)
-            .catch(err => this.handleError(err));
+    raiseIssue(issue: any): Promise<JsonResult> {
+        return this.postDynamic(this.http, 'issue', issue);
     }
 
     getWorkflowStepBreakdownByArtifactType(artifactTypeId: number): Promise<ArtifactTypeWorkflowBreakdown[]> {
@@ -198,6 +191,31 @@ export class WorkflowService extends BaseService implements IWorkflowService {
         return this.http.get(`services/workflow/${workflowId}/status`)
             .toPromise()
             .then(response => <WorkflowStatusDetails>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowIssueTypes(): Promise<WorkflowIssueType[]> {
+        return this.http.get('api/issuetypes')
+            .toPromise()
+            .then(response => <WorkflowIssueType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteWorkflowIssueType(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'ISSUETYPE', id);
+    }
+
+    saveIssueType(issueType: WorkflowIssueType): Promise<JsonResult> {
+        if (issueType.ID == undefined || !issueType.ID) {
+            return this.postDynamic(this.http, 'issuetype', issueType);
+        }
+        return this.putDynamic(this.http, 'issuetype', issueType);
+    }
+
+    getIssueDetails(issueId: number): Promise<IssueInfo> {
+        return this.http.get(`api/issue/${issueId}`)
+            .toPromise()
+            .then(response => <IssueInfo>response.json())
             .catch(err => this.handleError(err));
     }
 }

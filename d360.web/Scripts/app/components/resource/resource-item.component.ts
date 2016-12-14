@@ -1,9 +1,9 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, ResourcesService, ObjectStatisticsService, UriBasedService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Router, ActivatedRoute } from '@angular/router';
 import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { WorkflowType } from '../../models/workflow.model';
@@ -29,6 +29,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     PageMode = PageMode;
 
     constructor(
+        protected router: Router,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         private route: ActivatedRoute,
@@ -81,9 +82,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.sub.unsubscribe();
     }
 
-    showAssignment(e: any) {
-        this.selectedWorkflow = e.workflowType;
-        this.pageMode = PageMode.Assignment;
+    showAssignment(e: any) {        
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${e.workflowType}`);
     }
 
     action(e: string) {

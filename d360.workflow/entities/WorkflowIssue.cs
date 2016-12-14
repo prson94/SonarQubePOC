@@ -52,6 +52,12 @@ namespace d360.workflow.entities
         public string Comments { get; set; }
 
         [DataMember]
-        public IssueType IssueType { get; set; }
+        public int IssueType { get; set; }
+
+        [DataMember]
+        public string IssueTypeName { get; set; }
+
+        [DataMember]
+        public int IssueID { get; set; }
     }
 }

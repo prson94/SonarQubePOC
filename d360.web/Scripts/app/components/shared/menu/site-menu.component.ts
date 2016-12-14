@@ -164,28 +164,35 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         integrationMenu.Items.push({ Name: 'Fusion', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`, Items: null, IsLink: false});
 
         this.adminMenu.NavigationItems.push(integrationMenu);
-                
 
+        let securityMenu = new SiteMenuItem();
+        securityMenu.Name = "Security";
+        securityMenu.Items = [];
+
+        securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false });
+        securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false });
+        securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false });
+
+        this.adminMenu.NavigationItems.push(securityMenu);
+
+        this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false });
+        
         let metricsMenu = new SiteMenuItem();
         metricsMenu.Name = "Metrics";
         metricsMenu.Items = [];
         metricsMenu.Items.push({ Name: 'Analytics', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false});
         metricsMenu.Items.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false});
         this.adminMenu.NavigationItems.push(metricsMenu);
-
-        let securityMenu = new SiteMenuItem();
-        securityMenu.Name = "Security";
-        securityMenu.Items = [];
-
-        securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false});
-        securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false});
-        securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false});
-
-        this.adminMenu.NavigationItems.push(securityMenu);
                 
-        this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false });
-        this.adminMenu.NavigationItems.push({ Name: 'Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES}`, IsLink: false });
-        this.adminMenu.NavigationItems.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false });
+        this.adminMenu.NavigationItems.push({ Name: 'Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES}`, IsLink: false });        
+
+        let workflowMenu = new SiteMenuItem();
+        workflowMenu.Name = "Workflow";
+        workflowMenu.Items = [];
+        workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false });
+        workflowMenu.Items.push({ Name: 'Issue Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false });
+
+        this.adminMenu.NavigationItems.push(workflowMenu);
         
     }
 };

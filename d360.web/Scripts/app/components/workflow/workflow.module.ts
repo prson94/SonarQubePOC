@@ -9,6 +9,7 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 import { WorkflowAssignmentsComponent } from './workflow-assignments.component';
 import { WorkflowComponent } from './workflow.component';
@@ -65,6 +66,7 @@ import {
         CoreModule,
         TilesModule,
         SharedGridPagingInfoModule,
+        SharedDynamicGridEditorModule,
     ],
     declarations: [
         WorkflowAssignmentsComponent,
@@ -79,7 +81,7 @@ import {
         WorkflowComponent,
         WorkflowDetailedViewComponent,
         WorkflowIssueDetailsComponent,
-        WorkflowIssueEditorComponent,
+        WorkflowIssueEditorComponent,        
     ],
     exports: [
         WorkflowAssignmentsComponent,

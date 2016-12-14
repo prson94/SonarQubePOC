@@ -249,8 +249,9 @@ namespace d360.web.Models
         public string ResourceName { get; set; }
         public string ResourceUrl { get; set; }
         public DateTime DateStarted { get; set; }
-        public core.enums.IssueType IssueType { get; set; }
+        public int IssueType { get; set; }
         public string IssueTypeName { get; set; }
+        public int IssueID { get; set; }
     }
     public class WorkflowTask4Model : WorkflowTaskBaseModel
     {

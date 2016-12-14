@@ -180,6 +180,9 @@ namespace d360.model
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
+        public DbSet<Issue> Issues { get; set; }
+        public DbSet<core.entities.IssueType> IssueTypes { get; set; }
+
         public DbSet<Language> Languages { get; set; }
 
         public DbSet<Load> Loads { get; set; }
