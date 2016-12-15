@@ -13,3 +13,17 @@
 # Ignore all files in the Temp sub-folder
 \node_modules
 \WebJob1
+
+# Ignore application config
+\.vs\config\*.config
+
+# Ignore compiled css files
+\d360.web\Content\styles\*.min.css
+\d360.web\Content\styles\ang.css
+\d360.web\Content\styles\angular.css
+\d360.web\Content\styles\Root.css
+\d360.web\Content\styles\Diagrams.css
+\d360.web\Content\styles\ContentFormatting.css
+\d360.web\Content\styles\Tooltip.css
+\d360.web\Content\styles\typeahead.css
+

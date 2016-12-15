@@ -482,32 +482,14 @@
     <Content Include="Content\primeng\d3s\images\ui-icons_ffffff_256x240.png" />
     <Content Include="Content\primeng\d3s\theme.css" />
     <Content Include="Content\quill\quill.snow.css" />
-    <Content Include="Content\styles\ang.css" />
-    <Content Include="Content\styles\ang.min.css">
-      <DependentUpon>ang.css</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\angular.css">
-      <DependentUpon>angular.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\angular.min.css">
-      <DependentUpon>angular.css</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\materialize.css" />
     <Content Include="Content\styles\apps.css" />
-    <Content Include="Content\styles\apps.min.css">
-      <DependentUpon>apps.css</DependentUpon>
-    </Content>
+    <Content Include="Content\styles\apps.min.css" />
+    <Content Include="Content\styles\materialize.css" />
     <Content Include="Content\styles\angular.less" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.eot" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
-    <Content Include="Content\styles\typeahead.css">
-      <DependentUpon>typeahead.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\typeahead.min.css">
-      <DependentUpon>typeahead.css</DependentUpon>
-    </Content>
     <Content Include="Content\themes\base\accordion.css" />
     <Content Include="Content\themes\base\all.css" />
     <Content Include="Content\themes\base\autocomplete.css" />
@@ -785,24 +767,6 @@
     <None Include="Content\redactor\redactor-iframe.min.css">
       <DependentUpon>redactor-iframe.css</DependentUpon>
     </None>
-    <None Include="Content\styles\Diagrams.css">
-      <DependentUpon>Diagrams.less</DependentUpon>
-    </None>
-    <Content Include="Content\styles\Diagrams.min.css">
-      <DependentUpon>Diagrams.css</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\Tooltip.css">
-      <DependentUpon>Tooltip.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\Tooltip.min.css">
-      <DependentUpon>Tooltip.css</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\Tooltip.css.map">
-      <DependentUpon>Tooltip.css</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\Root.css.map">
-      <DependentUpon>Root.css</DependentUpon>
-    </Content>
     <Content Include="images\loader-small.gif" />
     <Content Include="images\gritter.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -822,32 +786,17 @@
     <None Include="Content\redactor\redactor.min.css">
       <DependentUpon>redactor.css</DependentUpon>
     </None>
-    <None Include="Content\styles\ContentFormatting.css">
-      <DependentUpon>ContentFormatting.less</DependentUpon>
-    </None>
-    <None Include="Content\styles\ContentFormatting.min.css">
-      <DependentUpon>ContentFormatting.css</DependentUpon>
-    </None>
     <None Include="Content\redactor\redactor.min.css.gzip">
       <DependentUpon>redactor.min.css</DependentUpon>
     </None>
     <None Include="Content\styles\ContentFormatting.less" />
     <None Include="Content\styles\Diagrams.less" />
-    <None Include="Content\styles\Diagrams.css.map">
-      <DependentUpon>Diagrams.css</DependentUpon>
-    </None>
     <Content Include="Content\styles\img\alpha-horizontal.png" />
     <Content Include="Content\styles\img\alpha.png" />
     <Content Include="Content\styles\img\hue-horizontal.png" />
     <Content Include="Content\styles\img\hue.png" />
     <Content Include="Content\styles\img\saturation.png" />
-    <None Include="Content\styles\Root.css">
-      <DependentUpon>Root.less</DependentUpon>
-    </None>
     <None Include="Content\styles\Tooltip.less" />
-    <None Include="Content\styles\Root.min.css">
-      <DependentUpon>Root.css</DependentUpon>
-    </None>
     <Content Include="node_modules\primeng\resources\images\loading.gif" />
     <Content Include="node_modules\primeng\resources\images\password-meter.png" />
     <Content Include="node_modules\primeng\resources\images\rating.png" />
