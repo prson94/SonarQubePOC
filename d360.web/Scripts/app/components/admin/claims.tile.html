@@ -7,7 +7,7 @@
     </div>
     <div *ngIf="!isLoading">
         <p-dataTable #dt [value]="claimItems" selectionMode="single" [rows]="20" [paginator]="true" expandableRows="true">                        
-            <template let-item>
+            <template let-item pTemplate="rowexpansion">
                 <d3s-claims-matrix [objectType]="item.ObjectType" [objectID]="item.ObjectID" [responsibilityTypeID]="item.ResponsibilityTypeID" [readonly]="readonly"></d3s-claims-matrix>
             </template>
             <p-column expander="true" [style]="{ 'width':'25px', 'padding-left': '2px', 'padding-right': '2px', 'text-align' : 'center' }"></p-column>
