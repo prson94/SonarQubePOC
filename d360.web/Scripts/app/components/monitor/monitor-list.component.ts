@@ -22,8 +22,8 @@ import * as _ from 'lodash';
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
-                                    <d3s-tooltip *ngIf="!data.AllowAction" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>
-                                    <d3s-tooltip *ngIf="data.AllowAction" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><a (click)="handleIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
+                                    <d3s-tooltip  *ngIf="!data.AllowAction" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>                                    
+                                    <d3s-tooltip *ngIf="data.AllowAction" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview"><a (click)="handleIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
                                 </template>
                             </p-column>
                             <p-column field="Criticality" header="Criticality" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
@@ -60,6 +60,13 @@ import * as _ from 'lodash';
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <i class="fa fa-check-circle-o" style="pointer:cursor" *ngIf="item.AllowAction" (click)="handleIssue(item)"></i>
+                                    </div>
+                                </template>
+                            </p-column>
+                            <p-column [style]="{width:'28px'}">
+                                <template let-data="rowData" pTemplate type="body">
+                                    <div class="RowTools">
+                                        <d3s-tooltip objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><i class="fa fa-info" aria-hidden="true"></i></d3s-tooltip>
                                     </div>
                                 </template>
                             </p-column>

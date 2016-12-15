@@ -401,7 +401,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             return Content(sb.ToString(), "text/html");
         }
 
-        [HttpGet, Route("{type}/{itemid:int}/templates/tooltip/{templateAction}")]
+        [HttpGet, Route("{type}/{itemid}/templates/tooltip/{templateAction}")]
         public ContentResult _RenderTooltip(SystemObjects type, string itemid, string templateAction, bool isNg = false)
         {
             string html = "";
@@ -445,6 +445,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 foreach (var user in users)
                 {
                     if (!string.IsNullOrEmpty(html)) html += "<br>";
+                    else html += "<b>Assigned To:</b><br>";
                     html += user;
                 }
             }
