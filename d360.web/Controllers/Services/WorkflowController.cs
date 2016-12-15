@@ -266,7 +266,8 @@ namespace d360.web.Controllers.Services
                                   IssueType = workflows.IssueType,
                                   IssueTypeName = workflows.IssueTypeName,
                                   IssueID = workflows.IssueID,
-                                  Criticality = workflows.CriticalityName
+                                  Criticality = workflows.CriticalityName,
+                                  EllapsedDays = workflows.EllapsedDays
                             };
 
                   return res.Distinct();                  

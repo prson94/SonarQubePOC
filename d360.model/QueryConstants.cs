@@ -241,9 +241,14 @@ order by    W.DateStarted desc
 			W.Data.value('(fields/IssueType)[1]', 'int') as IssueType,
             case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName,
 			0 as IssueID,
-            2 as Criticality
+            2 as Criticality,
+            case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays,
+            CR.ObjectType as 'Object',
+			CR.ObjectID as ObjectID,
+            A.Name as ObjectName
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+            left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
 			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
 				and W.DateCompleted is null
@@ -251,6 +256,7 @@ from	    Workflow W
 				and W.WorkflowType = 3
                 and WR.IsComplete = 0 
                 and W.Data.value('(fields/IssueID)[1]', 'int') is null 
+            left outer join cache.ObjectDetails A on A.[Object] = CR.ObjectType and A.ObjectID = CR.ObjectID            		
             {0}
 )			
 union
@@ -264,7 +270,11 @@ union
 			IT.ID as IssueType,
             IT.Name as IssueTypeName,
 			I.ID as IssueID,
-            I.Criticality as Criticality
+            I.Criticality as Criticality,
+            case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays,
+            I.[Object] as 'Object',
+			I.[ObjectID] as ObjectID,
+            A.Name as ObjectName
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
@@ -275,6 +285,7 @@ from	    Workflow W
                 and WR.IsComplete = 0 
 			inner join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)			
+            left outer join cache.ObjectDetails A on A.[Object] = I.[Object] and A.ObjectID = I.ObjectID            		
             {0}
 )
 order by    W.DateStarted desc";

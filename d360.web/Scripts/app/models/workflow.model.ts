@@ -76,6 +76,7 @@ export class IssueDetail {
     RaisedByResourceID: number;
     Url: string;
     WorkflowID: string;
+    EllapsedDays: number;
 }
 
 export class CertifyItem {

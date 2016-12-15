@@ -17,7 +17,7 @@ import * as _ from 'lodash';
                         <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <d3s-tooltip *ngIf="data.Activity <= 0" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>
-                                <d3s-tooltip *ngIf="data.Activity > 0" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><a (click)="openIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>                                
+                                <d3s-tooltip *ngIf="data.Activity > 0" objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><a (click)="openIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
                             </template>
                         </p-column>
                         <p-column field="CriticalityName" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
@@ -26,13 +26,19 @@ import * as _ from 'lodash';
                             <template let-col let-issue="rowData" pTemplate type="body">
                                 <span [innerHtml]="issue?.Issue"></span>
                             </template>
-                        </p-column>                        
+                        </p-column>             
+                        <p-column field="ObjectName" header="Item Name">
+                            <template let-col let-issue="rowData" pTemplate type="body">
+                                <d3s-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID" tooltipType="preview">{{issue.ObjectName}}</d3s-tooltip>
+                            </template>
+                        </p-column>           
                         <p-column field="ResourceName" header="Reported By" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="DateStarted" header="Created" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
-                                <span>{{data.DateStarted | date: 'medium'}}</span>
+                                <span>{{data.DateStarted | date: 'shortDate'}}</span>
                             </template>
                         </p-column>                        
+                        <p-column field="EllapsedDays" header="Days Open" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-issue="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="issue.Activity > 0">                                

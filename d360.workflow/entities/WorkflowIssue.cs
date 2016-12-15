@@ -66,5 +66,7 @@ namespace d360.workflow.entities
         [DataMember]
         public string CriticalityName { get; set; }
         
+        [DataMember]
+        public int EllapsedDays { get; set; }
     }
 }

@@ -19,6 +19,7 @@ AS
 			,0 as IssueID
 			,2 as Criticality
 			,'Medium' as CriticalityName
+			,case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays
 from	    Workflow W		
 			inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
@@ -46,6 +47,7 @@ union
 			,I.ID as IssueID
 			,I.Criticality as Criticality
 			,case when I.Criticality = 0 then 'Negligible' when I.Criticality = 1 then 'Low' when I.Criticality = 2 then 'Medium' when I.Criticality = 3 then 'High'  when I.Criticality = 4 then 'Critical' else 'N/A' end as CriticalityName
+			,case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays
 from	    Workflow W		
 			inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
@@ -56,5 +58,6 @@ from	    Workflow W
 			left outer join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')			
             where  W.WorkflowType = 3
 )
+
 
 GO

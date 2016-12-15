@@ -19,10 +19,12 @@ import * as _ from 'lodash';
                         <div>{{issue?.IssueTypeName}}</div>                        
                         <div class="FieldName">Criticality</div>
                         <div>{{issue?.CriticalityName}}</div>                        
+                        <div class="FieldName">Item Name</div>
+                        <div><d3s-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID" tooltipType="preview">{{issue.ObjectName}}</d3s-tooltip></div>
                         <div class="FieldName">Requestor</div>
-                        <div>{{issue?.ResourceName}}</div>
+                        <div>{{issue?.ResourceName}}</div>                        
                         <div class="FieldName">Date</div>
-                        <div>{{issue?.DateStarted | date: 'medium'}}</div>
+                        <div>{{issue?.DateStarted | date: 'fullDate'}}</div>
                         <template ngFor let-field [ngForOf]="issueDetails?.Fields">
                             <div class="FieldName">{{field.FieldName}}</div>
                             <div [innerHtml]="field.Value"></div>

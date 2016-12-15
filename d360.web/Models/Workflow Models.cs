@@ -254,6 +254,11 @@ namespace d360.web.Models
         public int IssueID { get; set; }
         public core.enums.IssueCriticality Criticality { get; set; }
         public string CriticalityName { get; set; }
+        public int EllapsedDays { get; set; }
+        public int ObjectID { get; set; }
+        public string Object { get; set; }
+        public string ObjectName { get; set; }
+
     }
     public class WorkflowTask4Model : WorkflowTaskBaseModel
     {

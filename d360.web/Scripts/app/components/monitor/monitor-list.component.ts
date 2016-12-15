@@ -28,7 +28,7 @@ import * as _ from 'lodash';
                             </p-column>
                             <p-column field="Criticality" header="Criticality" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="IssueTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
+                            <p-column field="Name" header="Item Name" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>
                                 </template>
@@ -54,6 +54,7 @@ import * as _ from 'lodash';
                                     <span>{{item.DateCompleted | date : 'shortDate'}}</span>
                                 </template>
                             </p-column>                            
+                            <p-column field="EllapsedDays" header="Days Open" [sortable]="true" [filter]="!showSimpleFilter"></p-column>   
                             <p-column field="Notes" header="Closing Notes" [sortable]="true" [filter]="!showSimpleFilter"></p-column>    
                             <p-column [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
@@ -95,7 +96,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
         this.workflowService.getAllIssueDetails()
             .then(result => {
                 this.issues = result;
-                this.isLoading = false;
+                this.isLoading = false;                
             });
     }
 
