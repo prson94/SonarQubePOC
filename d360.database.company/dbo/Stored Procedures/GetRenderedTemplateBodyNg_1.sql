@@ -540,6 +540,31 @@ BEGIN
 			set @html = @html + '<div><b>Classification:</b> {Classification}</div>'
 		end;
 
+		
+		if @Type = 'Issue'
+		begin
+			insert into @tbl values('Name', '')
+			insert into @tbl values('Description', '')
+					
+			if exists (select id from issue where id = @ID)
+			begin			
+				set @html = @html + '<div><b>Issue Type:</b> {IssueType}</div>'
+				set @html = @html + '<div><b>Criticality:</b> {Criticality}</div>'
+						
+				insert into @tbl 
+					select 'IssueType', it.name 
+					from issuetype it inner join issue i on(i.issuetypeid = it.id) 
+					where i.id = @ID
+
+				insert into @tbl 
+					select 'Criticality', case when i.Criticality = 0 then 'Negligible' when i.Criticality = 1 then 'Low' when i.Criticality = 2 then 'Medium' when i.Criticality = 3 then 'High'  when i.Criticality = 4 then 'Critical' else 'N/A' end
+					from issuetype it inner join issue i on(i.issuetypeid = it.id) 
+					where i.id = @ID
+
+				set @hasDynamicFields = 1
+			end			
+		end;
+
 		if @Type = 'Responsibility'
 		begin
 			select	@n = T.Name, 
@@ -648,25 +673,7 @@ BEGIN
 
 			set @hasDynamicFields = 1
 		end;
-
-		if @Type = 'Issue'
-		begin
-			insert into @tbl values('Name', '')
-			insert into @tbl values('Description', '')
-					
-			if exists (select id from issue where id = @ID)
-			begin			
-				set @html = @html + '<div><b>Issue Type:</b> {IssueType}</div>'
-						
-				insert into @tbl 
-					select 'IssueType', it.name 
-					from issuetype it inner join issue i on(i.issuetypeid = it.id) 
-					where i.id = @ID
-
-				set @hasDynamicFields = 1
-			end			
-		end;
-
+		
 		-- If required, get dynamic fields to add to list.
 		if @hasDynamicFields = 1
 		begin
