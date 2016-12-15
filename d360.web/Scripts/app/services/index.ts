@@ -50,6 +50,7 @@ import { ReferenceService } from './reference.service';
 import { FavoritesService } from './favorites.service';
 import { DiagramService } from './diagram.service';
 import { LevelsService } from './levels.service';
+import { QualifierService } from './qualifier.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -103,3 +104,4 @@ export * from './reference.service';
 export * from './favorites.service';
 export * from './diagram.service';
 export * from './levels.service';
+export * from './qualifier.service';

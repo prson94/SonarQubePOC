@@ -594,8 +594,6 @@
     <Content Include="Scripts\app\12.chunk.js" />
     <Content Include="Scripts\app\13.chunk.js" />
     <Content Include="Scripts\app\14.chunk.js" />
-    <Content Include="Scripts\app\15.chunk.js" />
-    <Content Include="Scripts\app\16.chunk.js" />
     <Content Include="Scripts\app\17.chunk.js" />
     <Content Include="Scripts\app\18.chunk.js" />
     <Content Include="Scripts\app\19.chunk.js" />
@@ -616,6 +614,7 @@
     <Content Include="Scripts\app\32.chunk.js" />
     <Content Include="Scripts\app\33.chunk.js" />
     <Content Include="Scripts\app\34.chunk.js" />
+    <Content Include="Scripts\app\35.chunk.js" />
     <Content Include="Scripts\app\4.chunk.js" />
     <Content Include="Scripts\app\5.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
@@ -1073,6 +1072,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
@@ -1167,6 +1168,7 @@
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
     <TypeScriptCompile Include="Scripts\app\selective-preloading-strategy.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dynamic-type-builder.ts" />
@@ -1376,7 +1378,6 @@
     <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\action-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\claims.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\editor-field.model.ts" />
@@ -1402,6 +1403,7 @@
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-constants.ts" />

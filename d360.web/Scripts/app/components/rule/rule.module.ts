@@ -26,6 +26,8 @@ import { RuleListComponent } from './rule-list.component';
 import { RuleItemComponent } from './rule-item.component';
 import { RuleResultsGridComponent } from './rule-results-grid.component';
 import { RuleColumnFilterComponent } from './rule-column-filter.component';
+import { RuleQualifierListComponent } from './rule-qualifier-list.component';
+import { RuleQualifierEditorComponent } from './rule-qualifier-editor.component';
 
 import {
     GrowlModule,
@@ -83,7 +85,9 @@ import {
         RuleListComponent,
         RuleItemComponent,
         RuleResultsGridComponent,
-        RuleColumnFilterComponent,        
+        RuleColumnFilterComponent,   
+        RuleQualifierListComponent,
+        RuleQualifierEditorComponent,     
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

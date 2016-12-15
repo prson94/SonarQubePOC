@@ -13940,6 +13940,98 @@ order by	T.Name, I.DisplayValue";
 
         #endregion
 
+        #region RuleQualifierType
+
+        #region Form Get/Post
+
+        [HttpPut, Route("MoveRuleQualifierType"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult MoveRuleQualifierType(int id, bool moveUp = false)
+        {
+            try
+            {
+                var rule = Company.GetById<RuleResultQualifierType>(id);
+                if (rule == null)
+                    throw new Exception($"Could not find rule qualifier for id '{id}'");
+                var otherRule = Company.RuleResultQualifierTypes.Where(r => r.RuleID == rule.RuleID && r.Order == (moveUp ? rule.Order - 1 : rule.Order + 1)).SingleOrDefault();
+                if (otherRule != null)
+                {
+                    rule.Order += (moveUp ? -1 : 1);
+                    otherRule.Order += (moveUp ? 1 : -1);
+                    Company.SaveChanges();
+                }
+            } catch(Exception ex)
+            {
+                return jsonException(ex.Message, HttpStatusCode.OK);
+            }
+            return jsonSuccess("Rule Qualifier moved", id.ToString(), "move", HttpStatusCode.OK);
+        }
+
+        [HttpPost, Route("AddRuleQualifierType"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult AddQualifierType(RuleResultQualifierType model)
+        {
+            try
+            {
+                if (model == null)
+                    throw new Exception("Supplied model was null");
+                model.Order = Company.Count<RuleResultQualifierType>(r => r.RuleID == model.RuleID) + 1;
+
+                Company.RuleResultQualifierTypes.Add(model);
+                Company.SaveChanges();
+            } catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.OK);
+            }
+            return jsonSuccess("Qualifier Type added successfully", model.ID.ToString(), "add", HttpStatusCode.OK);
+        }
+
+        [HttpPut, Route("EditRuleQualifierType"), ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult EditQualifierType(RuleResultQualifierType model)
+        {
+            try
+            {
+                if (model == null)
+                    throw new Exception("Supplied model was null");
+                var qualifier = Company.GetById<RuleResultQualifierType>(model.ID);
+                if (qualifier == null)
+                    throw new Exception($"Cannot find qualifier id '{model?.ID}'");
+
+                qualifier.Name = model.Name;
+                qualifier.ResolutionObject = model.ResolutionObject;
+                qualifier.ResolutionObjectID = model.ResolutionObjectID;
+                qualifier.ResolutionFieldTypeID = model.ResolutionFieldTypeID;
+                qualifier.ResolutionFieldTypeName = model.ResolutionFieldTypeName;
+
+                Company.SaveChanges();
+                
+            } catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.OK);
+            }
+            return jsonSuccess("Qualifier Type edited successfully", model.ID.ToString(), "edit", HttpStatusCode.OK);
+        }
+
+        [HttpDelete, Route("DeleteQualifierType")]
+        public JsonResult DeleteQualifierType(int id)
+        {
+            try
+            {
+                var qualifier = Company.GetById<RuleResultQualifierType>(id);
+                if (qualifier == null)
+                    throw new Exception($"Could not find qualifier type id {id}");
+                Company.RuleResultQualifierTypes.Remove(qualifier);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.OK);
+            }
+            return jsonSuccess("Qualifier Type deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
+        }
+
+        #endregion
+
+        #endregion
+
         #region MapSequence
 
         public class MapItemsSequenceEditModel

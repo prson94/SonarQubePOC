@@ -3001,6 +3001,20 @@ where    A.PolicyTypeID = @id", columns, joins);
 
         #endregion
 
+        #region Qualifiers
+        
+        [Route("qualifier/resolutiontypes")]
+        public IQueryable<dynamic> GetQualifierResolutionObjects()
+        {
+            return Company.Query<dynamic>(@"select ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(ID as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from ArtifactType
+                union all
+                select ID, 'TaxonomyType' as [Type], 'TaxonomyType|' + cast(ID as varchar(50)) as [value],  'Model :: ' + [Name] as [label] from TaxonomyType
+                union all
+                select ID, 'ReferenceItemType' as [Type], 'ReferenceItemType|' + cast(ID as varchar(50)) as [value], 'Reference :: ' + [Name] as [label] from ReferenceItemType").AsQueryable();
+        }
+
+        #endregion
+        
         #region Reports
 
         [Route("reports/mostactiveusers")]
@@ -3186,6 +3200,15 @@ from    (
         public IQueryable<RuleDimension> GetRuleDimensions()
         {
             return Company.Table<RuleDimension>();
+        }
+
+        [Route("rules/{ruleID:int}/qualifiers")]
+        public IQueryable<dynamic> GetRuleQualifierTypes(int ruleID)
+        {
+            return Company.Query<dynamic>(@"select R.*, D.Name as ResolutionObjectName from RuleResultQualifierType R
+                left join cache.ObjectDetails D on D.[Object] = R.ResolutionObject and D.ObjectID = R.ResolutionObjectID
+                where R.RuleID = @ruleID
+                order by R.[Order]", new { ruleID }).AsQueryable();
         }
 
         #endregion

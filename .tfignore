@@ -1,12 +1,15 @@
 ﻿######################################
-# Ignore .txt files in this folder 
-\Scripts\app\app.js
-\Scripts\all.js
-\Scripts\all.min.js
-#
+# ignore compiled js files
+\d360.web\Scripts\app\app.js
+\d360.web\Scripts\all.js
+\d360.web\Scripts\all.min.js
+\d360.web\Scripts\app\*.chunk.js
+\d360.web\Scripts\app\*.bundle.js
+
+
 # Ignore .cer files
 *.cer
-#
+
 # Ignore all files in the Temp sub-folder
 \node_modules
 \WebJob1

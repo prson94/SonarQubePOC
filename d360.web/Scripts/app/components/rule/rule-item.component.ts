@@ -9,6 +9,7 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-rule-item',
@@ -38,8 +39,15 @@ import { StringConstants } from '../../static/string-constants';
                         </div>
                     </div>
                 </div>
+                <div class="row" *ngIf="!isLoading && isQualifiersVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">       
+                            <d3s-rule-qualifier-list [ruleID]="rule?.ID"></d3s-rule-qualifier-list>
+                        </div>
+                    </div>
+                </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
                     <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
                     <div class="col s12" *ngIf="showSurvey && surveyType">
                                 <div class="tile tile-detail">
@@ -52,14 +60,14 @@ import { StringConstants } from '../../static/string-constants';
                         </div>
                     </div>
                 </div>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" [hasSynonyms]="false" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
                 </div>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-rule-results-grid [ruleId]="rule?.ID"></d3s-rule-results-grid> 
@@ -70,10 +78,12 @@ import { StringConstants } from '../../static/string-constants';
 
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
+    private rightSub: any;
     private rule: RuleDetail;
     private messages: MessageBarItem[] = [];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;
+    private isQualifiersVisible = false;
 
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
@@ -86,7 +96,13 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     ) {
         super(rightSidebarService);
 
-        this.setCommonRightSideBar(true, true,false,true,true,true, true);
+        this.setCommonRightSideBar(true, true, false, true, true, true, true);
+        this.rightSidebarService.showItem(<RightSidebarItem>{
+            active: false,
+            icons: ['fa-tags'],
+            tag: 'qualifiers',
+            title: 'Qualifiers'
+        });
     }
 
     ngOnInit() {
@@ -102,10 +118,19 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
             this.load(ruleId).then(() => this.isLoading = false);
         });
+
+        this.rightSub = this.rightSidebarService.rightSidebarClicked$.subscribe(c => {
+            if (c.tag == 'qualifiers')
+                this.isQualifiersVisible = !this.isQualifiersVisible;
+            else
+                this.isQualifiersVisible = false;
+        });
+
     }
 
     ngOnDestroy() {        
         this.sub.unsubscribe();
+        this.rightSub.unsubscribe();
         this.clearSidebar();
     }
 
