@@ -8,6 +8,22 @@
     "sourceMap": false
   },
   {
+    "outputFile": "Content/styles/Diagrams.css",
+    "inputFile": "Content/styles/Diagrams.less",
+    "minify": {
+      "enabled": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFile": "Content/styles/Tooltip.css",
+    "inputFile": "Content/styles/Tooltip.less",
+    "minify": {
+      "enabled": true
+    },
+    "sourceMap": false
+  },
+  {
     "outputFile": "Content/styles/Root.css",
     "inputFile": "Content/styles/Root.less",
     "minify": {
