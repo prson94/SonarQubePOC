@@ -310,7 +310,8 @@ from	    Workflow W
 			left outer join WorkflowResource WR on	WR.WorkflowID = W.ID 											    
                 and WR.ResourceID = @r												
                 and WR.IsComplete = 0 												                        
-            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3 and W.Data.value('(fields/IssueID)[1]', 'int') is null) )
+            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3 and W.Data.value('(fields/IssueID)[1]', 'int') is null 
+)
 union 
 (
 select		W.ID as WorkflowID,
@@ -333,7 +334,7 @@ from	    Workflow W
 			left outer join WorkflowResource WR on	WR.WorkflowID = W.ID 											    
                 and WR.ResourceID = @r												
                 and WR.IsComplete = 0 												                        
-            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3 and W.Data.value('(fields/IssueID)[1]', 'int') is null) 
+            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3 and W.Data.value('(fields/IssueID)[1]', 'int') is null 
 )
 order by    W.DateStarted desc";
 

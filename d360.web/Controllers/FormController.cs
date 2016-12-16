@@ -1079,71 +1079,7 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("Challenge")]
-        public JsonResult Challenge(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("artifact");
-
-                int id = parseIntField(form, "ID");
-                string challengeReason = parseTextField(form, "Reason");
-
-                var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-
-                if (artifact == null) throw new NotFoundException("artifact");
-
-                var relations = new List<CommentRelation>();
-                var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
-                var comment = new Comment();
-
-                relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
-
-                comment.OwnerObjectType = SystemObjects.Resource.ToString();
-                comment.OwnerObjectID = Company.CurrentResourceID;
-                comment.CommentTypeID = CommentType.Challenge;
-                comment.Body = challengeReason;
-
-                //add relation to current artifact
-                relations.Add(new CommentRelation { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id, Date = DateTime.UtcNow });
-
-                var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
-
-                if (dtl != null)
-                {
-                    var processor = new Processor();
-                    var dictionary = new Dictionary<string, object>();
-                    dictionary.Add("CompanyID", Company.CurrentCompanyID);
-                    dictionary.Add("requestInfo",
-                        new ChallengeRequest
-                        {
-                            ArtifactID = id,
-                            ArtifactTypeID = artifact.ArtifactTypeID,
-                            RequestingResourceID = Company.CurrentResourceID,
-                            ArtifactTypeName = artifact.ArtifactType.Name,
-                            Name = artifact.Name,
-                            Reason = challengeReason,
-                            CommentID = dtl.ID
-                        }
-                   );
-
-                    processor.CreateNewWorkflowInstance(WorkflowVersionMap.ChallengeArtifact_vCurrent, dictionary);
-                }
-
-                return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+                
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("RaiseIssue")]
         public JsonResult RaiseIssue(FormCollection form)
         {

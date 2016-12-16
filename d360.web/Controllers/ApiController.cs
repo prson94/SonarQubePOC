@@ -5954,9 +5954,7 @@ SELECT (
             items.Add(new CountModel { Name = Resources.Core.CommentType_Task, Total = getCommentCategoryCount(counts, CommentType.Task), TotalUri = $"{socialUri}?type={(int)CommentType.Task}" });
 
             items.Add(new CountModel { Name = Resources.Core.CommentType_DataEvent, Total = getCommentCategoryCount(counts, CommentType.DataEvent), TotalUri = $"{socialUri}?type={(int)CommentType.DataEvent}" });
-
-            //  items.Add(new CountModel { Name = Resources.Core.CommentType_Challenge, Total = getCommentCategoryCount(counts, CommentType.Challenge), TotalUri = $"{socialUri}?type={(int)CommentType.Challenge}" });
-
+            
             return items.OrderBy(x => x.Name);
         }
 
