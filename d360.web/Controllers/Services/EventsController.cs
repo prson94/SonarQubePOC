@@ -1,21 +1,15 @@
-﻿using d360.core.entities;
-using d360.extensions;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.exceptions;
 using d360.model;
-using d360.core;
-using Newtonsoft.Json.Linq;
+using d360.web.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.OData.Query;
-using System.Web.Http.OData;
-using System.Dynamic;
-using d360.core.exceptions;
-using d360.core.enums;
-using d360.web.Models.Attributes;
-using d360.web.Models;
 
 namespace d360.web.Controllers.Services
 {

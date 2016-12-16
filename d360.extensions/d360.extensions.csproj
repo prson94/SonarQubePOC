@@ -184,6 +184,7 @@
     <Compile Include="ICachingProvider.cs" />
     <Compile Include="IQueueSource.cs" />
     <Compile Include="IStorageProvider.cs" />
+    <Compile Include="IWorkflowActivity.cs" />
     <Compile Include="mail\TemplateMessage.cs" />
     <Compile Include="powerbi\PowerBI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -191,6 +192,7 @@
     <Compile Include="queue\DummyQueueSource.cs" />
     <Compile Include="search\ElasticSearchSource.cs" />
     <Compile Include="storage\AzureStorageProvider.cs" />
+    <Compile Include="workflow\activities\SendMailActivity.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">

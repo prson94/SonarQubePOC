@@ -217,14 +217,6 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=1.5.6.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NET-Core.1.5.6.1\lib\net45\OptimaJet.Workflow.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="OptimaJet.Workflow.DbPersistence, Version=1.5.6.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NET-ProviderForMSSQL.1.5.6.1\lib\net45\OptimaJet.Workflow.DbPersistence.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
@@ -380,7 +372,6 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\DesignerController.cs" />
     <Compile Include="Controllers\PartsController.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\CommunityController.cs" />
@@ -530,146 +521,22 @@
     <Content Include="Content\styles\typeahead.min.css">
       <DependentUpon>typeahead.css</DependentUpon>
     </Content>
-    <Content Include="Content\themes\base\accordion.css" />
-    <Content Include="Content\themes\base\all.css" />
-    <Content Include="Content\themes\base\autocomplete.css" />
-    <Content Include="Content\themes\base\base.css" />
-    <Content Include="Content\themes\base\button.css" />
-    <Content Include="Content\themes\base\core.css" />
-    <Content Include="Content\themes\base\datepicker.css" />
-    <Content Include="Content\themes\base\dialog.css" />
-    <Content Include="Content\themes\base\draggable.css" />
-    <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
-    <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
-    <Content Include="Content\themes\base\images\ui-icons_222222_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_444444_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_454545_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_555555_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_777620_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_777777_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_888888_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_cc0000_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="Content\themes\base\jquery-ui.css" />
-    <Content Include="Content\themes\base\jquery-ui.min.css" />
-    <Content Include="Content\themes\base\menu.css" />
-    <Content Include="Content\themes\base\progressbar.css" />
-    <Content Include="Content\themes\base\resizable.css" />
-    <Content Include="Content\themes\base\selectable.css" />
-    <Content Include="Content\themes\base\selectmenu.css" />
-    <Content Include="Content\themes\base\slider.css" />
-    <Content Include="Content\themes\base\sortable.css" />
-    <Content Include="Content\themes\base\spinner.css" />
-    <Content Include="Content\themes\base\tabs.css" />
-    <Content Include="Content\themes\base\theme.css" />
-    <Content Include="Content\themes\base\tooltip.css" />
-    <Content Include="Content\workflowdesigner.css" />
-    <Content Include="images\designer.command.png" />
-    <Content Include="images\designer.createat.png" />
-    <Content Include="images\designer.createt.png" />
-    <Content Include="images\designer.delete.png" />
-    <Content Include="images\designer.tb.actor.png" />
-    <Content Include="images\designer.tb.add.png" />
-    <Content Include="images\designer.tb.additionalparameters.png" />
-    <Content Include="images\designer.tb.arrangment.png" />
-    <Content Include="images\designer.tb.codeactions.png" />
-    <Content Include="images\designer.tb.command.png" />
-    <Content Include="images\designer.tb.copy.png" />
-    <Content Include="images\designer.tb.copyprops.png" />
-    <Content Include="images\designer.tb.copypropsactive.png" />
-    <Content Include="images\designer.tb.delete.png" />
-    <Content Include="images\designer.tb.locale.png" />
-    <Content Include="images\designer.tb.move.png" />
-    <Content Include="images\designer.tb.parameter.png" />
-    <Content Include="images\designer.tb.redo.png" />
-    <Content Include="images\designer.tb.saveasimage.png" />
-    <Content Include="images\designer.tb.timer.png" />
-    <Content Include="images\designer.tb.undo.png" />
-    <Content Include="images\designer.tb.zoomIn.png" />
-    <Content Include="images\designer.tb.zoomnorm.png" />
-    <Content Include="images\designer.tb.zoomOut.png" />
-    <Content Include="images\designer.tran.aa.png" />
-    <Content Include="images\designer.tran.ac.png" />
-    <Content Include="images\designer.tran.ao.png" />
-    <Content Include="images\designer.tran.ca.png" />
-    <Content Include="images\designer.tran.cc.png" />
-    <Content Include="images\designer.tran.co.png" />
     <Content Include="images\error.png" />
-    <Content Include="images\findHosting.png" />
     <Content Include="images\grid.gif" />
     <Content Include="images\heroAccent.png" />
     <Content Include="images\loading.gif" />
     <Content Include="images\x.png" />
-    <Content Include="Scripts\ace.js" />
-    <Content Include="Scripts\app\0.chunk.js" />
-    <Content Include="Scripts\app\1.chunk.js" />
-    <Content Include="Scripts\app\10.chunk.js" />
-    <Content Include="Scripts\app\11.chunk.js" />
-    <Content Include="Scripts\app\12.chunk.js" />
-    <Content Include="Scripts\app\13.chunk.js" />
-    <Content Include="Scripts\app\14.chunk.js" />
-    <Content Include="Scripts\app\17.chunk.js" />
-    <Content Include="Scripts\app\18.chunk.js" />
-    <Content Include="Scripts\app\19.chunk.js" />
-    <Content Include="Scripts\app\2.chunk.js" />
-    <Content Include="Scripts\app\20.chunk.js" />
-    <Content Include="Scripts\app\21.chunk.js" />
-    <Content Include="Scripts\app\22.chunk.js" />
-    <Content Include="Scripts\app\23.chunk.js" />
-    <Content Include="Scripts\app\24.chunk.js" />
-    <Content Include="Scripts\app\25.chunk.js" />
-    <Content Include="Scripts\app\26.chunk.js" />
-    <Content Include="Scripts\app\27.chunk.js" />
-    <Content Include="Scripts\app\28.chunk.js" />
-    <Content Include="Scripts\app\29.chunk.js" />
-    <Content Include="Scripts\app\3.chunk.js" />
-    <Content Include="Scripts\app\30.chunk.js" />
-    <Content Include="Scripts\app\31.chunk.js" />
-    <Content Include="Scripts\app\32.chunk.js" />
-    <Content Include="Scripts\app\33.chunk.js" />
-    <Content Include="Scripts\app\34.chunk.js" />
-    <Content Include="Scripts\app\35.chunk.js" />
-    <Content Include="Scripts\app\4.chunk.js" />
-    <Content Include="Scripts\app\5.chunk.js" />
-    <Content Include="Scripts\app\6.chunk.js" />
-    <Content Include="Scripts\app\7.chunk.js" />
-    <Content Include="Scripts\app\8.chunk.js" />
-    <Content Include="Scripts\app\9.chunk.js" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-findviarelation.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-lineage.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rules.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-relate.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-promote.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-find.component.html" />
-    <Content Include="Scripts\app\main.bundle.js" />
-    <Content Include="Scripts\app\polyfills.bundle.js" />
-    <Content Include="Scripts\app\vendor.bundle.js" />
-    <Content Include="Scripts\ext-searchbox.js" />
-    <None Include="Scripts\jquery-3.1.1.intellisense.js" />
-    <Content Include="Scripts\jquery-3.1.1.js" />
     <Content Include="Scripts\jquery-3.1.1.min.js" />
-    <Content Include="Scripts\jquery-3.1.1.slim.js" />
-    <Content Include="Scripts\jquery-3.1.1.slim.min.js" />
-    <Content Include="Scripts\jquery-ui-1.12.1.js" />
-    <Content Include="Scripts\jquery-ui-1.12.1.min.js" />
     <Content Include="Scripts\jquery.qtip.min.js" />
-    <Content Include="Scripts\json5.js" />
-    <Content Include="Scripts\kinetic-v5.1.0.min.js" />
-    <Content Include="Scripts\mode-csharp.js" />
-    <Content Include="Scripts\mode-json.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />
-    <Content Include="Scripts\theme-monokai.js" />
     <Content Include="Scripts\worker-json.js" />
-    <Content Include="Scripts\workflowdesigner.min.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
@@ -915,11 +782,8 @@
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
     <Content Include="Scripts\errors.json" />
-    <Content Include="Scripts\jquery-3.1.1.slim.min.map" />
-    <Content Include="Scripts\jquery-3.1.1.min.map" />
     <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
     <None Include="Content\styles\Root.less" />
-    <None Include="Scripts\jquery.qtip.js" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\version.json" />
@@ -934,7 +798,6 @@
     <Content Include="Service References\Application Insights\ConnectedService.json" />
     <Content Include="typings.json" />
     <Content Include="Views\Shared\App.cshtml" />
-    <Content Include="Views\Designer\Index.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -975,7 +838,9 @@
       <LastGenOutput>Validation.Designer.cs</LastGenOutput>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Content\themes\base\images\" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="App_GlobalResources\FormInfo.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
