@@ -20,7 +20,7 @@ import * as _ from 'lodash';
                         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                         <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)"  [filter]="!showSimpleFilter">
+                            <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <a (click)="artifactLink(item.ArtifactTypeID, item.ID)">{{item.Name}}</a>
                                 </template>
@@ -29,7 +29,7 @@ import * as _ from 'lodash';
                             <p-column [style]="{width:'40px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
-                                        <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [iconColor]="certificateColor(item)"></d3s-tooltip>                                            
+                                        <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [class]="certificateColor(item)"></d3s-tooltip>                                            
                                     </div>
                                 </template>
                             </p-column>
@@ -84,20 +84,14 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
             });
     }
 
-    private certificateColor(item) {
+    protected certificateColor(item) {
         switch (item.Status) {
             case 'Certified':
-                return '#3f9d40';
+                return 'artifact-certification-certified';
             case 'Under Review':
-                return '#e2792a';
+                return 'artifact-certification-underreview';
         }
-        return '#ebebeb';
-    }
-
-    private columnSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending                        
-        this.items = _.orderBy(this.items, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+        return 'artifact-certification';
     }
 }
 

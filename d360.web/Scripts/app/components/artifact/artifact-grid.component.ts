@@ -39,8 +39,8 @@ import { StringConstants } from '../../static/string-constants';
                             </p-column>
                             <p-column [style]="{width:'30px'}">
                                     <template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="certificate" icon="certificate" [iconColor]="certificateColor(item)"></d3s-tooltip>                                            
+                                        <div class="RowTools" style="color:red;">
+                                            <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="certificate" icon="certificate" [class]="certificateColor(item)"></d3s-tooltip>                                            
                                         </div>
                                     </template>
                             </p-column>
@@ -186,16 +186,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             });
     }
 
-    private certificateColor(item) {        
-        switch (item.Status) {
-            case 'Certified':
-                return '#3f9d40';                
-            case 'Under Review':
-                return '#e2792a';                             
-        }
-        return '#ebebeb';
-    }
-
     closeEditor() {
         this.showEditor = false;
     }
@@ -253,7 +243,17 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     private doSimpleSearch(dt: DataTable) {
         this.isGridFilterLoading = true;
         if (dt) dt.reset();      
-    }    
+    }
+
+    protected certificateColor(item) {
+        switch (item.Status) {
+            case 'Certified':
+                return 'artifact-certification-certified';
+            case 'Under Review':
+                return 'artifact-certification-underreview';
+        }
+        return 'artifact-certification';
+    }
 }
 
 
