@@ -31,6 +31,9 @@ import {MenuItem} from 'primeng/primeng';
                             <li class="left" *ngIf="hasApi"><a class="Action" (click)="apiClick.emit()" pTooltip="API Key"><i class="fa fa-key fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasPassword"><a class="Action" (click)="passwordClick.emit()" pTooltip="Password"><i class="fa fa-asterisk fa-fw"></i></a></li>                        
                             <li class="left" *ngIf="hasFullScreen"><a class="Action" (click)="fullScreenClick.emit()" pTooltip="Fullscreen"><i class="fa fa-arrows-alt fa-fw"></i></a></li>                        
+                            <li class="left" *ngIf="hasUser"><a class="Action" (click)="userClick()" pTooltip="Show my items only">
+                                <i class="fa fa-user fa-fw" [ngClass]="{'red-text darken-2':userMode}"></i>                                
+                            </a></li>
                         </ul>
                     </div>
                 </div>          
@@ -53,6 +56,9 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() suggestClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
 
+    @Input() userMode: boolean = false;
+    @Output() userModeChange = new EventEmitter();
+
     @Input() filterMode: boolean = false;        
     @Output() filterModeChange = new EventEmitter();
     
@@ -71,6 +77,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasFullScreen: boolean = false;
     @Input() hasSuggest: boolean = false;
     @Input() hasSave: boolean = false;
+    @Input() hasUser: boolean = false;
 
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];
@@ -123,4 +130,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
         this.filterModeChange.emit(this.filterMode);
     }
 
+    private userClick() {
+        this.userMode = !this.userMode;
+        this.userModeChange.emit(this.userMode);
+    }
 }

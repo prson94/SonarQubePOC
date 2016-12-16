@@ -100,13 +100,13 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    exportAllIssueDetails() {
-        window.location.assign('services/workflow/all/issues/excel/excel.xls');        
+    exportAllIssueDetails(all?: boolean) {
+        window.location.assign(`services/workflow/all/issues/excel/excel.xls?all=${(all === undefined || all) ? 'true':'false'}`);        
     }
 
-    getAllIssueDetails(): Promise<IssueDetail[]> {
-        let url = 'services/workflow/all/issues?$orderby=DateStarted%20desc,Issue';
-        
+    getAllIssueDetails(all?: boolean): Promise<IssueDetail[]> {
+        let url = `services/workflow/${(all === undefined || all) ? 'all':'my'}/issues?$orderby=DateStarted%20desc,Issue`;
+                
         return this.http.get(url)
             .toPromise()
             .then(response => <IssueDetail[]>response.json())

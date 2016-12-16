@@ -13,7 +13,7 @@ import * as _ from 'lodash';
     template: ` 
                 <div class="tile tile-detail">
                     <header>Monitor
-                        <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasUser]="true" [userMode]="showUser" (userModeChange)="showUser=$event;load()" [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
@@ -27,14 +27,14 @@ import * as _ from 'lodash';
                                 </template>
                             </p-column>
                             <p-column field="Criticality" header="Criticality" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="IssueTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="IssueTypeName" header="Action Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Name" header="Item Name" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>
                                 </template>
                             </p-column>
-                            <p-column field="Object" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Issue" header="Issue Description" [sortable]="false" [filter]="!showSimpleFilter">
+                            <p-column field="Object" header="Item Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Issue" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span [innerHtml]="item.Issue"></span>
                                 </template>
@@ -83,6 +83,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
     private selected: IssueDetail;
 
     private showEditor: boolean = false;
+    private showUser: boolean = false;
 
     constructor(protected workflowService: WorkflowService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, protected router: Router) {
         super();
@@ -100,7 +101,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
 
     private load() {
         this.isLoading = true;
-        this.workflowService.getAllIssueDetails()
+        this.workflowService.getAllIssueDetails(!this.showUser)
             .then(result => {
                 this.issues = result;
                 this.isLoading = false;                
@@ -113,7 +114,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
     }
 
     private export() {
-        this.workflowService.exportAllIssueDetails();
+        this.workflowService.exportAllIssueDetails(!this.showUser);
     }
 
     private columnSort(event) {

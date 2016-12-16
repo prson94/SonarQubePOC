@@ -202,46 +202,10 @@ namespace d360.web.Controllers.Services
             });
             return items;
         }
-
-        [Route("all/challenges"), HttpGet]
-        public IQueryable GetChallengesForAllUsers()
-        {
-            List<string> objectTypeList = new List<string> { "Resource", "Group" };
-
-            var res = from workflows in Company.WorkflowChallenges
-                      join comments in Company.Comments on workflows.CommentID equals comments.ID
-                      join commentRel in Company.CommentRelations on comments.ID equals commentRel.CommentID
-                      from resources in Company.WorkflowResources
-                       .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
-                       .DefaultIfEmpty()
-                      where !objectTypeList.Contains(commentRel.ObjectType)
-                      select new
-                      {
-                          WorkflowID = workflows.WorkflowID,
-                          Reason = comments.Body,
-                          DateStarted = workflows.DateStarted,
-                          DateCompleted = workflows.DateCompleted,
-                          IsCompleted = workflows.IsCompleted,
-                          Name = workflows.Name,                          
-                          AllowAction = resources != null,
-                          RaisedBy = workflows.RaisedBy,
-                          ArtifactID = workflows.ArtifactID,
-                          ArtifactTypeName = workflows.ArtifactTypeName,
-                          RaisedByResourceID = workflows.CreatingResourceID,
-                          Url = workflows.Url,
-                          IsApproved = workflows.Approved,
-                          Notes = workflows.ClosingNotes,
-                          ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
-                          ClosedBy = workflows.ClosedBy,
-                          ClosedByResourceID = workflows.ClosedByResourceID
-                      };
-
-            return res;
-        }
-
+        
         [Route("all/issues"), HttpGet]
         public IQueryable GetIssuesForAllUsers()
-        {               
+        {            
             var res = from workflows in Company.WorkflowIssues
                               join comments in Company.Comments on workflows.CommentID equals comments.ID                          
                               from resources in Company.WorkflowResources
@@ -273,10 +237,50 @@ namespace d360.web.Controllers.Services
                   return res.Distinct();                  
         }
 
-        [Route("all/issues/excel/excel.xls"), HttpGet]
-        public HttpResponseMessage GetIssuesForAllUsersExcel()
+
+        [Route("my/issues"), HttpGet]
+        public IQueryable GetIssuesForMyUser()
         {
             var res = from workflows in Company.WorkflowIssues
+                      join comments in Company.Comments on workflows.CommentID equals comments.ID
+                      from resources in Company.WorkflowResources
+                       .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
+                       .DefaultIfEmpty()
+                      where(workflows.CreatingResourceID == Company.CurrentResourceID || resources.ResourceID == Company.CurrentResourceID)
+                      select new
+                      {
+                          WorkflowID = workflows.WorkflowID,
+                          Issue = comments.Body,
+                          DateStarted = workflows.DateStarted,
+                          DateCompleted = workflows.DateCompleted,
+                          IsCompleted = workflows.IsCompleted,
+                          Name = workflows.Name,
+                          Object = workflows.Object,
+                          AllowAction = resources != null,
+                          RaisedBy = workflows.RaisedBy,
+                          ObjectID = workflows.ObjectID,
+                          RaisedByResourceID = workflows.CreatingResourceID,
+                          Url = workflows.Url,
+                          ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
+                          Notes = workflows.Comments,
+                          IssueType = workflows.IssueType,
+                          IssueTypeName = workflows.IssueTypeName,
+                          IssueID = workflows.IssueID,
+                          Criticality = workflows.CriticalityName,
+                          EllapsedDays = workflows.EllapsedDays
+                      };
+
+            return res.Distinct();
+        }
+
+        [Route("all/issues/excel/excel.xls"), HttpGet]
+        public HttpResponseMessage GetIssuesForAllUsersExcel(bool all = true)
+        {
+            IQueryable<dynamic> res = null;
+
+            if (all)
+            {
+                res = from workflows in Company.WorkflowIssues
                       join comments in Company.Comments on workflows.CommentID equals comments.ID
                       from resources in Company.WorkflowResources
                        .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
@@ -296,9 +300,44 @@ namespace d360.web.Controllers.Services
                           RaisedByResourceID = workflows.CreatingResourceID,
                           Url = workflows.Url,
                           ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
-                          Notes = workflows.Comments
+                          Notes = workflows.Comments,
+                          IssueType = workflows.IssueType,
+                          IssueTypeName = workflows.IssueTypeName,
+                          IssueID = workflows.IssueID,
+                          Criticality = workflows.CriticalityName,
+                          EllapsedDays = workflows.EllapsedDays
                       };
-
+            }
+            else
+            {
+                res = from workflows in Company.WorkflowIssues
+                      join comments in Company.Comments on workflows.CommentID equals comments.ID
+                      from resources in Company.WorkflowResources
+                       .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
+                       .DefaultIfEmpty()
+                      where (workflows.CreatingResourceID == Company.CurrentResourceID || resources.ResourceID == Company.CurrentResourceID)
+                      select new
+                      {
+                          WorkflowID = workflows.WorkflowID,
+                          Issue = comments.Body,
+                          DateStarted = workflows.DateStarted,
+                          DateCompleted = workflows.DateCompleted,
+                          IsCompleted = workflows.IsCompleted,
+                          Name = workflows.Name,
+                          Object = workflows.Object,
+                          AllowAction = resources != null,
+                          RaisedBy = workflows.RaisedBy,
+                          ObjectID = workflows.ObjectID,
+                          RaisedByResourceID = workflows.CreatingResourceID,
+                          Url = workflows.Url,
+                          ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
+                          Notes = workflows.Comments,                          
+                          IssueTypeName = workflows.IssueTypeName,                          
+                          Criticality = workflows.CriticalityName,
+                          EllapsedDays = workflows.EllapsedDays
+                      };
+            }
+                        
             var results = res.Distinct();
 
             var document = new SLDocument();
@@ -318,6 +357,9 @@ namespace d360.web.Controllers.Services
             document.SetCellValue(1, ++colIndex, "Closed On");
             document.SetCellValue(1, ++colIndex, "Status");
             document.SetCellValue(1, ++colIndex, "Closing Notes");
+            document.SetCellValue(1, ++colIndex, "Action Type");
+            document.SetCellValue(1, ++colIndex, "Criticality");
+            document.SetCellValue(1, ++colIndex, "Ellapsed Days");
 
             #endregion
 
@@ -327,14 +369,17 @@ namespace d360.web.Controllers.Services
                 var dataColIndex = 0;
                 rowIndex++;
 
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Issue);
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Name);
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Object);
-                document.SetCellValue(rowIndex, ++dataColIndex, row.RaisedBy);
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Issue ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Object ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.RaisedBy ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.DateStarted.ToShortDateString());
-                document.SetCellValue(rowIndex, ++dataColIndex, row.DateCompleted.HasValue ? row.DateCompleted.Value.ToShortDateString(): "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityName);
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Notes);
+                document.SetCellValue(rowIndex, ++dataColIndex, row.DateCompleted != null ? row.DateCompleted.ToShortDateString(): "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityName ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Notes ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.IssueTypeName ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Criticality ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, (row.EllapsedDays ?? "").ToString());
             }
 
             #endregion

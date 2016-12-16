@@ -16684,7 +16684,7 @@ order by TextPath
                 comment.OwnerObjectType = SystemObjects.Resource.ToString();
                 comment.OwnerObjectID = Company.CurrentResourceID;
                 comment.CommentTypeID = CommentType.Issue;
-                comment.Body = desc;
+                comment.Body = desc ?? "";
                 
 
                 //add relation to current artifact
@@ -16748,7 +16748,7 @@ order by TextPath
                         Object = SystemObjects.IssueType.ToString(),
                         IsListable = true,
                         IsRequired = true,
-                        FriendlyName = "Problem Description",
+                        FriendlyName = "Description",
                         Name = "ProblemDesc",                        
                         SortOrder = 1,
                         Type = DataType.Html.ToString()
