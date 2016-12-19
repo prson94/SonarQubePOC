@@ -29,6 +29,9 @@ var webpackConfig = {
             compress: { warnings: false },comments:false
         }),
       new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
+      new webpack.DefinePlugin({
+          __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
+      })
     ],
 
     module: {
