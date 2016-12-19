@@ -4960,7 +4960,7 @@ from    (
                                         columns = 1,
                                         FirstColumnFields = new List<ReadOnlyField>
                                         {
-                                            new ReadOnlyField { Name = p.Key, FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = responsibility.Name }
+                                            new ReadOnlyField { Name = System.Text.RegularExpressions.Regex.Replace(p.Key, "(\\B[A-Z])", " $1"), FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = responsibility.Name }
                                         }
                                     });
                                 }
@@ -4972,7 +4972,7 @@ from    (
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = p.Key, FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = p.Value }
+                                    new ReadOnlyField { Name = System.Text.RegularExpressions.Regex.Replace(p.Key, "(\\B[A-Z])", " $1"), FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = p.Value }
                                 }
                                 });
                             }
