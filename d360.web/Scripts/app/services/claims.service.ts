@@ -1,5 +1,4 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { ClaimItem, ClaimsMatrixDisplayModel, ClaimsMatrixEditorItemModel, IClaimsService } from '../models/claims.model';
 import { BaseService } from './base.service';

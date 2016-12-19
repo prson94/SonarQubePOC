@@ -2,9 +2,10 @@
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SearchService, TypeaheadSearchService } from '../../services/index';
+import { SearchService } from '../../services/search.service';
+import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 

@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { SocialService } from '../../services/index';
+import { SocialService } from '../../services/social.service';
 import { Count } from '../../models/counts.model';
 
 @Component({

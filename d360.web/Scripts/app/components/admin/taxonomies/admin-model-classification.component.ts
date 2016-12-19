@@ -1,6 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { ModelClassification } from '../../../models/model.model';
-import { MessagesService, ModelsService} from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { ModelsService } from '../../../services/models.service';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
 

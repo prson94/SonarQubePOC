@@ -2,7 +2,9 @@
 import { Router } from '@angular/router';
 import { Lookup, LookupItem } from '../../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService, RelationshipsService} from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { RelationshipsService} from '../../../services/relationships.service';
 import { BaseComponent } from '../base.component';
 import * as _ from 'lodash';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';

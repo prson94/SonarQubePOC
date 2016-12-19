@@ -1,6 +1,11 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { Taxonomy} from '../../../models/taxonomy.model';
-import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, RightSidebarService, StateService } from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { TaxonomiesService } from '../../../services/taxonomies.service';
+import { FieldsService } from '../../../services/fields.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent} from '../admin-base.component';
 import { FieldDefinition } from '../../../models/fields.model';
 import { Title } from '@angular/platform-browser';

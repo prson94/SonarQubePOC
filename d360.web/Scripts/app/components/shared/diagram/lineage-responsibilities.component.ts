@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { DiagramService } from '../../../services/index';
+import { DiagramService } from '../../../services/diagram.service';
 import { Responsibility } from '../../../models/lineage.model';
 import { BaseComponent } from '../base.component';
 

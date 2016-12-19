@@ -1,5 +1,7 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, RightSidebarService  } from '../../../services/index';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Relationship } from '../../../models/relationship.model';
 import { Title } from '@angular/platform-browser';

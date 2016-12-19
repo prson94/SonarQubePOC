@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { ReferenceService } from '../../services/index';
+import { ReferenceService } from '../../services/reference.service';
 import { ReferenceItemType } from '../../models/reference.model';
 import * as _ from 'lodash';
 

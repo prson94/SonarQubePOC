@@ -1,7 +1,10 @@
 ﻿import { Component } from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { WorkflowIssueType } from '../../../models/workflow.model';
-import { MessagesService, HeaderBreadcrumbService, RightSidebarService, WorkflowService } from '../../../services/index';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { WorkflowService } from '../../../services/workflow.service';
+import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 

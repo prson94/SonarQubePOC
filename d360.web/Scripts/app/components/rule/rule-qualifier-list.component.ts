@@ -1,6 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { QualifierService, MessagesService } from '../../services/index';
+import { QualifierService } from '../../services/qualifier.service';
+import { MessagesService } from '../../services/messages.service';
 import { QualifierType } from '../../models/qualifier.model';
 import { FormMode } from '../../models/form.model';
 

@@ -2,7 +2,8 @@
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import {SelectItem} from 'primeng/primeng';
-import { SearchService, TypeaheadSearchService } from '../../services/index';
+import { SearchService } from '../../services/search.service';
+import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';

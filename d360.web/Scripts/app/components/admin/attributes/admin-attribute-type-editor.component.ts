@@ -1,6 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { AttributeTypeService, FieldsService } from '../../../services/index';
+import { FieldsService } from '../../../services/fields.service';
+import { AttributeTypeService } from '../../../services/attribute-type.service';
 import { AttributeType } from '../../../models/attribute-type.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 

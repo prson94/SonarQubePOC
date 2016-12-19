@@ -1,6 +1,6 @@
 ﻿import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { WorkflowService } from '../../services/index';
+import { WorkflowService } from '../../services/workflow.service';
 import { SuggestedItem } from '../../models/workflow.model';
 import * as _ from 'lodash';
 

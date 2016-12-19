@@ -1,6 +1,7 @@
 ﻿import { Component, Input} from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, AuditService  } from '../../../services/index';
+import { HeaderBreadcrumbService  } from '../../../services/header-breadcrumb.service';
+import { AuditService  } from '../../../services/audit.service';
 import { Audit } from '../../../models/audit.model';
 import { LazyLoadEvent } from 'primeng/primeng';
 import { SortOrder } from '../../../models/enums.model';

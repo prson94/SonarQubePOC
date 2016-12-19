@@ -1,5 +1,6 @@
 ﻿import { Input, Component, OnChanges, SimpleChange } from '@angular/core';
-import { ArtifactTypeService, WorkflowService } from '../../services/index';
+import { ArtifactTypeService } from '../../services/artifact-type.service';
+import { WorkflowService } from '../../services/workflow.service';
 import { BaseComponent} from '../shared/base.component';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { ArtifactTypeWorkflowBreakdown, WorkflowStepStatistic, WorkflowType } from '../../models/workflow.model';

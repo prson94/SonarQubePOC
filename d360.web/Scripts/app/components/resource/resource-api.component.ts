@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ResourceAPICredentials } from '../../models/resource.model';
-import { ResourcesService } from '../../services/index';
+import { ResourcesService } from '../../services/resources.service';
 
 declare var CurrentResourceID;
 

@@ -1,5 +1,5 @@
 ﻿import { Component, Input, ElementRef, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { RightSidebarService  } from '../../../services/index';
+import { RightSidebarService  } from '../../../services/right-sidebar.service';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 import { Subscription }   from 'rxjs/Subscription';
 import * as _ from 'lodash';

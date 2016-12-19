@@ -1,7 +1,9 @@
 ﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { TypeaheadSearchService, HeaderBreadcrumbService, ModelsService } from '../../../services/index';
+import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { ModelsService } from '../../../services/models.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { TreeNode } from 'primeng/primeng';
 

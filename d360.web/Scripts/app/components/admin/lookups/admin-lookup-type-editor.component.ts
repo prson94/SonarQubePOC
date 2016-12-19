@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { LookupService } from '../../../services/index';
+import { LookupService } from '../../../services/lookup.service';
 import { Lookup } from '../../../models/lookup.model';
 import * as _ from 'lodash';
 

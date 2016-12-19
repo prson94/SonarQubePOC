@@ -1,6 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FusionAttributeService, GridDefinitionService } from '../../services/index';
+import { FusionAttributeService } from '../../services/fusion-attribute.service';
+import { GridDefinitionService } from '../../services/grid-definition.service';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeType, FusionConfigurationDetails  } from '../../models/fusion.model';
 import { LazyLoadEvent } from 'primeng/primeng';

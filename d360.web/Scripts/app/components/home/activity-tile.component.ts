@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, Output, Input, EventEmitter} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { ArtifactService } from '../../services/index';
+import { ArtifactService } from '../../services/artifacts.service';
 import { Count} from '../../models/counts.model';
 
 @Component({

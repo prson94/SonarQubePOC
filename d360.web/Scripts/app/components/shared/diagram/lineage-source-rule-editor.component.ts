@@ -1,5 +1,7 @@
 ﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
-import { DiagramService, MessagesService, PermissionsService } from '../../../services/index';
+import { DiagramService } from '../../../services/diagram.service';
+import { MessagesService } from '../../../services/messages.service';
+import { PermissionsService } from '../../../services/permissions.service';
 import { MapSequenceItem, MapSequenceModel, MapContext, MapReferenceItem } from '../../../models/lineage.model';
 import { BaseComponent } from '../base.component';
 import { Permission } from '../../../models/permission.model';

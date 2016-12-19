@@ -1,6 +1,6 @@
 ﻿import { Input, Component, OnInit } from '@angular/core';
 import { BaseComponent} from '../shared/base.component';
-import { ObjectStatisticsService } from '../../services/index';
+import { ObjectStatisticsService } from '../../services/object-statistics.service';
 import { ObjectStatistics, ObjectStatisticChildItem } from '../../models/object-statistics.model';
 
 @Component({

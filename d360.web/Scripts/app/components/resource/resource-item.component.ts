@@ -2,7 +2,10 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ResourcesService, ObjectStatisticsService, UriBasedService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { ResourcesService } from '../../services/resources.service';
+import { ObjectStatisticsService } from '../../services/object-statistics.service';
+import { UriBasedService } from '../../services/uri-based.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';

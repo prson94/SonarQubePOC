@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { ObjectStatisticsService } from '../../../services/index';
+import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 
 @Component({

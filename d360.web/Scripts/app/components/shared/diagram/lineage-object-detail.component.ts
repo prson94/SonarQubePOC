@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef } from '@angular/core';
-import { DiagramService } from '../../../services/index';
+import { DiagramService } from '../../../services/diagram.service';
 import { DynamicTypeBuilder, IHaveDynamicData } from '../../../services/dynamic-type-builder';
 
 @Component({

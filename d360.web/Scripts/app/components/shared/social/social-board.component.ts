@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { SocialService } from '../../../services/index';
+import { SocialService } from '../../../services/social.service';
 import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../../models/social.model';
 import { CurrentCompanySettings } from '../../../static/company-settings'
 

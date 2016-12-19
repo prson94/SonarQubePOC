@@ -2,7 +2,12 @@
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService, StateService, HeaderActionsService} from '../../services/index';
+import { MessagesService } from '../../services/messages.service';
+import { GridDefinitionService } from '../../services/grid-definition.service';
+import { ArtifactService } from '../../services/artifacts.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { StateService } from '../../services/state.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
@@ -12,7 +17,7 @@ import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-artifact-grid',
-    providers: [GridDefinitionService, UriBasedService, ArtifactService, PermissionsService],
+    providers: [GridDefinitionService, ArtifactService, PermissionsService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions() && !hasSuggest" [hasSuggest]="hasSuggest" (suggestClick)="add()" [hasExport]="true" (addClick)="add()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;resetFilters();"></d3s-tile-actions>                            
@@ -122,7 +127,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         private stateService: StateService,
         private permissionsService: PermissionsService,
         private router: Router,
-        private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
+        private gridDefinitionService: GridDefinitionService, private artifactService: ArtifactService) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }

@@ -1,6 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { ArtifactService, MessagesService } from '../../../services/index';
+import { ArtifactService } from '../../../services/artifacts.service';
+import { MessagesService } from '../../../services/messages.service';
 
 @Component({
     selector: 'd3s-artifact-status',

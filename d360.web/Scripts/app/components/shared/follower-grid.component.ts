@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { FollowerService } from '../../services/index';
+import { FollowerService } from '../../services/follower.service';
 import { FollowDetail } from '../../models/follower.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 

@@ -1,5 +1,8 @@
 ﻿import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, RightSidebarService, WebAnalyticsService  } from '../../services/index';
+import { MessagesService } from '../../services/messages.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Title } from '@angular/platform-browser';
 import { BaseComponent } from '../shared/base.component';
 import { Subscription }   from 'rxjs/Subscription';

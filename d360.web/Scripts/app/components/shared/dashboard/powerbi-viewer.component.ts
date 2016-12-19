@@ -1,7 +1,8 @@
 ﻿import {Component, Input, OnChanges, SimpleChange, ViewChildren, ElementRef, AfterViewInit, QueryList} from '@angular/core';
 import * as pbi from 'powerbi-client';
 import { BaseComponent } from '../../shared/base.component';
-import { DashboardService, WebAnalyticsService } from '../../../services/index';
+import { DashboardService } from '../../../services/dashboard.service';
+import { WebAnalyticsService } from '../../../services/web-analytics.service';
 import { Dashboard, DashboardTokens } from '../../../models/dashboard.model'
 
 @Component({

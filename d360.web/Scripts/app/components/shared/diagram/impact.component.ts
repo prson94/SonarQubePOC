@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { PermissionsService, DiagramService } from '../../../services/index';
+import { PermissionsService } from '../../../services/permissions.service';
+import { DiagramService } from '../../../services/diagram.service';
 import { Permission } from '../../../models/permission.model';
 import { ImpactDiagramModel, NodeModel, LinkModel, ImpactFilter, FilterType} from '../../../models/impact.model';
 import { MenuItem } from 'primeng/primeng';

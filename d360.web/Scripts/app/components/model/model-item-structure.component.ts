@@ -2,7 +2,12 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ModelsService, RightSidebarService, MessagesService, HeaderActionsService, PermissionsService } from '../../services/index';
+import { ModelsService } from '../../services/models.service';
+import { MessagesService } from '../../services/messages.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';

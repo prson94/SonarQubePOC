@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Taxonomy, TaxonomyLevel } from '../../models/taxonomy.model';
-import { LevelsService, MessagesService  } from '../../services/index';
+import { LevelsService  } from '../../services/levels.service';
+import { MessagesService  } from '../../services/messages.service';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({

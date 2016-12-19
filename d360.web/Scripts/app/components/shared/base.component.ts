@@ -1,7 +1,11 @@
 ﻿import { Input } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { RightSidebarService, WebAnalyticsService, PermissionsService, MessagesService  } from '../../services/index';
+import { PermissionsService } from '../../services/permissions.service';
+import { MessagesService } from '../../services/messages.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
+
 import { Subscription }   from 'rxjs/Subscription';
 import { Permission } from '../../models/permission.model'
 import { StringConstants } from '../../static/string-constants';

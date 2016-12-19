@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Report, ReportTile } from '../../../models/report.model';
-import { MessagesService, ReportsService  } from '../../../services/index';
+import { ReportsService  } from '../../../services/reports.service';
+import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
 
 @Component({

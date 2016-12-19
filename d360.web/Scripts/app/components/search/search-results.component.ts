@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, Input, EventEmitter, Output, ChangeDetectionStrategy} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { SearchService } from '../../services/index';
+import { SearchService } from '../../services/search.service';
 import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../models/search-result.model';
 
 @Component({

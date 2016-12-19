@@ -2,7 +2,8 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RightSidebarService  } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 
 

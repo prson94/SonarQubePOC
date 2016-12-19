@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { DiagramService } from '../../../services/index';
+import { DiagramService } from '../../../services/diagram.service';
 import { SourceRule } from '../../../models/lineage.model';
 
 @Component({

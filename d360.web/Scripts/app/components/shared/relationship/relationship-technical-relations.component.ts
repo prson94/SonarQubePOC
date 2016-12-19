@@ -1,6 +1,7 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { MessagesService, RelationshipsService} from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { RelationshipsService } from '../../../services/relationships.service';
 import { BaseComponent } from '../../shared/base.component';
 import { FusionAttributeItemDetailsComponent } from '../fusion-attribute-item-details.component';
 import { ObjectRelationship, PossibleTechnicalRelationship } from '../../../models/relationship.model';

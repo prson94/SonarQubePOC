@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit, Input} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { SearchService } from '../../services/index';
+import { SearchService } from '../../services/search.service';
 import { SearchFullResult } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 

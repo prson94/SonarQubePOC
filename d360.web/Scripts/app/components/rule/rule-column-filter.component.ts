@@ -1,6 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem  } from 'primeng/primeng';
-import { RulesService, RelationshipsService, AttributeTypeService } from '../../services/index';
+import { RulesService } from '../../services/rules.service';
+import { RelationshipsService } from '../../services/relationships.service';
+import { AttributeTypeService } from '../../services/attribute-type.service';
 import { GridFilterExpression, GridFilterColumn, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
 import { ObjectRelationship, RelatedItem } from '../../models/relationship.model';
 import { AttributeType } from '../../models/attribute-type.model';

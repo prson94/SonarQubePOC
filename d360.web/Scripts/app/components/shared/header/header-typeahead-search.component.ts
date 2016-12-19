@@ -1,5 +1,5 @@
 ﻿import { Component } from '@angular/core';
-import { TypeaheadSearchService } from '../../../services/index';
+import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { Router, NavigationEnd } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';

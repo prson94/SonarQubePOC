@@ -1,5 +1,6 @@
 ﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
-import { RelationshipsService, MessagesService  } from '../../../services/index';
+import { RelationshipsService } from '../../../services/relationships.service';
+import { MessagesService  } from '../../../services/messages.service';
 import { Relationship } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';

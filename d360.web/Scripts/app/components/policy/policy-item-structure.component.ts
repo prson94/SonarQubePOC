@@ -2,7 +2,12 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, MessagesService, HeaderActionsService, PermissionsService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { PoliciesService } from '../../services/policies.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { MessagesService } from '../../services/messages.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';

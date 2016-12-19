@@ -1,5 +1,6 @@
 ﻿import { Input, Component, OnInit, ViewChild } from '@angular/core';
-import { ArtifactTypeService, StateService } from '../../services/index';
+import { ArtifactTypeService } from '../../services/artifact-type.service';
+import { StateService } from '../../services/state.service';
 import { BaseComponent} from '../shared/base.component';
 import { ArtifactTypeStatusCount, ArtifactTypeUsedVsUnusedResponsibility } from '../../models/artifact-type.model';
 import { ArtifactType } from '../../models/artifact-type.model';

@@ -1,6 +1,6 @@
 ﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { ScoreService } from '../../../services/index';
+import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
 import { Highcharts } from 'angular2-highcharts';
 

@@ -1,6 +1,9 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { HeaderBreadcrumbService, ReferenceService, MessagesService, PermissionsService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { ReferenceService } from '../../services/reference.service';
+import { MessagesService } from '../../services/messages.service';
+import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';
 import * as _ from 'lodash';
 

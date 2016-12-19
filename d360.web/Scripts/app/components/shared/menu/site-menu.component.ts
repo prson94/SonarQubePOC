@@ -1,6 +1,11 @@
 ﻿import { Input, Component, OnInit, OnDestroy} from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { SiteMenuService, AuthenticationService, StateService, FavoritesService, HeaderActionsService, MessagesService } from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { HeaderActionsService } from '../../../services/header-actions.service';
+import { StateService } from '../../../services/state.service';
+import { FavoritesService } from '../../../services/favorites.service';
+import { AuthenticationService } from '../../../services/authentication.service';
+import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import { Favorite } from '../../../models/favorite.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';

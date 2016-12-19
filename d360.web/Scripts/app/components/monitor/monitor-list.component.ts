@@ -2,7 +2,8 @@
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, WorkflowService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { WorkflowService } from '../../services/workflow.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Issue, IssueDetail } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';

@@ -1,7 +1,12 @@
 ///<reference path="../../node_modules/typings/index.d.ts"/>  
 import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
+import { MessagesService } from './services/messages.service';
+import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
+import { HeaderActionsService } from './services/header-actions.service';
+import { RightSidebarService } from './services/right-sidebar.service';
+import { StateService } from './services/state.service';
+import { WebAnalyticsService } from './services/web-analytics.service';
 import { DynamicTypeBuilder, IHaveDynamicData } from './services/dynamic-type-builder';
 import { SiteMessage } from './models/site-message.model';
 import { Subscription }   from 'rxjs/Subscription';

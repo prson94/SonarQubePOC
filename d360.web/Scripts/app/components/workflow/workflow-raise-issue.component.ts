@@ -2,7 +2,13 @@
 import { Location } from '@angular/common';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RightSidebarService, WorkflowService, WebAnalyticsService, ObjectDetailService, TagService } from '../../services/index';
+import { WorkflowService } from '../../services/workflow.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
+import { ObjectDetailService } from '../../services/object-detail.service';
+import { TagService } from '../../services/tag.service';
+
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType, WorkflowIssueType } from '../../models/workflow.model';

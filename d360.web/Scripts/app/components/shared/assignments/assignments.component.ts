@@ -1,6 +1,7 @@
 ﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { WorkflowService, ResourcesService } from '../../../services/index';
+import { WorkflowService } from '../../../services/workflow.service';
+import { ResourcesService } from '../../../services/resources.service';
 import { Count } from '../../../models/counts.model';
 import { Resource } from '../../../models/resource.model';
 import { WorkflowType } from '../../../models/workflow.model';

@@ -1,6 +1,6 @@
 ﻿import { Component, Input, Output, EventEmitter, HostBinding } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { TagService } from '../../../services/index';
+import { TagService } from '../../../services/tag.service';
 import { Tag } from '../../../models/tag.model';
 
 @Component({

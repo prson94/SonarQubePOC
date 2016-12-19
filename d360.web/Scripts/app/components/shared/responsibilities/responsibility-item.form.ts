@@ -2,7 +2,8 @@
 import { ResponsibilityItem, ResponsibilityContextItem, ResponsibilityEditorModel } from '../../../models/responsibility.model';
 import { FormMessage, FormHelper } from '../../../models/form.model';
 import { SelectItem } from 'primeng/primeng';
-import { MessagesService, ResponsibilityService } from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { ResponsibilityService } from '../../../services/responsibility.service';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
 

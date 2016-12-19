@@ -16,7 +16,12 @@ import { HeaderModule } from './components/shared/header/header.module';
 import { AdminUserGuard } from './guards/admin-user.guard';
 
 import { AuthenticationService } from './services/authentication.service';
-import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
+import { MessagesService } from './services/messages.service';
+import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
+import { HeaderActionsService } from './services/header-actions.service';
+import { RightSidebarService } from './services/right-sidebar.service';
+import { StateService } from './services/state.service';
+import { WebAnalyticsService } from './services/web-analytics.service';
 import { DynamicTypeBuilder }     from './services/dynamic-type-builder';
 
 import { AuthenticationConnectionBackend } from './authentication-connection-backend';

@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnInit} from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { MessagesService, DashboardService } from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { DashboardService } from '../../../services/dashboard.service';
 import { Dashboard } from '../../../models/dashboard.model'
 
 @Component({

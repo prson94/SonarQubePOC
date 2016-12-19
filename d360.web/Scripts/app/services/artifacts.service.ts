@@ -8,7 +8,6 @@ import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
-import 'rxjs/Rx';
 
 @Injectable()
 export class ArtifactService extends BaseService {

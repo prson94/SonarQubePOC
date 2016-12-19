@@ -2,7 +2,11 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RulesService, MessagesService, HeaderActionsService, PermissionsService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RulesService } from '../../services/rules.service';
+import { MessagesService } from '../../services/messages.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDimension, Rule, RuleClassification, RuleStatus } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';

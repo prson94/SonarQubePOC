@@ -1,7 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { HeaderBreadcrumbService, ResponsibilityTypeService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';

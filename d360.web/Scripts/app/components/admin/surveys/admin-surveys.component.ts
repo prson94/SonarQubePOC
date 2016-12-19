@@ -1,6 +1,8 @@
 ﻿import { Component } from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, TemplatesService,  SurveysService  } from '../../../services/index';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SurveysService } from '../../../services/surveys.service';
+import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../../models/survey.model';

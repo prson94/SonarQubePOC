@@ -2,7 +2,9 @@
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService, UriBasedService } from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { UriBasedService } from '../../../services/uri-based.service';
 import { BaseComponent } from '../../shared/base.component';
 
 @Component({

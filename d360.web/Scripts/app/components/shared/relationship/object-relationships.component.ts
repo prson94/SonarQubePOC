@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { RelationshipsService } from '../../../services/index';
+import { RelationshipsService } from '../../../services/relationships.service';
 import { ObjectRelationshipCount } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { Permission } from '../../../models/permission.model'

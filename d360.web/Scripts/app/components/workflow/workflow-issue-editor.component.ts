@@ -1,7 +1,9 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
-import { ResourcesService, WorkflowService, MessagesService } from '../../services/index';
+import { ResourcesService } from '../../services/resources.service';
+import { MessagesService } from '../../services/messages.service';
+import { WorkflowService } from '../../services/workflow.service';
 import { Issue, IssueInfo } from '../../models/workflow.model';
 import { Resource } from '../../models/resource.model';
 

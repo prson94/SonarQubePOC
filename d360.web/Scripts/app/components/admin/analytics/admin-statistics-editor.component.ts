@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
-import { StatisticService } from '../../../services/index';
+import { StatisticService } from '../../../services/statistics.service';
 import { StatisticType, StatisticCheckTypes } from '../../../models/statistic.model';
 import * as _ from 'lodash';
 

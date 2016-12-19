@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { FusionService } from '../../services/index';
+import { FusionService } from '../../services/fusion.service';
 import { FusionPromotionExecutionStats } from '../../models/fusion.model';
 import * as _ from 'lodash';
 

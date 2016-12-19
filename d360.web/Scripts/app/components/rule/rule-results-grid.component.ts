@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { RulesService } from '../../services/index';
+import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Rule, RuleResult, RuleResultPagedResults, RuleResultFilter } from '../../models/rule.model';

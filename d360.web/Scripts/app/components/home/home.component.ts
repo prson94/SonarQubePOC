@@ -2,7 +2,10 @@
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
+import { ObjectActionsService } from '../../services/object-actions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType } from '../../models/workflow.model';

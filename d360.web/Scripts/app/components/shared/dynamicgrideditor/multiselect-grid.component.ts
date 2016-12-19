@@ -1,6 +1,6 @@
 ﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { UriBasedService } from '../../../services/index';
+import { UriBasedService } from '../../../services/uri-based.service';
 import { EditorField } from '../../../models/editor-field.model';
 import * as _ from 'lodash';
 import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';

@@ -1,5 +1,7 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../../services/index';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { WorkflowService } from '../../../services/workflow.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { WorkflowItem, WorkflowType } from '../../../models/workflow.model';
 import { MenuItem } from 'primeng/primeng';
 import { Breadcrumb } from '../../../models/breadcrumb.model';

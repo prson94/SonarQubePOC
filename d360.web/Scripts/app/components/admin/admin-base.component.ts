@@ -1,5 +1,8 @@
 ﻿import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, RightSidebarService  } from '../../services/index';
+import { MessagesService } from '../../services/messages.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 

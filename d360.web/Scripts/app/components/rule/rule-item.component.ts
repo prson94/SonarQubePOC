@@ -2,7 +2,11 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RightSidebarService, RulesService, PermissionsService, SurveysService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { RulesService } from '../../services/rules.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { SurveysService } from '../../services/surveys.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDetail } from '../../models/rule.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';

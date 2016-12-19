@@ -3,7 +3,7 @@ import { SelectItem } from 'primeng/primeng';
 import { FieldType, FieldTypeEditorModel, FilteredLookupItem, FilteredLookupDisplayField, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField, FieldTypeRelationItemEditorModel, ComplexLookupRelationType, FieldTypeItemDisplayFieldEditorModel } from '../../../models/fields.model';
 import { FieldsService } from '../../../services/fields.service';
 import { MessagesService } from '../../../services/messages.service';
-import { ObjectDetailService } from '../../../services/index';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../../shared/base.component';
 
 import * as _ from 'lodash';

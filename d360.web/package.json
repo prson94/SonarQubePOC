@@ -51,8 +51,8 @@
     "to-string-loader": "^1.1.4",
     "typescript": "^2.0.3",
     "typings": "^0.7.5",
-    "webpack": "2.1.0-beta.25",
-    "webpack-dev-server": "^2.1.0-beta.9",
+    "webpack": "2.2.0-rc.0",
+    "webpack-dev-server": "^2.2.0-rc.0",
     "webpack-merge": "^0.8.4"
   }
 }

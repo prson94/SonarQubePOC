@@ -1,6 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { MessagesService, SurveysService  } from '../../services/index';
+import { SurveysService  } from '../../services/surveys.service';
+import { MessagesService  } from '../../services/messages.service';
 import { BaseComponent } from '../shared/base.component';
 import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyQuestionOption, SurveyTypeDisplayStyle } from '../../models/survey.model';
 

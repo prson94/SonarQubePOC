@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { FusionService } from '../../services/index';
+import { FusionService } from '../../services/fusion.service';
 import { FusionAgentExecutionStats, FusionConfigurationDetails } from '../../models/fusion.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import * as _ from 'lodash';

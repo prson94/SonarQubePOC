@@ -3,7 +3,7 @@ import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../../models/editor-field.model';
 import { SelectItem } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { UriBasedService } from '../../../services/index';
+import { UriBasedService } from '../../../services/uri-based.service';
 
 declare var CompanySettings;
 

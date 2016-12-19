@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FusionService } from '../../services/index';
+import { FusionService } from '../../services/fusion.service';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeType, FusionQueryAttributeType, FusionConfigurationDetails  } from '../../models/fusion.model';
 import { TreeNode } from 'primeng/primeng';

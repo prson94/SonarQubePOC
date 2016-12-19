@@ -1,6 +1,6 @@
 ﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { WorkflowService } from '../../services/index';
+import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowStatusDetails } from '../../models/workflow.model';
 
 @Component({

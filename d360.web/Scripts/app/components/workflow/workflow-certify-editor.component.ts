@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
-import { WorkflowService } from '../../services/index';
+import { WorkflowService } from '../../services/workflow.service';
 import { CertifyItem } from '../../models/workflow.model';
 
 import * as _ from 'lodash';

@@ -1,7 +1,7 @@
 ﻿import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { WorkflowService } from '../../services/index';
+import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import * as _ from 'lodash';
 

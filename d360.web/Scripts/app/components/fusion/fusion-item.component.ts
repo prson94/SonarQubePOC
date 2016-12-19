@@ -1,6 +1,9 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HeaderBreadcrumbService, FusionService, RightSidebarService, PermissionsService } from '../../services/index';
+import { FusionService } from '../../services/fusion.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';

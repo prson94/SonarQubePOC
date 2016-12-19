@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { SurveyQuestionType, SurveyType } from '../../../models/survey.model';
-import { MessagesService, SurveysService  } from '../../../services/index';
+import { SurveysService } from '../../../services/surveys.service';
+import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
 
 @Component({

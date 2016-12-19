@@ -1,5 +1,6 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
-import { PermissionsService, DiagramService } from '../../../services/index';
+import { PermissionsService } from '../../../services/permissions.service';
+import { DiagramService } from '../../../services/diagram.service';
 import { BaseComponent } from '../base.component';
 import { DiagramObjectType, LinkModel, NodeModel, MapItem, Responsibility, TechnicalRelation } from '../../../models/lineage.model';
 

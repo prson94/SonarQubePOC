@@ -1,6 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit } from '@angular/core';
 import { FormArray, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
-import { EditorDefinitionService, UriBasedService, MessagesService } from '../../../services/index';
+import { EditorDefinitionService } from '../../../services/editor-definition.service';
+import { UriBasedService } from '../../../services/uri-based.service';
+import { MessagesService } from '../../../services/messages.service';
 import { EditorField, EditorRow, FieldValidation, EditorDropDownItem } from '../../../models/editor-field.model';
 import { BaseComponent } from '../base.component';
 

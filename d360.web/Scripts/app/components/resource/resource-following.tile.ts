@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { ResourcesService } from '../../services/index';
+import { ResourcesService } from '../../services/resources.service';
 import { Resource, CountObject } from '../../models/resource.model';
 
 declare var CurrentResourceID;

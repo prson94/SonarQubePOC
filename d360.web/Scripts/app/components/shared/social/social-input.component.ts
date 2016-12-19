@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, HostBinding, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { SocialService } from '../../../services/index';
+import { SocialService } from '../../../services/social.service';
 import { SocialComment, SocialEditCommentData } from '../../../models/social.model';
 import { Tag } from '../../../models/tag.model';
 

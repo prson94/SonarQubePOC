@@ -2,7 +2,7 @@
 import { NgModule, Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { FusionAttributeService } from '../../services/index';
+import { FusionAttributeService } from '../../services/fusion-attribute.service';
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CoreModule } from './core.module';

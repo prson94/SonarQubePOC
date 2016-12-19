@@ -1,6 +1,7 @@
 ﻿import { Input, Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactTypeService, HeaderBreadcrumbService } from '../../services/index';
+import { ArtifactTypeService } from '../../services/artifact-type.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ArtifactTypeSummary } from '../../models/artifact-type.model';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';

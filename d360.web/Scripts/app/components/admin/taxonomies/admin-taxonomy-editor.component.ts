@@ -1,7 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
-import { TaxonomiesService, ObjectStyleService } from '../../../services/index';
+import { TaxonomiesService } from '../../../services/taxonomies.service';
+import { ObjectStyleService } from '../../../services/object-style.service';
 import { Taxonomy, TaxonomyClassification } from '../../../models/taxonomy.model';
 import * as _ from 'lodash';
 

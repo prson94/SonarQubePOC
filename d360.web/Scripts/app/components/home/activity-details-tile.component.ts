@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { ArtifactService } from '../../services/index';
+import { ArtifactService } from '../../services/artifacts.service';
 import { Count} from '../../models/counts.model';
 import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';

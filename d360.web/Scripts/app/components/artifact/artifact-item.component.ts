@@ -1,6 +1,11 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactService, HeaderBreadcrumbService, RightSidebarService, WebAnalyticsService, SurveysService, PermissionsService } from '../../services/index';
+import { ArtifactService } from '../../services/artifacts.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
+import { SurveysService } from '../../services/surveys.service';
+import { PermissionsService } from '../../services/permissions.service';
 import { Artifact } from '../../models/artifacts.model';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent } from './artifact-base.component';

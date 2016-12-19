@@ -1,7 +1,7 @@
 ﻿import { Input, Component  } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { FusionService } from '../../services/index';
+import { FusionService } from '../../services/fusion.service';
 import { FusionConfigurationDetails } from '../../models/fusion.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 

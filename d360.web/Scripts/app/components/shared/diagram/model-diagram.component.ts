@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { DiagramService } from '../../../services/index';
+import { DiagramService } from '../../../services/diagram.service';
 import { HierarchyDiagramModel } from '../../../models/model.model';
 import { MenuItem } from 'primeng/primeng';
 

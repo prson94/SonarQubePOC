@@ -1,5 +1,8 @@
 ﻿import { Component} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, AttributeTypeService, RightSidebarService  } from '../../../services/index';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { AttributeTypeService } from '../../../services/attribute-type.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { MessagesService} from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { AttributeType } from '../../../models/attribute-type.model';
 import { TreeNode } from 'primeng/primeng';

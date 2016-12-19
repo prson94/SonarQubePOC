@@ -1,6 +1,10 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, FusionService, RightSidebarService, MessagesService, ObjectStyleService  } from '../../../services/index';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { FusionService } from '../../../services/fusion.service';
+import { ObjectStyleService } from '../../../services/object-style.service';
+import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { FormMode } from '../../../models/form.model';
 import { FusionType } from '../../../models/fusion.model';

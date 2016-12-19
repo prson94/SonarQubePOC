@@ -1,6 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { RuleDimension } from '../../../models/rule.model';
-import { MessagesService, RulesService  } from '../../../services/index';
+import { MessagesService } from '../../../services/messages.service';
+import { RulesService  } from '../../../services/rules.service';
 import { BaseComponent } from '../../shared/base.component';
 
 @Component({

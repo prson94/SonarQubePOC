@@ -1,5 +1,6 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
-import { ObjectDetailService, HeaderActionsService } from '../../services/index';
+import { ObjectDetailService } from '../../services/object-detail.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
 import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../../models/object-detail.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';

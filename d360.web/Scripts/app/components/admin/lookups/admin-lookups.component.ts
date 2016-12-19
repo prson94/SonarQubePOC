@@ -1,6 +1,9 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { MessagesService, HeaderBreadcrumbService, LookupService, RightSidebarService  } from '../../../services/index';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { LookupService } from '../../../services/lookup.service';
+import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Lookup } from '../../../models/lookup.model';
 import { Title } from '@angular/platform-browser';

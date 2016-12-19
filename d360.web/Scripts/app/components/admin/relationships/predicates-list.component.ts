@@ -1,6 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { Predicate } from '../../../models/predicate.model';
-import { MessagesService, PredicatesService  } from '..//../../services/index';
+import { PredicatesService } from '../../../services/predicates.service';
+import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
 

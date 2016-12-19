@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { FusionService } from '../../services/index';
+import { FusionService } from '../../services/fusion.service';
 import { FusionConfigurationDetails, FusionQueryAttributeType  } from '../../models/fusion.model';
 import { BaseComponent } from '../shared/base.component';
 import * as _ from 'lodash';

@@ -5,9 +5,6 @@ import {BaseService} from './base.service';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 
-
-import 'rxjs/add/operator/toPromise';
-
 @Injectable()
 export class TemplatesService extends BaseService {
     private templatesUrl = 'api/templates/tooltip';

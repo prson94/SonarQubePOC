@@ -1,6 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { SearchService, TypeaheadSearchService } from '../../services/index';
+import { SearchService } from '../../services/search.service';
+import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 
