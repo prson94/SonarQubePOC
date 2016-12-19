@@ -42,7 +42,7 @@ export class FusionManualLoadComponent extends BaseComponent {
     uploadedFiles: any[] = [];
 
     private selectedFusionAttributeTypeId: number;
-
+    
     constructor(private router: Router, private fusionService: FusionService) {
         super();
     }

@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, Response, ResponseContentType  } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { FormHelper } from '../models/form.model';
@@ -298,9 +298,24 @@ export class FusionService extends BaseService {
     }
 
     downloadFusionManualLoadTemplate(fusionId: number, fusionTypeId: number, fusionAttributeTypeId: number) {
-        window.location.assign(`internal/fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`);
+        let uri = `internal/fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`;
+        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, fusionAttributeTypeId.toString()));
     }
 
+    downloadFile(data: Response, name: string) {
+        var filename = `Load Template For ${name}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
+    }
+    
     getEditFusionRule(id: number): Promise<FusionRuleEditorModel> {
         return this.http.get(`form/GetEditFusionRule?id=${id}`)
             .toPromise()
