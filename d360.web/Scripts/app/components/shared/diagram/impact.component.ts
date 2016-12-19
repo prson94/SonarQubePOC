@@ -150,13 +150,14 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                         });
 
                 });
+                if (this.model.links) {
+                    this.model.links.forEach(l => {
+                        l.isTreeLink = true;
+                    });
+                    this.aggregatePredicates(this.model.nodes, this.model.links);
+                    this.addCategoryLayer(focal, this.model.nodes, this.model.links, false);
+                }
 
-                this.model.links.forEach(l => {
-                    l.isTreeLink = true;
-                });
-
-                this.aggregatePredicates(this.model.nodes, this.model.links);
-                this.addCategoryLayer(focal, this.model.nodes, this.model.links, false);
 
                 this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
                 this.isLoading = false;

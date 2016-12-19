@@ -31,6 +31,7 @@ import { QualifierType, ResolutionObjectType } from '../../models/qualifier.mode
                             <div class="col s4 offset-s4">
                                 <div class="FieldName" style="display:block;">Resolution Field</div>
                                 <select name="resType" [(ngModel)]="qualifier.ResolutionFieldTypeID" style="width:95%" required>
+                                    <option></option>
                                     <option *ngFor="let i of resolutionFields" [value]="i.ID">{{i.FriendlyName}}</option>
                                 </select>
                             </div>
