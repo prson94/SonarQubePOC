@@ -7,6 +7,11 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using d360.core.entities.Contracts;
+using System.Collections.Generic;
+using d360.extensions;
+using System.Reflection;
+using Autofac.Features.Metadata;
+using Autofac;
 
 namespace d360.model
 {
@@ -24,11 +29,27 @@ namespace d360.model
             //output queries in debug mode to console
             if (System.Diagnostics.Debugger.IsAttached)
                 this.Database.Log = Console.Write;
+
+            var builder = new ContainerBuilder();
+
+            var folder = AppDomain.CurrentDomain.BaseDirectory;
+
+            var files = System.IO.Directory.GetFiles(folder, "d360.extensions.*.dll");
+
+            var assemblies = (
+                             from f in files
+                             select Assembly.LoadFrom(f)
+                             ).ToArray();
+            builder.RegisterAssemblyTypes(assemblies).As<IWorkflowActivity>();
+            var container = builder.Build();
+            //var processor = container.Resolve<FusionProcessor>();
         }
 
         #endregion
 
         #region Properties
+
+        readonly IEnumerable<Meta<IWorkflowActivity>> ActivityTypes;
 
         public int CurrentResourceID { get; set; }
         public int CurrentCompanyID { get; set; }
@@ -111,7 +132,7 @@ namespace d360.model
                 }
                 #endregion
             }
-           
+
             try
             {
                 returnValue = base.SaveChanges();
@@ -150,6 +171,30 @@ namespace d360.model
 
             WorkflowItems.Add(item);
             SaveChanges();
+
+            //initiate first step.
+            var firstVersionStep = version.Steps.Single(s => s.StepType == core.enums.Workflow.StepType.Start);
+
+            var firstItemStep = new WorkflowItemStep { Date = DateTime.UtcNow, Step = firstVersionStep, Fields = "", Settings = "" };
+            item.Steps.Add(firstItemStep);
+
+            //var activity = ActivityTypes.SingleOrDefault(i => i.ID == firstItemStep.Step.ActivityType);
+
+            ////execute this activity.
+
+            ////Find the next activities from the start.
+            //var nextTransitions = transitions.Where(t => t.FromVersionStepID == firstVersionStep.ID).ToList();
+
+            ////Execute ALWAYS transitions.
+            //nextTransitions.Where(i => i.LinkType == core.enums.Workflow.LinkType.Always);
+
+            /*
+             NOTES: 
+             May need to include a TEST flag on the workflow.Item table so we can mark something as a test and not actually 
+             process the changes. The flag would be set when a user wants to test the development of workflow.
+
+             May need to extract a few statements from above code and make it more generic.
+             */
 
             return item;
         }
