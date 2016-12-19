@@ -20,21 +20,22 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                         <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
                         <p-dataTable #dt [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onLazyLoad)="loadRuleResultsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="EffectiveDate" header="Effective Date" [sortable]="true">
+                            <p-column field="EffectiveDate" header="Effective Date" [sortable]="true" [style]="{width:'120px'}">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
                                 </template>
                             </p-column>
-                            <p-column field="PassFraction" header="Pass Fraction" [sortable]="true" [style]="{width:'15%'}"></p-column>
-                            <p-column field="RowsPassed" header="Rows Passed" [sortable]="true" [style]="{width:'15%'}"></p-column>
-                            <p-column field="RowsFailed" header="Rows Failed" [sortable]="true" [style]="{width:'15%'}"></p-column>
-                            <p-column field="Passed" header="Passed" [sortable]="true" [style]="{width:'10%'}">
+                            <p-column field="PassFraction" header="Pass Fraction" [sortable]="true" [style]="{width:'150px'}"></p-column>
+                            <p-column field="RowsPassed" header="Rows Passed" [sortable]="true" [style]="{width:'150px'}"></p-column>
+                            <p-column field="RowsFailed" header="Rows Failed" [sortable]="true" [style]="{width:'150px'}"></p-column>
+                            <p-column field="Passed" header="Passed" [sortable]="true" [style]="{width:'150px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
                                     <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
                                 </template>
                             </p-column>
-                            <p-column field="FusionAttribute" header="Fusion" [sortable]="true" [style]="{width:'25%'}"></p-column>
+                            <p-column field="FusionAttribute" header="Fusion" [sortable]="true" [style]="{width:'200px'}"></p-column>
+                            <p-column *ngFor="let q of results?.qualifiers" [field]="q" [header]="q" [sortable]="true" [style]="{width:'200px'}"></p-column>
                         </p-dataTable>
                 </span>                
                 `,

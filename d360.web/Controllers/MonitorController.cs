@@ -164,9 +164,34 @@ inner join [Rule] T on T.ID = G.RuleID and A.EventGroupID = @id {1}", columns, j
 
             var querySql = @"select	A.*,
         F.TextPath as FusionAttribute
+{1}
 from	RuleResult A 
         left join FusionAttribute F on F.ID = A.FusionAttributeID
+        {0}
 where   A.RuleID = @id";
+
+            var ruleQualifiers = Company.Query<string>(@"select Name from RuleResultQualifierType where RuleID = @id", new { id }).ToList();
+            var qualifierFieldsSql = "";
+
+            if (ruleQualifiers.Count > 0)
+            {
+                qualifierFieldsSql = @"
+                        left join
+		                        (select * from
+			                        (select q.RuleResultID as ResID, QT.[Name] as N, Q.[Value] as Val from RuleResultQualifierType QT
+			                        join RuleResultQualifier Q on Q.RuleResultQualifierTypeID = QT.ID
+			                        where QT.RuleID = @id) as vt
+			                        pivot
+			                        (
+			                        max(Val) for N in (
+			                        {0}
+			                        )
+			                        ) as qr) as RQ on RQ.ResID = A.ID
+                                    ";
+                qualifierFieldsSql = string.Format(qualifierFieldsSql, string.Join(",", ruleQualifiers));
+            }
+
+            querySql = string.Format(querySql, qualifierFieldsSql, (ruleQualifiers.Count > 0) ? ",RQ.*" : "");
 
             //if simple filter specified add that citeria to the sql
             if (!string.IsNullOrEmpty(filter))
@@ -182,8 +207,9 @@ where   A.RuleID = @id";
                 }, "RuleResult", id, filter, dbArgs)}";
             }
 
-
             querySql = applyRelationFilteringExists(querySql, Request, dbArgs);
+
+           
 
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql);
@@ -199,7 +225,7 @@ where   A.RuleID = @id";
             int total = Company.Query<int>(countSql, dbArgs).First();
             var query = Company.Query<dynamic>(sql, dbArgs);
 
-            return new JsonNetResult { Data = new { total, results = query }, Formatting = Formatting.None };
+            return new JsonNetResult { Data = new { total, results = query, qualifiers = ruleQualifiers }, Formatting = Formatting.None };
         }
 
         #endregion

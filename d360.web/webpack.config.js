@@ -10,7 +10,9 @@ var webpackConfig = {
     'vendor':    './scripts/app/vendor.ts',
     'main':       './scripts/app/main.ts',
   },
-
+  stats: {
+      warnings: false //suppress warnings
+  },
   output: {
       path: './scripts/app/',
       publicPath: './scripts/app/'
