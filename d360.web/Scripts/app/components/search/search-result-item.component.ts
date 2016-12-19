@@ -10,7 +10,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     template: `       
                 <div class="search-res-container">
                     <h4 class="search-result-name"><a (click)="navigateLink()" class="search-result-link" [innerHtml]="result?.Name"></a></h4>
-                    <p class="search-result-desc" [innerHtml]="result?.Description"></p>
+                    <p class="search-result-desc" *ngIf="result?.Description" [innerHtml]="result.Description"></p>
                     <h5 class="search-result-attributes">Category: <em class="result-category" [innerHtml]="result?.Type"></em>&nbsp;&nbsp;Type: <em class="result-type">{{result?.Group}}</em></h5>
                 </div>        
                 `,
