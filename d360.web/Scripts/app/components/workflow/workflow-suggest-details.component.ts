@@ -67,6 +67,7 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
+    @Input() resourceID: number = null;
     @Input() hasCloseButton: boolean = true;
     @Input() hasCertifyButton: boolean = true;
 
@@ -82,12 +83,21 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
 
     private loadSuggestions() {
         this.isLoading = true;
-        this.workflowService.getSuggestedItems(this.objectID, this.objectType)
-            .then(result => {
-                this.items = result;
-                if (this.items.length && this.items.length > 0) this.selected = this.items[0];
-                this.isLoading = false;                
-            });
+        if (this.resourceID != null) {
+            this.workflowService.getSuggestedItemsForUser(this.resourceID)
+                .then(result => {
+                    this.items = result;
+                    if (this.items.length && this.items.length > 0) this.selected = this.items[0];
+                    this.isLoading = false;
+                });
+        } else {
+            this.workflowService.getSuggestedItems(this.objectID, this.objectType)
+                .then(result => {
+                    this.items = result;
+                    if (this.items.length && this.items.length > 0) this.selected = this.items[0];
+                    this.isLoading = false;
+                });
+        }
     }
 
 

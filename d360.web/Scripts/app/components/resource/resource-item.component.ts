@@ -85,8 +85,11 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.sub.unsubscribe();
     }
 
-    showAssignment(e: any) {        
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${e.workflowType}`);
+    showAssignment(e: any) {  
+        if (e.resourceID > 0)      
+            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${e.workflowType};resourceID=${e.resourceID}`);
+        else
+            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${e.workflowType}`);
     }
 
     action(e: string) {

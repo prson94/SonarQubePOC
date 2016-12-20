@@ -75,6 +75,7 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
+    @Input() resourceID: number = null;
     @Input() hasCloseButton: boolean = false;
     @Input() hasCertifyButton: boolean = false;
 
@@ -92,13 +93,25 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
     private loadIssues() {
         this.isLoading = true;
-        this.workflowService.getIssues(this.objectID, this.objectType)
-            .then(result => {
-                this.issues = result;
-                if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
-                this.isLoading = false;
-                this.loaded = true;
-            });
+        if (this.resourceID != null) {
+            this.workflowService.getIssuesForUser(this.resourceID)
+                .then(result => {
+                    //console.log('issue details', this.objectType, this.objectID);
+                    this.issues = result;
+                    if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
+                    this.isLoading = false;
+                    this.loaded = true;
+                });
+        } else {
+            this.workflowService.getIssues(this.objectID, this.objectType)
+                .then(result => {
+                    //console.log('issue details', this.objectType, this.objectID);
+                    this.issues = result;
+                    if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
+                    this.isLoading = false;
+                    this.loaded = true;
+                });
+        }
     }
        
 

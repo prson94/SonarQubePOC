@@ -87,6 +87,13 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
+    getSuggestedItemsForUser(resourceID: number): Promise<SuggestedItem[]> {
+        return this.http.get(`services/workflow/tasks/types/1?resourceID=${resourceID}`)
+            .toPromise()
+            .then(response => <SuggestedItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getCertifyItems(objectID: number, objectType: string): Promise<CertifyItem[]> {
         let url = 'services/workflow/tasks/types/2/';
 
@@ -95,6 +102,13 @@ export class WorkflowService extends BaseService implements IWorkflowService {
         }
 
         return this.http.get(url)
+            .toPromise()
+            .then(response => <CertifyItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getCertifyItemsForUser(resourceID: number): Promise<CertifyItem[]> {
+        return this.http.get(`services/workflow/tasks/types/2?resourceID=${resourceID}`)
             .toPromise()
             .then(response => <CertifyItem[]>response.json())
             .catch(err => this.handleError(err));
@@ -130,6 +144,13 @@ export class WorkflowService extends BaseService implements IWorkflowService {
         }
 
         return this.http.get(url)
+            .toPromise()
+            .then(response => <Issue[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getIssuesForUser(resourceID: number): Promise<Issue[]> {
+        return this.http.get(`services/workflow/tasks/types/3?resourceID=${resourceID}`)
             .toPromise()
             .then(response => <Issue[]>response.json())
             .catch(err => this.handleError(err));

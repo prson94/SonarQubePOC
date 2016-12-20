@@ -17,9 +17,9 @@ import * as _ from 'lodash';
                 <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                                <d3s-workflow-issue-details *ngIf="workflowType == tempWorkflowtype.WorkIssue" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();"></d3s-workflow-issue-details>                    
-                                <d3s-workflow-suggest-details *ngIf="workflowType == tempWorkflowtype.SuggestNewArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();"></d3s-workflow-suggest-details>                    
-                                <d3s-workflow-certify-details *ngIf="workflowType == tempWorkflowtype.CertifyArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();"></d3s-workflow-certify-details>                                  
+                                <d3s-workflow-issue-details *ngIf="workflowType == tempWorkflowtype.WorkIssue" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();" [objectType]="objectType" [objectID]="objectID" [resourceID]="resourceID"></d3s-workflow-issue-details>                    
+                                <d3s-workflow-suggest-details *ngIf="workflowType == tempWorkflowtype.SuggestNewArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();" [objectType]="objectType" [objectID]="objectID"></d3s-workflow-suggest-details>                    
+                                <d3s-workflow-certify-details *ngIf="workflowType == tempWorkflowtype.CertifyArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();" [objectType]="objectType" [objectID]="objectID"></d3s-workflow-certify-details>                                  
                         </div>
                     </div>
                 </div>                
@@ -30,6 +30,10 @@ export class WorkflowDetailComponent extends BaseComponent implements OnInit, On
     @Input() workflowType: WorkflowType;
     @Input() hasCloseButton: boolean = true;
     @Input() hasCertifyButton: boolean = true;
+
+    private objectType: string = null;
+    private objectID: number = null;
+    private resourceID: number = null;
     
 
     private sub: any;
@@ -48,6 +52,13 @@ export class WorkflowDetailComponent extends BaseComponent implements OnInit, On
         this.sub = this.route.params.subscribe(params => {
             this.isLoading = true;            
             this.workflowType = +params['workflowType'];
+
+            this.objectType = params['objectType'];
+            this.objectID = +params['objectID'];
+            this.resourceID = +params['resourceID'];
+
+            console.log(this.objectType, this.objectID);
+
             this.headerBreadcrumbService.clearBreadcrumbs();
             switch (this.workflowType) {
                 case WorkflowType.WorkIssue:

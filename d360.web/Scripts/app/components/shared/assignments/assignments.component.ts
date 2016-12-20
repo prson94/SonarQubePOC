@@ -71,7 +71,8 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
 
     private doSelect(item) {
         this.showItemDetail.emit({
-            workflowType: this.getWorkflowType(item)
+            workflowType: this.getWorkflowType(item),
+            resourceID: this.resourceId
         });
     }
 

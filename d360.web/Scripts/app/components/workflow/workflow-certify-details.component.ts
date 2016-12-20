@@ -62,6 +62,7 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
+    @Input() resourceID: number = null;
     @Input() hasCloseButton: boolean = true;
     @Input() hasCertifyButton: boolean = true;
 
@@ -77,12 +78,22 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
 
     private loadCertifications() {
         this.isLoading = true;
-        this.workflowService.getCertifyItems(this.objectID, this.objectType)
-            .then(result => {
-                this.items = result;
-                if (this.items.length && this.items.length > 0) this.selected = this.items[0];
-                this.isLoading = false;
-            });
+        if (this.resourceID != null) {
+            this.workflowService.getCertifyItemsForUser(this.resourceID)
+                .then(result => {
+                    this.items = result;
+                    if (this.items.length && this.items.length > 0) this.selected = this.items[0];
+                    this.isLoading = false;
+                });
+        } else {
+            this.workflowService.getCertifyItems(this.objectID, this.objectType)
+                .then(result => {
+                    this.items = result;
+                    if (this.items.length && this.items.length > 0) this.selected = this.items[0];
+                    this.isLoading = false;
+                });
+        }
+
     }
 
     private handleSave() {
