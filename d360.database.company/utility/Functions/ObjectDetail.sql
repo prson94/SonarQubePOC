@@ -11,7 +11,7 @@ RETURNS @tbl TABLE
 	ID int,
 	Name nvarchar(250),
 	TextPath nvarchar(2500),
-	Description nvarchar(4000),
+	Description nvarchar(max),
 	ParentID int null,
 	ParentType nvarchar(250),
 	Url nvarchar(2500),
