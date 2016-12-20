@@ -882,7 +882,6 @@ select * from h where ID <> @t order by h.[Level] desc;
             });
 
             //Parent joins have be listed in ASC order by Level.
-            var parentFilterJoinText = "";
             var parentQueryJoinText = "";
             parents.OrderBy(i => i.Level).ToList().ForEach(i =>
             {
@@ -890,19 +889,7 @@ select * from h where ID <> @t order by h.[Level] desc;
                     $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = A.ParentID" :
                     $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = P{i.Level - 1}.ParentID";
 
-                parentQueryJoinText += thisJoin;
-
-                if (parentFilterPresent)
-                {
-                    parentFilterJoinText += thisJoin;
-                }
-                else
-                {
-                    if (filterFields.Contains($"Parent{i.ID}"))
-                    {
-                        parentFilterJoinText += thisJoin;
-                    }
-                }
+                parentQueryJoinText += thisJoin;             
             });
 
             #endregion
@@ -923,7 +910,7 @@ select  A.ID,
         'FusionAttribute' as [Type]
         {filtercolumns} 
         {parentFilterColumnText} 
-from	FusionAttribute A {parentFilterJoinText} {filterjoins}
+from	FusionAttribute A {parentQueryJoinText} {filterjoins}
 where   A.FusionID = @f 
         and A.FusionAttributeTypeID = @t 
         and A.Deleted = 0";
