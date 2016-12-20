@@ -591,7 +591,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     intersectIdToGetChildrenFor = last.IntersectType;
                 }
                 return this.fieldsService
-                    .getRelationLookupChildIntersectTypes(intersectIdToGetChildrenFor)
+                    .getRelationLookupChildIntersectTypes(intersectIdToGetChildrenFor || 0)
                     .then(ci => {
                         item.relationItems = ci;
                     })

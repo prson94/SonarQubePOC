@@ -2856,13 +2856,15 @@ namespace d360.web.Controllers
                 case SystemObjects.ArtifactType:
                     list = Company.Filter<ArtifactType>(i => i.ID == id, i => i.Parent)
                         .ToList()
-                        .Select(i => new { value = $"0|ArtifactType|{i.ParentID}", title = i.Parent.Name })
+                        .Select(i => new { value = $"0|ArtifactType|{i.ParentID}", title = i.Parent?.Name })
+                        .Where(i => i.title != null)
                         .ToList();
                     break;
                 case SystemObjects.FusionAttributeType:
                     list = Company.Filter<FusionAttributeType>(i => i.ID == id, i => i.Parent)
                         .ToList()
-                        .Select(i => new { value = $"0|FusionAttributeType|{i.ParentID}", title = i.Parent.Name })
+                        .Select(i => new { value = $"0|FusionAttributeType|{i.ParentID}", title = i.Parent?.Name })
+                        .Where(i => i.title != null)
                         .ToList();
                     break;
             }

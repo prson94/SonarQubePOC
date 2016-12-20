@@ -96,7 +96,6 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
         if (this.resourceID != null) {
             this.workflowService.getIssuesForUser(this.resourceID)
                 .then(result => {
-                    //console.log('issue details', this.objectType, this.objectID);
                     this.issues = result;
                     if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
                     this.isLoading = false;
@@ -105,7 +104,6 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
         } else {
             this.workflowService.getIssues(this.objectID, this.objectType)
                 .then(result => {
-                    //console.log('issue details', this.objectType, this.objectID);
                     this.issues = result;
                     if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
                     this.isLoading = false;
