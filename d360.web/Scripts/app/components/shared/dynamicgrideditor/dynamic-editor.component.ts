@@ -128,6 +128,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     name = parts[0];
                     url = parts[1];
                 }
+                else if (field.Value) {
+                    name = '';
+                    url = field.Value;
+                }
                 group[field.FieldName + '_Name'] = field.Required ? new FormControl(name || '', Validators.required)
                     : new FormControl(name || '');
                 group[field.FieldName + '_Url'] = field.Required ? new FormControl(url || '', Validators.required)
