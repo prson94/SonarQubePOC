@@ -60,7 +60,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
-                console.log(this.responsibilities);
+                //console.log(this.responsibilities);
             });
     }
 

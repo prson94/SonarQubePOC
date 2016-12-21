@@ -1976,7 +1976,7 @@
             </summary>
             <returns>A list of available fusion configurations.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurationsByType(System.Int32)">
+        <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurationsByType(System.Int32,System.Boolean)">
             <summary>
             Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
             </summary>

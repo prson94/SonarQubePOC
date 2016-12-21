@@ -157,7 +157,7 @@ export class FusionService extends BaseService {
     }
 
     getFusionConfigurationsByType(id: number): Promise<any[]> {
-        return this.http.get(`services/fusion/${id}/configurations`)
+        return this.http.get(`services/fusion/${id}/configurations?useFieldName=false`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
