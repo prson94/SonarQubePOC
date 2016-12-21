@@ -297,13 +297,18 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    downloadFusionManualLoadTemplate(fusionId: number, fusionTypeId: number, fusionAttributeTypeId: number) {
-        let uri = `internal/fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`;
-        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, fusionAttributeTypeId.toString()));
+    downloadRawFusionData(executionId: number, name:string) {
+        let uri = `internal/fusion/_FusionExecutionRawLog?id=${executionId}`;
+        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));
     }
 
-    downloadFile(data: Response, name: string) {
-        var filename = `Load Template For ${name}.xlsx`;
+    downloadFusionManualLoadTemplate(fusionId: number, fusionTypeId: number, fusionAttributeTypeId: number) {
+        let uri = `internal/fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`;
+        let filename = `Load Template For ${fusionAttributeTypeId}.xlsx`;
+        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, filename));
+    }
+
+    downloadFile(data: Response, filename: string) {        
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data.blob(), filename);
         }
