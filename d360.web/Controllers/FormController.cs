@@ -10954,6 +10954,9 @@ order by D.TextPath";
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var relationship = Company.GetById<Intersect>(id, i => i.IntersectType);
+
+            if (relationship == null) return jsonException("Relationship not found.", HttpStatusCode.NotFound);
+
             var critical = (relationship.Classification.HasValue) ? (relationship.Classification.Value == IntersectClassification.Critical) : false;
 
             var list = new List<EditableField>();

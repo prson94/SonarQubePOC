@@ -118,8 +118,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
-                this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
-                this.relationships.splice(this.findRelationshipIndex(id), 1);
+                if (result.type != 'error') {
+                    this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
+                    this.relationships.splice(this.findRelationshipIndex(id), 1);
+                }
             });
     }
 
