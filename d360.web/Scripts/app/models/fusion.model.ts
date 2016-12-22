@@ -304,3 +304,17 @@ export class AttributeNode {
     parentType: number = 0;
     isLoadingChildren: boolean = false;
 }
+
+    
+export class RuleStepPromotionHistoryModel {
+    ID: number;
+    FusionAttributeID: number;
+    FusionAttributeName: string;
+    Object: string;
+    ObjectID: number;
+    ObjectName: string;
+    ObjectUrl: string;
+    CreatedOn: string;
+    UpdatedOn: string;
+}
+

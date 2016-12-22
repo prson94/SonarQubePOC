@@ -44,7 +44,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" *ngIf="!showRulePromotionHistory">
                 <div class="col s12">
                     <div class="tile tile-detail">
                         <header>Steps for selected rule <d3s-tile-actions hasAdd="true" (addClick)="addStep();" [hasFilterMode]="true" [(filterMode)]="showRuleStepsFilter"></d3s-tile-actions></header>
@@ -57,6 +57,7 @@
                             <p-column header="" [style]="{width:'15%'}">
                                 <template pTemplate type="body" let-row="rowData" let-i="rowIndex">
                                     <div class="RowTools">
+                                        <a (click)="showHistory(row)"><i class="fa fa-history"></i></a>
                                         <a (click)="editStep(row);"><i class="fa fa-pencil"></i></a>
                                         <a (click)="deleteStep(row);"><i class="fa fa-trash-o"></i></a>
                                         <a *ngIf="i > 0" (click)="move(row, true);"><i class="fa fa-caret-up"></i></a>
@@ -65,6 +66,13 @@
                                 </template>
                             </p-column>
                         </p-dataTable>
+                    </div>
+                </div>
+            </div>
+            <div class="row" *ngIf="showRulePromotionHistory">
+                <div class="col s12">
+                    <div class="tile tile-detail">
+                        <d3s-fusion-rule-step-history [fusionRuleStepID]="selectedFusionRuleStep.ID" (onClose)="showRulePromotionHistory=false"></d3s-fusion-rule-step-history>
                     </div>
                 </div>
             </div>

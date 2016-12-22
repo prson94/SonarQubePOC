@@ -22,7 +22,6 @@ import {MenuItem} from 'primeng/primeng';
                             <li class="left" *ngIf="hasExportOriginal"><a class="Action" (click)="exportOriginalClick.emit(null)" pTooltip="Export Original Spreadsheet"><i class="fa fa-download blue-text fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasEdit"><a class="Action" (click)="editClick.emit(null)" pTooltip="Edit"><i class="fa fa-pencil fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasSave"><a class="Action" (click)="saveClick.emit(null)" pTooltip="Save"><i class="fa fa-floppy-o fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" pTooltip="Close"><i class="fa fa-remove fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasFilterMode"><a class="Action" (click)="filterClick()" pTooltip="Filter Mode">
                                 <i class="fa fa-filter fa-fw" [ngClass]="{'red-text darken-2':!filterMode}"></i>                                
                             </a></li>
@@ -34,6 +33,9 @@ import {MenuItem} from 'primeng/primeng';
                             <li class="left" *ngIf="hasUser"><a class="Action" (click)="userClick()" pTooltip="Show my items only">
                                 <i class="fa fa-user fa-fw" [ngClass]="{'red-text darken-2':userMode}"></i>                                
                             </a></li>
+                            
+                            <!-- close should always be leftmost -->
+                            <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" pTooltip="Close"><i class="fa fa-remove fa-fw"></i></a></li>
                         </ul>
                     </div>
                 </div>          

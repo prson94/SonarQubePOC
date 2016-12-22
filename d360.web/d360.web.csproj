@@ -963,6 +963,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-rule-step-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />

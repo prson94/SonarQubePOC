@@ -51,6 +51,7 @@ import { FusionRuleStepPromoteComponent } from './fusion-rule-step-promote.compo
 import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.component';
 import { FusionQueryListComponent } from './fusion-query-list.component';
 import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-editor.component';
+import { FusionRuleStepHistoryComponent } from './fusion-rule-step-history.component';
 
 import {
     GrowlModule,
@@ -136,6 +137,7 @@ import {
         FusionRuleStepRelateComponent,
         FusionQueryListComponent,
         FusionQueryAttributeEditorComponent,
+        FusionRuleStepHistoryComponent,
         
     ],
     providers: [

@@ -57,6 +57,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     showRuleSimpleFilter: boolean = true;
     showRuleStepsFilter: boolean = true;
     showRuleMappingsFilter: boolean = true;
+    showRulePromotionHistory: boolean = false;
     
 
     constructor(private fusionService: FusionService, private messagesService: MessagesService) {
@@ -434,6 +435,12 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
 
     setFormMode(area: string, mode: FormMode) {
 
+    }
+
+    showHistory(row: FusionRuleStep) {
+        //console.log(row.ID);
+        this.selectedFusionRuleStep = row;
+        this.showRulePromotionHistory = true;
     }
 };
 

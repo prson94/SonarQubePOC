@@ -782,6 +782,24 @@ where A.FusionTypeID = @id", columns, joins);
             return Company.Query<PromotionHistoryApiModel>(QueryConstants.PromotionHistoryList).AsQueryable();
         }
 
+        public class RuleStepPromotionHistoryModel
+        {
+            public int ID { get; set; }
+            public int FusionAttributeID { get; set; }
+            public string FusionAttributeName { get; set; }
+            public string Object { get; set; }
+            public int ObjectID { get; set; }
+            public string ObjectName { get; set; }
+            public string ObjectUrl { get; set; }
+            public DateTime CreatedOn { get; set; }
+            public DateTime UpdatedOn { get; set; }
+        }
+
+        [Route("rules/steps/{ruleStepID:int}/promotionhistory")]
+        public IEnumerable<RuleStepPromotionHistoryModel> GetFusionRuleStepPromotionHistory(int ruleStepID)
+        {
+            return Company.Query<RuleStepPromotionHistoryModel>(QueryConstants.FusionRuleStepPromotionHistory, new { id = ruleStepID });
+        }
 
         [Route("promotions/{typeID:int}")]
         public IQueryable<dynamic> GetPromotionsByAttributeType(int typeID)

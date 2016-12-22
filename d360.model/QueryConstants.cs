@@ -1319,5 +1319,20 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 		    ) as 'nodes'
     for json path, WITHOUT_ARRAY_WRAPPER;
 ";
+
+        public static string FusionRuleStepPromotionHistory = @"select
+	P.ID,
+	P.FusionAttributeID,
+	FA.Name as FusionAttributeName,
+	P.ObjectType as [Object],
+	P.ObjectID,
+	D.Name as ObjectName,
+	D.NgUrl as ObjectUrl,
+	P.CreatedOn,
+	P.UpdatedOn
+from fusion.RulePromotion P
+join cache.ObjectDetails D on D.Object = P.ObjectType and D.ObjectID = P.ObjectID
+join FusionAttribute FA ON P.FusionAttributeID = FA.ID
+where P.RuleStepID = @id";
     }
 }

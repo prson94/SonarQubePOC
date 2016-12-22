@@ -33,6 +33,7 @@ import {
     FusionRuleMappingEditorModel,
     PromotionObject,
     RelationIntersectType,
+    RuleStepPromotionHistoryModel,
 } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
@@ -570,6 +571,13 @@ export class FusionService extends BaseService {
         return this.http.put(`form/MoveFusionRuleStep?ruleID=${ruleID}&ruleStepID=${ruleStepID}&moveUp=${moveUp}`, null)
             .toPromise()
             .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionRuleStepPromotionHistory(ruleStepID: number): Promise<RuleStepPromotionHistoryModel[]> {
+        return this.http.get(`services/fusion/rules/steps/${ruleStepID}/promotionhistory`)
+            .toPromise()
+            .then(response => <RuleStepPromotionHistoryModel[]>response.json())
             .catch(err => this.handleError(err));
     }
 
