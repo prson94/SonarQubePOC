@@ -43,10 +43,15 @@ import * as _ from 'lodash';
                                     <a *ngIf="data.ResultCount" (click)="selected=data;showExecutionResults=true;">{{data.ResultCount}} <i class="fa fa-check enabled"></i></a>
                                     <span *ngIf="!data.ResultCount">{{data.ResultCount}}</span>
                                 </template>
-                            </p-column>
+                            </p-column>                            
                             <p-column field="Adds" header="Adds" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Deletes" header="Deletes" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Updates" header="Updates" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>                            
+                            <p-column field="RawLogFileName" header="Data File" [sortable]="false" [filter]="!showSimpleFilter" [style]="{width:'250px'}">
+                                <template let-data="rowData" pTemplate type="body">
+                                    <a (click)="downloadFusionData(data);">{{data.RawLogFileName}}</a>
+                                </template>
+                            </p-column>
                         </p-dataTable>      
                     </span>                    
                 </div>                
@@ -107,5 +112,9 @@ export class FusionExecutionHistoryComponent extends BaseComponent implements On
             return;
         }
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionType', fusion.FusionID));
+    }
+
+    private downloadFusionData(data: FusionWorkerExecution) {
+        this.fusionService.downloadRawFusionData(data.ID, data.RawLogFileName);
     }
 };
