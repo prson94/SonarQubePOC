@@ -17,6 +17,8 @@ import { TreeNode, Column } from 'primeng/primeng';
 
 import * as _ from 'lodash';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-fusion-rules',
     templateUrl: './fusion-rules.component.html',
@@ -116,10 +118,15 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         }
         return this.fusionService.getFusionRuleStepMappings(this.selectedFusionRuleStep.ID)
             .then(r => {
-                var saItem = r.find(i => i.TargetFieldName == "TaxonomyTypeID");
-                if (saItem != undefined) {
-                    saItem.TargetFieldName = "Subject Area";
-                }
+                r.filter(i => i.TargetFieldName == "TaxonomyTypeID").forEach(i => {
+                    i.TargetFieldName = (CompanySettings.ArtifactType_TaxonomyTypeID || "Subject Area");
+
+                });
+                r.filter(i => i.SourceFieldName == "TaxonomyTypeID").forEach(i => {
+                    i.SourceFieldName = (CompanySettings.ArtifactType_TaxonomyTypeID || "Subject Area");
+
+                });
+
                 this.fusionRuleMappings = r;
             });
     }
@@ -320,12 +327,52 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.getEditFusionRuleStepMapping(row.ID)
             .then(r => {
                 this.fusionRuleMappingEditorModel = r;
-                this.fusionRuleMappingEditorModel.sourceValue = this.fusionRuleMappingEditorModel.Item.SourceFieldName + '|' + this.fusionRuleMappingEditorModel.Item.SourceFieldTypeID.toString();
-                this.fusionRuleMappingEditorModel.targetValue = this.fusionRuleMappingEditorModel.Item.TargetFieldName + '|' + this.fusionRuleMappingEditorModel.Item.TargetFieldTypeID.toString();
+                //this.fusionRuleMappingEditorModel.sourceValue = this.fusionRuleMappingEditorModel.Item.SourceFieldName + '|' + this.fusionRuleMappingEditorModel.Item.SourceFieldTypeID.toString();
+                //this.fusionRuleMappingEditorModel.targetValue = this.fusionRuleMappingEditorModel.Item.TargetFieldName + '|' + this.fusionRuleMappingEditorModel.Item.TargetFieldTypeID.toString();
+
+                let subjectArea = this.fusionRuleMappingEditorModel.SourceFields.find(s => s.Value == 'TaxonomyTypeID|0');
+                if (subjectArea != null && CompanySettings.ArtifactType_TaxonomyTypeID != null)
+                    subjectArea.Text = CompanySettings.ArtifactType_TaxonomyTypeID;
+
+                subjectArea = this.fusionRuleMappingEditorModel.TargetFields.find(s => s.Value == 'TaxonomyTypeID|0');
+                if (subjectArea != null && CompanySettings.ArtifactType_TaxonomyTypeID != null)
+                    subjectArea.Text = CompanySettings.ArtifactType_TaxonomyTypeID;
+
+
+                this.loadMappingValues(this.fusionRuleMappingEditorModel);
 
                 this.formMode = FormMode.EditMapping;  
                 this.isLoading = false;              
             });
+    }
+
+    loadMappingValues(mapping: FusionRuleMappingEditorModel) {
+        if (mapping.Item.SourceFieldTypeID == 0)
+            mapping.sourceValue = `${mapping.Item.SourceFieldName}|${mapping.Item.SourceFieldTypeID}`;
+        else {
+            mapping.SourceFields.forEach(f => {
+                if (f.Value.indexOf('|') != -1) {
+                    if (mapping.Item.SourceFieldTypeID.toString() == f.Value.split('|')[1]) {
+                        mapping.sourceValue = f.Value;
+                        return;
+                    }
+                }
+            });
+        }
+
+        if (mapping.Item.TargetFieldTypeID == 0)
+            mapping.targetValue = `${mapping.Item.TargetFieldName}|${mapping.Item.TargetFieldTypeID}`;
+        else {
+            mapping.TargetFields.forEach(f => {
+                if (f.Value.indexOf('|') != -1) {
+                    if (mapping.Item.TargetFieldTypeID.toString() == f.Value.split('|')[1]) {
+                        mapping.targetValue = f.Value;
+                        return;
+                    }
+                }
+            });
+        }
+
     }
 
     saveEditMapping() {
@@ -364,6 +411,16 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.getAddFusionRuleStepMapping(this.selectedFusionRuleStep.ID)
             .then(r => {
                 this.fusionRuleMappingEditorModel = r;
+
+
+                let subjectArea = this.fusionRuleMappingEditorModel.SourceFields.find(s => s.Value == 'TaxonomyTypeID|0');
+                if (subjectArea != null && CompanySettings.ArtifactType_TaxonomyTypeID != null)
+                    subjectArea.Text = CompanySettings.ArtifactType_TaxonomyTypeID;
+
+                subjectArea = this.fusionRuleMappingEditorModel.TargetFields.find(s => s.Value == 'TaxonomyTypeID|0');
+                if (subjectArea != null && CompanySettings.ArtifactType_TaxonomyTypeID != null)
+                    subjectArea.Text = CompanySettings.ArtifactType_TaxonomyTypeID;
+
                 this.formMode = FormMode.AddMapping;   
                 this.isLoading = false;             
             });

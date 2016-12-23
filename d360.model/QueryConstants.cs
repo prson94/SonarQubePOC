@@ -619,9 +619,9 @@ where   I.RuleID = @id
 select	I.ID,
         RS.RuleID,
         I.SourceFieldTypeID,
-        coalesce(I.SourceFieldName, SF.FriendlyName + ' (' + SF.Name + ')', 'Constant: ' + I.ConstantValue) as SourceFieldName,
+        coalesce(case when I.SourceFieldTypeID = 0 then I.SourceFieldName end, SF.FriendlyName + ' (' + SF.Name + ')', 'Constant: ' + I.ConstantValue) as SourceFieldName,
         I.TargetFieldTypeID,
-        coalesce(I.TargetFieldName, TF.FriendlyName + ' (' + TF.Name + ')') as TargetFieldName
+        coalesce(case when I.TargetFieldTypeID = 0 then I.TargetFieldName end, TF.FriendlyName + ' (' + TF.Name + ')') as TargetFieldName
 from	[fusion].[RuleStepMapping] I
         inner join [fusion].[RuleStep] RS on (I.RuleStepID = RS.ID)
 		left join FieldType SF on SF.ID = I.SourceFieldTypeID
