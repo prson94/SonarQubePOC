@@ -5,7 +5,8 @@ import { HttpModule, XHRBackend  }     from '@angular/http';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
-import {    
+import {
+    ButtonModule,
     DataTableModule,    
     SharedModule,    
 } from 'primeng/primeng';
@@ -36,6 +37,7 @@ import { ObjectIssuesComponent } from './object-issues.component';
         TilesModule,
         WorkflowModule,
         //prime        
+        ButtonModule,
         DataTableModule,        
         SharedModule,  
 
