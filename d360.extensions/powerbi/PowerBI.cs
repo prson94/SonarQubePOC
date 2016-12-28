@@ -97,32 +97,43 @@ namespace d360.extensions.powerbi
                 // Get the newly created dataset from the previous import process
                 var datasets = await client.Datasets.GetDatasetsAsync(workspaceCollectionName, workspaceId);
 
-                // Optionally udpate the connectionstring details if preent
-                if (!string.IsNullOrWhiteSpace(connectionString))
-                {
-                    var connectionParameters = new Dictionary<string, object>
+                if (datasets == null || datasets.Value == null) return;
+
+                //update the first sql data source..
+                foreach (var dataset in datasets.Value)
+                {                    
+                    // Optionally udpate the connectionstring details if preent
+                    if (!string.IsNullOrWhiteSpace(connectionString))
+                    {
+                        var connectionParameters = new Dictionary<string, object>
                     {
                         { "connectionString", connectionString }
                     };
-                    await client.Datasets.SetAllConnectionsAsync(workspaceCollectionName, workspaceId, datasets.Value[datasets.Value.Count - 1].Id, connectionParameters);
-                }
-
-                // Get the datasources from the dataset
-                var datasources = await client.Datasets.GetGatewayDatasourcesAsync(workspaceCollectionName, workspaceId, datasets.Value[datasets.Value.Count - 1].Id);
-
-                // Reset your connection credentials
-                var delta = new GatewayDatasource
-                {
-                    CredentialType = "Basic",
-                    BasicCredentials = new BasicCredentials
-                    {
-                        Username = username,
-                        Password = password
+                        await client.Datasets.SetAllConnectionsAsync(workspaceCollectionName, workspaceId, dataset.Id, connectionParameters);
                     }
-                };
 
-                // Update the datasource with the specified credentials
-                await client.Gateways.PatchDatasourceAsync(workspaceCollectionName, workspaceId, datasources.Value[datasources.Value.Count - 1].GatewayId, datasources.Value[datasources.Value.Count - 1].Id, delta);
+                    // Get the datasources from the dataset
+                    var datasources = await client.Datasets.GetGatewayDatasourcesAsync(workspaceCollectionName, workspaceId, dataset.Id);
+
+                    if ((datasources.Value[datasources.Value.Count - 1].DatasourceType ?? "").ToUpper() == "SQL")
+                    {
+                        // Reset your connection credentials
+                        var delta = new GatewayDatasource
+                        {
+                            CredentialType = "Basic",
+                            BasicCredentials = new BasicCredentials
+                            {
+                                Username = username,
+                                Password = password
+                            }
+                        };
+
+                        // Update the datasource with the specified credentials
+                        await client.Gateways.PatchDatasourceAsync(workspaceCollectionName, workspaceId, datasources.Value[datasources.Value.Count - 1].GatewayId, datasources.Value[datasources.Value.Count - 1].Id, delta);
+
+                        return;
+                    }
+                }                
             }
         }
     }
