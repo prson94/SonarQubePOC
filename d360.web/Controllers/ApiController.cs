@@ -4435,6 +4435,18 @@ from    (
                             });
                         }
 
+                        if(!string.IsNullOrEmpty(report.FileName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "File Name", FieldName = "FileName", Value = report.FileName }
+                                }
+                            });
+                        }
+
                         if (report.ReportLayout != null)
                         {
                             model.rows.Add(new DetailReadOnlyRowModel

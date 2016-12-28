@@ -95,3 +95,6 @@ GO
 
 --change size of decimal to support values of 1 on rule threshold
 ALTER TABLE [dbo].[rule] ALTER COLUMN [Threshold] decimal(4,3)
+
+-- add filename column to the report table
+alter table report add [FileName] varchar(260) null

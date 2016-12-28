@@ -128,38 +128,7 @@ namespace d360.web.Controllers
 
             return client;
         }
-
-        [Route("PowerBIOverlay"), NonNullableParameters]
-        public async Task<ActionResult> PowerBIOverlay(string reportId)
-        {
-            var companySettings = Community.GetCompanySettings();
-            var workspaceCollectionName = string.Empty;
-            var workspaceId = string.Empty;
-            var accessKey = string.Empty;
-
-            companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
-            companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
-            companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
-
-            if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
-                throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
-            
-            using (var client = CreatePowerBIClient( accessKey))
-            {
-                var reportsResponse = await client.Reports.GetReportsAsync(workspaceCollectionName, workspaceId);
-                var report = reportsResponse.Value.FirstOrDefault(r => r.Id == reportId);
-                var embedToken = PowerBIToken.CreateReportEmbedToken(workspaceCollectionName, workspaceId, report.Id);
-
-                var viewModel = new PowerBIReportViewModel
-                {
-                    Report = report,
-                    AccessToken = embedToken.Generate(accessKey)
-                };
-
-                return View(viewModel);
-            }
-        }
-
+        
         [Route("powerbi/tokens/{reportId}")]
         public async Task<JsonNetResult> GetPowerBITokens(string reportId)
         {
@@ -191,7 +160,7 @@ namespace d360.web.Controllers
             }            
         }
 
-        [Route("")]
+        [Route("reports")]
         public JsonNetResult GetReports()
         {
             return new JsonNetResult { Data = Company.Table<Report>().OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };

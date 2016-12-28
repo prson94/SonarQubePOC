@@ -9,9 +9,9 @@ var webpackConfig = {
     'polyfills': './scripts/app/polyfills.ts',
     'vendor':    './scripts/app/vendor.ts',
     'main':       './scripts/app/main.ts',
-  },
-  stats: {
-      warnings: false //suppress warnings
+  },  
+  performance: {
+      hints: false
   },
   output: {
       path: './scripts/app/',
@@ -39,7 +39,7 @@ var webpackConfig = {
   module: {
     loaders: [
       // .ts files for TypeScript
-      { test: /\.ts$/, loaders: ['awesome-typescript-loader?tsconfig=./scripts/app/tsconfig.json', 'angular2-template-loader','angular2-router-loader']},
+      { test: /\.ts$/, loaders: ['awesome-typescript-loader?tsconfig=./scripts/app/tsconfig.json', 'angular2-template-loader','angular2-router-loader'],  exclude: [/\.(spec|e2e)\.ts$/]},
       { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
       { test: /\.html$/, loader: 'raw-loader' }        
     ]

@@ -12,7 +12,7 @@ export class ReportsService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getReports(): Promise<Report[]> {
-        return this.http.get('reports')
+        return this.http.get('reports/reports')
             .toPromise()
             .then(response => <Report[]>response.json())
             .catch(err => this.handleError(err));

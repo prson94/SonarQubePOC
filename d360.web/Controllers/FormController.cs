@@ -11291,53 +11291,6 @@ order by D.TextPath";
 
         #region Form Get/Post
 
-//        void loadReportEditorModel(ReportEditorModel model)
-//        {
-//            model.ObjectTypes = Company.Query<SelectListItem>(@"
-//select      *
-//from        (
-//            select      'Artifact|' + cast(ID as varchar(15)) as Value,
-//                        'Artifact Instance : ' + Name as Text
-//            from        ArtifactType
-//            union
-//            select      'ArtifactType|' + cast(ID as varchar(15)) as Value,
-//                        'Artifact Type : ' + Name as Text
-//            from        ArtifactType
-//            union
-//            select      'Resource|1' as Value,
-//                        'Resource' as Text
-//            union
-//            select      'Taxonomy|' + cast(ID as varchar(15)) as Value,
-//                        'Model Instance : ' + Name as Text
-//            from        TaxonomyType
-//            union
-//            select      'TaxonomyType|' + cast(ID as varchar(15)) as Value,
-//                        'Model Type : ' + Name as Text
-//            from        TaxonomyType
-//            union
-//            select      'Policy|' + cast(ID as varchar(15)) as Value,
-//                        'Policy Instance : ' + Name as Text
-//            from        PolicyType
-//            union
-//            select      'PolicyType|' + cast(ID as varchar(15)) as Value,
-//                        'Policy Type : ' + Name as Text
-//            from        PolicyType
-//) O
-//order by    Text
-
-//").ToList();
-
-//            model.ObjectTypes.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = string.Format("Rule Instance : {0}", i.Name), Value = string.Format("Rule|{0}", (int)i.ID) }));
-//            //model.ObjectTypes.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = string.Format("Rule Type : {0}", i.Name), Value = string.Format("RuleType|{0}", (int)i.ID) }));
-
-//            model.ReportLayouts = Company.Query<SelectListItem>(@"
-//select      cast(ID as varchar(15)) as Value,
-//            Name as Text
-//from        ReportLayout
-//order by    Name
-//").ToList();
-//        }
-
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReport")]
         public async Task<JsonResult> AddReport(FormCollection form)
         {
@@ -11354,10 +11307,12 @@ order by D.TextPath";
                     var name = parseTextField(form, "Name");
                     string powerBIID = string.Empty;
                     string datasetID = string.Empty;
+                    string filename = string.Empty;
 
                     if (fileCount > 0 && reportType == "powerbi")
                     {
                         var file = HttpContext.Request.Files[0];
+                        
 
                         if (file.ContentLength > 0)
                         {
@@ -11367,7 +11322,8 @@ order by D.TextPath";
                                 throw new Exception("FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!");
 
                             datasetID = importResult.Datasets.FirstOrDefault().Id;
-                            powerBIID = importResult.Reports.FirstOrDefault().Id;                            
+                            powerBIID = importResult.Reports.FirstOrDefault().Id;
+                            filename = file.FileName;
                         }
                     }
 
@@ -11380,12 +11336,13 @@ order by D.TextPath";
                         ReportLayoutID = parseNullableIntField(form, "ReportLayoutID", -1).GetValueOrDefault(-1),
                         ReportType = parseTextField(form, "ReportType"),
                         PowerBIReportID = string.IsNullOrEmpty(powerBIID) ? null : powerBIID,
-                        PowerBIDatasetID = string.IsNullOrEmpty(datasetID) ? null : datasetID
+                        PowerBIDatasetID = string.IsNullOrEmpty(datasetID) ? null : datasetID,
+                        FileName = filename
                     };
 
                     Company.Add<Report>(model);
 
-                    return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.ID.ToString(), "add", HttpStatusCode.Created);
+                    return jsonSuccess("Dashboard successfully created", model.ID.ToString(), "add", HttpStatusCode.Created);
                 }
                 else
                 {
@@ -11434,7 +11391,7 @@ order by D.TextPath";
 
                 Company.Delete<Report>(model);
 
-                return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess("Dashboard successfully deleted", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -11480,7 +11437,7 @@ order by D.TextPath";
                 //save password in this workspace for all ds's
                 await PowerBI.UpdateConnectionCredentials(accessKey, workspaceCollectionName, workspaceId, user, pwd);
 
-                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, "", "add", HttpStatusCode.Created);
+                return jsonSuccess("Power BI Credentials successfully updated", "", "add", HttpStatusCode.Created);
                 
             }
             catch (BaseException ex)
@@ -11511,6 +11468,7 @@ order by D.TextPath";
                 var name = parseTextField(form, "Name");
                 string powerBIID = string.Empty;
                 string datasetID = string.Empty;
+                string filename = string.Empty;
 
                 if (fileCount > 0 && reportType == "powerbi")
                 {
@@ -11526,9 +11484,11 @@ order by D.TextPath";
                         datasetID = importResult.Datasets.FirstOrDefault().Id;
 
                         var rpt = importResult.Reports.FirstOrDefault();
-
+                        
                         if (rpt != null)
                             powerBIID = rpt.Id;
+
+                        filename = file.FileName;
                     }           
                 }
 
@@ -11550,9 +11510,12 @@ order by D.TextPath";
                     if (!string.IsNullOrEmpty(powerBIID))
                         model.PowerBIReportID = powerBIID;
 
+                    if (!string.IsNullOrEmpty(filename))
+                        model.FileName = filename;
+
                     Company.Update<Report>(model);
 
-                    return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, id.ToString(), "edit", HttpStatusCode.OK);
+                    return jsonSuccess("Dashboard successfully edited", id.ToString(), "edit", HttpStatusCode.OK);
                 }
                 else
                 {
@@ -11650,39 +11613,7 @@ order by D.TextPath";
         #endregion
 
         #region Form Get/Post
-
-        //private List<SelectListItem> getReportTilePreviewObjects(string objectType, int objectID)
-        //{
-        //    var list = new List<SelectListItem>();
-
-        //    switch (objectType)
-        //    {
-        //        case "Artifact":
-        //            list = Company.Filter<Artifact>(i => i.ArtifactTypeID == objectID)
-        //                .OrderBy(i => i.Name)
-        //                .ToList()
-        //                .Select(i => new SelectListItem { Text = i.Name, Value = string.Format("Artifact|{0}", i.ID) })
-        //                .ToList();
-        //            break;
-        //        case "Resource":
-        //            list = Company.Table<GlobalReportingResource>()
-        //                .OrderBy(i => i.LastName).ThenBy(i => i.FirstName)
-        //                .ToList()
-        //                .Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = string.Format("Resource|{0}", i.ResourceID) })
-        //                .ToList();
-        //            break;
-        //        case "Taxonomy":
-        //            list = Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == objectID)
-        //                .OrderBy(i => i.TextPath)
-        //                .ToList()
-        //                .Select(i => new SelectListItem { Text = i.TextPath, Value = string.Format("Taxonomy|{0}", i.ID) })
-        //                .ToList();
-        //            break;
-        //    }
-
-        //    return list;
-        //}
-
+        
         [HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false), Route("AddReportTile")]
         public JsonResult AddReportTile(FormCollection form, bool isNg = false)
         {

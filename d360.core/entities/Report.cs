@@ -54,6 +54,10 @@ namespace d360.core.entities
         [Column(TypeName = "varchar"), StringLength(50)]
         public string PowerBIDatasetID { get; set; }
 
+        [DataMember]
+        [Column(TypeName = "varchar"), StringLength(260)]
+        public string FileName { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 

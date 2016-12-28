@@ -10,6 +10,7 @@
     [ReportType]       VARCHAR (25)    CONSTRAINT [DF_Report_ReportType] DEFAULT ('legacy') NOT NULL,
     [PowerBIDatasetID] VARCHAR (50)    NULL,
     [PowerBIReportID]  VARCHAR (50)    NULL,
+    [FileName] VARCHAR(260) NULL, 
     CONSTRAINT [PK_Report] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
