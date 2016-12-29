@@ -154,7 +154,12 @@ begin
 				update	T
 				set		--T.ParentID = null,
 						T.[Description] = S.[Description],
-						T.[Status] = 'Draft',
+						T.[Status] = 
+						( CASE  
+							WHEN (T.[Status] = 'Certified') THEN 'Draft' 							
+							ELSE  (T.[Status])
+							END 
+						),
 						T.UpdatedBy = @UpdatedBy,
 						T.UpdatedOn = @UpdatedOn
 				from	Artifact T
@@ -201,8 +206,13 @@ begin
 				
 				update	T
 				set		T.ParentID = null,
-						T.[Description] = S.[Description],
-						T.[Status] = 'Draft',
+						T.[Description] = S.[Description],						
+						T.[Status] = 
+						( CASE  
+							WHEN (T.[Status] = 'Certified') THEN 'Draft' 							
+							ELSE  (T.[Status])
+						  END 
+						),
 						T.UpdatedBy = @UpdatedBy,
 						T.UpdatedOn = @UpdatedOn
 				from	Artifact T
