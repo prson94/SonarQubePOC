@@ -581,6 +581,40 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 #endregion
             }
+            else if (load.Action == "U")    // Unrelate
+            {
+                #region Unrelate
+                try
+                {
+                    companyConnection.Open();
+
+                    #region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
+
+                    //executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
+
+                    #endregion
+
+                    // Call business lineage procedure.
+                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.Unrelate {load.ID}", 2400);
+
+                    #region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
+
+                    //executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
+
+                    #endregion
+
+                    companyConnection.Close();
+                }
+                catch (Exception ex)
+                {
+                    logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
+                }
+                #endregion
+            }
             else if (load.Action == "S")    // Synonym
             {
                 #region Synonyms
