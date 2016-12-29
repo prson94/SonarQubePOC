@@ -7,7 +7,6 @@ import { GridFilterExpression, GridFilterColumn, GridRelationshipFilterExpressio
 import { ObjectRelationship, RelatedItem } from '../../models/relationship.model';
 import { AttributeType } from '../../models/attribute-type.model';
 import { FilterField, FilterFieldType, FilterExpression } from '../../models/filter-field.model';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-rule-column-filter',

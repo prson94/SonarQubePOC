@@ -4,14 +4,12 @@ import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { SuggestedItem } from '../../models/workflow.model';
 
-import * as _ from 'lodash';
-
 @Component({
     selector: 'd3s-workflow-suggest-editor',
     template: ` 
                 <form (ngSubmit)="onSubmit()" #suggestEditorForm="ngForm">
-                <header>Suggest Artifact</header>
-                <div id="FormDescription" class="form-instructions"></div>                
+                <header>Propose New Artifact</header>
+                <div class="form-instructions"></div>                
                 <div class="row">                    
                     <div class="col s12 l6">
                         <div class="FieldName">Type</div>

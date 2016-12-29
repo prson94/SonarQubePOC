@@ -9,7 +9,6 @@ import { WorkflowType } from '../../models/workflow.model';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-detail',
@@ -56,9 +55,7 @@ export class WorkflowDetailComponent extends BaseComponent implements OnInit, On
             this.objectType = params['objectType'];
             this.objectID = +params['objectID'];
             this.resourceID = +params['resourceID'];
-
-            console.log(this.objectType, this.objectID);
-
+            
             this.headerBreadcrumbService.clearBreadcrumbs();
             switch (this.workflowType) {
                 case WorkflowType.WorkIssue:
@@ -70,8 +67,8 @@ export class WorkflowDetailComponent extends BaseComponent implements OnInit, On
                     this.setBrowserTitle(this.titleService, 'Certify Artifact List');
                     break;
                 case WorkflowType.SuggestNewArtifact:
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Suggest New Artifact List'));
-                    this.setBrowserTitle(this.titleService, 'Suggest New Artifact List');
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Propose New Artifact List'));
+                    this.setBrowserTitle(this.titleService, 'Propose New Artifact List');
                     break;
             }
         });

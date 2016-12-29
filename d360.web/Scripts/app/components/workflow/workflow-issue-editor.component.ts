@@ -7,7 +7,6 @@ import { WorkflowService } from '../../services/workflow.service';
 import { Issue, IssueInfo } from '../../models/workflow.model';
 import { Resource } from '../../models/resource.model';
 
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-issue-editor',

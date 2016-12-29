@@ -5,7 +5,6 @@ import { ArtifactService } from '../../services/artifacts.service';
 import { Count} from '../../models/counts.model';
 import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-activity-details-tile',

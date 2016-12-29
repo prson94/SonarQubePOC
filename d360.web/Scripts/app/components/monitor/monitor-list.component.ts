@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -7,7 +7,6 @@ import { WorkflowService } from '../../services/workflow.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Issue, IssueDetail } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-monitor-list',
@@ -21,7 +20,7 @@ import * as _ from 'lodash';
                         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                         <p-dataTable #dt [globalFilter]="gb" [value]="issues" selectionMode="single" [(selection)]="selected" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                                                
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                            <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
                                     <d3s-tooltip  *ngIf="!data.AllowAction" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>                                    
                                     <d3s-tooltip *ngIf="data.AllowAction" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview"><a (click)="handleIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
@@ -116,11 +115,5 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
 
     private export() {
         this.workflowService.exportAllIssueDetails(!this.showUser);
-    }
-
-    private columnSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending                        
-        this.issues = _.orderBy(this.issues, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
-    }
+    }    
 };

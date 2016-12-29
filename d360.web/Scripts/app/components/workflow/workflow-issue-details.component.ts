@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-issue-details',
@@ -14,7 +13,7 @@ import * as _ from 'lodash';
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
                     <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="issues" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="openIssue($event.data);" >
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                        <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <d3s-tooltip *ngIf="data.Activity <= 0" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>
                                 <d3s-tooltip *ngIf="data.Activity > 0" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview"><a (click)="openIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
@@ -32,8 +31,8 @@ import * as _ from 'lodash';
                                 <d3s-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID" tooltipType="preview">{{issue.ObjectName}}</d3s-tooltip>
                             </template>
                         </p-column>           
-                        <p-column field="ResourceName" header="Reported By" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="DateStarted" header="Created" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="ResourceName" header="Reported By" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="DateStarted" header="Created" sortable="true"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DateStarted | date: 'shortDate'}}</span>
                             </template>
@@ -111,14 +110,7 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
                 });
         }
     }
-       
-
-    private columnSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending                        
-        this.issues = _.orderBy(this.issues, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
-    }
-
+    
     private openIssue(issue) {
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
     }

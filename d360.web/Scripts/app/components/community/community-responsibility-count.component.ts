@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -6,7 +6,6 @@ import { ResponsibilityTypeService } from '../../services/responsibility-type.se
 import { ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-community-responsibility-count',
@@ -16,7 +15,7 @@ import * as _ from 'lodash';
                     <header>Users Assigned As {{responsibilityTypeName}}</header>          
                     <p-dataTable #dt [globalFilter]="gb" sortField="OwnedItemCount" sortOrder="-1" [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                        <p-column field="FirstName" header="Name" [sortable]="true" sortable="custom" (sortFunction)="columnSort($event)" >
+                        <p-column field="FirstName" header="Name" [sortable]="true" >
                             <template let-col let-item="rowData" pTemplate type="body">                            
                                 <d3s-tooltip objectType="Resource" [objectId]="item.ResourceID" tooltipType="preview"><a (click)="selectResource(item)">{{item.FirstName}} {{item.LastName}}</a></d3s-tooltip>
                             </template>
@@ -59,11 +58,5 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
                 this.users = result;
                 this.isLoading = false;
             });
-    }
-
-    private columnSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending                        
-        this.users = _.orderBy(this.users, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 };
