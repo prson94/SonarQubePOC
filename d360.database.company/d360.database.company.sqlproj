@@ -131,6 +131,8 @@
     <Folder Include="bulkload\Stored Procedures\" />
     <Folder Include="Conversions" />
     <Folder Include="cache\Functions\" />
+    <Folder Include="workflow" />
+    <Folder Include="workflow\Tables" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="fusion\Tables\StagingRelation.sql">
@@ -494,25 +496,23 @@
     <None Include="Conversions\Old Lineage to New Lineage Conversion.sql" />
     <None Include="Conversions\RelatedArtifact to Intersect Conversion.sql" />
     <None Include="Conversions\RelationshipLookup to ComplexLookup Field Type Conversion.sql" />
-    <Build Include="dbo\Tables\WorkflowScheme.sql" />
-    <Build Include="dbo\Tables\WorkflowRuntime.sql" />
-    <Build Include="dbo\Tables\WorkflowProcessTransitionHistory.sql" />
-    <Build Include="dbo\Tables\WorkflowProcessTimer.sql" />
-    <Build Include="dbo\Tables\WorkflowProcessScheme.sql" />
-    <Build Include="dbo\Tables\WorkflowProcessInstanceStatus.sql" />
-    <Build Include="dbo\Tables\WorkflowProcessInstancePersistence.sql" />
-    <Build Include="dbo\Tables\WorkflowProcessInstance.sql" />
-    <Build Include="dbo\Tables\WorkflowInbox.sql" />
-    <Build Include="dbo\Tables\WorkflowGlobalParameter.sql" />
     <Build Include="dbo\Tables\RuleResultQualifierType.sql" />
     <Build Include="dbo\Tables\RuleResultQualifier.sql" />
     <Build Include="utility\Functions\GetFormattedFieldReferenceItemValueWrapper.sql" />
     <Build Include="cache\Functions\SynchronizeObjectResponsibilities.sql" />
-    <Build Include="dbo\Stored Procedures\spWorkflowProcessResetRunningStatus.sql" />
-    <Build Include="dbo\Stored Procedures\DropWorkflowProcesses.sql" />
-    <Build Include="dbo\Stored Procedures\DropWorkflowProcess.sql" />
-    <Build Include="dbo\Stored Procedures\DropWorkflowInbox.sql" />
-    <Build Include="dbo\User Defined Types\IdsTableType.sql" />
+    <Build Include="dbo\Tables\IssueType_1.sql" />
+    <Build Include="dbo\Tables\Issue_1.sql" />
+    <Build Include="dbo\Views\WorkflowIssue_1.sql" />
+    <Build Include="bulkload\Stored Procedures\Unrelate.sql" />
+    <Build Include="workflow\Tables\EventRegistration.sql" />
+    <Build Include="Security\workflow.sql" />
+    <Build Include="workflow\Tables\Item.sql" />
+    <Build Include="workflow\Tables\ItemStep.sql" />
+    <Build Include="workflow\Tables\ItemStepTransition.sql" />
+    <Build Include="workflow\Tables\Type.sql" />
+    <Build Include="workflow\Tables\Version.sql" />
+    <Build Include="workflow\Tables\VersionStep.sql" />
+    <Build Include="workflow\Tables\VersionStepTransition.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

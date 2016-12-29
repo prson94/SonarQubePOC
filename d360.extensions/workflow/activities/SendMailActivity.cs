@@ -1,4 +1,7 @@
-﻿using System;
+﻿using d360.core;
+using Mandrill;
+using Mandrill.Model;
+using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
@@ -48,13 +51,33 @@ namespace d360.extensions.workflow.activities
 
         public string MessageBodyTemplate { get; set; }
 
-        public Dictionary<string, string> MessageSubjectTokens { get; set; }
+        public Dictionary<string, string> MessageTokens { get; set; }
 
-        public Dictionary<string, string> MessageBodyTokens { get; set; }
-
-        public void Execute()
+        public void Execute(string settings, bool isTest = false)
         {
-            throw new NotImplementedException();
+            var message = new MandrillMessage();
+
+            message.AddTo(UserEmail, UserFullName);
+            message.FromEmail = "no-reply@data3sixty.com";
+            message.FromName = "Data3Sixty";
+
+            var subject = MessageSubjectTemplate;
+            var body = MessageBodyTemplate;
+            foreach (var k in MessageTokens.Keys)
+            {
+                subject.Replace($"[{k}]", MessageTokens[k]);
+                body.Replace($"[{k}]", MessageTokens[k]);
+            }
+
+            message.Subject = subject;
+            message.Html = body;
+            message.AutoText = true;
+
+            message.TrackOpens = false;
+            message.TrackClicks = false;
+
+            var api = new MandrillApi(constants.MANDRILL_API_KEY);
+            api.Messages.Send(message);
         }
     }
 }

@@ -534,43 +534,12 @@ namespace d360.jobs.queue.ProcessBulkLoad
             else if (load.Action == "R")    // Relation
             {
                 #region Relationship
-
-#region
-                /*
-                 * 1    Side 1
-                 * 2    Side 2
-                 * 
-                 * OR
-                 * 
-                 * 1    Side 1 Subject Area
-                 * 2    Side 1
-                 * 3    Side 2 Subject Area
-                 * 4    Side 2
-                 */
-#endregion
-
                 try
                 {
                     companyConnection.Open();
 
-#region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
-
-                    //executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
-
-#endregion
-
-                    // Call business lineage procedure.
+                    // Call relationships procedure.
                     executeWithTry(companyConnection, logger, $@"EXEC bulkload.Relationships {load.ID}", 2400);
-
-#region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
-
-                    //executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
-
-#endregion
 
                     companyConnection.Close();
                 }
@@ -578,7 +547,6 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 {
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
-
                 #endregion
             }
             else if (load.Action == "U")    // Unrelate
@@ -588,24 +556,8 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 {
                     companyConnection.Open();
 
-                    #region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
-
-                    //executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
-
-                    #endregion
-
-                    // Call business lineage procedure.
+                    // Call relationships procedure.
                     executeWithTry(companyConnection, logger, $@"EXEC bulkload.Unrelate {load.ID}", 2400);
-
-                    #region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
-
-                    //executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
-
-                    #endregion
 
                     companyConnection.Close();
                 }

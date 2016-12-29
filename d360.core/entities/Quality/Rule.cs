@@ -43,7 +43,7 @@ namespace d360.core.entities
 
 
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Rule, "Rule")]
-    public class Rule : BaseUpdatedIntObject, ICreatedObject, IUpdatedObject
+    public class Rule : BaseCreatedAndUpdatedIntObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember, StringLength(250)]
         public string Name { get; set; }

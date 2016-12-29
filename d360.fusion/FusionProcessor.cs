@@ -905,10 +905,11 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                 ) as S 
                 on (T.ObjectType = 'FusionQueryAttribute' and T.ObjectID = S.FusionQueryAttributeID and T.FieldTypeID = S.FieldTypeID) 
         when    matched then 
-                update set T.Value = S.Value 
+                update set  T.Value = S.Value, 
+                            T.FormattedValue = S.Value 
         when    not matched then 
-                insert (ObjectType, ObjectID, FieldTypeID, Value) 
-                values ('FusionQueryAttribute', S.FusionQueryAttributeID, S.FieldTypeID, S.Value);", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                insert (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue) 
+                values ('FusionQueryAttribute', S.FusionQueryAttributeID, S.FieldTypeID, S.Value, S.Value);", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
                         Trace.TraceInformation($"MERGE query attribute fields TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
@@ -1230,10 +1231,11 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                         ) as S
                         on T.ObjectType = 'FusionAttribute' and T.ObjectID = S.ObjectID and T.FieldTypeID = S.FieldTypeID
                         when matched then
-                            update set T.Value = S.Value                                
+                            update set  T.Value = S.Value,
+                                        T.FormattedValue = S.Value            
                         when not matched then
-                            insert (FieldTypeID, ObjectType, ObjectID, Value)
-                            values (S.FieldTypeID, 'FusionAttribute', S.ObjectID, S.Value);
+                            insert (FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
+                            values (S.FieldTypeID, 'FusionAttribute', S.ObjectID, S.Value, S.Value);
                     ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction:trans);
 
                 trans.Commit();

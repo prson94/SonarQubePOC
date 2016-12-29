@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using System.Xml.Linq;
 
 namespace d360.core.entities.Workflow
 {
@@ -19,11 +20,26 @@ namespace d360.core.entities.Workflow
         [IgnoreDataMember]
         public string Settings { get; set; }
 
+        [NotMapped, IgnoreDataMember]
+        public XElement SettingsDocument { get { return XElement.Parse(Settings); } }
+
         [IgnoreDataMember]
         public string Fields { get; set; }
 
+        [NotMapped, IgnoreDataMember]
+        public XElement FieldsDocument { get { return XElement.Parse(Fields); } }
+
         [DataMember]
-        public DateTime Date { get; set; }
+        public int StartedBy { get; set; }
+
+        [DataMember]
+        public DateTime StartedOn { get; set; }
+
+        [DataMember]
+        public int? CompletedBy { get; set; }
+
+        [DataMember]
+        public DateTime? CompletedOn { get; set; }
 
         [IgnoreDataMember, ForeignKey("ItemID")]
         public virtual WorkflowItem Item { get; set; }

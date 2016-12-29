@@ -22,6 +22,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Responsibility_ObjectType-ObjectID]
     ON [dbo].[Responsibility]([ObjectType] ASC, [ObjectID] ASC);
@@ -33,7 +35,6 @@ CREATE NONCLUSTERED INDEX [IX_Responsibility_ResponsibleObjectType-ResponsibleOb
 
 
 GO
-
 CREATE TRIGGER [dbo].[Responsibility_AfterDelete]
    ON  [dbo].[Responsibility] 
    AFTER DELETE
@@ -47,17 +48,41 @@ begin
 	from	cache.ResponsibilityItem T
 			inner join deleted S on S.ID = T.ResponsibilityID
 
-	insert into [cache].[ResponsibilityItem] ([ResponsibilityID], [ResponsibilityTypeID], [AssigningItem], [AssigningItemID], [Object], [ObjectID], [ResponsibleObject], [ResponsibleObjectID], [ContextHash], [ResponsibilityTypeGroup], [Visible])
-		select	distinct
-				J.ResponsibilityID, J.ResponsibilityTypeID, 
-				J.AssigningItem, J.AssigningItemID, 
-				J.[Object], J.ObjectID, 
-				R.ResponsibleObjectType, R.ResponsibleObjectID,  
-				J.ContextHash,
-				1, J.Visible
-		from	deleted I
-				cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
-				inner join [Responsibility] R on R.ID = J.ResponsibilityID;
+	MERGE
+	INTO    [cache].[ResponsibilityItem] T
+	USING   (
+			select	distinct
+					J.ResponsibilityID, J.ResponsibilityTypeID, 
+					J.AssigningItem, J.AssigningItemID, 
+					J.[Object], J.ObjectID, 
+					R.ResponsibleObjectType, R.ResponsibleObjectID,  
+					J.ContextHash,
+					J.Visible
+			from	deleted I
+					cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
+					inner join [Responsibility] R on R.ID = J.ResponsibilityID
+			) S
+	ON      (T.ResponsibilityID = S.ResponsibilityID and T.AssigningItem = S.AssigningItem and T.AssigningItemID = S.AssigningItemID and T.Object = S.Object and T.ObjectID = S.ObjectID and T.ContextHash = S.ContextHash)
+	WHEN MATCHED THEN
+		UPDATE
+		SET	T.[ResponsibleObject] = S.ResponsibleObjectType,
+			T.[ResponsibleObjectID] = S.[ResponsibleObjectID]
+	WHEN NOT MATCHED THEN
+		INSERT  (
+				[ResponsibilityID], [ResponsibilityTypeID], 
+				[AssigningItem], [AssigningItemID], 
+				[Object], [ObjectID], 
+				[ResponsibleObject], [ResponsibleObjectID], 
+				[ContextHash], [ResponsibilityTypeGroup], [Visible]
+				)
+		VALUES  (
+				S.ResponsibilityID, S.ResponsibilityTypeID, 
+				S.AssigningItem, S.AssigningItemID, 
+				S.[Object], S.ObjectID, 
+				S.ResponsibleObjectType, S.ResponsibleObjectID,  
+				S.ContextHash,
+				1, S.Visible
+				);
 end
 
 GO
@@ -71,26 +96,44 @@ BEGIN
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Add', [queue].WriteIndexXml('', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Responsibility', ID from inserted
 
-	insert into [cache].[ResponsibilityItem] (
-		[ResponsibilityID], [ResponsibilityTypeID], 
-		[AssigningItem], [AssigningItemID], 
-		[Object], [ObjectID], 
-		[ResponsibleObject], [ResponsibleObjectID], 
-		[ContextHash], [ResponsibilityTypeGroup], [Visible])
-		select	distinct
-				J.ResponsibilityID, J.ResponsibilityTypeID, 
-				J.AssigningItem, J.AssigningItemID, 
-				J.[Object], J.ObjectID, 
-				R.ResponsibleObjectType, R.ResponsibleObjectID,  
-				J.ContextHash,
-				1, J.Visible
-		from	inserted I
-				cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
-				inner join [Responsibility] R on R.ID = J.ResponsibilityID;
+	MERGE
+	INTO    [cache].[ResponsibilityItem] T
+	USING   (
+			select	distinct
+					J.ResponsibilityID, J.ResponsibilityTypeID, 
+					J.AssigningItem, J.AssigningItemID, 
+					J.[Object], J.ObjectID, 
+					R.ResponsibleObjectType, R.ResponsibleObjectID,  
+					J.ContextHash,
+					J.Visible
+			from	inserted I
+					cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
+					inner join [Responsibility] R on R.ID = J.ResponsibilityID
+			) S
+	ON      (T.ResponsibilityID = S.ResponsibilityID and T.AssigningItem = S.AssigningItem and T.AssigningItemID = S.AssigningItemID and T.Object = S.Object and T.ObjectID = S.ObjectID and T.ContextHash = S.ContextHash)
+	WHEN MATCHED THEN
+		UPDATE
+		SET	T.[ResponsibleObject] = S.ResponsibleObjectType,
+			T.[ResponsibleObjectID] = S.[ResponsibleObjectID]
+	WHEN NOT MATCHED THEN
+		INSERT  (
+				[ResponsibilityID], [ResponsibilityTypeID], 
+				[AssigningItem], [AssigningItemID], 
+				[Object], [ObjectID], 
+				[ResponsibleObject], [ResponsibleObjectID], 
+				[ContextHash], [ResponsibilityTypeGroup], [Visible]
+				)
+		VALUES  (
+				S.ResponsibilityID, S.ResponsibilityTypeID, 
+				S.AssigningItem, S.AssigningItemID, 
+				S.[Object], S.ObjectID, 
+				S.ResponsibleObjectType, S.ResponsibleObjectID,  
+				S.ContextHash,
+				1, S.Visible
+				);
 END
 
 GO
-
 CREATE TRIGGER [dbo].[Responsibility_AfterUpdate]
    ON  [dbo].[Responsibility] 
    AFTER UPDATE
@@ -105,15 +148,39 @@ begin
 	from	cache.[ResponsibilityItem] T
 			inner join inserted S on S.ID = T.ResponsibilityID 
 
-	insert into [cache].[ResponsibilityItem] ([ResponsibilityID], [ResponsibilityTypeID], [AssigningItem], [AssigningItemID], [Object], [ObjectID], [ResponsibleObject], [ResponsibleObjectID], [ContextHash], [ResponsibilityTypeGroup], [Visible])
-		select	distinct
-				J.ResponsibilityID, J.ResponsibilityTypeID, 
-				J.AssigningItem, J.AssigningItemID, 
-				J.[Object], J.ObjectID, 
-				R.ResponsibleObjectType, R.ResponsibleObjectID,  
-				J.ContextHash,
-				1, J.Visible
-		from	inserted I
-				cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
-				inner join [Responsibility] R on R.ID = J.ResponsibilityID;
+	MERGE
+	INTO    [cache].[ResponsibilityItem] T
+	USING   (
+			select	distinct
+					J.ResponsibilityID, J.ResponsibilityTypeID, 
+					J.AssigningItem, J.AssigningItemID, 
+					J.[Object], J.ObjectID, 
+					R.ResponsibleObjectType, R.ResponsibleObjectID,  
+					J.ContextHash,
+					J.Visible
+			from	inserted I
+					cross apply cache.SynchronizeObjectResponsibilities(i.ObjectType, i.ObjectID) J
+					inner join [Responsibility] R on R.ID = J.ResponsibilityID
+			) S
+	ON      (T.ResponsibilityID = S.ResponsibilityID and T.AssigningItem = S.AssigningItem and T.AssigningItemID = S.AssigningItemID and T.Object = S.Object and T.ObjectID = S.ObjectID and T.ContextHash = S.ContextHash)
+	WHEN MATCHED THEN
+		UPDATE
+		SET	T.[ResponsibleObject] = S.ResponsibleObjectType,
+			T.[ResponsibleObjectID] = S.[ResponsibleObjectID]
+	WHEN NOT MATCHED THEN
+		INSERT  (
+				[ResponsibilityID], [ResponsibilityTypeID], 
+				[AssigningItem], [AssigningItemID], 
+				[Object], [ObjectID], 
+				[ResponsibleObject], [ResponsibleObjectID], 
+				[ContextHash], [ResponsibilityTypeGroup], [Visible]
+				)
+		VALUES  (
+				S.ResponsibilityID, S.ResponsibilityTypeID, 
+				S.AssigningItem, S.AssigningItemID, 
+				S.[Object], S.ObjectID, 
+				S.ResponsibleObjectType, S.ResponsibleObjectID,  
+				S.ContextHash,
+				1, S.Visible
+				);
 end

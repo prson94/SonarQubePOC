@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using System.Xml.Linq;
 
 namespace d360.core.entities.Workflow
 {
@@ -19,6 +20,9 @@ namespace d360.core.entities.Workflow
         
         [IgnoreDataMember]
         public string Condition { get; set; }
+
+        [NotMapped, IgnoreDataMember]
+        public XElement ConditionDocument { get { return XElement.Parse(Condition); } }
 
         [IgnoreDataMember]
         public DateTime Date { get; set; }

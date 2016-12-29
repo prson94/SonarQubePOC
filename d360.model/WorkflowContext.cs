@@ -148,7 +148,7 @@ namespace d360.model
 
         #region Engine Methods
 
-        public WorkflowItem CreateWorkflowItem(int workflowTypeID)
+        public WorkflowItem CreateWorkflowItem(int workflowTypeID, bool isTest = false)
         {
             var version = WorkflowVersions
                 .Include(i => i.Steps)
@@ -166,7 +166,8 @@ namespace d360.model
                 Active = true,
                 StartedBy = 0, StartedOn = DateTime.UtcNow,
                 UpdatedBy = 0, UpdatedOn = DateTime.UtcNow,
-                VersionID = 1
+                VersionID = version.ID,
+                IsTest = isTest
             };
 
             WorkflowItems.Add(item);
@@ -175,7 +176,7 @@ namespace d360.model
             //initiate first step.
             var firstVersionStep = version.Steps.Single(s => s.StepType == core.enums.Workflow.StepType.Start);
 
-            var firstItemStep = new WorkflowItemStep { Date = DateTime.UtcNow, Step = firstVersionStep, Fields = "", Settings = "" };
+            var firstItemStep = new WorkflowItemStep { StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "", Settings = "" };
             item.Steps.Add(firstItemStep);
 
             //var activity = ActivityTypes.SingleOrDefault(i => i.ID == firstItemStep.Step.ActivityType);
@@ -197,6 +198,70 @@ namespace d360.model
              */
 
             return item;
+        }
+
+        public void ExecuteStep(long itemStepID)
+        {
+            var itemStep = getWorkflowItemStep(itemStepID);
+
+            var activityType = ActivityTypes.SingleOrDefault(i => i.Value.ID == itemStep.Step.ActivityType);
+            if (activityType == null)
+                throw new ApplicationException($"Item Step does not correspond to any known activity type of {itemStep.Step.ActivityType}.");
+
+            activityType.Value.Execute(itemStep.Settings);
+
+            itemStep.CompletedOn = DateTime.UtcNow;
+            itemStep.CompletedBy = CurrentResourceID;
+            SaveChanges();
+        }
+
+        public void DetermineTransitionBasedOnPreviousStepConditions(long itemStepID)
+        {
+            var itemStep = getWorkflowItemStep(itemStepID, true);
+            var possibleTransitions = GetTransitionsForCompletedStep(itemStep);
+
+            //itemStep.SettingsDocument.
+        }
+
+        /// <summary>
+        /// Gets a list of possible transitions based on a completed workflow item step.
+        /// </summary>
+        /// <param name="itemStepID">The workflow item step ID.
+        /// <returns>A list of possible transitions.</returns>
+        public List<WorkflowVersionStepTransition> GetTransitionsForCompletedStep(long itemStepID)
+        {
+            var itemStep = getWorkflowItemStep(itemStepID, true);
+            return GetTransitionsForCompletedStep(itemStep);
+        }
+
+        /// <summary>
+        /// Gets a list of possible transitions based on a completed workflow item step.
+        /// </summary>
+        /// <param name="itemStep">The workflow item step model.</param>
+        /// <returns>A list of possible transitions.</returns>
+        public List<WorkflowVersionStepTransition> GetTransitionsForCompletedStep(WorkflowItemStep itemStep)
+        {
+            return WorkflowVersionStepTransitions
+                .Include(i => i.FromVersionStep)
+                .Include(i => i.ToVersionStep)
+                .Where(i => i.FromVersionStepID == itemStep.StepID)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the active workflow item step based on a given ID.
+        /// </summary>
+        /// <param name="itemStepID">The item ID</param>
+        /// <returns>An active workflow item step model.</returns>
+        private WorkflowItemStep getWorkflowItemStep(long itemStepID, bool isStepCompleted = false)
+        {
+            var itemStep = WorkflowItemSteps.Include(i => i.Step).SingleOrDefault(i => i.ID == itemStepID);
+            if (itemStep == null)
+                throw new ApplicationException("Item Step ID does not correspond to a valid workflow item step.");
+            if (!isStepCompleted && itemStep.CompletedOn.HasValue)
+                throw new ApplicationException("Item Step has already been completed.");
+
+            return itemStep;
         }
 
         #endregion

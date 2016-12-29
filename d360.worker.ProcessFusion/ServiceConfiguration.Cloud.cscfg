@@ -4,12 +4,12 @@
     <Instances count="1" />
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="" />
-      <Setting name="QueueMessageVisibilityTime" value="3600" />
+      <Setting name="QueueMessageVisibilityTime" value="7200" />
       <Setting name="QueueName" value="fusion-queue" />
       <Setting name="QueueCheckFrequency" value="60000" />
       <Setting name="DBExecuteQueryTimeout" value="10800" />
-      <Setting name="DBReadQueryTimeout" value="600" />
-      <Setting name="DBBulkCopyTimeout" value="600" />
+      <Setting name="DBReadQueryTimeout" value="1800" />
+      <Setting name="DBBulkCopyTimeout" value="1800" />
       <Setting name="MaximumRetries" value="3" />
       <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="ce8d05fc-1a80-44d5-82e8-102232cffa0d" />
     </ConfigurationSettings>

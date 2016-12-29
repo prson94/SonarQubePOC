@@ -17,6 +17,6 @@ namespace d360.extensions
 
         XElement Settings { get; set; }
 
-        void Execute();
+        void Execute(string settings, bool isTest = false);
     }
 }

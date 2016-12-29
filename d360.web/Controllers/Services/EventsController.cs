@@ -4,8 +4,11 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.model;
 using d360.web.Models;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -16,11 +19,16 @@ namespace d360.web.Controllers.Services
     [RoutePrefix("services/events"), Authorize]
     public class EventsController : BaseApiController
     {
+        TelemetryClient Telemetry;
+
         #region DI
 
         public EventsController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
+            Telemetry = new TelemetryClient();
+            Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
+            Telemetry.Context.Properties["CompanyID"] = company.CurrentCompanyID.ToString();
         }
 
         #endregion
@@ -228,14 +236,20 @@ namespace d360.web.Controllers.Services
         ]
         public HttpResponseMessage AddRuleResults(int id, List<ResultModel> models)
         {
-            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
+                if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add results to this rule.");
 
             if (models == null)
             {
+                Telemetry.TrackTrace(new TraceTelemetry { Message = "AddRuleResults => No Models Found", SeverityLevel = SeverityLevel.Error });
+
                 var msg = new HttpResponseMessage(HttpStatusCode.BadRequest);
                 msg.ReasonPhrase = "Request body is invalid.  Please reformat your request.";
                 throw new HttpResponseException(msg);
+            }
+            else
+            {
+                Telemetry.TrackTrace(new TraceTelemetry { Message = Newtonsoft.Json.JsonConvert.SerializeObject(models), SeverityLevel = SeverityLevel.Information });
             }
 
             var rule = Company.GetById<Rule>(id, i => i.RuleResultQualifierTypes);
@@ -245,6 +259,8 @@ namespace d360.web.Controllers.Services
             try
             {
                 var qualitifierTypes = rule.RuleResultQualifierTypes.ToList();
+
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AddRuleResults => Rule has {qualitifierTypes.Count} qualifier types.", SeverityLevel = SeverityLevel.Information });
 
                 var loop = 1;
                 foreach (var model in models)
@@ -273,10 +289,14 @@ namespace d360.web.Controllers.Services
                         if (isResultValid)
                             Company.RuleResults.Add(result);
                         else
+                        {
                             errorList.Add(new CreateResponse { Message = $"Row {loop} contains qualifiers that are not yet defined on the rule." });
+                        }
+                            
                     }
                     catch (Exception ex)
                     {
+                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"AddRuleResults => {ex.GetFullExceptionData()}", SeverityLevel = SeverityLevel.Critical });
                         return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData(), ex);
                     }
 
@@ -289,10 +309,12 @@ namespace d360.web.Controllers.Services
             }
             catch (BaseException ex)
             {
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AddRuleResults => {ex.GetFullExceptionData()}", SeverityLevel = SeverityLevel.Critical });
                 return Request.CreateErrorResponse(ex.StatusCode, ex.StatusMessage);
             }
             catch (Exception ex)
             {
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AddRuleResults => {ex.GetFullExceptionData()}", SeverityLevel = SeverityLevel.Critical });
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
             }
         }

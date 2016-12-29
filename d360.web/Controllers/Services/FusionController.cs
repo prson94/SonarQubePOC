@@ -20,6 +20,7 @@ using d360.core.entities.Views;
 using d360.fusion;
 using SpreadsheetLight;
 using System.IO;
+using System.Data.SqlClient;
 
 namespace d360.web.Controllers.Services
 {
@@ -697,6 +698,79 @@ where A.FusionTypeID = @id", columns, joins);
                 SendException(ex, new Dictionary<string, string>());
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(), ex);
             }
+        }
+
+        [Route("{fusionID:int}/{fusionQueryAttributeTypeID:int}/data")]
+        public HttpResponseMessage GetFusionQueryAttributesByFusionAndType(int fusionID, int fusionQueryAttributeTypeID, bool? metadata = false)
+        {
+            HttpResponseMessage response = null;
+
+            try
+            {
+                var joins = "";
+                var columns = "";
+
+                var fields = Company.Filter<FieldType>(i => i.Object == "FusionQueryAttributeType" && i.ObjectID == fusionQueryAttributeTypeID).OrderBy(i => i.SortOrder).ToList();
+
+                foreach (var f in fields)
+                {
+                    var tableName = $"Field{f.ID}";
+                    columns += ((string.IsNullOrEmpty(columns)) ? "" : ", ") + $"{tableName}_T.FormattedValue as [{f.Name}]";
+                    joins += $@" left join FieldWithRelation {tableName}_T on {tableName}_T.ObjectType = 'FusionQueryAttribute' and {tableName}_T.ObjectID = A.ID and {tableName}_T.FieldTypeID = {f.ID} ";
+                }
+
+                if (columns.Contains("[type]"))
+                    columns = columns.Replace("[type]", "[_type]");
+
+                var dbArgs = new Dapper.DynamicParameters();
+                dbArgs.Add("f", fusionID);
+                dbArgs.Add("t", fusionQueryAttributeTypeID);
+
+                #region Query
+
+                var sql = $@"
+select  {columns} 
+from	FusionQueryAttribute A 
+        inner join FusionQueryAttributeType T on T.ID = A.FusionQueryAttributeTypeID and T.FusionID = @f and T.ID = @t 
+        {joins} 
+where   A.Deleted = 0";
+
+                var models = Company.Query<dynamic>(sql, dbArgs);
+
+                #endregion
+
+                if (metadata.GetValueOrDefault())
+                {
+                    List<dynamic> header = new List<dynamic>();
+
+                    var firstRow = models.FirstOrDefault();
+
+                    if (firstRow != null)
+                    {
+                        foreach (KeyValuePair<string, object> kvp in firstRow)
+                        { // enumerating over it exposes the Properties and Values as a KeyValuePair
+                            var dataType = typeof(string).ToString();
+
+                            if (kvp.Value != null)
+                                dataType = kvp.Value.GetType().ToString();
+
+                            header.Add(new { field = kvp.Key, type = dataType });
+                        }
+                    }
+
+                    response = Request.CreateResponse(HttpStatusCode.OK, new { metadata = header, data = models });
+                }
+                else
+                {
+                    response = Request.CreateResponse(HttpStatusCode.OK, models);
+                }
+            }
+            catch (SqlException ex)
+            {
+                response = Request.CreateErrorResponse(HttpStatusCode.PreconditionFailed, ex.GetFullExceptionData(), ex);
+            }
+
+            return response;
         }
 
         [HttpGet, Route("list")]

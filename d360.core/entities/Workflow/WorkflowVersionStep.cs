@@ -2,6 +2,7 @@
 using d360.core.enums.Workflow;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using System.Xml.Linq;
 
 namespace d360.core.entities.Workflow
 {
@@ -26,8 +27,14 @@ namespace d360.core.entities.Workflow
         [IgnoreDataMember]
         public string Settings { get; set; }
 
+        [NotMapped, IgnoreDataMember]
+        public XElement SettingsDocument { get { return XElement.Parse(Settings); } }
+
         [IgnoreDataMember]
         public string Fields { get; set; }
+
+        [NotMapped, IgnoreDataMember]
+        public XElement FieldsDocument { get { return XElement.Parse(Fields); } }
 
         [DataMember]
         public int XPosition { get; set; }

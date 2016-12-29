@@ -30,6 +30,8 @@
 
 
 
+
+
 GO
 
 CREATE TRIGGER [dbo].[Rule_AfterUpdate]
@@ -62,6 +64,12 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Add', [queue].WriteIndexXml('', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from inserted
+
+	update	T
+	set		T.CreatedOn = coalesce(S.CreatedOn, getutcdate()),
+			T.UpdatedOn = coalesce(S.UpdatedOn, getutcdate())
+	from	[Rule] T
+			inner join inserted S on S.ID = T.ID;
 
 	merge	[cache].[Object] as T
 	using	(

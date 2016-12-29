@@ -405,6 +405,8 @@ begin
 							I.SourceFusionAttributeID,
 							I.TargetFusionAttributeID
 					from	MapRuleItem I
+							inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
 					where	I.SourceFusionAttributeID = @id or I.TargetFusionAttributeID = @id;
 
 				with cte as (
@@ -599,6 +601,8 @@ begin
 					from	@tItems I
 							inner join MapRuleItemMapItem J on J.MapItemID = I.MapItemID
 							inner join MapRuleItem T on T.ID = J.MapRuleItemID
+							inner join FusionAttribute SFA on SFA.ID = T.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = T.TargetFusionAttributeID and TFA.Deleted = 0
 			end
 
 			--Load tables we will return to caller.

@@ -1,7 +1,0 @@
-﻿CREATE TABLE [dbo].[WorkflowInbox] (
-    [Id]         UNIQUEIDENTIFIER NOT NULL,
-    [ProcessId]  UNIQUEIDENTIFIER NOT NULL,
-    [IdentityId] UNIQUEIDENTIFIER NOT NULL,
-    CONSTRAINT [PK_WorkflowInbox] PRIMARY KEY CLUSTERED ([Id] ASC)
-);
-

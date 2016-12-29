@@ -36,6 +36,9 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public DateTime? CompletedOn { get; set; }
 
+        [DataMember]
+        public bool IsTest { get; set; }
+
         [IgnoreDataMember, ForeignKey("VersionID")]
         public virtual WorkflowVersion Version { get; set; }
 
