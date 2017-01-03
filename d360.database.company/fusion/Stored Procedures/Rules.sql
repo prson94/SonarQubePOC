@@ -11,8 +11,8 @@ BEGIN
 			@ExecutionID int,
 			@NumberOfRules int,			
 			@NumberOfNewTaxonomies int,
-			@NumberOfNewDomainItems int,
-			@NumberOfNewDomains int,
+			@NumberOfNewReferenceItems int,
+			@NumberOfNewReferences int,
 			@NumberOfNewArtifacts int,
 			@NumberOfAttributesTotal int,
 			@NumberOfNewRelations int,
@@ -20,8 +20,8 @@ BEGIN
 	
 	set	@NumberOfRules = 0;	
 	set @NumberOfNewTaxonomies = 0;
-	set @NumberOfNewDomainItems = 0;
-	set @NumberOfNewDomains = 0;
+	set @NumberOfNewReferenceItems = 0;
+	set @NumberOfNewReferences = 0;
 	set @NumberOfNewArtifacts = 0;
 	set @promotionNeedsToRun = 1;
 
@@ -96,8 +96,6 @@ BEGIN
 		from	[fusion].[Rule] R
 				inner join [fusion].[RuleItem] I on I.RuleID = R.ID and R.[Enabled] = 1
 				left join FusionAttribute A on A.ID = I.FusionAttributeID
-
-
 	
 	declare	@currentID int,
 			@maxID int
@@ -370,119 +368,78 @@ from	#rules R
 						end
 
 						if @ResultObjectID is null
-						begin
-							if @ParentObjectID = 0
 							begin
-								set @ParentObjectID = null
-							end
-
-							if @modelTypeID is not null
+								if @ParentObjectID = 0
 								begin
-									insert into Artifact ( ParentID, ArtifactTypeID, TaxonomyTypeID, Name, Description, Status, UpdatedOn, UpdatedBy )
-									values ( @ParentObjectID, @ObjectTypeIDToPromoteTo, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0 )
-
-									select @ResultObjectID =  SCOPE_IDENTITY()
-									set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
+									set @ParentObjectID = null
 								end
-						end
-						else
-						begin
-							declare @testArtifactName nvarchar(250) = null,
-									@testArtifactDescription nvarchar(4000) = null,
-									@testArtifactParentID int = null,
-									@testArtifactTaxonomyTypeID int = null
 
-							select	@testArtifactName = Name,
-									@testArtifactDescription = Description,
-									@testArtifactParentID = ParentID,
-									@testArtifactTaxonomyTypeID = TaxonomyTypeID
-							from	Artifact
-							where	ID = @ResultObjectID
-
-							if @modelTypeID is not null
-								begin
-									if (@testArtifactName <> @name) 
-										OR (@testArtifactDescription <> @description) 
-										OR (@testArtifactParentID <> @ParentObjectID) 
-										OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
+								if @modelTypeID is not null
 									begin
-										update	Artifact
-										set		Name = @name,
-												Description = @description,
-												ParentID = @ParentObjectID,
-												TaxonomyTypeID = @modelTypeID
-										where	ID = @ResultObjectID
+										insert into Artifact ( ParentID, ArtifactTypeID, TaxonomyTypeID, Name, Description, Status, UpdatedOn, UpdatedBy )
+										values ( @ParentObjectID, @ObjectTypeIDToPromoteTo, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0 )
+
+										select @ResultObjectID =  SCOPE_IDENTITY()
+										set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
 									end
-								end
-						end
+							end
+						else
+							begin
+								declare @testArtifactName nvarchar(250) = null,
+										@testArtifactDescription nvarchar(4000) = null,
+										@testArtifactParentID int = null,
+										@testArtifactTaxonomyTypeID int = null
+
+								select	@testArtifactName = Name,
+										@testArtifactDescription = Description,
+										@testArtifactParentID = ParentID,
+										@testArtifactTaxonomyTypeID = TaxonomyTypeID
+								from	Artifact
+								where	ID = @ResultObjectID
+
+								if @modelTypeID is not null
+									begin
+										if (@testArtifactName <> @name) 
+											OR (@testArtifactDescription <> @description) 
+											OR (@testArtifactParentID <> @ParentObjectID) 
+											OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
+										begin
+											update	Artifact
+											set		Name = @name,
+													Description = @description,
+													ParentID = @ParentObjectID,
+													TaxonomyTypeID = @modelTypeID
+											where	ID = @ResultObjectID
+										end
+									end
+							end
 					end
 					--END: IF ArtifactType
 
-					if @ObjectTypeToPromoteTo = 'DomainType'
+					if @ObjectTypeToPromoteTo = 'ReferenceItemType' OR @ObjectTypeToPromoteTo = 'ReferenceItem'
 					begin
-						if @ParentObject is null and @ParentObjectID is null
+						-- You are promoting Reference items to a specific Reference (list)
+						set @ResultObject = 'ReferenceItem'
+
+						if @ResultObject is null and @ResultObjectID is null
 							begin
-								set @ResultObject = 'Domain'
-									
-								-- You are promoting to a Domain (creating a list)
-								if @ResultObjectID is null
-									begin
-										select	@ResultObjectID = ID
-										from	Domain
-										where	DomainTypeID = @ObjectTypeIDToPromoteTo
-												and lower(Name) = lower(@name)
-									end
- 
-								if @ResultObjectID is null
-									begin
-										insert into Domain  ( DomainTypeID, Name, Description ) 
-										values ( @ObjectTypeIDToPromoteTo, @name, @description )
-
-										select @ResultObjectID =  SCOPE_IDENTITY()
-
-										set @NumberOfNewDomains = @NumberOfNewDomains +1;
-									end
-								else
-									begin
-										update	Domain
-										set		Name = @name,
-												Description = @description
-										where	ID = @ResultObjectID
-									end
+								select	@ResultObjectID = ID
+								from	ReferenceItem
+								where	ReferenceItemTypeID = @ParentObjectID
+										and lower(Code) = lower(@code)
 							end
-						else
-							begin
-								-- You are promoting domain items to a specific domain (list)
-								set @ResultObject = 'DomainItem'
-
-								if @ResultObject is null and @ResultObjectID is null
-									begin
-										select	@ResultObjectID = ID
-										from	DomainItem
-										where	DomainID = @ParentObjectID
-												and lower(Code) = lower(@code)
-									end
  
-								if @ResultObjectID is not null
-									begin
-										update	DomainItem
-										set		Name = @name,
-												Code = coalesce(@code, @name),
-												Description = @description
-										where	ID = @ResultObjectID
-									end
-								else
-									begin
-										insert into DomainItem ( DomainID, Name, Code, Description )
-										values ( @ParentObject, @name, coalesce(@code, @name), @description )
+						if @ResultObjectID is null
+							begin
+								insert into ReferenceItem ( ReferenceItemTypeID, Code )
+								values ( @ParentObject, @code )
 
-										select @ResultObjectID =  SCOPE_IDENTITY()
+								select @ResultObjectID =  SCOPE_IDENTITY()
 
-										set @NumberOfNewDomainItems = @NumberOfNewDomainItems +1;
-									end
+								set @NumberOfNewReferenceItems = @NumberOfNewReferenceItems +1;
 							end
 					end
-					--END: IF DomainType
+					--END: IF ReferenceType
 
 					if @ObjectTypeToPromoteTo = 'TaxonomyType'
 					begin
@@ -545,17 +502,37 @@ from	#rules R
 				if @FindSearchType = 'Fusion'
 				begin					
 					if @FindFilterField > 0
-					begin
-						select	@FindFilterFieldValue = Value
-						from	@fields
-						where	SourceFieldTypeID = @FindFilterField
-					end
+						begin
+							if not exists(select 1 from @fields where SourceFieldTypeID = @FindFilterField)
+								begin
+									select	@FindFilterFieldValue = Value
+									from	FieldWithRelation
+									where	FieldTypeID = @FindFilterField
+											and ObjectType = 'FusionAttribute'
+											and ObjectID = @FusionAttributeID
+								end
+							else
+								begin
+									select	@FindFilterFieldValue = Value
+									from	@fields
+									where	SourceFieldTypeID = @FindFilterField
+								end
+						end
 					else
-					begin
-						select	@FindFilterFieldValue = Value
-						from	@fields
-						where	SourceFieldName = 'Name'
-					end
+						begin
+							if not exists(select 1 from @fields where SourceFieldName = 'Name')
+								begin
+									select	@FindFilterFieldValue = TextPath
+									from	FusionAttribute
+									where	ID = @FusionAttributeID
+								end
+							else
+								begin
+									select	@FindFilterFieldValue = Value
+									from	@fields
+									where	SourceFieldName = 'Name'
+								end
+						end
 					
 					if @FindFilterFieldValue is not null
 					begin
@@ -565,20 +542,15 @@ from	#rules R
 						from	FusionAttribute
 						where	@FindSearchObject = 'FusionAttributeType'
 								and FusionAttributeTypeID = @FindSearchObjectID
-								and (TextPath = @FindFilterFieldValue or Name = @FindFilterFieldValue)
+								and (SourceID = @FindFilterFieldValue or TextPath = @FindFilterFieldValue or Name = @FindFilterFieldValue)
 					end
-
 				end
 
 				--BEGIN: Find based on search type
 				if @FindSearchType = 'FusionOwner'
 				begin
-					select	@ResultObject = 'Artifact',
-							@ResultObjectID = ArtifactID
-					from	FusionOwner
-					where	@FindSearchObject = 'Owner'
-							and FusionID = @FusionID
-							--and ID = @FindSearchObjectID
+					set	@ResultObject = 'Artifact'
+					set @ResultObjectID = @FindSearchObjectID
 				end
 
 				if @FindSearchType = 'Glossary'					
@@ -594,10 +566,7 @@ from	#rules R
 						select	@FindFilterFieldValue = Value
 						from	@fields
 						where	SourceFieldName = 'Name'	
-						
-											
 					end
-									
 
 					if @FindFilterFieldValue is not null
 					begin
@@ -632,8 +601,6 @@ from	#rules R
 									and (TextPath = @FindFilterFieldValue or Name = @FindFilterFieldValue)
 						end
 					end
-
---select @ResultObjectID
 				end
 
 				if @FindSearchType = 'ResultFromStep' and @FindParent is not null
@@ -641,7 +608,7 @@ from	#rules R
 					select	@ResultObject = co.parent,
 							@ResultObjectID = co.parentid
 					from	[fusion].[RulePromotion] rp
-						inner join [cache].[objectdetails] co on(co.[object] = rp.objecttype and co.objectid = rp.objectid)
+							inner join [cache].[objectdetails] co on(co.[object] = rp.objecttype and co.objectid = rp.objectid)
 					where	@FindSearchObject = 'Step'
 							and rp.RuleID = @RuleID
 							and rp.RuleStepID = @FindSearchObjectID
@@ -689,60 +656,112 @@ from	#rules R
 
 				--END: Find based on search type
 			end --END: Find Action
+
+
+			--BEGIN: FindRelation Action
+			if @Action = 'FindRelation'
+			begin
+				declare @IntersectTypeID		int = null,
+						@SearchType				nvarchar(250) = null,
+						@FindRelationObject		varchar(50) = null,
+						@FindRelationObjectID	int = null
+
+				select	@IntersectTypeID		= Value from @settings where Name = 'IntersectType'
+				select	@SearchType				= Value from @settings where Name = 'Search'
+				select	@FindSearchObjectID		= Value from @settings where Name = 'ID'
+
+				--BEGIN: Find based on search type
+
+				if @SearchType = 'ResultFromStep'
+				begin
+					select	@FindRelationObject = ObjectType,
+							@FindRelationObjectID = ObjectID
+					from	[fusion].[RulePromotion]
+					where	RuleID = @RuleID
+							and RuleStepID = @FindSearchObjectID
+							and FusionAttributeID = @FusionAttributeID
+				end
+
+				if @SearchType = 'Self'
+				begin
+					set @FindRelationObject = 'FusionAttribute'
+					set @FindRelationObjectID = @FusionAttributeID
+				end
+
+				if @FindRelationObject is not null and @FindRelationObjectID is not null
+				begin
+					select	top 1
+							@ResultObject = case 
+												when (Subject = @FindRelationObject and SubjectID = @FindRelationObjectID) then Object
+												else Subject
+											end,
+							@ResultObjectID = case 
+												when (Subject = @FindRelationObject and SubjectID = @FindRelationObjectID) then ObjectID
+												else SubjectID
+											end
+					from	[Intersect]
+					where	IntersectTypeID = @IntersectTypeID
+							and (
+									(Subject = @FindRelationObject and SubjectID = @FindRelationObjectID) 
+									OR (Object = @FindRelationObject and ObjectID = @FindRelationObjectID)
+								)
+				end
+
+				--END: Find based on search type
+
+			end --END: FindRelation Action
+
 			
 			--BEGIN: Lineage Action
 			if @Action = 'Lineage'
 			begin
-				declare @SubjectSearchType nvarchar(250) = null,
-						@SubjectSearchObject varchar(50) = null,
-						@SubjectSearchObjectID int = null,
+				declare @SubjectSearchID int = null,
+						@ObjectSearchID int = null,
 						@Subject varchar(50) = null,
 						@SubjectID int = null,
-						@ObjectSearchType nvarchar(250) = null,
-						@ObjectSearchObject varchar(50) = null,
-						@ObjectSearchObjectID int = null,
 						@Object varchar(50) = null,
 						@ObjectID int = null,
-						@RoleID int = null
 
-				select	@SubjectSearchType			= Value from @settings where Name = 'SubjectSearch'
-				select	@SubjectSearchObject		= Value from @settings where Name = 'Subject'
-				select	@SubjectSearchObjectID		= Value from @settings where Name = 'SubjectID'
-				select	@ObjectSearchType			= Value from @settings where Name = 'ObjectSearch'
-				select	@ObjectSearchObject			= Value from @settings where Name = 'Object'
-				select	@ObjectSearchObjectID		= Value from @settings where Name = 'ObjectID'
+						@TechnicalSubjectSearchID int = null,
+						@TechnicalObjectSearchID int = null,
+						@RoleID int = null,
+
+						@TechnicalSubject varchar(50) = null,
+						@TechnicalSubjectID int  = null,
+						@TechnicalObject varchar(50) = null,
+						@TechnicalObjectID int  = null
+
+				select	@SubjectSearchID			= Value from @settings where Name = 'SubjectID'
+				select	@ObjectSearchID				= Value from @settings where Name = 'ObjectID'
+
+				select	@TechnicalSubjectSearchID	= Value from @settings where Name = 'TechnicalSubjectID'
+				select	@TechnicalObjectSearchID	= Value from @settings where Name = 'TechnicalObjectID'
+
 				select	@RoleID						= Value from @settings where Name = 'Role'
 				
 				--BEGIN: Find subject based on search type, ALWAYS ResultFromStep
-				if @SubjectSearchType = 'ResultFromStep'
-				begin
-					select	@Subject = ObjectType,
-							@SubjectID = ObjectID
-					from	[Fusion].[RulePromotion]
-					where	@SubjectSearchObject = 'Step'
-							and RuleID = @RuleID
-							and RuleStepID = @SubjectSearchObjectID
-							and FusionAttributeID = @FusionAttributeID
-				end
+				select	@Subject = ObjectType,
+						@SubjectID = ObjectID
+				from	[Fusion].[RulePromotion]
+				where	RuleID = @RuleID
+						and RuleStepID = @SubjectSearchID
+						and FusionAttributeID = @FusionAttributeID
 				--END: Find subject based on search type
 
 				--BEGIN: Find object based on search type
-				if @ObjectSearchType = 'ResultFromStep' --ALWAYS ResultFromStep
-				begin
-					select	@Object = ObjectType,
-							@ObjectID = ObjectID
-					from	[fusion].[RulePromotion]
-					where	@ObjectSearchObject = 'Step'
-							and RuleID = @RuleID
-							and RuleStepID = @ObjectSearchObjectID
-							and FusionAttributeID = @FusionAttributeID
-				end
+				select	@Object = ObjectType,
+						@ObjectID = ObjectID
+				from	[fusion].[RulePromotion]
+				where	RuleID = @RuleID
+						and RuleStepID = @ObjectSearchID
+						and FusionAttributeID = @FusionAttributeID
 				--END: Find object based on search type
+
+				declare @Map table (ID int)
 
 				--BEGIN: Add Map
 				if @Subject = 'Intersect' and @SubjectID is not null and @Object = 'Intersect' and @ObjectID is not null
-				begin					
-					declare @Map table (ID int)
+				begin
 					MERGE	MapItem AS T
 					USING	(
 							SELECT	@SubjectID as SourceIntersectID, 
@@ -757,10 +776,68 @@ from	#rules R
 					
 					set @ResultObject = 'MapItem'
 					select top 1 @ResultObjectID = ID from @Map
-					delete from @Map				
 				end
 				--END: Add Map
 
+				--BEGIN: Find subject based on search type, ALWAYS ResultFromStep
+				if @TechnicalSubjectSearchID is not null and @TechnicalObjectSearchID is not null
+				begin
+					select	@TechnicalSubject = ObjectType,
+							@TechnicalSubjectID = ObjectID
+					from	[Fusion].[RulePromotion]
+					where	RuleID = @RuleID
+							and RuleStepID = @TechnicalSubjectSearchID
+							and FusionAttributeID = @FusionAttributeID
+
+					select	@TechnicalObject = ObjectType,
+							@TechnicalObjectID = ObjectID
+					from	[fusion].[RulePromotion]
+					where	RuleID = @RuleID
+							and RuleStepID = @TechnicalObjectSearchID
+							and FusionAttributeID = @FusionAttributeID
+				end
+				--END: Find object based on search type
+
+				declare @MapRule table (ID int)
+
+				--BEGIN: Add Map
+				if	@TechnicalSubject = 'FusionAttribute' and @TechnicalSubjectID is not null 
+					and @TechnicalObject = 'FusionAttribute' and @TechnicalObjectID is not null
+				begin
+					MERGE	MapRuleItem AS T
+					USING	(
+							SELECT	@TechnicalSubjectID as SourceFusionAttributeID, 
+									@TechnicalObjectID as TargetFusionAttributeID
+							) as S
+					ON		T.SourceFusionAttributeID = S.SourceFusionAttributeID
+							and T.TargetFusionAttributeID = S.TargetFusionAttributeID 
+					WHEN	NOT MATCHED THEN
+							INSERT (SourceFusionAttributeID, TargetFusionAttributeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) 
+							VALUES (S.SourceFusionAttributeID, S.TargetFusionAttributeID, 0, getutcdate(), 0, getutcdate())
+					OUTPUT inserted.ID into @Map;
+					
+					set @ResultObject = 'MapRuleItem'
+					select top 1 @ResultObjectID = ID from @MapRule
+				end
+				--END: Add Map
+
+				if exists(select ID from @Map) and exists(select ID from @MapRule)
+				begin
+					merge	MapRuleItemMapItem as T
+					using	(
+							select	B.ID as MapItemID,
+									T.ID as MapRuleItemID
+							from	@Map B
+									inner join @MapRule T on 1=1
+							) as S
+					on		T.MapRuleItemID = S.MapRuleItemID and T.MapItemID = S.MapItemID
+					when	not matched then
+							insert (MapRuleItemID, MapItemID)
+							values (S.MapRuleItemID, S.MapItemID);
+
+					delete from @Map
+					delete from @MapRule
+				end
 
 			end --END: Lineage Action
 
@@ -798,12 +875,8 @@ from	#rules R
 
 				if @R_SubjectSearchType = 'FusionOwner'
 				begin
-					select	@R_Subject = 'Artifact',
-							@R_SubjectID = ArtifactID
-					from	FusionOwner
-					where	@R_SubjectSearchObject = 'Owner'
-							and FusionID = @FusionID
-							--and ID = @R_SubjectSearchObjectID
+					set	@R_Subject = 'Artifact'
+					set @R_SubjectID = @R_ObjectSearchObjectID
 				end
 
 				if @R_SubjectSearchType = 'ResultFromStep'
@@ -815,8 +888,6 @@ from	#rules R
 							and RuleID = @RuleID
 							and RuleStepID = @R_SubjectSearchObjectID
 							and FusionAttributeID = @FusionAttributeID
-
---select @R_Subject, @R_SubjectID
 				end
 
 				if @R_SubjectSearchType = 'Self'
@@ -835,12 +906,8 @@ from	#rules R
 
 				if @R_ObjectSearchType = 'FusionOwner'
 				begin
-					select	@R_Object = 'Artifact',
-							@R_ObjectID = ArtifactID
-					from	FusionOwner
-					where	@R_ObjectSearchObject = 'Owner'
-							and FusionID = @FusionID
-							--and ID = @R_ObjectSearchObjectID
+					set	@R_Object = 'Artifact'
+					set @R_ObjectID = @R_ObjectSearchObjectID
 				end
 
 				if @R_ObjectSearchType = 'ResultFromStep'
@@ -864,7 +931,7 @@ from	#rules R
 
 
 				--Check to see if we have all the required data to create the relationship.
-				if @R_IntersectTypeID is not null and @R_subject is not null and @R_SubjectID is not null and @R_Object is not null and @R_ObjectID is not null
+				if @R_IntersectTypeID is not null and @R_Subject is not null and @R_SubjectID is not null and @R_Object is not null and @R_ObjectID is not null
 				begin
 					-- Validate that intersect type exists.
 					if exists(select 1 from IntersectType where ID = @R_IntersectTypeID)
@@ -907,10 +974,6 @@ from	#rules R
 
 									--cache logic
 									insert into cache.[Object] ( [Object], [ObjectID], [ObjectType], [ObjectTypeID] ) values	( 'Intersect', @R_IntersectID, 'IntersectType', @R_IntersectTypeID );
-									insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-									values	( @R_IntersectID, 0, 0, @R_Subject, @R_SubjectID, 0, 0, @R_Object, @R_ObjectID );
-									insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-									values	( @R_IntersectID, 0, 0, @R_Object, @R_ObjectID, 0, 0, @R_Subject, @R_SubjectID );
 
 									--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
 									if ( (@R_Subject = 'Taxonomy' and @R_Object = 'Artifact') OR (@R_Subject = 'Artifact' and @R_Object = 'Taxonomy') )
@@ -969,10 +1032,11 @@ from	#rules R
 						and T.ObjectID = S.ObjectID
 				WHEN	MATCHED THEN
 						UPDATE SET	T.RuleID = S.RuleID, 
-									T.ObjectTypeID = S.PromotedObjectTypeID
+									T.ObjectTypeID = S.PromotedObjectTypeID,
+									T.UpdatedOn = getutcdate()
 				WHEN	NOT MATCHED THEN
-						INSERT (FusionAttributeID, ObjectType, ObjectID, RuleID, RuleStepID, ObjectTypeID) 
-						VALUES (S.FusionAttributeID, S.ObjectType, S.ObjectID, S.RuleID, S.RuleStepID, S.PromotedObjectTypeID);
+						INSERT (FusionAttributeID, ObjectType, ObjectID, RuleID, RuleStepID, ObjectTypeID, CreatedOn, UpdatedOn) 
+						VALUES (S.FusionAttributeID, S.ObjectType, S.ObjectID, S.RuleID, S.RuleStepID, S.PromotedObjectTypeID, getutcdate(), getutcdate());
 
 
 				-- Add/Update the dynamic fields involved.
@@ -1012,12 +1076,12 @@ from	#rules R
 								from	Artifact
 								where	ArtifactTypeID = @lookupObjectID and Name = @fieldValue
 							end
-						if @lookupObjectType = 'Domain'
+						if @lookupObjectType = 'ReferenceItemType'
 							begin
 								select	top 1
 										@objectResultID = ID
-								from	DomainItem
-								where	DomainID = @lookupObjectID and Name = @fieldValue
+								from	ReferenceItem
+								where	ReferenceItemTypeID = @lookupObjectID and Code = @fieldValue
 							end
 						if @lookupObjectType = 'Lookup'
 							begin
@@ -1101,14 +1165,16 @@ from	#rules R
 	update	[fusion].[RuleLog]
 	set		DateCompleted = CURRENT_TIMESTAMP, 
 			[PromotedTaxonomies] = @NumberOfNewTaxonomies, 
-			[PromotedDomainItems] = @NumberOfNewDomainItems,  
-			[PromotedDomains] = @NumberOfNewDomains,
+			[PromotedDomainItems] = @NumberOfNewReferenceItems,  
+			[PromotedDomains] = @NumberOfNewReferences,
 			[PromotedArtifacts] = @NumberOfNewArtifacts,
-			[TotalNewPromotions] = (@NumberOfNewTaxonomies + @NumberOfNewDomainItems + @NumberOfNewDomains + @NumberOfNewArtifacts),
+			[TotalNewPromotions] = (@NumberOfNewTaxonomies + @NumberOfNewReferenceItems + @NumberOfNewReferences + @NumberOfNewArtifacts),
 			[AttributesConsidered]= @NumberOfAttributesTotal,
 			[NumberOfRules] = @NumberOfRules ,
 			[RelationshipsAdded] = @NumberOfNewRelations
 	where	ID = @ExecutionID;
 END
+
 GO
+
 

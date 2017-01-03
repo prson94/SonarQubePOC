@@ -22,8 +22,17 @@ import * as _ from 'lodash';
                                     </d3s-tooltip>
                                 </template>
                             </p-column>
-                            <p-column header="Created On" field="CreatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
-                            <p-column header="Updated On" field="UpdatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
+
+                            <p-column header="Created On" field="CreatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                                <template pTemplate type="body" let-row="rowData">
+                                    <span>{{row.CreatedOn | date: 'short'}}</span>
+                                </template>
+                            </p-column>
+                            <p-column header="Updated On" field="UpdatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                                <template pTemplate type="body" let-row="rowData">
+                                    <span>{{row.UpdatedOn | date: 'short'}}</span>
+                                </template>
+                            </p-column>
                         </p-dataTable>
 `,
     providers: [FusionService]
