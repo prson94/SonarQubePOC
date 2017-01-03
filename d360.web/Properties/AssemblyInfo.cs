@@ -9,4 +9,4 @@ using System.Runtime.InteropServices;
 //[assembly: AssemblyCompany(d360.utils.AssemblySettings.COMPANY)]
 //[assembly: AssemblyProduct(d360.utils.AssemblySettings.TITLE_PREFIX + " UI")]
 //[assembly: AssemblyCopyright(d360.utils.AssemblySettings.COPYRIGHT)]
-[assembly: AssemblyVersion("2016.6.1.*")]//d360.utils.AssemblySettings.PRODUCT_VERSION
+[assembly: AssemblyVersion("2017.1.1.*")]//d360.utils.AssemblySettings.PRODUCT_VERSION

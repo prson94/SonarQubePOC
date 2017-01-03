@@ -7,6 +7,8 @@
         CompanyAction,
         CompanyProcess,
         CommunityAction,
-        CommunityProcess
+        CommunityProcess,
+        Events,
+        EventsDev,
     }
 }

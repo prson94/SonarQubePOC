@@ -1,33 +1,30 @@
-﻿using System.Linq;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using d360.core;
 using d360.core.entities;
-using d360.core.entities.Views;
-using d360.extensions;
-using d360.core;
-using System;
-using System.Xml.Linq;
-using System.Data.Entity.Infrastructure;
 using d360.core.entities.Contracts;
-using System.Linq.Expressions;
-using System.Data;
-using d360.core.exceptions;
-using System.Data.SqlClient;
-using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Core;
-using d360.core.resources;
+using d360.core.entities.Queues;
+using d360.core.entities.Views;
 using d360.core.enums;
-using Dapper;
-using d360.core.entities.Transitive;
-using System.Data.Entity.Validation;
-using System.Data.Entity.Design.PluralizationServices;
-using gudusoft.gsqlparser;
+using d360.core.enums.Workflow;
+using d360.core.exceptions;
+using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
 using d360.workflow;
 using d360.workflow.entities;
 using d360.workflow.models;
+using Dapper;
+using gudusoft.gsqlparser;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Data.Entity.Core;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Design.PluralizationServices;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using d360.core.entities.Queues;
-using d360.core.queue;
 
 namespace d360.model
 {
@@ -357,90 +354,14 @@ namespace d360.model
             }
         }
 
-        public void AddRelatedArtifact(int artifact, int artifactToRelate)
+        public void Enqueue(QueueType type, QueueObject item)
         {
-            try
-            {
-                // See if there items are already related.
-                Database.Connection.Execute(@"
-declare @s int, @t int, @sG int, @tG int
-
-set @s = @ss
-set @t = @tt
-set @sG = 0
-set @tG = 0
-
-if exists(select GroupID from RelatedArtifact where ArtifactID = @s)
-begin
-	select @sG = GroupID from RelatedArtifact where ArtifactID = @s
-end
-if exists(select GroupID from RelatedArtifact where ArtifactID = @t)
-begin
-	select @tG = GroupID from RelatedArtifact where ArtifactID = @t
-end
-
-if @sG = @tG and @sG = 0 and @tG = 0
-begin
- select @sG = coalesce(max(GroupID), 0) + 1 from RelatedArtifact
- begin try
-  insert into RelatedArtifact (GroupID, ArtifactID) values (@sG, @s)
-  insert into RelatedArtifact (GroupID, ArtifactID) values (@sG, @t)
- end try
- begin catch
-  select ''
- end catch
-end
-
-if @sG <> @tG and @sG <> 0 and @tG = 0
-begin
- insert into RelatedArtifact (GroupID, ArtifactID) values (@sG, @t)
-end
-
-if @sG <> @tG and @sG = 0 and @tG <> 0
-begin
- insert into RelatedArtifact (GroupID, ArtifactID) values (@tG, @s)
-end
-", new { ss = artifact, tt = artifactToRelate });
-            }
-            catch
-            {
-            }
+            QueueSource.CreateMessage(type, item);
         }
 
-        public void DeleteRelatedArtifact(int source, int target)
+        public void Enqueue(QueueType type, List<QueueObject> items)
         {
-            // See if there items are already related.
-            Database.Connection.Execute(@"
-declare @s int, @t int, @sG int, @tG int, @count int
-
-set @s = @ss
-set @t = @tt
-set @sG = 0
-set @tG = 0
-
-if exists(select GroupID from RelatedArtifact where ArtifactID = @s)
-begin
-	select @sG = GroupID from RelatedArtifact where ArtifactID = @s
-end
-if exists(select GroupID from RelatedArtifact where ArtifactID = @t)
-begin
-	select @tG = GroupID from RelatedArtifact where ArtifactID = @t
-end
-
-if @sG = @tG
-begin
- delete RelatedArtifact where GroupID = @tG and ArtifactID = @t
- select @count = count(1) from RelatedArtifact where GroupID = @tG
- if @count = 1
- begin
-  delete RelatedArtifact where GroupID = @tG
- end
-end", new { ss = source, tt = target });
-        }
-
-        public void Enqueue(QueueType type, QueueObject obj)
-        {
-            QueueSource.CreateMessage(type, obj);
+            QueueSource.CreateMessages(type, items);
         }
 
         public List<AllocationPossibility> GetTypes()
@@ -521,11 +442,6 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             list = list.OrderBy(i => i.Name).ToList();
 
             return list;
-        }
-
-        public List<AllocationPossibility> GetAvailableAllocationPossibilities()
-        {
-            return GetAllocationOptions();
         }
 
         public List<AllowedIntersectionType> GetAllowedIntersectionTypes(string type, int id, int intersectID = 0)
@@ -896,13 +812,6 @@ order by	ColumnIndex", new { id });
             return Filter<ObjectStyle>(i => i.ObjectType == sType && i.ObjectID == id).FirstOrDefault();
         }
         
-        public XElement GetRandomSurveyQuestionForUser(SystemObjects type, int id)
-        {
-            string query = string.Format("GetRandomSurveyQuestionForUser {0}, '{1}', {2}", CurrentResourceID, type.ToString(), id);
-            var xmlString = Database.SqlQuery<string>(query).First();
-            return XElement.Parse(xmlString);
-        }
-
         public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = true)
         {
             try
@@ -1017,11 +926,6 @@ order by	ColumnIndex", new { id });
             return Database.Connection.Query<T>(sql, param, null, true, timeout);
         }
 
-        public SqlMapper.GridReader QueryMultiple(string sql, object param = null)
-        {
-            return Database.Connection.QueryMultiple(sql, param, null);
-        }
-
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
         {
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
@@ -1087,38 +991,6 @@ order by	ColumnIndex", new { id });
             return value;
         }
 
-        #region Events
-
-        public IQueryable<OverlayEventHeader> GetEventHeadersByObject(SystemObjects type, int id)
-        {
-            return Database.Connection.Query<OverlayEventHeader>(@"
-select		R.Name as [Rule],
-			G.ID,
-			G.Name,
-			case coalesce(E.Status, 'Closed')
-				when 'Closed' then 'Closed'
-				else 'Active'
-			end as Status,
-			max(Date) as Date,
-			coalesce(count(E.ID), 0) as [Count]
-from		EventGroup G
-			inner join [Rule] R on R.ID = G.RuleID
-			inner join cache.Relationships CR on CR.SourceObject = @t and CR.SourceObjectID = @i and CR.TargetObject = 'Rule' and CR.TargetObjectID = R.ID
-			left join [Event] E on E.EventGroupID = G.ID
-group by	R.Name,
-			G.ID,
-			G.Name,
-			case coalesce(E.Status, 'Closed')
-				when 'Closed' then 'Closed'
-				else 'Active'
-			end
-order by	Date desc",
-                new { t = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, i = id }
-            ).AsQueryable();
-        }
-
-        #endregion
-
         public ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id)
         {
             var model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
@@ -1160,43 +1032,6 @@ order by	Date desc",
             });
 
             return model;
-        }
-
-        public IEnumerable<FieldTypeLookupValue> GetFieldTypeLookupOptions()
-        {
-            return Query<FieldTypeLookupValue>(
-@"
-select	*
-from	(
-		SELECT	'Artifact' as LookupObjectType,
-				ID as LookupObjectID,
-				'Artifact : ' + Name as Name
-		FROM	ArtifactType
-		UNION
-		SELECT	'ReferenceItemType' as LookupObjectType,
-				0 as LookupObjectID,
-				'Reference List' as Name
-		UNION
-		SELECT	'ReferenceItem' as LookupObjectType,
-				ID as LookupObjectID,
-				'Reference Items : ' + Name as Name
-		FROM	ReferenceItemType
-        UNION
-		SELECT	'Resource' as LookupObjectType,
-				1 as LookupObjectID,
-				'Resource : User' as Name
-		UNION
-		SELECT	'Taxonomy' as LookupObjectType,
-				ID as LookupObjectID,
-				'Information Model : ' + Name as Name
-		FROM	TaxonomyType
-		UNION
-		SELECT	'Lookup' as LookupObjectType,
-				ID as LookupObjectID,
-				'Lookup : ' + Name as Name
-		FROM	LookupType
-		) O
-order by Name");
         }
 
         #region Permission
@@ -2377,11 +2212,25 @@ order by Name", new { workflowType, type, id });
             return returnValue;
         }
 
+        private void addQE(List<QueueObject> queueObjects, ChangeType action, SystemObjects o, int oid, SystemObjects t, int tid)
+        {
+            queueObjects.Add(new EventInfo {
+                CompanyID = CurrentCompanyID,
+                DomainPrefix = CurrentCompanyDomain,
+                ResourceID = CurrentResourceID,
+                Action = action,
+                Object = o, ObjectID = oid,
+                ObjectType = t, ObjectTypeID = tid,
+                To = QueueAction.Event });
+        }
+
         public override int SaveChanges()
         {
             int returnValue = 0;
 
-            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(System.Data.Entity.EntityState.Added))
+            var queueObjects = new List<QueueObject>();
+
+            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
             {
                 #region Business logic : ICreatedMetadata
                 if (entry.Entity is ICreatedMetadata)
@@ -2393,7 +2242,7 @@ order by Name", new { workflowType, type, id });
                 #endregion
             }
 
-            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(System.Data.Entity.EntityState.Added | System.Data.Entity.EntityState.Unchanged | System.Data.Entity.EntityState.Modified | System.Data.Entity.EntityState.Deleted))
+            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Unchanged | EntityState.Modified | EntityState.Deleted))
             {
                 #region Business logic : IUpdatedMetadata
                 if (entry.Entity is IUpdatedMetadata)
@@ -2414,6 +2263,8 @@ order by Name", new { workflowType, type, id });
                     { 
                         case EntityState.Added:
                             if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.Artifact, o.ID, SystemObjects.ArtifactType, o.ArtifactTypeID);
                             break;
                         case EntityState.Deleted:
                             var any = false;
@@ -2422,9 +2273,13 @@ order by Name", new { workflowType, type, id });
 
                             any = Any<Artifact>(i => i.ParentID == o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);
+
+                            addQE(queueObjects, ChangeType.Delete, SystemObjects.Artifact, o.ID, SystemObjects.ArtifactType, o.ArtifactTypeID);
                             break;
                         case EntityState.Modified:
                             if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.Artifact, o.ID, SystemObjects.ArtifactType, o.ArtifactTypeID);
                             break;
                     }
 
@@ -2443,6 +2298,8 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<ArtifactType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.ArtifactType, o.ID, SystemObjects.ArtifactType, 0);
                             break;
                         case EntityState.Deleted:
                             if (Any<Artifact>(i => i.ArtifactTypeID == o.ID))
@@ -2450,12 +2307,14 @@ order by Name", new { workflowType, type, id });
                             var childIDs = Filter<ArtifactType>(i => i.ParentID == o.ID).Select(i => i.ID).ToList();
                             if (childIDs.Count > 0)
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ChildTypesAssignedToType);
-                            //if (Artifacts.Any(i => childIDs.Contains(i.ArtifactTypeID)))
-                            //    throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
+
+                            addQE(queueObjects, ChangeType.Delete, SystemObjects.ArtifactType, o.ID, SystemObjects.ArtifactType, 0);
                             break;
                         case EntityState.Modified:
                             if (Any<ArtifactType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.ArtifactType, o.ID, SystemObjects.ArtifactType, 0);
                             break;
                     }
                 }
@@ -2472,14 +2331,20 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.AttributeType, o.ID, SystemObjects.AttributeType, 0);
                             break;
                         case EntityState.Deleted:
                             if (Any<AttributeTypeRelation>(i => i.AttributeTypeID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_AttributeType_Allocations);
+
+                            addQE(queueObjects, ChangeType.Delete, SystemObjects.AttributeType, o.ID, SystemObjects.AttributeType, 0);
                             break;
                         case EntityState.Modified:
                             if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.AttributeType, o.ID, SystemObjects.AttributeType, 0);
                             break;
                     }
                 }
@@ -2556,10 +2421,14 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<Fusion>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.Fusion, o.ID, SystemObjects.FusionType, o.FusionTypeID);
                             break;
                         case EntityState.Modified:
                             if (Any<Fusion>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.Fusion, o.ID, SystemObjects.FusionType, o.FusionTypeID);
                             break;
                     }
                 }
@@ -2576,10 +2445,14 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<FusionType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.FusionType, o.ID, SystemObjects.FusionType, 0);
                             break;
                         case EntityState.Modified:
                             if (Any<FusionType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.FusionType, o.ID, SystemObjects.FusionType, 0);
                             break;
                     }
                 }
@@ -2596,14 +2469,20 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<Group>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.Group, o.ID, SystemObjects.GroupType, 0);
                             break;
                         case EntityState.Modified:
                             if (Any<Group>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.Group, o.ID, SystemObjects.GroupType, 0);
                             break;
                         case EntityState.Deleted:
                             if (Any<Responsibility>(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
+
+                            addQE(queueObjects, ChangeType.Delete, SystemObjects.Group, o.ID, SystemObjects.GroupType, 0);
                             break;
                     }
                 }
@@ -2646,6 +2525,8 @@ order by Name", new { workflowType, type, id });
                                 i.Subject == o.Subject &&
                                 i.SubjectID == o.SubjectID);
                             if (anyAdd) throw new ConflictException("Relationship Type Cannot Be Created", "Another relationship already exists with this configuration.");
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.IntersectType, o.ID, SystemObjects.IntersectType, 0);
                             break;
                         case EntityState.Modified:
                             var anyEdit = Any<IntersectType>(i =>
@@ -2656,6 +2537,8 @@ order by Name", new { workflowType, type, id });
                                 i.SubjectID == o.SubjectID &&
                                 i.ID != o.ID);
                             if (anyEdit) throw new ConflictException("Relationship Type Cannot Be Updated", "Another relationship already exists with this configuration.");
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.IntersectType, o.ID, SystemObjects.IntersectType, 0);
                             break;
                     }
                 }
@@ -2875,10 +2758,14 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<SurveyType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.SurveyType, o.ID, SystemObjects.SurveyType, 0);
                             break;
                         case EntityState.Modified:
                             if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.SurveyType, o.ID, SystemObjects.SurveyType, 0);
                             break;
                     }
                 }
@@ -2896,6 +2783,8 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) 
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.Taxonomy, o.ID, SystemObjects.TaxonomyType, o.TaxonomyTypeID);
                             break;
                         case EntityState.Deleted:
                             var any = Any<Field>(f => f.FieldType.LookupObjectType == "Taxonomy" && f.FieldType.LookupObjectID == taxonomyTypeID && f.Value == id);
@@ -2907,14 +2796,16 @@ order by Name", new { workflowType, type, id });
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_RelationshipReference);
                             if (Any<Taxonomy>(i => i.ParentID == o.ID)) 
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_ChildModelsExist);
-                            if (Any<Responsibility>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectType == "Taxonomy" && i.ObjectID == o.ID)) 
+                            if (Any<Responsibility>(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_PeopleResponsibilitiesExist);
-                            if (Any<Responsibility>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing && i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
-                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_SourcingResponsibilitiesExist);
+
+                            addQE(queueObjects, ChangeType.Delete, SystemObjects.Taxonomy, o.ID, SystemObjects.TaxonomyType, o.TaxonomyTypeID);
                             break;
                         case EntityState.Modified:
                             if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID && i.ID != o.ID)) 
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.Taxonomy, o.ID, SystemObjects.TaxonomyType, o.TaxonomyTypeID);
                             break;
                     }
 
@@ -2934,14 +2825,20 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<TaxonomyType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Add, SystemObjects.TaxonomyType, o.ID, SystemObjects.TaxonomyType, 0);
                             break;
                         case EntityState.Modified:
                             if (Any<TaxonomyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+
+                            addQE(queueObjects, ChangeType.Update, SystemObjects.TaxonomyType, o.ID, SystemObjects.TaxonomyType, 0);
                             break;
                         case EntityState.Deleted:
                             if (Any<Artifact>(i => i.TaxonomyTypeID == o.ID))
                                 throw new ArgumentException(Messages.TaxonomyType_Assigned);
+
+                            addQE(queueObjects, ChangeType.Delete, SystemObjects.TaxonomyType, o.ID, SystemObjects.TaxonomyType, 0);
                             break;
                     }
 
@@ -2978,14 +2875,19 @@ order by Name", new { workflowType, type, id });
             {
             }
 
+
+            if (queueObjects.Count > 0)
+            {
+#if DEBUG
+                //Enqueue(QueueType.EventsDev, queueObjects);
+#else
+                //Enqueue(QueueType.Events, queueObjects);
+#endif
+            }
+
             return returnValue;
         }
 
-        protected override DbEntityValidationResult ValidateEntity(DbEntityEntry entityEntry, IDictionary<object, object> items)
-        {
-            return base.ValidateEntity(entityEntry, items);
-        }
-
-        #endregion
+#endregion
     }
 }

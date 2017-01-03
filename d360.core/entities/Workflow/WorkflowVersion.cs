@@ -10,9 +10,6 @@ namespace d360.core.entities.Workflow
     public class WorkflowVersion : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
         public int TypeID { get; set; }
 
         public int? CreatedBy { get; set; }

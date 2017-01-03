@@ -4,7 +4,7 @@
     {
         public const string TITLE_PREFIX = "Data3Sixty";
         public const string COMPANY = "Data3Sixty, Inc.";
-        public const string COPYRIGHT = "Copyright © Data3Sixty, Inc. 2016";
-        public const string PRODUCT_VERSION = "2016.12.6.*";
+        public const string COPYRIGHT = "Copyright © Data3Sixty, Inc. 2017";
+        public const string PRODUCT_VERSION = "2017.1.1.*";
     }
 }

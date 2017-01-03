@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Workflow
 {
     [DataContract(Namespace = NAMESPACE), Table("VersionStepTransition", Schema = "workflow")]
-    public class WorkflowVersionStepTransition : BaseIntObject, IIntObject
+    public class WorkflowVersionStepTransition : BaseObject
     {
         [DataMember]
         public string Name { get; set; }

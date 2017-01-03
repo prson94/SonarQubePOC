@@ -8,13 +8,13 @@ namespace d360.core.enums.Workflow
     public enum StepType
     {
         [Description("Start")]
-        Start,
+        Start = 1,
         [Description("Task")]
-        Task,
+        Task = 2,
         [Description("Terminate")]
-        Terminate,
+        Terminate = 3,
         [Description("Finish")]
-        Finish
+        Finish = 4
     }
 
     public class StepTypeInfo

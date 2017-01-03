@@ -7,6 +7,7 @@ using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace d360.extensions.queue
 {
@@ -21,6 +22,12 @@ namespace d360.extensions.queue
 
         public void CreateMessage(QueueType type, QueueObject item)
         {
+            var list = new List<QueueObject>() { item };
+            CreateMessages(type, list);
+        }
+
+        public void CreateMessages(QueueType type, List<QueueObject> items)
+        {
             //var connectionString = constants.SERVICE_BUS_ACTIONS;
             var queueName = "";
 
@@ -32,6 +39,12 @@ namespace d360.extensions.queue
                 case QueueType.BulkLoadDev:
                     queueName = "d3s-bulkload-debug";
                     break;
+                case QueueType.Events:
+                    queueName = "d3s-events";
+                    break;
+                case QueueType.EventsDev:
+                    queueName = "d3s-events-debug";
+                    break;
                 case QueueType.CommunityAction:
                     queueName = "community-actions";
                     break;
@@ -39,7 +52,7 @@ namespace d360.extensions.queue
                     queueName = "community-processes";
                     break;
                 case QueueType.CompanyAction:
-                    queueName = "d3s-actions";//"company-actions";
+                    queueName = "d3s-actions";
                     break;
                 case QueueType.CompanyProcess:
                     queueName = "company-processes";
@@ -48,14 +61,18 @@ namespace d360.extensions.queue
 
             try
             {
-                var queueClient = new Microsoft.WindowsAzure.Storage.Queue.CloudQueueClient(
-                                    new Uri(string.Format(@"https://{0}.queue.core.windows.net/", constants.AZURE_STORAGE_NAME)),
-                                    getCredentials());
-
-                var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
+                var queueClient = new CloudQueueClient(
+                    new Uri($"https://{constants.AZURE_STORAGE_NAME}.queue.core.windows.net/"),
+                    getCredentials()
+                );
 
                 var queue = queueClient.GetQueueReference(queueName);
-                queue.AddMessage(msg);
+
+                items.ForEach(item =>
+                {
+                    var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
+                    queue.AddMessage(msg);
+                });
 
                 queue = null;
                 queueClient = null;

@@ -6773,56 +6773,6 @@ namespace d360.web.Controllers
 
         #region Intersect/Other Relationships
 
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("RelatedArtifact/{s:int}/{t:int}")]
-        public JsonResult AddRelatedArtifact(int s, int t)
-        {
-            try
-            {
-                if (
-                    !Company.HasPermission(SystemObjects.Artifact, s, Claim.Update, ClaimObject.Relationship) ||
-                    !Company.HasPermission(SystemObjects.Artifact, t, Claim.Update, ClaimObject.Relationship)
-                    )
-                    throw new UnauthorizedException(FormInfo.Permisions_Error_Add, "You do not have permission to relate this artifact.");
-
-                Company.AddRelatedArtifact(s, t);
-                return jsonSuccess("Relationship successfully created.", "0", "add", HttpStatusCode.Created, new { commandname = "RelatedArtifactAdded" });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusMessage, ex.StatusCode);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message.Replace(System.Environment.NewLine, " "), HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("RelatedArtifact/{s:int}/{t:int}")]
-        public JsonResult DeleteRelatedArtifact(int s, int t)
-        {
-            try
-            {
-                if (
-                    !Company.HasPermission(SystemObjects.Artifact, s, Claim.Update, ClaimObject.Relationship) ||
-                    !Company.HasPermission(SystemObjects.Artifact, t, Claim.Update, ClaimObject.Relationship)
-                    )
-                    throw new UnauthorizedException(FormInfo.Permisions_Error_Delete, "You do not have permission to remove this related artifact.");
-
-                Company.DeleteRelatedArtifact(s, t);
-                return jsonSuccess("Relationship successfully removed.", "0", "delete", HttpStatusCode.OK, new { commandname = "RelatedArtifactDeleted" });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusMessage, ex.StatusCode);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message.Replace(System.Environment.NewLine, " "), HttpStatusCode.InternalServerError);
-            }
-        }
-
         [HttpDelete, Route("DeleteIntersect"), NonNullableParameters]
         public JsonResult DeleteIntersect(int id)
         {
@@ -12245,7 +12195,7 @@ order by	T.Name, I.DisplayValue";
 
             list.Add(new EditableField { FieldName = "ResponsibilityTypeGroup", FieldType = DataType.Hidden.ToString(), Value = ((int)Group).ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAvailableAllocationPossibilities().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAllocationOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -12274,7 +12224,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name });
             var selectedAllocations = Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id).ToList();
             var allocations = Company
-                .GetAvailableAllocationPossibilities()
+                .GetAllocationOptions()
                 .Select(i => new SelectListItem {
                     Text = i.Name,
                     Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
@@ -12419,7 +12369,7 @@ order by	T.Name, I.DisplayValue";
             }
 
             var allocations = Company
-                .GetAvailableAllocationPossibilities()
+                .GetAllocationOptions()
                 .Select(i => new
                 {
                     label = i.Name,

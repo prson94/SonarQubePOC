@@ -7,6 +7,7 @@
         RemoveFromIndex = 3,
         AddVersion = 4,
         BulkLoad = 5,
-        Cache = 6
+        Cache = 6,
+        Event = 7
     }
 }

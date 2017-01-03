@@ -57,7 +57,7 @@ namespace d360.extensions.workflow.activities
         {
             var message = new MandrillMessage();
 
-            message.AddTo(UserEmail, UserFullName);
+            message.AddTo("mike@data3sixty.com", "Pappas");//message.AddTo(UserEmail, UserFullName);
             message.FromEmail = "no-reply@data3sixty.com";
             message.FromName = "Data3Sixty";
 

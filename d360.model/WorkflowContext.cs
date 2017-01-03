@@ -12,6 +12,7 @@ using d360.extensions;
 using System.Reflection;
 using Autofac.Features.Metadata;
 using Autofac;
+using d360.core.enums.Workflow;
 
 namespace d360.model
 {
@@ -42,7 +43,10 @@ namespace d360.model
                              ).ToArray();
             builder.RegisterAssemblyTypes(assemblies).As<IWorkflowActivity>();
             var container = builder.Build();
-            //var processor = container.Resolve<FusionProcessor>();
+
+            //container.
+
+            //ActivityTypes = container.Resolve<IWorkflowActivity>();
         }
 
         #endregion
@@ -148,7 +152,7 @@ namespace d360.model
 
         #region Engine Methods
 
-        public WorkflowItem CreateWorkflowItem(int workflowTypeID, bool isTest = false)
+        public WorkflowItem CreateWorkflowItem(int workflowTypeID, string @object, int objectID, bool isTest = false)
         {
             var version = WorkflowVersions
                 .Include(i => i.Steps)
@@ -163,6 +167,7 @@ namespace d360.model
                 .ToList();
 
             var item = new WorkflowItem {
+                Object = @object, ObjectID = objectID,
                 Active = true,
                 StartedBy = 0, StartedOn = DateTime.UtcNow,
                 UpdatedBy = 0, UpdatedOn = DateTime.UtcNow,
@@ -174,10 +179,13 @@ namespace d360.model
             SaveChanges();
 
             //initiate first step.
-            var firstVersionStep = version.Steps.Single(s => s.StepType == core.enums.Workflow.StepType.Start);
+            var firstVersionStep = version.Steps.Single(s => s.StepType == StepType.Start);
 
-            var firstItemStep = new WorkflowItemStep { StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "", Settings = "" };
-            item.Steps.Add(firstItemStep);
+            var firstItemStep = new WorkflowItemStep { StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
+            WorkflowItemSteps.Add(firstItemStep);
+            SaveChanges();
+
+            ExecuteStep(firstItemStep.ID);
 
             //var activity = ActivityTypes.SingleOrDefault(i => i.ID == firstItemStep.Step.ActivityType);
 

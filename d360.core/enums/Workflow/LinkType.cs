@@ -8,9 +8,9 @@ namespace d360.core.enums.Workflow
     public enum LinkType
     {
         [Description("Always")]
-        Always,
+        Always = 1,
         [Description("Conditional")]
-        Condition
+        Condition = 2
     }
 
     public class LinkTypeInfo

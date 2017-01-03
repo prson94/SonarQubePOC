@@ -13,10 +13,10 @@ namespace d360.core.entities.Workflow
         public string Name { get; set; }
 
         [DataMember, Key, Column(Order = 1)]
-        public int FromItemStepID { get; set; }
+        public long FromItemStepID { get; set; }
 
         [DataMember, Key, Column(Order = 2)]
-        public int ToItemStepID { get; set; }
+        public long ToItemStepID { get; set; }
         
         [IgnoreDataMember]
         public string Condition { get; set; }

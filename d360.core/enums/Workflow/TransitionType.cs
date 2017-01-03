@@ -8,11 +8,11 @@ namespace d360.core.enums.Workflow
     public enum TransitionType
     {
         [Description("None")]
-        None,
+        None = 1,
         [Description("Timer-based")]
-        Timer,
+        Timer = 2,
         [Description("Value-based")]
-        Value
+        Value = 3
     }
 
     public class TransitionTypeInfo
