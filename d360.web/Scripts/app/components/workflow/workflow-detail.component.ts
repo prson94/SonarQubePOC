@@ -17,8 +17,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
                     <div class="col s12">
                         <div class="tile tile-detail">
                                 <d3s-workflow-issue-details *ngIf="workflowType == tempWorkflowtype.WorkIssue" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();" [objectType]="objectType" [objectID]="objectID" [resourceID]="resourceID"></d3s-workflow-issue-details>                    
-                                <d3s-workflow-suggest-details *ngIf="workflowType == tempWorkflowtype.SuggestNewArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();" [objectType]="objectType" [objectID]="objectID"></d3s-workflow-suggest-details>                    
-                                <d3s-workflow-certify-details *ngIf="workflowType == tempWorkflowtype.CertifyArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();" [objectType]="objectType" [objectID]="objectID"></d3s-workflow-certify-details>                                  
+                                <d3s-workflow-suggest-details *ngIf="workflowType == tempWorkflowtype.SuggestNewArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();" [objectType]="objectType" [objectID]="objectID" [resourceID]="resourceID"></d3s-workflow-suggest-details>                    
+                                <d3s-workflow-certify-details *ngIf="workflowType == tempWorkflowtype.CertifyArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close();" [objectType]="objectType" [objectID]="objectID" [resourceID]="resourceID"></d3s-workflow-certify-details>                                  
                         </div>
                     </div>
                 </div>                

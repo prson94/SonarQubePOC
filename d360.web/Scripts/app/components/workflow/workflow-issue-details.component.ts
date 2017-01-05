@@ -4,9 +4,11 @@ import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
+declare var CurrentResourceID;
+
 @Component({
     selector: 'd3s-workflow-issue-details',
-    template: `            
+    template: `          
             <div class="row" *ngIf="!isLoading && issues.length > 0">
                 <header>Open Issues<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
@@ -15,8 +17,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
-                                <d3s-tooltip *ngIf="data.Activity <= 0" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>
-                                <d3s-tooltip *ngIf="data.Activity > 0" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview"><a (click)="openIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
+                                <d3s-tooltip *ngIf="data.Activity <= 0 || !isMe" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>
+                                <d3s-tooltip *ngIf="data.Activity > 0 && isMe" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview"><a (click)="openIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
                             </template>
                         </p-column>
                         <p-column field="CriticalityName" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
@@ -40,7 +42,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <p-column field="EllapsedDays" header="Days Open" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-issue="rowData" pTemplate type="body">
-                                <div class="RowTools" *ngIf="issue.Activity > 0">                                
+                                <div class="RowTools" *ngIf="issue.Activity > 0 && isMe">                                
                                     <a style="cursor:pointer;" (click)="openIssue(issue)"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>
                             </template>
@@ -70,7 +72,9 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 export class WorkflowIssueDetailsComponent extends BaseComponent implements OnInit {
     private issues: any[] = [];
     private selected: any;
-    private loaded: boolean = false;    
+    private loaded: boolean = false; 
+    private isMe: boolean = false;   
+
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -80,6 +84,7 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
     @Output() close = new EventEmitter();
     @Output() countsChanged = new EventEmitter();
+
 
     constructor(private workflowService: WorkflowService, protected router: Router) {
         super();
@@ -92,7 +97,10 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
     private loadIssues() {
         this.isLoading = true;
-        if (this.resourceID != null) {
+        
+        if (this.resourceID != null && !isNaN(this.resourceID)) {
+            this.isMe = (this.resourceID == (CurrentResourceID || 0));
+
             this.workflowService.getIssuesForUser(this.resourceID)
                 .then(result => {
                     this.issues = result;
@@ -101,6 +109,8 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
                     this.loaded = true;
                 });
         } else {
+            this.isMe = true;
+
             this.workflowService.getIssues(this.objectID, this.objectType)
                 .then(result => {
                     this.issues = result;

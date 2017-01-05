@@ -3,6 +3,9 @@ import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { CertifyItem } from '../../models/workflow.model';
 
+
+declare var CurrentResourceID;
+
 @Component({
     selector: 'd3s-workflow-certify-details',
     template: `     
@@ -15,8 +18,8 @@ import { CertifyItem } from '../../models/workflow.model';
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
-                                <span *ngIf="data.Activity <= 0">{{data.ActivityName}}</span>
-                                <a *ngIf="data.Activity > 0" (click)="selected=data;showEditor=true">{{data.ActivityName}}</a>
+                                <span *ngIf="data.Activity <= 0 || !isMe">{{data.ActivityName}}</span>
+                                <a *ngIf="data.Activity > 0 && isMe" (click)="selected=data;showEditor=true">{{data.ActivityName}}</a>
                             </template>
                         </p-column>
                         <p-column field="TypeName" header="Type Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
@@ -37,7 +40,7 @@ import { CertifyItem } from '../../models/workflow.model';
                         </p-column>                        
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" *ngIf="item.Activity > 0">                                
+                                <div class="RowTools" *ngIf="item.Activity > 0 && isMe">                                
                                     <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>
                             </template>
@@ -57,6 +60,7 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
     private selected: CertifyItem;
 
     private showEditor: boolean = false;
+    private isMe: boolean = false;
 
     @Input() objectID: number = 0;
     @Input() objectType: string;
@@ -66,6 +70,7 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
     @Input() hasCertifyButton: boolean = true;
 
     @Output() close = new EventEmitter();
+
     
     constructor(private workflowService: WorkflowService) {
         super();
@@ -77,7 +82,9 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
 
     private loadCertifications() {
         this.isLoading = true;
-        if (this.resourceID != null) {
+        if (this.resourceID != null && !isNaN(this.resourceID)) {
+            this.isMe = (this.resourceID == (CurrentResourceID || 0));
+            
             this.workflowService.getCertifyItemsForUser(this.resourceID)
                 .then(result => {
                     this.items = result;
@@ -85,6 +92,8 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
                     this.isLoading = false;
                 });
         } else {
+            this.isMe = true;
+
             this.workflowService.getCertifyItems(this.objectID, this.objectType)
                 .then(result => {
                     this.items = result;

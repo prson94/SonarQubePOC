@@ -4,9 +4,11 @@ import { WorkflowService } from '../../services/workflow.service';
 import { SuggestedItem } from '../../models/workflow.model';
 import * as _ from 'lodash';
 
+declare var CurrentResourceID;
+
 @Component({
     selector: 'd3s-workflow-suggest-details',
-    template: `        
+    template: `    
             <d3s-workflow-suggest-editor *ngIf="!isLoading && showEditor" [suggest]="selected" (saveClick)="handleSave();" (closeClick)="showEditor=false"></d3s-workflow-suggest-editor>           
             <div class="row" *ngIf="!isLoading && !showEditor">
                 <header>Open Proposed New Artifacts<d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
@@ -16,8 +18,8 @@ import * as _ from 'lodash';
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
-                                <span *ngIf="data.Activity <= 0">{{data.ActivityName}}</span>
-                                <a *ngIf="data.Activity > 0" (click)="selected=data;showEditor=true">{{data.ActivityName}}</a>
+                                <span *ngIf="data.Activity <= 0 || !isMe">{{data.ActivityName}}</span>
+                                <a *ngIf="data.Activity > 0 && isMe" (click)="selected=data;showEditor=true">{{data.ActivityName}}</a>
                             </template>
                         </p-column>
                         <p-column field="Name" header="Type" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
@@ -43,7 +45,7 @@ import * as _ from 'lodash';
                         <p-column field="TaxonomyTypeName" header="Subject Area" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>                        
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools" *ngIf="item.Activity > 0">                                
+                                <div class="RowTools" *ngIf="item.Activity > 0 && isMe">                                
                                     <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>
                             </template>
@@ -63,7 +65,8 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
     private selected: SuggestedItem;
 
     private showEditor: boolean = false;
-    
+    private isMe: boolean = false;
+
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -72,6 +75,7 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
     @Input() hasCertifyButton: boolean = true;
 
     @Output() close = new EventEmitter();
+
     
     constructor(private workflowService: WorkflowService) {
         super();
@@ -83,7 +87,9 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
 
     private loadSuggestions() {
         this.isLoading = true;
-        if (this.resourceID != null) {
+        if (this.resourceID != null && !isNaN(this.resourceID)) {
+            this.isMe = (this.resourceID == (CurrentResourceID || 0));
+
             this.workflowService.getSuggestedItemsForUser(this.resourceID)
                 .then(result => {
                     this.items = result;
@@ -91,6 +97,8 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
                     this.isLoading = false;
                 });
         } else {
+            this.isMe = true;
+
             this.workflowService.getSuggestedItems(this.objectID, this.objectType)
                 .then(result => {
                     this.items = result;
