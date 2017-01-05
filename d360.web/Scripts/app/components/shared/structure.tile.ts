@@ -3,8 +3,6 @@ import { HierarchyModel, PredicateType, HierarchyArtifactsModel, HierarchyArtifa
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { TreeNode } from 'primeng/primeng';
 import { RelationshipsService } from '../../services/relationships.service';
-//import { ActionBarItem } from '../shared/action-bar.part';
-//import { MenuPartItem } from '../shared/menu.part';
 import { FormHelper } from '../../models/form.model';
 
 
@@ -24,9 +22,7 @@ import { FormHelper } from '../../models/form.model';
         `
     ],
     template: `
-                <div *ngIf="isLoading">
-                    <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading">
                     <div class="row">
                         <div class="col s12 m6">

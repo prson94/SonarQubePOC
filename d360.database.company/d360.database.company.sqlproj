@@ -540,6 +540,7 @@
     <None Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg.sql" />
     <None Include="dbo\Tables\IssueType.sql" />
     <None Include="dbo\Tables\Issue.sql" />
+    <None Include="dbo\Tables\Synonym.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

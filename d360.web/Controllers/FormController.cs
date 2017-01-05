@@ -589,6 +589,10 @@ namespace d360.web.Controllers
                     return DeleteFusionQueryAttribute(form);
                 case "ISSUETYPE":
                     return DeleteIssueType(form);
+                case "SYNONYM":
+                    return DeleteSynonym(form);
+                case "CUSTOMSYNONYM":
+                    return DeleteCustomSynonym(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -667,6 +671,8 @@ namespace d360.web.Controllers
                     return AddIssueType(form);
                 case "ISSUE":
                     return AddIssue(form);
+                case "CUSTOMSYNONYM":
+                    return AddCustomSynonym(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -14620,6 +14626,47 @@ from    [IntersectType] RT
 
         #region Form Get/Post
 
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddCustomSynonym")]
+        public JsonResult AddCustomSynonym(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("custom synonym");
+
+                var name = parseTextField(form, "Name");
+                var predicateId = parseIntField(form, "PredicateID");
+                var objectType = parseTextField(form, "Object");
+                var objectId = parseIntField(form, "ObjectID");
+
+                Synonym model = new Synonym
+                {
+                    Name = name,
+                    PredicateID = predicateId,
+                    Object = objectType,
+                    ObjectID = objectId,
+                    CreatedBy = Company.CurrentResourceID,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                };
+
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), model.Object), model.ObjectID, Claim.Create, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Add<Synonym>(model);
+
+                return jsonSuccess("Synonym " + model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [ValidateHttpAntiForgeryToken, HttpPost, Route("AddSynonym")]
         public JsonResult AddSynonym(SynonymEditModel model)
         {
@@ -14678,9 +14725,12 @@ from    [IntersectType] RT
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("synonym");
-                var id = parseIntField(form, "IntersectID");
+                var id = parseIntField(form, "ID");
 
                 var detail = Company.GetById<Intersect>(id);
+
+                if (detail == null)
+                    throw new NullReferenceException("Intersect not found");
 
                 if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Subject), detail.SubjectID, Claim.Delete, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
@@ -14709,13 +14759,41 @@ from    [IntersectType] RT
             }
         }
 
-        [HttpDelete, Route("DeleteSynonymByID"), NonNullableParameters]
-        public JsonResult DeleteSynonymByID(int id)
+
+        [HttpDelete, Route("DeleteCustomSynonym")]
+        public JsonResult DeleteCustomSynonym(FormCollection form)
         {
-            var form = new FormCollection();
-            form.Add("IntersectID", id.ToString());
-            return DeleteSynonym(form);
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("synonym");
+                var id = parseIntField(form, "ID");
+
+                var detail = Company.GetById<Synonym>(id);
+
+                if (detail == null)
+                    throw new NullReferenceException("Custom Synonym not found");
+
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Object), detail.ObjectID, Claim.Delete, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (detail != null)
+                {
+                    Company.Delete(detail);
+                }
+                
+                return jsonSuccess("Synonym successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
         }
+
 
         #endregion
 

@@ -4,6 +4,7 @@ import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { TreeNode } from 'primeng/primeng';
 import { FormHelper } from '../models/form.model';
+import { JsonResult } from '../models/jsonresult.model';
 import {
     DetailField,
     DetailRow,
@@ -54,8 +55,7 @@ export class ObjectDetailService extends BaseService {
     }
 
     getSynonymOptions(type: string, typeId: number, object: string, objectId: number, query: string = ''): Promise<SynonymEditorModel> {
-        //string type, int typeId, string obj, int objId, string query = ""
-
+        
         return this.http.get(`form/SynonymsOptions?type=${type}&typeId=${typeId}&obj=${object}&objid=${objectId}&query=${query}`)
             .toPromise()
             .then(response => <SynonymEditorModel>response.json())
@@ -115,24 +115,28 @@ export class ObjectDetailService extends BaseService {
             return FormHelper.formTree(result, 'UID', 'ParentID');
         });
     }
-
-    testDynamicParams(): Promise<any> {
-        var params = [];
-        params.push(1);
-        params.push('bob');
-        params.push(3);
-        params.push(4);
-        return this.http.post('form/dynamiceditor/new/attribute', params)
-            .toPromise()
-            .then(result => <any>result.json());
-    }
-
+    
     //TODO: make explicit call here instead of passing uri
     getLookupGrid(uri: string): Promise<LookupGrid> {
         return this.http.get(uri)
             .toPromise()
             .then(result => <LookupGrid>result.json())
             .catch(err => this.handleError(err));
+    }
+
+    deleteSynonym(synonym: Synonym): Promise<JsonResult> {
+        if (synonym.IntersectID)
+            return this.deleteDynamicWithResult(this.http, 'synonym', synonym.IntersectID);
+        return this.deleteDynamicWithResult(this.http, 'customsynonym', synonym.CustomID);       
+    }
+
+    postCustomSynonym(synonymName: string, predicateID: number, object: string, objectId: number): Promise<JsonResult> {
+        var synonym: any = new Object();
+        synonym.Name = synonymName;
+        synonym.PredicateID = predicateID;
+        synonym.Object = object;
+        synonym.ObjectID = objectId;
+        return this.postDynamic(this.http, 'customsynonym', synonym);
     }
 
 }

@@ -1096,6 +1096,8 @@ select	I.ID as IntersectID,
         D.ObjectTypeName,
 		D.Description,
 		D.Url
+        ,P.Name as 'Predicate'
+        ,null as 'CustomID'
 from	[Intersect] I
 		inner join IntersectType T on T.ID = I.IntersectTypeID 
 		inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
@@ -1110,7 +1112,28 @@ from	[Intersect] I
         left join Artifact A on A.ID = D.ObjectID
         left join Artifact AP on AP.ID = A.ParentID
 		left join TaxonomyType TT on TT.ID = A.TaxonomyTypeID
-where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)";
+where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+union
+select 
+	null as IntersectID
+	,null as 'Object'
+	,-1 as 'ObjectID'
+	,null as SubjectArea
+	,null as TaxonomyTypeID
+	,null as ParentID
+	,null as ParentUrl
+	,null as ParentName
+	,S.Name
+	,'Custom' as ObjectTypeName
+	,null as Description
+	,null as Url
+	,P.Name as 'Predicate'
+    ,S.ID as 'CustomID'
+from 
+	[dbo].[synonym] s
+	inner join [dbo].[predicate] p on s.PredicateID = P.ID
+where s.[object] = @type and s.[objectID] = @id
+";
 
         public static string TaxonomySettingsItem = @"
 select	

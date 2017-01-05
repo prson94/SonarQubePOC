@@ -872,7 +872,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 var row = Company.Query<dynamic>(QueryConstants.ArtifactSettingsItem, new { id = a.ArtifactTypeID }).Single();
 
                 model.Add("AllowAttributes", (bool)row.AllowAttributes);
-                model.Add("AllowSynonyms", (bool)row.AllowSynonyms);
+                model.Add("AllowSynonyms", true);   //allow synonyms on all artifacts as custom synonyms are allowed everywhere.
                 model.Add("AllowPredicateHierarchies", (bool)row.AllowPredicateHierarchies);
             }
             catch (Exception ex)
@@ -5855,7 +5855,7 @@ SELECT (
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
-                    { "AllowSynonyms", (bool)row.AllowSynonyms },
+                    { "AllowSynonyms", (bool)true }, //always allow synonyms so custom ones may be added.
                     { "ClassificationName", row.ClassificationName },
                     { "HasDashboards", row.HasDashboards }
                 }

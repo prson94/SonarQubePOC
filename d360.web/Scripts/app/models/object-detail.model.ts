@@ -11,9 +11,7 @@ export class DetailRow {
     Category: any;
     columns: number;
     FirstColumnFields = new Array<DetailField>();
-    SecondColumnFields = new Array<DetailField>();
-
-    //Type: DetailRowType = DetailRowType.Field;
+    SecondColumnFields = new Array<DetailField>();    
 }
 
 export enum DetailFieldType {
@@ -56,6 +54,8 @@ export class DetailField {
 }
 
 export class Synonym {
+    Predicate: string;
+    CustomID: number;
     IntersectID: number;
     IntersectMapID: number;
     Name: string;

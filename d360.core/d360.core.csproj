@@ -167,6 +167,7 @@
     <Compile Include="entities\SiteNav.cs" />
     <Compile Include="entities\Glossary\TaxonomyTypeClass.cs" />
     <Compile Include="entities\Quality\PolicyTypeLevel.cs" />
+    <Compile Include="entities\Synonym.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
     <Compile Include="entities\Views\MapRuleItemDetail.cs" />
