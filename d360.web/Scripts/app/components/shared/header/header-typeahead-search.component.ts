@@ -20,7 +20,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 (onSelect)="selectItem()">                       
                             <template let-result>
                                 <div style="padding:5px 0;">                                
-                                    <div class="tt-suggestion tt-selectable"><span style="color:#999;">{{result.Type}}:</span> {{result.Name}}</div>
+                                    <div class="tt-suggestion tt-selectable"><span style="color:#999;">{{result.Type}}:</span> {{result.DisplayName}}</div>
                                 </div>                            
                             </template>
                         </p-autoComplete>
