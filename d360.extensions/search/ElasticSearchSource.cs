@@ -678,7 +678,15 @@ namespace d360.extensions.search
             
             var name = GetPropertyValue<string>(h._source, "Name");
 
-            if (string.IsNullOrEmpty(synonymFor)) return name;
+            if (string.IsNullOrEmpty(synonymFor))
+            {
+                if((h._type ?? "").ToUpper() != "ARTIFACT")
+                    return name;
+
+                var taxonomy = GetPropertyValue<string>(h._source, "Taxonomy");
+
+                return $"{name} ({taxonomy})";
+            }
 
             return $"{name} (For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
         }
@@ -686,17 +694,28 @@ namespace d360.extensions.search
         private string GetHighlightedNameValueIfExists(SearchResultsHitModel h)
         {
             var synonymFor = GetPropertyValue<string>(h._source, "SynonymFor");
+            var taxonomy = "";
 
-            if(!string.IsNullOrEmpty(synonymFor))
+            if ((h._type ?? "").ToUpper() == "ARTIFACT")
+            {
+                taxonomy = GetPropertyValue<string>(h._source, "Taxonomy");
+
+                if (!string.IsNullOrEmpty(taxonomy))
+                {
+                    taxonomy = $" ({taxonomy})";
+                }
+            }
+
+            if (!string.IsNullOrEmpty(synonymFor))
             {
                 synonymFor = $" (For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
             }
 
             var highlightVal = GetPropertyValue<string>(h.highlight, "Name");
 
-            if (!string.IsNullOrEmpty(highlightVal)) return highlightVal + (synonymFor ?? "");
+            if (!string.IsNullOrEmpty(highlightVal)) return highlightVal + (synonymFor ?? "") + (taxonomy ?? "");
 
-            return GetPropertyValue<string>(h._source, "Name") + (synonymFor ?? "");
+            return GetPropertyValue<string>(h._source, "Name") + (synonymFor ?? "") + (taxonomy ?? "");
         }
 
         private string GetHighlightedPropertyValueIfExists(SearchResultsHitModel h, string propName)
