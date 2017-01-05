@@ -92,6 +92,10 @@ namespace d360.jobs.ReIndex
                           Console.WriteLine("loading artifact synonyms [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadArtifactSynonyms(context, companyID, source));
+                          
+                          Console.WriteLine("loading custom synonyms [company id: {0}]", companyID);
+
+                          source.AddToIndex(LoadCustomSynonyms(context, companyID, source));
 
                       }
 
@@ -170,6 +174,34 @@ namespace d360.jobs.ReIndex
             foreach (var a in context.Query(sql))
             {
                 var item = new AddToIndexModel { Group = "Synonym", CompanyID = companyID, Type = "Synonym", ItemUniqueID = $"{a.SynonymObjectType}|{a.SynonymObjectID}|{a.SynonymForObjectType}|{a.SynonymForObjectID}", RelativeUrl = a.Url };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Synonym);
+                item.Fields.Add("SynonymFor", a.SynonymFor);
+                item.Fields.Add("SynonymForObject", a.SynonymForObject);
+                item.Fields.Add("SynonymForObjectType", a.SynonymForObjectType);
+
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var sql = @"                    	
+                select 
+	                s.Name as 'Synonym'
+	                ,c.Name as 'SynonymFor'
+	                ,s.[Object] as 'SynonymForObject'
+	                ,s.[ObjectID] as 'SynonymForObjectID'
+	                ,dbo.GenerateObjectUrl(s.[Object], c.ObjectTypeID, s.[ObjectID]) as 'Url'
+	                ,c.ObjectTypeName as 'SynonymForObjectType'	
+                from
+	                [dbo].[synonym] s
+	                inner join [cache].[objectdetails] c on (s.[Object] = c.[Object] and s.[ObjectID] = c.[ObjectID])
+            ";
+
+            foreach (var a in context.Query(sql))
+            {
+                var item = new AddToIndexModel { Group = "Synonym", CompanyID = companyID, Type = "Synonym", ItemUniqueID = $"custom|{a.Synonym}|{a.SynonymForObjectType}|{a.SynonymForObjectID}", RelativeUrl = a.Url };
                 item.Fields = new Dictionary<string, string>();
                 item.Fields.Add("Name", a.Synonym);
                 item.Fields.Add("SynonymFor", a.SynonymFor);
