@@ -29,7 +29,7 @@ namespace d360.jobs.FusionPromotion
                         Console.WriteLine("Company: {0}. Executing FusionPromotion procedure", companyID);
 
                         bool writeStatus = true;
-                        var task = companyConnection.ExecuteAsync("EXEC fusion.Rules", null, null, 10800);
+                        var task = companyConnection.ExecuteAsync("EXEC fusion.Rules", null, null, 12600);
                         //var task = companyConnection.ExecuteAsync("EXEC utility.PromoteFusionAttributes", null, null, 10800);
                         task.ContinueWith(t =>
                         {
