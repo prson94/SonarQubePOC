@@ -461,6 +461,15 @@ export class FusionService extends BaseService {
         return this.http.get(`api/${objectType}/${parentTypeID}/fieldlookup`)
             .toPromise()
             .then(response => response.json())
+            .then(r => {
+                r = r.sort((a, b) => {
+                    let n1 = (a.Name || '').toUpperCase();
+                    let n2 = (b.Name || '').toUpperCase();
+
+                    return (n1 < n2) ? -1 : (n1 > n2) ? 1 : 0;
+                });
+                return r;
+            })
             .catch(err => this.handleError(err));
     }
 

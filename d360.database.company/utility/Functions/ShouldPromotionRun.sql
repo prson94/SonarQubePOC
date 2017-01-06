@@ -33,7 +33,9 @@ BEGIN
 						inner join [fusion].[Rule] R on R.fusionid = E.fusionid	
 				where	R.[enabled] = 1 
 						and E.datecompleted > @lastPromotionRun
+						and (E.Adds + E.Updates + E.Deletes) > 0
 				)
+
 	begin		
 		RETURN 1;		
 	end;

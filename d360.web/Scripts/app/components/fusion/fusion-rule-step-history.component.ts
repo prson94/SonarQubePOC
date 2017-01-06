@@ -11,8 +11,9 @@ import * as _ from 'lodash';
     selector: 'd3s-fusion-rule-step-history',
     template: `
                         <header>Promotion History<d3s-tile-actions hasClose="true" (closeClick)="onClose.emit()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-                        <input [hidden]="!showSimpleFilter" #gbRuleStepsHistory type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                        <p-dataTable #dtRuleStepsHistory [globalFilter]="gbRuleStepsHistory" [value]="ruleStepPromotions" selectionMode="single" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                        <input *ngIf="!isLoading" [hidden]="!showSimpleFilter" #gbRuleStepsHistory type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                        <p-dataTable *ngIf="!isLoading" #dtRuleStepsHistory [globalFilter]="gbRuleStepsHistory" [value]="ruleStepPromotions" selectionMode="single" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
                             <footer *ngIf="dtRuleStepsHistory.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleStepsHistory.totalRecords" [first]="dtRuleStepsHistory.first" [rows]="dtRuleStepsHistory.rows"></d3s-grid-paging-info></footer>
                             <p-column header="Fusion Attribute" field="FusionAttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
                             <p-column header="Object" field="ObjectName" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
@@ -54,9 +55,11 @@ export class FusionRuleStepHistoryComponent extends BaseComponent implements OnI
     }
 
     load() {
+        this.isLoading = true;
         this.fusionService.getFusionRuleStepPromotionHistory(this.fusionRuleStepID)
             .then(r => {
                 this.ruleStepPromotions = r;
+                this.isLoading = false;
             });
     }
 
