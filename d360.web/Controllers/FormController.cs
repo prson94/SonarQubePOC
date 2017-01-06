@@ -10,6 +10,7 @@ using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+//using d360.web.Repositories;
 using d360.workflow;
 using d360.workflow.entities;
 using d360.workflow.models;
@@ -36,12 +37,15 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
         IStorageProvider Storage;
+        //SiteMenuRepository MenuRepository;
 
         public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
             : base(community, company)
         {
             SecProvider = secProvider;
             Storage = storage;
+
+           // MenuRepository = new SiteMenuRepository(community, company);
         }
 
         #endregion
@@ -583,6 +587,8 @@ namespace d360.web.Controllers
                     return DeleteIntersectRole(form);
                 case "TAXONOMYTYPELEVEL":
                     return DeleteTaxonomyTypeLevel(form);
+                case "TAXONOMYTYPE":
+                    return DeleteTaxonomyType(form);
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
                 case "FUSIONQUERYATTRIBUTE":
@@ -1360,13 +1366,13 @@ namespace d360.web.Controllers
                 {
                     Name = model.ArtifactType.Name,
                     Description = model.ArtifactType.Description,
-                    CanOwnFusion = model.ArtifactType.CanOwnFusion, //parseBooleanField(form, "CanOwnFusion"),
-                    AllowRelatedArtifacts = model.ArtifactType.AllowRelatedArtifacts, //parseBooleanField(form, "AllowRelatedArtifacts")
+                    CanOwnFusion = model.ArtifactType.CanOwnFusion,
+                    AllowRelatedArtifacts = model.ArtifactType.AllowRelatedArtifacts,
                 };
 
                 if (model.ArtifactType.ParentID != null)
                 {
-                    a.ParentID = model.ArtifactType.ParentID; // parseIntField(form, "ParentID");
+                    a.ParentID = model.ArtifactType.ParentID;
                     if (a.ParentID == 0) a.ParentID = null;
                 }
 
@@ -1378,9 +1384,10 @@ namespace d360.web.Controllers
                 {
                     ParentID = a.ParentID,
                     Name = a.Name,
-                    action = "add",
-                    //Context = "", // form["_context"]
+                    action = "add"
                 };
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
@@ -1400,17 +1407,17 @@ namespace d360.web.Controllers
         {
             try
             {
-                var id = model.ArtifactType.ID; // parseIntField(form, "ID");
+                var id = model.ArtifactType.ID;
                 var existing = Company.GetById<ArtifactType>(id);
                 if (existing == null) throw new NotFoundException("artifact type");
 
                 if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                existing.Name = model.ArtifactType.Name;  //parseTextField(form, "Name");
-                existing.Description = model.ArtifactType.Description; // parseTextField(form, "Description");
-                existing.AllowRelatedArtifacts = model.ArtifactType.AllowRelatedArtifacts; // parseBooleanField(form, "AllowRelatedArtifacts");
-                existing.CanOwnFusion = model.ArtifactType.CanOwnFusion; // parseBooleanField(form, "CanOwnFusion");
+                existing.Name = model.ArtifactType.Name;
+                existing.Description = model.ArtifactType.Description;
+                existing.AllowRelatedArtifacts = model.ArtifactType.AllowRelatedArtifacts;
+                existing.CanOwnFusion = model.ArtifactType.CanOwnFusion;
 
                 Company.Update(existing);
 
@@ -1420,9 +1427,10 @@ namespace d360.web.Controllers
                 {
                     ParentID = existing.ParentID,
                     Name = existing.Name,
-                    action = "edit",
-                    //Context = form["_context"]
+                    action = "edit"                    
                 };
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(existing.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
@@ -1438,13 +1446,10 @@ namespace d360.web.Controllers
         }
 
         [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("ArtifactType"), Route("ArtifactType"), NonNullableParameters]
-        public JsonResult DeleteArtifactType2(int id)
+        public JsonResult DeleteArtifactType(int id)
         {
             try
-            {
-                //if (!form.HasKeys()) throw new NoFormDataException("artifact type");
-
-               // var id = parseIntField(form, "ID");
+            {               
                 var model = Company.GetById<ArtifactType>(id);
                 if (model == null) throw new NotFoundException("artifact type");
 
@@ -1460,9 +1465,10 @@ namespace d360.web.Controllers
                 {
                     ParentID = model.ParentID,
                     Name = model.Name,
-                    action = "delete",
-                   // Context = form["_context"]
+                    action = "delete"              
                 };
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -1476,141 +1482,7 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddArtifactType")]
-        public JsonResult AddArtifactType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.ArtifactType, 0, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("artifact type");
-
-                var a = new ArtifactType
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    CanOwnFusion = parseBooleanField(form, "CanOwnFusion"),
-                    AllowRelatedArtifacts = parseBooleanField(form, "AllowRelatedArtifacts")
-                };
-
-                if (!string.IsNullOrEmpty(form["ParentID"]))
-                {
-                    a.ParentID = parseIntField(form, "ParentID");
-                    if (a.ParentID == 0) a.ParentID = null;
-                }
-
-                Company.Add<ArtifactType>(a);
-
-                upsertObjectStyle(SystemObjects.ArtifactType, a.ID, form, a.Name);
-
-                dynamic custom = new
-                {
-                    ParentID = a.ParentID,
-                    Name = a.Name,
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteArtifactType")]
-        public JsonResult DeleteArtifactType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("artifact type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ArtifactType>(id);
-                if (model == null) throw new NotFoundException("artifact type");
-
-                if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (model.ParentID.HasValue) id = model.ParentID.Value;
-
-                Company.Delete(model);
-                deleteObjectStyle(SystemObjects.ArtifactType, id);
-
-                dynamic custom = new
-                {
-                    ParentID = model.ParentID,
-                    Name = model.Name,
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditArtifactType")]
-        public JsonResult EditArtifactType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("artifact type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ArtifactType>(id);
-                if (model == null) throw new NotFoundException("artifact type");
-
-                if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-                //model.AllowHierarchy = parseBooleanField(form, "AllowHierarchy");
-                model.AllowRelatedArtifacts = parseBooleanField(form, "AllowRelatedArtifacts");
-                model.CanOwnFusion = parseBooleanField(form, "CanOwnFusion");
-
-                Company.Update<ArtifactType>(model);
-
-                upsertObjectStyle(SystemObjects.ArtifactType, model.ID, form, model.Name);
-
-                dynamic custom = new
-                {
-                    ParentID = model.ParentID,
-                    Name = model.Name,
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+        
         #endregion
 
         #endregion
@@ -9866,6 +9738,8 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
+                //MenuRepository.ClearCachedMenu();
+
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
@@ -9901,6 +9775,8 @@ from ArtifactType A
                     action = "delete",
                     Context = form["_context"]
                 };
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -9952,6 +9828,8 @@ from ArtifactType A
                     action = "edit",
                     Context = form["_context"]
                 };
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
@@ -10062,6 +9940,8 @@ from ArtifactType A
 
                 upsertObjectStyle(SystemObjects.PolicyType, a.ID, form, a.Name);
 
+                //MenuRepository.ClearCachedMenu();
+
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -10091,6 +9971,8 @@ from ArtifactType A
 
                 Company.Delete<PolicyType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.PolicyType, id);
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -10146,6 +10028,8 @@ from ArtifactType A
                 Company.Delete<PolicyTypeLevel>(l => l.Level > model.MaximumDepth);
 
                 upsertObjectStyle(SystemObjects.PolicyType, model.ID, form, model.Name);
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -10233,6 +10117,8 @@ from ArtifactType A
 
                 Company.Add<PolicyTypeClass>(a);
 
+                //MenuRepository.ClearCachedMenu();
+
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -10261,6 +10147,8 @@ from ArtifactType A
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete<PolicyTypeClass>(i => i.ID == id);
+                
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -10292,6 +10180,8 @@ from ArtifactType A
                 model.Name = parseTextField(form, "Name");
 
                 Company.Update<PolicyTypeClass>(model);
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -14956,6 +14846,8 @@ order by TextPath
                     Context = form["_context"]
                 };
 
+                //MenuRepository.ClearCachedMenu();
+
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
@@ -14992,6 +14884,8 @@ order by TextPath
                 };
 
                 Company.Delete(model);
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -15037,6 +14931,8 @@ order by TextPath
                     Name = model.Name,
                     Context = form["_context"]
                 };
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
@@ -15175,6 +15071,8 @@ order by TextPath
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, a.ID, form, a.Name);
 
+                //MenuRepository.ClearCachedMenu();
+
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -15204,6 +15102,8 @@ order by TextPath
 
                 Company.Delete<TaxonomyType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.TaxonomyType, id);
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -15273,6 +15173,8 @@ order by TextPath
                 Company.SaveChanges();
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, model.ID, form, model.Name);
+
+                //MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }

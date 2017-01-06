@@ -67,16 +67,7 @@ export class TaxonomiesService extends BaseService {
     }
 
     deleteTaxonomy(taxonomyId: number): Promise<JsonResult> {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-
-        let url = `form/catalogs/${taxonomyId}`;
-
-        return this.http
-            .delete(url, headers)
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
+        return this.deleteDynamicWithResult(this.http, "TAXONOMYTYPE", taxonomyId);        
     }
 }
 
