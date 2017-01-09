@@ -132,10 +132,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     name = '';
                     url = field.Value;
                 }
-                group[field.FieldName + '_Name'] = field.Required ? new FormControl(name || '', Validators.required)
-                    : new FormControl(name || '');
-                group[field.FieldName + '_Url'] = field.Required ? new FormControl(url || '', Validators.required)
-                    : new FormControl(url || '');
+                group[field.FieldName + '_Name'] = new FormControl(name || '');
+                group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
             }            
             else if (field.FieldType == "Date" || field.FieldType == "DateTime") {                
                 field.Value = field.Value === null ? '' : new Date(field.Value);

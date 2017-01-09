@@ -162,21 +162,28 @@ export class DynamicFieldComponent implements OnInit {
     }
 
     get isValid() {        
-        if (this.form.controls[this.field.FieldName] == undefined) return true;
-        if (this.form.controls[this.field.FieldName].disabled) return true;;
+        if (this.field.FieldType == "Link") {
+            if (this.form.controls[this.field.FieldName + '_Name'] == undefined) return true;
+            if (this.form.controls[this.field.FieldName + '_Name'].disabled) return true;
 
-        //look at url... fieldname is different.
-        if (this.field.FieldType == "Link")
-            return this.form.controls[this.field.FieldName + '_Name'].valid && this.form.controls[this.field.FieldName + '_Url'].valid
-        else
-            return this.form.controls[this.field.FieldName].valid;        
+            if (this.form.controls[this.field.FieldName + '_Url'] == undefined) return true;
+            if (this.form.controls[this.field.FieldName + '_Url'].disabled) return true;
+
+            return this.form.controls[this.field.FieldName + '_Url'].valid
+        }
+        
+        if (this.form.controls[this.field.FieldName] == undefined) return true;
+        if (this.form.controls[this.field.FieldName].disabled) return true;
+
+        return this.form.controls[this.field.FieldName].valid;        
     }
 
-    get errorMessage() {
-        if (this.field.FieldType == "Link")
-            return this.fieldMessage(this.field.FieldName + '_Name', this.field.Name + ' Name') + ' ' + this.fieldMessage(this.field.FieldName + '_Url', this.field.Name + ' Url');
+    get errorMessage() {        
+        if (this.field.FieldType == "Link") {            
+            return this.fieldMessage(this.field.FieldName + '_Url');
+        }
         else
-            return this.fieldMessage(this.field.FieldName, this.field.Name);
+            return this.fieldMessage(this.field.FieldName);
     }
 
     get taxonomyName() {
@@ -188,7 +195,7 @@ export class DynamicFieldComponent implements OnInit {
         return this.field ? this.field.Name : '';
     }
 
-    private fieldMessage(field: string, fieldName: string) {        
+    private fieldMessage(field: string) {        
         if (this.form.controls[field] == undefined) return '';
         var errors = this.form.controls[field].errors;
 
