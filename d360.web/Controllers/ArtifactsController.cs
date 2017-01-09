@@ -122,8 +122,30 @@ where A.ArtifactTypeID = @id ", columns, joins);
                 }
 
                 foreach (var field in fields)
-                {
-                    document.SetCellValue(rowNumber, index++, (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]));
+                {                    
+                    switch ((field.Type ?? "").ToUpper())
+                    {
+                        case "DECIMAL":
+                            double dVal = 0;
+                            var decVal = (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]);
+                            if (double.TryParse(decVal, out dVal))
+                                document.SetCellValue(rowNumber, index++, dVal);
+                            else
+                                document.SetCellValue(rowNumber, index++, decVal);                                                        
+                            break;
+                        case "NUMBER":
+                            int intVal = 0;
+                            var val = (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]);
+                            if (int.TryParse(val, out intVal))
+                                document.SetCellValue(rowNumber, index++, intVal);
+                            else
+                                document.SetCellValue(rowNumber, index++, val);
+                            break;
+                        default:
+                            document.SetCellValue(rowNumber, index++, (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]));
+                            break;
+                    }
+                    
                 }
 
                 document.SetCellValue(rowNumber, index++, (string)row.TaxonomyType);
