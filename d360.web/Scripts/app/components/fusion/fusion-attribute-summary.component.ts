@@ -69,7 +69,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             this.fusionObjectID = this.fusionAttributeTypeId;
             this.fusionQueryAttributeTypeId = null;
             if (this.initialFusionAttributeId > 0)
-                this.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS' }];
+                this.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
             else   
                 this.filters = [];
 

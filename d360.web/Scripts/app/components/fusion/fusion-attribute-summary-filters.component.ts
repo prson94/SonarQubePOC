@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
 import { FusionAttributeValueDetails, FusionAttributeFilter } from '../../models/fusion-attribute.model';
@@ -11,13 +11,13 @@ import * as _ from 'lodash';
                 <div class="row advSearchRow" *ngFor="let filter of internalFilters;let last = last;let i = index">
                     <div class="col s1 center-align">Field:</div>
                     <div class="col s3">                        
-                        <select [name]="'field'+i" required [(ngModel)]="filter.dataField" style="width:100%;" #field="ngModel">
+                        <select [name]="'field'+i" required [ngModel]="filter.dataField" (ngModelChange)="setFieldType(filter,$event);filter.dataField = $event;" style="width:100%;" #field="ngModel">
                             <option></option>
                             <option *ngFor="let p of filterColumns" [value]="p.datafield">{{p.text}}</option>
                         </select>
                         <div [hidden]="field.valid || field.pristine">A field is required</div>                                                                        
                     </div>
-                    <div class="col s3" [ngSwitch]="typeOfField(filter.dataField)">
+                    <div class="col s3" [ngSwitch]="filter.columnType">
                         <select required [name]="'value'+i" [(ngModel)]="filter.value" style="width:100%;" *ngSwitchCase="'dropdownlist'">
                             <option></option>
                             <option *ngFor="let p of fieldOptions(filter.dataField)" [value]="p">{{p}}</option>
@@ -48,6 +48,7 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
     @Input() filterColumns: GridFilterColumn[];
 
     private internalFilters: FusionAttributeFilter[] = [];
+
 
     constructor(private fusionAttributeService: FusionAttributeService) {
         super();
@@ -102,12 +103,16 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
         return [];
     }
 
-    private typeOfField(dataField: string): string {
+    private setFieldType(filter: FusionAttributeFilter, dataField: string): void {       
         let results = this.filterColumns.filter(x => x.datafield == dataField);
 
         if (results && results.length > 0) {
-            return results[0].columntype;
+            filter.columnType = results[0].columntype;
+            
+            if (filter.columnType == 'dropdownlist') filter.condition = 'EQUALS';
+            else filter.condition = 'CONTAINS';
         }
-        return "";
-    }
+        else
+            filter.columnType = "";        
+    }    
 };

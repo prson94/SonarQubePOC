@@ -21,4 +21,5 @@ export class FusionAttributeFilter {
     dataField: string;
     value: string;
     condition: string = 'CONTAINS';
+    columnType: string;
 }

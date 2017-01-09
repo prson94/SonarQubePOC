@@ -1,5 +1,5 @@
 ﻿import { CommonModule } from '@angular/common';
-import { NgModule, Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
+import { NgModule, Input, Component, EventEmitter, Output, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
@@ -36,6 +36,7 @@ import { CoreModule } from './core.module';
             }
         `],
     providers: [FusionAttributeService],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class FusionAttributeItemDetailsComponent extends BaseComponent implements OnChanges {
@@ -44,7 +45,7 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
 
     private fusionAttributeValueDetails: FusionAttributeValueDetails;
 
-    constructor(private fusionAttributeService: FusionAttributeService, private router: Router) {
+    constructor(private fusionAttributeService: FusionAttributeService, private router: Router, private ref: ChangeDetectorRef) {
         super();
     }
 
@@ -60,6 +61,7 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
             .then(res => {
                 this.isLoading = false;
                 this.fusionAttributeValueDetails = res;
+                this.ref.markForCheck();
             });
     }
 
