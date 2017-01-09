@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using System.Data;
 using d360.core.resources;
+using System.Data.SqlClient;
 
 namespace d360.core
 {
@@ -139,6 +140,21 @@ namespace d360.core
     {
         public static string GetFullExceptionData(this Exception ex)
         {
+            if(ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException))
+            {
+                SqlException sqlException = (SqlException)ex.InnerException.InnerException;
+
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+                foreach (SqlError sqlError in sqlException.Errors)
+                {
+                    if (sb.Length > 0) sb.Append(" ");
+                    sb.Append(sqlError.Message);
+                }
+
+                return sb.ToString();                
+            }
+
             string error = "";
 
             if (!ex.Message.Contains("inner exception for details")) error += ex.Message;
