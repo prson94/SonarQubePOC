@@ -1,7 +1,6 @@
-﻿import { Component, OnInit, Input} from '@angular/core';
+﻿import { Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { SearchService } from '../../services/search.service';
 import { SearchFullResult } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
@@ -13,8 +12,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <p class="search-result-desc" *ngIf="result?.Description" [innerHtml]="result.Description"></p>
                     <h5 class="search-result-attributes">Category: <em class="result-category" [innerHtml]="result?.Type"></em>&nbsp;&nbsp;Type: <em class="result-type">{{result?.Group}}</em></h5>
                 </div>        
-                `,
-    providers: [SearchService], 
+                `,    
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class SearchResultItemComponent extends BaseComponent  {

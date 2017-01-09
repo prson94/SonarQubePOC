@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { MessagesService } from '../../../services/messages.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
@@ -25,6 +25,7 @@ declare var CompanySettings;
                 </ul>
                 `,    
     providers: [SiteMenuService, FavoritesService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -37,7 +38,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private subSiteNav: any;
     private subFavorites: any;  
 
-    constructor(private messagesService: MessagesService, private stateService: StateService, private headerActionsService: HeaderActionsService, private authenticationService: AuthenticationService, private siteMenuService: SiteMenuService, private favoritesService: FavoritesService) {
+    constructor(private ref: ChangeDetectorRef, private messagesService: MessagesService, private stateService: StateService, private headerActionsService: HeaderActionsService, private authenticationService: AuthenticationService, private siteMenuService: SiteMenuService, private favoritesService: FavoritesService) {
         super();
     }
 
@@ -72,6 +73,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     Items: null
                 });
             }
+            this.ref.markForCheck();
         });        
     }
 
@@ -132,6 +134,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.authenticationService.admin$.complete();
 
                 this.isAdmin = result.IsAdmin;
+
+                this.ref.markForCheck();
 
             });
     }

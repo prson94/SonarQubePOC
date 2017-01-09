@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -77,7 +77,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
                 </div>                
             </div>
         </div>
-         `
+         `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class HelpComponent extends BaseComponent implements OnInit {
