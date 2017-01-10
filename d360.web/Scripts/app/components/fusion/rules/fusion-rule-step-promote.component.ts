@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
-import { FusionService } from '../../services/fusion.service';
-import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../models/fusion.model';
+import { FusionService } from '../../../services/fusion.service';
+import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
 
 @Component({

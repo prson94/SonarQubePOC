@@ -1,6 +1,6 @@
 ﻿import { Component, EventEmitter, Output, Input } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { FusionRule } from '../../models/fusion.model';
+import { BaseComponent } from '../../shared/base.component';
+import { FusionRule } from '../../../models/fusion.model';
 
 export class FusioRuleStepBaseComponent extends BaseComponent {    
     protected rule: FusionRule;

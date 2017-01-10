@@ -10,7 +10,7 @@ import { SharedFormMessageModule } from './form-message.part';
     templateUrl: './delete.form.html',    
 })
 
-export class DeleteForm {
+export class DeleteForm  {
     @Input() model: any;
     @Input() uri: string;
     @Input() method: string = 'post';
@@ -51,14 +51,14 @@ export class DeleteForm {
                         var r = new JsonResult(data);
                         if (r.isError) {
                             this.message.Error(r.message);
-                            this.onDeleteFail.emit({ message: this.message });
+                            this.onDeleteFail.emit({ message: this.message, result: r  });
                         } else if (r.isSuccess) {
                             this.message.Success(r.message);
-                            this.onDeleteSuccess.emit({ message: this.message });
+                            this.onDeleteSuccess.emit({ message: this.message, result: r  });
                         } else {
                             this.message.Info(r.message);
                         }
-                        this.onDeleteComplete.emit({ message: this.message });
+                        this.onDeleteComplete.emit({ message: this.message, result: r  });
                         this.isLoading = false;
                     }
                     );
@@ -71,14 +71,14 @@ export class DeleteForm {
                         var r = new JsonResult(data);
                         if (r.isError) {
                             this.message.Error(r.message);
-                            this.onDeleteFail.emit({ message: this.message });
+                            this.onDeleteFail.emit({ message: this.message, result: r  });
                         } else if (r.isSuccess) {
                             this.message.Success(r.message);
-                            this.onDeleteSuccess.emit({ message: this.message });
+                            this.onDeleteSuccess.emit({ message: this.message, result: r  });
                         } else {
                             this.message.Info(r.message);
                         }
-                        this.onDeleteComplete.emit({ message: this.message });
+                        this.onDeleteComplete.emit({ message: this.message, result: r  });
                         this.isLoading = false;
                     }
                     );
@@ -93,14 +93,14 @@ export class DeleteForm {
                         var r = new JsonResult(data);
                         if (r.isError) {
                             this.message.Error(r.message);
-                            this.onDeleteFail.emit({ message: this.message });
+                            this.onDeleteFail.emit({ message: this.message, result: r  });
                         } else if (r.isSuccess) {
                             this.message.Success(r.message);
-                            this.onDeleteSuccess.emit({ message: this.message });
+                            this.onDeleteSuccess.emit({ message: this.message, result: r  });
                         } else {
                             this.message.Info(r.message);
                         }
-                        this.onDeleteComplete.emit({ message: this.message });
+                        this.onDeleteComplete.emit({ message: this.message, result: r });
                         this.isLoading = false;
                     }
                     );

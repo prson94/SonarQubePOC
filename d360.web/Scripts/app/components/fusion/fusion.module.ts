@@ -23,6 +23,7 @@ import { SharedRelationshipModule } from '../shared/relationship/shared-relation
 import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-field-definition.module';
 
 import { FusionRoutingModule } from './fusion.routes';
+import { FusionRuleModule } from './rules/fusion-rule.module';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
 import { FusionAgentErrorsComponent } from './fusion-agent-errors.component';
@@ -43,15 +44,10 @@ import { FusionTechnicalMappingsComponent } from './fusion-technical-mappings.co
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
 import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summary-filters.component';
 import { FusionRulesComponent } from './fusion-rules.component';
-import { FusionRuleStepComponent } from './fusion-rule-step.component';
-import { FusionRuleStepFindComponent } from './fusion-rule-step-find.component';
-import { FusionRuleStepFindViaRelationComponent } from './fusion-rule-step-findviarelation.component';
-import { FusionRuleStepLineageComponent } from './fusion-rule-step-lineage.component';
-import { FusionRuleStepPromoteComponent } from './fusion-rule-step-promote.component';
-import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.component';
 import { FusionQueryListComponent } from './fusion-query-list.component';
 import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-editor.component';
-import { FusionRuleStepHistoryComponent } from './fusion-rule-step-history.component';
+
+
 
 import {
     GrowlModule,
@@ -76,6 +72,7 @@ import {
         RouterModule,
 
         FusionRoutingModule,
+        FusionRuleModule,
 
         //primeng
         GrowlModule,
@@ -129,15 +126,8 @@ import {
         FusionTechnicalMappingsComponent,
         FusionStructureTreeComponent,
         FusionRulesComponent,
-        FusionRuleStepComponent,
-        FusionRuleStepFindComponent,
-        FusionRuleStepFindViaRelationComponent,
-        FusionRuleStepLineageComponent,
-        FusionRuleStepPromoteComponent,
-        FusionRuleStepRelateComponent,
         FusionQueryListComponent,
         FusionQueryAttributeEditorComponent,
-        FusionRuleStepHistoryComponent,
         
     ],
     providers: [
