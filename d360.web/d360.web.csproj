@@ -821,7 +821,6 @@
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
     <Content Include="Scripts\errors.json" />
-    <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
     <None Include="Content\styles\Root.less" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />

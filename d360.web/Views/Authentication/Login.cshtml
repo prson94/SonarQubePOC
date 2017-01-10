@@ -14,38 +14,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="Shortcut Icon" href="/favicon.ico" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-    <script src="/Scripts/jqx/3.7.1/jqx-all.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>    
     <link rel="stylesheet" href="/Content/styles/root@(suffix).css?version=@(VersionNumber)" />
     <script type="text/javascript">
-    $(document).ready(function () {
-        $("#UserName").jqxInput({ width: '95%', theme: 'd3s', minLength: 10 });
-        $("#Password").jqxInput({ width: '95%', theme: 'd3s', minLength: 6 });
-        $("#LoginButton").jqxButton({ width: '95%', theme: 'd3s' });
+    $(document).ready(function () {        
         $("#UserName").focus();
         $('input').keypress(function (e) {
             if (e.which == 13) {
-                $('#LoginButton').submit();
+                $('#loginButton').submit();
             }
         });
     });
     </script>
+    <style>
+        .loginlogo{
+            background-image: url(/Content/images/logo.new.png);
+            background-repeat: no-repeat;
+            background-position: left top;
+            background-size: auto 40px;
+            height: 40px;
+            width:200px;
+            display:inline-block;
+        }
+    </style>
 </head>
-<body>
+<body class="loginBody">
+    <span class="loginlogo"></span>
     <div id="loginForm">
+        <h4>Log in To Data3Sixty</h4>        
         @Html.ValidationSummary()
 
         @using (Html.BeginForm())
         {
-            <div class="FieldNameRequired">@Html.LabelFor(m => m.UserName)</div>
-            <input type="text" id="UserName" name="UserName" />
+            <input placeholder="Username" type="text" id="UserName" name="UserName" required pattern=".{10,}" title="Username must be at least 10 characters long." style="width:100%" />
             @Html.ValidationMessageFor(m => m.UserName)
-            <div class="FieldNameRequired">@Html.LabelFor(m => m.Password)</div>
-            <input type="password" id="Password" name="Password" autocomplete="off" />
+            <div>&nbsp;</div>
+            <input type="password" placeholder="Password" id="Password" name="Password" autocomplete="off" required pattern=".{6,}" title="Password must be at least 6 characters long." style="width:100%" />
             @Html.ValidationMessageFor(m => m.Password)
             <br /><br />
-            <input id="LoginButton" type="submit" value="Login!" tabindex="3" />
+            <div><input id="loginButton" type="submit" value="Log in" tabindex="3" style="width:100%" /></div>
         }
     </div>
 </body>
+
 </html>

@@ -44,15 +44,20 @@ fieldset legend {
 
 /*#region Login */
 
+.loginBody{
+    background-color: @rgba-primary-0;    
+}
+
 #loginForm {
+    font-family:Tahoma,Helvetica,Verdana,sans-serif;
     position: relative;
     top: 100px;
-    width: 270px;
+    width: 350px;
     margin: auto;
     background-color: #fff;
-    padding: 25px;
-    border-radius: 15px;
-    border: 1px solid #666;
+    padding: 0 20px 20px 20px;
+    border-radius: 10px;
+    border: 1px solid #999;
 
     .validation-summary-errors ul {
         list-style-type: square;
@@ -62,6 +67,22 @@ fieldset legend {
             color: Red;
             font-weight: 400 !important;
         }
+    }
+
+    input{
+        padding:5px;
+        border-radius:5px;
+        box-sizing:border-box;        
+        border-style:solid;
+        border-color: #ccc;
+    }
+
+    #loginButton{        
+        color:white;        
+        padding:15px;
+        border:none;
+        background-color: @rgba-primary-0;  
+        font-weight:bold;
     }
 }
 
