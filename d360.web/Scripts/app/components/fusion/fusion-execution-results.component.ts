@@ -5,7 +5,9 @@ import { FusionExecutionResult } from '../../models/fusion.model';
 
 @Component({
     selector: 'd3s-fusion-execution-results',
-    template: `     <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    template: `     
+                    <header>Execution History - Result Details<d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                         <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="results" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" >                            
@@ -44,5 +46,9 @@ export class FusionExecutionResultsComponent extends BaseComponent implements On
                 this.selected = this.results.length > 0 ? this.results[0] : null;
                 this.isLoading = false;
             });
+    }
+
+    private export() {
+        this.fusionService.getFusionExecutionResultsExport(this.executionId);
     }
 };

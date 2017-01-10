@@ -350,6 +350,66 @@ where A.FusionTypeID = @id", columns, joins);
             return Company.Query<AgentHistoryApiModel>(QueryConstants.AgentHistoryList).AsQueryable();
         }
 
+        [Route("agenthistoryexport")]
+        public HttpResponseMessage GetAgentHistoryExport(int top = 100, int fusionId = -1)
+        {
+            var sql = string.Format(QueryConstants.AgentHistoryExportList, top);
+
+            if (fusionId > 0)
+                sql += $" where S.fusionId = {fusionId}";
+
+            sql += " order by S.DateStarted desc";
+
+            var res = Company.Query<AgentHistoryApiModel>(sql);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 1, "Type");
+            document.SetCellValue(1, 2, "Configuration");
+            document.SetCellValue(1, 3, "Started");
+            document.SetCellValue(1, 4, "Completed");
+            document.SetCellValue(1, 5, "Success");
+            
+            #endregion
+
+            int r = 1;
+            foreach (var row in res)
+            {
+                r++;
+                document.SetCellValue(r, 1, row.FusionType);
+                document.SetCellValue(r, 2, row.Fusion);
+                document.SetCellValue(r, 3, row.DateStarted.ToLocalTime().ToString());
+
+                if(row.DateCompleted.HasValue) document.SetCellValue(r, 4, row.DateCompleted.GetValueOrDefault().ToLocalTime().ToString());
+                document.SetCellValue(r, 5, row.Success);
+            }
+
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+
+            stream.Position = 0;
+
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
+            //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Fusion agent history as of {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
+
         public class ExecutionHistoryApiModel
         {
             public int ID { get; set; }
@@ -373,6 +433,75 @@ where A.FusionTypeID = @id", columns, joins);
             return Company.Query<ExecutionHistoryApiModel>(QueryConstants.ExecutionHistoryList).AsQueryable();
         }
 
+        [Route("executionhistoryexport")]        
+        public HttpResponseMessage GetExecutionHistoryExport(int top = 100, int fusionId = -1)
+        {
+            var sql = string.Format(QueryConstants.ExecutionHistoryExportList, top);
+
+            if (fusionId > 0)
+                sql += $" where E.fusionId = {fusionId}";
+
+            sql += " order by DateStarted desc";
+
+            var res = Company.Query<ExecutionHistoryApiModel>(sql);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+            
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 1, "Type");
+            document.SetCellValue(1, 2, "Configuration");
+            document.SetCellValue(1, 3, "Started");
+            document.SetCellValue(1, 4, "Completed");
+            document.SetCellValue(1, 5, "Errors");
+            document.SetCellValue(1, 6, "Results");
+            document.SetCellValue(1, 7, "Adds");
+            document.SetCellValue(1, 8, "Deletes");
+            document.SetCellValue(1, 9, "Updates");
+            document.SetCellValue(1, 10, "Data File");
+
+            #endregion
+
+            int r = 1;
+            foreach (var row in res)
+            {
+                r++;
+                document.SetCellValue(r, 1, row.FusionType);
+                document.SetCellValue(r, 2, row.Fusion);
+                document.SetCellValue(r, 3, row.DateStarted.ToLocalTime().ToString());
+
+                if (row.DateCompleted.HasValue) document.SetCellValue(r, 4, row.DateCompleted.GetValueOrDefault().ToLocalTime().ToString());
+                document.SetCellValue(r, 5, row.ErrorCount);
+                document.SetCellValue(r, 6, row.ResultCount);
+                document.SetCellValue(r, 7, row.Adds);
+                document.SetCellValue(r, 8, row.Deletes);
+                document.SetCellValue(r, 9, row.Updates);
+                document.SetCellValue(r, 10, row.RawLogFileName);
+            }
+            
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+
+            stream.Position = 0;
+
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
+            //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Fusion execution history as of {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
+
+
         public class ExecutionErrorModel
         {
             public DateTime Date { get; set; }
@@ -390,6 +519,53 @@ where A.FusionTypeID = @id", columns, joins);
             return Company.Query<ExecutionErrorModel>(QueryConstants.ExecutionErrorList).AsQueryable();
         }
 
+
+        [Route("executionerrorsexport/{executionId:int}")]
+        public HttpResponseMessage GetExecutionErrorsExport(int executionId)
+        {
+            var sql = string.Format(QueryConstants.ExecutionErrorExportList, executionId);
+            var res = Company.Query<ExecutionErrorModel>(sql);
+            
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 1, "Date");
+            document.SetCellValue(1, 2, "Error");
+            
+            #endregion
+
+            int r = 1;
+            foreach (var row in res)
+            {
+                r++;
+                document.SetCellValue(r, 1, row.Date.ToLocalTime().ToString());
+                document.SetCellValue(r, 2, row.Error);            
+            }
+
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+
+            stream.Position = 0;
+
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
+            //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Fusion execution errors {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
+
         public class AgentErrorModel
         {
             public DateTime Date { get; set; }
@@ -404,6 +580,72 @@ where A.FusionTypeID = @id", columns, joins);
         public IQueryable<AgentErrorModel> GetAgentErrors()
         {
             return Company.Query<AgentErrorModel>(QueryConstants.AgentErrorList).AsQueryable();
+        }
+
+        [Route("executions/{id:int}/exportresults")]
+        public HttpResponseMessage GetExecutionResultsExport(int id)
+        {
+            var querySql = string.Format(QueryConstants.ExecutionResultList, id);
+
+            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+            countSql = applyFilteringSuffix(countSql, Request);
+            int total = Company.Query<int>(countSql).First();
+
+            sql = applyFilteringSuffix(sql, Request);
+            sql = applySortSuffix(sql, Request, "FusionAttribute");
+            sql = applyPagingSuffix(sql, Request);
+
+            var query = Company.Query<FusionExecutionResultDetail>(sql);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+            
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 1, "Type");
+            document.SetCellValue(1, 2, "Attribute");
+            document.SetCellValue(1, 3, "Action");
+            document.SetCellValue(1, 4, "Field");
+            document.SetCellValue(1, 5, "Old Value");
+            document.SetCellValue(1, 6, "New Value");
+
+            #endregion
+
+            int r = 1;
+            foreach (var row in query)
+            {
+                r++;
+                document.SetCellValue(r, 1, row.FusionAttributeType);
+                document.SetCellValue(r, 2, row.FusionAttribute);
+                document.SetCellValue(r, 3, row.Action);
+                document.SetCellValue(r, 4, row.FieldName);
+                document.SetCellValue(r, 5, row.OldValue);
+                document.SetCellValue(r, 6, row.NewValue);
+            }
+
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+
+            stream.Position = 0;
+
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
+            //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Fusion execution results {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
         }
 
         [Route("executions/{id:int}/results")]

@@ -10,7 +10,7 @@ import * as _ from 'lodash';
     selector: 'd3s-fusion-execution-history',
     template: `                 
                 <div class="tile tile-detail" *ngIf="!showExecutionErrors && !showExecutionResults">
-                    <header>Execution History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasRefresh]="true" (refreshClick)="load();"></d3s-tile-actions></header>
+                    <header>Execution History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasRefresh]="true" (refreshClick)="load();" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
@@ -55,13 +55,11 @@ import * as _ from 'lodash';
                         </p-dataTable>      
                     </span>                    
                 </div>                
-                <div class="tile tile-detail" *ngIf="showExecutionErrors && selected">
-                    <header>Execution History - Error Details</header>
+                <div class="tile tile-detail" *ngIf="showExecutionErrors && selected">                    
                     <d3s-fusion-execution-errors [executionId]="selected.ID"></d3s-fusion-execution-errors>
                     <button pButton type="button" (click)="showExecutionErrors=false;" label="Close" style="width: 150px;"></button>
                 </div>
-                <div class="tile tile-detail" *ngIf="showExecutionResults && selected">
-                    <header>Execution History - Result Details</header>
+                <div class="tile tile-detail" *ngIf="showExecutionResults && selected">                    
                     <d3s-fusion-execution-results [executionId]="selected.ID"></d3s-fusion-execution-results>
                     <button pButton type="button" (click)="showExecutionResults=false;" label="Close" style="width: 150px;"></button>
                 </div>
@@ -116,5 +114,9 @@ export class FusionExecutionHistoryComponent extends BaseComponent implements On
 
     private downloadFusionData(data: FusionWorkerExecution) {
         this.fusionService.downloadRawFusionData(data.ID, data.RawLogFileName);
+    }
+
+    private export() {
+        this.fusionService.getFusionWorkerExecutionHistoryExport(this.maxRows, this.fusion ? this.fusion.ID : undefined);
     }
 };

@@ -29,6 +29,21 @@ from    FusionStatusLog S
         inner join FusionType FT on FT.ID = F.FusionTypeID
         order by S.DateStarted desc";
 
+        public static string AgentHistoryExportList = @"
+select top {0}  S.DateStarted, 
+        S.DateCompleted, 
+        S.MachineQueuedOn, 
+        S.Success,             
+        S.Message, 
+        F.ID as FusionID, 
+        F.Name as Fusion, 
+        F.FusionTypeID,
+        FT.Name as FusionType 
+from    FusionStatusLog S 
+        inner join Fusion F on F.ID = S.FusionID
+        inner join FusionType FT on FT.ID = F.FusionTypeID
+        ";
+
         public static string ArtifactActivitySpecificDateCountList = @"
 select  at.name as Name,
 	    count(1) as New,
@@ -387,6 +402,19 @@ from	fusion.Error ER
         inner join Fusion F on F.ID = EX.FusionID
         inner join FusionType FT on FT.ID = F.FusionTypeID";
 
+        public static string ExecutionErrorExportList = @"
+select  ER.Date,
+        ER.Error,
+        ER.ExecutionID,
+        F.ID as FusionID, 
+        F.Name as Fusion, 
+        F.FusionTypeID,
+        FT.Name as FusionType
+from	fusion.Error ER
+        inner join fusion.Execution EX on EX.ID = ER.ExecutionID
+        inner join Fusion F on F.ID = EX.FusionID
+        inner join FusionType FT on FT.ID = F.FusionTypeID where EX.ID = {0}";
+
         public static string ExecutionHistoryList = @"
 select	E.ID,
 		    E.RawLogFileName,
@@ -411,6 +439,30 @@ from	    fusion.Execution E
 			            select count(1) as [C] from fusion.Result where ExecutionID = E.ID
 			            ) R 
 order by    DateStarted desc";
+
+        public static string ExecutionHistoryExportList = @"
+select	top {0} E.ID,
+		    E.RawLogFileName,
+		    E.DateStarted,
+		    E.DateCompleted,
+		    E.Adds,
+		    E.Updates,
+		    E.Deletes,
+		    X.[C] as ErrorCount,
+		    R.[C] as ResultCount,
+            F.ID as FusionID, 
+            F.Name as Fusion, 
+            F.FusionTypeID,
+            FT.Name as FusionType
+from	    fusion.Execution E
+            inner join Fusion F on F.ID = E.FusionID
+            inner join FusionType FT on FT.ID = F.FusionTypeID
+            cross apply (
+			            select count(1) as [C] from fusion.Error where ExecutionID = E.ID
+			            ) X
+            cross apply (
+			            select count(1) as [C] from fusion.Result where ExecutionID = E.ID
+			            ) R";
 
         public static string ExecutionResultList = @"
 select	A.TextPath as FusionAttribute,

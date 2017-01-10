@@ -460,23 +460,7 @@ namespace d360.web.Controllers
 
         [Authorize, HttpGet, Route("GetFavorites")]
         public JsonNetResult GetFavorites(bool adminOnly = false)
-        {
-            //var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && !f.IsOverride).OrderBy(f => f.SortOrder).ToList();
-
-            /*   var sql = @"select 
-                               COALESCE(od.Name,fav.Name) as Name,
-                               fav.Route as [Route],
-                               fav.[Object],
-                               fav.[ObjectId],
-                               fav.SortOrder,
-                               fav.Id,
-                               fav.ResourceId
-                           from
-                               [dbo].[favorite] fav
-                               left outer join[cache].[objectdetails]
-                                   od on(fav.[Object] = od.[Object] and fav.[ObjectId] = od.[ObjectId])
-                           where
-                              fav.resourceid = @resId order by fav.SortOrder";*/
+        {            
             var sql = @"select 
 	                    od.Name as Name,	
 	                    fav.Route as [Route],

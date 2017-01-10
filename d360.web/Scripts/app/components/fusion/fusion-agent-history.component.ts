@@ -10,7 +10,7 @@ import * as _ from 'lodash';
         selector: 'd3s-fusion-agent-history',
         template: `                 
                 <div class="tile tile-detail">
-                    <header>Agent History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasRefresh]="true" (refreshClick)="load()" [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+                    <header>Agent History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasRefresh]="true" (refreshClick)="load()" [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span  *ngIf="!isLoading">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
@@ -86,5 +86,9 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
             return;
         }
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionType', fusion.FusionID));
+    }
+
+    private export() {
+        this.fusionService.getFusionAgentHistoryExport(this.maxRows, this.fusion ? this.fusion.ID : undefined)
     }
 };

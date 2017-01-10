@@ -5,7 +5,8 @@ import { FusionExecutionError } from '../../models/fusion.model';
 
 @Component({
     selector: 'd3s-fusion-execution-errors',
-    template: `                
+    template: `        
+                    <header>Execution History - Error Details<d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
@@ -45,5 +46,9 @@ export class FusionExecutionErrorsComponent extends BaseComponent implements OnI
                 this.selected = this.errors.length > 0 ? this.errors[0] : null;
                 this.isLoading = false;
             });
-    }    
+    }  
+
+    private export() {
+        this.fusionService.getFusionExecutionErrorsExport(this.executionId)
+    }
 };

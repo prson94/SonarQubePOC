@@ -99,6 +99,17 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFusionAgentHistoryExport(maxRows?: number, fusionId?: number) {
+        var url = `services/fusion/agenthistoryexport?top=${maxRows ? maxRows : '100'}`;
+
+        if (fusionId) {
+            url += `&fusionId=${fusionId}`;
+        }
+
+        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion agent history.xlsx'));                      
+    }
+    
+
     getFusionAgentErrorHistory(maxRows?: number, days?: number): Promise<FusionAgentError[]> {
         let url = `services/fusion/agenterrors?$top=${maxRows ? maxRows : '100'}&$orderby=Date%20desc`;
         if (days) {
@@ -137,6 +148,16 @@ export class FusionService extends BaseService {
             .toPromise()
             .then(response => <FusionWorkerExecution[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getFusionWorkerExecutionHistoryExport(maxRows?: number, fusionId?: number) {
+        let url = `services/fusion/executionhistoryexport?top=${maxRows ? maxRows : '100'}`;
+
+        if (fusionId) {
+            url += `&fusionId=${fusionId}`;
+        }
+
+        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution history.xlsx'));                      
     }
 
     getFusionPromotionHistory(maxRows?: number): Promise<FusionPromotionExecutionStats[]> {
@@ -291,11 +312,19 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFusionExecutionErrorsExport(executionId: number) {        
+        this.http.get(`services/fusion/executionerrorsexport/${executionId}`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution errors.xlsx'));
+    }
+
     getFusionExecutionResults(executionId: number): Promise<FusionExecutionResult[]> {
         return this.http.get(`services/fusion/executions/${executionId}/results`)
             .toPromise()
             .then(response => <FusionExecutionResult[]>response.json().results)
             .catch(err => this.handleError(err));
+    }
+
+    getFusionExecutionResultsExport(executionId: number) {        
+        this.http.get(`services/fusion/executions/${executionId}/exportresults`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution results.xlsx'));                      
     }
 
     downloadRawFusionData(executionId: number, name:string) {
