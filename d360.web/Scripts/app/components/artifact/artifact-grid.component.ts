@@ -145,8 +145,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.stateService.resetArtifactTypeFilterIfRequired(this.artifactType.ID);        
     }
 
-    load() {
-        console.log('load artifact type');
+    load() {        
         this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID);
         this.getFieldsDefinition();              
     }
