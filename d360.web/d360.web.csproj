@@ -52,8 +52,9 @@
       <HintPath>..\packages\Autofac.WebApi2.4.0.1\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ComponentSpace.SAML2">
-      <HintPath>..\..\..\..\Users\mike\Box Sync\Engineering\Software\ComponentSpace.SAML2.dll</HintPath>
+    <Reference Include="ComponentSpace.SAML2, Version=2.5.0.20, Culture=neutral, PublicKeyToken=7c51d97b3a0a8ff9, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Users\Ken\Box Sync\Engineering\Software\ComponentSpace.SAML2.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
@@ -449,6 +450,7 @@
     <Compile Include="Models\Action Models.cs" />
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\SiteMenuRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\Documentation.XML" />

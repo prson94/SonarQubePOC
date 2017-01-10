@@ -43,34 +43,44 @@ namespace d360.extensions.caching
 
     public class RedisCachingProvider: ICachingProvider
     {
-        ConnectionMultiplexer Connection;
-        IDatabase _Cache;
-
         public RedisCachingProvider()
+        {            
+            
+        }
+
+        private static Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() => {
+            return ConnectionMultiplexer.Connect("d3sdev.redis.cache.windows.net:6380,password=yOxnljCQFbYjVtd0QJR/Vmujy4++VzVQ/J9yjk+JnyI=,ssl=True,abortConnect=False");
+        });
+
+        public static ConnectionMultiplexer Connection
         {
-            Connection = ConnectionMultiplexer.Connect("d3s.redis.cache.windows.net:6380,password=AzQsO/Ea1y4fEwT715ifLOw9simClvoUQezXr9JGhY0=,ssl=True,abortConnect=False");//("d3ssession.redis.cache.windows.net,ssl=true,password=V8oa+l3HhHOxzLJtltnHBXPKVxzvH3vjbrI4NxLeXX4=");
-            _Cache = Connection.GetDatabase();
+            get
+            {
+                return lazyConnection.Value;
+            }
         }
 
         public bool ListItemExists<T, TIdentifier>(string name, TIdentifier id)
         {
-            return _Cache.SetContains(name, id.ToString());
+            IDatabase cache = Connection.GetDatabase();
+            return cache.SetContains(name, id.ToString());
         }
 
         public bool ItemExists<T>(string name)
         {
-            return _Cache.KeyExists(name);
+            IDatabase cache = Connection.GetDatabase();
+
+            return cache.KeyExists(name);
         }
 
         public T GetItem<T>(string name)
         {
-            var data = _Cache.StringGet(name);
+            IDatabase cache = Connection.GetDatabase();
+
+            var data = cache.StringGet(name);
 
             if (!data.IsNull && data.HasValue)
-            {
-                //var blobBytes = (byte[])data;
-                //var deserializedObject = blobBytes.Deserialize<T>();
-                //return deserializedObject;
+            {                
                 return JsonConvert.DeserializeObject<T>(data);
             }
             else
@@ -81,13 +91,12 @@ namespace d360.extensions.caching
 
         public T GetItemInListByID<T, TIdentifier>(string name, TIdentifier id)
         {
-            var data = _Cache.StringGetSet(name, id.ToString());
+            IDatabase cache = Connection.GetDatabase();
+
+            var data = cache.StringGetSet(name, id.ToString());
 
             if (!data.IsNull && data.HasValue)
-            {
-                //var blobBytes = (byte[])data;
-                //var deserializedObject = blobBytes.Deserialize<T>();
-                //return deserializedObject;
+            {                
                 return JsonConvert.DeserializeObject<T>(data);
             }
             else
@@ -98,7 +107,9 @@ namespace d360.extensions.caching
 
         public void RemoveItem(string name)
         {
-            _Cache.KeyDelete(name);
+            IDatabase cache = Connection.GetDatabase();
+
+            cache.KeyDelete(name);
         }
 
         public void SetItem<T>(string name, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
@@ -113,9 +124,10 @@ namespace d360.extensions.caching
             {
                 expiry = DateTime.Now.AddMinutes(expirationMinutes).TimeOfDay;
             }
-            
+            IDatabase cache = Connection.GetDatabase();
+
             //_Cache.StringSet(name, item.Serialize(), expiry);
-            _Cache.StringSet(name, JsonConvert.SerializeObject(item), expiry);
+            cache.StringSet(name, JsonConvert.SerializeObject(item), expiry);
         }
 
         public void SetList<T, TIdentifier>(string name, SortedDictionary<TIdentifier, T> list, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
@@ -127,7 +139,8 @@ namespace d360.extensions.caching
             //    entries[i] = list[k].Serialize();
             //    i++;
             //}
-            _Cache.SetAdd(name, JsonConvert.SerializeObject(list));//entries);
+            IDatabase cache = Connection.GetDatabase();
+            cache.SetAdd(name, JsonConvert.SerializeObject(list));//entries);
         }
 
         public void SetItemInListByID<T, TIdentifier>(string name, TIdentifier id, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)

@@ -10,7 +10,7 @@ using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-//using d360.web.Repositories;
+using d360.web.Repositories;
 using d360.workflow;
 using d360.workflow.entities;
 using d360.workflow.models;
@@ -37,7 +37,7 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
         IStorageProvider Storage;
-        //SiteMenuRepository MenuRepository;
+        SiteMenuRepository MenuRepository;
 
         public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
             : base(community, company)
@@ -45,7 +45,7 @@ namespace d360.web.Controllers
             SecProvider = secProvider;
             Storage = storage;
 
-           // MenuRepository = new SiteMenuRepository(community, company);
+            MenuRepository = new SiteMenuRepository(community, company);
         }
 
         #endregion
@@ -192,30 +192,6 @@ namespace d360.web.Controllers
 
             return list;
         }
-
-        //List<SelectListItem> convertToEditableFieldItems(List<FieldTypeLookupValue> items, string selectedValue = "", bool appendType = true)
-        //{
-        //    return items
-        //        .Select(i => new SelectListItem
-        //        {
-        //            Text = i.Name,
-        //            Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
-        //            Selected = string.IsNullOrEmpty(selectedValue) ? false : selectedValue.Equals(string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID))
-        //        })
-        //        .ToList();
-        //}
-
-        //List<SelectListItem> convertToEditableFieldItems(List<FieldNameByObjectType> items, string selectedValue = "")
-        //{
-        //    return items
-        //        .Select(i => new SelectListItem
-        //        {
-        //            Text = string.Format("{0}", i.Name),
-        //            Value = string.Format("{0}|{1}", i.Name, i.IsCustomField),
-        //            Selected = string.IsNullOrEmpty(selectedValue) ? false : selectedValue.Equals(string.Format("{0}|{1}", i.Name, i.IsCustomField))
-        //        })
-        //        .ToList();
-        //}
         
         #endregion
 
@@ -223,22 +199,16 @@ namespace d360.web.Controllers
 
         JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
-            //Response.StatusCode = (int)statusCode;
-            //Response.StatusDescription = ex.GetFullExceptionData();//.Replace("\n", "  ").Replace("\r", " ");
             return Json(new { type = "error", title = title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
         }
 
         JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {
-            //Response.StatusCode = (int)statusCode;
-            //Response.StatusDescription = message.Replace("\n", "  ").Replace("\r", " ");
+        {            
             return Json(new { type = "error", title = title, message = message }, JsonRequestBehavior.AllowGet);
         }
 
         JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {
-            //Response.StatusCode = (int)statusCode;
-            //Response.StatusDescription = message.Replace("\n", "  ").Replace("\r", " ");
+        {         
             return new JsonNetResult
             {
                 Data = new { type = "error", title = title, message = message },
@@ -1387,7 +1357,7 @@ namespace d360.web.Controllers
                     action = "add"
                 };
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
@@ -1430,7 +1400,7 @@ namespace d360.web.Controllers
                     action = "edit"                    
                 };
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(existing.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
@@ -1468,7 +1438,7 @@ namespace d360.web.Controllers
                     action = "delete"              
                 };
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -9738,7 +9708,7 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
@@ -9776,7 +9746,7 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -9829,7 +9799,7 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
@@ -9940,7 +9910,7 @@ from ArtifactType A
 
                 upsertObjectStyle(SystemObjects.PolicyType, a.ID, form, a.Name);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -9972,7 +9942,7 @@ from ArtifactType A
                 Company.Delete<PolicyType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.PolicyType, id);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -10029,7 +9999,7 @@ from ArtifactType A
 
                 upsertObjectStyle(SystemObjects.PolicyType, model.ID, form, model.Name);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -10117,7 +10087,7 @@ from ArtifactType A
 
                 Company.Add<PolicyTypeClass>(a);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -10148,7 +10118,7 @@ from ArtifactType A
 
                 Company.Delete<PolicyTypeClass>(i => i.ID == id);
                 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -10181,7 +10151,7 @@ from ArtifactType A
 
                 Company.Update<PolicyTypeClass>(model);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -14846,7 +14816,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
@@ -14885,7 +14855,7 @@ order by TextPath
 
                 Company.Delete(model);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -14932,7 +14902,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
@@ -15071,7 +15041,7 @@ order by TextPath
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, a.ID, form, a.Name);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -15103,7 +15073,7 @@ order by TextPath
                 Company.Delete<TaxonomyType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.TaxonomyType, id);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -15174,7 +15144,7 @@ order by TextPath
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, model.ID, form, model.Name);
 
-                //MenuRepository.ClearCachedMenu();
+                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
