@@ -55,6 +55,18 @@ export class FusionRulesComponent extends BaseComponent {
         if (this.selectedFusionRule != null)
             this.formMode = FormMode.AddItem;
     }
+
+    deleteRule() {
+        this.selectedFusionRuleStepMapping = null;
+        this.selectedFusionRuleStep = null;
+        this.selectedFusionRuleItem = null;
+        this.selectedFusionRule = null;
+    }
+
+    deleteStep() {
+        this.selectedFusionRuleStepMapping = null;
+        this.selectedFusionRuleStep = null;
+    }
 };
 
 enum FormMode {
