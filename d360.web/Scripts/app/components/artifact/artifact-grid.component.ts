@@ -137,7 +137,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.artifactType != null) {
+        if (changes['artifactType'] && this.artifactType != null) {            
             this.load();
         }
 
@@ -146,6 +146,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     load() {
+        console.log('load artifact type');
         this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID);
         this.getFieldsDefinition();              
     }
