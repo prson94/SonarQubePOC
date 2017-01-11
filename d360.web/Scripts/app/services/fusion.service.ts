@@ -34,9 +34,11 @@ import {
     PromotionObject,
     RelationIntersectType,
     RuleStepPromotionHistoryModel,
+    FusionExecutionResultPaged,
 } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
+import { SortOrder } from '../models/enums.model';
 
 @Injectable()
 export class FusionService extends BaseService {
@@ -312,19 +314,29 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionExecutionErrorsExport(executionId: number) {        
+    getFusionExecutionErrorsExport(executionId: number) {              
         this.http.get(`services/fusion/executionerrorsexport/${executionId}`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution errors.xlsx'));
     }
 
-    getFusionExecutionResults(executionId: number): Promise<FusionExecutionResult[]> {
-        return this.http.get(`services/fusion/executions/${executionId}/results`)
+    getFusionExecutionResults(executionId: number, sortField: string, sortOrder: SortOrder, pageSize: number, pageNum: number, simpleFilter: string): Promise<FusionExecutionResultPaged> {
+        let sortOrderText = sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
+        let url = `services/fusion/executions/${executionId}/results?pagesize=${pageSize}&pagenum=${pageNum}&sortDataField=${sortField}&sortOrder=${sortOrderText}`;
+
+        if (simpleFilter)
+            url += `&filter=${encodeURIComponent(simpleFilter)}`;
+
+        return this.http.get(url)
             .toPromise()
-            .then(response => <FusionExecutionResult[]>response.json().results)
+            .then(response => <FusionExecutionResultPaged>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getFusionExecutionResultsExport(executionId: number) {        
-        this.http.get(`services/fusion/executions/${executionId}/exportresults`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution results.xlsx'));                      
+    getFusionExecutionResultsExport(executionId: number, simpleFilter: string) { 
+        let url = `services/fusion/executions/${executionId}/exportresults`;
+        if (simpleFilter)
+            url += `?filter=${encodeURIComponent(simpleFilter)}`;  
+             
+        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution results.xlsx'));                      
     }
 
     downloadRawFusionData(executionId: number, name:string) {

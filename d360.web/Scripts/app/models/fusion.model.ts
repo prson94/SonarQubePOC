@@ -217,6 +217,11 @@ export class FusionExecutionError {
     FusionTypeID: number;
 }
 
+export class FusionExecutionResultPaged {
+    total: number;
+    results: FusionExecutionResult[];
+}
+
 export class FusionExecutionResult {
     Action: string;
     Body: string;

@@ -585,20 +585,25 @@ where A.FusionTypeID = @id", columns, joins);
         [Route("executions/{id:int}/exportresults")]
         public HttpResponseMessage GetExecutionResultsExport(int id)
         {
+            var dbArgs = new Dapper.DynamicParameters();
             var querySql = string.Format(QueryConstants.ExecutionResultList, id);
 
-            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+            var filter = Request.GetQueryString("filter");
 
+            if (!string.IsNullOrEmpty(filter))
+            {
+                querySql += $" and (A.TextPath like @filter or AT.TextPath like @filter or E.FieldName like @filter or E.OldValue like @filter or E.NewValue like @filter)";
+
+                // add value to db args
+                dbArgs.Add("filter", $"{filter}%", System.Data.DbType.AnsiString, System.Data.ParameterDirection.Input, 200);
+
+            }
+                        
             var sql = string.Format(@"select * from ({0}) A", querySql);
+            
+            sql = applySortSuffix(sql, Request, "FusionAttribute");            
 
-            countSql = applyFilteringSuffix(countSql, Request);
-            int total = Company.Query<int>(countSql).First();
-
-            sql = applyFilteringSuffix(sql, Request);
-            sql = applySortSuffix(sql, Request, "FusionAttribute");
-            sql = applyPagingSuffix(sql, Request);
-
-            var query = Company.Query<FusionExecutionResultDetail>(sql);
+            var query = Company.Query<FusionExecutionResultDetail>(sql, dbArgs);
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
@@ -651,24 +656,34 @@ where A.FusionTypeID = @id", columns, joins);
         [Route("executions/{id:int}/results")]
         public HttpResponseMessage GetExecutionResults(int id) 
         {
+            var dbArgs = new Dapper.DynamicParameters();
+
             var querySql = string.Format(QueryConstants.ExecutionResultList, id);
+
+            var filter = Request.GetQueryString("filter");
+
+            if(!string.IsNullOrEmpty(filter))
+            {
+                querySql += $" and (A.TextPath like @filter or AT.TextPath like @filter or E.FieldName like @filter or E.OldValue like @filter or E.NewValue like @filter)";
+                
+                // add value to db args
+                dbArgs.Add("filter", $"{filter}%", System.Data.DbType.AnsiString, System.Data.ParameterDirection.Input, 200);
+
+            }
 
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
-
+            
             countSql = applyFilteringSuffix(countSql, Request);
-            int total = Company.Query<int>(countSql).First();
-
-            sql = applyFilteringSuffix(sql, Request);
+            int total = Company.Query<int>(countSql, dbArgs).First();
+                        
             sql = applySortSuffix(sql, Request, "FusionAttribute");
             sql = applyPagingSuffix(sql, Request);
 
-            var query = Company.Query<FusionExecutionResultDetail>(sql);
+            var query = Company.Query<FusionExecutionResultDetail>(sql, dbArgs);
 
-            return Request.CreateResponse(HttpStatusCode.OK, new { total, results = query });
-            
-            //return Company.Query<FusionExecutionResultDetail>(sql, new { id = id }).AsQueryable();
+            return Request.CreateResponse(HttpStatusCode.OK, new { total, results = query });            
         }
 
         #endregion
