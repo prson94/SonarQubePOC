@@ -273,8 +273,7 @@ namespace d360.web.Models
         }
 
         public bool DisableCommunityPosting { get; set; }
-        public bool DisableIssuePosting { get; set; }
-        //public bool DisableQuestionPosting { get; set; }
+        public bool DisableIssuePosting { get; set; }        
         public bool DisableIssueManagement { get; set; }
         public string CompanyLogo { get; set; }
         public bool SetLogoToDefault { get; set; }
@@ -285,6 +284,8 @@ namespace d360.web.Models
 
         public string ArtifactType_TaxonomyTypeID { get; set; }
         public string ArtifactType_TaxonomyTypeIDNodes { get; set; }
+
+        public string HeaderBackgroundColor { get; set; }
 
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
         public List<SiteNav> SiteNav { get; set; } = new List<SiteNav>();

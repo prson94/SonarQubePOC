@@ -18,6 +18,7 @@ namespace d360.model
     public class CommunityContext : BaseContext
     {
         internal IQueueSource QueueSource;
+        internal string SettingsCacheKey;
 
         public CompanySsoModel CurrentCompanySsoModel { get; set; }
 
@@ -32,6 +33,8 @@ namespace d360.model
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;
             GetCompanySsoModel();
+
+            SettingsCacheKey = $"c{CurrentCompanyID}_settings";
         }
 
         #region DbSets
@@ -184,15 +187,31 @@ namespace d360.model
         public override int SaveChanges()
         {
             int returnValue = 0;
+            bool bClearSettingsCache = false;
 
-            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(System.Data.Entity.EntityState.Added | System.Data.Entity.EntityState.Modified | System.Data.Entity.EntityState.Deleted))
+            var changedItems = this.ChangeTracker.Entries().Where(p => p.State == EntityState.Added ||
+                    p.State == EntityState.Deleted ||
+                    p.State == EntityState.Modified);
+
+            foreach (var entry in changedItems)
             {
-
+                if (entry.Entity is CompanySetting)
+                {
+                    bClearSettingsCache = true;
+                }
             }
            
             try
             {
                 returnValue = base.SaveChanges();
+
+                // After we update the database we clear the cached copy of settings.  
+                // if we do this before we update the database it opens a period of 
+                // at which a load request would cache the old data...
+                if (bClearSettingsCache)
+                {
+                    Caching.RemoveItem(SettingsCacheKey);  // clear the settings cache for this company as the settings have changed.
+                }
             }
             catch (OptimisticConcurrencyException)
             {
@@ -208,8 +227,8 @@ namespace d360.model
                 Caching.RemoveItem("Users");
                 Caching.RemoveItem("RESOURCES");
             }
-
-            return (SaveChanges() > 0);
+                        
+            return  (SaveChanges() > 0);            
         }
 
         #endregion
@@ -295,8 +314,7 @@ namespace d360.model
         public string createRandomPassword()
         {
             int MinimumPasswordLength = 7;
-            //int MinimumNonAlphanumericLength = 0;
-            
+                        
             string _allowedNonAlphaNumericChars = "!#$%";
             string _allowedChars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789" + _allowedNonAlphaNumericChars;
             Random randNum = new Random();
@@ -306,12 +324,7 @@ namespace d360.model
             {
                 chars[i] = _allowedChars[(int)((_allowedChars.Length) * randNum.NextDouble())];
             }
-
-            //for (int i = 0; i < MinimumNonAlphanumericLength; i++)
-            //{
-            //    chars[i] = _allowedChars[(int)((_allowedChars.Length) * randNum.NextDouble())];
-            //}
-
+            
             return new string(chars);
         }
 
@@ -424,14 +437,22 @@ namespace d360.model
 
             public string Value { get; set; }
         }
-
+        
         public Dictionary<string, string> GetCompanySettings()
         {
-            return Query<SettingModel>(
-@"select S.ID as SettingID, S.Name, S.FieldName, S.Description, coalesce(C.Value, S.DefaultValue) as Value
+            Dictionary<string, string> settings = Caching.GetItem<Dictionary<string, string>>(SettingsCacheKey);
+
+            if (settings == null)
+            {
+                settings = Query<SettingModel>(
+    @"select S.ID as SettingID, S.Name, S.FieldName, S.Description, coalesce(C.Value, S.DefaultValue) as Value
 from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @c
-where S.ID <> 4", new {c = CurrentCompanyID })
-.ToDictionary(k => k.FieldName, v => v.Value);
+where S.ID <> 4", new { c = CurrentCompanyID })
+    .ToDictionary(k => k.FieldName, v => v.Value);
+
+                Caching.SetItem(SettingsCacheKey, settings, false, 10);
+            }
+            return settings;
         }
 
     }

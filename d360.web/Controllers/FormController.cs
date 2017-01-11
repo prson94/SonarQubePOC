@@ -2160,7 +2160,7 @@ namespace d360.web.Controllers
             model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
             model.DisableIssuePosting = (settings.Any(i => i.SettingID == 5) ? bool.Parse(settings.Single(i => i.SettingID == 5).Value) : false);
             model.DisableIssueManagement = (settings.Any(i => i.SettingID == 17) ? bool.Parse(settings.Single(i => i.SettingID == 17).Value) : false);
-            //model.DisableQuestionPosting = (settings.Any(i => i.SettingID == 6) ? bool.Parse(settings.Single(i => i.SettingID == 6).Value) : false);
+            
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
             if (settings.Any(i => i.SettingID == 4))
@@ -2179,6 +2179,8 @@ namespace d360.web.Controllers
             model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
             model.SiteNav = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
 
+            model.HeaderBackgroundColor = (settings.Any(i => i.SettingID == 10) ? settings.Single(i => i.SettingID == 10).Value : "");
+            
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -2451,6 +2453,32 @@ namespace d360.web.Controllers
                     Community.SaveChanges();
                 }
 
+                #endregion
+
+                #region Header Styles
+
+                var headerBackgroundColorSetting = settings.SingleOrDefault(i => i.SettingID == 10);
+                if (string.IsNullOrEmpty(formModel.HeaderBackgroundColor))
+                {
+                    if(headerBackgroundColorSetting != null)
+                    {
+                        Community.Delete<CompanySetting>(headerBackgroundColorSetting);
+                    }                        
+                }
+                else
+                {
+                    if (headerBackgroundColorSetting == null)
+                    {
+                        searchSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 10, Value = formModel.HeaderBackgroundColor };
+                        Community.Add<CompanySetting>(searchSetting);
+                    }
+                    else
+                    {
+                        headerBackgroundColorSetting.Value = formModel.HeaderBackgroundColor;
+                        Community.SaveChanges();
+                    }
+                }
+                                
                 #endregion
 
                 return jsonSuccess("Settings successfully updated.", "0", "edit", HttpStatusCode.OK);

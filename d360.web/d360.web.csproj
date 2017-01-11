@@ -816,7 +816,6 @@
     <Content Include="Scripts\app\components\shared\responsibilities\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\groups\admin-groups.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
-    <Content Include="Scripts\app\components\admin\settings\admin-settings.component.css" />
     <Content Include="Scripts\app\components\admin\settings\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />

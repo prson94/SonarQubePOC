@@ -135,7 +135,7 @@
                                     </div>
                                     <div class="col s12">
                                         <div class="FieldName" style="display:block;">Folder Icon</div>
-                                        <d3s-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl></d3s-icon-picker>                                        
+                                        <d3s-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl></d3s-icon-picker>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -193,7 +193,7 @@
                                         <input maxlength="250" type="text" [(ngModel)]="newFolder.Name" style="width:100%" />
                                     </div>
                                     <div class="col s12">
-                                        <div class="FieldName" style="display:block;">Folder Icon</div>                                        
+                                        <div class="FieldName" style="display:block;">Folder Icon</div>
                                         <d3s-icon-picker [(ngModel)]="newFolder.Icon" ngDefaultControl></d3s-icon-picker>
                                     </div>
                                 </div>
@@ -236,9 +236,7 @@
             </div>
             <div class="col s12 m12 l3">
                 <div class="tile tile-detail">
-                    <header>
-                        Features
-                    </header>
+                    <header>Features</header>
                     <input type="checkbox" [(ngModel)]="companySettings.DisableCommunityPosting" /> Disable Discussion Posts<br />
                     <div class="directions">
                         Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
@@ -247,8 +245,6 @@
                     <div class="directions">
                         Hide the Take Action button and Monitor page from the interface.
                     </div>
-
-                    <!--<input type="checkbox" [(ngModel)]="companySettings.DisableIssuePosting" /> Disable Issue Posts-->
                 </div>
                 <div class="tile tile-detail">
                     <header>Global Fields</header>
@@ -263,10 +259,13 @@
                     <input [(ngModel)]="companySettings.ArtifactType_TaxonomyTypeIDNodes" type="text" />
                 </div>
                 <div class="tile tile-detail">
-                    <header>
-                        Search
-                        <div class="TileTools"></div>
-                    </header>
+                    <header>Styles</header>                    
+                    <div class="FieldName">Header Background/Border Color</div>
+                    <input [(ngModel)]="companySettings.HeaderBackgroundColor" type="text" /><br/>                    
+                    <div class="directions">Specify color for the header background color and border.  If left blank the system default value will be used.</div>
+                </div>
+                <div class="tile tile-detail">
+                    <header>Search</header>
                     <div class="directions">
                         Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data3Sixty global search functionality.
                     </div>

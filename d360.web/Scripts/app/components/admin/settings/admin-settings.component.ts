@@ -1,11 +1,9 @@
-import { Component, NgZone } from '@angular/core';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { HeaderActionsService } from '../../../services/header-actions.service';
 import { StateService } from '../../../services/state.service';
 import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -18,7 +16,18 @@ import * as _ from 'lodash';
     selector: 'admin-settings',
     providers: [CompanySettingsService, SiteMenuService],
     templateUrl: './admin-settings.component.html',
-    styleUrls: ['./admin-settings.component.css']
+    styles: [`
+        .remove {
+            cursor: pointer; 
+            color: maroon; 
+            font-size: 1.5em;
+            vertical-align: middle;
+        }
+        input[type=text] {
+            width: 90%;
+            height:25px;
+        }
+  `],    
 })
 
 export class AdminSettingsComponent extends AdminBaseComponent {
@@ -40,13 +49,12 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
     oldFolderItems: SiteNav[] = [];
     oldFolderName;
-
+    
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,
         titleService: Title,
-        private siteMenuService: SiteMenuService,
-        private headerActionsService: HeaderActionsService,
+        private siteMenuService: SiteMenuService,        
         private stateService: StateService,
         private messagesService: MessagesService
     ) {
@@ -278,11 +286,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                         promises.push(this.siteMenuService.addFolderItem(o));
                     }
                 });
-
-                if (this.oldFolderName != this.selection.Name) {
-                    //promises.push(this.siteMenuService.renameFolder(this.selection.ID, this.oldFolderName));
-                }
-
+                
                 Promise.all(promises)
                     .then(() => this.loadFolderItems())
                     .then(() => {
