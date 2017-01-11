@@ -1,6 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { FusionService, MessagesService } from '../../../services/index';
+import { FusionService } from '../../../services/fusion.service';
+import { MessagesService } from '../../../services/messages.service';
 import { FusionRule, FusionRuleEditorModel } from '../../../models/fusion.model';
 
 @Component({
