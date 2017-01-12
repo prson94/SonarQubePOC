@@ -176,7 +176,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
             this.triggerSearch();
         }
 
-        else if (this.searchText && this.searchText.length > 3) {
+        else if (this.searchText && this.searchText.length >= 3) {
             this.cancelAutocomplete();
 
             this.simpleSearchID = window.setTimeout(() => this.doAutocompleteSearch(), 1000);
