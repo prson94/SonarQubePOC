@@ -156,7 +156,7 @@ export class ArtifactService extends BaseService {
     }
 
     getArtifact(id: number): Promise<Artifact> {
-        return this.http.get(`api/artifact/${id}?isNg=true`)
+        return this.http.get(`api/artifact/${id}`)
             .toPromise()
             .then(response => <Artifact>response.json())
             .catch(err => this.handleError(err));        

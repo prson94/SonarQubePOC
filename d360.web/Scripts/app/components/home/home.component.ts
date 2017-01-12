@@ -5,12 +5,9 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
-import { ObjectActionsService } from '../../services/object-actions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType } from '../../models/workflow.model';
-import { Subscription }   from 'rxjs/Subscription';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
@@ -91,6 +88,5 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.showBoardDetails = true;
         this.showAssignmentDetails = false;
         this.showActivityDetails = false;        
-    }
-    
+    }    
 }

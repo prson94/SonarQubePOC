@@ -796,24 +796,6 @@ where   h.ID <> @t order by h.[Level] desc;
             );
         }
 
-        [Route("{type}/{id:int}/angularactions/{context=default}")]
-        public dynamic GetAngularObjectActions(SystemObjects type, int id, string context)
-        {
-            dynamic actionsObj = new ExpandoObject();
-            switch (type)
-            {
-                case SystemObjects.ArtifactType:
-                    //check for dashboards
-                    bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();
-                    actionsObj.HasDashboards = hasDashboards;
-                    var suggestEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
-                    actionsObj.HasSuggest = suggestEnabled;
-                    break;
-            }
-
-            return actionsObj;
-        }
-
         #endregion
 
         #region Attributes
@@ -837,7 +819,7 @@ where   h.ID <> @t order by h.[Level] desc;
         #region Artifacts
 
         [Route("artifact/{id:int}")]
-        public ArtifactModelRequest GetArtifact(int id, bool isNg = false)
+        public ArtifactModelRequest GetArtifact(int id)
         {
             var a = Company.GetById<Artifact>(id, i => i.ArtifactType);
 
@@ -852,21 +834,18 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("TypeName", a.ArtifactType.Name);
             model.Add("AllowRelatedArtifacts", a.ArtifactType.AllowRelatedArtifacts);
             model.Add("Status", a.Status);
+            
+            //check if this object has dashboards             
+            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();
+            model.Add("HasDashboards", hasDashboards);
 
-            if (isNg)
-            {
-                //check if this object has dashboards             
-                bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();
-                model.Add("HasDashboards", hasDashboards);
+            var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && i.WorkflowType == WorkflowType.CertifyArtifact).Any();
+            model.Add("HasWorkflow", workflowEnabled);
 
-                var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && i.WorkflowType == WorkflowType.CertifyArtifact).Any();
-                model.Add("HasWorkflow", workflowEnabled);
-
-                //chick if this object has any child objects
-                bool hasChildren = Company.Filter<Artifact>(x => x.ParentID == a.ID).Any();
-                model.Add("HasChildArtifacts", hasChildren);
-            }
-
+            //chick if this object has any child objects
+            bool hasChildren = Company.Filter<Artifact>(x => x.ParentID == a.ID).Any();
+            model.Add("HasChildArtifacts", hasChildren);
+            
             try
             {
                 var row = Company.Query<dynamic>(QueryConstants.ArtifactSettingsItem, new { id = a.ArtifactTypeID }).Single();
@@ -878,7 +857,7 @@ where   h.ID <> @t order by h.[Level] desc;
             catch (Exception ex)
             { }
 
-            var breadcrumbItems = Company.Query<dynamic>((isNg ? QueryConstants.ArtifactNgBreadcrumbItem : QueryConstants.ArtifactBreadcrumbItem), new { id = id }).ToList();
+            var breadcrumbItems = Company.Query<dynamic>((QueryConstants.ArtifactNgBreadcrumbItem), new { id = id }).ToList();
             var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
             var breadcrumbs = new List<BreadcrumbItem>() {
@@ -899,11 +878,28 @@ where   h.ID <> @t order by h.[Level] desc;
         }
 
         [Route("artifacts/{typeID:int}")]
-        public ArtifactType GetArtifactType(int typeID)
+        public Dictionary<string, object> GetArtifactType(int typeID)
         {
             var artifactType = Company.GetById<ArtifactType>(typeID);
             if (artifactType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-            return artifactType;
+
+            Dictionary<string, object> model = new Dictionary<string, object>();
+
+            model.Add("ID", artifactType.ID);
+            model.Add("Name", artifactType.Name);
+            model.Add("Description", artifactType.Description);
+            model.Add("AllowHierarchy", artifactType.AllowHierarchy);
+            model.Add("AllowRelatedArtifacts", artifactType.AllowRelatedArtifacts);
+            model.Add("ParentID", artifactType.ParentID);
+            model.Add("CanOwnFusion", artifactType.CanOwnFusion);
+            
+            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType == "powerbi").Any();
+            model.Add("HasDashboards", hasDashboards);
+
+            var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == typeID && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
+            model.Add("HasSuggestWorkflow", workflowEnabled);
+            
+            return model;
         }
 
 
@@ -4121,7 +4117,7 @@ from    (
                                  string.Format("<span data-context='Preview' data-type='RuleDimension' data-id='{1}'>{0} <i class='fa fa-question-circle' aria-hidden='true'></i></span>", rule.Dimension.Name, rule.RuleDimensionID) :
                                  "";*/
 
-                        model.rows.Add(new DetailReadOnlyRowModel
+            model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>

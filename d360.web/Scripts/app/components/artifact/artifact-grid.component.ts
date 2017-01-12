@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit, ViewChild} from '@angular/core';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit } from '@angular/core';
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
@@ -11,7 +11,6 @@ import { HeaderActionsService } from '../../services/header-actions.service';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { ArtifactColumnFilterComponent } from './artifact-column-filter.component'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 
@@ -20,14 +19,14 @@ import { StringConstants } from '../../static/string-constants';
     providers: [GridDefinitionService, ArtifactService, PermissionsService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
-                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions() && !hasSuggest" [hasSuggest]="hasSuggest" (suggestClick)="add()" [hasExport]="true" (addClick)="add()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;resetFilters();"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions() && !hasSuggest" [hasSuggest]="hasSuggest" (suggestClick)="add()" [hasExport]="true" (addClick)="add()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>                
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
-                    <div class="col s12" *ngIf="stateService.artifactTypeFilters.showSimpleFilter">                                                
+                    <div class="col s12" *ngIf="showGridSimpleFilter">                                                
                         <input type="text" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
-                    </div>                                        
-                    <d3s-artifact-column-filter [hidden]="stateService.artifactTypeFilters.showSimpleFilter" [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
+                    </div>       
+                    <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
                     <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
                     <div class="col s12">
                        <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
@@ -92,9 +91,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
     @Input() hasSuggest: boolean = false;
-        
-    @ViewChild(ArtifactColumnFilterComponent) private filtersComponent: ArtifactColumnFilterComponent;
-        
+            
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
@@ -121,15 +118,19 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     selected: any = null;
 
     theDeleteCallback: Function;
-    
+        
     constructor(private headerActionsService: HeaderActionsService,
         private messagesService: MessagesService,
         private stateService: StateService,
         private permissionsService: PermissionsService,
-        private router: Router,
+        private router: Router,        
         private gridDefinitionService: GridDefinitionService, private artifactService: ArtifactService) {
         super();
-        this.theDeleteCallback = this.deleteItem.bind(this);
+        this.theDeleteCallback = this.deleteItem.bind(this);        
+    }
+
+    get showGridSimpleFilter(): boolean {        
+        return this.stateService.artifactTypeFilters.showSimpleFilter;
     }
 
     get newActionName(){
@@ -150,15 +151,21 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.getFieldsDefinition();              
     }
 
-    public filterGridData(filterData) {
+    public filterGridData() {
         this.isGridFilterLoading = true;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
     }
 
-    resetFilters() {        
+    resetFilters(val) {        
+        this.stateService.artifactTypeFilters.showSimpleFilter = val;        
         this.stateService.artifactTypeFilters.simpleTextFilter = '';
-        this.filtersComponent.resetFilters();
+        this.stateService.artifactTypeFilters.filters = [];
+        this.stateService.artifactTypeFilters.attributes = null;
+        this.stateService.artifactTypeFilters.relationships = null;
+        this.stateService.artifactTypeFilters.owners = null;
+
+        this.filterGridData();
     }
 
     deleteItem(id: number) {

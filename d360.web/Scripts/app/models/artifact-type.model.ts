@@ -14,8 +14,8 @@ export class ArtifactType {
     AllowHierarchy: boolean;
     AllowRelatedArtifacts: boolean;
     CanOwnFusion: boolean;
-    UpdatedOn: string;
-    UpdatedBy: number;
+    HasDashboards: boolean;
+    HasSuggestWorkflow: boolean;    
 }
 
 export class ArtifactTypeSummary {

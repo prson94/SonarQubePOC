@@ -34,7 +34,6 @@ import { ModelsService } from './models.service';
 import { SurveysService } from './surveys.service';
 import { ObjectStatisticsService } from './object-statistics.service';
 import { DashboardService } from './dashboard.service';
-import { ObjectActionsService } from './object-actions.service';
 import { WebAnalyticsService } from './web-analytics.service';
 import { ScoreService } from './score.service';
 import { ResourcesService } from './resources.service';

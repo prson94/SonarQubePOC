@@ -133,6 +133,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         if (this.ownerFilter && (this.ownerFilter.ownerGroups || this.ownerFilter.ownerUsers)) {            
             this.ownerSelected();
         }
+        
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -145,7 +146,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 });
             }
 
-            if (this.filters.length > 0 && !bHasInternalFilters) {                
+            if (this.filters.length > 0 && !bHasInternalFilters) {
                 this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Field);
 
                 for (let filter of this.filters) {
@@ -155,7 +156,11 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                         Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
                     });
                 }
-            }       
+            }
+            else if (!bHasInternalFilters) {
+                this.resetFilters();
+            }
+            
 
             this.getAttributes();
             //fetch relationships for this artifacttypeid

@@ -1,6 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs/Rx';
-import {take} from "rxjs/operator/take";
+import { Subject } from 'rxjs/Subject';
 
 @Injectable()
 export class AuthenticationService {

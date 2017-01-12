@@ -1,9 +1,8 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../services/right-sidebar.service';
-import { ObjectActionsService } from '../../services/object-actions.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { ArtifactBaseComponent} from './artifact-base.component';
@@ -26,7 +25,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     </div>
                 </div>
                 `,
-    providers: [ArtifactTypeService, ObjectActionsService],
+    providers: [ArtifactTypeService],
 })
 
 export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
@@ -40,17 +39,13 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         private router: Router,
         private artifactTypeService: ArtifactTypeService,                
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private titleService: Title,
-        private objectActionsService: ObjectActionsService,
+        private titleService: Title,        
         webAnalyticsService: WebAnalyticsService,
         rightSidebarService: RightSidebarService) {
         super(headerBreadcrumbService, rightSidebarService, webAnalyticsService );      
-
-        
     }
 
-    ngOnInit() {
-        
+    ngOnInit() {        
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
             this.isLoading = true;
@@ -65,18 +60,16 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, this.areaLink));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.artifactType.Name, this.router.url));
-                    this.setBrowserTitle(this.titleService, this.artifactType.Name);
-                                        
-                    this.isLoading = false;
-                });
-            this.objectActionsService.getObjectActions(artifactTypeId, 'ArtifactType', 'list')
-                .then(actions => {                     
                     this.clearSidebar();
-                    this.setCommonRightSideBar(false, false, actions.HasDashboards);
-                    this.hasSuggest = actions.HasSuggest;
+                    this.setBrowserTitle(this.titleService, this.artifactType.Name);
+                    this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
+
+                    this.hasSuggest = this.artifactType.HasSuggestWorkflow;
                     this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o']));
                     this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus', ['fa-hourglass-start']));
-                });
+
+                    this.isLoading = false;
+                });            
         });
     }
 
@@ -89,5 +82,4 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         if (activatedItem.tag == 'metrics') this.isMetricsVisible = !this.isMetricsVisible;
         else if (activatedItem.tag == 'workflowstatus') this.isWorkflowStatusVisible = !this.isWorkflowStatusVisible;
     }
-
 };

@@ -200,7 +200,7 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
 
         this.stateService.artifactTypeFilters.filters.push(filter);
 
-        this.artifactTypeGrid.filterGridData(1);
+        this.artifactTypeGrid.filterGridData();
 
         this.showArtifactStatusGrid = !e.originalEvent.point.sliced; // appears to be 1 behind        
     }
