@@ -106,6 +106,6 @@ export class AuditComponent extends BaseComponent {
     }
 
     private export() {
-        this.auditService.exportToExcel(this.objectID, this.objectType, this.objectName);
+        this.auditService.exportToExcel(this.objectID, this.objectType, this.objectName, this.filters);
     }
 }

@@ -32,8 +32,20 @@ export class AuditService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    exportToExcel(objectID: number, objectType: string, name: string) {        
-        this.http.get(`overlays/${objectType}/${objectID}/download/excel/audit.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));
+    exportToExcel(objectID: number, objectType: string, name: string, filters?: GridFilterExpression[]) {        
+        let url = `overlays/${objectType}/${objectID}/download/excel/audit.xls`;
+        let indx = 0;
+
+        if (filters != undefined) {
+            url += `?filterscount=${filters.length}`;
+
+            for (let filter of filters) {
+                url += `&filtervalue${indx}=${filter.value}&filtercondition${indx}=${filter.condition}&filteroperator${indx}=1&filterdatafield${indx}=${filter.field}`;
+                indx++;
+            }
+        }
+
+        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));
     }
 
     downloadFile(data: Response, name: string) {
