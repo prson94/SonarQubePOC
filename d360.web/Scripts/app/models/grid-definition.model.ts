@@ -7,8 +7,7 @@ export class GridField {
 
 export class GridColumn {
     text: string;
-    datafield: string;
-    width: string;
+    datafield: string;   
     cellsformat: string;
     type: string;
 }
@@ -50,7 +49,6 @@ export class GridFilterColumn {
     relatedfield: boolean;
     hiddenfield: boolean;
     id: string;
-
     type: string;
 }
 

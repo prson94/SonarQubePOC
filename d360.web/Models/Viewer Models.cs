@@ -322,12 +322,7 @@ namespace d360.web.Models
             return fields;
         }
     }
-
-    //public class Fields : List<DynamicField>
-    //{
-
-    //}
-
+    
     [DataContract(Namespace = constants.NAMESPACE)]
     public class FilterObjectItem
     {
@@ -389,10 +384,7 @@ namespace d360.web.Models
 
         [DataMember]
         public string text { get; set; }
-
-        [DataMember]
-        public string width { get; set; }
-
+        
         [DataMember]
         public bool sortable { get; set; }
 
@@ -408,7 +400,7 @@ namespace d360.web.Models
         [DataMember]
         public string filtertype { get; set; }
 
-        [DataMember]
+        [DataMember]        
         public List<string> filteritems { get; set; }
 
         [DataMember]
@@ -436,8 +428,7 @@ namespace d360.web.Models
             relatedfield = false;
             cellsformat = val.cellsformat;
             datafield = val.datafield;
-            text = val.text;
-            width = val.width;
+            text = val.text;            
             sortable = val.sortable;
             filterable = val.filterable;
             columntype = val.columntype;

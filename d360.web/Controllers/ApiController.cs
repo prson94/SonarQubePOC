@@ -285,7 +285,7 @@ namespace d360.web.Controllers
                     break;
             }
 
-            var gc = new GridColumn { text = item.FriendlyName, datafield = $"Field{item.ID}", width = string.Format("{0}%", dynamicFieldWidth), columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -384,8 +384,7 @@ namespace d360.web.Controllers
             var filterColumns = new List<GridFilterColumn>();
             var groups = new List<GridColumnGroup>();
             decimal dynamicFieldWidth = 0;
-            int remainingWidth = 0;
-            //int columnWidth = 0;
+            int remainingWidth = 0;            
             int staticFieldCount = 0;
             ObjectDetail detail = null;
 
@@ -406,20 +405,18 @@ namespace d360.web.Controllers
                         hasParentType = artifactType.ParentID.HasValue;
 
                     staticFieldCount = hasParentType ? 4 : 3;
-                    remainingWidth = hasParentType ? 35 : 45;
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(20, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
 
                     if (hasParentType)
                     {
-                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID).OrderBy(i => i.TextPath).Select(i => i.TextPath).ToList() });
+                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID).OrderBy(i => i.TextPath).Select(i => i.TextPath).ToList() });
                     }
 
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
-                    columns.Add(new GridColumn { text = settings["ArtifactType_TaxonomyTypeID"], datafield = "TaxonomyType", width = calculateStaticColumnWidth(14, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = taxonomyTypes });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", width = calculateStaticColumnWidth(9, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Draft", "Under Review", "Certified" } });
+                    columns.Add(new GridColumn { text = settings["ArtifactType_TaxonomyTypeID"], datafield = "TaxonomyType", filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = taxonomyTypes });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Draft", "Under Review", "Certified" } });
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
@@ -438,10 +435,16 @@ namespace d360.web.Controllers
 
                     filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
 
-                    filterColumns.Add(new GridFilterColumn { text = d360.core.resources.Fields.Description_Name, datafield = "Description", width = "0" });
+                    //clear the filtercolumns of the columns since they are not used and copied to the filtercolumns
+                    foreach (var column in columns)
+                    {
+                        column.filteritems = new List<string>();
+                    }
+
+                    filterColumns.Add(new GridFilterColumn { text = d360.core.resources.Fields.Description_Name, datafield = "Description" });
 
                     var hiddenItems = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
-                    parseDynamicFilterFields(hiddenItems, filterColumns, dynamicFieldWidth, false, true);
+                    parseDynamicFilterFields(hiddenItems, filterColumns, 0, false, true);
 
                     //Load any fields that are displayed on relationships so we can show them as 
                     // filters in the grid
@@ -454,7 +457,7 @@ namespace d360.web.Controllers
 
                         if (relItems.Any())
                         {
-                            parseDynamicFilterFields(relItems, filterColumns, dynamicFieldWidth, true, false);
+                            parseDynamicFilterFields(relItems, filterColumns, 0, true, false);
                         }
                     }
 
@@ -478,7 +481,7 @@ namespace d360.web.Controllers
                     {
                         var name = $"AttributeType{f.AttributeType.ID}";
                         columns.Add(
-                            new GridColumn { text = f.AttributeType.Name, datafield = $"{name}", width = string.Format("{0}%", dynamicFieldWidth), columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
+                            new GridColumn { text = f.AttributeType.Name, datafield = $"{name}", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
                         );
 
                         fields.Add(new GridField { name = $"{name}", type = "string" });
@@ -491,7 +494,7 @@ namespace d360.web.Controllers
                     {
                         fields.Add(new GridField { name = "TaxonomyType", type = "string", });
                     }
-                    //fields.Add(new GridField { name = "Role", type = "string" });
+                    
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "ObjectID", type = "number" });
                     fields.Add(new GridField { name = "Object", type = "string" });
@@ -525,14 +528,13 @@ namespace d360.web.Controllers
                     remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(55, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "ParentID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
-                    //fields.Add(new GridField { name = "Description", type = "string" });
+                    fields.Add(new GridField { name = "Name", type = "string" });                    
                     fields.Add(new GridField { name = "PolicyTypeID", type = "number" });
                     break;
                 #endregion                                
@@ -542,7 +544,7 @@ namespace d360.web.Controllers
                     remainingWidth = 85;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code"});
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -556,13 +558,13 @@ namespace d360.web.Controllers
                     remainingWidth = 55;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = "Date", datafield = "Date", columntype = GridColumn.COLUMN_TYPE_DATE, filtertype = GridColumn.FILTER_TYPE_RANGE, width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount), cellsformat = "MM/dd/yyyy HH:mm:ss" });
+                    columns.Add(new GridColumn { text = "Date", datafield = "Date", columntype = GridColumn.COLUMN_TYPE_DATE, filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "MM/dd/yyyy HH:mm:ss" });
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
-                    columns.Add(new GridColumn { text = "Criticality", datafield = "Criticality", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.SourceID_Name, datafield = "SourceID", width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Assigned", "Open", "Closed" }, width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = "Criticality", datafield = "Criticality", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.SourceID_Name, datafield = "SourceID" });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Assigned", "Open", "Closed" } });
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Date", type = "date" });
@@ -579,8 +581,7 @@ namespace d360.web.Controllers
                     remainingWidth = 75;
 
                     detail = Company.GetObjectDetail(type, id);
-
-
+                    
                     #region Parents
 
                     var parentSql = @"
@@ -620,12 +621,12 @@ where   h.ID <> @t order by h.[Level] desc;
                         if (fusionIDPresent)
                         {
                             var parentFilterValues = Company.Query<string>(@"select Name from FusionAttribute where FusionID = @f and FusionAttributeTypeID = @t group by Name order by Name", new { f = fusionID, t = i.ID }).ToList();
-                            filterColumns.Add(new GridFilterColumn { text = i.Name, datafield = $"Parent{i.ID}", width = "", filtertype = GridColumn.COLUMN_TYPE_DROPDOWN, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filteritems = parentFilterValues });
-                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", width = "100px", filteritems = new List<string>() });
+                            filterColumns.Add(new GridFilterColumn { text = i.Name, datafield = $"Parent{i.ID}", filtertype = GridColumn.COLUMN_TYPE_DROPDOWN, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filteritems = parentFilterValues });
+                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", filteritems = new List<string>() });
                         }
                         else
                         {
-                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", width = "100px", filteritems = new List<string>() });
+                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", filteritems = new List<string>() });
                         }
                         fields.Add(new GridField { name = $"Parent{i.ID}", type = "string" });
                     });
@@ -636,7 +637,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
                     filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                    columns.Add(new GridColumn { text = detail.Name, datafield = "Name", width = calculateStaticColumnWidth(25, dynamicFieldWidth, remainingWidth, staticFieldCount), filteritems = new List<string>() });
+                    columns.Add(new GridColumn { text = detail.Name, datafield = "Name", filteritems = new List<string>() });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
 
@@ -652,14 +653,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
                         filterColumns.Add(col);
                     });
-
-                    //relations.ForEach(i =>
-                    //{
-                    //    columns.Add(new GridColumn { text = i.FriendlyName, datafield = i.Name, width = string.Format("{0}%", dynamicFieldWidth), filtertype = GridColumn.FILTER_TYPE_NUMBER, cellsformat = "n" });
-                    //    fields.Add(new GridField { name = i.Name, type = "number" });
-                    //    filterColumns.Add(new GridFilterColumn { text = i.FriendlyName, datafield = i.Name, width = "", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                    //});
-
+                    
                     break;
                 #endregion
                 case SystemObjects.FusionQueryAttributeType:
@@ -692,9 +686,9 @@ where   h.ID <> @t order by h.[Level] desc;
                     remainingWidth = 61;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(23, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Enabled_Name, columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, datafield = "Enabled", width = calculateStaticColumnWidth(8, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    columns.Add(new GridColumn { text = "Owners", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.COLUMN_TYPE_STRING, datafield = "Owners", width = calculateStaticColumnWidth(30, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Enabled_Name, columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, datafield = "Enabled" });
+                    columns.Add(new GridColumn { text = "Owners", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.COLUMN_TYPE_STRING, datafield = "Owners" });
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
 
@@ -710,13 +704,13 @@ where   h.ID <> @t order by h.[Level] desc;
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName", width = calculateStaticColumnWidth(13, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName", width = calculateStaticColumnWidth(13, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName" });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName" });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.DateLastLoggedIn_Name, datafield = "DateLastLoggedIn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, width = calculateStaticColumnWidth(7, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, filteritems = new List<string>() { "Active", "Disabled" }, width = calculateStaticColumnWidth(4, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.DateLastLoggedIn_Name, datafield = "DateLastLoggedIn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
+                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, filteritems = new List<string>() { "Active", "Disabled" } });
 
                     fields.Add(new GridField { name = "IsAdministrator", type = "bool" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -728,9 +722,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     break;
                     #endregion
             }
-
-            settings = null;
-
+            
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
                 Title = (detail != null) ? detail.PluralizedName : "Child Items",
@@ -1544,7 +1536,7 @@ from	cte a
                         if (!gridFields.Any(i => i.name == fieldType.Name) && !columns.Any(i => i.datafield == fieldType.Name))
                         {
                             gridFields.Add(new GridField { name = fieldType.Name, type = gridfieldType });
-                            var gc = new GridColumn { text = fieldType.FriendlyName, columntype = columntype, datafield = fieldType.Name, width = "auto" };
+                            var gc = new GridColumn { text = fieldType.FriendlyName, columntype = columntype, datafield = fieldType.Name };
                             if (!string.IsNullOrEmpty(cellsformat))
                             {
                                 gc.cellsformat = cellsformat;
@@ -1768,12 +1760,12 @@ from    [Intersect] I
             if (displayFields.Any(i => i.FieldTypeName == "Name" && i.Show))
             {
                 gridFields.Add(new GridField { name = "Name", type = "string" });
-                columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
+                columns.Add(new GridColumn { text = "Name", datafield = "Name" });
             }
             if (displayFields.Any(i => i.FieldTypeName == "TextPath" && i.Show))
             {
                 gridFields.Add(new GridField { name = "TextPath", type = "string" });
-                columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
+                columns.Add(new GridColumn { text = "Path", datafield = "TextPath" });
             }
             if (fieldTypeIDs != null)
             {
@@ -1783,7 +1775,7 @@ from    [Intersect] I
                     gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
                     if (displayFields.Any(i => i.Show && i.FieldTypeID == fieldType.ID))
                     {
-                        columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
+                        columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name });
                         sqlColumns.Add($"F{fieldType.ID}.FormattedValue as [{fieldType.Name}]");
                     }
                     sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'FusionAttribute' and F{fieldType.ID}.ObjectID = A.ID");
@@ -2639,8 +2631,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                             var gc = new GridColumn
                             {
                                 text = c.text,
-                                datafield = c.datafield,
-                                width = "auto",
+                                datafield = c.datafield,                                
                                 columntype = c.texttype,
                                 contextfield = c.contextfield,
                                 objectfield = c.objectfield,
@@ -5229,7 +5220,7 @@ from    (
                 i.IsListable
             ).OrderBy(i => i.SortOrder).ToList();
 
-            columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "100px", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING });
+            columns.Add(new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING });
 
             fieldTypes.ForEach(f =>
             {
@@ -5238,9 +5229,7 @@ from    (
                 columns.Add(getGridColumnForColumn(f, 100, false, false));
             });
 
-            fields.Add(new GridField { name = "ID", type = "number" });
-            //fields.Add(new GridField { name = "Description", type = "string" });
-            //fields.Add(new GridField { name = "Role", type = "string" });
+            fields.Add(new GridField { name = "ID", type = "number" });            
             fields.Add(new GridField { name = "Name", type = "string" });
             fields.Add(new GridField { name = "ObjectID", type = "number" });
             fields.Add(new GridField { name = "Object", type = "string" });

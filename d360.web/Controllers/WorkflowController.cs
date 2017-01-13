@@ -246,12 +246,12 @@ where   coalesce(A.ArtifactTypeID, W.Data.value('(/fields/ArtifactTypeID)[1]', '
 		and W.WorkflowType = 2
 		and W.Step = @step";
                     #endregion
-                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "Artifact", filterable = true, filtertype = GridColumn.FILTER_TYPE_STRING, sortable = true, text = "Item", width = "35%" });
-                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "StartDate", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Started On", width = "15%" });
-                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DueDate", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Due On", width = "15%" });
-                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Completed On", width = "15%" });
-                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesAssigned", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Assigned", width = "10%" });
-                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Completed", width = "10%" });
+                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "Artifact", filterable = true, filtertype = GridColumn.FILTER_TYPE_STRING, sortable = true, text = "Item" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "StartDate", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Started On" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DueDate", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Due On" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Completed On" });
+                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesAssigned", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Assigned" });
+                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Completed" });
                     fields.Add(new GridField { name = "ArtifactID", type = "number" });
                     fields.Add(new GridField { name = "StartDate", type = "date" });
                     fields.Add(new GridField { name = "DueDate", type = "date" });
@@ -290,12 +290,12 @@ where   W.Data.value('(/fields/ArtifactTypeID)[1]', 'int') = @id
 		and W.WorkflowType = 1
 		and W.Step = @step";
                     #endregion
-                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "Name", filterable = true, filtertype = GridColumn.FILTER_TYPE_STRING, sortable = true, text = "Name", width = "18%" });
-                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "RequestingResource", filterable = true, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, sortable = true, text = "Requestor", width = "17%" });
-                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateStarted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Started On", width = "15%" });
-                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Completed On", width = "15%" });
-                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesAssigned", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Assigned", width = "10%" });
-                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Completed", width = "10%" });
+                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "Name", filterable = true, filtertype = GridColumn.FILTER_TYPE_STRING, sortable = true, text = "Name" });
+                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "RequestingResource", filterable = true, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, sortable = true, text = "Requestor" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateStarted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Started On" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Completed On" });
+                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesAssigned", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Assigned" });
+                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Completed" });
                     fields.Add(new GridField { name = "ArtifactTypeID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "Description", type = "string" });
@@ -335,12 +335,12 @@ where   W.Data.value('(/fields/ArtifactTypeID)[1]', 'int') = @id
 		                            and W.WorkflowType = 5
 		                            and W.Step = @step";
                     #endregion
-                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "Name", filterable = true, filtertype = GridColumn.FILTER_TYPE_STRING, sortable = true, text = "Name", width = "18%" });
-                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "RequestingResource", filterable = true, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, sortable = true, text = "Requestor", width = "17%" });
-                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateStarted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Started On", width = "15%" });
-                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Completed On", width = "15%" });
-                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesAssigned", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Assigned", width = "10%" });
-                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Completed", width = "10%" });
+                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "Name", filterable = true, filtertype = GridColumn.FILTER_TYPE_STRING, sortable = true, text = "Name" });
+                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "RequestingResource", filterable = true, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, sortable = true, text = "Requestor" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateStarted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Started On" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Completed On" });
+                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesAssigned", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Assigned" });
+                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Completed" });
                     fields.Add(new GridField { name = "ArtifactTypeID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "Description", type = "string" });
