@@ -90,9 +90,7 @@ namespace d360.web.Models
     {
         public string Name { get; set; }
         public int? New { get; set; }
-        public int? Total { get; set; }
-        public string NewUri { get; set; }
-        public string TotalUri { get; set; }
+        public int? Total { get; set; }        
         public int? Id { get; set; }
     }
 

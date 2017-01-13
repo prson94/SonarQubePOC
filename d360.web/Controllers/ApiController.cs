@@ -5955,13 +5955,13 @@ SELECT (
 
             //need to add a record for social, Issue, Task, DataEvent, Question
 
-            items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social), TotalUri = $"{socialUri}?type={(int)CommentType.Social}" });
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social)  });
 
-            items.Add(new CountModel { Name = Resources.Core.CommentType_Issue, Total = getCommentCategoryCount(counts, CommentType.Issue), TotalUri = $"{socialUri}?type={(int)CommentType.Issue}" });
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Issue, Total = getCommentCategoryCount(counts, CommentType.Issue) });
 
-            items.Add(new CountModel { Name = Resources.Core.CommentType_Task, Total = getCommentCategoryCount(counts, CommentType.Task), TotalUri = $"{socialUri}?type={(int)CommentType.Task}" });
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Task, Total = getCommentCategoryCount(counts, CommentType.Task) });
 
-            items.Add(new CountModel { Name = Resources.Core.CommentType_DataEvent, Total = getCommentCategoryCount(counts, CommentType.DataEvent), TotalUri = $"{socialUri}?type={(int)CommentType.DataEvent}" });
+            items.Add(new CountModel { Name = Resources.Core.CommentType_DataEvent, Total = getCommentCategoryCount(counts, CommentType.DataEvent) });
             
             return items.OrderBy(x => x.Name);
         }
@@ -5974,11 +5974,14 @@ SELECT (
 
         private IEnumerable<CountModel> LoadWorkflowAssignmentsCount(int resourceId)
         {
-            var sql = @"(select '/Home/AssignmentActivityOverlay?mode=total&type=1&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType in(1,5)
+            var sql = @"(select '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType in(1,5)
                         union
-                        select '/Home/AssignmentActivityOverlay?mode=total&type=2&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
+                        select '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
                         union
-                        select '/Home/AssignmentActivityOverlay?mode=total&type=3&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3                        
+                        select '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID)
+                                inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+                                left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
+                                where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3                        
                         ) order by Name";
 
             return Company.Query<CountModel>(sql, new { r = resourceId });

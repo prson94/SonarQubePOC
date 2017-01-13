@@ -46,8 +46,7 @@ from    FusionStatusLog S
 
         public static string ArtifactActivitySpecificDateCountList = @"
 select  at.name as Name,
-	    count(1) as New,
-        '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri,							
+	    count(1) as New,        					
         at.id as Id		
 from    Artifact a
         inner join artifacttype at on a.artifacttypeid = at.id
@@ -56,8 +55,7 @@ group by at.name,at.id order by at.name";
 
         public static string ArtifactActivityAllDateCountList = @"
 select  at.name as Name,
-	    count(1) as New,
-        '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri,							
+	    count(1) as New,        					
         at.id as Id								
 from    Artifact a
         inner join artifacttype at on a.artifacttypeid = at.id                        
@@ -298,8 +296,9 @@ from	    Workflow W
 				and WR.ResourceID = @r
 				and W.WorkflowType = 3
                 and WR.IsComplete = 0 
-			inner join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
-			inner join IssueType IT on (I.IssueTypeID = IT.ID)			
+                and W.Data.value('(fields/IssueID)[1]', 'int') is not null 
+			left outer join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
+			left outer join IssueType IT on (I.IssueTypeID = IT.ID)			
             left outer join cache.ObjectDetails A on A.[Object] = I.[Object] and A.ObjectID = I.ObjectID            		
             {0}
 )
