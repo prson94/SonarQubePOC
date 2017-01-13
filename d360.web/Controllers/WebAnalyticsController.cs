@@ -67,6 +67,7 @@ namespace d360.web.Controllers
 
             try
             {
+
                 var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
 
                 var tableClient = storageAccount.CreateCloudTableClient();
@@ -76,7 +77,8 @@ namespace d360.web.Controllers
 
                 var insertOperation = TableOperation.Insert(value);
 
-                await table.ExecuteAsync(insertOperation);
+                // its logging we dont give a crap if it fails we arent able to log so lets not wait for it to complete...
+                /*await */table.ExecuteAsync(insertOperation);
             }
             catch(Exception e)
             {
