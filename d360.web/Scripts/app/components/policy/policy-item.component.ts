@@ -198,7 +198,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             let selArray = this.policies.filter(x => x.ID == selectedHierarchyId);
             if (selArray.length > 0) this.selected = selArray[0];
             else {
-                console.log("ERROR INVALID SELECTED HIERARCY ID SPECIFIED.", selectedHierarchyId);
+                console.log("ERROR INVALID SELECTED HIERARCHY ID SPECIFIED.", selectedHierarchyId);
 
                 this.selected = (this.policies.length && this.policies.length > 0) ? this.policies[0] : null;
             }

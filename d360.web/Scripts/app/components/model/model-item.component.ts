@@ -161,7 +161,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             let selArray = this.modelHierarchy.filter(x => x.ID == selectedHierarchyId);
             if (selArray.length > 0) this.selected = selArray[0];
             else {
-                console.log("ERROR INVALID SELECTED HIERARCY ID SPECIFIED.", selectedHierarchyId);
+                console.log("ERROR INVALID SELECTED HIERARCHY ID SPECIFIED.", selectedHierarchyId);
 
                 this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
             }
@@ -248,7 +248,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private loadItemSurvey(modelId: number) {
         if (!this.selected) {
-            console.log("ERROR NO MODEL HEIRARCY ITEM SELECTED TO LOAD SURVEY INFO FOR.");
+            console.log("ERROR NO MODEL HEIRARCHY ITEM SELECTED TO LOAD SURVEY INFO FOR.");
 
             return;
         }

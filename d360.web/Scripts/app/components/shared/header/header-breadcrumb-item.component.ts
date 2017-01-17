@@ -66,7 +66,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
     }
 
     private isTreeItem(): boolean {
-        return this.breadcrumb.objectType == 'Taxonomy';
+        return this.breadcrumb.objectType == 'Taxonomy' || this.breadcrumb.objectType == 'Policy';
     }
     
     private in(panel, event) {
