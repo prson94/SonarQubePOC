@@ -14,8 +14,8 @@ import { FusionRule, FusionRuleEditorModel } from '../../../models/fusion.model'
             <div class="row">
                 <div class="col s12">
                     <div class="FieldName" style="display:block;">Promote</div>
-                    <select [(ngModel)]="model.Rule.ObjectID" required name="object">
-                        <option *ngFor="let i of model.AttributeTypes" [value]="i.ID">{{i.Name}}</option>
+                    <select [(ngModel)]="selectedAttributeType" required name="object">
+                        <option *ngFor="let i of attributeTypes" [value]="i.id">{{i.name}}</option>
                     </select>
                 </div>
             </div>
@@ -53,6 +53,8 @@ export class FusionRuleEditorComponent extends BaseComponent implements OnInit {
 
     model: FusionRuleEditorModel;
     mode = "Add";
+    attributeTypes: any[] = [];
+    selectedAttributeType: string;
 
     constructor(private fusionService: FusionService, private messagesService: MessagesService) {
         super();
@@ -65,14 +67,21 @@ export class FusionRuleEditorComponent extends BaseComponent implements OnInit {
     load() {
         this.isLoading = true;
         if (this.fusionTypeID != null && this.fusionTypeID != 0) {
-            this.fusionService.getAddFusionRule(this.fusionTypeID)
+            this.fusionService.getAddFusionRule(this.fusionTypeID, this.fusionID)
                 .then(r => {
+
                     this.model = new FusionRuleEditorModel();
                     this.model.Rule = new FusionRule();
                     this.model.Rule.FusionID = this.fusionID;
                     this.model.Rule.Description = "";
                     this.model.AttributeTypes = r;
                     this.mode = "Add";
+
+                    this.attributeTypes = [];
+                    this.model.AttributeTypes.forEach(i => {
+                        this.attributeTypes.push({ id: i.ID + '|' + i.Type, name: i.Name });
+                    });
+
                     this.isLoading = false;
 
                 });
@@ -80,6 +89,12 @@ export class FusionRuleEditorComponent extends BaseComponent implements OnInit {
             this.fusionService.getEditFusionRule(this.fusionRule.ID)
                 .then(r => {
                     this.model = r;
+                    this.attributeTypes = [];
+                    this.model.AttributeTypes.forEach(i => {
+                        this.attributeTypes.push({ id: i.ID + '|' + i.Type, name: i.Name });
+                    });
+
+                    this.selectedAttributeType = this.model.Rule.ObjectID + '|' + this.model.Rule.ObjectType;
                     this.mode = "Edit";
                     this.isLoading = false;
                 });
@@ -90,6 +105,12 @@ export class FusionRuleEditorComponent extends BaseComponent implements OnInit {
         if (this.isLoading)
             return;
         this.isLoading = true;
+
+        if (this.selectedAttributeType != null && this.selectedAttributeType.indexOf('|') > -1) {
+            this.model.Rule.ObjectID = +this.selectedAttributeType.split('|')[0];
+            this.model.Rule.ObjectType = this.selectedAttributeType.split('|')[1];
+        }
+
         if (this.fusionTypeID != null && this.fusionTypeID != 0) {
             this.fusionService.postAddFusionRule(this.model.Rule)
                 .then(r => {

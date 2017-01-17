@@ -626,9 +626,9 @@ if @currentFusionAttributeTypeID = 0 and @fusionAttributeID = 0
 		from		FusionAttribute A
 					inner join @tbl t on t.ParentID is null and A.FusionAttributeTypeiD = t.ID and A.FusionID = @fusionID
         where       A.ID not in (
-                                select  RI.FusionAttributeID
+                                select  RI.ObjectID
                                 from    fusion.RuleItem RI
-                                        inner join fusion.[Rule] R on R.ID = RI.RuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
+                                        inner join fusion.[Rule] R on R.ID = RI.RuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.ObjectID is not null and RI.ObjectType = 'FusionAttribute'
                                 )
 		order by	A.Name
 	end
@@ -644,9 +644,9 @@ else
 								and A.ParentID = @fusionAttributeID
 								and A.FusionID = @fusionID
         where       A.ID not in (
-                                select  RI.FusionAttributeID
+                                select  RI.ObjectID
                                 from    fusion.RuleItem RI
-                                        inner join fusion.[Rule] R on R.ID = RI.RuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
+                                        inner join fusion.[Rule] R on R.ID = RI.RuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.ObjectID is not null and RI.ObjectType = 'FusionAttribute'
                                 )
         order by	Name
 	end";
@@ -654,15 +654,18 @@ else
         public static string FusionRuleItemList = @"
 select	I.ID,
         I.RuleID,
-        I.FusionAttributeID,
-        case 
-			when F.FusionAttributeTypeID = FT.ID then F.TextPath
-			else coalesce(FT.Name + ' attributes under ' + F.TextPath, 'All ' + FT.Name + ' attributes') 
-		end as FusionAttributeName
+        I.ObjectID,
+		case when I.ObjectType = 'FusionAttribute' and F.FusionAttributeTypeID = FT.ID then F.TextPath
+			when I.ObjectType = 'FusionAttribute' then coalesce(FT.Name + ' attributes under ' + F.TextPath, 'All ' + FT.Name + ' attributes') 
+			when I.ObjectType = 'FusionQueryAttribute' and I.ObjectID is not null then QFT.Name
+			when I.ObjectType = 'FusionQueryAttribute' then'All ' + QT.Name + ' query attributes'
+        end as FusionAttributeName
 from	[fusion].[RuleItem] I
 		inner join [fusion].[Rule] R on R.ID = I.RuleID
-		inner join FusionAttributeType FT on FT.ID = R.ObjectID
-        left join FusionAttribute F on F.ID = I.FusionAttributeID
+		left join FusionAttributeType FT on FT.ID = R.ObjectID and I.ObjectType = 'FusionAttribute'
+        left join FusionAttribute F on F.ID = I.ObjectID and I.ObjectType = 'FusionAttribute'
+		left join FusionQueryAttributeType QT on QT.ID = R.ObjectID and I.ObjectType = 'FusionQueryAttribute'
+		left join FieldType QFT on I.ObjectType = 'FusionQueryAttribute' and QFT.ID = I.ObjectID
 where   I.RuleID = @id
         ";
 
@@ -1396,8 +1399,9 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 
         public static string FusionRuleStepPromotionHistory = @"select
 	P.ID,
-	P.FusionAttributeID,
-	FA.Name as FusionAttributeName,
+	P.AttributeID,
+    P.AttributeType,
+	FA.Name as AttributeName,
 	P.ObjectType as [Object],
 	P.ObjectID,
 	D.Name as ObjectName,
@@ -1406,7 +1410,23 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 	P.UpdatedOn
 from fusion.RulePromotion P
 join cache.ObjectDetails D on D.Object = P.ObjectType and D.ObjectID = P.ObjectID
-join FusionAttribute FA ON P.FusionAttributeID = FA.ID
-where P.RuleStepID = @id";
+join FusionAttribute FA ON P.AttributeID = FA.ID and P.AttributeType = 'FusionAttribute'
+where P.RuleStepID = @id
+union all
+select
+	P.ID,
+	P.AttributeID,
+    P.AttributeType,
+	FT.Name as AttributeName,
+	P.ObjectType as [Object],
+	P.ObjectID,
+	D.Name as ObjectName,
+	D.NgUrl as ObjectUrl,
+	P.CreatedOn,
+	P.UpdatedOn
+from fusion.RulePromotion P
+join cache.ObjectDetails D on D.Object = P.ObjectType and D.ObjectID = P.ObjectID
+join FieldType FT ON P.AttributeID = FT.ID and P.AttributeType = 'FusionQueryAttribute'
+where P.RuleStepID = @id;";
     }
 }

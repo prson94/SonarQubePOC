@@ -4124,11 +4124,13 @@ namespace d360.web.Controllers
         #region Form Get/Post
 
         [HttpGet, Route("GetAddFusionRule"), NonNullableParameters]
-        public JsonNetResult GetAddFusionRule(int typeID)
+        public JsonNetResult GetAddFusionRule(int typeID, int fusionID)
         {
+            var attributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).Select(i => new { i.ID, i.Name, @Type = "FusionAttributeType" }).ToList();
+            attributeTypes.AddRange(Company.Filter<FusionQueryAttributeType>(i => i.FusionID == fusionID).Select(i => new { i.ID, Name = "Query :: " + i.Name, @Type = "FusionQueryAttributeType" }).ToList());
             return new JsonNetResult
             {
-                Data = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).ToList(),
+                Data = attributeTypes,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -4144,7 +4146,7 @@ namespace d360.web.Controllers
                     Description = r.Description,
                     FusionID = r.FusionID,
                     ObjectID = r.ObjectID,
-                    ObjectType = "FusionAttributeType",
+                    ObjectType = r.ObjectType,
                     UpdatedBy = Company.CurrentResourceID,
                     UpdatedOn = DateTime.UtcNow
                 };
@@ -4230,6 +4232,9 @@ namespace d360.web.Controllers
             var a = Company.GetById<FusionRule>(id);
             if (a == null) return null;
 
+            var attributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).Select(i => new { i.ID, i.Name, @Type = "FusionAttributeType" }).ToList();
+            attributeTypes.AddRange(Company.Filter<FusionQueryAttributeType>(i => i.FusionID == a.FusionID).Select(i => new { i.ID, Name = "Query :: " + i.Name, @Type = "FusionQueryAttributeType" }).ToList());
+
             var model = new FusionRuleEditorModel
             {
                 FusionID = a.Fusion.ID,
@@ -4237,13 +4242,12 @@ namespace d360.web.Controllers
                 FormUri = "/Form/EditFusionRule",
                 FormMethod = "PUT",
                 FormName = "Edit Fusion Rule",
-                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).ToList(),
                 Rule = a
             };
 
             return new JsonNetResult
             {
-                Data = model,
+                Data = new { model, attributeTypes },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -4262,7 +4266,7 @@ namespace d360.web.Controllers
                 model.Description = r.Description;
                 model.FusionID = r.FusionID;
                 model.ObjectID = r.ObjectID;
-                model.ObjectType = "FusionAttributeType";
+                model.ObjectType = r.ObjectType;
 
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
@@ -4391,30 +4395,30 @@ namespace d360.web.Controllers
                 int ruleID = form.RuleID;
                 var rule = Company.GetById<FusionRule>(ruleID);
                 bool allSelected = form.AllSelected;
-                List<string> fusionAttributes = new List<string>();
+                List<string> attributes = new List<string>();
 
-                if (!string.IsNullOrEmpty(form.FusionAttributeID))
-                    fusionAttributes = form.FusionAttributeID.Split(',').ToList();
+                if (!string.IsNullOrEmpty(form.attributeIDs))
+                    attributes = form.attributeIDs.Split(',').ToList();
 
-                if(fusionAttributes.Count == 0 && allSelected)
+                if(attributes.Count == 0 && allSelected)
                 {
                     {
                         Company.Set<FusionRuleItem>().Add(
-                            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = null }
+                            new FusionRuleItem { RuleID = ruleID, ObjectID = null, ObjectType = form.ObjectType }
                             );
                     }
                 }
                 else
                 {
-                    fusionAttributes.ForEach(fa =>
+                    attributes.ForEach(fa =>
                     {
-                        int? fusionAttributeID = null;
+                        int? attributeID = null;
                         if (!string.IsNullOrEmpty(fa))
                         {
-                            fusionAttributeID = int.Parse(fa);
+                            attributeID = int.Parse(fa);
                         }
                         Company.Set<FusionRuleItem>().Add(
-                            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = fusionAttributeID }
+                            new FusionRuleItem { RuleID = ruleID, ObjectID = attributeID, ObjectType = form.ObjectType }
                             );
                     });
                 }
@@ -4457,7 +4461,7 @@ namespace d360.web.Controllers
                 if (fusionAttributeIDs.Count == 0)
                 {
                     Company.Set<FusionRuleItem>().Add(
-                        new FusionRuleItem { RuleID = ruleID, FusionAttributeID = null }
+                        new FusionRuleItem { RuleID = ruleID, ObjectID = null }
                         );
                 }
                 else
@@ -4470,7 +4474,7 @@ namespace d360.web.Controllers
                             fusionAttributeID = int.Parse(fa);
                         }
                         Company.Set<FusionRuleItem>().Add(
-                            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = fusionAttributeID }
+                            new FusionRuleItem { RuleID = ruleID, ObjectID = fusionAttributeID }
                             );
                     });
                 }

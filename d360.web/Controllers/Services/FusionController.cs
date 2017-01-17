@@ -1116,8 +1116,9 @@ where   A.Deleted = 0";
         public class RuleStepPromotionHistoryModel
         {
             public int ID { get; set; }
-            public int FusionAttributeID { get; set; }
-            public string FusionAttributeName { get; set; }
+            public int AttributeID { get; set; }
+            public string AttributeType { get; set; }
+            public string AttributeName { get; set; }
             public string Object { get; set; }
             public int ObjectID { get; set; }
             public string ObjectName { get; set; }

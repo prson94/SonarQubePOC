@@ -15,7 +15,10 @@ namespace d360.core.entities
         public int RuleID { get; set; }
 
         [DataMember]
-        public int? FusionAttributeID { get; set; }
+        public int? ObjectID { get; set; }
+        
+        [DataMember]
+        public string ObjectType { get; set; }
                 
         [ForeignKey("RuleID")]
         public virtual FusionRule FusionRule { get; set; }

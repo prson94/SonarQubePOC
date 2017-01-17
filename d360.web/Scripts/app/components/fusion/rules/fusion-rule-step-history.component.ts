@@ -13,7 +13,7 @@ import { Column } from 'primeng/primeng';
         <input *ngIf="!isLoading" [hidden]="!showSimpleFilter" #gbRuleStepsHistory type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
         <p-dataTable *ngIf="!isLoading" #dtRuleStepsHistory [globalFilter]="gbRuleStepsHistory" [value]="ruleStepPromotions" selectionMode="single" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
             <footer *ngIf="dtRuleStepsHistory.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleStepsHistory.totalRecords" [first]="dtRuleStepsHistory.first" [rows]="dtRuleStepsHistory.rows"></d3s-grid-paging-info></footer>
-            <p-column header="Fusion Attribute" field="FusionAttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
+            <p-column header="Attribute" field="AttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
             <p-column header="Object" field="ObjectName" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                 <template pTemplate type="body" let-row="rowData">
                     <d3s-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" tooltipType="preview">

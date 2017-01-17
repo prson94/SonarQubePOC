@@ -18,6 +18,12 @@ export class FusionAttributeType {
     UpdatedBy: number;
 }
 
+export class FusionAttributeItem {
+    ID: number;
+    Name: string;
+    Type: string;
+}
+
 export class FusionConfiguration {
     ID: number;
     Name: string;
@@ -173,8 +179,9 @@ export class FusionRuleStep {
 export class FusionRuleItem {
     ID: number;
     RuleID: number;
-    FusionAttributeID: number;
-    FusionAttributeName: string;
+    Name: string;
+    ObjectID: number;
+    ObjectType: string;
 }
 
 export class FusionRuleMapping {
@@ -246,7 +253,7 @@ export class FusionRuleEditorModel {
     FormMethod: string;
     FormName: string;
     Rule: FusionRule;
-    AttributeTypes: FusionAttributeType[] = [];
+    AttributeTypes: FusionAttributeItem[] = [];
 
 
 }
@@ -313,8 +320,9 @@ export class AttributeNode {
     
 export class RuleStepPromotionHistoryModel {
     ID: number;
-    FusionAttributeID: number;
-    FusionAttributeName: string;
+    AttributeID: number;
+    AttributeType: string;
+    AttributeName: string;
     Object: string;
     ObjectID: number;
     ObjectName: string;

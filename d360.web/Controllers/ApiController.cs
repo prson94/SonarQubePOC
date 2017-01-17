@@ -1083,6 +1083,15 @@ where   h.ID <> @t order by h.[Level] desc;
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
+        [Route("fusion/promotion/QueryAttributes"), HttpGet]
+        public HttpResponseMessage GetPromotionFusionQueryAttributes(int ruleID)
+        {
+            var results = Company.Query<dynamic>(@"select f.id, f.[name], f.friendlyName from fieldtype f
+                join fusion.[rule] r on r.id = @ruleID and f.[object] = r.[objecttype] and f.objectid = r.objectid", new { ruleID });
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+
+        }
+
         [Route("fusion/{typeID:int}/configurations/{id:int}/filters")]
         public HttpResponseMessage GetFilterByFusion(int typeID, int id)
         {
@@ -1116,7 +1125,11 @@ where   h.ID <> @t order by h.[Level] desc;
 	                    r.fusionid as FusionID,
 	                    r.objecttype as ObjectType,
 	                    r.objectid as ObjectID,
-	                    od.textpath as ObjectName
+						case when r.objecttype = 'FusionQueryAttributeType' then
+							'Query :: ' + od.textpath
+						else
+							od.textpath
+						end as ObjectName
                     from[fusion].[Rule]
                             r
                        left outer join[cache].[objectdetails]

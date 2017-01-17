@@ -9,9 +9,9 @@ import { TreeNode } from 'primeng/primeng';
     selector: 'd3s-fusion-rule-item-editor',
     template: `
     <header>Add Promotion Target Item</header>
-    <div class="row">
-        <div class="col s4 offset-s4">
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div class="row" *ngIf="!isQueryEditor">
+        <div class="col s4 offset-s4">
             <div *ngIf="!isLoading">
                 <div style="max-height:500px;overflow-y:scroll;position:relative;">
                     <input type="text" style="width:100%;margin-bottom:10px;" [(ngModel)]="addItemSearch" placeholder="Search..." [disabled]="selectAllItems"/>
@@ -30,6 +30,23 @@ import { TreeNode } from 'primeng/primeng';
             <input type="checkbox" [(ngModel)]="selectAllItems" /> Select All
         </div>
     </div>
+
+<div class="row" *ngIf="isQueryEditor">
+    <div class="col s4 offset-s4">
+        <p-dataTable #dtItems [value]="queryValues" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+            <footer *ngIf="dtItems.totalRecords"><d3s-grid-paging-info [totalRecords]="dtItems.totalRecords" [first]="dtItems.first" [rows]="dtItems.rows"></d3s-grid-paging-info></footer>
+            <p-column header="" field="selected" sortable="false" [style]="{width:'10%'}">
+                <template let-item="rowData" pTemplate type="body">
+                    <input type="checkbox" [(ngModel)]="item.selected" [disabled]="selectAllItems" />
+                </template>
+            </p-column>
+            <p-column header="Name" field="friendlyName" sortable="true" [style]="{width:'90%'}"></p-column>
+        </p-dataTable>
+        <div class="col s2">
+            <input type="checkbox" [(ngModel)]="selectAllItems" /> Select All
+        </div>
+    </div>
+</div>
     <div class="row">
         <div class="col s12">
             <button type="button" label="Save" (click)="save()" [disabled]="isLoading" pButton></button>
@@ -50,8 +67,11 @@ export class FusionRuleItemEditorComponent extends BaseComponent implements OnIn
 
     values: TreeNode[] = [];
     attributes: AttributeNode[] = [];
+    queryValues: any[] = [];
     selectAllItems = false;
     addItemSearch = "";
+
+    isQueryEditor = false;
 
     model: FusionRuleItemEditorModel;
 
@@ -67,48 +87,38 @@ export class FusionRuleItemEditorComponent extends BaseComponent implements OnIn
         if (this.fusionRule == null || this.fusionRule.ID == null)
             return;
         this.isLoading = true;
-        this.fusionService.getAddFusionRuleItem(this.fusionRule.ID)
-            .then(r => this.model = r)
-            .then(() => this.fusionService.getPromotionChildAttributeNodes(this.model.FusionID, this.model.TargetFusionAttributeTypeID, this.fusionRule.ID))
-            .then(r => {
-                this.attributes = r;
-                this.values = [];
+        this.isQueryEditor = (this.fusionRule.ObjectType == 'FusionQueryAttributeType');
 
-                this.attributes.forEach(i => {
-                    i.parentType = this.model.TargetFusionAttributeTypeID;
-                    i.selected = false;
-                    this.values.push({
-                        data: i,
-                        expanded: false,
-                        leaf: false
+        if (this.isQueryEditor) {
+            this.fusionService.getAddFusionRuleItem(this.fusionRule.ID)
+                .then(r => {
+                    this.model = r;
+                })
+                .then(() => this.fusionService.getPromotionQueryAttributes(this.fusionRule.ID))
+                .then(r => {
+                    this.queryValues = r;
+                })
+                .then(() => this.isLoading = false);
+        } else {
+            this.fusionService.getAddFusionRuleItem(this.fusionRule.ID)
+                .then(r => this.model = r)
+                .then(() => this.fusionService.getPromotionChildAttributeNodes(this.model.FusionID, this.model.TargetFusionAttributeTypeID, this.fusionRule.ID))
+                .then(r => {
+                    this.attributes = r;
+                    this.values = [];
+
+                    this.attributes.forEach(i => {
+                        i.parentType = this.model.TargetFusionAttributeTypeID;
+                        i.selected = false;
+                        this.values.push({
+                            data: i,
+                            expanded: false,
+                            leaf: false
+                        });
                     });
-                });
-            })
-            .then(() => this.isLoading = false);
-        //if (this.selectedFusionRule == null || this.selectedFusionRule.ID == null)
-        //    return;
-        //this.formMode = FormMode.AddItem;
-        //this.addItemLoading = true;
-        //this.fusionService.getAddFusionRuleItem(this.selectedFusionRule.ID)
-        //    .then(r => {
-        //        this.fusionRuleItemEditorModel = r;
-        //        //console.log(r);
-        //    }).then(() => this.fusionService.getPromotionChildAttributeNodes(this.fusionRuleItemEditorModel.FusionID, this.fusionRuleItemEditorModel.TargetFusionAttributeTypeID, this.selectedFusionRule.ID))
-        //    .then(r => {
-        //        this.fusionAttributeNodeItems = r;
-        //        this.attributeNodes = [];
-
-        //        this.fusionAttributeNodeItems.forEach(i => {
-        //            i.parentType = this.fusionRuleItemEditorModel.TargetFusionAttributeTypeID;
-        //            i.selected = false;
-        //            this.attributeNodes.push({
-        //                data: i,
-        //                expanded: false,
-        //                leaf: false
-        //            });
-        //        });
-        //        this.addItemLoading = false;
-        //    });
+                })
+                .then(() => this.isLoading = false);
+        }
     }
 
     save() {
@@ -119,7 +129,14 @@ export class FusionRuleItemEditorComponent extends BaseComponent implements OnIn
 
         form.RuleID = this.fusionRule.ID;
         form.AllSelected = this.selectAllItems;
-        form.FusionAttributeID = this.getSelectedAttributeNodeIDs().join(',');
+        form.ObjectType = this.isQueryEditor ? 'FusionQueryAttribute' : 'FusionAttribute';
+
+        if (this.isQueryEditor)
+            form.attributeIDs = this.getSelectedQueryAttributeIDs(this.queryValues).join(',');
+        else
+            form.attributeIDs = this.getSelectedAttributeNodeIDs().join(',');
+
+
 
         this.fusionService.postAddFusionRuleItem(form)
             .then(r => {
@@ -128,6 +145,7 @@ export class FusionRuleItemEditorComponent extends BaseComponent implements OnIn
                 this.selectAllItems = false;
                 this.addItemSearch = "";
                 this.values = [];
+                this.queryValues = [];
                 this.isLoading = false;
             })
             .catch(() => this.onError.emit());        
@@ -171,6 +189,10 @@ export class FusionRuleItemEditorComponent extends BaseComponent implements OnIn
             }
         });
         return values;
+    }
+
+    getSelectedQueryAttributeIDs(records: any[]) {
+        return records.filter(r => r.selected == true).map(r => r.id);
     }
 
     selectInOriginalTree(id: number, event) {

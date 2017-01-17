@@ -9,6 +9,7 @@ import {
     AttributeNode,
     FusionType,
     FusionAttributeType,
+    FusionAttributeItem,
     FusionQueryAttributeType,
     FusionConfiguration,
     FusionFilter,    
@@ -366,7 +367,13 @@ export class FusionService extends BaseService {
     getEditFusionRule(id: number): Promise<FusionRuleEditorModel> {
         return this.http.get(`form/GetEditFusionRule?id=${id}`)
             .toPromise()
-            .then(response => <FusionRuleEditorModel>response.json())
+            .then(response => response.json())
+            .then(r => {
+                let m = new FusionRuleEditorModel();
+                m = r.model;
+                m.AttributeTypes = r.attributeTypes;
+                return m;
+            })
             .catch(err => this.handleError(err));
     }
 
@@ -384,10 +391,10 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getAddFusionRule(typeID: number): Promise<FusionAttributeType[]> {
-        return this.http.get(`form/GetAddFusionRule?typeID=${typeID}`)
+    getAddFusionRule(typeID: number, fusionID: number): Promise<FusionAttributeItem[]> {
+        return this.http.get(`form/GetAddFusionRule?typeID=${typeID}&fusionID=${fusionID}`)
             .toPromise()
-            .then(response => <FusionAttributeType[]>response.json())
+            .then(response => <FusionAttributeItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 
@@ -640,5 +647,12 @@ export class FusionService extends BaseService {
             return this.postDynamic(this.http, 'fusionqueryattribute', query);
         }
         return this.putDynamic(this.http, 'fusionqueryattribute', query);
+    }
+
+    getPromotionQueryAttributes(ruleID: number): Promise<any[]> {
+        return this.http.get(`api/fusion/promotion/QueryAttributes?ruleID=${ruleID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
     }
 }
