@@ -4377,7 +4377,7 @@ namespace d360.web.Controllers
                 FormName = "Add Promotion Target Item",
                 FusionID = rule.FusionID,
                 TargetFusionAttributeTypeID = rule.ObjectID,
-                Item = new FusionRuleItem { RuleID = id }
+                Items = Company.FusionRuleItem.Where(i => i.RuleID == id).ToList()
             };
 
             return new JsonNetResult
@@ -4417,9 +4417,12 @@ namespace d360.web.Controllers
                         {
                             attributeID = int.Parse(fa);
                         }
-                        Company.Set<FusionRuleItem>().Add(
-                            new FusionRuleItem { RuleID = ruleID, ObjectID = attributeID, ObjectType = form.ObjectType }
-                            );
+
+                        var existing = Company.FusionRuleItem.Any(i => i.RuleID == ruleID && i.ObjectID == attributeID && i.ObjectType == form.ObjectType);
+                        if (!existing)
+                            Company.Set<FusionRuleItem>().Add(
+                                new FusionRuleItem { RuleID = ruleID, ObjectID = attributeID, ObjectType = form.ObjectType }
+                                );
                     });
                 }
 

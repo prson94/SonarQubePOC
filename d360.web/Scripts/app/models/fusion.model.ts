@@ -272,7 +272,7 @@ export class FusionRuleItemEditorModel {
     FormName: string;
     FusionID: number;
     TargetFusionAttributeTypeID: number;
-    Item: FusionRuleItem;
+    Items: FusionRuleItem[] = [];
 }
 
 export class FusionRuleMappingEditorModel {

@@ -733,7 +733,7 @@ namespace d360.web.Models
 
         public int TargetFusionAttributeTypeID { get; set; }
 
-        public FusionRuleItem Item { get; set; }
+        public List<FusionRuleItem> Items { get; set; }
     }
 
     public class FusionRuleStepEditorModel

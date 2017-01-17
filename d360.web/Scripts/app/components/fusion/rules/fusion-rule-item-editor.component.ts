@@ -96,7 +96,8 @@ export class FusionRuleItemEditorComponent extends BaseComponent implements OnIn
                 })
                 .then(() => this.fusionService.getPromotionQueryAttributes(this.fusionRule.ID))
                 .then(r => {
-                    this.queryValues = r;
+                    //filter out values which have already been selected
+                    this.queryValues = r.filter(i => this.model.Items.findIndex(j => j.ObjectType == 'FusionQueryAttribute' && j.ObjectID == i.id) < 0);
                 })
                 .then(() => this.isLoading = false);
         } else {
