@@ -34,9 +34,9 @@
                         <div [hidden]="showRulePromotionHistory">
                             <d3s-fusion-rule-step-list [fusionRule]="selectedFusionRule"
                                                        [(selection)]="selectedFusionRuleStep"
-                                                       (onEditClick)="formMode = FormMode.EditStep;"
+                                                       (onEditClick)="editStep()"
                                                        (onAddClick)="addStep()"
-                                                       (onDeleteClick)="editStep()"
+                                                       (onDeleteClick)="formMode = FormMode.DeleteStep"
                                                        (onHistoryClick)="showRulePromotionHistory = true;"></d3s-fusion-rule-step-list>
                         </div>
                         <d3s-fusion-rule-step-history *ngIf="showRulePromotionHistory"

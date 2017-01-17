@@ -2711,7 +2711,7 @@ namespace d360.web.Controllers
 
             return new JsonNetResult
             {
-                Data = list,
+                Data = list ?? new List<dynamic>(),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -2747,7 +2747,7 @@ namespace d360.web.Controllers
 
             return new JsonNetResult
             {
-                Data = list,
+                Data = list ?? new List<dynamic>(),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
