@@ -1128,13 +1128,13 @@ from cache.ObjectDetails d
 								end as TargetingSubject
 						from	IntersectType IT
                                 inner join Predicate P on   P.ID = IT.PredicateID 
-                                                            and P.Type = 6
+                                                            and P.ID = @predicateId
 														    and (
 															    (IT.Subject = @ot and IT.SubjectID = @otid) OR
 															    (IT.Object = @ot and IT.ObjectID = @otid)
 															    )
 						) O on O.Object = D.ObjectType and O.ObjectID = D.ObjectTypeID and D.ObjectTypeName is not null and D.Object + '|' + cast(D.ObjectID as varchar) <> @object + '|' + cast(@objectId as varchar)
-            inner join [Predicate] P on P.Type = 6
+            inner join [Predicate] P on P.ID = @predicateId
 			where (@query = '') or (@query != '' and d.textpath like '%'+@query+'%')
 order by	D.ObjectTypeName,
 			D.TextPath

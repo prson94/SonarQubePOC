@@ -14465,7 +14465,7 @@ from    [IntersectType] RT
         }
 
         [HttpGet, Route("SynonymsOptions"), NonNullableParameters]
-        public JsonResult SynonymsOptions(string type, int typeId, string obj, int objId, string query = "")
+        public JsonResult SynonymsOptions(int predicateId, string type, int typeId, string obj, int objId, string query = "")
         {
             query = query.Replace("_", "[_]").Replace("%", "[%]");
 
@@ -14496,7 +14496,7 @@ from    [IntersectType] RT
 
 
             var list = new List<EditableField>();
-            var items = Company.Query<dynamic>(string.Format(QueryConstants.SynonymOptions, joinStatement), new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objectId = objId, typeId, query }).ToList();
+            var items = Company.Query<dynamic>(string.Format(QueryConstants.SynonymOptions, joinStatement), new { predicateId,  type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objectId = objId, typeId, query }).ToList();
             var typeIsSubject = true;
             if (items.Count > 0)
             {

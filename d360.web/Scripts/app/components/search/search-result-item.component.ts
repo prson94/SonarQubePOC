@@ -10,7 +10,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <div class="search-res-container">
                     <h4 class="search-result-name"><a (click)="navigateLink()" class="search-result-link" [innerHtml]="result?.Name"></a></h4>
                     <p class="search-result-desc" *ngIf="result?.Description" [innerHtml]="result.Description"></p>
-                    <h5 class="search-result-attributes">Category: <em class="result-category" [innerHtml]="result?.Type"></em>&nbsp;&nbsp;Type: <em class="result-type">{{result?.Group}}</em></h5>
+                    <h5 class="search-result-attributes"><span *ngIf="result?.Type">Category: <em class="result-category" [innerHtml]="result?.Type"></em>&nbsp;&nbsp;</span>Type: <em class="result-type">{{displayType}}</em></h5>
                 </div>        
                 `,    
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +18,19 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 export class SearchResultItemComponent extends BaseComponent  {
     @Input() result: SearchFullResult;
+
+    get displayType() {
+        if (this.result) {
+            switch (this.result.Group) {
+                case 'Artifact':
+                    return 'Glossary';
+                case 'Synonym':
+                    return 'Grammatic Type';
+                default:
+                    return this.result.Group
+            }
+        }            
+    }
 
     constructor(private router: Router) {
         super();

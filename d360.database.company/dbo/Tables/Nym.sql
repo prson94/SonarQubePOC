@@ -11,3 +11,48 @@
 	CONSTRAINT [PK_Nym] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Nym_Predicate] FOREIGN KEY ([PredicateID]) REFERENCES [dbo].[Predicate] ([ID]) ON DELETE CASCADE
 );
+
+go
+
+CREATE TRIGGER [dbo].[Nym_AfterDelete]
+   ON  [dbo].[Nym] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Synonym'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	'ObjectIndex',
+				'D', 
+				@ot, 
+				ID
+		from	deleted;
+
+GO
+
+ALTER TABLE [dbo].[Nym] ENABLE TRIGGER [Nym_AfterDelete]
+GO
+
+
+CREATE TRIGGER [dbo].[Nym_AfterUpsert]
+   ON  [dbo].[Nym] 
+   AFTER INSERT, UPDATE
+AS 
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Synonym'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	'ObjectIndex',
+				case 
+					when D.ID is not null then 'U'
+					else 'A'
+				end, 
+				@ot, 
+				I.ID
+		from	inserted I
+				left join deleted D on D.ID = I.ID;
+
+GO
+
+ALTER TABLE [dbo].[Nym] ENABLE TRIGGER [Nym_AfterUpsert]
+GO

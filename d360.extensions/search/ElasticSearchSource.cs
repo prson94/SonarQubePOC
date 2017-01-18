@@ -531,6 +531,8 @@ namespace d360.extensions.search
                     return "Model";
                 case "DOMAIN":
                     return "Reference";
+                case "SYNONYM":
+                    return "Grammatic Type";
                 default:
                     return key;
             }
@@ -688,7 +690,9 @@ namespace d360.extensions.search
                 return $"{name} ({taxonomy})";
             }
 
-            return $"{name} (For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
+            var nymType = GetPropertyValue<string>(h._source, "NymType");
+
+            return $"{name} ({nymType ?? ""} For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
         }
         
         private string GetHighlightedNameValueIfExists(SearchResultsHitModel h)
@@ -708,7 +712,9 @@ namespace d360.extensions.search
 
             if (!string.IsNullOrEmpty(synonymFor))
             {
-                synonymFor = $" (For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
+                var nymType = GetPropertyValue<string>(h._source, "NymType");
+
+                synonymFor = $" ({nymType ?? ""} For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
             }
 
             var highlightVal = GetPropertyValue<string>(h.highlight, "Name");

@@ -145,7 +145,8 @@ namespace d360.jobs.ReIndex
 	                I.Object as 'SynonymForObject',
 	                I.ObjectID as 'SynonymForObjectID',		
 	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
-	                ArtType.Name as 'SynonymForObjectType'	
+	                ArtType.Name as 'SynonymForObjectType',
+                    P.Name as 'PredicateName'
                 from [intersect] I
 	                inner join IntersectType T on T.ID = I.IntersectTypeID 
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
@@ -161,7 +162,8 @@ namespace d360.jobs.ReIndex
 	                I.Subject as 'SynonymForObject',
 	                I.SubjectID as 'SynonymForObjectID',		
 	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
-	                ArtType.Name as 'SynonymForObjectType'	
+	                ArtType.Name as 'SynonymForObjectType',
+                    P.Name as 'PredicateName'	
                 from [intersect] I
 	                inner join IntersectType T on T.ID = I.IntersectTypeID 
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
@@ -179,6 +181,7 @@ namespace d360.jobs.ReIndex
                 item.Fields.Add("SynonymFor", a.SynonymFor);
                 item.Fields.Add("SynonymForObject", a.SynonymForObject);
                 item.Fields.Add("SynonymForObjectType", a.SynonymForObjectType);
+                item.Fields.Add("NymType", a.PredicateName);
 
                 yield return item;
             }
@@ -194,20 +197,24 @@ namespace d360.jobs.ReIndex
 	                ,s.[ObjectID] as 'SynonymForObjectID'
 	                ,dbo.GenerateObjectUrl(s.[Object], c.ObjectTypeID, s.[ObjectID]) as 'Url'
 	                ,c.ObjectTypeName as 'SynonymForObjectType'	
+                    ,p.Name as 'PredicateName'    
+                    ,s.ID as 'ID'                
                 from
-	                [dbo].[synonym] s
+	                [dbo].[nym] s
 	                inner join [cache].[objectdetails] c on (s.[Object] = c.[Object] and s.[ObjectID] = c.[ObjectID])
+                    inner join [dbo].[predicate] p on (s.predicateid = p.id)
             ";
 
             foreach (var a in context.Query(sql))
             {
-                var item = new AddToIndexModel { Group = "Synonym", CompanyID = companyID, Type = "Synonym", ItemUniqueID = $"custom|{a.Synonym}|{a.SynonymForObjectType}|{a.SynonymForObjectID}", RelativeUrl = a.Url };
+                var item = new AddToIndexModel { Group = "Synonym", CompanyID = companyID, Type = "Synonym", ItemUniqueID = $"custom|{a.PredicateName}|{a.ID}", RelativeUrl = a.Url };
                 item.Fields = new Dictionary<string, string>();
                 item.Fields.Add("Name", a.Synonym);
                 item.Fields.Add("SynonymFor", a.SynonymFor);
                 item.Fields.Add("SynonymForObject", a.SynonymForObject);
                 item.Fields.Add("SynonymForObjectType", a.SynonymForObjectType);
-
+                item.Fields.Add("NymType", a.PredicateName);
+                
                 yield return item;
             }
         }
