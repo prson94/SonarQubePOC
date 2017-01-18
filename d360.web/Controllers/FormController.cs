@@ -648,7 +648,7 @@ namespace d360.web.Controllers
                 case "ISSUE":
                     return AddIssue(form);
                 case "CUSTOMSYNONYM":
-                    return AddCustomSynonym(form);
+                    return AddCustomSynonym(form);                
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -14417,9 +14417,9 @@ from    [IntersectType] RT
         #region Json
 
         [HttpGet, Route("SynonymTypes"), NonNullableParameters]
-        public JsonNetResult SynonymTypes(string type, int id)
+        public JsonNetResult SynonymTypes(string type, int id, int predicateId)
         {
-            var items = Company.Query<dynamic>(QueryConstants.SynonymTypes, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
+            var items = Company.Query<dynamic>(QueryConstants.SynonymTypes, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id, predicateId }).ToList();
 
             return new JsonNetResult
             {
@@ -14521,6 +14521,51 @@ from    [IntersectType] RT
 
         #region Form Get/Post
 
+
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddNymAllocation")]
+        public JsonResult AddNymAllocation(NymAllocationModel model)
+        {
+            try
+            {
+                if (!Company.HasPermission(model.Object, model.ObjectID, Claim.Create, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                // delete any existing allocations
+                var rels = Company.Filter<NymRelation>(x => x.Object == model.Object.ToString() && x.ObjectID == model.ObjectID);
+
+                foreach (var rel in rels)
+                {
+                    Company.Delete(rel);
+                }
+
+                foreach (var predicateId in model.PredicateIDs)
+                {
+                    NymRelation rel = new NymRelation
+                    {
+                        PredicateID = predicateId,
+                        Object = model.Object.ToString(),
+                        ObjectID = model.ObjectID,
+                        UpdatedBy = Company.CurrentResourceID,
+                        UpdatedOn = DateTime.UtcNow
+                    };
+
+                    Company.Add<NymRelation>(rel);
+                }
+
+                return jsonSuccess("Grammar allocation successfully modified.", "", "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+        
+
         [ValidateHttpAntiForgeryToken, HttpPost, Route("AddCustomSynonym")]
         public JsonResult AddCustomSynonym(FormCollection form)
         {
@@ -14533,7 +14578,7 @@ from    [IntersectType] RT
                 var objectType = parseTextField(form, "Object");
                 var objectId = parseIntField(form, "ObjectID");
 
-                Synonym model = new Synonym
+                Nym model = new Nym
                 {
                     Name = name,
                     PredicateID = predicateId,
@@ -14547,7 +14592,7 @@ from    [IntersectType] RT
                 if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), model.Object), model.ObjectID, Claim.Create, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Add<Synonym>(model);
+                Company.Add<Nym>(model);
 
                 return jsonSuccess("Synonym " + model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -14589,7 +14634,7 @@ from    [IntersectType] RT
                         (i.Subject == subjectDetail.ObjectType && i.SubjectID == subjectDetail.ObjectTypeID && i.Object == objectDetail.ObjectType && i.ObjectID == objectDetail.ObjectTypeID) ||
                         (i.Subject == objectDetail.ObjectType && i.SubjectID == objectDetail.ObjectTypeID && i.Object == subjectDetail.ObjectType && i.ObjectID == subjectDetail.ObjectTypeID)
                         )
-                        && i.Predicate.Type == PredicateType.Synonym
+                        && i.PredicateID == model.PredicateID
                     ).SingleOrDefault();
                     var intersect = Company.AddIntersect(intersectType.ID, subject, subjectID, @object, objectID);
 
@@ -14663,7 +14708,7 @@ from    [IntersectType] RT
                 if (!form.HasKeys()) throw new NoFormDataException("synonym");
                 var id = parseIntField(form, "ID");
 
-                var detail = Company.GetById<Synonym>(id);
+                var detail = Company.GetById<Nym>(id);
 
                 if (detail == null)
                     throw new NullReferenceException("Custom Synonym not found");

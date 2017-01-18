@@ -87,6 +87,13 @@ export class SynonymEditModel {
     ID: number;
     Synonym: string;
     TypeIsSubject: boolean;
+    PredicateID: number;
+}
+
+export class NymType {
+    Enabled: boolean;
+    ID: number;
+    Name: string;    
 }
 
 export class AttributeHeirarchyItem {

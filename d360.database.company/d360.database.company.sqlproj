@@ -513,6 +513,7 @@
     <Build Include="workflow\Tables\Version.sql" />
     <Build Include="workflow\Tables\VersionStep.sql" />
     <Build Include="workflow\Tables\VersionStepTransition.sql" />
+    <Build Include="dbo\Tables\NymRelation.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -540,7 +541,7 @@
     <None Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg.sql" />
     <None Include="dbo\Tables\IssueType.sql" />
     <None Include="dbo\Tables\Issue.sql" />
-    <None Include="dbo\Tables\Synonym.sql" />
+    <None Include="dbo\Tables\Nym.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

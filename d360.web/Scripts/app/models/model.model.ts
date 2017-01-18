@@ -1,4 +1,6 @@
-﻿export class Model {
+﻿import { NymType } from './object-detail.model';
+
+export class Model {
     Name: string;
     Description: string;
     MaximumDepth: number;
@@ -8,6 +10,7 @@
     AllowAttributes: boolean;
     AllowSynonyms: boolean;
     ID: number;
+    NymTypes: NymType[];
 }
 
 export class ModelHierarchy {

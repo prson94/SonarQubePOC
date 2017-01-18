@@ -36,8 +36,7 @@ declare var CompanySettings: any;
                             <span *ngIf="!item.Object">{{item.Name}}</span>
                         </template>
                     </p-column>
-                    <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>
-                    <p-column field="Predicate" header="Predicate" sortable="true"></p-column>
+                    <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>                    
                     <p-column header="Parent" field="ParentName" sortable="true">
                         <template pTemplate type="body" let-item="rowData">                        
                             <d3s-tooltip [objectType]="item.Object" [objectId]="item.ParentID" [tooltipType]="'Preview'">
@@ -62,10 +61,10 @@ declare var CompanySettings: any;
                 </p-dataTable>
             </div>
             <div *ngSwitchCase="FormMode.Adding">
-                <header>Add Synonym</header>
+                <header>Add {{predicateName}}</header>
                 <div class="row">
                     <div class="col s12">
-                        <div class="FieldName" style="display:block;">Synonym Type</div>
+                        <div class="FieldName" style="display:block;">Type</div>
                         <select [(ngModel)]="selectedType" style="width:35em;" (ngModelChanged)="clearSearch()">
                             <option></option>
                             <option *ngFor="let i of synonymTypes" [value]="i.Value">
@@ -77,31 +76,20 @@ declare var CompanySettings: any;
                 </div>
                 <div class="row" style="padding-bottom: 15px" *ngIf="selectedType != '_custom'">
                     <div class="col s12">
-                        <div class="FieldName" style="display:block;">Synonym</div>
+                        <div class="FieldName" style="display:block;">Value</div>
                         <p-autoComplete [suggestions]="synonymItems" (completeMethod)="search($event)" field="Name" [(ngModel)]="selectedSynonym" placeholder="Search..." size="64" [disabled]="selectedType == ''"></p-autoComplete>
                         <span *ngIf="isLoadingItems"><i class="fa fa-spinner fa-spin"></i></span>
                     </div>
                 </div>
                 <div class="row" style="padding-bottom: 15px" *ngIf="selectedType == '_custom'">
                     <div class="col s12">
-                        <div class="FieldName">Synonym</div>         
+                        <div class="FieldName">Value</div>         
                         <div><input maxlength="250" pInputText name="name" type="text" style="width:35em;" [(ngModel)]="customSynonymName" required /></div>
-                    </div>
-                    <div class="col s12">
-                        <div class="FieldName">Synonym Type</div>         
-                        <div>
-                            <select [(ngModel)]="predicateType" style="width:35em;">
-                            <option></option>
-                            <option *ngFor="let i of predicateTypes" [value]="i.ID">
-                                {{i.Name}}
-                            </option>                            
-                            </select>
-                        </div>
-                    </div>
+                    </div>                    
                 </div>
                 <div class="row">
                     <div class="col s12">
-                        <button pButton type="button" label="Save" (click)="save();" [disabled]="(selectedType != '_custom' && selectedSynonym?.ID == null) || (selectedType == '_custom' && (!predicateType || !customSynonymName))"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
+                        <button pButton type="button" label="Save" (click)="save();" [disabled]="(selectedType != '_custom' && selectedSynonym?.ID == null) || (selectedType == '_custom' && (!customSynonymName))"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
                     </div>
                 </div>
             </div>             
@@ -109,7 +97,7 @@ declare var CompanySettings: any;
                     [callback]="theDeleteCallback"
                     [itemId]="selectedItem"
                     [method]="'callback'"
-                    [prompt]="'Are you sure you want to remove the synonym ' + selectedItem.Name + '?'"                                         
+                    [prompt]="'Are you sure you want to remove the ' + predicateName + ' ' + selectedItem.Name + '?'"                                         
                     (onCancel)="formMode = FormMode.Default;"
             ></d3s-delete-form>              
         </div>
@@ -122,7 +110,9 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() readonly: boolean = true;
+    @Input() predicateId: number;
     @Output() itemCount: number = 0; 
+    @Input() predicateName: string;
     
     @Input() hasAdd: boolean = true;    
     @Input() hasDelete: boolean = true;
@@ -142,7 +132,6 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
 
     private synonymTypes = [];
-    private predicateTypes: Predicate[] = [];
     private predicateType: number = 0;
     private selectedType: string = '';
     private synonymItems = [];
@@ -175,7 +164,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
             return;
 
         this.isLoading = true;
-        this.objectDetailService.getObjectSynonyms(this.objectID, this.objectType)
+        this.objectDetailService.getObjectSynonyms(this.objectID, this.objectType, this.predicateId)
             .then(d => {
                 this.items = d;                
                 this.itemCount = this.items.length;
@@ -200,17 +189,10 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
     add() {
         this.selectedSynonym = null;
-        //if we havent loaded predicate types yet do so
-        if (this.predicateTypes.length == 0) {
-            this.predicatesService.getPredicates().then(
-                res => {
-                    this.predicateTypes = res.filter(x => x.Type == 'Synonym'); //synonym types only
-                });
-        }
-
+        
         //if we havent loaded synonym types already do so now
         if (this.synonymTypes.length == 0) {
-            this.objectDetailService.getSynonymTypes(this.objectID, this.objectType)
+            this.objectDetailService.getSynonymTypes(this.objectID, this.objectType, this.predicateId)
                 .then(d => {
                     this.synonymTypes = d;
                     this.formMode = FormMode.Adding;
@@ -234,6 +216,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
             model.ID = this.objectID;
             model.Type = this.objectType;
             model.TypeIsSubject = this.selectedSynonym.TargetingSubject;
+            model.PredicateID = this.predicateId;
 
             this.objectDetailService.postSynonym(model)
                 .then(d => {
@@ -242,8 +225,8 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
                     this.load();
                 });
         }
-        else if (this.customSynonymName) {            
-            this.objectDetailService.postCustomSynonym(this.customSynonymName, this.predicateType, this.objectType, this.objectID)
+        else if (this.customSynonymName) {
+            this.objectDetailService.postCustomSynonym(this.customSynonymName, this.predicateId, this.objectType, this.objectID)
                 .then(d => {
                     this.showMessageForResult(this.messagesService, d);
                     this.customSynonymName = '';

@@ -64,7 +64,7 @@ import { StringConstants } from '../../static/string-constants';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <d3s-object-definition-tile [objectPermissions]="permissions" [objectType]="'Taxonomy'" [objectID]="selected?.ID" [hasAttributes]="model.AllowAttributes" [hasSynonyms]="model.AllowSynonyms" (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
+                                    <d3s-object-definition-tile [nymTypes]="model?.NymTypes" [objectPermissions]="permissions" [objectType]="'Taxonomy'" [objectID]="selected?.ID" [hasAttributes]="model.AllowAttributes" (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
                                 </div>
                             </div>
                         </div>                        

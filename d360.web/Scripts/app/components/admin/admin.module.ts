@@ -21,22 +21,27 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
-
+import { AdminAllocationComponent } from './admin-allocation.component';
 import { AdminComponent } from './admin.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
+import { AdminNymAllocationsComponent } from './admin-nym-allocations.component';
 import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
 
+
 @NgModule({
     declarations: [        
+        AdminAllocationComponent,
         AdminComponent,                
         AdminLevelListComponent,
-        AdminLevelEditorComponent,                
+        AdminLevelEditorComponent,   
+        AdminNymAllocationsComponent,             
         ClaimsMatrixPart,
         ClaimsTile,                          
     ],
     exports: [
+        AdminAllocationComponent,
         ClaimsTile,
         AdminLevelListComponent,
     ],

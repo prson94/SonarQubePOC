@@ -67,7 +67,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                 <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" [hasSynonyms]="false" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
+                            <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
                 </div>

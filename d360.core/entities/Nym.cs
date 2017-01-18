@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Synonym, "Synonym")]
-    public partial class Synonym : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
+    public partial class Nym : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
     {
         [DataMember, StringLength(25), Column(TypeName = "varchar")]
         public string Object { get; set; }

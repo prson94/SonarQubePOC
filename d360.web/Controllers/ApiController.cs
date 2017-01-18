@@ -843,7 +843,11 @@ where   h.ID <> @t order by h.[Level] desc;
                 var row = Company.Query<dynamic>(QueryConstants.ArtifactSettingsItem, new { id = a.ArtifactTypeID }).Single();
 
                 model.Add("AllowAttributes", (bool)row.AllowAttributes);
-                model.Add("AllowSynonyms", true);   //allow synonyms on all artifacts as custom synonyms are allowed everywhere.
+                                
+                //get synonyms based on relations and allocations
+                var synonymTypes = Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = a.ArtifactTypeID, ot = "ArtifactType" });
+                
+                model.Add("NymTypes", synonymTypes);   //allow synonyms on all artifacts as custom synonyms are allowed everywhere.
                 model.Add("AllowPredicateHierarchies", (bool)row.AllowPredicateHierarchies);
             }
             catch (Exception ex)
@@ -2963,7 +2967,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "PolicyTypeClass", row.PolicyTypeClass },
-                    { "PolicyTypeClassID", row.PolicyTypeClassID }
+                    { "PolicyTypeClassID", row.PolicyTypeClassID },
+                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = "PolicyType" }) },
                 }
             );
         }
@@ -4121,7 +4126,7 @@ from    (
                                  string.Format("<span data-context='Preview' data-type='RuleDimension' data-id='{1}'>{0} <i class='fa fa-question-circle' aria-hidden='true'></i></span>", rule.Dimension.Name, rule.RuleDimensionID) :
                                  "";*/
 
-            model.rows.Add(new DetailReadOnlyRowModel
+                model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
@@ -5588,21 +5593,51 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
             return Company.GetStatisticDetailsByType(type, id).AsQueryable();
         }
 
-        [Route("{type}/{id:int}/synonyms")]
-        public HttpResponseMessage GetSynonymsByObject(SystemObjects type, int id)
+        [Route("{type}/{id:int}/{predicateId:int}/synonyms")]
+        public HttpResponseMessage GetSynonymsByObject(SystemObjects type, int id, int predicateId)
         {
             var models = Company.Query<dynamic>(
                 QueryConstants.SynonymsByObjectList,
                 new
                 {
                     type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
-                    id
+                    id,
+                    predicateId
                 }
             );
 
             return Request.CreateResponse(
                 HttpStatusCode.OK,
                 models
+            );
+        }
+
+
+        [Route("{type}/{id:int}/nymAllocations")]
+        public HttpResponseMessage GetNymAllocations(SystemObjects type, int id)
+        {
+            var model = new List<Dictionary<string, object>>();
+            //get universe of available nyms / predicates of type 8.
+
+            var availablePredicates = Company.Filter<Predicate>(x => x.Type == PredicateType.Grammar).OrderBy(x=>x.Name);
+
+            // get which ones are allocted for this object.
+
+            var selectedPredicates = Company.Filter<NymRelation>(x => x.Object == type.ToString() && x.ObjectID == id);
+
+            foreach (var predicate in availablePredicates)
+            {
+                model.Add(new Dictionary<string, object>
+                {
+                    { "Name",predicate.Name },
+                    { "ID",predicate.ID },
+                    { "Enabled",selectedPredicates.Where(x =>x.PredicateID == predicate.ID).Any() }
+                });
+            }
+
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                model
             );
         }
 
@@ -5844,7 +5879,7 @@ SELECT (
 
         [Route("catalogs/{typeID:int}")]
         public HttpResponseMessage GetTaxonomyType(int typeID)
-        {
+        {            
             var row = Company.Query<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID }).Single();
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object> {
@@ -5853,7 +5888,7 @@ SELECT (
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
-                    { "AllowSynonyms", (bool)true }, //always allow synonyms so custom ones may be added.
+                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = "TaxonomyType" }) },
                     { "ClassificationName", row.ClassificationName },
                     { "HasDashboards", row.HasDashboards }
                 }

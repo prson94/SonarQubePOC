@@ -64,16 +64,16 @@ namespace d360.core.enums
         ]
         ParentChildHierarchy = 5,
         [
-            Name("Synonym"), 
+            Name("Grammatic Association"), 
             Graph("Glossary"), 
-            Description("Allows you to establish synonyms between two objects that are synonyms of each other."), 
-            ReadOnly(true),
+            Description("Allows you to establish grammatic association between two objects."), 
+            ReadOnly(false),
             AllowIntersectTypeAssignment(true),
-            AllowMultiplePredicates(false), 
+            AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
         ]
-        Synonym = 6,
+        Grammar = 6,
         [
             Name("Simple"), 
             Graph("Glossary"), 

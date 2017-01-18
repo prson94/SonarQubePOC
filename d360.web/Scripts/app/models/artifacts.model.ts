@@ -1,9 +1,11 @@
 ﻿import { BreadcrumbItem } from './breadcrumb.model';
+import { NymType } from './object-detail.model';
 
 export class Artifacts {
     results: any[];
     total: number;
 }
+
 
 export class Artifact {
     AllowAttributes: boolean;
@@ -20,4 +22,5 @@ export class Artifact {
     Status: string;
     TypeName: string;
     Breadcrumbs: BreadcrumbItem[];
+    NymTypes: NymType[];
 }

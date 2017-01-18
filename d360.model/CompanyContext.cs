@@ -280,7 +280,9 @@ namespace d360.model
 
         public DbSet<SiteNav> SiteNav { get; set; }
 
-        public DbSet<Synonym> Synonym { get; set; }
+        public DbSet<Nym> Nyms { get; set; }
+
+        public DbSet<NymRelation> NymRelations { get; set; }
 
         public DbSet<Statistic> Statistics { get; set; }
 

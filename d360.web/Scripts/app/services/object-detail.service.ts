@@ -20,6 +20,7 @@ import {
 } from '../models/object-detail.model';
 import { HierarchyModel, PredicateType } from '../models/relations.model';
 import { LookupGrid } from '../models/grid-definition.model';
+import { NymType } from '../models/object-detail.model';
 
 @Injectable()
 export class ObjectDetailService extends BaseService {
@@ -40,15 +41,15 @@ export class ObjectDetailService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getObjectSynonyms(objectID: number, objectType: string): Promise<Synonym[]> {
-        return this.http.get(`api/${objectType}/${objectID}/synonyms`)
+    getObjectSynonyms(objectID: number, objectType: string, predicateId: number): Promise<Synonym[]> {
+        return this.http.get(`api/${objectType}/${objectID}/${predicateId}/synonyms`)
             .toPromise()
             .then(response => <Synonym[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getSynonymTypes(objectID: number, objectType: string): Promise<any> {
-        return this.http.get(`form/SynonymTypes?id=${objectID}&type=${objectType}`)
+    getSynonymTypes(objectID: number, objectType: string, predicateId: number): Promise<any> {
+        return this.http.get(`form/SynonymTypes?id=${objectID}&type=${objectType}&predicateId=${predicateId}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
@@ -139,4 +140,18 @@ export class ObjectDetailService extends BaseService {
         return this.postDynamic(this.http, 'customsynonym', synonym);
     }
 
+    getNymAllocations(objectID: number, object: string): Promise<NymType[]> {
+        return this.http.get(`api/${object}/${objectID}/NymAllocations`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    saveNymAllocations(objectID: number, object: string, nyms: NymType[]): Promise<JsonResult> {
+        let model = { Object: object, ObjectID: objectID, PredicateIDs: nyms.filter(x => x.Enabled).map(function (a) { return a.ID; }) };        
+        return this.http.post('form/AddNymAllocation', model)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 }

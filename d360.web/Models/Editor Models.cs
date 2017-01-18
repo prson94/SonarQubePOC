@@ -208,6 +208,18 @@ namespace d360.web.Models
         public string Synonym { get; set; }
 
         public bool TypeIsSubject { get; set; }
+
+        public int PredicateID { get; set; }
+    }
+
+
+    public class NymAllocationModel
+    {
+        public SystemObjects Object { get; set; }
+
+        public int ObjectID { get; set; }
+
+        public int[] PredicateIDs { get; set; }
     }
 
     public class ArtifactTypeEditorModel : BaseEditorModel

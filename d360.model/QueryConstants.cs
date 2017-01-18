@@ -95,6 +95,21 @@ with h as
 	)
 select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]";
 
+        public static string ObjectNymTypes = @"
+                                select 
+	                                P.ID as [ID],
+	                                P.Name as [Name]
+                                from [Predicate] P
+                                where exists
+	                                (SELECT *  
+                                    FROM IntersectType IT
+                                    WHERE P.[type] = 6 and P.ID = IT.PredicateID and ((IT.Subject = @ot and IT.SubjectID = @id) OR (IT.Object = @ot and IT.ObjectID = @id)))
+                                union
+									select 
+                                        P.ID as [ID], P.Name as [Name] 
+                                from  [dbo].[NymRelation] R inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = @ot and R.ObjectID = @id
+    ";
+
         public static string ArtifactSettingsItem = @"
 select	*
 from	(
@@ -104,19 +119,7 @@ from	(
 				end as AllowAttributes
 		from	AttributeTypeRelation
 		where	ObjectType = 'ArtifactType' and ObjectID = @id
-		) A
-		inner join	(
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit) 
-							end as AllowSynonyms
-					from	(
-								select	IT.ID
-								from	IntersectType IT
-										inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 6 -- Synonym
-								where	(IT.Subject = 'ArtifactType' and IT.SubjectID = @id) OR (IT.Object = 'ArtifactType' and IT.ObjectID = @id)
-							) O
-					) S on 1=1
+		) A		
 		inner join	(
 					select	case 
 								when count(1) > 0 then cast(1 as bit)
@@ -1078,8 +1081,8 @@ order by D.Name, S.Name";
                 and ObjectID = @id
 
 
-        select d.Name, d.Object + '|' + cast(d.ObjectID as varchar(50)) as [Value], d.Object, d.ObjectID from intersecttype IT
-        inner join predicate p on p.id = IT.predicateid and p.type = 6
+        select 
+            d.Name, d.Object + '|' + cast(d.ObjectID as varchar(50)) as [Value], d.Object, d.ObjectID from intersecttype IT        
         inner join cache.ObjectDetails d on
 	        case when IT.Subject = @ot then
 		        IT.Object
@@ -1093,7 +1096,7 @@ order by D.Name, S.Name";
 		        IT.SubjectID
 	        end = d.ObjectID
         where 
-	        (IT.Subject = @ot and IT.SubjectID = @otid) OR (IT.Object = @ot and IT.ObjectID = @otid)";
+	        ((IT.Subject = @ot and IT.SubjectID = @otid) OR (IT.Object = @ot and IT.ObjectID = @otid)) and IT.predicateid = @predicateId";
 
         public static string SynonymOptions = @"
 declare	@ot varchar(50),
@@ -1149,12 +1152,10 @@ select	I.ID as IntersectID,
 		D.Name,
         D.ObjectTypeName,
 		D.Description,
-		D.Url
-        ,P.Name as 'Predicate'
+		D.Url        
         ,null as 'CustomID'
 from	[Intersect] I
-		inner join IntersectType T on T.ID = I.IntersectTypeID 
-		inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+		inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId		
         inner join cache.ObjectDetails D on D.Object = case 
 															when I.Subject = @type and I.SubjectID = @id then I.Object 
 															else I.Subject
@@ -1180,13 +1181,11 @@ select
 	,S.Name
 	,'Custom' as ObjectTypeName
 	,null as Description
-	,null as Url
-	,P.Name as 'Predicate'
+	,null as Url	
     ,S.ID as 'CustomID'
 from 
-	[dbo].[synonym] s
-	inner join [dbo].[predicate] p on s.PredicateID = P.ID
-where s.[object] = @type and s.[objectID] = @id
+	[dbo].[nym] s	
+where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId
 ";
 
         public static string TaxonomySettingsItem = @"

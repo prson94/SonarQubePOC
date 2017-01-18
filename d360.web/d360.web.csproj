@@ -921,6 +921,8 @@
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\authentication-connection-backend.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.ts" />

@@ -70,7 +70,7 @@ import { StringConstants } from '../../static/string-constants';
                     <div class="row">
                         <div class="col s12">
                             <div class="tile tile-detail">                               
-                                <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [objectType]="'Artifact'" [hasAttributes]="artifact?.AllowAttributes" [hasSynonyms]="artifact?.AllowSynonyms" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
+                                <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [objectType]="'Artifact'" [hasAttributes]="artifact?.AllowAttributes" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
                             </div>
                         </div>
                     </div>                    

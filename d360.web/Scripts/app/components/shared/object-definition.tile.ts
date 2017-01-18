@@ -5,6 +5,7 @@ import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../..
 import { ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
 import { Permission } from '../../models/permission.model'
+import { NymType } from '../../models/object-detail.model';
 
 @Component({
     selector: 'd3s-object-definition-tile',
@@ -15,15 +16,12 @@ import { Permission } from '../../models/permission.model'
                         <simple-accordion header="Definition" [active]="true">
                             <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
                         </simple-accordion>
-                        <simple-accordion header="Synonyms ({{synonyms.itemCount}})" [active]="false" *ngIf="hasSynonyms">
-                            <d3s-synonyms-tile #synonyms [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasRelationshipCreatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-synonyms-tile>
+                        <simple-accordion header="{{nym.Name}} ({{synonyms.itemCount}})" [active]="false" *ngFor="let nym of nymTypes">
+                            <d3s-synonyms-tile #synonyms [predicateId]="nym.ID" [predicateName]="nym.Name" [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasRelationshipCreatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-synonyms-tile>
                         </simple-accordion>
                         <simple-accordion header="Attributes ({{attributes.itemCount}})" [active]="false" *ngIf="hasAttributes">
                             <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasAttributeCreatePermissions()" [hasEdit]="hasAttributeUpdatePermissions()" [hasDelete]="hasAttributeDeletePermissions"></d3s-attributes-tile>
-                        </simple-accordion>
-                     <!--   <simple-accordion header="Structure" [active]="false">
-                            <d3s-structure-tile [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-structure-tile>
-                        </simple-accordion>-->
+                        </simple-accordion>                     
             </div>
             <d3s-dynamic-editor *ngIf="showEditor"
                                             [objectID]="objectID" 
@@ -42,18 +40,16 @@ import { Permission } from '../../models/permission.model'
 export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Input() objectID: number;
     @Input() objectType: string;
-    
-    @Input() hasSynonyms: boolean = true;
+        
     @Input() hasAttributes: boolean = true;
+    @Input() nymTypes: NymType[] = [];
 
     @Output() onEditComplete = new EventEmitter();
     
     private object: ObjectDetail = null;
 
     private showEditor: boolean = false;;
-    
-
-    //ideally base permissions would be an input but angular doesnt support this yet
+        
     @Input() objectPermissions: Permission[] = [];
 
     constructor(private objectDetailService: ObjectDetailService, private headerActionsService: HeaderActionsService) {

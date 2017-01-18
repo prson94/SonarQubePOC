@@ -1,10 +1,13 @@
-﻿export class PolicyType {
+﻿import { NymType } from './object-detail.model';
+
+export class PolicyType {
     Name: string;
     Description: string;   
     ID: number;
     PolicyTypeClass: string;
     PolicyTypeClassID: number;
     AllowAttributes: boolean;
+    NymTypes: NymType[];
 }
 
 export enum PolicyStatus {
