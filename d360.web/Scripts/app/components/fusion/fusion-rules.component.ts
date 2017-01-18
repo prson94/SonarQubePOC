@@ -52,7 +52,7 @@ export class FusionRulesComponent extends BaseComponent {
     }
 
     addItem() {
-        if (this.selectedFusionRule != null)
+        if (this.selectedFusionRule != null && this.selectedFusionRule.ObjectType != 'FusionQueryAttributeType')
             this.formMode = FormMode.AddItem;
     }
 
@@ -66,6 +66,11 @@ export class FusionRulesComponent extends BaseComponent {
     deleteStep() {
         this.selectedFusionRuleStepMapping = null;
         this.selectedFusionRuleStep = null;
+    }
+
+    deleteItem() {
+        if (this.selectedFusionRule.ObjectType != 'FusionQueryAttributeType')
+            this.formMode = FormMode.DeleteItem;
     }
 };
 

@@ -281,7 +281,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //console.log(value);
         switch (value.toLowerCase()) {
             case 'lookup':
-                promises.push(this.loadTokens(this.model.FieldType.LookupObjectType, this.model.FieldType.LookupObjectID));
+                promises.push(this.lookupTypeSelected(this.model.selectedLookup || this.lookups.Lookups[0].value));
+                //promises.push(this.loadTokens(this.model.FieldType.LookupObjectType, this.model.FieldType.LookupObjectID));
             case 'fusionlookup':
                 this.lookups.ReferenceTypes = this.fieldsService.getFusionReferenceTypes();
                 if (this.model.FusionItems && this.model.FusionItems.length)
@@ -334,11 +335,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     // called when the lookup type field is changed
-    private lookupTypeSelected(value: string) {
+    private lookupTypeSelected(value: string): Promise<any> {
 
         if (value == undefined) {
             console.log("[ERROR] - LOOKUP TYPE IS UNDEFINED", value);
-            return;
+            return Promise.resolve();
         }
 
         //update the model to have correct lookuptype object and id
@@ -348,7 +349,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectID = id;
         this.model.FieldType.LookupObjectType = type;
 
-        this.loadTokens(type, id);
+        return this.loadTokens(type, id);
     }
 
     private loadTokens(objectType: string, objectId: number): Promise<void> {
@@ -363,7 +364,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         return this.fieldsService.getLookupTokens(objectId, objectType)
             .then(r => {
                 this.model.LookupTokens = r;
-                if (this.model.LookupTokens.length > 0 && this.model.FieldType.LookupDisplayFormat.length == 0)
+                if (this.model.LookupTokens
+                    && this.model.LookupTokens.length > 0
+                    && (this.model.FieldType.LookupDisplayFormat == null 
+                    || this.model.FieldType.LookupDisplayFormat.length == 0))
                     this.model.FieldType.LookupDisplayFormat = this.model.LookupTokens[0].value;
             });
     }

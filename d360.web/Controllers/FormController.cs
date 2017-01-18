@@ -2923,6 +2923,7 @@ namespace d360.web.Controllers
             switch (type)
             {
                 case SystemObjects.ArtifactType:
+                    list.Add("ID", "ID");
                     list.Add("Name", "Name");
                     list.Add("Status", "Status");
                     list.Add("Description", "Description");
@@ -4140,7 +4141,7 @@ namespace d360.web.Controllers
         {
             try
             {
-                var item = new FusionRule
+                var rule = new FusionRule
                 {
                     Enabled = r.Enabled,
                     Description = r.Description,
@@ -4151,7 +4152,20 @@ namespace d360.web.Controllers
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                Company.Add<FusionRule>(item);
+                Company.Add<FusionRule>(rule);
+                Company.SaveChanges();
+
+                //automatically add all items for query attribute types
+                var exists = Company.FusionRuleItem.Any(i => i.RuleID == rule.ID && i.ObjectType == "FusionQueryAttributeType");
+                if (r.ObjectType == "FusionQueryAttributeType" && !exists)
+                {
+                    var item = new FusionRuleItem();
+                    item.ObjectType = "FusionQueryAttribute";
+                    item.ObjectID = null;
+                    item.RuleID = rule.ID;
+
+                    Company.Add<FusionRuleItem>(item);
+                }
 
                 return jsonSuccess("Items marked for auto-promotion", "0", "add", HttpStatusCode.Created);
             }
@@ -4262,6 +4276,8 @@ namespace d360.web.Controllers
                 var model = Company.GetById<FusionRule>(r.ID);
                 if (model == null) throw new NotFoundException("promotion rule");
 
+                var type = model.ObjectType;
+
                 model.Enabled = r.Enabled;
                 model.Description = r.Description;
                 model.FusionID = r.FusionID;
@@ -4272,6 +4288,26 @@ namespace d360.web.Controllers
                 model.UpdatedOn = DateTime.UtcNow;
 
                 Company.Update<FusionRule>(model);
+
+                if (model.ObjectType != type)
+                {
+                    //if the type has changed, delete the rule items
+                    Company.Delete<FusionRuleItem>(i => i.RuleID == model.ID);
+
+                    //if the type was changed to query attribute, add the item record
+                    if (model.ObjectType == "FusionQueryAttributeType")
+                    {
+                        var item = new FusionRuleItem();
+                        item.RuleID = model.ID;
+                        item.ObjectType = "FusionQueryAttribute";
+                        item.ObjectID = null;
+
+                        Company.Add(item);
+                    }
+                }
+                    
+
+               
 
                 return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
