@@ -1406,13 +1406,13 @@ from	cte a
             return Company.Query<dynamic>(QueryConstants.LookupAllocations, new { type = "Lookup", id });
         }
 
-        [Route("PolicyTypeClasses")]
+        [Route("PolicyTypeClass")]
         public IQueryable<PolicyTypeClass> GetPolicyTypeClasses()
         {
             return Company.Table<PolicyTypeClass>();
         }
 
-        [Route("TaxonomyTypeClasses")]
+        [Route("TaxonomyTypeClass")]
         public IQueryable<TaxonomyTypeClass> GetTaxonomyTypeClasses()
         {
             return Company.Table<TaxonomyTypeClass>();
@@ -5822,27 +5822,7 @@ SELECT (
 
             return Company.Query<ObjectSurveyQuestionValuesModel>(sql, new { id = questionId });
         }
-
-        [Route("surveys /randomquestion")]
-        public CreateResponse Post(QuestionResponseModel model)
-        {
-            var survey = Company.Filter<Survey>(i =>
-                i.SurveyTypeID == model.SurveyTypeID &&
-                i.ResourceID == Company.CurrentResourceID &&
-                DateTime.UtcNow.Subtract(i.CreatedOn).Days <= i.SurveyType.ValidForDays
-            ).SingleOrDefault();
-
-            if (survey == null)
-            {
-                survey = new Survey { ObjectID = model.ObjectID, Object = model.ObjectType.ToString(), ResourceID = Company.CurrentResourceID, SurveyTypeID = model.SurveyTypeID };
-                Company.Add<Survey>(survey);
-            }
-            var q = new Question { Comment = model.Comment, SurveyID = survey.ID, QuestionTypeOptions = new List<QuestionTypeOption>() };
-            Company.Add(q);
-
-            return new CreateResponse { Message = "Created" };
-        }
-
+        
         #endregion
 
         #region Statistics

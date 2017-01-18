@@ -934,7 +934,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-model-classification.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-classifications.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.module.ts" />

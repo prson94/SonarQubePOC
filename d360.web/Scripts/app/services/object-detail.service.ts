@@ -6,10 +6,12 @@ import { TreeNode } from 'primeng/primeng';
 import { FormHelper } from '../models/form.model';
 import { JsonResult } from '../models/jsonresult.model';
 import {
+    Classification,
     DetailField,
     DetailRow,
     DetailModel,
     IObjectDetailService,
+    NymType,
     Synonym,
     SynonymItem,
     SynonymEditorModel,
@@ -20,7 +22,6 @@ import {
 } from '../models/object-detail.model';
 import { HierarchyModel, PredicateType } from '../models/relations.model';
 import { LookupGrid } from '../models/grid-definition.model';
-import { NymType } from '../models/object-detail.model';
 
 @Injectable()
 export class ObjectDetailService extends BaseService {
@@ -153,5 +154,24 @@ export class ObjectDetailService extends BaseService {
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
+    }
+
+
+    getClassifications(objectType:string): Promise<Classification[]> {
+        return this.http.get(`api/${objectType}?$orderby=Name`)
+            .toPromise()
+            .then(response => <Classification[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteClassification(id: number, objectType: string): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, objectType, id);
+    }
+
+    saveClassification(classification: Classification, objectType: string): Promise<JsonResult> {
+        if (classification.ID == undefined || !classification.ID) {
+            return this.postDynamic(this.http, objectType, classification);
+        }
+        return this.putDynamic(this.http, objectType, classification);
     }
 }

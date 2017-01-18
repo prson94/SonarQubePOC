@@ -21,7 +21,6 @@ import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
 import { AdminModule } from '../admin.module';
 
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminModelClassificationComponent } from './admin-model-classification.component';
 import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 
@@ -68,8 +67,7 @@ import {
         TilesModule,
     ],
     declarations: [
-        AdminTaxonomiesComponent,
-        AdminModelClassificationComponent,
+        AdminTaxonomiesComponent,        
         AdminTaxonomyEditorComponent,
         AdminTaxonomyDetailComponent,
     ],

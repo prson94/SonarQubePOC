@@ -15,7 +15,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
     selector: 'd3s-admin-models-component',    
     providers: [TaxonomiesService, FieldsService],
     template:   `<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedTaxonomy?.ID" [objectName]="selectedTaxonomy?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
-                <d3s-admin-model-classifications *ngIf="isClassificationsVisible" ></d3s-admin-model-classifications>
+                <d3s-admin-classifications objectType="TaxonomyTypeClass" *ngIf="isClassificationsVisible" ></d3s-admin-classifications>
                 <div *ngIf="showEditor || showDelete && !isAuditVisible && !isLoading && !isClassificationsVisible" class="row">
                     <div class="tile tile-detail">                            
                             <d3s-admin-model-editor *ngIf="showEditor" [taxonomy]="selectedTaxonomy" (saveClick)="saveModel($event)" (closeClick)="closeEditor()"></d3s-admin-model-editor>

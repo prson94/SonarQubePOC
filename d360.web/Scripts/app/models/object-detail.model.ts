@@ -160,3 +160,8 @@ export class ObjectAction {
     Name: string;
     Value: boolean;
 }
+
+export class Classification {
+    ID: number;
+    Name: string;
+}

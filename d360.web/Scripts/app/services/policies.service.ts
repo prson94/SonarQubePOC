@@ -58,5 +58,5 @@ export class PoliciesService extends BaseService {
             return this.postDynamic(this.http, 'policy', policy);
         }
         return this.putDynamic(this.http, 'policy', policy);
-    }
+    }    
 }

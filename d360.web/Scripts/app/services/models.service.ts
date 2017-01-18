@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Model, ModelHierarchy, ModelClassification } from '../models/model.model';
+import { Model, ModelHierarchy } from '../models/model.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -40,23 +40,5 @@ export class ModelsService extends BaseService {
             return this.postDynamic(this.http, 'taxonomy', hierarchy);
         }
         return this.putDynamic(this.http, 'taxonomy', hierarchy);  
-    }
-
-    getModelClassifications(): Promise<ModelClassification[]> {
-        return this.http.get(`api/TaxonomyTypeClasses?$orderby=Name`)
-            .toPromise()
-            .then(response => <ModelClassification[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    deleteClassification(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'taxonomytypeclass', id);
-    }
-
-    saveClassification(classification: ModelClassification): Promise<JsonResult> {
-        if (classification.ID == undefined || !classification.ID) {
-            return this.postDynamic(this.http, 'taxonomytypeclass', classification);
-        }
-        return this.putDynamic(this.http, 'taxonomytypeclass', classification);
     }
 }

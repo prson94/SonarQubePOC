@@ -352,6 +352,8 @@ namespace d360.web.Controllers
                     return Taxonomy_EditFields(ID);
                 case "TAXONOMYTYPECLASS":
                     return TaxonomyTypeClass_EditFields(ID);
+                case "POLICYTYPECLASS":
+                    return PolicyTypeClass_EditFields(ID);
                 case "REFERENCEITEMTYPE":
                     return ReferenceItem_EditFields(ID);                
                 case "POLICY":
@@ -395,6 +397,8 @@ namespace d360.web.Controllers
                     return SurveyType_AddFields();
                 case "TAXONOMYTYPECLASS":
                     return TaxonomyTypeClass_AddFields();
+                case "POLICYTYPECLASS":
+                    return PolicyTypeClass_AddFields();
                 case "TAXONOMY":
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
                 case "REFERENCEITEMTYPE":
@@ -490,6 +494,8 @@ namespace d360.web.Controllers
                     return EditMapRuleItem(form);
                 case "TAXONOMYTYPECLASS":
                     return EditTaxonomyTypeClass(form);
+                case "POLICYTYPECLASS":
+                    return EditPolicyTypeClass(form);
                 case "TAXONOMYTYPELEVEL":
                     return EditTaxonomyTypeLevel(form);
                 case "RELATIONSHIPROLE":
@@ -553,6 +559,8 @@ namespace d360.web.Controllers
                     return DeleteMapRuleItem(form);
                 case "TAXONOMYTYPECLASS":
                     return DeleteTaxonomyTypeClass(form);
+                case "POLICYTYPECLASS":
+                    return DeletePolicyTypeClass(form);
                 case "RELATIONSHIPROLE":
                     return DeleteIntersectRole(form);
                 case "TAXONOMYTYPELEVEL":
@@ -635,6 +643,8 @@ namespace d360.web.Controllers
                     return AddMapRuleItem(form);
                 case "TAXONOMYTYPECLASS":
                     return AddTaxonomyTypeClass(form);
+                case "POLICYTYPECLASS":
+                    return AddPolicyTypeClass(form);
                 case "RELATIONSHIPROLE":
                     return AddIntersectRole(form);
                 case "TAXONOMYTYPELEVEL":

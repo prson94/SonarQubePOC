@@ -10,6 +10,7 @@ import { AdminRoutingModule } from './admin.routes';
 
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 
@@ -22,6 +23,7 @@ import {
 } from 'primeng/primeng';
 
 import { AdminAllocationComponent } from './admin-allocation.component';
+import { AdminClassificationsComponent } from './admin-classifications.component';
 import { AdminComponent } from './admin.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
@@ -33,6 +35,7 @@ import { ClaimsMatrixPart } from './claims-matrix.part';
 @NgModule({
     declarations: [        
         AdminAllocationComponent,
+        AdminClassificationsComponent,
         AdminComponent,                
         AdminLevelListComponent,
         AdminLevelEditorComponent,   
@@ -42,6 +45,7 @@ import { ClaimsMatrixPart } from './claims-matrix.part';
     ],
     exports: [
         AdminAllocationComponent,
+        AdminClassificationsComponent,
         ClaimsTile,
         AdminLevelListComponent,
     ],
@@ -60,9 +64,10 @@ import { ClaimsMatrixPart } from './claims-matrix.part';
         
         //d3s        
         CoreModule,                                      
-        SharedDeleteFormModule,        
-        SharedGridPagingInfoModule,         
-        TilesModule,  
+        SharedDeleteFormModule,
+        SharedDynamicGridEditorModule,    
+        SharedGridPagingInfoModule,
+        TilesModule,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

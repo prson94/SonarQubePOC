@@ -21,11 +21,6 @@ export class ModelHierarchy {
     Description: string;
 }
 
-export class ModelClassification {
-    ID: number;
-    Name: string;
-}
-
 export class HierarchyDiagramModel {
     RelationshipsExist: boolean;
     children: HierarchyDiagramModel[] = [];
