@@ -297,7 +297,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             // only create children once per node
             diagram.model.setDataProperty(data, "everExpanded", true);
 
-            promise = this.diagramService.getImpactDiagramFusion(data.obj, data.objid)
+            promise = this.diagramService.getImpactDiagram(data.obj, data.objid)
                 .then(r => {
                     let hasChildren = false;
 
