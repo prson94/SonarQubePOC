@@ -2255,7 +2255,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         var oc = new ComplexColumnModel
                         {
                             DisplayColumn = $"A{pos}.{i.FieldTypeName}",
-                            SortColumn = $"A{pos}.{i.FieldTypeName}",
+                            SortColumn = $"{dataField}",
                             datafield = $"{dataField}",
                             text = i.OverrideDisplayName ?? i.FieldTypeName,
                             OutputColumn = true
@@ -2277,7 +2277,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         }
 
                         var objectFriendlyName = i.OverrideDisplayName ?? i.FieldTypeName;
-                        var objectSortColumn = (i.SortOrder > 0) ? $"A{pos}.{i.FieldTypeName}" : string.Empty;
+                        var objectSortColumn = (i.SortOrder > 0) ? $"{dataField}" : string.Empty;
 
                         switch (i.Object)
                         {
@@ -2649,6 +2649,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
                 if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
                 sqlQuery += whereQuery + " ";
+
+                //wrap in distinct to avoid appearance of duplicate records when unique columns are not displayed
+                sqlQuery = $"select distinct * from ({sqlQuery}) z ";
 
                 var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && !string.IsNullOrEmpty(i.SortColumn)).OrderBy(i => i.SortOrder).Select(i => i.SortColumn));
                 if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;

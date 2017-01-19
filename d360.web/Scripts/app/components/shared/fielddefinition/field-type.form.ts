@@ -1,6 +1,16 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
-import { FieldType, FieldTypeEditorModel, FilteredLookupItem, FilteredLookupDisplayField, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField, FieldTypeRelationItemEditorModel, ComplexLookupRelationType, FieldTypeItemDisplayFieldEditorModel } from '../../../models/fields.model';
+import {
+    FieldType, 
+    FieldTypeEditorModel,
+    FilteredLookupItem,
+    FilteredLookupDisplayField,
+    Lookups,
+    FieldTypeFusionItemEditorModel,
+    FieldTypeFusionLookupDisplayField,
+    FieldTypeRelationItemEditorModel,
+    ComplexLookupRelationType,
+    FieldTypeItemDisplayFieldEditorModel, } from '../../../models/fields.model';
 import { FieldsService } from '../../../services/fields.service';
 import { MessagesService } from '../../../services/messages.service';
 import { ObjectDetailService } from '../../../services/object-detail.service';
@@ -46,11 +56,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-    //TODO: cleanup, probably some unused properties here
-
     private lookups: Lookups = new Lookups();
     private model: FieldTypeEditorModel;    
-    private isSaving = false;
     private initialItem: FieldTypeEditorModel;
 
     private testPattern: string;
@@ -67,7 +74,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private filteredLookupDisplayFields: any[] = [];
     private filteredSortOrderList: any[] = [];
     private filteredLookupHideHeader: boolean = false;
-    private filteredLookupHideFooter: boolean = false;
+    private filteredLookupHideFooter: boolean = false; 
 
     private errorMessage: string = "";
 
@@ -106,7 +113,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 .then(data => {
                     //console.log('data: ', data);
                     this.model = data;
-                    this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
+                    if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                        this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
+                    else
+                        this.model.selectedLookup = null;
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
                 .then(d => {
@@ -204,6 +214,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     })
                     .then(() => this.changeRel(i))
                     .then(() => {
+                        let parent = item;
                         item.DisplayFields.forEach(d => {
                             let item = clone[i].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
 
@@ -213,6 +224,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                 d.FilterValue = item.Filter;
                                 d.OverrideDisplayName = item.OverrideDisplayName;
                                 d.SortOrder = item.SortOrder;
+
+                                if (d.DisplayOrder != null)
+                                    this.changeDisplayOrder(item, parent); 
                             }
 
                         });
@@ -282,7 +296,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         switch (value.toLowerCase()) {
             case 'lookup':
                 promises.push(this.lookupTypeSelected(this.model.selectedLookup || this.lookups.Lookups[0].value));
-                //promises.push(this.loadTokens(this.model.FieldType.LookupObjectType, this.model.FieldType.LookupObjectID));
             case 'fusionlookup':
                 this.lookups.ReferenceTypes = this.fieldsService.getFusionReferenceTypes();
                 if (this.model.FusionItems && this.model.FusionItems.length)
@@ -336,7 +349,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     // called when the lookup type field is changed
     private lookupTypeSelected(value: string): Promise<any> {
-
         if (value == undefined) {
             console.log("[ERROR] - LOOKUP TYPE IS UNDEFINED", value);
             return Promise.resolve();
