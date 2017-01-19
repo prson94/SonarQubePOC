@@ -479,9 +479,7 @@ namespace d360.web.Controllers
 
         [Route("slo")]
         public ActionResult Logout()
-        {
-            Session["CurrentResource"] = null;
-
+        {          
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
             { 
                 case AuthenticationType.SSO:
