@@ -50,7 +50,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     hasRelationships: boolean;
     showAddRelationship: boolean = false;
-    showEmptyRelationshipTypes: boolean = false;
+    showEmptyRelationshipTypes: boolean = true;
     
     @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
     
