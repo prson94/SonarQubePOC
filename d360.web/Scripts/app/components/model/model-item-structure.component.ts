@@ -187,7 +187,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 label: root.Name,
                 expanded: true,
                 data: {
-                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: root.Description.replace(/<[^>]+>/gm, '')
+                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : '')
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });

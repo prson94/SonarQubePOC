@@ -172,7 +172,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 label: root.Name,
                 expanded: true,
                 data: {
-                    ID: root.ID, Name: root.Name, Description: root.Description.replace(/<[^>]+>/gm, ''), ParentID: root.ParentID, StatusName: root.StatusName
+                    ID: root.ID, Name: root.Name, Description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : ''), ParentID: root.ParentID, StatusName: root.StatusName
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
