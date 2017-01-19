@@ -1353,7 +1353,6 @@
     <TypeScriptCompile Include="Scripts\app\services\responsibility-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\index.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lookup.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-style.service.ts" />
