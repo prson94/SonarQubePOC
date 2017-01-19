@@ -2283,7 +2283,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         {
                             case "ArtifactType":
                                 #region ArtifactType
-                                //Create the column/field to display the visible column cell.
+
                                 var ac = new ComplexColumnModel
                                 {
                                     DisplayColumn = objectDisplayColumn,
@@ -2296,15 +2296,36 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                     SortColumn = objectSortColumn,
                                     urlfield = $"{dataField}_Url"
                                 };
-                                setColumnTypeInfo(ft, i, ac);
-                                ac.datafieldtype = "lookup"; //must be done after function call above.
-                                columnModels.Add(ac);
 
-                                // Add the fields that you need to create link in Angular component.
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Artifact'", datafield = $"{dataField}_Object" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Artifact', A{pos}.ArtifactTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+
+                                //special case for subject area
+                                if (i.FieldTypeName == "SubjectArea")
+                                {
+                                    ac.DisplayColumn = $"T{pos}.Name";
+                                    setColumnTypeInfo(ft, i, ac);
+                                    ac.datafieldtype = "lookup"; //must be done after function call above.
+                                    columnModels.Add(ac);
+                                    // Add the fields that you need to create link in Angular component.
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'TaxonomyType'", datafield = $"{dataField}_Object" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(T{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('TaxonomyType', 0, T{pos}.ID)", datafield = $"{dataField}_Url" });
+                                    join.JoinStatement += $" left join TaxonomyType T{pos} on T{pos}.ID = A{pos}.TaxonomyTypeID ";
+                                }
+                                else
+                                {
+
+                                    setColumnTypeInfo(ft, i, ac);
+                                    ac.datafieldtype = "lookup"; //must be done after function call above.
+                                    columnModels.Add(ac);
+                                    // Add the fields that you need to create link in Angular component.
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Artifact'", datafield = $"{dataField}_Object" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Artifact', A{pos}.ArtifactTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+
+                                }
+
                                 #endregion
                                 break;
                             case "FusionAttributeType":

@@ -2905,6 +2905,8 @@ namespace d360.web.Controllers
             list.Add("TextPath", 0);
             if (!list.ContainsKey("Description"))
                 list.Add("Description", 0);
+            if (type == SystemObjects.ArtifactType)
+                list.Add("SubjectArea", 0);
 
             var relList = Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersectTypeID)
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())

@@ -4,7 +4,7 @@
 	@DisplayFormat nvarchar(250),
 	@LookupObjectType varchar(25),
 	@LookupObjectID int,
-	@Value nvarchar(max)
+	@Value nvarchar(max)	
 )
 RETURNS nvarchar(max)
 AS
@@ -129,7 +129,8 @@ BEGIN
 											NULL as LookupObjectID,
 											NULL as LookupDisplayFormat
 									FROM	(
-											SELECT	ID,
+											SELECT	ID as AID,
+													CAST(ID as nvarchar(max)) as ID,
 													CAST(Name as nvarchar(max)) as Name,
 													CAST(Description as nvarchar(max)) as Description,
 													CAST(TextPath as nvarchar(max)) as TextPath
@@ -138,7 +139,7 @@ BEGIN
 													and L.ObjectType = 'Artifact'
 											) A
 											unpivot	(
-													FieldValue for FieldName in (Name, Description, TextPath)
+													FieldValue for FieldName in (ID, Name, Description, TextPath)
 													) p
 
 									UNION
@@ -265,3 +266,6 @@ BEGIN
 
 	return @formattedValue
 END
+
+
+
