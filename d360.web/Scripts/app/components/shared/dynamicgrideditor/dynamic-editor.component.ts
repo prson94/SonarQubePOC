@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormArray, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { EditorDefinitionService } from '../../../services/editor-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
@@ -28,6 +28,7 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [EditorDefinitionService, UriBasedService],
+    changeDetection: ChangeDetectionStrategy.OnPush, 
 })
 
 export class DynamicEditorComponent extends BaseComponent implements OnChanges, OnInit {
@@ -59,7 +60,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     editedItem: any;
 
-    constructor(private formBuilder: FormBuilder, private messagesService: MessagesService, private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
+    constructor(private ref: ChangeDetectorRef, private formBuilder: FormBuilder, private messagesService: MessagesService, private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
         super();
     }
 
@@ -111,7 +112,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 });
                                 
                 this.form = this.toFormGroup(this.fields);
-                
+                this.ref.markForCheck();
             });
     }   
 

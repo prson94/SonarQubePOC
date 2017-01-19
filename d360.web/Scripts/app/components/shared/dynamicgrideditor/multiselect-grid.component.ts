@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { EditorField } from '../../../models/editor-field.model';
@@ -16,7 +16,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading">
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" (keypress)="ref.markForCheck()">
                     <p-dataTable #dt [globalFilter]="gb" [value]="items" [selection]="selectedItems" (selectionChange)="selectedItems=$event;handleItemSelection($event);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                         <p-column [style]="{'width':'38px'}" selectionMode="multiple"></p-column>
                         <p-column field="Text" header="Name">
@@ -34,6 +34,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                 </span>
                 `,
     providers: [MULTISELECT_GRID_VALUE_ACCESSOR],
+    changeDetection: ChangeDetectionStrategy.OnPush, 
 })
 
 export class MultiSelectGridComponent extends BaseComponent implements OnInit, ControlValueAccessor  {   
@@ -48,7 +49,7 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
 
     public onModelTouched: Function = () => { };
 
-    constructor(private uriBasedService: UriBasedService) {
+    constructor(private uriBasedService: UriBasedService, private ref: ChangeDetectorRef) {
         super();
     }
 
@@ -62,6 +63,7 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
             then(result => {
                 this.items = result;
                 this.isLoading = false;
+                this.ref.markForCheck();
             });
     }
 
