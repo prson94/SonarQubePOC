@@ -19,7 +19,7 @@ import * as _ from 'lodash';
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                                                            
                         <p-column field="Inverse" header="Inverse" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Type" header="Type" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                
+                        <p-column field="Type" header="Functional Type" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                
                         <p-column [style]="{width:'40px'}">
                             <template let-predicate="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="!predicate.IsSystem">
