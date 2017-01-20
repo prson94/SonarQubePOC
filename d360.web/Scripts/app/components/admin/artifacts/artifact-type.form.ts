@@ -48,7 +48,6 @@ export class ArtifactTypeForm implements OnInit, OnChanges {
         this.artifactTypeService.getArtifactTypeEditor(this.id, this.parentID)
             .then(data => {
                 this.model = data;
-                //console.log(data);
                 this.isLoading = false;
             });
     }
@@ -73,8 +72,6 @@ export class ArtifactTypeForm implements OnInit, OnChanges {
                     this.onSuccess.emit(data);
                     this.onComplete.emit(data);
                 });
-
-
-        //service call here
     }
+
 }

@@ -50,7 +50,7 @@ import * as _ from 'lodash';
                                             cpFallbackColor="#000"
                                             cpPosition="bottom"
                                             spellcheck="false"
-                                            name="background" [value]="editedTaxonomy.IconBackColor" style="width: 100%;height:25px;" required />
+                                            name="background" [value]="editedTaxonomy.IconBackColor" style="width: 100%;height:25px;" required readonly />
                                     </td>
                                     <td>
                                         <span [style.background-color]="editedTaxonomy.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
@@ -71,7 +71,7 @@ import * as _ from 'lodash';
                                             cpFallbackColor="#000"
                                             cpPosition="bottom"
                                             spellcheck="false"
-                                            name="background" [value]="editedTaxonomy.IconForeColor" style="width: 100%;height:25px;" required />
+                                            name="background" [value]="editedTaxonomy.IconForeColor" style="width: 100%;height:25px;" required readonly />
                                     </td>
                                     <td>
                                         <span [style.background-color]="editedTaxonomy.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
@@ -80,9 +80,12 @@ import * as _ from 'lodash';
                             </tbody>
                         </table>
                     </div>
+                    <div class="col s12">
+                        <div *ngIf="editedTaxonomy.IconForeColor == editedTaxonomy.IconBackColor" class="errorMessage">Foreground and background color cannot be the same</div>
+                    </div>
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12">
-                        <button pButton type="submit" [disabled]="!modelForm.form.valid" label="Save" style="width: 150px;"></button>
+                        <button pButton type="submit" [disabled]="!modelForm.form.valid || (editedTaxonomy.IconForeColor == editedTaxonomy.IconBackColor)" label="Save" style="width: 150px;"></button>
                         <button pButton type="button" (click)="close()" label="Close" style="width: 150px;"></button>
                     </div>                    
                 </div>
@@ -164,4 +167,5 @@ export class AdminTaxonomyEditorComponent {
     close() {
         this.closeClick.emit({ taxonomyId: (this.taxonomy ? this.taxonomy.ID : -1) });
     }
+
 };

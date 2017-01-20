@@ -87,7 +87,7 @@
                                                cpPosition="bottom"
                                                spellcheck="false"
                                                [value]="newFusionStyle.IconBackColor"
-                                               style="width: 100%;height: 25px;" name="backcolor" required />
+                                               style="width: 100%;height: 25px;" name="backcolor" required readonly/>
                                     </td>
                                     <td>
                                         <span [style.background-color]="newFusionStyle.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
@@ -108,7 +108,7 @@
                                                cpPosition="bottom"
                                                spellcheck="false"
                                                [value]="newFusionStyle.IconForeColor"
-                                               style="width: 100%;height: 25px;" name="forecolor" required />
+                                               style="width: 100%;height: 25px;" name="forecolor" required readonly/>
                                     </td>
                                     <td>
                                         <span [style.background-color]="newFusionStyle.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
@@ -119,8 +119,13 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col s12">
+                        <div *ngIf="newFusionStyle.IconForeColor == newFusionStyle.IconBackColor" class="errorMessage">Foreground and background color cannot be the same</div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col s12" style="padding-top:10px;">
-                        <button pButton type="submit" label="Save" [disabled]="!fusionForm.form.valid"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
+                        <button pButton type="submit" label="Save" [disabled]="!fusionForm.form.valid || (newFusionStyle.IconForeColor == newFusionStyle.IconBackColor)"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
                     </div>
                 </div>
             </div>

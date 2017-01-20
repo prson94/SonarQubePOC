@@ -42,7 +42,7 @@
                                            cpFallbackColor="#000"
                                            cpPosition="bottom"
                                            spellcheck="false"
-                                           [value]="model.IconBackColor" required />
+                                           [value]="model.IconBackColor" required readonly />
                                 </td>
                                 <td>
                                     <span [style.background-color]="model.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
@@ -65,7 +65,7 @@
                                            spellcheck="false"
                                            style="height:25px;width:100%;display:block;" 
                                            name="IconForeColor" 
-                                           [value]="model.IconForeColor" required />
+                                           [value]="model.IconForeColor" required readonly/>
                                 </td>
                                 <td>
                                     <span [style.background-color]="model.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
@@ -74,12 +74,15 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="row">
+                    <div *ngIf="model.IconForeColor == model.IconBackColor" class="errorMessage">Foreground and background color cannot be the same</div>
+                </div>
             </div>
         </div>
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px;">
-                    <button pButton label="Save" type="submit" (click)="save()" [disabled]="!form.form.valid"></button><button pButton label="Cancel" (click)="cancel()"></button>
+                    <button pButton label="Save" type="submit" (click)="save()" [disabled]="!form.form.valid || (model.IconForeColor == model.IconBackColor)"></button><button pButton label="Cancel" (click)="cancel()"></button>
                 </div>
             </div>
         </div>
