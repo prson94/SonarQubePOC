@@ -126,7 +126,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
     ];
         
     private simpleSearchID: number = 0;
-    private autocompleteResultSize: number = 5;
+    private autocompleteResultSize: number = 20;
 
     private autocompletions: SearchResult[] = [];
 

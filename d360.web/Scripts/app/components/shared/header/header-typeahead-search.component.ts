@@ -40,7 +40,7 @@ export class HeaderTypeaheadSearchComponent {
     
     search(event) {
         this.searchText = event.query;
-        this.typeaheadSearchService.getResults(10, event.query).then(data => {
+        this.typeaheadSearchService.getResults(20, event.query).then(data => {
             this.results = data;
         });
     }
