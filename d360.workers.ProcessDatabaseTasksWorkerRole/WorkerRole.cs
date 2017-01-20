@@ -194,14 +194,23 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                                     if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
                                     else fields.Add("Name", detail.Name);
 
-                                    if (fields.ContainsKey("Description")) fields["Description"] = detail.Description;
-                                    else fields.Add("Description", detail.Description);
+                                    if (o == "Synonym")
+                                    {
+                                        fields.Add("SynonymFor", detail.TextPath);
+                                        fields.Add("SynonymForObject", detail.ParentType);
+                                        fields.Add("SynonymForObjectType", detail.Description);
+                                    }
+                                    else
+                                    {
+                                        if (fields.ContainsKey("Description")) fields["Description"] = detail.Description;
+                                        else fields.Add("Description", detail.Description);
 
-                                    if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
-                                    else fields.Add("TextPath", detail.TextPath);
+                                        if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
+                                        else fields.Add("TextPath", detail.TextPath);
 
-                                    if (fields.ContainsKey("Type")) fields["Type"] = detail.TypeName;
-                                    else fields.Add("Type", detail.TypeName);
+                                        if (fields.ContainsKey("Type")) fields["Type"] = detail.TypeName;
+                                        else fields.Add("Type", detail.TypeName);
+                                    }
                                 }
 
                                 #endregion
@@ -210,10 +219,18 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                                 {
                                     case "A":   //Add
                                         var add = new AddToIndexModel { CompanyID = companyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.AddToIndex, Type = detail.TypeName };
+                                        if (o == "Synonym")
+                                        {
+                                            add.ItemUniqueID = $"custom|{detail.Name}|{detail.ParentType}|{detail.ParentID.Value}";
+                                        }
                                         indexCollectionModel.Adds.Add(add);
                                         break;
                                     case "U":   //Update
                                         var update = new UpdateInIndexModel { CompanyID = companyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.UpdateInIndex, Type = detail.TypeName };
+                                        if (o == "Synonym")
+                                        {
+                                            update.ItemUniqueID = $"custom|{detail.Name}|{detail.ParentType}|{detail.ParentID.Value}";
+                                        }
                                         indexCollectionModel.Updates.Add(update);
                                         break;
                                     case "D":   //Delete
