@@ -61,11 +61,11 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Challenge.
+        ///   Looks up a localized string similar to Open Actions.
         /// </summary>
-        internal static string CommentType_Challenge {
+        internal static string CommentType_Action {
             get {
-                return ResourceManager.GetString("CommentType_Challenge", resourceCulture);
+                return ResourceManager.GetString("CommentType_Action", resourceCulture);
             }
         }
         
@@ -75,15 +75,6 @@ namespace Resources {
         internal static string CommentType_DataEvent {
             get {
                 return ResourceManager.GetString("CommentType_DataEvent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Issues.
-        /// </summary>
-        internal static string CommentType_Issue {
-            get {
-                return ResourceManager.GetString("CommentType_Issue", resourceCulture);
             }
         }
         
@@ -133,7 +124,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Issues.
+        ///   Looks up a localized string similar to Actions.
         /// </summary>
         internal static string WorkflowType_WorkIssue {
             get {

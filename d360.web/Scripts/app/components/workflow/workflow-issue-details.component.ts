@@ -10,7 +10,7 @@ declare var CurrentResourceID;
     selector: 'd3s-workflow-issue-details',
     template: `          
             <div class="row" *ngIf="!isLoading && issues.length > 0">
-                <header>Open Issues<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+                <header>Open Actions<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
                     <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="issues" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="openIssue($event.data);" >
@@ -23,7 +23,7 @@ declare var CurrentResourceID;
                         </p-column>
                         <p-column field="CriticalityName" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'150px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Issue" header="Issue" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="Issue" header="Description" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-issue="rowData" pTemplate type="body">
                                 <span [innerHtml]="issue?.Issue"></span>
                             </template>
@@ -58,8 +58,8 @@ declare var CurrentResourceID;
                 </div>
             </div>            
             <div style="min-height:100px" *ngIf="!isLoading && issues.length == 0">
-                <h4 *ngIf="objectName">No issues currently exist for <b>{{objectName}}</b>.</h4>
-                <h4 *ngIf="!objectName">No issues assigned.</h4>
+                <h4 *ngIf="objectName">No actions currently exist for <b>{{objectName}}</b>.</h4>
+                <h4 *ngIf="!objectName">No actions assigned.</h4>
             </div>
             <div style="padding:10px">
                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>

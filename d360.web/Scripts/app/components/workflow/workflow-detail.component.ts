@@ -59,8 +59,8 @@ export class WorkflowDetailComponent extends BaseComponent implements OnInit, On
             this.headerBreadcrumbService.clearBreadcrumbs();
             switch (this.workflowType) {
                 case WorkflowType.WorkIssue:
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Issue List'));
-                    this.setBrowserTitle(this.titleService, 'Issue List');
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Action List'));
+                    this.setBrowserTitle(this.titleService, 'Action List');
                     break;
                 case WorkflowType.CertifyArtifact:
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Certify Artifact List'));

@@ -117,14 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CommentType_Challenge" xml:space="preserve">
-    <value>Challenge</value>
+  <data name="CommentType_Action" xml:space="preserve">
+    <value>Open Actions</value>
   </data>
   <data name="CommentType_DataEvent" xml:space="preserve">
     <value>Data Event</value>
-  </data>
-  <data name="CommentType_Issue" xml:space="preserve">
-    <value>Issues</value>
   </data>
   <data name="CommentType_Social" xml:space="preserve">
     <value>Comment</value>
@@ -142,6 +139,6 @@
     <value>Propose New Artifact</value>
   </data>
   <data name="WorkflowType_WorkIssue" xml:space="preserve">
-    <value>Issues</value>
+    <value>Actions</value>
   </data>
 </root>

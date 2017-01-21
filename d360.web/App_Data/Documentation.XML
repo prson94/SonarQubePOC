@@ -336,19 +336,14 @@
               resource lookups using this strongly typed resource class.
             </summary>
         </member>
-        <member name="P:Resources.Core.CommentType_Challenge">
+        <member name="P:Resources.Core.CommentType_Action">
             <summary>
-              Looks up a localized string similar to Challenge.
+              Looks up a localized string similar to Open Actions.
             </summary>
         </member>
         <member name="P:Resources.Core.CommentType_DataEvent">
             <summary>
               Looks up a localized string similar to Data Event.
-            </summary>
-        </member>
-        <member name="P:Resources.Core.CommentType_Issue">
-            <summary>
-              Looks up a localized string similar to Issues.
             </summary>
         </member>
         <member name="P:Resources.Core.CommentType_Social">
@@ -378,7 +373,7 @@
         </member>
         <member name="P:Resources.Core.WorkflowType_WorkIssue">
             <summary>
-              Looks up a localized string similar to Issues.
+              Looks up a localized string similar to Actions.
             </summary>
         </member>
         <member name="T:Resources.FieldInfo">

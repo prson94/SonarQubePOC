@@ -12,11 +12,11 @@ import { Resource } from '../../models/resource.model';
     selector: 'd3s-workflow-issue-editor',
     template: ` 
                 <form (ngSubmit)="onSubmit()" #issueEditorForm="ngForm">
-                <header>Work Issue</header>
-                <div id="FormDescription" class="form-instructions">The workflow that is triggered when an issue is reported.  The owner is assigned as a potential resource to work on the issue. They must still choose to work the issue.</div>                
+                <header>Work Action</header>
+                <div id="FormDescription" class="form-instructions">The workflow that is triggered when an action is reported.  The owner is assigned as a potential resource to work on the action item. They must still choose to work the action item.</div>                
                 <div class="row">                    
                     <div class="col s12 l6">                        
-                        <div class="FieldName">Issue Type</div>
+                        <div class="FieldName">Action Type</div>
                         <div>{{issue?.IssueTypeName}}</div>                        
                         <div class="FieldName">Criticality</div>
                         <div>{{issue?.CriticalityName}}</div>                        

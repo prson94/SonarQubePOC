@@ -50,8 +50,8 @@ export class WorkflowWorkItemComponent extends BaseComponent implements OnInit, 
 
             switch (this.workflowType) {
                 case WorkflowType.WorkIssue:
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Work Issue'));
-                    this.setBrowserTitle(this.titleService, 'Work Issue');
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Work Action'));
+                    this.setBrowserTitle(this.titleService, 'Work Action');
                     break;
                 case WorkflowType.CertifyArtifact:
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Certify Artifact'));

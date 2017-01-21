@@ -15,9 +15,9 @@ namespace d360.workflow
         OwnerApproval = 1,
         [Name("Certification by Owner"), Description("The assigned owner must certify that all data on the specified item is correct to complete the certification process."), EnumMember]
         OwnerCertification = 2,
-        [Name("Assign Issue To Pool"), Description("The owner is assigned as a potential resource to work on the issue.  They must still choose to work the issue."), EnumMember]
+        [Name("Assign Action To Pool"), Description("The owner is assigned as a potential resource to work on the action.  They must still choose to work the action."), EnumMember]
         AssignIssueToPool = 3,
-        [Name("Assign Issue To Self"), Description("The owner has chosen to work the issue."), EnumMember]
+        [Name("Assign Action To Self"), Description("The owner has chosen to work the action."), EnumMember]
         AssignIssueToSelf = 4,
         [Name("Final Approval"), Description("The owner has approved this item and it needs to be signed off by another user."), EnumMember]
         FinalApproval = 5,

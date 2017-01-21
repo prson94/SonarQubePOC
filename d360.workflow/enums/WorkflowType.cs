@@ -29,8 +29,8 @@ namespace d360.workflow
         CertifyArtifact = 2,
 
         [
-        Name("Work Issue"),
-        Description("The workflow that is triggered when an issue is reported."),
+        Name("Work Action"),
+        Description("The workflow that is triggered when an action is raised."),
         EnumMember(Value = "3")
         ]
         WorkIssue = 3,

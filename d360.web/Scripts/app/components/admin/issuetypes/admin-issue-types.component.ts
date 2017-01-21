@@ -50,7 +50,7 @@ import { Title } from '@angular/platform-browser';
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
                                 [method]="'callback'"
-                                [prompt]="'Are you sure you want to delete the issue type [' + [selected?.Name] + ']?'"                                         
+                                [prompt]="'Are you sure you want to delete the action type [' + [selected?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
                             ></d3s-delete-form>        
                         </div>

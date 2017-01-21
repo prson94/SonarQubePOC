@@ -86,7 +86,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
                 return WorkflowType.ChallengeArtifact;
             case "PROPOSE NEW ARTIFACT":
                 return WorkflowType.SuggestNewArtifact;
-            case "ISSUES":
+            case "ACTIONS":
                 return WorkflowType.WorkIssue;            
         }        
         return null;

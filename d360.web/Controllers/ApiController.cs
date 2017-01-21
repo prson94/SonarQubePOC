@@ -5998,7 +5998,7 @@ SELECT (
 
             items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social)  });
 
-            items.Add(new CountModel { Name = Resources.Core.CommentType_Issue, Total = getCommentCategoryCount(counts, CommentType.Issue) });
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Action, Total = getCommentCategoryCount(counts, CommentType.Issue) });
 
             items.Add(new CountModel { Name = Resources.Core.CommentType_Task, Total = getCommentCategoryCount(counts, CommentType.Task) });
 

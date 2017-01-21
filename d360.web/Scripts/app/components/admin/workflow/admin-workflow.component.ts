@@ -49,7 +49,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
 
         items.push({
             icon: null,
-            label: 'Work Issue'
+            label: 'Work Action'
         });
 
         items.push({
@@ -96,7 +96,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
             case 'Certify artifact':
                 this.addingRow.WorkflowType = WorkflowType.CertifyArtifact
                 break;
-            case 'Work Issue':
+            case 'Work Action':
                 this.addingRow.WorkflowType = WorkflowType.WorkIssue
                 break;            
             case 'Propose new Artifact (Multi-approval)':
