@@ -3095,6 +3095,10 @@ from        (
             select      'PolicyType|' + cast(ID as varchar(15)) as value,
                         'Policy Type : ' + Name as title
             from        PolicyType
+            union
+            select      'FusionType|' + cast(ID as varchar(15)) as value,
+                        'Fusion Type : ' + Name as title
+            from        FusionType
 ) O
 order by    title
 

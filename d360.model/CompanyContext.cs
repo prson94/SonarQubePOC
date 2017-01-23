@@ -537,7 +537,10 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             {
                 model.Add("Filters", item.FusionFilters.Select(i => new { i.FusionAttributeTypeID, i.Filter }).ToDictionary(k => k.FusionAttributeTypeID, v => v.Filter));
             }
-            
+
+            bool hasDashboards = Filter<Report>(x => x.ObjectType == "FusionType" && x.ObjectID == item.FusionTypeID && x.ReportType == "powerbi").Any();
+            model.Add("HasDashboards", hasDashboards);
+
             return model;
         }
 

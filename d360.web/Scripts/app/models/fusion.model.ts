@@ -80,6 +80,7 @@ export class FusionConfigurationDetails {
     LockPromotedItems: boolean;
     Manual: boolean;
     FusionTypeID: number;
+    HasDashboards: boolean;
 }
 
 export class FusionAgentExecutionStats {

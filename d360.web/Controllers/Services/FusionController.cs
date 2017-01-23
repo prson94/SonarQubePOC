@@ -221,6 +221,7 @@ where A.FusionTypeID = @id", columns, joins);
         {
             var model = Company.GetFusionAsDictionary(id);
             if (model == null) return Request.CreateResponse(HttpStatusCode.NotFound);
+            
             return Request.CreateResponse<Dictionary<string, object>>(HttpStatusCode.OK, model);
         }
 

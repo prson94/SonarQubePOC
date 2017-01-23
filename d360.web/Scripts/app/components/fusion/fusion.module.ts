@@ -14,6 +14,7 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedFusionAttributeItemDetailsModule } from '../shared/fusion-attribute-item-details.component';
@@ -97,6 +98,7 @@ import {
         CoreModule,
         D3SSharedModule,        
         PipesModule,        
+        SharedDashboardModule,
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
         SharedFieldDefinitionModule,

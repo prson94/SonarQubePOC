@@ -35,12 +35,13 @@ import { StringConstants } from '../../static/string-constants';
                         <d3s-fusion-manual-load [fusion]="fusion"></d3s-fusion-manual-load>
                     </div>
                 </div>   
+                <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="fusion.FusionTypeID" [objectName]="fusion.Name" [objectType]="'FusionType'"></d3s-dashboard-tab>
                 <div class="row" *ngIf="!isLoading && showFusionRules">
                     <div class="col s12">
                         <d3s-fusion-rules [fusionID]="fusionId" [fusionTypeID]="fusion.FusionTypeID"></d3s-fusion-rules>
                     </div>
                 </div>   
-                <div class="row" *ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible && !isManualLoadVisible && !showFusionRules">
+                <div class="row" *ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible && !isManualLoadVisible && !showFusionRules && !isDashboardVisible">
                     <div class="col l3 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
@@ -94,10 +95,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             protected permissionsService: PermissionsService
     ) {
         super(rightSidebarService);
-        this.rightSidebarService.clearItems();
-        this.setCommonRightSideBar(false, true);
-
-        this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive']));           
+        
     }
 
     ngOnInit() {
@@ -124,9 +122,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                         this.buildBreadcrumb();
 
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
-                        
-                        if (this.fusion.Manual)
-                            this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o']));           
+
+                        this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
                     });
             }
             else {
@@ -139,6 +136,15 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     ngOnDestroy() {
         this.sub.unsubscribe();
         this.clearSidebar();
+    }
+
+    private setRightSideBar(hasDashboard: boolean, isManual: boolean) {
+        this.rightSidebarService.clearItems();
+        this.setCommonRightSideBar(false, true, hasDashboard);
+
+        this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive']));
+
+        if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o']));           
     }
     
     private buildBreadcrumb() {
