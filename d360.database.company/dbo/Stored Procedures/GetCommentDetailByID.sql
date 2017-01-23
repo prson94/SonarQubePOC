@@ -18,11 +18,11 @@ BEGIN
 					C.ParentID
 		FROM		Comment C
 		WHERE		ID = @id
-		UNION ALL
+	/*	UNION ALL
 		SELECT	C.ID, 
 				C.ParentID
 		FROM	Comment C
-				INNER JOIN P PAR ON PAR.ID = C.ParentID
+				INNER JOIN P PAR ON PAR.ID = C.ParentID*/
 	)
 
 	SELECT		C.*,
