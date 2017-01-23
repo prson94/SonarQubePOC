@@ -3068,11 +3068,7 @@ where    A.PolicyTypeID = @id", columns, joins);
         {
             var items = Company.Query<dynamic>(@"
 select      *
-from        (
-            select      'Artifact|' + cast(ID as varchar(15)) as value,
-                        'Artifact Instance : ' + Name as title
-            from        ArtifactType
-            union
+from        (            
             select      'ArtifactType|' + cast(ID as varchar(15)) as value,
                         'Artifact Type : ' + Name as title
             from        ArtifactType                        
