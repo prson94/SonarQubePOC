@@ -21,7 +21,7 @@ import { BaseComponent } from '../../shared/base.component';
                         <option value="fa-bookmark-o">bookmark-empty</option>
                         <option value="fa-briefcase">briefcase</option>
                         <option value="fa-bullhorn">bullhorn</option>
-                        <option value="fa-bullseye">bullhorn</option>
+                        <option value="fa-bullseye">bullseye</option>
                         <option value="fa-bug">bug</option>
                         <option value="fa-bus">bus</option>
                         <option value="fa-cab">cab</option>

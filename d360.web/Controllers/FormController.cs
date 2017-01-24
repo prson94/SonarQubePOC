@@ -12856,7 +12856,7 @@ order by	T.Name, I.DisplayValue";
 
                 templateValues["firstname"] = model.FirstName;
                 templateValues["password"] = generatedPassword;
-                templateValues["url"] = strUrl;
+                templateValues["request_url"] = strUrl;
 
                 //email user 
                 extensions.mail.TemplateMessage.SendMessage("Data3Sixty Password Reset", model.Email, model.FormatDisplayName(), templateValues, "forms-password-reset");

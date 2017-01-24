@@ -80,13 +80,7 @@ export class SiteMenuService extends BaseService {
             .then(response => <SiteNav[]>response.json())
             .then(r => {
                 r.forEach(s => {
-                    if (s.Name.indexOf('#') == 0) {
-                        s.IsCustom = false;
-                        s.DisplayName = s.Name.substring(1);
-                    } else {
-                        s.DisplayName = s.Name;
-                        s.IsCustom = true;
-                    }
+                    s.IsCustom = (s.Name.indexOf('#') != 0);
                 });
                 return r;
             })

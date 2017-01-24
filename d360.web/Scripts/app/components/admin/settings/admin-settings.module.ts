@@ -12,6 +12,7 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 
 import { IconPickerComponent } from './icon-picker.component';
 import { AdminSettingsComponent } from './admin-settings.component';
+import { AdminSiteMenuComponent } from './admin-site-menu.component';
 
 import { AdminSettingsRoutingModule } from './admin-settings.routes';
 
@@ -45,6 +46,7 @@ import {
     declarations: [
         IconPickerComponent,
         AdminSettingsComponent,
+        AdminSiteMenuComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

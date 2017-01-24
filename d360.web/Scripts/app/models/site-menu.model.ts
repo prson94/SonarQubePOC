@@ -32,7 +32,6 @@ export class SiteNav {
     Object: string;
     ObjectID: number;
 
-    DisplayName: string;
     IsCustom: boolean = false;
 
     Icon: string;

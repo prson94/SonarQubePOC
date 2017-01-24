@@ -945,6 +945,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-taxonomies.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-taxonomies.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\policies\admin-policies.module.ts" />

@@ -63,9 +63,9 @@ namespace d360.web.Controllers
 	                else
 		                name
 	                end	
-	                 as varchar(500)) as DisplayName,* from sitenavavailable where parentid is null
+	                 as varchar(500)) as Title,* from sitenavavailable where parentid is null
 	                union all
-	                select cast((s.DisplayName + ' :: ' + v.name) as varchar(500)) as displayname, v.* from sitenavavailable v join s on s.objectid = v.parentid and 
+	                select cast((s.Title + ' :: ' + v.name) as varchar(500)) as Title, v.* from sitenavavailable v join s on s.objectid = v.parentid and 
 	                case when v.object = 'TaxonomyType' or v.object = 'PolicyType' then
 		                v.object + 'Class'
 	                else
@@ -312,7 +312,7 @@ namespace d360.web.Controllers
                     throw new Exception($"Folder Id ${folder.ID} not found.");
                 siteNav.Name = folder.Name;
                 siteNav.Icon = folder.Icon;
-                siteNav.Title = folder.Name;
+                siteNav.Title = folder.Title ?? folder.Name;
                 Company.SaveChanges();
                 menuRepository.ClearCachedMenu();
                 message = "Folder renamed successfully.";
