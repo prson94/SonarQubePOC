@@ -49,7 +49,9 @@ as
 				select 4 as ID, 'Profile' as Name
 			) SRT												on IT.Subject = 'RuleType'				and SRT.ID = IT.SubjectID 
 			left join dbo.TaxonomyType STT with(nolock)			on IT.Subject = 'TaxonomyType'			and STT.ID = IT.SubjectID
-
+			left join (
+				select 1 as ID, 'Resource' as Name				
+			) SRET												on IT.[Subject] = 'ResourceType'
 
 			left join dbo.ArtifactType OAT with(nolock)			on IT.Object = 'ArtifactType'			and OAT.ID = IT.ObjectID
 			left join dbo.ReferenceItemType ODT with(nolock)	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
@@ -66,8 +68,15 @@ as
 				select 4 as ID, 'Profile' as Name
 			) ORT												on IT.Object = 'RuleType'				and ORT.ID = IT.ObjectID
 			left join dbo.TaxonomyType OTT with(nolock)			on IT.Object = 'TaxonomyType'			and OTT.ID = IT.ObjectID
+			left join (
+				select 1 as ID, 'Resource' as Name				
+			) ORET												on IT.[Object] = 'ResourceType'
 
 			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType = IT.Subject and SIcon.ObjectID =	IT.SubjectID
 			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType = IT.Object and OIcon.ObjectID = IT.ObjectID
-	where	coalesce(SAT.ID, SDT.ID, SIT.ID, SFT.ID, SPT.ID, SRT.ID, STT.ID) is not null
-			and coalesce(OAT.ID, ODT.ID, [OFT].ID, OPT.ID, ORT.ID, OTT.ID) is not null
+	where	coalesce(SAT.ID, SDT.ID, SIT.ID, SFT.ID, SPT.ID, SRT.ID, STT.ID, SRET.ID) is not null
+			and coalesce(OAT.ID, ODT.ID, [OFT].ID, OPT.ID, ORT.ID, OTT.ID, ORET.ID) is not null
+
+
+
+GO
