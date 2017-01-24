@@ -3202,6 +3202,11 @@ namespace d360.web.Controllers
 
                 switch (model.FieldType.Type)
                 {
+                    case "Html":
+                        model.FieldType.MinimumLength = (!model.FieldType.IsRequired) ? (int?)null : 1;
+                        model.FieldType.MaximumLength = null;
+                        Company.Add<FieldType>(model.FieldType);
+                        break;
                     case "Lookup":
                         #region
                         if (string.IsNullOrEmpty(model.FieldType.LookupDisplayFormat))
