@@ -159,7 +159,7 @@ BEGIN
 	if @type = 'Policy'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	T.ID,	'PolicyType',	T.Name
+			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, T.ID, O.ID),	T.ID,	'PolicyType',	T.Name
 			FROM	[Policy] O
 					INNER JOIN PolicyType T ON O.PolicyTypeID = T.ID AND O.ID = @id
 	end
@@ -176,7 +176,7 @@ BEGIN
 	if @type = 'ReferenceItemType'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Reference Item Type'
+			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	0,		@type,	'Reference Item Type'
 			FROM	ReferenceItemType
 			WHERE	ID = @id
 	end
@@ -225,6 +225,15 @@ BEGIN
 			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Analytic Type'
 			FROM	StatisticType O
 			WHERE	ID = @id
+	end
+
+	if @type = 'Synonym'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,			[Type],		TypeName)
+			SELECT			O.ID,	O.Name,	D.TextPath,	D.TypeName,		O.ObjectID,	O.Object,	D.Url,	O.PredicateID,	'Synonym',	P.Name
+			FROM	[Synonym] O
+					INNER JOIN [Predicate] P ON O.PredicateID = P.ID and O.ID = @id
+					cross apply  utility.ObjectDetail(O.[Object], O.ObjectID) D
 	end
 
 	if @type = 'Taxonomy'

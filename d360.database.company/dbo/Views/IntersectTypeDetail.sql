@@ -35,7 +35,9 @@ as
 			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
 
 			left join dbo.ArtifactType SAT with(nolock)			on IT.Subject = 'ArtifactType'			and SAT.ID = IT.SubjectID
-			left join dbo.ReferenceItemType SDT with(nolock)	on IT.Subject = 'ReferenceItemType'		and IT.SubjectID = 0
+			left join (
+				select 1 as ID, 'Reference List' as Name
+			) SDT												on IT.Subject = 'ReferenceItemType'		and IT.SubjectID = 0
 			left join dbo.FusionAttributeType SFT with(nolock)	on IT.Subject = 'FusionAttributeType'	and SFT.ID = IT.SubjectID
 			left join dbo.IntersectType SIT with(nolock)		on IT.Subject = 'IntersectType'			and SIT.ID = IT.SubjectID
 			left join dbo.PolicyType SPT with(nolock)			on IT.Subject = 'PolicyType'			and SPT.ID = IT.SubjectID
@@ -53,8 +55,7 @@ as
 				select 1 as ID, 'Resource' as Name				
 			) SRET												on IT.[Subject] = 'ResourceType'
 
-			left join dbo.ArtifactType OAT with(nolock)			on IT.Object = 'ArtifactType'			and OAT.ID = IT.ObjectID
-			left join dbo.ReferenceItemType ODT with(nolock)	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
+			left join dbo.ArtifactType OAT with(nolock)			on IT.Object = 'ArtifactType'			and OAT.ID = IT.ObjectID			
 			left join dbo.FusionAttributeType OFT with(nolock)	on IT.Object = 'FusionAttributeType'	and OFT.ID = IT.ObjectID
 			left join dbo.IntersectType OIT with(nolock)		on IT.Object = 'IntersectType'			and OIT.ID = IT.ObjectID
 			left join dbo.PolicyType OPT with(nolock)			on IT.Object = 'PolicyType'				and OPT.ID = IT.ObjectID
@@ -71,6 +72,9 @@ as
 			left join (
 				select 1 as ID, 'Resource' as Name				
 			) ORET												on IT.[Object] = 'ResourceType'
+			left join (
+				select 1 as ID, 'Reference List' as Name
+			) ODT 	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
 
 			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType = IT.Subject and SIcon.ObjectID =	IT.SubjectID
 			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType = IT.Object and OIcon.ObjectID = IT.ObjectID

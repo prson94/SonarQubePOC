@@ -11121,6 +11121,25 @@ where   D.ResourceID not in (
 							)
 					)
 order by D.LastName, D.FirstName";
+                    break;                
+                case "ReferenceItemType":
+                    sql = $@"
+select	'ReferenceItemType' as [Object], 
+        r.ID as ObjectID, 
+        r.Name as Name
+from	[dbo].[referenceitemtype] r with(nolock)
+where   r.ID not in (
+					select	case 
+                                when SubjectType = 'ReferenceItemType' then SubjectID
+                                else ObjectID
+                            end
+					from	[IntersectDetail]
+					where	IntersectTypeID = @it and (
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItemType' and ObjectTypeID = 1) ) OR
+							 ( (SubjectType = 'ReferenceItemType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+							)
+					)
+order by r.Name";
                     break;
                 default:
                     sql = $@"

@@ -1380,7 +1380,7 @@ where	R.SourceObject = 'FusionAttribute'
 				SELECT	CAST(ID as int) ID,
 						'Relationships :: ' + Name AS Name,
 						'IntersectType' AS Type
-				FROM	IntersectType
+				FROM	IntersectType                
 				UNION
 				SELECT	1 as ID,
 						'Resource' as Name,
@@ -1401,6 +1401,11 @@ where	R.SourceObject = 'FusionAttribute'
 				SELECT	4 as ID,
 						'Rules :: Profile' as Name,
 						'RuleType' as Type
+                UNION
+				SELECT	0 as ID,
+						'Reference :: List' as Name,
+						'ReferenceItemType' as Type
+				 				
 ) I";
 
             if (subject.HasValue && subjectID.HasValue)
