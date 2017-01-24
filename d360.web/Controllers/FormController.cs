@@ -3555,6 +3555,10 @@ namespace d360.web.Controllers
 
                 switch (ft.Type)
                 {
+                    case "Html":
+                        ft.MinimumLength = (!ft.IsRequired) ? (int?)null : 1;
+                        ft.MaximumLength = null;
+                    break;
                     case "FilteredLookup":
                         #region
                         isNew = false;

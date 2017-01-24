@@ -19,9 +19,10 @@ import * as _ from 'lodash';
                                 <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
                             </div>
                         </div>
+                        <div *ngIf="hasIconFields && fore.Value == back.Value" class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
-                            <button pButton type="submit" [disabled]="!form.valid" style="width: '150px';" label="Save"></button>                            
+                            <button pButton type="submit" [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)" style="width: '150px';" label="Save"></button>                            
                             <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
                         </div>                    
                     </form>                    
@@ -59,6 +60,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     rows: EditorRow[] = [];
 
     editedItem: any;
+
+    hasIconFields = false;
+    fore: EditorField;
+    back: EditorField;
 
     constructor(private ref: ChangeDetectorRef, private formBuilder: FormBuilder, private messagesService: MessagesService, private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
         super();
@@ -110,9 +115,15 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         this.rows.push(n);
                     }
                 });
-                                
+
+                this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
+                this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
+                if (this.fore != null && this.back != null)  
+                    this.hasIconFields = true;
+
                 this.form = this.toFormGroup(this.fields);
                 this.ref.markForCheck();
+                console.log(this.fields);
             });
     }   
 

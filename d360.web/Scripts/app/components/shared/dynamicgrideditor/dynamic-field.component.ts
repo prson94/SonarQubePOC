@@ -87,7 +87,7 @@ declare var CompanySettings;
                                                 cpFallbackColor="#000"
                                                 cpPosition="bottom"
                                                 spellcheck="false"
-                                                style="width: 100%;height:25px;" [formControlName]="field.FieldName" [value]="colorValue" (colorPickerChange)="setColorPickerValue($event)"/>
+                                                style="width: 100%;height:25px;" [formControlName]="field.FieldName" [value]="colorValue" (colorPickerChange)="setColorPickerValue($event)" readonly/>
                                         </td>
                                         <td>
                                             <span [style.background-color]="field.Value" style="height:25px;width:25px;display:block;border:1px solid black"></span>

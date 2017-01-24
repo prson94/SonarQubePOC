@@ -141,8 +141,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                         if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
                             this.loadComplexRelationLookup();
-                        } else if (this.model.FieldType.Type == 'RelationLookup') {
-                            this.loadRelationLookup(f);
                         }
                     }
                 })
@@ -161,7 +159,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     //console.log('lookups: ', d);
                     this.lookups = d;
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
-                    this.model.FieldType.Type = 'Date';
+                    this.lookups.DataTypes.unshift({ label: 'Choose...', value: null });
+                    this.model.FieldType.Type = null;
                 })
                 .then(() => this.isLoading = false);;
         }
@@ -252,47 +251,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    private loadRelationLookup(f: FieldTypeEditorModel) {
-        this.model.RelationItem = f.RelationItems[0];
-        this.model.RelationItems = [];
-
-        let intersect = this.lookups.IntersectTypes.find(f => f.value.split('|')[0] == this.model.RelationItem.IntersectType.toString());
-        let displayFields = _.cloneDeep(this.model.RelationItem.DisplayFields);
-
-        this.model.RelationItem.selectedRelationItemID = intersect.value;
-
-        let s = [];
-        for (let i = 1; i <= this.model.RelationItem.DisplayFields.length; i++) {
-            this.model.RelationItem.DisplayFields[i - 1].DisplayOrder = i;
-            s.push({ id: i, text: i });
-        }
-        this.model.RelationItem.SortOrderList = s;
-
-        this.changeLegacyRef()
-            .then(() => {
-                let child = this.childIntersectTypes.find(f => f.value.split('|')[0] == this.model.RelationItem.ChildIntersectType.toString());
-                if (child)
-                    this.model.RelationItem.selectedChildIntersectType = child.value;
-            })
-            .then(() => this.changeLegacyChild())
-            .then(() => {
-
-                this.model.RelationItem.DisplayFields.forEach(d => {
-                    let f = displayFields.find(i => i.value == d.value);
-
-                    if (f) {
-                        d.Show = f.Show;
-                        d.FilterValue = f.FilterValue;
-                        d.SortOrder = f.SortOrder;
-                    }
-                });
-            });
-    }
-    
     private loadDataType(value: string): Promise<void> {
         let promises = [];
         //console.log('load data type');
         //console.log(value);
+        if (value == null)
+            return Promise.resolve();
+
         switch (value.toLowerCase()) {
             case 'lookup':
                 promises.push(this.lookupTypeSelected(this.model.selectedLookup || this.lookups.Lookups[0].value));
@@ -324,18 +289,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                     }
                     this.changeRefType(this.model.RelationItems.length - 1);
-                }
-                break;
-            case 'relationlookup':
-                this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
-                if (this.model.RelationItem == null) {
-                    let r = new FieldTypeRelationItemEditorModel();
-                    r.DisplayFields = [];
-                    r.ReferenceType = 1;
-                    r.Object = this.objectType;
-                    r.ObjectID = this.objectID;
-                    this.model.RelationItem = r;
-                    this.relationItemCount = 1;                    
                 }
                 break;
             case 'filteredlookup':
@@ -427,33 +380,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.onCancel.emit(null);
     }
 
-    private onSubmit(): void {
+    private onSubmit(): any {
 
         if (!this.validate())
             return;
-
-        if (this.model.FieldType.Type == 'RelationLookup') {
-            if (this.model.RelationItem.ReferenceType.toString() != '1' && this.model.RelationItem.selectedChildIntersectType != null)
-                this.model.RelationItem.ChildIntersectType = parseInt(this.model.RelationItem.selectedChildIntersectType.split('|')[0]);
-            if (this.model.RelationItem.selectedRelationItemID != null) {
-                let params = this.model.RelationItem.selectedRelationItemID.split('|');
-                this.model.RelationItem.ObjectID = parseInt(params[2]);
-                this.model.RelationItem.Object = params[1];
-                if (this.model.RelationItem.IntersectType == null)
-                    this.model.RelationItem.IntersectType = parseInt(params[0]);
-
-            }
-
-            var displayFields = _.cloneDeep(this.model.RelationItem.DisplayFields);
-            this.model.RelationItem.DisplayFields = [];
-
-            displayFields.forEach(d => {
-                //only send back fields with values
-                if ((d.FilterValue == null || d.FilterValue == '') && d.Show == false)
-                    return;
-                this.model.RelationItem.DisplayFields.push(d);
-            });
-        }
 
         //convert DisplayFields to objects
         if (this.model.FusionItems) {
@@ -530,18 +460,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.errorMessage = '';
         
         switch (this.model.FieldType.Type.toLowerCase()) {
-            case 'relationlookup':
-                if (this.model.RelationItem.DisplayFields) {
-                    let count = 0;
-                    this.model.RelationItem.DisplayFields.forEach(d => {
-                        if (d.Show || (d.FilterValue != null || d.FilterValue != '')) count++;
-                    });
-                    if (count < 1) {
-                        this.errorMessage = "There are no display fields selected for this relationship lookup.";
-                        valid = false;
-                    }
-                }
-                break;
             case 'fusionlookup':
                 if (this.model.FusionItems == null || this.model.FusionItems.length < 1) {
                     this.errorMessage = "Please add at least one fusion item";
