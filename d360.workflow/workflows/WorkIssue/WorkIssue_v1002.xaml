@@ -68,7 +68,7 @@
       <State x:Name="__ReferenceID2" DisplayName="New" sap2010:WorkflowViewState.IdRef="State_1">
         <State.Entry>
           <Sequence sap2010:WorkflowViewState.IdRef="Sequence_1">
-            <local:GetWorkflowInstanceRelatedInfo>
+            <local:GetWorkflowInstanceRelatedInfo sap2010:WorkflowViewState.IdRef="GetWorkflowInstanceRelatedInfo_2">
               <local:GetWorkflowInstanceRelatedInfo.CompanyDomainPrefix>
                 <OutArgument x:TypeArguments="x:String">
                   <mca:CSharpReference x:TypeArguments="x:String">CompanyDomainPrefix</mca:CSharpReference>
@@ -84,7 +84,6 @@
                   <mca:CSharpReference x:TypeArguments="s:Guid">WorkflowInstanceID</mca:CSharpReference>
                 </OutArgument>
               </local:GetWorkflowInstanceRelatedInfo.WorkflowInstanceID>
-              <sap2010:WorkflowViewState.IdRef>GetWorkflowInstanceRelatedInfo_2</sap2010:WorkflowViewState.IdRef>
             </local:GetWorkflowInstanceRelatedInfo>
             <local:GetCommentInfoFromRequest DisplayName="Get Comment" sap2010:WorkflowViewState.IdRef="GetCommentInfoFromRequest_1">
               <local:GetCommentInfoFromRequest.CommentBody>
@@ -123,7 +122,7 @@
                 </OutArgument>
               </local:GetCommentInfoFromRequest.Tags>
             </local:GetCommentInfoFromRequest>
-            <local:BuildIssueRequestXml DisplayName="Build Issue Request Xml" sap2010:WorkflowViewState.IdRef="BuildIssueRequestXml_1">
+            <local:BuildIssueRequestXml IssueID="{x:Null}" IssueType="{x:Null}" DisplayName="Build Issue Request Xml" sap2010:WorkflowViewState.IdRef="BuildIssueRequestXml_1">
               <local:BuildIssueRequestXml.CommentCreatorResourceID>
                 <InArgument x:TypeArguments="x:Int32">
                   <mca:CSharpValue x:TypeArguments="x:Int32">CommentCreatorResourceID</mca:CSharpValue>
@@ -423,7 +422,7 @@
                                       <DelegateInArgument x:TypeArguments="dce:Resource" Name="user" />
                                     </ActivityAction.Argument>
                                     <Sequence sap2010:WorkflowViewState.IdRef="Sequence_10">
-                                      <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_1" Key="url">
+                                      <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_1" Key="request_url">
                                         <maes:AddToDictionary.Dictionary>
                                           <InArgument x:TypeArguments="scg:IDictionary(x:String, x:String)">
                                             <mca:CSharpValue x:TypeArguments="scg:IDictionary(x:String, x:String)">TemplateTags</mca:CSharpValue>
@@ -644,7 +643,7 @@
       <Variable x:TypeArguments="x:String" Name="CompanyDomainPrefix" />
       <Variable x:TypeArguments="s:Guid" Name="WorkflowInstanceID" />
     </StateMachine.Variables>
-    <sads:DebugSymbol.Symbol>d1lDOlxQcm9qZWN0c1xEM1NcRGV2ZWxvcG1lbnQgQnJhbmNoXGQzNjAud29ya2Zsb3dcd29ya2Zsb3dzXFdvcmtJc3N1ZVxXb3JrSXNzdWVfdjEwMDIueGFtbIQBQgOIBRICAQFEB/wEDwMBgwaAAheLBB8DAawCqwIfygInAwGOAtMBD/AEFwIBAkYLqgEWAwHKBq0BC84BFgMBhgaEAh+oAjgDAbQF5wIf5wJvAwGpBc0CH+QCKgMB+gSABB+ABHIDAe8E7AIf/QMqAwGuAq0CI8gCLgMBkALXARf9ASIDAb4B5QQX5QRoAwGzAY4EF+IEIgIBBEcNWDQDAYIIWQ19LwMBrQd+DZgBKgMB8AaZAQ2pATADAcsGsQENvAEnAwGvBr0BDc0BMAMBhwabAiWbApABAwH4BYQCXIQCZgMB9wWWAiWWAoMBAwHsBYwCJYwCcgMB4QWHAiWHAnEDAdYFoAIloAJ0AwHLBaUCJaUCcAMBwAWRAiWRAmsDAbUFzgIh4wI7AwH7BPECIYYDOQMBugSHAyGNA1ADAawEjgMhngNEAwGEBJ8DIdUDKwMBjQPWAyHmA0ADAeUC5wMh/AM7AwGvAq4CJbQCVAMBpQK1AiXAAkADAZgCwQIlxwJIAwGRAtgBGfwBMgMBvwGSBBmnBDEDAYIBqAQZrgRIAgF1rwQZvwQ8AgFQwAQZywQ0AgE3zAQZ4QQzAgEFShNKbAMBmwhUE1RpAwGPCE8TT1kDAYMIZhNmcwMB9gdhE2FwAwHqB3UTdWYDAd4HaxNrWQMB0gd6E3prAwHGB1wTXGQDAboHcBNwWQMBrgeGAROGAV4DAaEHgQETgQFoAwGVB5UBE5UBagMBiQeLAROLAVkDAf0GkAETkAFZAwHxBqYBE6YBcQMB5AacAROcAVkDAdgGoQEToQFiAwHMBrkBE7kBbAMBvQa0ARO0AVkDAbAGwAETwAF5AwGiBsoBE8oBZAMBlQbFARPFAVkDAYgG0QIn0QKUAQMBngXgAifgAm4DAZMFzgJIzgJLAwGSBdYCJ9YCbQMBhwXbAifbAm0DAfwE+QIn+QKEAQMB4gSDAyeDA4ABAwHVBPQCJ/QCfQMByAT+Aif+Am0DAbsEigMnigNtAwGtBJEDJ5EDjQEDAZ8EmwMnmwN4AwGSBJYDJ5YDbQMBhQSiAyeiA38DAfcDqQMl0wMwAwGOA+MDJ+MDeAMBgAPZAyfZA20DAfMC3gMn3gNtAwHmAuoDJ+oDmQEDAdgC+QMn+QNuAwHLAucDSOcDSwMBygLvAyfvA20DAb0C9AMn9ANtAwGwArECK7ECcQMBpgK9Aiu9AoIBAwGfArgCK7gCcQMBmQLEAivEAnEDAZIC7wEf7wGKAQMBgwLYAT7YAUQDAYIC6gEf6gF9AwH3AeABH+ABbAMB7AHbAR/bAWsDAeEB9AEf9AFuAwHWAfkBH/kBagMBywHlAR/lAWUDAcABmgQfmgR8AwGnAaQEH6QEeAMBmwGVBB+VBHUDAY8BnwQfnwRlAwGDAasEH6sEZQIBdrIEH7IEhQECAWm8BB+8BHACAV23BB+3BGUCAVHIBB/IBHgCAUTDBB/DBGUCATjPBB/PBI4BAgEr3gQf3gRmAgEfzARAzARDAgEe1AQf1ARlAgES2QQf2QRlAgEGqgMntQM+AwHZA7YDJ8EDPgMBuwPCAyfSA0EDAY8DsgMtsgOfAQMB6QOtAy2tA5IBAwHbA6oDnAGqA6EBAwHaA74DLb4DgwEDAcsDuQMtuQOSAQMBvQO2A5wBtgOiAQMBvAPCA6QBwgO9AQMBugPFAy3FA5EBAwGsA88DLc8DgwEDAZ4DygMtygN1AwGQAw==</sads:DebugSymbol.Symbol>
+    <sads:DebugSymbol.Symbol>d1NDOlx3c1x0ZnNcRGV2ZWxvcG1lbnQgQnJhbmNoXGQzNjAud29ya2Zsb3dcd29ya2Zsb3dzXFdvcmtJc3N1ZVxXb3JrSXNzdWVfdjEwMDIueGFtbIQBQgOHBRICAQFEB/sEDwMBgwb/AReKBB8DAawCqgIfyQInAwGOAtIBD+8EFwIBAkYLqQEWAwHKBqwBC80BFgMBhgaDAh+nAjgDAbQF5gIf5gJvAwGpBcwCH+MCKgMB+gT/Ax//A3IDAe8E6wIf/AMqAwGuAqwCI8cCLgMBkALWARf8ASIDAb4B5AQX5ARoAwGzAY0EF+EEIgIBBEcNVzQDAYIIWA18LwMBrQd9DZcBKgMB8AaYAQ2oATADAcsGsAENuwEnAwGvBrwBDcwBMAMBhwaaAiWaApABAwH4BYMCXIMCZgMB9wWVAiWVAoMBAwHsBYsCJYsCcgMB4QWGAiWGAnEDAdYFnwIlnwJ0AwHLBaQCJaQCcAMBwAWQAiWQAmsDAbUFzQIh4gI7AwH7BPACIYUDOQMBugSGAyGMA1ADAawEjQMhnQNEAwGEBJ4DIdQDKwMBjQPVAyHlA0ADAeUC5gMh+wM7AwGvAq0CJbMCVAMBpQK0AiW/AkADAZgCwAIlxgJIAwGRAtcBGfsBMgMBvwGRBBmmBDEDAYIBpwQZrQRIAgF1rgQZvgQ8AgFQvwQZygQ0AgE3ywQZ4AQzAgEFShNKbAMBmwhUE1RpAwGPCE8TT1kDAYMIZRNlcwMB9gdgE2BwAwHqB3QTdGYDAd4HahNqWQMB0gd5E3lrAwHGB1sTW2QDAboHbxNvWQMBrgeFAROFAV4DAaEHgAETgAFoAwGVB5QBE5QBagMBiQeKAROKAVkDAf0GjwETjwFZAwHxBqUBE6UBcQMB5AabARObAVkDAdgGoAEToAFiAwHMBrgBE7gBbAMBvQazAROzAVkDAbAGvwETvwF5AwGiBskBE8kBZAMBlQbEARPEAVkDAYgG0AIn0AKUAQMBngXfAiffAm4DAZMFzQJIzQJLAwGSBdUCJ9UCbQMBhwXaAifaAm0DAfwE+AIn+AKEAQMB4gSCAyeCA4ABAwHVBPMCJ/MCfQMByAT9Aif9Am0DAbsEiQMniQNtAwGtBJADJ5ADjQEDAZ8EmgMnmgN4AwGSBJUDJ5UDbQMBhQShAyehA38DAfcDqAMl0gMwAwGOA+IDJ+IDeAMBgAPYAyfYA20DAfMC3QMn3QNtAwHmAukDJ+kDmQEDAdgC+AMn+ANuAwHLAuYDSOYDSwMBygLuAyfuA20DAb0C8wMn8wNtAwGwArACK7ACcQMBpgK8Aiu8AoIBAwGfArcCK7cCcQMBmQLDAivDAnEDAZIC7gEf7gGKAQMBgwLXAT7XAUQDAYIC6QEf6QF9AwH3Ad8BH98BbAMB7AHaAR/aAWsDAeEB8wEf8wFuAwHWAfgBH/gBagMBywHkAR/kAWUDAcABmQQfmQR8AwGnAaMEH6MEeAMBmwGUBB+UBHUDAY8BngQfngRlAwGDAaoEH6oEZQIBdrEEH7EEhQECAWm7BB+7BHACAV22BB+2BGUCAVHHBB/HBHgCAUTCBB/CBGUCATjOBB/OBI4BAgEr3QQf3QRmAgEfywRAywRDAgEe0wQf0wRlAgES2AQf2ARlAgEGqQMntAM+AwHZA7UDJ8ADPgMBuwPBAyfRA0EDAY8DsQMtsQOfAQMB6QOsAy2sA5IBAwHbA6kDnAGpA6kBAwHaA70DLb0DgwEDAcsDuAMtuAOSAQMBvQO1A5wBtQOiAQMBvAPBA6QBwQO9AQMBugPEAy3EA5EBAwGsA84DLc4DgwEDAZ4DyQMtyQN1AwGQAw==</sads:DebugSymbol.Symbol>
   </StateMachine>
   <sap2010:WorkflowViewState.ViewStateManager>
     <sap2010:ViewStateManager>
@@ -749,7 +748,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="State_3" sap:VirtualizedContainerService.HintSize="226,68">
+      <sap2010:ViewStateData Id="State_3" sap:VirtualizedContainerService.HintSize="326,499">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <av:Point x:Key="ShapeLocation">77,306</av:Point>
@@ -801,7 +800,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="State_1" sap:VirtualizedContainerService.HintSize="326,792">
+      <sap2010:ViewStateData Id="State_1" sap:VirtualizedContainerService.HintSize="225,77">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <av:Point x:Key="ShapeLocation">107.5,101.5</av:Point>

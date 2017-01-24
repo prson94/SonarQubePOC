@@ -123,7 +123,7 @@
                 </OutArgument>
               </local:GetCommentInfoFromRequest.Tags>
             </local:GetCommentInfoFromRequest>
-            <local:BuildIssueRequestXml DisplayName="Build Issue Request Xml" sap2010:WorkflowViewState.IdRef="BuildIssueRequestXml_1">
+            <local:BuildIssueRequestXml IssueID="{x:Null}" DisplayName="Build Issue Request Xml" sap2010:WorkflowViewState.IdRef="BuildIssueRequestXml_1">
               <local:BuildIssueRequestXml.CommentCreatorResourceID>
                 <InArgument x:TypeArguments="x:Int32">
                   <mca:CSharpValue x:TypeArguments="x:Int32">CommentCreatorResourceID</mca:CSharpValue>
@@ -428,7 +428,7 @@
                                       <DelegateInArgument x:TypeArguments="dce:Resource" Name="user" />
                                     </ActivityAction.Argument>
                                     <Sequence sap2010:WorkflowViewState.IdRef="Sequence_10">
-                                      <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_1" Key="url">
+                                      <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_1" Key="request_url">
                                         <maes:AddToDictionary.Dictionary>
                                           <InArgument x:TypeArguments="scg:IDictionary(x:String, x:String)">
                                             <mca:CSharpValue x:TypeArguments="scg:IDictionary(x:String, x:String)">TemplateTags</mca:CSharpValue>
@@ -649,7 +649,7 @@
       <Variable x:TypeArguments="x:String" Name="CompanyDomainPrefix" />
       <Variable x:TypeArguments="s:Guid" Name="WorkflowInstanceID" />
     </StateMachine.Variables>
-    <sads:DebugSymbol.Symbol>d1dDOlxzb3VyY2VcRDNTXERldmVsb3BtZW50IEJyYW5jaFxkMzYwLndvcmtmbG93XHdvcmtmbG93c1xXb3JrSXNzdWVcV29ya0lzc3VlX3YxMDAzLnhhbWyFAUMDjQUSAgEBRQeBBQ8DAcEGhQIXkAQfAwHGArACH88CJwMBpALYAQ/1BBcCAQJHC68BFgMBjQeyAQvTARYDAcQGiQIfrQI4AwHrBewCH+wCbwMB3wXSAh/pAioDAawFhQQfhQRyAwGgBfECH4IEKgMByAKyAiPNAi4DAaYC3AEXggIiAwHNAeoEF+oEaAMBwQGTBBfnBCICAQRIDVg0AwHhCFkNfS8DAYUIfg2dASoDAbYHngENrgEwAwGOB7YBDcEBJwMB8AbCAQ3SATADAcUGoAIloAKQAQMBtQaJAlyJAmYDAbQGmwIlmwKDAQMBqAaRAiWRAnIDAZwGjAIljAJxAwGQBqUCJaUCdAMBhAaqAiWqAnADAfgFlgIllgJrAwHsBdMCIegCOwMBrQX2AiGLAzkDAecEjAMhkgNQAwHYBJMDIaMDRAMBrQSkAyHaAysDAa4D2wMh6wNAAwGDA+wDIYEEOwMByQKzAiW5AlQDAb4CugIlxQJAAwGvAsYCJcwCSAMBpwLdARmBAjIDAc4BlwQZrAQxAwGMAa0EGbMESAIBfrQEGcQEPAIBVsUEGdAENAIBO9EEGeYEMwIBBUsTS2wDAfwIVRNVaQMB7whQE1BZAwHiCGYTZnMDAdQIYRNhcAMBxwh1E3VmAwG6CGsTa1kDAa0IehN6awMBoAhcE1xkAwGTCHATcFkDAYYIlQETlQFZAwH4B4YBE4YBXgMB6weBAROBAWgDAd4HmgETmgFqAwHRB4sBE4sBWQMBxAeQAROQAVkDAbcHqwETqwFxAwGpB6EBE6EBWQMBnAemAROmAWIDAY8HvgETvgFsAwH/BrkBE7kBWQMB8QbFARPFAXkDAeIGzwETzwFkAwHUBsoBE8oBWQMBxgbWAifWApQBAwHTBeUCJ+UCbgMBxwXTAkjTAksDAcYF2wIn2wJtAwG6BeACJ+ACbQMBrgX+Aif+AoQBAwGSBYgDJ4gDgAEDAYQF+QIn+QJ9AwH2BIMDJ4MDbQMB6ASPAyePA20DAdkElgMnlgONAQMBygSgAyegA3gDAbwEmwMnmwNtAwGuBKcDJ6cDfwMBnwSuAyXYAzADAa8D6AMn6AN4AwGgA94DJ94DbQMBkgPjAyfjA20DAYQD7wMn7wOZAQMB9QL+Ayf+A24DAecC7ANI7ANLAwHmAvQDJ/QDbQMB2AL5Ayf5A20DAcoCtgIrtgJxAwG/AsICK8ICggEDAbcCvQIrvQJxAwGwAskCK8kCcQMBqAL0AR/0AYoBAwGYAt0BPt0BRAMBlwLvAR/vAX0DAYsC5QEf5QFsAwH/AeABH+ABawMB8wH5AR/5AW4DAecB/gEf/gFqAwHbAeoBH+oBZQMBzwGfBB+fBHwDAbQBqQQfqQR4AwGnAZoEH5oEdQMBmgGkBB+kBGUDAY0BsAQfsARlAgF/twQftwSFAQIBccEEH8EEcAIBZLwEH7wEZQIBV80EH80EeAIBScgEH8gEZQIBPNQEH9QEjgECAS7jBB/jBGYCASHRBEDRBEMCASDZBB/ZBGUCARPeBB/eBGUCAQavAye6Az4DAf8DuwMnxgM+AwHfA8cDJ9cDQQMBsAO3Ay23A58BAwGQBLIDLbIDkgEDAYEErwOcAa8DoQEDAYAEwwMtwwODAQMB8AO+Ay2+A5IBAwHhA7sDnAG7A6IBAwHgA8cDpAHHA70BAwHeA8oDLcoDkQEDAc8D1AMt1AODAQMBwAPPAy3PA3UDAbED</sads:DebugSymbol.Symbol>
+    <sads:DebugSymbol.Symbol>d1NDOlx3c1x0ZnNcRGV2ZWxvcG1lbnQgQnJhbmNoXGQzNjAud29ya2Zsb3dcd29ya2Zsb3dzXFdvcmtJc3N1ZVxXb3JrSXNzdWVfdjEwMDMueGFtbIUBQwONBRICAQFFB4EFDwMBwQaFAheQBB8DAcYCsAIfzwInAwGkAtgBD/UEFwIBAkcLrwEWAwGNB7IBC9MBFgMBxAaJAh+tAjgDAesF7AIf7AJvAwHfBdICH+kCKgMBrAWFBB+FBHIDAaAF8QIfggQqAwHIArICI80CLgMBpgLcAReCAiIDAc0B6gQX6gRoAwHBAZMEF+cEIgIBBEgNWDQDAeEIWQ19LwMBhQh+DZ0BKgMBtgeeAQ2uATADAY4HtgENwQEnAwHwBsIBDdIBMAMBxQagAiWgApABAwG1BokCXIkCZgMBtAabAiWbAoMBAwGoBpECJZECcgMBnAaMAiWMAnEDAZAGpQIlpQJ0AwGEBqoCJaoCcAMB+AWWAiWWAmsDAewF0wIh6AI7AwGtBfYCIYsDOQMB5wSMAyGSA1ADAdgEkwMhowNEAwGtBKQDIdoDKwMBrgPbAyHrA0ADAYMD7AMhgQQ7AwHJArMCJbkCVAMBvgK6AiXFAkADAa8CxgIlzAJIAwGnAt0BGYECMgMBzgGXBBmsBDEDAYwBrQQZswRIAgF+tAQZxAQ8AgFWxQQZ0AQ0AgE70QQZ5gQzAgEFSxNLbAMB/AhVE1VpAwHvCFATUFkDAeIIZhNmcwMB1AhhE2FwAwHHCHUTdWYDAboIaxNrWQMBrQh6E3prAwGgCFwTXGQDAZMIcBNwWQMBhgiVAROVAVkDAfgHhgEThgFeAwHrB4EBE4EBaAMB3geaAROaAWoDAdEHiwETiwFZAwHEB5ABE5ABWQMBtwerAROrAXEDAakHoQEToQFZAwGcB6YBE6YBYgMBjwe+ARO+AWwDAf8GuQETuQFZAwHxBsUBE8UBeQMB4gbPARPPAWQDAdQGygETygFZAwHGBtYCJ9YClAEDAdMF5QIn5QJuAwHHBdMCSNMCSwMBxgXbAifbAm0DAboF4AIn4AJtAwGuBf4CJ/4ChAEDAZIFiAMniAOAAQMBhAX5Aif5An0DAfYEgwMngwNtAwHoBI8DJ48DbQMB2QSWAyeWA40BAwHKBKADJ6ADeAMBvASbAyebA20DAa4EpwMnpwN/AwGfBK4DJdgDMAMBrwPoAyfoA3gDAaAD3gMn3gNtAwGSA+MDJ+MDbQMBhAPvAyfvA5kBAwH1Av4DJ/4DbgMB5wLsA0jsA0sDAeYC9AMn9ANtAwHYAvkDJ/kDbQMBygK2Aiu2AnEDAb8CwgIrwgKCAQMBtwK9Aiu9AnEDAbACyQIryQJxAwGoAvQBH/QBigEDAZgC3QE+3QFEAwGXAu8BH+8BfQMBiwLlAR/lAWwDAf8B4AEf4AFrAwHzAfkBH/kBbgMB5wH+AR/+AWoDAdsB6gEf6gFlAwHPAZ8EH58EfAMBtAGpBB+pBHgDAacBmgQfmgR1AwGaAaQEH6QEZQMBjQGwBB+wBGUCAX+3BB+3BIUBAgFxwQQfwQRwAgFkvAQfvARlAgFXzQQfzQR4AgFJyAQfyARlAgE81AQf1ASOAQIBLuMEH+MEZgIBIdEEQNEEQwIBINkEH9kEZQIBE94EH94EZQIBBq8DJ7oDPgMB/wO7AyfGAz4DAd8DxwMn1wNBAwGwA7cDLbcDnwEDAZAEsgMtsgOSAQMBgQSvA5wBrwOpAQMBgATDAy3DA4MBAwHwA74DLb4DkgEDAeEDuwOcAbsDogEDAeADxwOkAccDvQEDAd4DygMtygORAQMBzwPUAy3UA4MBAwHAA88DLc8DdQMBsQM=</sads:DebugSymbol.Symbol>
   </StateMachine>
   <sap2010:WorkflowViewState.ViewStateManager>
     <sap2010:ViewStateManager>
@@ -754,7 +754,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="State_3" sap:VirtualizedContainerService.HintSize="226,68">
+      <sap2010:ViewStateData Id="State_3" sap:VirtualizedContainerService.HintSize="326,499">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <av:Point x:Key="ShapeLocation">77,306</av:Point>
@@ -806,7 +806,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="State_1" sap:VirtualizedContainerService.HintSize="326,792">
+      <sap2010:ViewStateData Id="State_1" sap:VirtualizedContainerService.HintSize="225,77">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <av:Point x:Key="ShapeLocation">107.5,101.5</av:Point>
