@@ -1676,3 +1676,7 @@ BEGIN
 	where	ID = @ExecutionID;
 END
 GO
+
+--insert referenceitemtype into cache object so it shows up correctly on relationshiptype def screen
+insert into cache.[object] ([object],[objectid],[objecttype],[objecttypeid]) values('ReferenceItemType',0,'ReferenceItemType',0)
+go

@@ -1,5 +1,4 @@
 ﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { Http } from '@angular/http';
 
 import { TreeNode } from 'primeng/primeng';
 import * as _ from 'lodash';

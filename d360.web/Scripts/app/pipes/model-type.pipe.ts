@@ -1,5 +1,4 @@
 ﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { Http } from '@angular/http';
 import { Model } from '../models/model.model';
 
 
