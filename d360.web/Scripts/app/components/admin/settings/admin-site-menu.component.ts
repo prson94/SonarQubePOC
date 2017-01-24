@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { ICompanySettingsService, CompanySettings, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
@@ -164,7 +164,7 @@ import * as _ from 'lodash';
   `],
 })
 
-export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit {
+export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit, OnChanges {
     @Input() companySettings: CompanySettings;
     @Output() companySettingsChange = new EventEmitter();
     @Output() onSaveComplete = new EventEmitter();
@@ -193,9 +193,14 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         super(headerBreadcrumbService, titleService);
     }
 
-    ngOnInit() {
+    ngOnInit() {             
+        this.isLoading = true;
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['companySettings'].isFirstChange)
+            this.isLoading = false;
+    }
 
     add() {
         this.selection = null;
@@ -283,7 +288,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         this.selection = item;
         this.formMode = FormMode.Deleting;
     }
-
 
     moveUp(item: SiteNav) {
         this.selection = item;

@@ -1,4 +1,16 @@
-﻿--update RuleItem to use objectid/type instead of FusionAttributeID
+﻿--update old fieldtype html records to have no MaximumLength (Task 1789)
+update FieldType
+set MinimumLength = 1,
+	MaximumLength = NULL
+where [Type] = 'Html' AND IsRequired = 1;
+go
+
+update FieldType
+set MinimumLength = NULL, MaximumLength = NULL
+where [Type] = 'Html' AND IsRequired = 0;
+go
+
+--update RuleItem to use objectid/type instead of FusionAttributeID
 sp_RENAME 'fusion.RuleItem.FusionAttributeID' , 'ObjectID', 'COLUMN'
 
 alter table fusion.RuleItem add ObjectType nvarchar(250);
