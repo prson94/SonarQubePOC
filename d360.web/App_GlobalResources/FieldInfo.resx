@@ -288,6 +288,12 @@
   <data name="RuleThreshold_Name" xml:space="preserve">
     <value>Threshold</value>
   </data>
+  <data name="RuleType_Description" xml:space="preserve">
+    <value>The rule's type categorizes the rule according to its purpose.</value>
+  </data>
+  <data name="RuleType_Name" xml:space="preserve">
+    <value>Type</value>
+  </data>
   <data name="TaxonomyType_Description" xml:space="preserve">
     <value>The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required.</value>
   </data>

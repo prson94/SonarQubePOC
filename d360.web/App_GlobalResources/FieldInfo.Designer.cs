@@ -574,6 +574,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The rule&apos;s type categorizes the rule according to its purpose..
+        /// </summary>
+        internal static string RuleType_Description {
+            get {
+                return ResourceManager.GetString("RuleType_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type.
+        /// </summary>
+        internal static string RuleType_Name {
+            get {
+                return ResourceManager.GetString("RuleType_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required..
         /// </summary>
         internal static string TaxonomyType_Description {

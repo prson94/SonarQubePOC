@@ -677,6 +677,16 @@
               Looks up a localized string similar to Threshold.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.RuleType_Description">
+            <summary>
+              Looks up a localized string similar to The rule&apos;s type categorizes the rule according to its purpose..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleType_Name">
+            <summary>
+              Looks up a localized string similar to Type.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.TaxonomyType_Description">
             <summary>
               Looks up a localized string similar to The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required..

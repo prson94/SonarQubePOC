@@ -4146,17 +4146,17 @@ from    (
                     var rule = Company.Rules.Include("dimension").Where(x => x.ID == id).FirstOrDefault();
                     if (rule != null)
                     {
-                        /* var dimensionLink = (rule.RuleDimensionID.HasValue) ?
-                                 string.Format("<span data-context='Preview' data-type='RuleDimension' data-id='{1}'>{0} <i class='fa fa-question-circle' aria-hidden='true'></i></span>", rule.Dimension.Name, rule.RuleDimensionID) :
-                                 "";*/
-
-                model.rows.Add(new DetailReadOnlyRowModel
+                        model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = $"<b>{rule.Name}</b>" }
-                            }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.GetRuleTypeDisplayName() }
+                            }    
                         });
 
                         model.rows.Add(new DetailReadOnlyRowModel
