@@ -125,7 +125,7 @@
                 </OutArgument>
               </local:GetCommentInfoFromRequest.Tags>
             </local:GetCommentInfoFromRequest>
-            <local:BuildIssueRequestXml IssueID="{x:Null}" DisplayName="Build Issue Request Xml" sap2010:WorkflowViewState.IdRef="BuildIssueRequestXml_1">
+            <local:BuildIssueRequestXml DisplayName="Build Issue Request Xml" sap2010:WorkflowViewState.IdRef="BuildIssueRequestXml_1">
               <local:BuildIssueRequestXml.CommentCreatorResourceID>
                 <InArgument x:TypeArguments="x:Int32">
                   <mca:CSharpValue x:TypeArguments="x:Int32">CommentCreatorResourceID</mca:CSharpValue>
@@ -226,7 +226,7 @@
                   <DelegateInArgument x:TypeArguments="dce:Resource" Name="user" />
                 </ActivityAction.Argument>
                 <Sequence sap2010:WorkflowViewState.IdRef="Sequence_11">
-                  <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_3" Key="request_url">
+                  <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_3" Key="url">
                     <maes:AddToDictionary.Dictionary>
                       <InArgument x:TypeArguments="scg:IDictionary(x:String, x:String)">
                         <mca:CSharpValue x:TypeArguments="scg:IDictionary(x:String, x:String)">TemplateTags</mca:CSharpValue>
@@ -542,7 +542,7 @@
                                       <DelegateInArgument x:TypeArguments="dce:Resource" Name="user" />
                                     </ActivityAction.Argument>
                                     <Sequence sap2010:WorkflowViewState.IdRef="Sequence_10">
-                                      <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_1" Key="request_url">
+                                      <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_1" Key="url">
                                         <maes:AddToDictionary.Dictionary>
                                           <InArgument x:TypeArguments="scg:IDictionary(x:String, x:String)">
                                             <mca:CSharpValue x:TypeArguments="scg:IDictionary(x:String, x:String)">TemplateTags</mca:CSharpValue>
@@ -744,7 +744,7 @@
                                   </Variable.Default>
                                 </Variable>
                               </Sequence.Variables>
-                              <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_7" Key="request_url">
+                              <maes:AddToDictionary x:TypeArguments="x:String, x:String" sap2010:WorkflowViewState.IdRef="AddToDictionary`2_7" Key="url">
                                 <maes:AddToDictionary.Dictionary>
                                   <InArgument x:TypeArguments="scg:IDictionary(x:String, x:String)">
                                     <mca:CSharpValue x:TypeArguments="scg:IDictionary(x:String, x:String)">TemplateTags</mca:CSharpValue>
@@ -825,7 +825,7 @@
       <Variable x:TypeArguments="x:String" Name="CompanyDomainPrefix" />
       <Variable x:TypeArguments="s:Guid" Name="WorkflowInstanceID" />
     </StateMachine.Variables>
-    <sads:DebugSymbol.Symbol>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</sads:DebugSymbol.Symbol>
+    <sads:DebugSymbol.Symbol>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</sads:DebugSymbol.Symbol>
   </StateMachine>
   <sap2010:WorkflowViewState.ViewStateManager>
     <sap2010:ViewStateManager>
@@ -945,7 +945,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="State_3" sap:VirtualizedContainerService.HintSize="326,499">
+      <sap2010:ViewStateData Id="State_3" sap:VirtualizedContainerService.HintSize="226,68">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <av:Point x:Key="ShapeLocation">77,306</av:Point>
