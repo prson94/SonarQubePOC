@@ -2,13 +2,12 @@
     [ExecutionID]       INT              NOT NULL,
     [FusionAttributeID] INT              NOT NULL,
     [Body]              NVARCHAR (MAX)   NULL,
-    [ID]                UNIQUEIDENTIFIER CONSTRAINT [DF_FusionResult_ID] DEFAULT (newid()) NOT NULL,
+    [ID]                UNIQUEIDENTIFIER NULL,
     [FieldTypeID]       INT              NULL,
     [FieldName]         NVARCHAR (250)   CONSTRAINT [DF_FusionResult_FieldName] DEFAULT ('Name') NOT NULL,
     [Action]            VARCHAR (1)      NULL,
     [OldValue]          NVARCHAR (MAX)   NULL,
-    [NewValue]          NVARCHAR (MAX)   NULL,
-    CONSTRAINT [PK_FusionResult] PRIMARY KEY CLUSTERED ([ID] DESC)
+    [NewValue]          NVARCHAR (MAX)   NULL    
 );
 
 

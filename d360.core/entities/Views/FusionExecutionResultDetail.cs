@@ -4,11 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities.Views
 {
-    [DataContract(Namespace = NAMESPACE), Table("ExecutionResult", Schema = "fusion")]
+    [DataContract(Namespace = NAMESPACE)]
     public class FusionExecutionResultDetail : BaseObject
-    {
-        [DataMember]
-        public Guid ID { get; set; }
+    {        
         [DataMember]
         public string FusionAttribute { get; set; }
         [DataMember]

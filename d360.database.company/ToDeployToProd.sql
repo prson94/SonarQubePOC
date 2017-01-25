@@ -9033,3 +9033,19 @@ GO
 --insert referenceitemtype into cache object so it shows up correctly on relationshiptype def screen
 insert into cache.[object] ([object],[objectid],[objecttype],[objecttypeid]) values('ReferenceItemType',0,'ReferenceItemType',0)
 go
+
+-----Remove unique guid from fusion results table for performance / as it is not used and is slow------------------
+
+-- drop old primary key
+ALTER TABLE [fusion].[result]
+DROP CONSTRAINT PK_FusionResult;
+GO
+
+-- drop the constraint that generates the id
+ALTER TABLE [fusion].[result]
+DROP CONSTRAINT DF_FusionResult_ID;
+GO
+
+-- make the unique id column nullable
+ALTER TABLE [fusion].[result] ALTER COLUMN [ID] uniqueidentifier NULL ;
+GO

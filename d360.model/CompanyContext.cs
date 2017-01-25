@@ -138,9 +138,7 @@ namespace d360.model
         public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
 
         public DbSet<FusionExecution> FusionExecutions { get; set; }
-
-        public DbSet<FusionExecutionResultDetail> FusionExecutionResultDetails { get; set; }    /* VIEW */
-
+        
         public DbSet<Fusion> FusionTypeConfigurations { get; set; }
 
         public DbSet<FusionAttribute> FusionAttributes { get; set; }

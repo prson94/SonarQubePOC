@@ -52,7 +52,7 @@ namespace d360.fusion
         private static string FUSION_PROCESSOR_AI_NAME_TOTAL = "FusionProcessor - Total";
         private static string FUSION_PROCESSOR_AI_NAME_DOWNLOAD = "FusionProcessor - Download JSON";
         private static string FUSION_PROCESSOR_AI_NAME_LOG_EXECUTION = "FusionProcessor - Log Execution";
-        private static string FUSION_PROCESSOR_AI_NAME_SAVE_CHANGED_VALUES = "FusionProcessor - Log Execution";
+        private static string FUSION_PROCESSOR_AI_NAME_SAVE_CHANGED_VALUES = "FusionProcessor - Save Changed Values";
         private static string FUSION_PROCESSOR_AI_NAME_LOADCURRENTFUSIONFIELD = "FusionProcessor - Load Current Fusion Field Info";
         private static string FUSION_PROCESSOR_AI_NAME_GENERATE_FUSION_ATTR_VALUES = "FusionProcessor - Generate Fusion Attr Values";
         private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_MERGE = "FusionProcessor - Fusion Attribute Merge";
