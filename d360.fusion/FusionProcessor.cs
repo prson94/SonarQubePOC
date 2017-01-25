@@ -1161,8 +1161,6 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             //fusionattributetempvalues doesnt have any id values need to get them from AttributeMappingCollection
             foreach (var item in _workArea.FusionAttributeTempValues)
             {
-                if (string.IsNullOrEmpty(item.ParentSourceID)) continue; // only add this mapping for items that have parent / child relations
-
                 int id = 0;
                 if (!_workArea.FusionSourceToIDMap.TryGetValue(item.SourceID, out id))
                 {
@@ -1172,6 +1170,8 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                 }
 
                 item.ID = id; //sets the id of this guy
+
+                if (string.IsNullOrEmpty(item.ParentSourceID)) continue; // only add this mapping for items that have parent / child relations
 
                 //AttributeMappingCollection HAS THE ID AND PARENT ID                
                 int parentId = 0;
