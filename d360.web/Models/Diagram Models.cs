@@ -4,31 +4,6 @@ using System.Runtime.Serialization;
 
 namespace d360.web.Models
 {
-    public class DbMapItem
-    {
-        public string Sub { get; set; }
-        public int SubID { get; set; }
-        public string SubjectID { get; set; }
-        public string Subject { get; set; }
-        public string SubjectType { get; set; }
-        public string SubjectBackColor { get; set; }
-        public string SubjectForeColor { get; set; }
-
-        public string Obj { get; set; }
-        public int ObjID { get; set; }
-        public string ObjectID { get; set; }
-        public string Object { get; set; }
-        public string ObjectType { get; set; }
-        public string ObjectBackColor { get; set; }
-        public string ObjectForeColor { get; set; }
-
-        public int Level { get; set; }
-
-        public string Predicate { get; set; }
-        public bool Exclude { get; set; }
-        public int IntersectMapID { get; set; }
-    }
-
     public class JsonNodeItem
     {
         public string key { get; set; }
@@ -108,17 +83,7 @@ namespace d360.web.Models
         public DiagramNode FromNode { get; set; }
         public DiagramNode ToNode { get; set; }
     }
-
-    public class DiagramChanges
-    {
-        public string TargetType { get; set; }
-        public string TargetID { get; set; }
-        public List<DiagramLink> AddedLinks { get; set; }
-        public List<DiagramNode> DeletedNodes { get; set; }
-        public List<DiagramNode> AllNodes { get; set; }
-        public List<DiagramLink> AllLinks { get; set; }
-
-    }
+    
 
     [DataContract]
     public class InformationCatalogDiagramDataItem

@@ -241,8 +241,7 @@ export class FusionExecutionResult {
     FusionAttributeType: string;
     FusionID: number;
     FusionType: string;
-    FusionTypeID: number;
-    ID: string;
+    FusionTypeID: number;    
     NewValue: string;
     OldValue: string;
 }

@@ -708,13 +708,7 @@ namespace d360.web.Models
         public string Context { get; set; }
         public string SaveActionName { get; set; }
     }
-
-    public class FusionAttributeTypeEditorControl
-    {
-        public string Title { get; set; }
-        public List<FusionAttributeType> Types { get; set; }
-        public int? SelectedID { get; set; }
-    }
+       
 
     public class FusionRuleEditorModel
     {
@@ -827,53 +821,7 @@ namespace d360.web.Models
         public int GroupNumber { get; set; }
     }
 
-    public class ReportEditorModel : BaseEditorModel
-    {
-        public string FormDirections { get; set; }
-
-        public Report Report { get; set; }
-
-        public List<SelectListItem> ReportLayouts { get; set; }
-
-        public List<SelectListItem> ObjectTypes { get; set; }
-
-        public List<SelectListItem> ReportTypes{ get; set; }
-    }
-
-    public class ReportTileEditorModel : BaseEditorModel
-    {
-        public string FormDirections { get; set; }
-
-        public string ReportBaseUri { get; set; }
-
-        public ReportTile ReportTile { get; set; }
-
-        public List<SelectListItem> ReportTileTypes { get; set; }
-
-        public List<SelectListItem> ContentAreaNumbers { get; set; }
-
-        public List<ReportSchemaModel> SchemaItems { get; set; }
-
-        public List<SelectListItem> ObjectTypes { get; set; }
-    }
-
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class QuestionResponseModel
-    {
-        [DataMember]
-        public int QuestionTypeID { get; set; }
-        [DataMember]
-        public int SurveyTypeID { get; set; }
-        [DataMember]
-        public SystemObjects ObjectType { get; set; }
-        [DataMember]
-        public int ObjectID { get; set; }
-        [DataMember]
-        public int Value { get; set; }
-        [DataMember]
-        public string Comment { get; set; }
-    }
-
+    
     public class QuestionTypeItemEditorModel
     {
         public int ID { get; set; }
@@ -1017,30 +965,5 @@ namespace d360.web.Models
         public List<SelectListItem> ParentTypes { get; set; }
 
         public List<SelectListItem> ResponsibilityTypes { get; set; }
-    }
-
-    //public class DomainItemXrefEditorModel : BaseEditorModel
-    //{
-    //    public int ID { get; set; }
-    //    public int HouseDomainItemID { get; set; }
-    //    public int DomainItemID { get; set; }
-    //    public string HouseCode { get; set; }
-    //    public string Code { get; set; }
-    //    public int? SourceArtifactID { get; set; }
-    //    public string SourceArtifactName { get; set; }
-    //    public int DomainID { get; set; }
-    //    public int LanguageID { get; set; }
-
-    //}
-
-    //public class DomainEditorModel : BaseEditorModel
-    //{
-    //    public int DomainID { get; set; }
-    //    public int DomainTypeID { get; set; }
-    //    public int DomainClassificationID { get; set; }
-    //    public int? SourceArtifactID { get; set; }
-    //    public string Name { get; set; }
-    //    public string Description { get; set; }
-    //    public int? DomainGroupID { get; set; }
-    //}
+    }    
 }
