@@ -96,6 +96,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workflow.extensions", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.queue.ProcessEvent", "Jobs\d360.jobs.queue.ProcessEvent\d360.jobs.queue.ProcessEvent.csproj", "{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.test.web", "d360.test.web\d360.test.web.csproj", "{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Client Development|Any CPU = Client Development|Any CPU
@@ -1114,6 +1116,36 @@ Global
 		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|x86.ActiveCfg = Release|Any CPU
 		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|x86.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|Any CPU.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|Any CPU.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|Mixed Platforms.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|x86.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|x86.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Debug|x86.Build.0 = Debug|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Nightly|Any CPU.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Nightly|Any CPU.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Nightly|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Nightly|Mixed Platforms.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Nightly|x86.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Nightly|x86.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Production|Any CPU.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Production|Any CPU.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Production|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Production|Mixed Platforms.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Production|x86.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Production|x86.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Release|x86.ActiveCfg = Release|Any CPU
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1153,14 +1185,15 @@ Global
 		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{A024F008-E4F1-415D-A532-EAAE377B687D} = {DF896E70-6A4C-4E11-B0AF-0780094E0BEF}
 		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D} = {BA377137-34B5-4D67-86AA-5803B3D1957E}
+		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6} = {313B4C9B-F3D7-4718-97A5-2F04A3B12589}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 34
+		SccNumberOfProjects = 35
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://data3sixty.visualstudio.com/
+		SccTeamFoundationServer = https://data3sixty.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = d360.core\\d360.core.csproj
 		SccProjectTopLevelParentUniqueName1 = D360.sln
@@ -1278,22 +1311,26 @@ Global
 		SccProjectTopLevelParentUniqueName29 = D360.sln
 		SccProjectName29 = d360.workers.ProcessDatabaseTasksWorkerRole
 		SccLocalPath29 = d360.workers.ProcessDatabaseTasksWorkerRole
-		SccProjectUniqueName30 = Jobs\\d360.jobs.QualityChecks\\d360.jobs.QualityChecks.csproj
+		SccProjectUniqueName30 = d360.workflow.extensions\\d360.workflow.extensions.csproj
 		SccProjectTopLevelParentUniqueName30 = D360.sln
-		SccProjectName30 = Jobs/d360.jobs.QualityChecks
-		SccLocalPath30 = Jobs\\d360.jobs.QualityChecks
-		SccProjectUniqueName31 = Jobs\\d360.jobs.MatchTechnicalMappingsToBusinessMappings\\d360.jobs.MatchTechnicalMappingsToBusinessMappings.csproj
+		SccProjectName30 = d360.workflow.extensions
+		SccLocalPath30 = d360.workflow.extensions
+		SccProjectUniqueName31 = Jobs\\d360.jobs.QualityChecks\\d360.jobs.QualityChecks.csproj
 		SccProjectTopLevelParentUniqueName31 = D360.sln
-		SccProjectName31 = Jobs/d360.jobs.MatchTechnicalMappingsToBusinessMappings
-		SccLocalPath31 = Jobs\\d360.jobs.MatchTechnicalMappingsToBusinessMappings
-		SccProjectUniqueName32 = d360.workflow.extensions\\d360.workflow.extensions.csproj
+		SccProjectName31 = Jobs/d360.jobs.QualityChecks
+		SccLocalPath31 = Jobs\\d360.jobs.QualityChecks
+		SccProjectUniqueName32 = Jobs\\d360.jobs.MatchTechnicalMappingsToBusinessMappings\\d360.jobs.MatchTechnicalMappingsToBusinessMappings.csproj
 		SccProjectTopLevelParentUniqueName32 = D360.sln
-		SccProjectName32 = d360.workflow.extensions
-		SccLocalPath32 = d360.workflow.extensions
+		SccProjectName32 = Jobs/d360.jobs.MatchTechnicalMappingsToBusinessMappings
+		SccLocalPath32 = Jobs\\d360.jobs.MatchTechnicalMappingsToBusinessMappings
 		SccProjectUniqueName33 = Jobs\\d360.jobs.queue.ProcessEvent\\d360.jobs.queue.ProcessEvent.csproj
 		SccProjectTopLevelParentUniqueName33 = D360.sln
 		SccProjectName33 = Jobs/d360.jobs.queue.ProcessEvent
 		SccLocalPath33 = Jobs\\d360.jobs.queue.ProcessEvent
+		SccProjectUniqueName34 = d360.test.web\\d360.test.web.csproj
+		SccProjectTopLevelParentUniqueName34 = D360.sln
+		SccProjectName34 = d360.test.web
+		SccLocalPath34 = d360.test.web
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi
