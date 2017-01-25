@@ -3545,6 +3545,11 @@ namespace d360.web.Controllers
                 else
                 {
                     ft.Type = model.FieldType.Type;
+                    //reset type specific properties
+                    ft.LookupObjectType = null;
+                    ft.LookupObjectID = null;
+                    ft.LookupDisplayFormat = null;
+
                 }
 
                 bool isNew;
