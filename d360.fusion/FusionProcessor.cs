@@ -49,7 +49,25 @@ namespace d360.fusion
         private static int MAX_FIELD_VALUE_LENGTH = 4000;
         private static int MAX_SOURCEID_LENGTH = 250;
         private static string FUSION_ATTRIBUTE_MISSING_NAME_NAME = "Name not resolved";
-        private static string FUSION_PROCESSOR_AI_NAME = "FusionProcessor";
+        private static string FUSION_PROCESSOR_AI_NAME_TOTAL = "FusionProcessor - Total";
+        private static string FUSION_PROCESSOR_AI_NAME_DOWNLOAD = "FusionProcessor - Download JSON";
+        private static string FUSION_PROCESSOR_AI_NAME_LOG_EXECUTION = "FusionProcessor - Log Execution";
+        private static string FUSION_PROCESSOR_AI_NAME_SAVE_CHANGED_VALUES = "FusionProcessor - Log Execution";
+        private static string FUSION_PROCESSOR_AI_NAME_LOADCURRENTFUSIONFIELD = "FusionProcessor - Load Current Fusion Field Info";
+        private static string FUSION_PROCESSOR_AI_NAME_GENERATE_FUSION_ATTR_VALUES = "FusionProcessor - Generate Fusion Attr Values";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_MERGE = "FusionProcessor - Fusion Attribute Merge";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_CACHE = "FusionProcessor - Fusion Attribute Cache";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_RELOAD = "FusionProcessor - Fusion Attribute Reload";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_FIELDTYPE_MAP = "FusionProcessor - Fusion Attribute Field Map";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_VALS = "FusionProcessor - Fusion Field Vals";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_MERGE = "FusionProcessor - Fusion Field Merge";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PARENT_UPDATE = "FusionProcessor - Fusion Attr Parent ID Map";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PARENT_UPDATE_MERGE = "FusionProcessor - Fusion Attr Parent ID Merge";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_CHANGES = "FusionProcessor - Fusion Determine Field Changes";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_ATTR_CHANGES = "FusionProcessor - Fusion Determine Attr Changes";
+        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PATHS_UPD = "FusionProcessor - Update Paths / TextPath";
+        private static string FUSION_PROCESSOR_AI_NAME_PROCESS_RELATIONSHIPS = "FusionProcessor - Process Relationships";
+        private static string FUSION_PROCESSOR_AI_NAME_PROCESS_QUERY_ITEMS = "FusionProcessor - Process Query Items";
 
         public async Task Process(FusionProcessingData fusionData, int bulkTimeout, int readTimeout, int executeTimeout)
         {
@@ -60,7 +78,7 @@ namespace d360.fusion
             var metrics = new Dictionary<string, double>();
 
             ai.Context.Operation.Id = Guid.NewGuid().ToString();
-            ai.Context.Operation.Name = FUSION_PROCESSOR_AI_NAME;
+            ai.Context.Operation.Name = FUSION_PROCESSOR_AI_NAME_TOTAL;
             
             BulkCopyTimeout = bulkTimeout;
             ReadQueryTimeout = readTimeout;
@@ -102,6 +120,7 @@ namespace d360.fusion
             if (data == null) throw new Exception("UNABLE TO LOAD FUSION DATA FROM AZURE STORAGE / NULL FUSION DATA OBJECT.");
 
             Trace.TraceInformation(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_DOWNLOAD, DateTime.Now, sw.Elapsed, "", true);
 
             Trace.TraceInformation("FUSION JOB HAS {0} MODELS, {1} RELATIONS", data.Models.Count, data.Relationships.Count);
 
@@ -132,24 +151,29 @@ namespace d360.fusion
                     sw.Restart();
                     ExecutionID = await LogExecution(companyConnection,data.Version);
                     Trace.TraceInformation(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+                    ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_LOG_EXECUTION, DateTime.Now, sw.Elapsed, "", true);
 
                     Trace.TraceInformation("Processing fusion execution ID: [{0}]", ExecutionID);
                     
                     //Process Models                
-                    await ProcessModels(companyConnection, data.Models);
+                    await ProcessModels(companyConnection, data.Models, ai);
 
                     if (data.QueryItems != null)
                     {
+                        sw.Restart();
                         await ProcessQueryItems(companyConnection, data.QueryItems);
+                        ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_PROCESS_QUERY_ITEMS, DateTime.Now, sw.Elapsed, "", true);
                     }
 
                     //Process Relationships
+                    sw.Restart();
                     await ProcessRelationships(companyConnection, data.Relationships);
-
+                    ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_PROCESS_RELATIONSHIPS, DateTime.Now, sw.Elapsed, "", true);
 
                     sw.Restart();
                     await SaveChangedValuesLog(companyConnection);
                     Trace.TraceInformation(string.Format("SaveChangedValuesLog\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+                    ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_SAVE_CHANGED_VALUES, DateTime.Now, sw.Elapsed, "", true);
 
                     //Update the executionID to say this is done
                     await UpdateExecutionWithStats(companyConnection);
@@ -187,7 +211,7 @@ namespace d360.fusion
             
             ai.TrackEvent("Fusion Job Complete", null, metrics);
 
-            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME, DateTime.Now, jobDuration.Elapsed, "", true); 
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_TOTAL, DateTime.Now, jobDuration.Elapsed, "", true); 
         }
 
         private async Task UpdateQueue(SqlConnection companyConnection)
@@ -606,12 +630,13 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
         /// </summary>
         /// <param name="models"></param>
         /// <returns></returns>
-        private async Task ProcessModels(SqlConnection companyConnection, List<Dictionary<string, string>> models)
+        private async Task ProcessModels(SqlConnection companyConnection, List<Dictionary<string, string>> models, TelemetryClient ai)
         {            
             Stopwatch sw = Stopwatch.StartNew();   
             // RUN QUERY TO GET FIELDS INFO FOR THE FIELDS IN THIS RUN
             await LoadCurrentFusionFieldInfo(companyConnection);
             Trace.TraceInformation(string.Format("LOADCURRENTFUSIONFIELD INFO TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_LOADCURRENTFUSIONFIELD, DateTime.Now, sw.Elapsed, "", true);
 
             // RUN QUERY TO GET THE EXISTING FUSIONATTRIBUTES IN THIS RUN
             await LoadCurrentFusionAttributeMap(companyConnection);
@@ -620,6 +645,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             sw.Restart();
             GenerateFusionAttributeTableValues(models);
             Trace.TraceInformation(string.Format("GENERATEFUSIONATTRIBUTETABLEVALUES TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_GENERATE_FUSION_ATTR_VALUES, DateTime.Now, sw.Elapsed, "", true);
 
             // handle fusionattribute updates / inserts
             //we have two cases
@@ -627,46 +653,55 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             sw.Restart();
             await DoFusionAttributeMerge(companyConnection);
             Trace.TraceInformation(string.Format("DoFusionAttributeMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_MERGE, DateTime.Now, sw.Elapsed, "", true);
 
             // RUN QUERY TO PUT FUSION ATTRIBUTES INTO CACHE
             sw.Restart();
             await DoFusionAttributeCache(companyConnection);
             Trace.TraceInformation(string.Format("DoFusionAttributeCache TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_CACHE, DateTime.Now, sw.Elapsed, "", true);
 
             // RUN QUERY TO GET FUSION ATTRIBUTE IDS
             sw.Restart();
             await LoadCurrentFusionAttributeInfo(companyConnection);
             Trace.TraceInformation(string.Format("LoadCurrentFusionAttributeInfo TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_RELOAD, DateTime.Now, sw.Elapsed, "", true);
 
             // load all the fusionfield type ids
             sw.Restart();
             await LoadFusionAttributeToFieldTypeIDMap(companyConnection);
             Trace.TraceInformation(string.Format("LoadFusionAttributeToFieldTypeIDMap TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_FIELDTYPE_MAP, DateTime.Now, sw.Elapsed, "", true);
 
             // handle fields
             sw.Restart();
             GenerateFusionFieldTableValues(models);
             Trace.TraceInformation(string.Format("GenerateFusionFieldTableValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_VALS, DateTime.Now, sw.Elapsed, "", true);
 
             sw.Restart();
             await DoFusionFieldMerge(companyConnection);
             Trace.TraceInformation(string.Format("DoFusionFieldMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_MERGE, DateTime.Now, sw.Elapsed, "", true);
 
             // fields and attributes now updated need to update any parent ids
             sw.Restart();
             UpdateAttributesWithParentIDValues();
             Trace.TraceInformation(string.Format("UpdateAttributesWithParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PARENT_UPDATE, DateTime.Now, sw.Elapsed, "", true);
 
             //update the parentids by doing a merge
             sw.Restart();
             await UpdateFusionAttributeParentIDs(companyConnection);
             Trace.TraceInformation(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PARENT_UPDATE_MERGE, DateTime.Now, sw.Elapsed, "", true);
 
             if (models.Count > 0)
             {
                 sw.Restart();
                 await UpdateFusionAttributeTextPaths(companyConnection);
                 Trace.TraceInformation(string.Format("UpdateFusionAttributeTextPaths TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+                ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PATHS_UPD, DateTime.Now, sw.Elapsed, "", true);
             }
             else
             {
@@ -677,10 +712,12 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             sw.Restart();
             DetermineChangedFields();
             Trace.TraceInformation(string.Format("DetermineChangedFields TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_CHANGES, DateTime.Now, sw.Elapsed, "", true);
 
             sw.Restart();
             DetermineChangedFusionAttributes();
             Trace.TraceInformation(string.Format("DetermineChangedFusionAttributes TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_ATTR_CHANGES, DateTime.Now, sw.Elapsed, "", true);
         }
 
         /// <summary>
