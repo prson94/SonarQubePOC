@@ -116,20 +116,20 @@
                     <tbody *ngFor="let item of model.FusionItems; let i=index;">
                         <tr>
                             <td>
-                                <p-dropdown name="fusionAttrType" [options]="lookups.FusionAttributeTypes" [(ngModel)]="item.SourceFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                <p-dropdown [ngModelOptions]="{standalone: true}"  [options]="lookups.FusionAttributeTypes" [(ngModel)]="item.SourceFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
                             </td>
                             <td>
-                                <p-dropdown name="refType" [options]="lookups.ReferenceTypes" [(ngModel)]="item.ReferenceType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.ReferenceTypes" [(ngModel)]="item.ReferenceType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
                             </td>
                             <td>
-                                <p-dropdown name="targetFusType" [options]="item.TargetFusionAttributeTypes" [(ngModel)]="item.TargetFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
+                                <p-dropdown  [ngModelOptions]="{standalone: true}" [options]="item.TargetFusionAttributeTypes" [(ngModel)]="item.TargetFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
                             </td>
                             <td>
-                                <p-multiSelect name="fusDisplayFields" [options]="item.FusionDisplayFields" [(ngModel)]="item.DisplayFields" [style]="{ 'width' : '95%' }"></p-multiSelect>
+                                <p-multiSelect [ngModelOptions]="{standalone: true}"  [options]="item.FusionDisplayFields" [(ngModel)]="item.DisplayFields" [style]="{ 'width' : '95%' }"></p-multiSelect>
                             </td>
                             <td>
-                                <div><input name="fusHideHeader" pCheckbox type="checkbox" [(ngModel)]="item.HideHeader" /> Hide Header?</div>
-                                <div><input name="fusHideFooter" pCheckbox type="checkbox" [(ngModel)]="item.HideFooter" /> Hide Footer?</div>
+                                <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideHeader" [ngModelOptions]="{standalone: true}" /> Hide Header?</div>
+                                <div><input  pCheckbox type="checkbox" [(ngModel)]="item.HideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?</div>
                             </td>
                             <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeFusion(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
                         </tr>

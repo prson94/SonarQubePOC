@@ -3515,6 +3515,12 @@ namespace d360.web.Controllers
 
                 if (!ft.IsRequired) ft.MinimumLength = 0;
 
+                bool isNew;
+
+                var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
+                var efli = Company.Filter<FieldTypeFilteredLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFilteredLookupDisplayFields).FirstOrDefault();
+                var fl = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == ft.ID).FirstOrDefault();
+
                 if (used)
                 {
                     var allowTypeChange = false;
@@ -3545,18 +3551,41 @@ namespace d360.web.Controllers
                 else
                 {
                     ft.Type = model.FieldType.Type;
+
                     //reset type specific properties
                     ft.LookupObjectType = null;
                     ft.LookupObjectID = null;
                     ft.LookupDisplayFormat = null;
 
+                    if (defs != null && ft.Type != DataType.FusionLookup.ToString())
+                    {
+                        foreach(var i in defs)
+                        {
+                            var d = Company.FieldTypeFusionLookupDisplayFields.Where(j => j.FieldTypeFusionLookupDefinitionID == i.ID).ToList();
+                            if (d != null && d.Count > 0)
+                                Company.FieldTypeFusionLookupDisplayFields.RemoveRange(d);
+                        }
+                        Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
+                            
+                    }
+
+                    if (efli != null && ft.Type != DataType.FilteredLookup.ToString())
+                    {
+
+                        var d = Company.FieldTypeFilteredLookupDisplayFields.Where(j => j.FieldTypeFilteredLookupDefinitionID == efli.ID).ToList();
+                        if (d != null && d.Count > 0)
+                            Company.FieldTypeFilteredLookupDisplayFields.RemoveRange(d);
+                        Company.FieldTypeFilteredLookupDefinitions.Remove(efli);
+                    }
+
+                    if (fl != null && ft.Type != DataType.ComplexRelationLookup.ToString())
+                    {
+                        Company.FieldTypeLookups.Remove(fl);
+                    }
+
                 }
 
-                bool isNew;
 
-                var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
-                var efli = Company.Filter<FieldTypeFilteredLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFilteredLookupDisplayFields).FirstOrDefault();
-                var fl = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == ft.ID).FirstOrDefault();
 
                 switch (ft.Type)
                 {
@@ -5648,11 +5677,23 @@ namespace d360.web.Controllers
             int promotionObjectID = 0;
             int.TryParse(ruleStep.GetSettingValueByName("ObjectID"), out promotionObjectID);
 
+            var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID)
+                .OrderBy(i => i.FriendlyName)
+                .ToList()
+                .Where(i => !targetFieldIDs.Contains(i.ID))
+                .Select(i => new SelectListItem
+                {
+                    Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
+                    Value = string.Format("{0}|{1}", i.Name, i.ID)
+                })
+                .ToList();
+
             switch (promotionType)
             {
                 case "ReferenceItemType":
                     if (!targetFieldNames.Contains("Code"))
                         targetFields.Add(new SelectListItem { Text = "Code", Value = "Code|0" });
+                    targetFields.AddRange(targetDynamicFields);
                     break;
                 case "ArtifactType":
                 case "TaxonomyType":
@@ -5660,16 +5701,7 @@ namespace d360.web.Controllers
                         targetFields.Add(new SelectListItem { Text = "Name", Value = "Name|0" });
                     if (!targetFieldNames.Contains("Description"))
                         targetFields.Add(new SelectListItem { Text = "Description", Value = "Description|0" });
-                    var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID)
-                        .OrderBy(i => i.FriendlyName)
-                        .ToList()
-                        .Where(i => !targetFieldIDs.Contains(i.ID))
-                        .Select(i => new SelectListItem
-                        {
-                            Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
-                            Value = string.Format("{0}|{1}", i.Name, i.ID)
-                        })
-                        .ToList();
+
                     targetFields.AddRange(targetDynamicFields);
 
                     if (promotionType == "ArtifactType")

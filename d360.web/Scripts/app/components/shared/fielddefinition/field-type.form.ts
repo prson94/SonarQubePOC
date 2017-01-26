@@ -137,6 +137,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                         this.model.RelationItems = f.RelationItems;
                         this.model.FusionItems = f.FusionItems;
+                        if (this.model.FusionItems != null)
+                            this.model.FusionItems.forEach(i => {
+                                if (i.SourceFusionAttributeType.toString().indexOf('|') == -1)
+                                    i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
+
+                                for (let j = 0; j < i.DisplayFields.length; j++) {
+                                    let d = i.DisplayFields[j] as FieldTypeFusionLookupDisplayField;
+                                    i.DisplayFields[j] = d.value;
+                                }
+                                
+                            });
+
                         this.model.FilteredLookupItems = f.FilteredLookupItems;
 
                         if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
@@ -338,14 +350,23 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private loadTargetFusionAttributes(item: FieldTypeFusionItemEditorModel): Promise<void> {
-        return this.fieldsService.getFusionLookupTargetAttributeTypes(item.SourceFusionAttributeType, item.ReferenceType)
+        //console.log('loadTargetFusionAttributes', item);
+        let id;
+        if (item.SourceFusionAttributeType == null)
+            return;
+        if (item.SourceFusionAttributeType.toString().indexOf('|') != -1)
+            id = item.SourceFusionAttributeType.split('|')[1];
+        else
+            id = item.SourceFusionAttributeType;
+
+        return this.fieldsService.getFusionLookupTargetAttributeTypes(+id, item.ReferenceType)
             .then(d => {
                 item.TargetFusionAttributeTypes = d;
             });
     }
 
     private loadFusionDisplayFields(item: FieldTypeFusionItemEditorModel): Promise<void> {
-        return this.fieldsService.getFusionDisplayFields(item.TargetFusionAttributeType || item.SourceFusionAttributeType)
+        return this.fieldsService.getFusionDisplayFields(+item.TargetFusionAttributeType || +item.SourceFusionAttributeType)
             .then(d => {
                 item.FusionDisplayFields = d;
             });
@@ -382,12 +403,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private onSubmit(): any {
 
-        if (!this.validate())
-            return;
+        //if (!this.validate())
+        //    return;
 
         //convert DisplayFields to objects
         if (this.model.FusionItems) {
             this.model.FusionItems.forEach(i => {
+
+                if (i.SourceFusionAttributeType.toString().indexOf('|') != -1)
+                    i.SourceFusionAttributeType = i.SourceFusionAttributeType.toString().split('|')[1];
+
                 let d: FieldTypeFusionLookupDisplayField[] = [];
 
                 (<string[]>i.DisplayFields).forEach(j => {
@@ -395,6 +420,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     try {
                         k.FieldTypeID = parseInt(j.split('|')[0]);
                         k.FieldTypeName = j.split('|')[1];
+                        k.Show = true;
                     } catch (e) {
                         return;
                     }

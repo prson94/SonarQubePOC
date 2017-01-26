@@ -99,9 +99,9 @@ export class Field {
 
 export class FieldTypeFusionItemEditorModel {
     ID: number;
-    SourceFusionAttributeType: number;
+    SourceFusionAttributeType: string;
     ReferenceType: number;
-    TargetFusionAttributeType: number;
+    TargetFusionAttributeType: string;
     HideHeader: boolean;
     HideFooter: boolean;
     DisplayFields: string[] | FieldTypeFusionLookupDisplayField[] = new Array<string>();
@@ -193,6 +193,8 @@ export class FieldTypeFusionLookupDisplayField {
     FieldTypeID: number;
     FieldTypeName: string;
     FieldTypeFusionLookupDefinition: FieldTypeFusionLookupDefinition;
+    Show: boolean;
+    value: string;
 }
 
 export class Lookups {
