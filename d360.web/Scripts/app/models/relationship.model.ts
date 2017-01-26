@@ -1,4 +1,4 @@
-﻿export class Relationship {
+﻿export class RelationshipType {
     ID: number;
     Object: string;
     ObjectID: number;

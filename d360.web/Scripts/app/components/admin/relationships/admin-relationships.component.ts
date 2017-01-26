@@ -1,9 +1,9 @@
-﻿import { Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Component, OnDestroy} from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
-import { Relationship } from '../../../models/relationship.model';
+import { RelationshipType } from '../../../models/relationship.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
@@ -43,10 +43,10 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                 `
 })
 
-export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy, OnInit {
+export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {
     private isPredicatesVisible: boolean = false;
     private isRolesVisible: boolean = false;
-    private selected: Relationship;
+    private selected: RelationshipType;
     
     constructor(rightSidebarService: RightSidebarService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
@@ -57,12 +57,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         this.rightSidebarService.showItem(new RightSidebarItem('Predicates', 'predicates', ['fa-map-signs']));
         this.rightSidebarService.showItem(new RightSidebarItem('Relationship Roles', 'roles', ['fa-user']));
     }
-
     
-    ngOnInit() {
-
-    }
-
     ngOnDestroy() {
         this.clearSidebar();
     }

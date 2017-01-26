@@ -1,8 +1,8 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, Response, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, RelationshipRole } from '../models/relationship.model';
+import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, RelationshipRole } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../models/relations.model';
@@ -12,11 +12,29 @@ export class RelationshipsService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getRelations(): Promise<Relationship[]> {
+    getRelationshipTypes(): Promise<RelationshipType[]> {
         return this.http.get('relations/_intersectTypes')
             .toPromise()
-            .then(response => <Relationship[]>response.json())
+            .then(response => <RelationshipType[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    exportRelationshipTypes() {        
+        this.http.get('relations/_intersectTypes/excel.xls', { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'relationship types'));              
+    }
+
+    downloadFile(data: Response, name: string) {
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 
     getRelation(id: number): Promise<RelationshipDetail> {

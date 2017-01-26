@@ -6,6 +6,7 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -193,6 +194,63 @@ where       I.IsSystem = 0
 order by	SD.Name,
 			TD.Name");
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
+        }
+
+
+        [Route("_IntersectTypes/excel.xls"), FileDownload, HttpGet]        
+        public FileResult _IntersectTypesExcel()
+        {
+            var models = Company.Query<dynamic>(
+@"select    I.ID,
+			I.Subject,
+			I.SubjectID,
+			SD.TextPath as SubjectName,
+            I.PredicateID,
+            P.Name as PredicateName,
+			I.Object,
+			I.ObjectID,
+			TD.TextPath as ObjectName
+from		IntersectType I
+            left join [Predicate] P on P.ID = I.PredicateID
+			left join cache.ObjectDetails SD on SD.[Object] = I.Subject and SD.ObjectID = I.SubjectID
+			left join cache.ObjectDetails TD on TD.[Object] = I.Object and TD.ObjectID = I.ObjectID
+where       I.IsSystem = 0
+order by	SD.Name,
+			TD.Name");
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Subject");
+            document.SetCellValue(1, index++, "Subject Type");
+            document.SetCellValue(1, index++, "Predicate");            
+            document.SetCellValue(1, index++, "Object");
+            document.SetCellValue(1, index++, "Object Type");
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in models)
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
+                document.SetCellValue(rowNumber, index++, (string)row.Subject);
+                document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
+                document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
+                document.SetCellValue(rowNumber, index++, (string)row.Object);                
+            }
+
+            #endregion
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString()));
         }
 
         [Route("OptionsToRelate"), NonNullableParameters]

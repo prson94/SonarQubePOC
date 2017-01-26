@@ -1,7 +1,7 @@
 ﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { MessagesService  } from '../../../services/messages.service';
-import { Relationship } from '../../../models/relationship.model';
+import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
 
@@ -10,7 +10,7 @@ import * as _ from 'lodash';
     providers: [RelationshipsService],    
     template: `
                 <header *ngIf="!showEditor && !showDelete">Relationship Types
-                    <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
                 </header>    
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">                    
@@ -58,11 +58,11 @@ import * as _ from 'lodash';
 })
 
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
-    relationships: Relationship[] = [];
+    relationships: RelationshipType[] = [];
     
     @Input() filterToName: string;
 
-    @Input() selected: Relationship;
+    @Input() selected: RelationshipType;
     @Output() selectedChange = new EventEmitter();
 
     showEditor: boolean = false;
@@ -84,6 +84,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         }
     }
 
+    private export() {
+        this.relationshipsService.exportRelationshipTypes();
+    }
+
     private filterResults() {
         if (this.filterToName && this.filterToName.length > 0) {
             var search = this.filterToName.toLowerCase();            
@@ -93,7 +97,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     getRelationships() {
         this.isLoading = true;
-        this.relationshipsService.getRelations()
+        this.relationshipsService.getRelationshipTypes()
             .then(result => {                                
                 this.relationships = result;
                 this.filterResults();
