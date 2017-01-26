@@ -20,6 +20,11 @@
               resource lookups using this strongly typed resource class.
             </summary>
         </member>
+        <member name="P:Resources.Actions.Add_Icon">
+            <summary>
+              Looks up a localized string similar to plus.
+            </summary>
+        </member>
         <member name="P:Resources.Actions.AddClaim_Text">
             <summary>
               Looks up a localized string similar to Claim.
@@ -48,11 +53,6 @@
         <member name="P:Resources.Actions.AddVerticalSecurity_Text">
             <summary>
               Looks up a localized string similar to Vertical Responsibilities.
-            </summary>
-        </member>
-        <member name="P:Resources.Actions.Add_Icon">
-            <summary>
-              Looks up a localized string similar to plus.
             </summary>
         </member>
         <member name="P:Resources.Actions.Allocation_Icon">
@@ -748,11 +748,6 @@
               Looks up a localized string similar to Add Artifact Type.
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.Add_AttributeTypeCategory_Title">
-            <summary>
-              Looks up a localized string similar to Add Attribute Category.
-            </summary>
-        </member>
         <member name="P:Resources.FormInfo.Add_AttributeType_Confirmation">
             <summary>
               Looks up a localized string similar to Attribute group successfully added..
@@ -766,6 +761,11 @@
         <member name="P:Resources.FormInfo.Add_AttributeType_Title">
             <summary>
               Looks up a localized string similar to Add Attribute Group.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_AttributeTypeCategory_Title">
+            <summary>
+              Looks up a localized string similar to Add Attribute Category.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Add_FieldType_Confirmation">
@@ -823,11 +823,6 @@
               Looks up a localized string similar to When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear..
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.Add_ReportTile_Confirmation">
-            <summary>
-              Looks up a localized string similar to Report tile successfully created..
-            </summary>
-        </member>
         <member name="P:Resources.FormInfo.Add_Report_Directions">
             <summary>
               Looks up a localized string similar to Add a report to the list of reports, which can then be exposed in other areas of this system..
@@ -836,6 +831,11 @@
         <member name="P:Resources.FormInfo.Add_Report_Title">
             <summary>
               Looks up a localized string similar to Add Report.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_ReportTile_Confirmation">
+            <summary>
+              Looks up a localized string similar to Report tile successfully created..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Add_ResponsibilityTransformation_Directions">
@@ -923,11 +923,6 @@
               Looks up a localized string similar to De-allocate Workflow.
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.Delete_AttributeType_Confirmation">
-            <summary>
-              Looks up a localized string similar to Attribute type successfully removed..
-            </summary>
-        </member>
         <member name="P:Resources.FormInfo.Delete_Attribute_Confirmation">
             <summary>
               Looks up a localized string similar to Attribute successfully removed..
@@ -936,6 +931,11 @@
         <member name="P:Resources.FormInfo.Delete_Attribute_Description">
             <summary>
               Looks up a localized string similar to Removing this attribute may affect the score of the item it is tagged to..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Delete_AttributeType_Confirmation">
+            <summary>
+              Looks up a localized string similar to Attribute type successfully removed..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Delete_Error_Rule_Exist">
@@ -973,9 +973,9 @@
               Looks up a localized string similar to Edit Artifact Type.
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.Edit_AttributeTypeCategory_Title">
+        <member name="P:Resources.FormInfo.Edit_Attribute_Description">
             <summary>
-              Looks up a localized string similar to Edit Category.
+              Looks up a localized string similar to Updating this attribute may affect the score of the item it is tagged to..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Edit_AttributeType_Confirmation">
@@ -993,9 +993,9 @@
               Looks up a localized string similar to Edit Attribute Group.
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.Edit_Attribute_Description">
+        <member name="P:Resources.FormInfo.Edit_AttributeTypeCategory_Title">
             <summary>
-              Looks up a localized string similar to Updating this attribute may affect the score of the item it is tagged to..
+              Looks up a localized string similar to Edit Category.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Edit_FieldType_Confirmation">
@@ -1043,11 +1043,6 @@
               Looks up a localized string similar to When updating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear..
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.Edit_ReportTile_Confirmation">
-            <summary>
-              Looks up a localized string similar to Report tile successfully updated..
-            </summary>
-        </member>
         <member name="P:Resources.FormInfo.Edit_Report_Directions">
             <summary>
               Looks up a localized string similar to Edit the settings for this report and the components that make it up..
@@ -1056,6 +1051,11 @@
         <member name="P:Resources.FormInfo.Edit_Report_Title">
             <summary>
               Looks up a localized string similar to Edit Report.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_ReportTile_Confirmation">
+            <summary>
+              Looks up a localized string similar to Report tile successfully updated..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Edit_ResponsibilityTransformation_Directions">
@@ -1148,9 +1148,9 @@
               Looks up a localized string similar to You do not have permissions to update this..
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.PolicyTypeLevel_Remove">
+        <member name="P:Resources.FormInfo.Policy_Error_Delete_ExistingRulesPresent">
             <summary>
-              Looks up a localized string similar to Removing this level will alter the level name of all policies at this level..
+              Looks up a localized string similar to You may not remove this policy as there are existing rules assigned to it..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.PolicyType_Remove">
@@ -1158,9 +1158,9 @@
               Looks up a localized string similar to Removing this top-level policy type will permanently remove all policies under it, as well as any relationships that these policies participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.Policy_Error_Delete_ExistingRulesPresent">
+        <member name="P:Resources.FormInfo.PolicyTypeLevel_Remove">
             <summary>
-              Looks up a localized string similar to You may not remove this policy as there are existing rules assigned to it..
+              Looks up a localized string similar to Removing this level will alter the level name of all policies at this level..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.SynonymType_Remove">
@@ -1168,14 +1168,14 @@
               Looks up a localized string similar to Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
             </summary>
         </member>
-        <member name="P:Resources.FormInfo.TaxonomyType_Remove">
-            <summary>
-              Looks up a localized string similar to Removing this top-level information model will permanently remove all models under it, as well as any relationships that these models participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
-            </summary>
-        </member>
         <member name="P:Resources.FormInfo.Taxonomy_ChangeParent_Warning">
             <summary>
               Looks up a localized string similar to Altering a model&apos;s parent could potentially have a significant impact on ownership throughout the system..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.TaxonomyType_Remove">
+            <summary>
+              Looks up a localized string similar to Removing this top-level information model will permanently remove all models under it, as well as any relationships that these models participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Workflow_Certification_Request_Error">

@@ -843,11 +843,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_GlobalResources\PageInfo.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\PageInfo.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>PageInfo.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Authentication\Login.cshtml" />
@@ -859,33 +860,37 @@
     <Content Include="Content\Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_GlobalResources\Actions.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\Actions.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Actions.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_GlobalResources\Validation.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\Validation.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Validation.Designer.cs</LastGenOutput>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\themes\base\images\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_GlobalResources\FormInfo.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FormInfo.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_GlobalResources\FieldInfo.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\FieldInfo.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FieldInfo.Designer.cs</LastGenOutput>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">
@@ -1376,10 +1381,11 @@
     <TypeScriptCompile Include="Scripts\typings\powerbi.d.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_GlobalResources\Core.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\Core.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Core.designer.cs</LastGenOutput>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

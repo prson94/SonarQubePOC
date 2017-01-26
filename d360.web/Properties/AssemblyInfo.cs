@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: ComVisible(false)]
@@ -9,4 +10,5 @@ using System.Runtime.InteropServices;
 //[assembly: AssemblyCompany(d360.utils.AssemblySettings.COMPANY)]
 //[assembly: AssemblyProduct(d360.utils.AssemblySettings.TITLE_PREFIX + " UI")]
 //[assembly: AssemblyCopyright(d360.utils.AssemblySettings.COPYRIGHT)]
+[assembly: InternalsVisibleTo("d360.test.web")]
 [assembly: AssemblyVersion("2017.1.1.*")]//d360.utils.AssemblySettings.PRODUCT_VERSION

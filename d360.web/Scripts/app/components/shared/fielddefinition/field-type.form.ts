@@ -350,7 +350,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private loadTargetFusionAttributes(item: FieldTypeFusionItemEditorModel): Promise<void> {
-        //console.log('loadTargetFusionAttributes', item);
         let id;
         if (item.SourceFusionAttributeType == null)
             return;
