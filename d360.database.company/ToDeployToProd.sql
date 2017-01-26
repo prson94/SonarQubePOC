@@ -9049,3 +9049,9 @@ GO
 -- make the unique id column nullable
 ALTER TABLE [fusion].[result] ALTER COLUMN [ID] uniqueidentifier NULL ;
 GO
+
+
+-- add index on fusion id and parent id to fusion attribute table
+CREATE INDEX IX_FusionID_ParentID 
+	ON FusionAttribute (FusionID, ParentID);  
+GO
