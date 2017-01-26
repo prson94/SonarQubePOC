@@ -22,4 +22,5 @@ begin
 	inner join 
 		hierarchy cte
 	on cte.id = T.id
+	OPTION (MAXRECURSION 10)
 end
