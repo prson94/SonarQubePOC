@@ -100,9 +100,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Fusion');
-
-        this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork']));
-        
+                
         this.sub = this.route.params.subscribe(params => {
 
             this.fusionId = +params['fusionId'];
@@ -143,6 +141,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.setCommonRightSideBar(false, true, hasDashboard);
 
         this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive']));
+        this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork']));
 
         if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o']));           
     }
