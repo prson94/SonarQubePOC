@@ -11,6 +11,7 @@
       <Setting name="DBReadQueryTimeout" value="600" />
       <Setting name="DBBulkCopyTimeout" value="600" />
       <Setting name="MaximumRetries" value="3" />
+      <Setting name="MergeChunkSize" value="5000" />
       <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="ce8d05fc-1a80-44d5-82e8-102232cffa0d" />
     </ConfigurationSettings>
   </Role>

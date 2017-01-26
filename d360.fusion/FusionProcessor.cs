@@ -38,6 +38,8 @@ namespace d360.fusion
         /// </summary>
         public int BulkCopyTimeout { get; set; }
 
+        public int MergeChunkSize { get; set; }
+
         private FusionWorkArea _workArea = new FusionWorkArea();
 
         private static string SourceIDAttribute = "SourceID";
@@ -69,7 +71,7 @@ namespace d360.fusion
         private static string FUSION_PROCESSOR_AI_NAME_PROCESS_RELATIONSHIPS = "FusionProcessor - Process Relationships";
         private static string FUSION_PROCESSOR_AI_NAME_PROCESS_QUERY_ITEMS = "FusionProcessor - Process Query Items";
 
-        public async Task Process(FusionProcessingData fusionData, int bulkTimeout, int readTimeout, int executeTimeout)
+        public async Task Process(FusionProcessingData fusionData, int bulkTimeout, int readTimeout, int executeTimeout, int chunkSize)
         {
             BulkFusionImport data = null;
 
@@ -89,6 +91,8 @@ namespace d360.fusion
             FusionID = fusionData.FusionID;
 
             LogFileName = fusionData.LogFileName;
+
+            MergeChunkSize = chunkSize;
 
             if (CompanyID <= 0) throw new Exception("Invalid company id specified.");
 
@@ -334,14 +338,12 @@ namespace d360.fusion
 
         private async Task<int> LogExecution(SqlConnection companyConnection,string version)
         {
-            if (string.IsNullOrEmpty(version)) version = "unknown";
-            //TODO : remove queueID from fusion.execution table or make it nullable.
-            //insert a record into the fusion execution table that logs the start of this execution
-            //insert into fusion.execution (queueID,fusionID,RawLogFileName,DateStarted)
+            if (string.IsNullOrEmpty(version)) version = "unknown";            
+            //insert a record into the fusion execution table that logs the start of this execution            
             var result = await companyConnection.QueryAsync<int>(@"
                     insert 
-                        into [fusion].[execution] ([queueID],[fusionID],[RawLogFileName],[DateStarted],[Version])
-                        values('F4EEC459-9DEF-4A3D-BDCA-EC34849CAE08',@inFusionID,@log,@started,@ver);
+                        into [fusion].[execution] ([fusionID],[RawLogFileName],[DateStarted],[Version])
+                        values(@inFusionID,@log,@started,@ver);
                         SELECT CAST(SCOPE_IDENTITY() as int)
             ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow,ver =version }, commandTimeout:ReadQueryTimeout);
             
@@ -651,7 +653,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             //we have two cases
             // items that 
             sw.Restart();
-            await DoFusionAttributeMerge(companyConnection);
+            await DoFusionAttributeMerge(companyConnection, ai);
             Trace.TraceInformation(string.Format("DoFusionAttributeMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_MERGE, DateTime.Now, sw.Elapsed, "", true);
 
@@ -680,7 +682,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_VALS, DateTime.Now, sw.Elapsed, "", true);
 
             sw.Restart();
-            await DoFusionFieldMerge(companyConnection);
+            await DoFusionFieldMerge(companyConnection, ai);
             Trace.TraceInformation(string.Format("DoFusionFieldMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_MERGE, DateTime.Now, sw.Elapsed, "", true);
 
@@ -970,11 +972,8 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
         /// <returns></returns>
         private async Task UpdateFusionAttributeTextPaths(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"
-                UPDATE     FusionAttribute
-                SET        TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
-                WHERE   FusionID = @fus
-            ", new { fus = FusionID }, commandTimeout:ExecuteQueryTimeout);
+            await companyConnection.ExecuteAsync("[fusion].[UpdateFusionTextPaths]", new { FusionID }, commandTimeout:ExecuteQueryTimeout, commandType:CommandType.StoredProcedure);
+            
         }
 
         /// <summary>
@@ -1206,59 +1205,76 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                 ", commandTimeout:ReadQueryTimeout);
         }
 
-        private async Task DoFusionFieldMerge(SqlConnection companyConnection)
+        private async Task DoFusionFieldMerge(SqlConnection companyConnection, TelemetryClient ai)
         {
             await companyConnection.ExecuteAsync(@"
                     create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000));
                     CREATE UNIQUE CLUSTERED INDEX PK_tempFusionFields ON #tempFusionFields ([FusionAttributeID] ASC,[FieldTypeID] ASC);
             ", commandTimeout: ExecuteQueryTimeout);
 
-
             using (var trans = companyConnection.BeginTransaction())
             {
+                //do this in chunks of n max rows
+                int chunkSize = MergeChunkSize;
+                int chunks = (_workArea.FieldTempValues.Count / chunkSize) + 1;
 
-                Trace.TraceInformation("DoFusionFieldMerge - INSERTING {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
-                //insert to the temp table
+                ai.TrackTrace($"DoFusionFieldMerge - INSERTING {_workArea.FieldTempValues.Count} FIELD VALUES TO #tempFusionFields TEMP TABLE IN {chunkSize} ROW CHUNKS - {chunks} TOTAL CHUNKS.");
 
-                using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
+                for (var i = 0; i < chunks; i++)
                 {
-                    bulkCopy.BatchSize = _workArea.FieldTempValues.Count;
-                    bulkCopy.DestinationTableName = "#tempFusionFields";
-                    bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
+                    int startIndex = (i*chunkSize);
+                    int endIndex = (_workArea.FieldTempValues.Count > (startIndex +chunkSize)) ? (startIndex + chunkSize) : (startIndex + (_workArea.FieldTempValues.Count % chunkSize));
 
-                    var table = new DataTable();
-                    var columnName = "FusionAttributeID";
-                    table.Columns.Add(columnName, typeof(int));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "FieldTypeID";
-                    table.Columns.Add(columnName, typeof(int));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "Value";
-                    table.Columns.Add(columnName, typeof(string));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    foreach (var item in _workArea.FieldTempValues)
+                    if (i > 0)
                     {
-                        var row = table.NewRow();
-
-                        row["FusionAttributeID"] = item.ObjectID;
-                        row["FieldTypeID"] = item.FieldTypeID;
-                        row["Value"] = item.Value;
-
-                        table.Rows.Add(row);
+                        await companyConnection.ExecuteAsync(@"TRUNCATE TABLE #tempFusionFields", commandTimeout: ExecuteQueryTimeout, transaction: trans);
                     }
 
-                    await bulkCopy.WriteToServerAsync(table);
-                }
+                    var size = endIndex - startIndex;
+                                        
+                    Trace.TraceInformation("DoFusionFieldMerge - INSERTING {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", size);
+                    //insert to the temp table
 
-                Trace.TraceInformation("DoFusionFieldMerge - INSERTED {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
+                    using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
+                    {
+                        bulkCopy.BatchSize = size;
+                        bulkCopy.DestinationTableName = "#tempFusionFields";
+                        bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
-                Trace.TraceInformation("DoFusionFieldMerge - Starting to merge #tempFusionFields with [dbo].[field]");
+                        var table = new DataTable();
+                        var columnName = "FusionAttributeID";
+                        table.Columns.Add(columnName, typeof(int));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                //merge temp table with fields table
-                await companyConnection.ExecuteAsync(@"
+                        columnName = "FieldTypeID";
+                        table.Columns.Add(columnName, typeof(int));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "Value";
+                        table.Columns.Add(columnName, typeof(string));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        for(var j = startIndex; j < endIndex; j++)
+                        {
+                            var item = _workArea.FieldTempValues[j];
+                            var row = table.NewRow();
+
+                            row["FusionAttributeID"] = item.ObjectID;
+                            row["FieldTypeID"] = item.FieldTypeID;
+                            row["Value"] = item.Value;
+
+                            table.Rows.Add(row);
+                        }
+
+                        await bulkCopy.WriteToServerAsync(table);
+                    }
+
+                    Trace.TraceInformation("DoFusionFieldMerge - INSERTED {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", size);
+
+                    Trace.TraceInformation("DoFusionFieldMerge - Starting to merge #tempFusionFields with [dbo].[field]");
+
+                    //merge temp table with fields table
+                    await companyConnection.ExecuteAsync(@"
                         merge Field as T
                         using (
                             select FusionAttributeID as ObjectID,
@@ -1273,7 +1289,10 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                         when not matched then
                             insert (FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
                             values (S.FieldTypeID, 'FusionAttribute', S.ObjectID, S.Value, S.Value);
-                    ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction:trans);
+                    ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
+
+
+                }
 
                 trans.Commit();
 
@@ -1327,7 +1346,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
 
                 foreach (var item in x)
                 {
-                    if (item.Key == SourceIDAttribute || item.Key == NameAttribute || item.Key == FusionAttributeTypeIDAttribute || item.Key == ParentSourceIDAttribute)
+                    if (item.Key == SourceIDAttribute || item.Key == NameAttribute || item.Key == FusionAttributeTypeIDAttribute || item.Key == ParentSourceIDAttribute || item.Key == ActionAttribute)
                         continue;
 
                     if(string.IsNullOrEmpty(item.Key))
@@ -1360,63 +1379,81 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             }
         }
 
-        private async Task DoFusionAttributeMerge(SqlConnection companyConnection)
-        {               
+        private async Task DoFusionAttributeMerge(SqlConnection companyConnection, TelemetryClient ai)
+        {
             var sql = @"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250));
                         CREATE UNIQUE CLUSTERED INDEX PK_tempFusionAttributes ON #tempFusionAttributes ([FusionAttributeTypeID] ASC,[SourceID] ASC);";
-            
+
             await companyConnection.ExecuteAsync(sql, commandTimeout: ExecuteQueryTimeout);
-            
+
             Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.", _workArea.FusionAttributeTempValues.Count);
 
             using (var trans = companyConnection.BeginTransaction())
             {
-                //insert to the temp table
-                using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
+                //do this in chunks of n max rows
+                int chunkSize = MergeChunkSize;
+                int chunks = (_workArea.FusionAttributeTempValues.Count / chunkSize) + 1;
+
+                ai.TrackTrace($"DoFusionFieldMerge - INSERTING {_workArea.FusionAttributeTempValues.Count} FIELD VALUES TO #tempFusionAttributes TEMP TABLE IN {chunkSize} ROW CHUNKS - {chunks} TOTAL CHUNKS.");
+
+                for (var i = 0; i < chunks; i++)
                 {
-                    bulkCopy.BatchSize = _workArea.FusionAttributeTempValues.Count;
-                    bulkCopy.DestinationTableName = "#tempFusionAttributes";
-                    bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
+                    int startIndex = (i * chunkSize);
+                    int endIndex = (_workArea.FusionAttributeTempValues.Count > (startIndex + chunkSize)) ? (startIndex + chunkSize) : (startIndex + (_workArea.FusionAttributeTempValues.Count % chunkSize));
 
-                    var table = new DataTable();
-                    var columnName = "FusionAttributeTypeID";
-                    table.Columns.Add(columnName, typeof(int));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "SourceID";
-                    table.Columns.Add(columnName, typeof(string));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "Name";
-                    table.Columns.Add(columnName, typeof(string));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "Deleted";
-                    table.Columns.Add(columnName, typeof(bool));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "ParentSourceID";
-                    table.Columns.Add(columnName, typeof(string));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    foreach (var item in _workArea.FusionAttributeTempValues)
+                    if (i > 0)
                     {
-                        var row = table.NewRow();
-
-                        row["FusionAttributeTypeID"] = item.FusionAttributeTypeID;
-                        row["SourceID"] = item.SourceID;
-                        row["Name"] = item.Name;
-                        row["Deleted"] = item.IsDeleted();
-                        row["ParentSourceID"] = item.ParentSourceID;
-
-                        table.Rows.Add(row);
+                        await companyConnection.ExecuteAsync(@"TRUNCATE TABLE #tempFusionAttributes", commandTimeout: ExecuteQueryTimeout, transaction: trans);
                     }
 
-                    await bulkCopy.WriteToServerAsync(table);
-                }
+                    var size = endIndex - startIndex;
+                    //insert to the temp table
+                    using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
+                    {
+                        bulkCopy.BatchSize = size;
+                        bulkCopy.DestinationTableName = "#tempFusionAttributes";
+                        bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
-                //merge temp table with fusion attributes table
-                await companyConnection.ExecuteAsync(@"
+                        var table = new DataTable();
+                        var columnName = "FusionAttributeTypeID";
+                        table.Columns.Add(columnName, typeof(int));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "SourceID";
+                        table.Columns.Add(columnName, typeof(string));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "Name";
+                        table.Columns.Add(columnName, typeof(string));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "Deleted";
+                        table.Columns.Add(columnName, typeof(bool));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "ParentSourceID";
+                        table.Columns.Add(columnName, typeof(string));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        for (var j = startIndex; j < endIndex; j++)
+                        {
+                            var item = _workArea.FusionAttributeTempValues[j];                            
+                            var row = table.NewRow();
+
+                            row["FusionAttributeTypeID"] = item.FusionAttributeTypeID;
+                            row["SourceID"] = item.SourceID;
+                            row["Name"] = item.Name;
+                            row["Deleted"] = item.IsDeleted();
+                            row["ParentSourceID"] = item.ParentSourceID;
+
+                            table.Rows.Add(row);
+                        }
+
+                        await bulkCopy.WriteToServerAsync(table);
+                    }
+
+                    //merge temp table with fusion attributes table
+                    await companyConnection.ExecuteAsync(@"
                     merge FusionAttribute as T
                     using (
                         select FusionAttributeTypeID,
@@ -1433,6 +1470,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                         insert (FusionID, FusionAttributeTypeID, SourceID, Name, Deleted)
                         values (@fus, S.FusionAttributeTypeID, S.SourceID, S.Name, S.Deleted);
                     ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                }
 
                 trans.Commit();
             }

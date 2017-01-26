@@ -41,7 +41,8 @@ namespace d360.fusion
                                                 int bulkTimeout = 180,
                                                 int readTimeout = 180,
                                                 int executionTimeout = 180,
-                                                int maxRetries = 3)
+                                                int maxRetries = 3,
+                                                int mergeSize = 50000)
         {
             CloudQueue queue = _queueClient.GetQueueReference(_queueName);
             await queue.CreateIfNotExistsAsync();
@@ -81,7 +82,7 @@ namespace d360.fusion
                         try
                         {
                             Stopwatch sw = Stopwatch.StartNew();
-                            await fp.Process(fusion, bulkTimeout,readTimeout, executionTimeout);
+                            await fp.Process(fusion, bulkTimeout,readTimeout, executionTimeout, mergeSize);
                             Trace.TraceInformation(string.Format("Fusion Processing Took\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
                             Trace.TraceInformation("Fusion Processing successful! FusionQueueManager deleting message from queue");

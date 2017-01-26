@@ -542,6 +542,7 @@
     <None Include="dbo\Tables\IssueType.sql" />
     <None Include="dbo\Tables\Issue.sql" />
     <None Include="dbo\Tables\Nym.sql" />
+    <None Include="fusion\Stored Procedures\UpdateFusionTextPaths.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

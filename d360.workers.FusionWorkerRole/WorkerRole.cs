@@ -44,9 +44,9 @@ namespace d360.workers.FusionWorkerRole
 
             FusionProcessingData fusionData = new FusionProcessingData
             {
-                CompanyID = 15,
-                FusionID = 8,
-                LogFileName = "1.8.2016-11-15_11.18.04.json"
+                CompanyID = 4,
+                FusionID = 68,
+                LogFileName = "50028.68.2017-01-25_09.48.52.json"
             };
             
             //the biggest fusion job i can find 30.9 MB for Demo dev - gmo has a 35.3MB file in fusion-15 22 has 38.6mb
@@ -81,7 +81,9 @@ namespace d360.workers.FusionWorkerRole
                                                         GlobalStaticProperties.DBBulkCopyTimeout,
                                                         GlobalStaticProperties.DBReadQueryTimeout,
                                                         GlobalStaticProperties.DBExecuteQueryTimeout, 
-                                                        GlobalStaticProperties.MaximumRetries);
+                                                        GlobalStaticProperties.MaximumRetries,
+                                                        GlobalStaticProperties.MergeChunkSize
+                                                       );
 
                 // wait some time so we arent constantly polling the queue
                 await Task.Delay(GlobalStaticProperties.QueueCheckFrequency);

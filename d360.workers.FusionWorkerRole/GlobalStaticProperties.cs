@@ -17,6 +17,8 @@ namespace d360.workers.FusionWorkerRole
         private static int _MaximumRetries { get; set; }
         private static string _QueueName { get; set; }
         private static int _QueueCheckFrequency { get; set; }
+
+        private static int _MergeChunkSize { get; set; }
         /// <summary>
         /// This is the amount of time the message remains invisible after being
         /// read from the queue, before it becomes visible again (unless it is deleted)
@@ -198,6 +200,34 @@ namespace d360.workers.FusionWorkerRole
                 return _QueueCheckFrequency;
             }
         }
-        
+
+
+        //Size of chunks for merge into the fields table
+        internal static int MergeChunkSize
+        {
+            get
+            {
+                if (_MergeChunkSize <= 0)
+                {
+                    //hasn't been loaded yet, so load it 
+                    string mergeChunkSize =
+                      RoleEnvironment.GetConfigurationSettingValue("MergeChunkSize");
+                    int intTest = 0;
+                    bool success = int.TryParse(mergeChunkSize, out intTest);
+                    if (!success || intTest <= 0)
+                    {
+                        _MergeChunkSize = 50000;
+                    }
+                    else
+                    {
+                        _MergeChunkSize = intTest;
+                    }
+                    Trace.TraceInformation("[d360.workers.FusionWorkerRole.GlobalStaticProperties] "
+                      + "Setting MergeChunkSize to {0}", _MergeChunkSize);
+                }
+                return _MergeChunkSize;
+            }
+        }
+
     }
 }
