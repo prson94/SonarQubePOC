@@ -11188,21 +11188,64 @@ where   r.ID not in (
 order by r.Name";
                     break;
                 default:
-                    sql = $@"
-select	D.[Object], 
-        D.ObjectID, 
-        D.TextPath as Name
-from	cache.ObjectDetails D with(nolock)
-		left join [IntersectDetail] I on	I.IntersectTypeID = @it and (
-											 ( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
-											 ( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-											)
-where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
-        and D.ObjectTypeID <> D.ObjectID 
-        and D.ObjectTypeID <> 0
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-        and I.ID is null
-order by D.TextPath";
+                    sql = $@"(
+select		D.[Object], 
+			D.ObjectID
+from		cache.Object D
+			left join [Intersect] I on	I.IntersectTypeID = @it and (
+											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
+											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+										)
+where		D.ObjectType = @targetType and D.ObjectTypeID = @targetTypeID 
+			and D.ObjectType <> D.Object
+			and I.ID is null
+) C on C.ObjectID = O.ID";
+
+                    switch (targetType)
+                    {
+                        case "ArtifactType":
+                            sql = $@"select C.Object, C.ObjectID, O.TextPath + ' ( ' + T.Name + ' )' as Name from Artifact O inner join TaxonomyType T on T.ID = O.TaxonomyTypeID inner join {sql} order by O.TextPath + ' ( ' + T.Name + ' )'";
+                            break;
+                        case "GroupType":
+                            sql = $@"select C.Object, C.ObjectID, O.Name from [Group] O inner join {sql} order by O.Name";
+                            break;
+                        case "IntersectType":
+                            sql = $@"select C.Object, C.ObjectID, O.Name from [Intersect] O inner join {sql} order by O.Name";
+                            break;
+                        case "LookupType":
+                            sql = $@"select C.Object, C.ObjectID, O.Name from [LookupType] O inner join {sql} order by O.Name";
+                            break;
+                        case "PolicyType":
+                            sql = $@"select C.Object, C.ObjectID, O.TextPath as Name from [Policy] O inner join {sql} order by O.TextPath";
+                            break;
+                        case "ReferenceItemType":
+                            sql = $@"select C.Object, C.ObjectID, O.Name from [ReferenceItemType] O inner join {sql} order by O.Name";
+                            break;
+                        case "ResourceType":
+                            sql = $@"select C.Object, C.ObjectID, O.LastName + ', ' + O.FirstName as Name from reporting.[Global_Resource] O inner join {sql} order by O.LastName + ', ' + O.FirstName";
+                            break;
+                        case "RuleType":
+                            sql = $@"select C.Object, C.ObjectID, O.Name from [Rule] O inner join {sql} order by O.Name";
+                            break;
+                        case "TaxonomyType":
+                            sql = $@"select C.Object, C.ObjectID, O.TextPath as Name from Taxonomy O inner join {sql} order by O.TextPath";
+                            break;
+                    }
+//                    sql = $@"
+//select	D.[Object], 
+//        D.ObjectID, 
+//        D.TextPath as Name
+//from	cache.ObjectDetails D with(nolock)
+//		left join [IntersectDetail] I on	I.IntersectTypeID = @it and (
+//											 ( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
+//											 ( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+//											)
+//where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
+//        and D.ObjectTypeID <> D.ObjectID 
+//        and D.ObjectTypeID <> 0
+//        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+//        and I.ID is null
+//order by D.TextPath";
                     break;
             }
 
