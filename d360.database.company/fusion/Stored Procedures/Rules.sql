@@ -8,6 +8,7 @@ BEGIN
 			@RuleID int,
 			@FusionID int,
 			@AttributeID int,
+			@ParentAttributeID int,
 			@ExecutionID int,
 			@NumberOfRules int,			
 			@NumberOfNewTaxonomies int,
@@ -28,12 +29,11 @@ BEGIN
 	--First check if there is anything to do
 	EXEC @promotionNeedsToRun = [utility].[ShouldPromotionRun]
 
-
-	if(@promotionNeedsToRun <= 0)
-	BEGIN
-		PRINT 'NO REASON TO RUN THE PROMOTION RULES WAS DETECTED';
-		return;
-	END;
+	--if(@promotionNeedsToRun <= 0)
+	--BEGIN
+	--	PRINT 'NO REASON TO RUN THE PROMOTION RULES WAS DETECTED';
+	--	return;
+	--END;
 
 	--Log this run get a new id from the fusion.promotion table
 	insert into [fusion].[RuleLog] ( DateStarted ) values ( CURRENT_TIMESTAMP)
@@ -61,6 +61,7 @@ BEGIN
 		RuleStepID int,
 		[Action] varchar(25),
 		AttributeID int,
+		ParentAttributeID int null,
 		AttributeType varchar(25)
 	);
 
@@ -75,7 +76,7 @@ BEGIN
 		SourceFieldTypeID int, 
 		TargetFieldName nvarchar(250), 
 		TargetFieldTypeID int, 
-		Value nvarchar(4000)
+		Value nvarchar(max)
 	);
 	
 	IF OBJECT_ID('tempdb..#fieldValues') IS NOT NULL
@@ -85,8 +86,10 @@ BEGIN
 		ObjectType varchar(50), 
 		ObjectID int, 
 		FieldTypeID int, 
-		Value nvarchar(4000)
+		Value nvarchar(max)
 	);
+
+	CREATE UNIQUE CLUSTERED INDEX PK_tempfieldValues ON #fieldValues ([ObjectType] ASC,[ObjectID] ASC,[FieldTypeID] ASC);
 	
 	insert into #rules
 		select	R.ID,
@@ -94,12 +97,12 @@ BEGIN
 				R.ObjectType,
 				R.ObjectID,
 				I.ObjectID as FilterAttributeID,
-				coalesce(A.FusionAttributeTypeID, F.ObjectID, Q.ID, R.ObjectID) as FilterAttributeTypeID
+				coalesce(A.FusionAttributeTypeID, Q.ID, R.ObjectID) as FilterAttributeTypeID--coalesce(A.FusionAttributeTypeID, F.ObjectID, Q.ID, R.ObjectID) as FilterAttributeTypeID
 		from	[fusion].[Rule] R
 				inner join [fusion].[RuleItem] I on I.RuleID = R.ID and R.[Enabled] = 1
 				left join FusionAttribute A on A.ID = I.ObjectID AND I.ObjectType = 'FusionAttribute'
 				left join FusionQueryAttributeType Q on Q.ID = R.ObjectID and R.ObjectType = 'FusionQueryAttribute'
-				left join FieldType F on F.ID = I.ObjectID and I.ObjectType = 'FusionQueryAttribute'
+				--left join FieldType F on F.ID = I.ObjectID and I.ObjectType = 'FusionQueryAttribute'
 
 	declare	@currentID int,
 			@maxID int
@@ -116,7 +119,6 @@ BEGIN
 				@FusionObjectID int,
 				@FilterAttributeID int,
 				@FilterAttributeTypeID int
-
 
 		select	@RuleID = RuleID,
 				@FusionObjectType = ObjectType,
@@ -135,8 +137,10 @@ BEGIN
 							S.ID,
 							S.[Action],
 							@FilterAttributeID,
+							A.ParentID,
 							@FusionObjectType
 					from	[fusion].[RuleStep] S
+							inner join FusionAttribute A on A.ID = @FilterAttributeID
 					where	S.RuleID = @RuleID
 					order by S.Step
 			end
@@ -148,25 +152,27 @@ BEGIN
 						if @FilterAttributeID is null
 							begin
 								insert into #attributes
-									select @RuleID,
-										S.ID,
-										S.[Action],
-										FT.ID,
-										@FusionObjectType
-									from FieldType FT
-									inner join fusion.RuleStep S on S.RuleID = @RuleID and FT.[Object] = 'FusionQueryAttributeType' and FT.ObjectID = @FilterAttributeTypeID
+									select	@RuleID,
+											S.ID,
+											S.[Action],
+											FT.ID,
+											NULL,
+											@FusionObjectType
+									from	FusionQueryAttribute FT
+											inner join fusion.RuleStep S on S.RuleID = @RuleID and FT.FusionQueryAttributeTypeID = @FusionObjectID
 							end
 						else
 							--take specific query attribute
 							begin
 								insert into #attributes
-									select @RuleID,
-										S.ID,
-										S.[Action],
-										FT.ID,
-										@FusionObjectType
-									from FieldType FT
-									inner join fusion.RuleStep S on S.RuleID = @RuleID and FT.ID = @FilterAttributeID
+									select	@RuleID,
+											S.ID,
+											S.[Action],
+											FT.ID,
+											NULL,
+											@FusionObjectType
+									from	FusionQueryAttribute FT
+											inner join fusion.RuleStep S on S.RuleID = @RuleID and FT.FusionQueryAttributeTypeID = @FusionObjectID and FT.ID = @FilterAttributeID
 							end
 					end
 				else
@@ -180,6 +186,7 @@ BEGIN
 										S.ID,
 										S.[Action],
 										FA.ID,
+										FA.ParentID,
 										@FusionObjectType
 								from	FusionAttribute FA 
 										inner join [fusion].[RuleStep] S on S.RuleID = @RuleID and FA.FusionID = @FusionID and FA.FusionAttributeTypeID = @FusionObjectID
@@ -209,6 +216,7 @@ BEGIN
 										S.ID,
 										S.[Action],
 										FA.ID,
+										FA.ParentID,
 										@FusionObjectType
 								from	FA 
 										inner join [fusion].[RuleStep] S on S.RuleID = @RuleID and FA.FusionAttributeTypeID = @FusionObjectID
@@ -222,8 +230,6 @@ BEGIN
 		set @currentID = @currentID + 1
 	end --end while loop
 	--END: Determine the target fusion attributes to promote.
-
-
 
 	-- Load field values we are working with, first starting with the Name.
 	insert into #fields
@@ -241,9 +247,25 @@ BEGIN
 					when M.IsConstantValue = 1 then M.ConstantValue
 				end				
 		from	[fusion].[RuleStepMapping] M
-				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID
+				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName in ('ID', 'Name', 'TextPath') OR M.IsConstantValue = 1)
 				inner join #attributes A on A.RuleID = RS.RuleID
 				inner join FusionAttribute FA on FA.ID = A.AttributeID and A.AttributeType = 'FusionAttributeType'
+
+	insert into #fields
+		select	A.ID,
+				RS.RuleID,
+				M.RuleStepID,
+				M.SourceFieldName,
+				M.SourceFieldTypeID,
+				M.TargetFieldName,
+				M.TargetFieldTypeID,
+				F.FormattedValue
+		from	[fusion].[RuleStepMapping] M
+				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName not in ('ID', 'Name', 'TextPath') AND M.IsConstantValue = 0)
+				inner join #attributes A on A.RuleID = RS.RuleID and A.AttributeType = 'FusionAttributeType' --and A.AttributeID = M.SourceFieldTypeID
+				inner join Field F on F.ObjectType = 'FusionAttribute' and F.ObjectID = A.AttributeID
+				inner join FieldType FT on FT.ID = F.FieldTypeID and M.SourceFieldName = FT.Name
+
 
 	--insert fusion query attribute fields
 	insert into #fields
@@ -255,35 +277,46 @@ BEGIN
 				M.TargetFieldName,
 				M.TargetFieldTypeID,
 				case 
-					when M.SourceFieldName = 'ID' then cast(FT.ID as nvarchar)
-					when M.SourceFieldName = 'Name' then FT.Name
-					when M.SourceFieldName = 'TextPath' then FT.Name
+					when M.SourceFieldName = 'ID' then cast(A.AttributeID as nvarchar)
 					when M.IsConstantValue = 1 then M.ConstantValue
-				end				
+				end
 		from	[fusion].[RuleStepMapping] M
-				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID
-				inner join #attributes A on A.RuleID = RS.RuleID and A.AttributeID = M.SourceFieldTypeID
-				inner join FieldType FT on FT.ID = A.AttributeID and A.AttributeType = 'FusionQueryAttributeType'
+				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName = 'ID' OR M.IsConstantValue = 1)
+				inner join #attributes A on A.RuleID = RS.RuleID and A.AttributeType = 'FusionQueryAttributeType'
+
+	insert into #fields
+		select	A.ID,
+				RS.RuleID,
+				M.RuleStepID,
+				M.SourceFieldName,
+				M.SourceFieldTypeID,
+				M.TargetFieldName,
+				M.TargetFieldTypeID,
+				F.FormattedValue
+		from	[fusion].[RuleStepMapping] M
+				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName <> 'ID' AND M.IsConstantValue = 0)
+				inner join #attributes A on A.RuleID = RS.RuleID and A.AttributeType = 'FusionQueryAttributeType' --and A.AttributeID = M.SourceFieldTypeID
+				inner join Field F on F.ObjectType = 'FusionQueryAttribute' and F.ObjectID = A.AttributeID
+				inner join FieldType FT on FT.ID = F.FieldTypeID and M.SourceFieldName = FT.Name
 
 	-- Update the fields table above with values for all dynamic fields.
-	update	T
-	set		T.Value = S.Value
-	from	#fields T
-			inner join #attributes A on A.ID = T.ID and A.AttributeType = 'FusionQueryAttributeType'
-			inner join Field S on S.FieldTypeID = A.AttributeID;
+	--update	T
+	--set		T.Value = S.Value
+	--from	#fields T
+	--		inner join #attributes A on A.ID = T.ID and A.AttributeType = 'FusionQueryAttributeType'
+	--		inner join Field S on S.ObjectType = 'FusionQueryAttribute' and S.ObjectID = A.AttributeID;
 
-	update	T
-	set		T.Value = S.Value
-	from	#fields T
-			inner join #attributes A on A.ID = T.ID and A.AttributeType = 'FusionAttributeType'
-			inner join Field S on S.ObjectType = 'FusionAttribute' and S.ObjectID = A.AttributeID and S.FieldTypeID = T.SourceFieldTypeID
-
+	--update	T
+	--set		T.Value = S.Value
+	--from	#fields T
+	--		inner join #attributes A on A.ID = T.ID and A.AttributeType = 'FusionAttributeType'
+	--		inner join Field S on S.ObjectType = 'FusionAttribute' and S.ObjectID = A.AttributeID and S.FieldTypeID = T.SourceFieldTypeID
 
 --BEGIN: TESTING ---------------------------------------
 
 --select * from #rules;
---select * from #attributes;
---select * from #fields;
+--select * from #attributes order by ID;
+--select * from #fields order by ID;
 
 --drop table #attributes;
 --drop table #fields;
@@ -351,204 +384,223 @@ BEGIN
 				select	@ParentSearchObject			= Value from @settings where Name = 'ParentObject'
 				select	@ParentSearchObjectID		= Value from @settings where Name = 'ParentObjectID'
 
-				if exists(select 1 from @fields where TargetFieldName = 'Name')
+				if @ObjectTypeToPromoteTo = 'ReferenceItemType' OR @ObjectTypeToPromoteTo = 'ReferenceItem'
 				begin
-					declare @code nvarchar(50) = null,
-							@name nvarchar(250) = null,
-							@description nvarchar(4000) = null
-
-					select @code = Value from @fields where TargetFieldName = 'Code'
-					select @name = Value from @fields where TargetFieldName = 'Name'
-					select @description = coalesce(Value, '') from @fields where TargetFieldName = 'Description'
-
-					--BEGIN: Find parent based on search type
-					if @ParentObjectSearchType = 'Direct'
+					if exists(select 1 from @fields where TargetFieldName = 'Code')
 					begin
-						set @ParentObject = @ParentSearchObject
-						set @ParentObjectID = @ParentSearchObjectID
-					end
+						declare @code nvarchar(50) = null
 
-					if @ParentObjectSearchType = 'FusionOwner'
-					begin
-						select	@ParentObject = 'Artifact',
-								@ParentObjectID = ArtifactID
-						from	FusionOwner
-						where	@ParentSearchObject = 'Owner'
-								and FusionID = @FusionID
-								--and ID = @ParentSearchObjectID
-					end
+						select @code = Value from @fields where TargetFieldName = 'Code'
 
-					if @ParentObjectSearchType = 'ResultFromStep'
-					begin
-						select	@ParentObject = ObjectType,
-								@ParentObjectID = ObjectID
-						from	[fusion].[RulePromotion]
-						where	@ParentSearchObject = 'Step'
-								and RuleID = @RuleID
-								and RuleStepID = @ParentSearchObjectID
-								and AttributeID = @AttributeID
-								and AttributeType = @AttributeType
-
-					end
-					--END: Find parent based on search type
-
-					print @ParentObject
-					print @ParentObjectID
-
-					--BEGIN: Determine object type to promote as
-					if @ObjectTypeToPromoteTo = 'ArtifactType'
-					begin
-						set @ResultObject = 'Artifact'
-
-						if @ResultObjectID is null
-						begin
-							select	@ResultObjectID = ID
-							from	Artifact
-							where	ArtifactTypeID = @ObjectTypeIDToPromoteTo
-									and lower(Name) = lower(@name)
-						end
-
-						declare @modelTypeID int = null
-						declare @taxonomyTypeValue nvarchar(250)
-
-						select @taxonomyTypeValue = Value from @fields where TargetFieldName = 'TaxonomyTypeID'
-
---fusion.Rules
-						if (@taxonomyTypeValue <> '' and @taxonomyTypeValue is not null)
-						begin
-							select @modelTypeID = ID from TaxonomyType where Name = ltrim(rtrim(@taxonomyTypeValue))
-						end
-
-						if @taxonomyTypeValue is null
-						begin
-							select @modelTypeID = min(ID) from TaxonomyType
-						end
-
-						if @ResultObjectID is null
-							begin
-								if @ParentObjectID = 0
-								begin
-									set @ParentObjectID = null
-								end
-
-								if @modelTypeID is not null
-									begin
-
-										--DEBUGGING------------------------
-										--select 
-										--	@ParentObjectID as ParentObjectID,
-										--	@ObjectTypeIDToPromoteTo as ObjectTypeIDToPromoteTo,
-										--	@modelTypeID as modelTypeID, 
-										--	@name as [name], 
-										--	@description as [description], 
-										--	@ResultObject as ResultObject, 
-										--	@ResultObjectID as ResultObjectID,
-										--    @RuleID as RuleID, @RuleStepID as RuleStepID;
-
-										-- select * from @fields;
-										------------------------------------
-
-										insert into Artifact ( ParentID, ArtifactTypeID, TaxonomyTypeID, Name, Description, Status, UpdatedOn, UpdatedBy )
-										values ( @ParentObjectID, @ObjectTypeIDToPromoteTo, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0 )
-
-										select @ResultObjectID =  SCOPE_IDENTITY()
-										set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
-									end
-							end
-						else
-							begin
-								declare @testArtifactName nvarchar(250) = null,
-										@testArtifactDescription nvarchar(4000) = null,
-										@testArtifactParentID int = null,
-										@testArtifactTaxonomyTypeID int = null
-
-								select	@testArtifactName = Name,
-										@testArtifactDescription = Description,
-										@testArtifactParentID = ParentID,
-										@testArtifactTaxonomyTypeID = TaxonomyTypeID
-								from	Artifact
-								where	ID = @ResultObjectID
-
-								if @modelTypeID is not null
-									begin
-										if (@testArtifactName <> @name) 
-											OR (@testArtifactDescription <> @description) 
-											OR (@testArtifactParentID <> @ParentObjectID) 
-											OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
-										begin
-											update	Artifact
-											set		Name = @name,
-													Description = @description,
-													ParentID = @ParentObjectID,
-													TaxonomyTypeID = @modelTypeID
-											where	ID = @ResultObjectID
-										end
-									end
-							end
-					end
-					--END: IF ArtifactType
-
-					if @ObjectTypeToPromoteTo = 'ReferenceItemType' OR @ObjectTypeToPromoteTo = 'ReferenceItem'
-					begin
 						-- You are promoting Reference items to a specific Reference (list)
 						set @ResultObject = 'ReferenceItem'
 
-						if @ResultObject is null and @ResultObjectID is null
+						if (@ResultObject is null and @ResultObjectID is null) or not exists(select 1 from ReferenceItem where ID = @ResultObjectID)
+						begin
+							select	@ResultObjectID = ID
+							from	ReferenceItem
+							where	ReferenceItemTypeID = @ObjectTypeIDToPromoteTo
+									and lower(Code) = lower(@code)
+
+							if not exists(select 1 from ReferenceItem where ID = @ResultObjectID)
 							begin
-								select	@ResultObjectID = ID
-								from	ReferenceItem
-								where	ReferenceItemTypeID = @ParentObjectID
-										and lower(Code) = lower(@code)
+								set @ResultObjectID = null
 							end
+						end
  
 						if @ResultObjectID is null
-							begin
-								insert into ReferenceItem ( ReferenceItemTypeID, Code )
-								values ( @ParentObject, @code )
+						begin
+							insert into ReferenceItem ( ReferenceItemTypeID, Code, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy )
+							values ( @ObjectTypeIDToPromoteTo, @code, getutcdate(), 0, getutcdate(), 0 )
 
-								select @ResultObjectID =  SCOPE_IDENTITY()
+							select @ResultObjectID =  SCOPE_IDENTITY()
 
-								set @NumberOfNewReferenceItems = @NumberOfNewReferenceItems +1;
-							end
-					end
-					--END: IF ReferenceType
-
-					if @ObjectTypeToPromoteTo = 'TaxonomyType'
+							set @NumberOfNewReferenceItems = @NumberOfNewReferenceItems +1;
+						end
+					end -- END check if Code is a TargetField
+				end	--END: IF ReferenceType
+				else
+				begin
+					if exists(select 1 from @fields where TargetFieldName = 'Name')
 					begin
-						set @ResultObject = 'Taxonomy'
+						declare @name nvarchar(250) = null,
+								@description nvarchar(4000) = null
 
-						if @ResultObjectID is null
+						select @name = Value from @fields where TargetFieldName = 'Name'
+						select @description = coalesce(Value, '') from @fields where TargetFieldName = 'Description'
+
+						--BEGIN: Find parent based on search type
+						if @ParentObjectSearchType = 'Direct'
+						begin
+							set @ParentObject = @ParentSearchObject
+							set @ParentObjectID = @ParentSearchObjectID
+						end
+
+						if @ParentObjectSearchType = 'FusionOwner'	--acts similarly to Direct
+						begin
+							set	@ParentObject = @ParentSearchObject
+							set @ParentObjectID = @ParentSearchObjectID
+						end
+
+						if @ParentObjectSearchType = 'ResultFromStep'
+						begin
+							select	@ParentObject = ObjectType,
+									@ParentObjectID = ObjectID
+							from	[fusion].[RulePromotion]
+							where	@ParentSearchObject = 'Step'
+									and RuleID = @RuleID
+									and RuleStepID = @ParentSearchObjectID
+									and AttributeID = @AttributeID
+									and AttributeType = @AttributeType
+						end
+						--END: Find parent based on search type
+
+						--BEGIN: Determine object type to promote as
+						if @ObjectTypeToPromoteTo = 'ArtifactType'
+						begin
+							set @ResultObject = 'Artifact'
+
+							if (@ResultObjectID is null) or not exists(select 1 from Artifact where ID = @ResultObjectID)
+							begin
+								select	@ResultObjectID = ID
+								from	Artifact
+								where	ArtifactTypeID = @ObjectTypeIDToPromoteTo
+										and lower(Name) = lower(@name)
+
+								if not exists(select 1 from Artifact where ID = @ResultObjectID)
+								begin
+									set @ResultObjectID = null
+								end
+							end
+
+							declare @modelTypeID int = null
+							declare @taxonomyTypeValue nvarchar(250)
+
+							select @taxonomyTypeValue = Value from @fields where TargetFieldName = 'TaxonomyTypeID'
+
+							if (@taxonomyTypeValue <> '' and @taxonomyTypeValue is not null)
+							begin
+								select @modelTypeID = ID from TaxonomyType where Name = ltrim(rtrim(@taxonomyTypeValue))
+							end
+
+							if @taxonomyTypeValue is null
+							begin
+								select @modelTypeID = min(ID) from TaxonomyType
+							end
+
+							if @ResultObjectID is null
+								begin
+									if @ParentObjectID = 0
+									begin
+										set @ParentObjectID = null
+									end
+
+									if @modelTypeID is not null
+										begin
+
+											--DEBUGGING------------------------
+											--select 
+											--	@ParentObjectID as ParentObjectID,
+											--	@ObjectTypeIDToPromoteTo as ObjectTypeIDToPromoteTo,
+											--	@modelTypeID as modelTypeID, 
+											--	@name as [name], 
+											--	@description as [description], 
+											--	@ResultObject as ResultObject, 
+											--	@ResultObjectID as ResultObjectID,
+											--    @RuleID as RuleID, @RuleStepID as RuleStepID;
+
+											-- select * from @fields;
+											------------------------------------
+
+											insert into Artifact ( ParentID, ArtifactTypeID, TaxonomyTypeID, Name, Description, Status, UpdatedOn, UpdatedBy, CreatedOn )
+											values ( @ParentObjectID, @ObjectTypeIDToPromoteTo, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0, getutcdate() )
+
+											select @ResultObjectID =  SCOPE_IDENTITY()
+											set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
+										end
+								end
+							else
+								begin
+									declare @testArtifactName nvarchar(250) = null,
+											@testArtifactDescription nvarchar(4000) = null,
+											@testArtifactParentID int = null,
+											@testArtifactTaxonomyTypeID int = null
+
+									select	@testArtifactName = Name,
+											@testArtifactDescription = Description,
+											@testArtifactParentID = ParentID,
+											@testArtifactTaxonomyTypeID = TaxonomyTypeID
+									from	Artifact
+									where	ID = @ResultObjectID
+
+									if @modelTypeID is not null
+										begin
+											if (@testArtifactName <> @name) 
+												OR (@testArtifactDescription <> @description) 
+												OR (@testArtifactParentID <> @ParentObjectID) 
+												OR (@testArtifactParentID is null and @ParentObjectID is not null)
+												OR (@testArtifactParentID is not null and @ParentObjectID is null)
+												OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
+											begin
+												update	Artifact
+												set		Name = @name,
+														Description = @description,
+														ParentID = @ParentObjectID,
+														TaxonomyTypeID = @modelTypeID,
+														UpdatedOn = getutcdate(),
+														UpdatedBy = 0
+												where	ID = @ResultObjectID
+											end
+										end
+								end
+						end
+						--END: IF ArtifactType
+
+						if @ObjectTypeToPromoteTo = 'TaxonomyType'
+						begin
+							set @ResultObject = 'Taxonomy'
+
+							if (@ResultObjectID is null) or not exists(select 1 from Taxonomy where ID = @ResultObjectID)
 							begin
 								select	@ResultObjectID = ID
 								from	Taxonomy
 								where	TaxonomyTypeID = @ObjectTypeIDToPromoteTo
 										and ParentID = @ParentObjectID
 										and lower(Name) = lower(@name)
+
+								if not exists(select 1 from Taxonomy where ID = @ResultObjectID)
+								begin
+									set @ResultObjectID = null
+								end
 							end
 
-						if @ResultObjectID is null
+							if @ResultObjectID is null
 							begin
-								insert into Taxonomy	( ParentID, TaxonomyTypeID, Name, Description )
-								values					( @ParentObjectID, @ObjectTypeIDToPromoteTo, @name, @description )
+								insert into Taxonomy	( ParentID, TaxonomyTypeID, Name, Description, UpdatedOn, UpdatedBy )
+								values					( @ParentObjectID, @ObjectTypeIDToPromoteTo, @name, @description, getutcdate(), 0 )
 
 								select @ResultObjectID =  SCOPE_IDENTITY()
 
 								set @NumberOfNewTaxonomies = @NumberOfNewTaxonomies +1;
 							end
-						else
+							else
 							begin
 								update	Taxonomy
 								set		Name = @Name,
-										Description = @Description--,
+										Description = @Description,
+										UpdatedOn = getutcdate(),
+										UpdatedBy = 0--,
 										--ParentID = @PromotionParentObjectID
 								where	ID = @ResultObjectID
  							end
-					end
-					--END: IF TaxonomyType
+						end
+						--END: IF TaxonomyType
 
-					--END: Determine object type to promote as
+						--END: Determine object type to promote as
 
-				end -- END: Check to see if Target Field called NAME is present
+					end -- END: Check to see if Target Field called NAME is present
+
+				end --End of the ELSE that checks to see if referencelist, or not.
 
 			end --END: Promote action
 
@@ -660,9 +712,18 @@ BEGIN
 					end
 					else
 					begin
-						select	@FindFilterFieldValue = Value
-						from	@fields
-						where	SourceFieldName = 'Name'	
+						if @FindFilterField = -2
+							begin
+								select	@FindFilterFieldValue = Name
+								from	FusionAttribute
+								where	ID = @ParentAttributeID
+							end
+						else
+							begin
+								select	@FindFilterFieldValue = Value
+								from	@fields
+								where	SourceFieldName = 'Name'	
+							end
 					end
 
 					if @FindFilterFieldValue is not null
@@ -1217,9 +1278,14 @@ BEGIN
 
 					if @shouldInsert = 1
 					begin
-						If not EXISTS (SELECT 1 FROM #fieldValues where ObjectType = @ResultObject and ObjectID = @ResultObjectID and FieldTypeID = @targetFieldTypeID) --avoid duplicates this happens in gmo
+						--If not EXISTS (SELECT 1 FROM #fieldValues where ObjectType = @ResultObject and ObjectID = @ResultObjectID and FieldTypeID = @targetFieldTypeID) --avoid duplicates this happens in gmo
 						begin
-							insert into #fieldValues (ObjectType, ObjectID, FieldTypeID, Value) values(@ResultObject, @ResultObjectID, @targetFieldTypeID, @fieldValue)
+							begin try
+								insert into #fieldValues (ObjectType, ObjectID, FieldTypeID, Value) values(@ResultObject, @ResultObjectID, @targetFieldTypeID, @fieldValue)
+							end try
+							Begin Catch
+								print 'duplicate field value'
+							End Catch
 						end
 					end
 						
@@ -1286,3 +1352,4 @@ BEGIN
 	where	ID = @ExecutionID;
 END
 
+GO
