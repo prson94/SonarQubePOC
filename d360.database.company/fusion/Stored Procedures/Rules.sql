@@ -29,11 +29,11 @@ BEGIN
 	--First check if there is anything to do
 	EXEC @promotionNeedsToRun = [utility].[ShouldPromotionRun]
 
-	--if(@promotionNeedsToRun <= 0)
-	--BEGIN
-	--	PRINT 'NO REASON TO RUN THE PROMOTION RULES WAS DETECTED';
-	--	return;
-	--END;
+	if(@promotionNeedsToRun <= 0)
+	BEGIN
+		PRINT 'NO REASON TO RUN THE PROMOTION RULES WAS DETECTED';
+		return;
+	END;
 
 	--Log this run get a new id from the fusion.promotion table
 	insert into [fusion].[RuleLog] ( DateStarted ) values ( CURRENT_TIMESTAMP)
