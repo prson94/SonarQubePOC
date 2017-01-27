@@ -79,6 +79,8 @@ BEGIN
 		Value nvarchar(max)
 	);
 	
+	CREATE NONCLUSTERED INDEX [CIX_TempFields] ON #fields ( ID ASC, RuleID ASC );
+
 	IF OBJECT_ID('tempdb..#fieldValues') IS NOT NULL
 		DROP TABLE #fieldValues;
 
@@ -1284,7 +1286,7 @@ BEGIN
 								insert into #fieldValues (ObjectType, ObjectID, FieldTypeID, Value) values(@ResultObject, @ResultObjectID, @targetFieldTypeID, @fieldValue)
 							end try
 							Begin Catch
-								print 'duplicate field value'
+							--	print 'duplicate field value'
 							End Catch
 						end
 					end
