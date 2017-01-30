@@ -319,7 +319,8 @@ order by    W.DateStarted desc";
             W.Data.value('(fields/IssueType)[1]', 'int') as IssueType,
 			case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName,
 			0 as IssueID,
-            2 as Criticality
+            2 as Criticality,
+            case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
@@ -341,7 +342,8 @@ select		W.ID as WorkflowID,
             IT.ID as IssueType,
             IT.Name as IssueTypeName,
 			I.ID as IssueID,
-            I.Criticality as Criticality
+            I.Criticality as Criticality,
+            case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
