@@ -4060,6 +4060,22 @@ from    (
                                 new ReadOnlyField { Name = "# Errors", FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() }
                             }
                         });
+
+                        if (load.DateCompleted.HasValue && load.DateStarted.HasValue)
+                        {
+                            var minutes = Math.Round((load.DateCompleted.Value - load.DateStarted.Value).TotalMinutes);
+
+                            var minutesMessage = (minutes == 0 ? "less than a minute" : minutes + " minute(s)");
+                            
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Took (minutes)", FieldName = "EllapsedTime", FieldDescription = "", Value = minutesMessage  }
+                            }
+                            });
+                        }
                     }
                     load = null;
                     break;
