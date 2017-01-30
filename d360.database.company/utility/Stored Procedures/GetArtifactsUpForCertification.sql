@@ -211,15 +211,15 @@ begin
 	select	A.ID as ArtifactID,
 --A.ArtifactTypeID,
 --W.DateStarted,
-			coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime')) as CertificationStartDate,
-			coalesce(V.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime')) as CertificationEndDate
+			coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime')) as CertificationStartDate,
+			coalesce(V.Fields.value('(/fields/CertificationEndDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate/text())[1]', 'datetime')) as CertificationEndDate
 	from	Artifact A
 			left join WorkflowTypeRelation T on T.[Object] = 'ArtifactType' and T.ObjectID = A.ArtifactTypeID and T.WorkflowType = @wt and T.[Enabled] = 1  and T.Parent is null and T.ParentID is null
 			left join WorkflowTypeRelation V on V.[Object] = 'ArtifactType' and V.ObjectID = A.ArtifactTypeID and V.WorkflowType = @wt and V.[Enabled] = 1 and V.Parent = 'TaxonomyType' and V.ParentID = A.TaxonomyTypeID
 			outer apply (
 						select	max(DateStarted) as DateStarted
 						from	Workflow
-						where	Data.value('(/fields/ArtifactID)[1]', 'int') = A.ID
+						where	artifactID = A.ID
 								--and DateCompleted is null
 						) W
 	where	(
@@ -229,7 +229,7 @@ begin
 					W.DateStarted is not null 
 					and
 					DATEDIFF(m, W.DateStarted, 
-						coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
+						coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'))
 					) > 0
 				)
 			)
@@ -242,36 +242,36 @@ begin
 					A.DateLastCertified is not null
 					and DATEDIFF(m, 
 						A.DateLastCertified, 
-						coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
-					) > coalesce(V.Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'), T.Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'))
+						coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'))
+					) > coalesce(V.Fields.value('(/fields/MonthsUntilCertification/text())[1]', 'int'), T.Fields.value('(/fields/MonthsUntilCertification/text())[1]', 'int'))
 					and A.Status = 'Certified'
 				)
 				or A.Status <> 'Certified'
 			)
 			and A.Status <> 'Archived'
-			and coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime')) is not null
+			and coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime')) is not null
 			and A.ID not in (
-							select	Data.value('(/fields/ArtifactID)[1]', 'int')
+							select	artifactid
 							from	Workflow
 							where	WorkflowType = @wt 
-									and Data.value('(/fields/StartDate)[1]', 'datetime') between 
-											coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
-											and coalesce(V.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'))
+									and Data.value('(/fields/StartDate/text())[1]', 'datetime') between 
+											coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'))
+											and coalesce(V.Fields.value('(/fields/CertificationEndDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate/text())[1]', 'datetime'))
 							)
 			and A.ID not in (
-							select	Data.value('(/fields/ArtifactID)[1]', 'int')
+							select	ArtifactID
 							from	Workflow
 							where	WorkflowType = @wt 
 									and DateCompleted is null
 							)
 			and A.ID not in (
-							select	Data.value('(/fields/ArtifactID)[1]', 'int')
+							select	ArtifactID
 							from	Workflow
 							where	WorkflowType = @wt 
 									and DATEDIFF(m, 
 											DateStarted, 
-											coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
-										) > coalesce(V.Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'), T.Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'))
+											coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'))
+										) > coalesce(V.Fields.value('(/fields/MonthsUntilCertification/text())[1]', 'int'), T.Fields.value('(/fields/MonthsUntilCertification/text())[1]', 'int'))
 							)
 			and A.ID in (
 						select	RD.ObjectID 
