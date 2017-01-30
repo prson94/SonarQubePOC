@@ -294,6 +294,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         let promise = Promise.resolve();
 
         if (!data.everExpanded) {
+            this.isLoading = true;
             // only create children once per node
             diagram.model.setDataProperty(data, "everExpanded", true);
 
@@ -365,6 +366,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         }
 
         promise.then(() => {
+            this.isLoading = false;
             if (node.isTreeExpanded) {
                 diagram.commandHandler.collapseTree(node);
                 //need to hide/show non-tree links manually here to workaround issue with child nodes having multiple parents

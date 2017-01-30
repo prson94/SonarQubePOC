@@ -110,6 +110,6 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
     }
 
     private handleRowDblClick() {
-        if (this.selected.Activity > 0) this.showEditor = true;
+        if (this.selected.Activity > 0 && this.isMe) this.showEditor = true;
     }
 }
