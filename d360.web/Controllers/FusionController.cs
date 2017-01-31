@@ -18,6 +18,7 @@ using d360.core.exceptions;
 using System.Net;
 using d360.fusion;
 using System.Threading.Tasks;
+using System.Data.Entity.Design.PluralizationServices;
 
 namespace d360.web.Controllers
 {
@@ -325,168 +326,7 @@ namespace d360.web.Controllers
         #endregion
 
         #region Json
-
-        [Route("RelationshipAggregates"), NonNullableParameters]
-        public JsonResult RelationshipAggregates(SystemObjects type, int id, int parentAttributeID = 0)
-        {
-            var sql = "";
-            IEnumerable<RelationshipAggregate> models = null;
-            switch (type) 
-            {
-                case SystemObjects.Fusion:
-                    #region
-                    sql =
-@"SELECT    'Fusion' as ObjectType, 
-		    @id as ObjectID, 
-		    TD.Name as TypeName, 
-		    TD.ObjectID as TypeID, 
-		    TD.[Object] as Type, 
-		    TD.IconBackColor, 
-		    TD.IconForeColor, 
-		    TD.IconText, 
-		    COALESCE(N.[Count], 0) as [Count]
-FROM	    (
-		    select	Count(1) as [Count], 
-                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.Subject else TN.Object end as T, 
-                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.SubjectID else TN.ObjectID end as I
-		    from	FusionAttribute FA
-				    inner join [Intersect] R on FA.FusionID = @id and ( (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) OR (R.Object = 'FusionAttribute' and R.ObjectID = FA.ID) )
-				    inner join IntersectType TN on TN.ID = R.IntersectTypeID 
-		    group by	case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.Subject else TN.Object end, 
-                        case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.SubjectID else TN.ObjectID end
-		    ) N
-		    inner join cache.ObjectDetails TD on TD.[Object] = N.T and TD.ObjectID = N.I
-            order by TD.Name";
-                    models = Company.Query<RelationshipAggregate>(sql, new { id = id });
-                    break;
-                    #endregion
-                case SystemObjects.FusionAttribute:
-                    #region
-                    sql =
-@"with h as	(
-			select	ID,
-					ParentID
-			from	FusionAttribute
-			where	ID = @id
-			union all
-			select	C.ID,
-					C.ParentID
-			from	FusionAttribute C
-					inner join h as P on P.ID = C.ParentID
-			)
-
-SELECT    'FusionAttribute' as ObjectType, 
-            @id as ObjectID, 
-            TD.Name as TypeName, 
-            TD.ObjectID as TypeID, 
-            TD.[Object] as Type, 
-            TD.IconBackColor, 
-            TD.IconForeColor, 
-            TD.IconText, 
-            COALESCE(N.[Count], 0) as [Count]
-FROM		(
-			select	Count(1) as [Count], 
-                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = h.ID) then TN.Subject else TN.Object end as T, 
-                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = h.ID) then TN.SubjectID else TN.ObjectID end as I
-			from	h
-					inner join [Intersect] R on ( (R.Subject = 'FusionAttribute' and R.SubjectID = h.ID) OR (R.Object = 'FusionAttribute' and R.ObjectID = h.ID) )
-                    inner join IntersectType TN on TN.ID = R.IntersectTypeID 
-			group by	TN.ObjectType, TN.ObjectID
-			) N
-			inner join cache.ObjectDetails TD on TD.[Object] = N.T and TD.ObjectID = N.I
-            order by TD.Name";
-                    models = Company.Query<RelationshipAggregate>(sql, new { id = id });
-                    break;
-                    #endregion
-                case SystemObjects.FusionAttributeType:
-                    #region
-                    sql =
-@"with h as	(
-			select	ID,
-					ParentID
-			from	FusionAttribute
-			where	FusionAttributeTypeID = @id and ( (ParentID = @parentID and @parentID > 0) OR (@parentID = 0 and 1=1) )
-			union all
-			select	C.ID,
-					C.ParentID
-			from	FusionAttribute C
-					inner join h as P on P.ID = C.ParentID
-			)
-
-SELECT		'FusionAttributeType' as ObjectType, 
-		    @id as ObjectID, 
-		    TD.Name as TypeName, 
-		    TD.ObjectID as TypeID, 
-		    TD.[Object] as Type, 
-		    TD.IconBackColor, 
-		    TD.IconForeColor, 
-		    TD.IconText, 
-		    COALESCE(N.[Count], 0) as [Count]
-FROM	    (
-			select	Count(1) as [Count], 
-                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.Subject else TN.Object end as T, 
-                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.SubjectID else TN.ObjectID end as I
-			from	FusionAttribute FA
-					inner join  h on h.ID = FA.ID
-					inner join [Intersect] R on ( (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) OR (R.Object = 'FusionAttribute' and R.ObjectID = FA.ID) )
-					inner join IntersectType TN on TN.ID = R.IntersectTypeID 
-		    group by	case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.Subject else TN.Object end, 
-                        case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.SubjectID else TN.ObjectID end
-			) N
-		    inner join cache.ObjectDetails TD on TD.[Object] = N.T and TD.ObjectID = N.I
-            order by TD.Name";
-                    models = Company.Query<RelationshipAggregate>(sql, new { id = id, parentID = parentAttributeID });
-                    break;
-                    #endregion
-            }
-
-            return Json(
-                models,
-                JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("TreeNodes"), NonNullableParameters]
-        public JsonNetResult TreeNodes(int typeID, int fusionID)
-        {
-            var types = Company.Query<dynamic>(@"
-with th as	(
-			select	A.ID,
-					A.ParentID,
-					A.Name
-			from	FusionAttributeType A
-			where	A.FusionTypeID = @id and A.ParentID is null
-			union all
-			select	A.ID,
-					A.ParentID,
-					A.Name
-			from	FusionAttributeType A
-					inner join th P on P.ID = A.ParentID
-			)
-
-select * from th", new { id = typeID });
-
-            var attributes = Company.Query<dynamic>(@"with h as	(
-			select	A.ID,
-					A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-			from	FusionAttribute A
-			where	A.FusionID = @id and A.ParentID is null
-			union all
-			select	A.ID,
-					A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-			from	FusionAttribute A
-					inner join h P on P.ID = A.ParentID
-			where	A.FusionAttributeTypeID in (select ParentID from FusionAttributeType)
-			)
-select	*
-from	h", new { id = fusionID });
-
-            return new JsonNetResult { Data = new { Types = types, Attributes = attributes }, Formatting = Formatting.None };
-        }
-
+        
         [Route("ItemsByParent"), NonNullableParameters]
         public JsonNetResult ItemsByParent(int fusionTypeID, int fusionID, SystemObjects parentType, int? parentID, int? parentFusionAttributeTypeID, int? parentFusionAttributeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
@@ -620,8 +460,11 @@ from	    FusionAttributeType T
         public FileResult ExportItemsByAttributeType(int fusionID, int fusionAttributeTypeID, string sortDataField, string sortOrder)
         {
             var type = "FusionAttributeType";
+            
+            var fusionAttributeTypeName = Company.FusionAttributeTypes.Where(x => x.ID == fusionAttributeTypeID).Single().Name;
 
-            var detail = Company.GetObjectDetail(type, fusionAttributeTypeID);
+            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+            var pluralFusionAttributeName = pluralize.Pluralize(fusionAttributeTypeName);
 
             var sqlFieldModels = new List<SqlFieldModel>();
 
@@ -669,7 +512,7 @@ select * from h where ID <> @t order by h.[Level] desc;
             #endregion
 
             sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "ID", FieldName = "A.ID", FieldFriendlyName = "ID" });
-            sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "Name", FieldName = "A.Name", FieldFriendlyName = detail.Name });
+            sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "Name", FieldName = "A.Name", FieldFriendlyName = fusionAttributeTypeName });
 
             #region Dynamic Fields
 
@@ -771,7 +614,7 @@ where   A.FusionID = @f
             #region Create the list sheet
 
             var document = new SLDocument();
-            var defaultSheet = detail.PluralizedName;
+            var defaultSheet = pluralFusionAttributeName;
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);
             document.SelectWorksheet(defaultSheet);
 
@@ -806,7 +649,7 @@ where   A.FusionID = @f
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionAttributeName}.xlsx");
         }
 
         [Route("ItemsByAttributeType"), NonNullableParameters]
@@ -951,8 +794,11 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
         public FileResult ExportQueryItemsByAttributeType(int fusionID, int fusionQueryAttributeTypeID, string sortDataField, string sortOrder)
         {
             var type = "FusionQueryAttributeType";
+            
+            var fusionQueryAttributeTypeName = Company.FusionQueryAttributeTypes.Where(x => x.ID == fusionQueryAttributeTypeID).Single().Name;
 
-            var detail = Company.GetObjectDetail(type, fusionQueryAttributeTypeID);
+            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+            var pluralFusionQueryAttributeTypeName = pluralize.Pluralize(fusionQueryAttributeTypeName);
 
             var sqlFieldModels = new List<SqlFieldModel>();
 
@@ -1003,7 +849,7 @@ where   A.FusionQueryAttributeTypeID = @t
             #region Create the list sheet
 
             var document = new SLDocument();
-            var defaultSheet = detail.PluralizedName;
+            var defaultSheet = pluralFusionQueryAttributeTypeName;
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);
             document.SelectWorksheet(defaultSheet);
 
@@ -1038,7 +884,7 @@ where   A.FusionQueryAttributeTypeID = @t
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionQueryAttributeTypeName}.xlsx");
         }
 
         [Route("QueryItemsByAttributeType"), NonNullableParameters]

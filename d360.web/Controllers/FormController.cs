@@ -10698,7 +10698,7 @@ from ArtifactType A
             switch (targetType)
             {
                 case "FusionAttributeType":
-                    if (relationshipType.Predicate.Type == PredicateType.FusionMapping)
+                    if ((relationshipType.Predicate != null) && (relationshipType.Predicate.Type == PredicateType.FusionMapping))
                     {
                         sql = $@"
 select	'FusionAttribute' as [Object], 
@@ -11022,16 +11022,30 @@ order by D.TextPath";
         public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
         {
             var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
-            var obj = Company.GetObjectDetail(type, objectId);
+            
+            int objectTypeID = -1;
+            string parentType = string.Empty;
 
-            if (obj == null || relationshipType == null)
+            if(type == SystemObjects.FusionAttribute)
+            {
+                objectTypeID = Company.FusionAttributes.Where(x => x.ID == objectId).Single().FusionAttributeTypeID;
+                parentType = "FusionAttributeType";
+            }
+            else
+            {
+                var obj = Company.GetObjectDetail(type, objectId);
+                objectTypeID = obj.TypeID;
+                parentType = obj.Type;
+            }
+
+            if (objectTypeID <= 0 || string.IsNullOrEmpty(parentType) || relationshipType == null)
             {
                 return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
             }
 
             var targetType = "";
             var targetTypeID = 0;
-            if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
+            if (relationshipType.Subject == parentType && relationshipType.SubjectID == objectTypeID)
             {
                 targetType = relationshipType.Object;
                 targetTypeID = relationshipType.ObjectID;
@@ -11049,7 +11063,7 @@ order by D.TextPath";
             switch (targetType)
             {
                 case "FusionAttributeType":
-                    if (relationshipType.Predicate.Type == PredicateType.FusionMapping)
+                    if ((relationshipType.Predicate != null) && (relationshipType.Predicate.Type == PredicateType.FusionMapping))
                     {
                         sql = $@"
 select	'FusionAttribute' as [Object], 
