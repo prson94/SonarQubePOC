@@ -26,6 +26,7 @@ using System.Web;
 using System.IO;
 using SpreadsheetLight;
 using d360.extensions;
+using System.Threading.Tasks;
 
 namespace d360.web.Controllers
 {
@@ -6097,11 +6098,12 @@ SELECT (
         {
             return Company.Table<ReferenceItemType>();
         }
-
-        [Route("referenceItems/{referenceItemTypeID:int}")]
-        public IQueryable<ReferenceItem> GetReferenceItem(int referenceItemTypeID)
+        
+        [HttpGet, Route("referenceItems/{typeID:int}/items.json")]
+        public async Task<HttpResponseMessage> GetReferenceItems(int typeID)
         {
-            return Company.Filter<ReferenceItem>(x => x.ReferenceItemTypeID == referenceItemTypeID);
+            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}");
+            return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
         #endregion

@@ -100,7 +100,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     referenceItemUri() {
         if (this.selectedReferenceItemType == null) return "";
 
-        return `resources/referenceItems/${this.selectedReferenceItemType.ID}/items.json`;
+        return `api/referenceItems/${this.selectedReferenceItemType.ID}/items.json`;
     }  
 
     private refreshItems(itemsGrid) {

@@ -17,14 +17,6 @@ export class ReferenceService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-
-    getReferenceItems(referenceItemTypeId: number): Promise<ReferenceItem[]> {
-        return this.http.get(`api/referenceItems/${referenceItemTypeId}`)
-            .toPromise()
-            .then(response => <ReferenceItem[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
     saveReferenceItemType(item: ReferenceItemType) {
         if (item.ID == undefined || !item.ID) {
             return this.postDynamic(this.http, 'referenceItemType', item);

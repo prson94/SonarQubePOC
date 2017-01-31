@@ -544,6 +544,7 @@
     <None Include="dbo\Tables\Nym.sql" />
     <None Include="fusion\Stored Procedures\UpdateFusionTextPaths.sql" />
     <None Include="dbo\Functions\GetWorkflowArtifactID.sql" />
+    <None Include="dbo\Stored Procedures\GetReferenceItemValues.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

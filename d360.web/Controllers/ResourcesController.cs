@@ -599,14 +599,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         {
             return Json(Company.GetLookupItemsAsDictionary(typeID), JsonRequestBehavior.AllowGet);
         }
-
-
-        [HttpGet, Route("referenceItems/{typeID:int}/items.json")]
-        public JsonResult GetReferenceItems(int typeID)
-        {
-            return Json(Company.GetReferenceItemsAsDictionary(typeID), JsonRequestBehavior.AllowGet);
-        }
-
+        
         [HttpPost, Route("UpdateFollowStatus"), NonNullableParameters]
         public JsonResult UpdateFollowStatus(SystemObjects type, int id, bool includeChildren = false)
         {
