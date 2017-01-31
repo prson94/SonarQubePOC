@@ -656,13 +656,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             await DoFusionAttributeMerge(companyConnection, ai);
             Trace.TraceInformation(string.Format("DoFusionAttributeMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_MERGE, DateTime.Now, sw.Elapsed, "", true);
-
-            // RUN QUERY TO PUT FUSION ATTRIBUTES INTO CACHE
-            sw.Restart();
-            await DoFusionAttributeCache(companyConnection);
-            Trace.TraceInformation(string.Format("DoFusionAttributeCache TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
-            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_CACHE, DateTime.Now, sw.Elapsed, "", true);
-
+            
             // RUN QUERY TO GET FUSION ATTRIBUTE IDS
             sw.Restart();
             await LoadCurrentFusionAttributeInfo(companyConnection);
@@ -697,19 +691,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             await UpdateFusionAttributeParentIDs(companyConnection);
             Trace.TraceInformation(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PARENT_UPDATE_MERGE, DateTime.Now, sw.Elapsed, "", true);
-
-            if (models.Count > 0)
-            {
-                sw.Restart();
-                await UpdateFusionAttributeTextPaths(companyConnection);
-                Trace.TraceInformation(string.Format("UpdateFusionAttributeTextPaths TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
-                ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PATHS_UPD, DateTime.Now, sw.Elapsed, "", true);
-            }
-            else
-            {
-                Trace.TraceInformation("NO MODELS SPECIFIED SKIPPING UPDATEFUSIONATTRIBUTETEXTPATHS");
-            }
-
+                        
             //update old values with values we             
             sw.Restart();
             DetermineChangedFields();
