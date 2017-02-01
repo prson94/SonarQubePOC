@@ -64,24 +64,25 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
                 this.treeItems.push(queriesNode);
 
                 // handle initial selected item
-                if (this.fusionAttributeTypeId) {
+                if (this.fusionAttributeTypeId) {                    
                     this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId, 'FusionAttributeType');
                     this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
                 }                        
-                else if (this.fusionQueryAttributeTypeId) {
+                else if (this.fusionQueryAttributeTypeId) {                    
                     this.selected = this.findSelectedTreeNode(this.fusionQueryAttributeTypeId, 'FusionQueryAttributeType');
                     this.fusionQueryAttributeTypeIdChange.emit(this.fusionQueryAttributeTypeId);
                 }
-                else if (this.showFusionQueryConfig) {
+                else if (this.showFusionQueryConfig) {                    
                     this.selected = this.findSelectedTreeNode(-1, 'FusionQueryAttributeType');
                     this.showFusionQueryConfigChange.emit(this.showFusionQueryConfig);
                 }
-                else if (this.treeItems.length > 0) {
-                    this.fusionAttributeTypeId = this.treeItems[0].data.id;
+                else if (this.treeItems.length > 0) {                    
+                    this.fusionAttributeTypeId = this.treeItems[0].data.id;                    
                     if (!this.fusionQueryAttributeTypeId) {
                         this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId, 'FusionAttributeType');
                     }
-                    this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
+                    if (this.fusionAttributeTypeId > 0)
+                        this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
                 }    
 
                 this.isLoading = false;
