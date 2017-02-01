@@ -1,4 +1,4 @@
-﻿CREATE procedure [fusion].[ProcessFusionCacheInQueue]
+﻿create procedure [fusion].[ProcessFusionCacheInQueue]
 --declare
 	@FusionID int
 --set @FusionID = 15
@@ -8,8 +8,7 @@ begin
 	SET ANSI_WARNINGS ON;
 
 	UPDATE  FusionAttribute
-	SET		[Path] = utility.GetBreadcrumbWrapper('FusionAttribute', ID),
-			TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
+	SET		TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
 	FROM	FusionAttribute 
 	WHERE	FusionID = @FusionID
 
@@ -21,6 +20,7 @@ begin
 					'FusionAttributeType' as ObjectType, 
 					FusionAttributeTypeID as ObjectTypeID
 			FROM	FusionAttribute
+			where	FusionID = @FusionID
 			) as S
 	on		(
 			T.[Object] = S.[Object] and T.[ObjectID] = S.[ID]
@@ -33,4 +33,3 @@ begin
 			insert ([Object], ObjectID, ObjectType, ObjectTypeID)
 			values (S.[Object], S.ID, S.ObjectType, S.ObjectTypeID);
 end
-
