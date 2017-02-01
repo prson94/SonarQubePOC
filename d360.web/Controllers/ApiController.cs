@@ -5253,6 +5253,8 @@ from    (
         [Route("{obj}/{objid:int}/relationships/counts")]
         public IEnumerable<dynamic> GetRelationshipCountsByObject(SystemObjects obj, int objid)
         {
+            if(obj == SystemObjects.FusionAttribute)
+                return Company.Query<dynamic>(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, new { objid });
             return Company.Query<dynamic>(QueryConstants.ObjectRelationshipAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objid });
         }
 

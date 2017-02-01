@@ -859,6 +859,43 @@ from	@points O
 		inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
 		inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID";
 
+        public static string FusionAttributeRelationshipAllCountsWithZero = @"
+select	IT.ID as IntersectTypeID,
+		case 
+			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[Object]
+			else IT.[Subject]
+		end as [Object],
+		case 
+			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[ObjectID]
+			else IT.[SubjectID]
+		end as [ObjectID],		
+		I.[Count],
+		case 
+			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[ObjectName] 
+			else IT.SubjectName
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+from	[dbo].[fusionattribute] fa	
+		inner join IntersectTypeDetail IT on ( 
+										(IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) OR 
+										(IT.Object = 'FusionAttributeType' and IT.ObjectID = fa.fusionattributetypeid) 
+									   )
+		left join [Predicate] P on P.ID = IT.PredicateID
+		cross apply (
+					select	count(1) as [Count]
+					from	[Intersect] 
+					where	IntersectTypeID = IT.ID 
+							and (
+								(Subject = 'FusionAttribute' and SubjectID = @objId) or 
+								(Object = 'FusionAttribute' and ObjectID = @objId)
+								)
+					) I
+where	fa.ID = @objId
+order by case 
+			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[ObjectName] 
+			else IT.SubjectName
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')
+";
+
         public static string ObjectRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
 		case 
