@@ -6616,6 +6616,8 @@ namespace d360.web.Controllers
 
                 var sql = parseTextField(form, "Query");
 
+                if (string.IsNullOrEmpty(sql)) throw new NotFoundException("No SQL Specified for Fusion Query Attribute");
+
                 // only allow select
                 var valid = Company.IsValidReportingQuery(sql);
                 if (!valid)
@@ -6662,6 +6664,8 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var sql = parseTextField(form, "Query");
+
+                if (string.IsNullOrEmpty(sql)) throw new NotFoundException("No SQL Specified for Fusion Query Attribute");
 
                 //check if it is a select we only allow selects
                 var valid = Company.IsValidReportingQuery(sql);

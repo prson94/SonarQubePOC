@@ -42,7 +42,7 @@ import * as _ from 'lodash';
                         </div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
-                            <button pButton type="submit" [disabled]="!tileForm.form.valid" label="Save"></button>
+                            <button pButton type="submit" [disabled]="!tileForm.form.valid || !editedTile?.CommandText" label="Save"></button>
                             <button pButton type="button" (click)="closeClick.emit();" label="Close"></button>
                         </div>                    
                     </form>
