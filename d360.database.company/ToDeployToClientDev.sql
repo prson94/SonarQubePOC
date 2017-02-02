@@ -1760,3 +1760,9 @@ GO
 CREATE INDEX IX_FusionID_ParentID 
 	ON FusionAttribute (FusionID, ParentID);  
 GO
+
+
+-- remove fusionattributes from the cache... this may take a few moments
+
+delete from [cache].[object] where [object] = 'FusionAttribute';
+go

@@ -47,7 +47,7 @@ BEGIN
 
 	-- Get the static tokens, depending on the type.
 	declare @n nvarchar(250), @t nvarchar(250), @s nvarchar(25), @v int, @dc datetime, @du datetime, @d nvarchar(4000);
-
+		
 	-- Get common fields
 	select	@typeID = ObjectTypeID,
 			@icon = '<div title=''' + ObjectTypeName + ''' class=''tooltip-icon'' style=''background-color: ' + IconBackColor + '; color: ' + IconForeColor + '''><i class=''fa fa-' + IconText + '''></i></div>',
@@ -58,6 +58,19 @@ BEGIN
 	from	cache.ObjectDetails
 	where	[Object] = @Type
 			and ObjectID = @ID;
+
+	--fusion attributes arent in cache
+	if @Type = 'FusionAttribute'
+	begin		
+		select 
+			@typeID = fa.fusionattributetypeid,
+			@n = fa.name,
+			@t = fat.textpath,
+			@link = dbo.GenerateNgObjectUrl('FusionAttribute', fat.id, fa.id) 
+		from fusionattribute fa 
+			inner join fusionattributetype fat on (fa.fusionattributetypeid = fat.id) 
+		where fa.id = @ID
+	end
 
 	if @n is not null
 	begin
@@ -786,3 +799,4 @@ BEGIN
 	select	'' as Title,
 			@html as Body;
 END
+GO

@@ -1,4 +1,4 @@
-﻿CREATE procedure [cache].[ReSynchronizeAllObjectDetails]
+﻿create procedure [cache].[ReSynchronizeAllObjectDetails]
 as
 begin
 	set nocount on;
@@ -90,11 +90,11 @@ begin
 			SELECT	@type, ID, @type, ID FROM FusionType;
 	end;
 
-	begin
+/*	begin
 		set @type = 'FusionAttribute';
 		insert into #Recache
 			SELECT	@type, ID, 'FusionAttributeType', FusionAttributeTypeID FROM FusionAttribute;
-	end;
+	end;*/
  
 	begin
 		set @type = 'FusionAttributeType';
@@ -184,3 +184,4 @@ begin
 			insert ( [Object], ObjectID, ObjectType, ObjectTypeID )
 			values ( S.[Object], S.ObjectID, S.ObjectType, S.ObjectTypeID );
 end
+go
