@@ -14700,18 +14700,21 @@ from    [IntersectType] RT
                     Company.Delete(rel);
                 }
 
-                foreach (var predicateId in model.PredicateIDs)
+                if (model.PredicateIDs != null)
                 {
-                    NymRelation rel = new NymRelation
+                    foreach (var predicateId in model.PredicateIDs)
                     {
-                        PredicateID = predicateId,
-                        Object = model.Object.ToString(),
-                        ObjectID = model.ObjectID,
-                        UpdatedBy = Company.CurrentResourceID,
-                        UpdatedOn = DateTime.UtcNow
-                    };
+                        NymRelation rel = new NymRelation
+                        {
+                            PredicateID = predicateId,
+                            Object = model.Object.ToString(),
+                            ObjectID = model.ObjectID,
+                            UpdatedBy = Company.CurrentResourceID,
+                            UpdatedOn = DateTime.UtcNow
+                        };
 
-                    Company.Add<NymRelation>(rel);
+                        Company.Add<NymRelation>(rel);
+                    }
                 }
 
                 return jsonSuccess("Grammar allocation successfully modified.", "", "add", HttpStatusCode.Created);
