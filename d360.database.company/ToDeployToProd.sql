@@ -9051,12 +9051,11 @@ ALTER TABLE [fusion].[result] ALTER COLUMN [ID] uniqueidentifier NULL ;
 GO
 
 
--- add index on fusion id and parent id to fusion attribute table
-CREATE INDEX IX_FusionID_ParentID 
-	ON FusionAttribute (FusionID, ParentID);  
+-- add index on fusion id deleted, and parent id to fusion attribute table
+
+CREATE INDEX IX_FusionAttribute_FusionID_Deleted_ParentID 
+	ON FusionAttribute (FusionID, Deleted, ParentID)
 GO
-
-
 
 -- remove fusionattributes from the cache... this may take a few moments
 

@@ -53,7 +53,8 @@ CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID_TextPath]
     ON [dbo].[FusionAttribute]([FusionID] ASC, [TextPath] ASC);
 GO
 
-CREATE INDEX IX_FusionID_ParentID 
-	ON FusionAttribute (FusionID, ParentID);  
+CREATE INDEX IX_FusionAttribute_FusionID_Deleted_ParentID 
+	ON FusionAttribute (FusionID, Deleted, ParentID)
 GO
+
 

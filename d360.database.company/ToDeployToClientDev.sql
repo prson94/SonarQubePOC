@@ -1756,9 +1756,20 @@ GO
 ALTER TABLE [fusion].[result] ALTER COLUMN [ID] uniqueidentifier NULL ;
 GO
 
--- add index on fusion id and parent id to fusion attribute table
-CREATE INDEX IX_FusionID_ParentID 
-	ON FusionAttribute (FusionID, ParentID);  
+-- add index on fusion id deleted and parent id to fusion attribute table / remove the old one that was missing deleted if it exists
+begin
+
+  IF EXISTS (SELECT *  FROM sys.indexes  WHERE name='IX_FusionID_ParentID' 
+    AND object_id = OBJECT_ID('[dbo].[FusionAttribute]'))
+  begin
+    DROP INDEX [IX_FusionID_ParentID] ON [dbo].[FusionAttribute];
+  end
+
+end
+
+
+CREATE INDEX IX_FusionAttribute_FusionID_Deleted_ParentID 
+	ON FusionAttribute (FusionID, Deleted, ParentID)
 GO
 
 

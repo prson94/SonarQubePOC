@@ -10,6 +10,6 @@ begin
 	UPDATE  FusionAttribute
 	SET		TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
 	FROM	FusionAttribute 
-	WHERE	FusionID = @FusionID
+	WHERE	FusionID = @FusionID and deleted = 0
 
 end
