@@ -70,7 +70,7 @@ export class RuleDetail {
 export class RuleResultPagedResults {
     total: number;
     results: any[];
-    qualifiers: string[];
+    qualifiers: any[];//string[];
 }
 
 export class RuleResultFilter {

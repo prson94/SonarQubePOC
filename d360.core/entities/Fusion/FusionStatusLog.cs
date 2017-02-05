@@ -27,6 +27,9 @@ namespace d360.core.entities
         [DataMember]
         public string Message { get; set; }
 
+        [DataMember]
+        public bool FullRefresh { get; set; }
+
         [IgnoreDataMember]
         public virtual Fusion Fusion { get; set; }
     }

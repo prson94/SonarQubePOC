@@ -14,6 +14,7 @@ import {
     FusionConfiguration,
     FusionFilter,    
     Fusion,
+    FusionSchedule,
     FusionConfigurationDetails,
     FusionAgentExecutionStats,
     FusionWorkerExecution,
@@ -112,7 +113,6 @@ export class FusionService extends BaseService {
         this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion agent history.xlsx'));                      
     }
     
-
     getFusionAgentErrorHistory(maxRows?: number, days?: number): Promise<FusionAgentError[]> {
         let url = `services/fusion/agenterrors?$top=${maxRows ? maxRows : '100'}&$orderby=Date%20desc`;
         if (days) {
@@ -123,6 +123,14 @@ export class FusionService extends BaseService {
         return this.http.get(url)
             .toPromise()
             .then(response => <FusionAgentError[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionConfigurationSchedules(fusionTypeId: number, fusionId: number): Promise<FusionSchedule[]> {
+        console.log('getFusionConfigurationSchedules');
+        return this.http.get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/schedules?$orderby=Day,Time`)
+            .toPromise()
+            .then(response => <FusionSchedule[]>response.json())
             .catch(err => this.handleError(err));
     }
 

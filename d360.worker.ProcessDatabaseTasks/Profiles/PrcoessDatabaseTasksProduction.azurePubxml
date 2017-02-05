@@ -9,8 +9,8 @@
     <AzureEnableRemoteDesktop>True</AzureEnableRemoteDesktop>
     <AzureEnableWebDeploy>False</AzureEnableWebDeploy>
     <AzureFallbackToDeleteAndRecreateIfUpgradeFails>False</AzureFallbackToDeleteAndRecreateIfUpgradeFails>
-    <AzureHostedServiceLabel>ProcessDatabaseTasks3</AzureHostedServiceLabel>
-    <AzureHostedServiceName>processdatabasetasks3</AzureHostedServiceName>
+    <AzureHostedServiceLabel>ProcessDatabaseTasks2</AzureHostedServiceLabel>
+    <AzureHostedServiceName>processdatabasetasks2</AzureHostedServiceName>
     <AzureEnableIntelliTrace>False</AzureEnableIntelliTrace>
     <AzureEnableProfiling>False</AzureEnableProfiling>
     <AzureServiceConfiguration>Cloud</AzureServiceConfiguration>
@@ -18,6 +18,6 @@
     <AzureStorageAccountLabel>data3sixty</AzureStorageAccountLabel>
     <AzureStorageAccountName>data3sixty</AzureStorageAccountName>
     <AzureAppendTimestampToDeploymentLabel>True</AzureAppendTimestampToDeploymentLabel>
-    <AzureHostedServiceResourceGroup>processdatabasetasks3</AzureHostedServiceResourceGroup>
+    <AzureHostedServiceResourceGroup>processdatabasetasks2</AzureHostedServiceResourceGroup>
   </PropertyGroup>
 </Project>

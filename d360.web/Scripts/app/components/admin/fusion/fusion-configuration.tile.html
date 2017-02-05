@@ -1,70 +1,70 @@
-﻿    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div *ngIf="!isLoading" [ngSwitch]="formMode">
-        <div *ngSwitchDefault>
-            <header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormModeConfig.Adding;"  [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-            <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable #dt scrollable="true" scrollWidth="100%" [globalFilter]="gb" [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" (onRowDblclick)="openFusion($event.data);" [rows]="20" [paginator]="true" >
-                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }" [filter]="!showSimpleFilter"></p-column>
-                <p-column [style]="{ 'width': '30px' }">
-                    <template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a (click)="openFusion(item);" style="cursor:pointer;"><i class="fa fa-info"></i></a>                            
-                        </div>
-                    </template>
-                </p-column>
-                <p-column [style]="{ 'width': '30px' }">
-                    <template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">                            
-                            <a (click)="selectedRow = item; formMode = FormModeConfig.Editing" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
-                        </div>
-                    </template>
-                </p-column>
-                <p-column [style]="{ 'width': '30px' }">
-                    <template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">                            
-                            <a (click)="selectedRow = item; formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                            
-                        </div>
-                    </template>
-                </p-column>
-                <p-column [style]="{ 'width': '30px' }">
-                    <template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">                            
-                            <a (click)="selectedRow = item; formMode = FormModeConfig.Filters" style="cursor:pointer;"><i class="fa fa-filter"></i></a>
-                        </div>
-                    </template>
-                </p-column>
-            </p-dataTable>
-        </div>
-        <div *ngSwitchCase="FormModeConfig.Adding">
-            <d3s-dynamic-editor [objectType]="'Fusion'"
-            [objectID]="fusionType.ID"
-            [title]="'Fusion Configuration'"
-            [createUri]="'form/dynamicedit/create/fusion'"
-            (closeClick)="formMode = FormModeConfig.Default"
-            (saveClick)="isLoading = true; formMode = FormModeConfig.Default; load();">
-            </d3s-dynamic-editor>
-        </div>
-        <div *ngSwitchCase="FormModeConfig.Editing">
-            <d3s-dynamic-editor [selection]="selectedRow"
-            [title]="'Fusion Configuration'"
-            [objectID]="fusionType.ID"
-            [objectType]="'Fusion'"
-            [editUri]="'form/dynamicedit/edit/fusion'"
-            (closeClick)="formMode = FormModeConfig.Default"
-            (saveClick)="isLoading = true; formMode = FormModeConfig.Default; load();">
-            </d3s-dynamic-editor>
-        </div>
-        <div *ngSwitchCase="FormModeConfig.Deleting">
-            <d3s-delete-form [uri]="'form/DeleteFusionByID?id='+selectedRow.ID"
-            [method]="'delete'"
-            [prompt]="'Are you sure you want to delete this fusion configuration?'"
-            (onCancel)="formMode = FormModeConfig.Default;"
-            (onDeleteComplete)="formMode = FormModeConfig.Default; load();">
-            </d3s-delete-form>
-        </div>
-        <div *ngSwitchCase="FormModeConfig.Filters">
-			<div style="text-align:right;"><a (click)="formMode = FormModeConfig.Default;" style="cursor:pointer;color:black;display:block; padding:0 5px 0 5px; background-color: #c3c3c3;"><i class="fa fa-2x fa-remove"></i></a></div>
-           <d3s-fusion-filters-tile [fusionTypeID]="fusionType.ID" [fusionID]="selectedRow?.ID"></d3s-fusion-filters-tile>
-        </div>
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading" [ngSwitch]="formMode">
+    <div *ngSwitchDefault>
+        <header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormModeConfig.Adding;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+        <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+        <p-dataTable #dt scrollable="true" scrollWidth="100%" [globalFilter]="gb" [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" (onRowDblclick)="openFusion($event.data);" [rows]="20" [paginator]="true">
+            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }" [filter]="!showSimpleFilter"></p-column>
+            <p-column [style]="{ 'width': '30px' }">
+                <template let-col let-item="rowData" pTemplate type="body">
+                    <div class="RowTools">
+                        <a (click)="openFusion(item);" style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                    </div>
+                </template>
+            </p-column>
+            <p-column [style]="{ 'width': '30px' }">
+                <template let-col let-item="rowData" pTemplate type="body">
+                    <div class="RowTools">
+                        <a (click)="selectedRow = item; formMode = FormModeConfig.Editing" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                    </div>
+                </template>
+            </p-column>
+            <p-column [style]="{ 'width': '30px' }">
+                <template let-col let-item="rowData" pTemplate type="body">
+                    <div class="RowTools">
+                        <a (click)="selectedRow = item; formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                    </div>
+                </template>
+            </p-column>
+            <!--<p-column [style]="{ 'width': '30px' }">
+                <template let-col let-item="rowData" pTemplate type="body">
+                    <div class="RowTools">
+                        <a (click)="selectedRow = item; formMode = FormModeConfig.Scheduling" style="cursor:pointer;"><i class="fa fa-calendar"></i></a>
+                    </div>
+                </template>
+            </p-column>-->
+        </p-dataTable>
     </div>
+    <div *ngSwitchCase="FormModeConfig.Adding">
+        <d3s-dynamic-editor [objectType]="'Fusion'"
+                            [objectID]="fusionType.ID"
+                            [title]="'Fusion Configuration'"
+                            [createUri]="'form/dynamicedit/create/fusion'"
+                            (closeClick)="formMode = FormModeConfig.Default"
+                            (saveClick)="isLoading = true; formMode = FormModeConfig.Default; load();">
+        </d3s-dynamic-editor>
+    </div>
+    <div *ngSwitchCase="FormModeConfig.Editing">
+        <d3s-dynamic-editor [selection]="selectedRow"
+                            [title]="'Fusion Configuration'"
+                            [objectID]="fusionType.ID"
+                            [objectType]="'Fusion'"
+                            [editUri]="'form/dynamicedit/edit/fusion'"
+                            (closeClick)="formMode = FormModeConfig.Default"
+                            (saveClick)="isLoading = true; formMode = FormModeConfig.Default; load();">
+        </d3s-dynamic-editor>
+    </div>
+    <div *ngSwitchCase="FormModeConfig.Deleting">
+        <d3s-delete-form [uri]="'form/DeleteFusionByID?id='+selectedRow.ID"
+                         [method]="'delete'"
+                         [prompt]="'Are you sure you want to delete this fusion configuration?'"
+                         (onCancel)="formMode = FormModeConfig.Default;"
+                         (onDeleteComplete)="formMode = FormModeConfig.Default; load();">
+        </d3s-delete-form>
+    </div>
+    <!--<div *ngSwitchCase="FormModeConfig.Scheduling">
+        <d3s-fusion-configuration-schedule-tile [fusionID]="selectedRow.ID">
+        </d3s-fusion-configuration-schedule-tile>
+    </div>-->
+</div>

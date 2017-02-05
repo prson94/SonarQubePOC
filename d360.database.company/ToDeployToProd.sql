@@ -1,65 +1,669 @@
-﻿DROP TABLE [dbo].[DomainItemXref]
+﻿DROP TABLE [dbo].[WorkflowGlobalParameter]
 GO
 
-DROP TABLE [dbo].[DomainSourceType]
+DROP TABLE [dbo].[WorkflowInbox]
 GO
 
-DROP TABLE [dbo].[DomainItem]
+DROP TABLE [dbo].[WorkflowProcessInstance]
 GO
 
-DROP TABLE [dbo].[DomainGroup]
+DROP TABLE [dbo].[WorkflowProcessInstancePersistence] 
 GO
 
---DROP VIEW [dbo].[ObjectCache]
-
-DROP TABLE [dbo].[Domain]
+DROP TABLE [dbo].[WorkflowProcessInstanceStatus]
 GO
 
-DROP TABLE [dbo].[DomainType]
+DROP TABLE [dbo].[WorkflowProcessScheme]
 GO
 
-DROP TABLE [dbo].[DomainClassification] 
+DROP TABLE [dbo].[WorkflowProcessTimer]
 GO
 
-DROP TABLE [dbo].[FieldTypeRelationLookupDisplayField]
+DROP TABLE [dbo].[WorkflowProcessTransitionHistory]
 GO
 
-DROP TABLE [dbo].[FieldTypeRelationLookupDefinition]
+DROP TABLE [dbo].[WorkflowRuntime]
 GO
 
-DROP TABLE [dbo].[IntersectTypePredicate]
+DROP TABLE [dbo].[WorkflowScheme]
 GO
 
-DROP TABLE [dbo].[RelatedArtifact]
+DROP PROCEDURE [DropWorkflowInbox]
 GO
 
-DROP TABLE [dbo].[ResolutionRelation]
+DROP PROCEDURE [DropWorkflowProcess]
 GO
 
-DROP TABLE [dbo].[Resolution]
+DROP PROCEDURE [DropWorkflowProcesses]
 GO
 
-ENABLE TRIGGER [dbo].[Artifact_AfterDelete] ON [dbo].[Artifact];
+DROP PROCEDURE [dbo].[GetRenderedTemplateBody]
 GO
 
-DROP INDEX [IX_Intersect_IntersectTypeID_Subject_Object] ON [dbo].[Intersect]
+DROP PROCEDURE [spWorkflowProcessResetRunningStatus]
 GO
 
-ALTER TABLE MapItem ALTER COLUMN [TargetIntersectID] INT NULL
+DROP TYPE [dbo].[IdsTableType]
 GO
 
-ALTER TABLE [Rule] ALTER COLUMN [Threshold] DECIMAL (4, 3) NULL
+CREATE NONCLUSTERED INDEX [IX_Artifact_ArtifactTypeID_TaxonomyTypeID]
+    ON [dbo].[Artifact]([ArtifactTypeID] ASC, [TaxonomyTypeID] ASC)
+    INCLUDE([ID], [TextPath]);
 GO
 
-ALTER TABLE [fusion].[RuleItem] ALTER COLUMN [RuleID] INT NULL
+
+drop INDEX [CIX_FusionAttribute] on FusionAttribute
 GO
+
+
+--add sequence to fusion attribute table
+
+-- add new column
+ALTER TABLE dbo.fusionattribute ADD IDNew int NULL
+GO
+
+-- set new columns value = to old id
+UPDATE dbo.fusionattribute
+SET [IDNew] = [ID]
+GO
+
+-- drop fk constraint
+alter table dbo.ruleresult
+drop constraint FK_RuleResult_FusionAttribute
+go
+
+ALTER TABLE [fusion].[RulePromotion] DROP CONSTRAINT [FK_FusionRulePromotion_FusionAttribute]
+GO
+
+-- drop the constraint
+ALTER TABLE dbo.fusionattribute
+DROP CONSTRAINT PK_FusionAttribute;
+GO
+
+-- drop index
+DROP INDEX [dbo].fusionattribute.IX_FusionAttribute_FusionAttributeTypeID;
+GO
+
+--DROP INDEX [dbo].fusionattribute.CIX_FusionAttribute;
+--GO
+
+--drop identity column
+ALTER TABLE dbo.fusionattribute
+DROP COLUMN [ID] ;
+GO
+
+
+-- rename temp id to regular id
+EXEC sp_rename 'dbo.fusionattribute.IDNew',
+'ID', 'COLUMN';
+GO
+
+-- alter the column to be not null
+ALTER TABLE dbo.fusionattribute ALTER COLUMN [ID] int NOT NULL ;
+GO
+
+-- add back constraint
+ALTER TABLE dbo.fusionattribute ADD CONSTRAINT PK_FusionAttribute PRIMARY KEY CLUSTERED ( [ID] ASC);
+GO
+
+-- get max value from id column
+SELECT MAX(ID) FROM dbo.fusionattribute ;
+GO
+
+-- THIS STEP NEEDS TO BE AUTOMATTED WITH PREVIOUS!!! -- 
+-- create sequence with max plus one from above.
+CREATE SEQUENCE dbo.FusionAttribute_Seq AS int 
+START WITH 2047323 -- value from previous step + 1
+INCREMENT BY 1;
+GO
+
+-- add constraint that uses sequence
+ALTER TABLE dbo.FusionAttribute
+ADD CONSTRAINT Const_FusionAttributeSeq DEFAULT (NEXT VALUE FOR dbo.FusionAttribute_Seq)
+FOR ID;
+GO
+
+-- add fk back that we removed
+ALTER TABLE [dbo].[RuleResult]  WITH CHECK ADD  CONSTRAINT [FK_RuleResult_FusionAttribute] FOREIGN KEY([FusionAttributeID])
+REFERENCES [dbo].[FusionAttribute] ([ID])
+GO
+
+-- add back index we deleted IX_FusionAttribute_FusionAttributeTypeID
+
+ALTER TABLE [fusion].[RulePromotion]  WITH CHECK ADD  CONSTRAINT [FK_FusionRulePromotion_FusionAttribute] FOREIGN KEY([FusionAttributeID])
+REFERENCES [dbo].[FusionAttribute] ([ID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [fusion].[RulePromotion] CHECK CONSTRAINT [FK_FusionRulePromotion_FusionAttribute]
+GO
+
+CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionAttributeTypeID]
+    ON [dbo].[FusionAttribute]([FusionAttributeTypeID] ASC)
+    INCLUDE([ID], [Name]);
+go
+
+CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID_Deleted_ParentID]
+    ON [dbo].[FusionAttribute]([FusionID] ASC, [Deleted] ASC, [ParentID] ASC);
+GO
+
+delete from [cache].[object] where [object] = 'FusionAttribute';
+go
+
+ALTER TABLE FusionStatusLog ADD [FullRefresh]     BIT              CONSTRAINT [DF_FusionStatusLog_FullRefresh] DEFAULT ((0)) NOT NULL
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID_Subject_Object]
+    ON [dbo].[Intersect]([IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC);
+GO
+
+ALTER TRIGGER [dbo].[Intersect_AfterInsert]
+	ON [dbo].[Intersect]
+	FOR INSERT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	merge cache.Object as T
+	using (
+			select	'Intersect' as Object,
+					ID as ObjectID,
+					'IntersectType' as ObjectType,
+					IntersectTypeID as ObjectTypeID
+			from	inserted
+			) as S
+	on    (T.Object = S.Object and T.ObjectID = S.ObjectID)
+	when not matched then
+		insert (Object, ObjectID, ObjectType, ObjectTypeID)
+		values (S.Object, S.ObjectID, S.ObjectType, S.ObjectTypeID);
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', Subject, SubjectID, UpdatedBy), 'Intersect', ID from inserted;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'Intersect', ID from inserted;
+END
+GO
+
+ALTER TRIGGER [dbo].[Intersect_AfterUpdate]
+	ON [dbo].[Intersect]
+	FOR UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	merge cache.Object as T
+	using (
+			select	'Intersect' as Object,
+					ID as ObjectID,
+					'IntersectType' as ObjectType,
+					IntersectTypeID as ObjectTypeID
+			from	inserted
+			) as S
+	on    (T.Object = S.Object and T.ObjectID = S.ObjectID)
+	when not matched then
+		insert (Object, ObjectID, ObjectType, ObjectTypeID)
+		values (S.Object, S.ObjectID, S.ObjectType, S.ObjectTypeID);
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', Subject, SubjectID, UpdatedBy), 'Intersect', ID from inserted;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'Intersect', ID from inserted;
+END
+GO
+
+alter table MapItem add [Owner]             VARCHAR (100) NULL
+go
+
+alter table MapRuleItem add [Owner]             VARCHAR (100) NULL
+go
+
+alter table MapRuleItemMapItem add [Owner]             VARCHAR (100) NULL
+go
+
+CREATE FUNCTION dbo.GetWorkflowArtifactID(@Data XML)
+RETURNS INT
+WITH SCHEMABINDING
+AS BEGIN
+  DECLARE @ArtifactID INT
+
+  SELECT  
+    @ArtifactID = @Data.value('(fields/ArtifactID/text())[1]', 'int')
+
+  RETURN @ArtifactID
+END
+GO
+
+CREATE FUNCTION dbo.GetWorkflowStartDate(@Data XML)
+RETURNS varchar(33) 
+WITH SCHEMABINDING
+AS BEGIN
+  DECLARE @StartDate varchar(33)
+
+  SELECT  
+    @StartDate = @Data.value('(fields/StartDate/text())[1]', 'varchar(33)')
+
+  RETURN @StartDate
+END
+GO
+
+alter table Workflow add [ArtifactID] AS ([dbo].[GetWorkflowArtifactID]([Data])) PERSISTED
+GO
+
+CREATE XML INDEX [IXXML_Workflow_Data_Property]
+    ON [dbo].[Workflow]([Data])
+    USING XML INDEX [IXXML_Workflow_Data] FOR PROPERTY
+    WITH (PAD_INDEX = OFF);
+GO
+
+CREATE PRIMARY XML INDEX [IXXML_WorkflowTypeRelation_Fields]
+    ON [dbo].[WorkflowTypeRelation]([Fields])
+    WITH (PAD_INDEX = OFF);
+GO
+
+CREATE XML INDEX [IXXML_WorkflowTypeRelation_Fields_Property]
+    ON [dbo].[WorkflowTypeRelation]([Fields])
+    USING XML INDEX [IXXML_WorkflowTypeRelation_Fields] FOR PROPERTY
+    WITH (PAD_INDEX = OFF);
+GO
+
+CREATE XML INDEX [IXXML_WorkflowTypeRelation_Secondary_PATH]
+    ON [dbo].[WorkflowTypeRelation]([Fields])
+    USING XML INDEX [IXXML_WorkflowTypeRelation_Fields] FOR PATH
+    WITH (PAD_INDEX = OFF);
+GO
+
+CREATE XML INDEX [IXXML_WorkflowTypeRelation_Secondary_VALUE]
+    ON [dbo].[WorkflowTypeRelation]([Fields])
+    USING XML INDEX [IXXML_WorkflowTypeRelation_Fields] FOR VALUE
+    WITH (PAD_INDEX = OFF);
+GO
+
+alter table Report add [FileName]         VARCHAR (260)   NULL
+GO
+
+ALTER TRIGGER [dbo].[Rule_AfterInsert]
+   ON  [dbo].[Rule] 
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Add', [queue].WriteIndexXml('', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from inserted
+
+	update	T
+	set		T.CreatedOn = coalesce(S.CreatedOn, getutcdate()),
+			T.UpdatedOn = coalesce(S.UpdatedOn, getutcdate())
+	from	[Rule] T
+			inner join inserted S on S.ID = T.ID;
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'Rule' as [Object],			ID as ObjectID,
+					'RuleType' as ObjectType,	RuleType as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+GO
+
+ALTER TRIGGER [dbo].[Rule_AfterUpdate]
+   ON  [dbo].[Rule] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Update', [queue].WriteIndexXml('', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'Rule' as [Object],			ID as ObjectID,
+					'RuleType' as ObjectType,	RuleType as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+GO
+
+alter table RuleResult drop column [PassFraction]
+go
+alter table RuleResult drop column [FailFraction]
+go
+alter table RuleResult drop column [Passed]
+go
+alter table RuleResult add [PassFraction]      AS       (case when [RowsPassed]=(0) AND [RowsFailed]=(0) then (0) else CONVERT([decimal](4,3),CONVERT([decimal](18,3),[RowsPassed],(0))/(CONVERT([decimal](18,3),[RowsPassed],(0))+CONVERT([decimal](18,3),[RowsFailed],(0))),(0)) end)
+go
+alter table RuleResult add [FailFraction]      AS       (case when [RowsPassed]=(0) AND [RowsFailed]=(0) then (0) else CONVERT([decimal](4,3),CONVERT([decimal](3,3),CONVERT([decimal](18,3),(1),(0))-CONVERT([decimal](18,3),[RowsPassed],(0))/(CONVERT([decimal](18,3),[RowsPassed],(0))+CONVERT([decimal](18,3),[RowsFailed],(0))),(0)),(0)) end)
+go
+alter table RuleResult add [Passed]            AS       ([utility].[CalculatePassedWrapper](case when [RowsPassed]=(0) AND [RowsFailed]=(0) then (0) else CONVERT([decimal](4,3),CONVERT([decimal](18,3),[RowsPassed],(0))/(CONVERT([decimal](18,3),[RowsPassed],(0))+CONVERT([decimal](18,3),[RowsFailed],(0))),(0)) end,[RuleID]))
+go
+alter table RuleResult add [RunDate]           DATETIME CONSTRAINT [DF_RuleResult_RunDate] DEFAULT (getutcdate()) NOT NULL
+go
+
+ALTER TABLE [fusion].[result] DROP CONSTRAINT DF_FusionResult_ID;
+GO
+ALTER TABLE [fusion].[Result] DROP CONSTRAINT [PK_FusionResult]
+GO
+alter table fusion.Result alter column [ID] UNIQUEIDENTIFIER NULL
+go
+
+
+--update old fieldtype html records to have no MaximumLength (Task 1789)
+update FieldType
+set MinimumLength = 1,
+	MaximumLength = NULL
+where [Type] = 'Html' AND IsRequired = 1;
+go
+
+update FieldType
+set MinimumLength = NULL, MaximumLength = NULL
+where [Type] = 'Html' AND IsRequired = 0;
+go
+
+--update RuleItem to use objectid/type instead of FusionAttributeID
+sp_RENAME 'fusion.RuleItem.FusionAttributeID' , 'ObjectID', 'COLUMN'
+
+alter table fusion.RuleItem add ObjectType nvarchar(250);
+go
+
+update fusion.RuleItem
+set ObjectType = 'FusionAttribute' where ObjectType is null;
+go
+
+--add attribute type column to RulePromotion
+sp_RENAME 'fusion.RulePromotion.FusionAttributeID' , 'AttributeID', 'COLUMN';
+
+alter table fusion.RulePromotion drop constraint FK_FusionRulePromotion_FusionAttribute;
+go
+alter table fusion.RulePromotion add AttributeType varchar(25);
+go
+update fusion.RulePromotion set AttributeType = 'FusionAttribute' where AttributeType is null;
+go
+alter table fusion.RulePromotion alter column AttributeType varchar(25) not null;
+go
+
+
+CREATE TABLE [dbo].[IssueType] (
+    [ID]          INT            IDENTITY (1, 1) NOT NULL,
+    [Name]        NVARCHAR (250) NOT NULL,
+    [Description] NVARCHAR (MAX) NULL,
+    [IsSystem]    BIT            NOT NULL,
+    [UpdatedOn]   DATETIME       NULL,
+    [UpdatedBy]   INT            NULL,
+    CONSTRAINT [PK_IssueType] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [CONST_IssueType_Name] UNIQUE NONCLUSTERED ([Name] ASC)
+);
+GO
+
+CREATE TRIGGER [dbo].[IssueType_AfterDelete]
+   ON  [dbo].[IssueType] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'IssueType', ID, coalesce(UpdatedBy, 0)), 'IssueType', ID from deleted
+GO
+
+CREATE TRIGGER [dbo].[IssueType_AfterInsert]
+   ON  [dbo].[IssueType]
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'IssueType', ID, coalesce(UpdatedBy, 0)), 'IssueType', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'IssueType' as [Object],			ID as ObjectID,
+					'IssueType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+GO
+
+CREATE TRIGGER [dbo].[IssueType_AfterUpdate]
+   ON  [dbo].[IssueType] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'IssueType', ID, coalesce(UpdatedBy, 0)), 'IssueType', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'IssueType' as [Object],			ID as ObjectID,
+					'IssueType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+GO
+
+CREATE TABLE [dbo].[Issue] (
+    [ID]           INT          IDENTITY (1, 1) NOT NULL,
+    [IssueTypeID]  INT          NOT NULL,
+    [Object]       VARCHAR (50) NOT NULL,
+    [ObjectID]     INT          NOT NULL,
+    [ObjectType]   VARCHAR (25) NOT NULL,
+    [ObjectTypeID] INT          NOT NULL,
+    [CreatedOn]    DATETIME     NOT NULL,
+    [CreatedBy]    INT          NOT NULL,
+    [UpdatedOn]    DATETIME     DEFAULT (getutcdate()) NOT NULL,
+    [UpdatedBy]    INT          NULL,
+    [Criticality]  INT          DEFAULT ((0)) NOT NULL,
+    CONSTRAINT [PK_Issue] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_Issue_IssueType] FOREIGN KEY ([IssueTypeID]) REFERENCES [dbo].[IssueType] ([ID]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [dbo].[NymRelation] (
+    [ID]          INT          IDENTITY (1, 1) NOT NULL,
+    [PredicateID] INT          NOT NULL,
+    [Object]      VARCHAR (25) NOT NULL,
+    [ObjectID]    INT          NOT NULL,
+    [UpdatedOn]   DATETIME     NOT NULL,
+    [UpdatedBy]   INT          NOT NULL,
+    CONSTRAINT [PK_NymRelation] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_NymRelation_PredicateType] FOREIGN KEY ([PredicateID]) REFERENCES [dbo].[Predicate] ([ID]) ON DELETE CASCADE,
+    CONSTRAINT [CONST_NymRelation_Name] UNIQUE NONCLUSTERED ([PredicateID] ASC, [Object] ASC, [ObjectID] ASC)
+);
+GO
+
+
+CREATE TABLE [dbo].[Nym] (
+    [ID]          INT            IDENTITY (1, 1) NOT NULL,
+    [Object]      VARCHAR (25)   NOT NULL,
+    [ObjectID]    INT            NOT NULL,
+    [Name]        NVARCHAR (250) NULL,
+    [PredicateID] INT            NOT NULL,
+    [UpdatedOn]   DATETIME       DEFAULT (getutcdate()) NULL,
+    [UpdatedBy]   INT            NULL,
+    [CreatedOn]   DATETIME       DEFAULT (getutcdate()) NOT NULL,
+    [CreatedBy]   INT            NOT NULL,
+    CONSTRAINT [PK_Nym] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_Nym_Predicate] FOREIGN KEY ([PredicateID]) REFERENCES [dbo].[Predicate] ([ID]) ON DELETE CASCADE
+);
+GO
+
+CREATE TRIGGER [dbo].[Nym_AfterDelete]
+   ON  [dbo].[Nym] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Synonym'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	'ObjectIndex',
+				'D', 
+				@ot, 
+				ID
+		from	deleted;
+GO
+
+CREATE TRIGGER [dbo].[Nym_AfterUpsert]
+   ON  [dbo].[Nym] 
+   AFTER INSERT, UPDATE
+AS 
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Synonym'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	'ObjectIndex',
+				case 
+					when D.ID is not null then 'U'
+					else 'A'
+				end, 
+				@ot, 
+				I.ID
+		from	inserted I
+				left join deleted D on D.ID = I.ID;
+GO
+
+CREATE SCHEMA [workflow]
+    AUTHORIZATION [dbo];
+GO
+
+CREATE TABLE [workflow].[Type] (
+    [ID]        INT            IDENTITY (1, 1) NOT NULL,
+    [Name]      NVARCHAR (500) NOT NULL,
+    [CreatedBy] INT            NOT NULL,
+    [CreatedOn] DATETIME       NOT NULL,
+    [UpdatedBy] INT            NOT NULL,
+    [UpdatedOn] DATETIME       NOT NULL,
+    CONSTRAINT [PK_WorkflowType] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+GO
+
+CREATE TABLE [workflow].[Version] (
+    [ID]        INT      IDENTITY (1, 1) NOT NULL,
+    [TypeID]    INT      NOT NULL,
+    [CreatedBy] INT      NOT NULL,
+    [CreatedOn] DATETIME NOT NULL,
+    [UpdatedBy] INT      NOT NULL,
+    [UpdatedOn] DATETIME NOT NULL,
+    CONSTRAINT [PK_WorkflowVersion] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_WorkflowVersion_WorkflowType] FOREIGN KEY ([TypeID]) REFERENCES [workflow].[Type] ([ID]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [workflow].[VersionStep] (
+    [ID]           INT            IDENTITY (1, 1) NOT NULL,
+    [ParentID]     INT            NULL,
+    [VersionID]    INT            NOT NULL,
+    [Name]         NVARCHAR (500) NOT NULL,
+    [StepType]     INT            NOT NULL,
+    [ActivityType] INT            NOT NULL,
+    [Settings]     XML            NULL,
+    [Fields]       XML            NULL,
+    [XPosition]    INT            NOT NULL,
+    [YPosition]    INT            NOT NULL,
+    CONSTRAINT [PK_WorkflowVersionStep] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_WorkflowVersionStep_Parent] FOREIGN KEY ([ParentID]) REFERENCES [workflow].[VersionStep] ([ID]),
+    CONSTRAINT [FK_WorkflowVersionStep_WorkflowVersion] FOREIGN KEY ([VersionID]) REFERENCES [workflow].[Version] ([ID]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [workflow].[VersionStepTransition] (
+    [FromVersionStepID] INT            NOT NULL,
+    [ToVersionStepID]   INT            NOT NULL,
+    [Name]              NVARCHAR (500) NOT NULL,
+    [TransitionType]    INT            NOT NULL,
+    [Condition]         XML            NULL,
+    [LinkType]          INT            NOT NULL,
+    CONSTRAINT [PK_WorkflowVersionStepTransition] PRIMARY KEY CLUSTERED ([FromVersionStepID] ASC, [ToVersionStepID] ASC),
+    CONSTRAINT [FK_WorkflowVersionStepTransition_FromVersionStep] FOREIGN KEY ([FromVersionStepID]) REFERENCES [workflow].[VersionStep] ([ID]),
+    CONSTRAINT [FK_WorkflowVersionStepTransition_ToVersionStep] FOREIGN KEY ([ToVersionStepID]) REFERENCES [workflow].[VersionStep] ([ID])
+);
+GO
+
+CREATE TABLE [workflow].[EventRegistration] (
+    [ID]         INT          IDENTITY (1, 1) NOT NULL,
+    [TypeID]     INT          NOT NULL,
+    [Object]     VARCHAR (50) NOT NULL,
+    [ObjectID]   INT          NOT NULL,
+    [ChangeType] INT          NOT NULL,
+    [Condition]  XML          NULL,
+    CONSTRAINT [PK_WorkflowEventRegistration] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_WorkflowEventRegistration_WorkflowType] FOREIGN KEY ([TypeID]) REFERENCES [workflow].[Type] ([ID]) ON DELETE CASCADE
+);
+GO
+
+
+CREATE TABLE [workflow].[Item] (
+    [ID]          BIGINT       IDENTITY (1, 1) NOT NULL,
+    [VersionID]   INT          NOT NULL,
+    [Active]      BIT          NOT NULL,
+    [Object]      VARCHAR (50) NOT NULL,
+    [ObjectID]    INT          NOT NULL,
+    [StartedBy]   INT          NOT NULL,
+    [StartedOn]   DATETIME     NOT NULL,
+    [UpdatedBy]   INT          NOT NULL,
+    [UpdatedOn]   DATETIME     NOT NULL,
+    [CompletedBy] INT          NULL,
+    [CompletedOn] DATETIME     NULL,
+    [IsTest]      BIT          CONSTRAINT [DF_WorkflowItem_IsTest] DEFAULT ((0)) NOT NULL,
+    CONSTRAINT [PK_WorkflowItem] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_WorkflowItem_WorkflowVersion] FOREIGN KEY ([VersionID]) REFERENCES [workflow].[Version] ([ID]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [workflow].[ItemStep] (
+    [ID]          BIGINT   IDENTITY (1, 1) NOT NULL,
+    [ItemID]      BIGINT   NOT NULL,
+    [StepID]      INT      NOT NULL,
+    [Settings]    XML      NULL,
+    [Fields]      XML      NULL,
+    [StartedBy]   INT      NOT NULL,
+    [StartedOn]   DATETIME NOT NULL,
+    [CompletedBy] INT      NULL,
+    [CompletedOn] DATETIME NULL,
+    CONSTRAINT [PK_WorkflowItemStep] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_WorkflowItemStep_WorkflowItem] FOREIGN KEY ([ItemID]) REFERENCES [workflow].[Item] ([ID]),
+    CONSTRAINT [FK_WorkflowItemStep_WorkflowVersionStep] FOREIGN KEY ([StepID]) REFERENCES [workflow].[VersionStep] ([ID]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [workflow].[ItemStepTransition] (
+    [FromItemStepID] BIGINT   NOT NULL,
+    [ToItemStepID]   BIGINT   NOT NULL,
+    [Condition]      XML      NULL,
+    [Date]           DATETIME NOT NULL,
+    CONSTRAINT [PK_WorkflowItemStepTransition] PRIMARY KEY CLUSTERED ([FromItemStepID] ASC, [ToItemStepID] ASC),
+    CONSTRAINT [FK_WorkflowItemStepTransition_FromItemStep] FOREIGN KEY ([FromItemStepID]) REFERENCES [workflow].[ItemStep] ([ID]),
+    CONSTRAINT [FK_WorkflowItemStepTransition_ToItemStep] FOREIGN KEY ([ToItemStepID]) REFERENCES [workflow].[ItemStep] ([ID])
+);
+GO
+
+
+
 
 alter view [cache].[ObjectDetails]
 as
 	select	D.[Object],
 			D.[ObjectID],
-			coalesce(O1.Name, O2.Name, O4.Name, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.Name, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.Name, O18.Name, O21.Name, O22.Name, O23.Name, O24.Name, O25.DisplayValue, O26.Name, O27.Name, null) as Name,
-			coalesce(O1.TextPath, O2.TextPath, O4.TextPath, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.TextPath, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.TextPath, O18.Name, O21.Name, O22.Name, O23.Name, O24.Name, O25.DisplayValue, O26.Name, O27.Name, '') as TextPath,
+			coalesce(O1.Name, O2.Name, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.Name, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.Name, O18.Name, O21.Name, O22.Name, O23.Name, O24.Name, O25.DisplayValue, O26.Name, O27.Name, O28.Name, O29.Name, null) as Name, --O4.Name, 
+			coalesce(O1.TextPath, O2.TextPath, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.TextPath, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.TextPath, O18.Name, O21.Name, O22.Name, O23.Name, O24.Name, O25.DisplayValue, O26.Name, O27.Name, O28.Name, O29.Name, '') as TextPath, --O4.TextPath, 
 			coalesce(O1.Description, O2.Description, O6.Description, O7.Description, O8.Description, O9.Description, O10.Description, O12.Description, O13.Description, O26.Description, NULL) as Description,
 			case D.[Object]
 				when 'Lookup' then dbo.GenerateNgObjectUrl('Lookup', O20.LookupTypeID, O20.ID)
@@ -71,19 +675,18 @@ as
 			case 
 				when P1.ID is not null then 'Artifact'
 				when P2.ID is not null then 'Taxonomy'
-				when P4.ID is not null then 'FusionAttribute'
-				when P4.ID is not null then 'FusionAttribute'
+				--when P4.ID is not null then 'FusionAttribute'
 				when P7.ID is not null then 'ArtifactType'
 				when P10.ID is not null then 'AttributeType'
 				when P13.ID is not null then 'PolicyType'
 				when P17.ID is not null then 'FusionAttributeType'
 				else NULL
 			end as Parent,
-			coalesce(O1.ParentID, O2.ParentID, O4.ParentID, O7.ParentID, O10.ParentID, O13.ParentID, O17.ParentID, NULL) as ParentID,
-			coalesce(P1.Name, P2.Name, P4.Name, P7.Name, P10.Name, P13.Name, P17.Name, NULL) as ParentName,
+			coalesce(O1.ParentID, O2.ParentID, O7.ParentID, O10.ParentID, O13.ParentID, O17.ParentID, NULL) as ParentID, --O4.ParentID, 
+			coalesce(P1.Name, P2.Name, P7.Name, P10.Name, P13.Name, P17.Name, NULL) as ParentName,	--P4.Name, 
 			D.[ObjectType],
 			D.ObjectTypeID,
-			coalesce(OT1.Name, OT2.Name, OT4.TextPath, OT5.Name, OT12.Name, OT13.Name, OT14.Name, OT15.Name, OT20.Name, OT24.Name, NULL) as ObjectTypeName,
+			coalesce(OT1.Name, OT2.Name, OT5.Name, OT12.Name, OT13.Name, OT14.Name, OT15.Name, OT20.Name, OT24.Name, NULL) as ObjectTypeName, --OT4.TextPath, 
 			coalesce(S.IconBackColor, '#000') as IconBackColor,
 			coalesce(S.IconForeColor, '#fff') as IconForeColor,
 			coalesce(S.IconText, 'leaf') as IconText,
@@ -103,9 +706,9 @@ as
 			left join TaxonomyType OT2 with(nolock) on D.[Object] = 'Taxonomy' and OT2.ID = O2.TaxonomyTypeID
 			left join Taxonomy P2 with(nolock) on D.[Object] = 'Taxonomy' and P2.ID = O2.ParentID
 
-			left join FusionAttribute O4 with(nolock) on D.[Object] = 'FusionAttribute' and O4.ID = D.ObjectID
-			left join FusionAttributeType OT4 with(nolock) on D.[Object] = 'FusionAttribute' and OT4.ID = O4.FusionAttributeTypeID
-			left join FusionAttribute P4 with(nolock) on D.[Object] = 'FusionAttribute' and P4.ID = O4.ParentID
+			--left join FusionAttribute O4 with(nolock) on D.[Object] = 'FusionAttribute' and O4.ID = D.ObjectID
+			--left join FusionAttributeType OT4 with(nolock) on D.[Object] = 'FusionAttribute' and OT4.ID = O4.FusionAttributeTypeID
+			--left join FusionAttribute P4 with(nolock) on D.[Object] = 'FusionAttribute' and P4.ID = O4.ParentID
 
 			left join Fusion O5 with(nolock) on D.[Object] = 'Fusion' and O5.ID = D.ObjectID
 			left join FusionType OT5 with(nolock) on D.[Object] = 'Fusion' and OT5.ID = O5.FusionTypeID
@@ -191,1661 +794,13 @@ as
 
 			left join FusionQueryAttributeType O27 with(nolock) on D.[Object] = 'FusionQueryAttributeType' and O27.ID = D.ObjectID
 
-			left join ObjectStyle S with(nolock) on S.ObjectType = D.ObjectType and S.ObjectID = D.[ObjectTypeID]
-GO
+			left join IssueType O28 with(nolock) on D.[Object] = 'IssueType' and O28.ID = D.ObjectID
 
-alter view [cache].[Responsibilities]
-as
-	SELECT R.[ResponsibilityID]
-		  ,R.[ResponsibilityTypeID]
-		  ,RT.Name as [ResponsibilityType]
-		  ,R.[AssigningItem]
-		  ,R.[AssigningItemID]
-		  ,A.TextPath as [AssigningItemName]
-		  ,A.Url as [AssigningItemUrl]
-		  ,A.ObjectType as [AssigningItemType]
-		  ,A.ObjectTypeID as [AssigningItemTypeID]
-		  ,A.ObjectTypeName as [AssigningTypeName]
-		  ,R.[Object]
-		  ,R.[ObjectID]
-		  ,O.TextPath as [ObjectName]
-		  ,O.[ObjectType]
-		  ,O.[ObjectTypeID]
-		  ,O.[ObjectTypeName]
-		  ,O.Url as [ObjectUrl]
-		  ,R.[ResponsibleObject]
-		  ,R.[ResponsibleObjectID]
-		  ,RO.Name as [ResponsibleObjectName]
-		  ,RO.Url as [ResponsibleObjectUrl]
-		  ,R.[ContextHash]
-		  ,R.[ResponsibilityTypeGroup]
-		  ,R.[Visible]
-		  ,R.[TargetResponsibilityID]
-	FROM	[cache].ResponsibilityItem R
-			inner join ResponsibilityType RT on RT.ID = R.[ResponsibilityTypeID]
-			inner join cache.ObjectDetails A on A.[Object] = R.[AssigningItem] and A.[ObjectID] = R.[AssigningItemID]
-			inner join cache.ObjectDetails O on O.[Object] = R.[Object] and O.[ObjectID] = R.[ObjectID]
-			inner join cache.ObjectDetails RO on RO.[Object] = R.[ResponsibleObject] and RO.[ObjectID] = R.[ResponsibleObjectID]
-GO
-
-ALTER VIEW [dbo].[FieldLookupValue]
-AS
-	SELECT	T.ID as FieldTypeID,
-			T.LookupObjectType,
-			T.LookupObjectID,
-			COALESCE(A.ID, R.ResourceID, L.ID, RI.ID, RIT.ID) as Value,	
-			utility.GetFormattedFieldLookupValue(T.Type, T.LookupDisplayFormat, T.LookupObjectType, T.LookupObjectID, COALESCE(A.ID, R.ResourceID, L.ID, RI.ID, RIT.ID)) as Text
-	FROM	FieldType T 
-			LEFT JOIN Artifact A ON T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.ArtifactTypeID
-			LEFT JOIN reporting.Global_Resource R ON T.LookupObjectType = 'Resource' --AND T.LookupObjectID = R.ResourceTypeID
-			LEFT JOIN Lookup L ON T.LookupObjectType = 'Lookup' AND T.LookupObjectID = L.LookupTypeID
-			LEFT JOIN ReferenceItem RI ON T.LookupObjectType = 'ReferenceItem' AND T.LookupObjectID = RI.ReferenceItemTypeID
-			LEFT JOIN ReferenceItemType RIT ON T.LookupObjectType = 'ReferenceItemType' --AND T.LookupObjectID = RIT.ID
-	WHERE	T.LookupObjectType is not null
-			AND COALESCE(A.ID, R.ResourceID, L.ID, RI.ID, RIT.ID) IS NOT NULL
-GO
-
-ALTER VIEW [dbo].[FieldTypeLookupValue]
-AS
-	SELECT	'Artifact' as LookupObjectType,
-			ID as LookupObjectID,
-			Name--'Artifact : ' + Name as Name
-	FROM	ArtifactType
-	UNION
-	SELECT	'ReferenceItemType' as LookupObjectType,
-			ID as LookupObjectID,
-			Name --'Domain : ' + Name as Name
-	FROM	ReferenceItemType
-	UNION
-	SELECT	'Taxonomy' as LookupObjectType,
-			ID as LookupObjectID,
-			Name --'Information Model : ' + Name as Name
-	FROM	TaxonomyType
-	UNION
-	SELECT	'Lookup' as LookupObjectType,
-			ID as LookupObjectID,
-			Name --'Lookup : ' + Name as Name
-	FROM	LookupType
-GO
-
-ALTER VIEW [dbo].[FieldWithRelation]
-AS
-	SELECT	F.FieldTypeID,
-			T.Name,
-			T.FriendlyName,
-			T.Category,
-			T.Description,
-			T.DisplayDescription,
-			T.FormDescription,
-			T.ValidationDescription,
-			T.Type,
-			T.LookupObjectType,
-			T.LookupObjectID,
-			T.LookupDisplayFormat,
-			T.MinimumLength,
-			T.MaximumLength,
-			T.Length,
-			T.Pattern,
-			T.IsListable,
-			T.IsRequired,
-			T.SortOrder,
-			F.ObjectType,
-			F.ObjectID,
-			F.Value,
-			F.FormattedValue,
-			LD.Url as LookupUrl
-	FROM	FieldType T
-			inner join Field F on F.FieldTypeID = T.ID and ( 
-															(F.ObjectType + 'Type' = T.[Object] and F.ObjectType <> 'Event') OR 
-															(T.[Object] = 'Rule' and F.ObjectType = 'Event') 
-														   )
-			left join cache.ObjectDetails LD on 
-				LD.[Object] = case T.LookupObjectType
-									when 'ReferenceItem' then 'ReferenceItemType' 
-									else T.LookupObjectType 
-							  end
-				and LD.ObjectID = case 
-									when T.LookupObjectType = 'ReferenceItem' then T.LookupObjectID 
-									when T.LookupObjectType = 'Resource' then T.LookupObjectID 
-									when T.LookupObjectType is null then NULL 
-									when dbo.IsInteger(F.Value) = 1 then F.Value
-								end
-GO
-
-ALTER VIEW [dbo].[FollowDetail]
-AS
-	with ArtifactTypes as
-	(
-	select	ID as FollowID,
-			ObjectType as [Object],
-			ObjectID,
-			ResourceID,
-			1 as HardFollow
-	from	Follow
-	where	ObjectType = 'ArtifactType' and FollowTypeID = 3
-	union all
-	select	P.ID as FollowID,
-			cast('Artifact' as varchar(50)) as [Object],
-			C.ID as ObjectID,
-			P.ResourceID,
-			0 as HardFollow
-	from	Artifact C
-			inner join Follow P on P.ObjectType = 'ArtifactType' and P.ObjectID = C.ArtifactTypeID and P.FollowTypeID = 3
-	),
-	DomainTypes as
-	(
-	select	ID as FollowID,
-			ObjectType as [Object],
-			ObjectID,
-			ResourceID,
-			1 as HardFollow
-	from	Follow
-	where	ObjectType = 'ReferenceItemType' and FollowTypeID = 3
-	),
-	Groups as
-	(
-	select	ID as FollowID,
-			ObjectType as [Object],
-			ObjectID,
-			ResourceID,
-			1 as HardFollow
-	from	Follow
-	where	ObjectType = 'Group' and ObjectID = 0 and FollowTypeID = 3
-	union all
-	select	P.ID as FollowID,
-			P.ObjectType as [Object],
-			C.ID as ObjectID,
-			P.ResourceID,
-			0 as HardFollow
-	from	[Group] C
-			inner join Follow P on P.ObjectType = 'Group' and P.ObjectID = 0 and P.FollowTypeID = 3
-	),
-	PolicyTypes as
-	(
-	select	ID as FollowID,
-			ObjectType as [Object],
-			ObjectID,
-			ResourceID,
-			1 as HardFollow
-	from	Follow
-	where	ObjectType = 'PolicyType' and FollowTypeID = 3
-	union all
-	select	P.ID as FollowID,
-			cast('Policy' as varchar(50)) as [Object],
-			C.ID as ObjectID,
-			P.ResourceID,
-			0 as HardFollow
-	from	Policy C
-			inner join Follow P on P.ObjectType = 'PolicyType' and P.ObjectID = C.PolicyTypeID and P.FollowTypeID = 3
-	),
-	PolicyParents as
-	(
-	select	F.ID as FollowID,
-			T.ID,
-			T.ParentID,
-			F.ResourceID,
-			1 as HardFollow
-	from	Policy T
-			inner join Follow F on F.ObjectType = 'Policy' and F.ObjectID = T.ID and F.FollowTypeID = 3
-	union all
-	select	P.FollowID,
-			C.ID,
-			C.ParentID,
-			P.ResourceID,
-			0 as HardFollow
-	from	Policy C
-			inner join PolicyParents P on P.ID = C.ParentID
-	),
-	Resources as
-	(
-	select	ID as FollowID,
-			ObjectType as [Object],
-			ObjectID,
-			ResourceID,
-			1 as HardFollow
-	from	Follow
-	where	ObjectType = 'ResourceType' and FollowTypeID = 3
-	union all
-	select	P.ID as FollowID,
-			cast('Resource' as varchar(50)) as [Object],
-			C.ResourceID as ObjectID,
-			P.ResourceID,
-			0 as HardFollow
-	from	reporting.Global_Resource C
-			inner join Follow P on P.ObjectType = 'ResourceType' and P.FollowTypeID = 3
-	where	C.ResourceID > 0
-	),
-	TaxonomyParents as
-	(
-	select	F.ID as FollowID,
-			T.ID,
-			T.ParentID,
-			F.ResourceID,
-			1 as HardFollow
-	from	Taxonomy T
-			inner join Follow F on F.ObjectType = 'Taxonomy' and F.ObjectID = T.ID and F.FollowTypeID = 3
-	union all
-	select	P.FollowID,
-			C.ID,
-			C.ParentID,
-			P.ResourceID,
-			0 as HardFollow
-	from	Taxonomy C
-			inner join TaxonomyParents P on P.ID = C.ParentID
-	)
-
-	SELECT		F.FollowID,
-				F.ResourceID,
-				R.Email,
-				R.Email as FollowerEmail,
-				R.FirstName + ' ' + R.LastName as FollowerName,
-				R.FirstName as FollowerFirstName,
-				R.LastName as FollowerLastName,
-				'Resource' as FollowerObjectType,
-				F.ResourceID as FollowerObjectID,
-				dbo.GenerateObjectUrl('Resource', 1, F.ResourceID) as FollowerUrl,
-				F.ObjectID,
-				F.[Object] as ObjectType,
-				O.ObjectID as ID,
-				O.Name,
-				O.TextPath,
-				O.Description,
-				O.ParentID,
-				O.Parent as ParentType,
-				O.Url,
-				O.ObjectTypeID as TypeID,
-				O.ObjectType as [Type],
-				case O.ObjectType
-					when 'ResourceType' then 'User'
-					when 'Group' then 'Group'
-					else O.ObjectTypeName
-				end as [TypeName],
-				O.IconBackColor,
-				O.IconForeColor,
-				O.IconText,
-				0 AS OpenEventCount,
-				dbo.GetObjectStatisticScore(F.[Object], F.ObjectID) as CurrentScore,
-				cast(F.HardFollow as bit) as HardFollow
-	FROM		(
-				select	FollowID,
-						[Object], 
-						ObjectID, 
-						ResourceID, 
-						HardFollow 
-				from	ArtifactTypes
-				union
-				select	FollowID,
-						[Object], 
-						ObjectID, 
-						ResourceID, 
-						HardFollow 
-				from	DomainTypes
-				union
-				select	FollowID,
-						[Object], 
-						ObjectID, 
-						ResourceID, 
-						HardFollow 
-				from	Groups
-				union
-				select	FollowID,
-						[Object], 
-						ObjectID, 
-						ResourceID, 
-						HardFollow 
-				from	PolicyTypes
-				union
-				select	FollowID,
-						'Policy', 
-						ID as ObjectID, 
-						ResourceID, 
-						HardFollow 
-				from	PolicyParents
-				union
-				select	FollowID,
-						[Object], 
-						ObjectID, 
-						ResourceID, 
-						HardFollow 
-				from	Resources
-				union
-				select	FollowID,
-						'Taxonomy' as [Object], 
-						ID as ObjectID, 
-						ResourceID, 
-						HardFollow 
-				from	TaxonomyParents
-				union
-				select	ID as FollowID,
-						ObjectType as [Object], 
-						ObjectID, 
-						ResourceID, 
-						1 as HardFollow 
-				from	Follow
-				where	FollowTypeID = 1	
-				) F
-				inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
-				inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
-GO
-
-ALTER view [dbo].[IntersectDetail]
-as
-	select	I.ID,
-			I.IntersectTypeID,
-			case I.Classification
-				when 0 then 2
-				else coalesce(I.Classification, 2)
-			end as Classification,
-			I.Description,
-
-			I.Subject,
-			I.SubjectID,
-			case I.Subject
-				when 'Intersect' then utility.DeriveIntersectName(SI.ID)
-				when 'Resource' then SRE.FirstName + ' ' + SRE.LastName
-				else coalesce(SA.TextPath, SD.Name, SF.TextPath, SG.Name, SP.TextPath, SR.Name, ST.TextPath) 
-			end as SubjectName,
-			dbo.GenerateNgObjectUrl(
-				I.Subject, 
-				case I.Subject
-					when 'Resource' then 1
-					when 'Group' then 1
-					when 'ReferenceItemType' then 0
-					else coalesce(SA.ArtifactTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
-				end,
-				I.SubjectID) as SubjectUrl,
-			case I.Subject
-				when 'Group' then 'GroupType'
-				when 'Resource' then 'ResourceType'
-				else I.Subject + 'Type'
-			end as SubjectType,
-			case I.Subject
-				when 'Resource' then 1
-				when 'Group' then 1
-				when 'ReferenceItemType' then 0
-				else coalesce(SA.ArtifactTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
-			end as SubjectTypeID,
-			case 
-				when I.Subject = 'ReferenceItemType' then 'Reference List'
-				when I.Subject = 'Rule' and SR.RuleType = 1 then 'Informational Rule'
-				when I.Subject = 'Rule' and SR.RuleType = 2 then 'Quality Check Rule'
-				when I.Subject = 'Rule' and SR.RuleType = 3 then 'Metric Rule'
-				when I.Subject = 'Rule' and SR.RuleType = 4 then 'Profile Rule'
-				when I.Subject = 'Intersect' then utility.DeriveIntersectTypeName(SI.IntersectTypeID)
-				else coalesce(SAT.Name, SFT.TextPath, SPT.Name, STT.Name) 
-			end as SubjectTypeName,
-			coalesce(SIcon.IconBackColor, '#000') as SubjectIconBackColor,
-			coalesce(SIcon.IconForeColor, '#fff') as SubjectIconForeColor,
-			coalesce(SIcon.IconText, substring(coalesce(SAT.Name, SD.Name, SFT.TextPath, SPT.Name, STT.Name, ''), 1, 2)) as SubjectIconText,
-
-			I.Object,
-			I.ObjectID,
-			case I.Object
-				when 'Intersect' then utility.DeriveIntersectName(OI.ID)
-				when 'Resource' then ORE.FirstName + ' ' + ORE.LastName
-				else coalesce(OA.TextPath, OD.Name, [OF].TextPath, OG.Name, OP.TextPath, [OR].Name, OT.TextPath)
-			end as ObjectName,
-			dbo.GenerateNgObjectUrl(
-				I.Object, 
-				case I.Object
-					when 'Resource' then 1
-					when 'Group' then 1
-					when 'ReferenceItemType' then 0
-					else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID)
-				end,
-				I.ObjectID) as ObjectUrl,
-			case I.Object
-				when 'Artifact' then 'ArtifactType'
-				when 'FusionAttribute' then 'FusionAttributeType'
-				when 'Intersect' then 'IntersectType'
-				when 'Policy' then 'PolicyType'
-				when 'Rule' then 'RuleType'
-				when 'Taxonomy' then 'TaxonomyType'
-				else I.Object
-			end as ObjectType,
-			case I.Object
-				when 'Resource' then 1
-				when 'Group' then 1
-				when 'ReferenceItemType' then 0
-				else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID)
-			end as ObjectTypeID,
-			case
-				when I.Object = 'ReferenceItemType' then 'Reference List'
-				when I.Object = 'Rule' and [OR].RuleType = 1 then 'Informational Rule'
-				when I.Object = 'Rule' and [OR].RuleType = 2 then 'Quality Check Rule'
-				when I.Object = 'Rule' and [OR].RuleType = 3 then 'Metric Rule'
-				when I.Object = 'Rule' and [OR].RuleType = 4 then 'Profile Rule'
-				when I.Object = 'Intersect' then utility.DeriveIntersectTypeName(OI.IntersectTypeID)
-				else coalesce(OAT.Name, OD.Name, OFT.TextPath, OPT.Name, OTT.Name) 
-			end as ObjectTypeName,
-			coalesce(OIcon.IconBackColor, '#000') as ObjectIconBackColor,
-			coalesce(OIcon.IconForeColor, '#fff') as ObjectIconForeColor,
-			--coalesce(OIcon.IconText, 'leaf') as ObjectIconText,
-			coalesce(OIcon.IconText, substring(coalesce(OAT.Name, OD.Name, OFT.TextPath, OPT.Name, OTT.Name, ''), 1, 2)) as ObjectIconText,
-
-			IT.PredicateID,
-			P.Name as [PredicateName],
-			P.Type as PredicateType
-	from	dbo.[Intersect] I with(nolock)
-			inner join dbo.[IntersectType] IT with(nolock) on IT.ID = I.IntersectTypeID
-			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
-			left join dbo.Artifact SA with(nolock) on I.Subject = 'Artifact' and SA.ID = I.SubjectID
-			left join dbo.ArtifactType SAT with(nolock) on SAT.ID = SA.ArtifactTypeID
-			left join dbo.ReferenceItemType SD with(nolock) on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
-			left join dbo.FusionAttribute SF with(nolock) on I.Subject = 'FusionAttribute' and SF.ID = I.SubjectID
-			left join dbo.FusionAttributeType SFT with(nolock) on SFT.ID = SF.FusionAttributeTypeID
-			left join dbo.[Group] SG with(nolock) on I.Subject = 'Group' and SG.ID = I.SubjectID
-			left join dbo.[Intersect] SI with(nolock) on I.Subject = 'Intersect' and SI.ID = I.SubjectID
-			--left join dbo.[IntersectType] SIT with(nolock) on SIT.ID = SI.IntersectTypeID
-			left join dbo.[Policy] SP with(nolock) on I.Subject = 'Policy' and SP.ID = I.SubjectID
-			left join dbo.PolicyType SPT with(nolock) on SPT.ID = SP.PolicyTypeID
-			left join reporting.Global_Resource SRE with(nolock) on I.Subject = 'Resource' and SRE.ResourceID = I.SubjectID
-			left join dbo.[Rule] SR with(nolock) on I.Subject = 'Rule' and SR.ID = I.SubjectID
-			left join dbo.Taxonomy ST with(nolock) on I.Subject = 'Taxonomy' and ST.ID = I.SubjectID
-			left join dbo.TaxonomyType STT with(nolock) on STT.ID = ST.TaxonomyTypeID
-
-			left join dbo.Artifact OA with(nolock) on I.Object = 'Artifact' and OA.ID = I.ObjectID
-			left join dbo.ArtifactType OAT with(nolock) on OAT.ID = OA.ArtifactTypeID
-			left join dbo.ReferenceItemType OD with(nolock) on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
-			left join dbo.FusionAttribute [OF] with(nolock) on I.Object = 'FusionAttribute' and [OF].ID = I.ObjectID
-			left join dbo.FusionAttributeType OFT with(nolock) on OFT.ID = [OF].FusionAttributeTypeID
-			left join dbo.[Group] OG with(nolock) on I.Object = 'Group' and OG.ID = I.SubjectID
-			left join dbo.[Intersect] OI with(nolock) on I.Subject = 'Intersect' and OI.ID = I.SubjectID
-			--left join dbo.[IntersectType] OIT with(nolock) on OIT.ID = OI.IntersectTypeID
-			left join dbo.[Policy] OP with(nolock) on I.Object = 'Policy' and OP.ID = I.ObjectID
-			left join dbo.PolicyType OPT with(nolock) on OPT.ID = OP.PolicyTypeID
-			left join reporting.Global_Resource ORE with(nolock) on I.Object = 'Resource' and ORE.ResourceID = I.ObjectID
-			left join dbo.[Rule] [OR] with(nolock) on I.Object = 'Rule' and [OR].ID = I.ObjectID
-			left join dbo.Taxonomy OT with(nolock) on I.Object = 'Taxonomy' and OT.ID = I.ObjectID
-			left join dbo.TaxonomyType OTT with(nolock) on OTT.ID = OT.TaxonomyTypeID
-
-			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType =	case I.Subject
-																				when 'Group' then 'GroupType'
-																				when 'Resource' then 'ResourceType'
-																				else I.Subject + 'Type'
-																			end 
-														and SIcon.ObjectID =	case I.Subject
-																					when 'Resource' then 1
-																					when 'Group' then 1
-																					else coalesce(SA.ArtifactTypeID, SD.ID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SP.PolicyTypeID, SR.RuleType, ST.TaxonomyTypeID) 
-																				end
-			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType =	case I.Object
-																				when 'Group' then 'GroupType'
-																				when 'Resource' then 'ResourceType'
-																				else I.Object + 'Type'
-																			end 
-														and OIcon.ObjectID =	case I.Object
-																					when 'Resource' then 1
-																					when 'Group' then 1
-																					else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OP.PolicyTypeID, [OR].RuleType, OT.TaxonomyTypeID) 
-																				end
-
-	where	coalesce(SA.ID, SD.ID, SF.ID, SG.ID, SI.ID, SP.ID, SR.ID, SRE.ResourceID, ST.ID) is not null
-			and coalesce(OA.ID, OD.ID, [OF].ID, OG.ID, OI.ID, OP.ID, [OR].ID, ORE.ResourceID, OT.ID) is not null
-GO
-
-alter view [dbo].[IntersectTypeDetail]
-as
-	select	IT.ID,
-			IT.Subject,
-			IT.SubjectID,
-			case IT.Subject
-				when 'IntersectType' then utility.DeriveIntersectTypeName(SIT.ID)
-				when 'GroupType' then 'Group'
-				when 'ResourceType' then 'Resource'
-				else coalesce(SAT.Name, SDT.Name, SFT.TextPath, SPT.Name, SRT.Name, STT.Name) 
-			end as SubjectName,
-			coalesce(SIcon.IconBackColor, '#000') as SubjectIconBackColor,
-			coalesce(SIcon.IconForeColor, '#fff') as SubjectIconForeColor,
-			coalesce(SIcon.IconText, substring(coalesce(SAT.Name, SDT.Name, SFT.Name, SPT.Name, SRT.Name, STT.Name, ''), 1, 2)) as SubjectIconText,
-			
-			IT.Object,
-			IT.ObjectID,
-			case IT.Object
-				when 'IntersectType' then utility.DeriveIntersectTypeName(OIT.ID)
-				when 'GroupType' then 'Group'
-				when 'ResourceType' then 'Resource'
-				else coalesce(OAT.Name, ODT.Name, OFT.TextPath, OPT.Name, ORT.Name, OTT.Name) 
-			end as ObjectName,
-			coalesce(OIcon.IconBackColor, '#000') as ObjectIconBackColor,
-			coalesce(OIcon.IconForeColor, '#fff') as ObjectIconForeColor,
-			--coalesce(OIcon.IconText, 'leaf') as ObjectIconText,
-			coalesce(OIcon.IconText, substring(coalesce(OAT.Name, ODT.Name, OFT.Name, OPT.Name, ORT.Name, OTT.Name, ''), 1, 2)) as ObjectIconText,
-
-			IT.PredicateID,
-			P.Name as [PredicateName],
-			P.Type as PredicateType,
-			
-			coalesce(IT.IsSystem, cast(0 as bit)) as IsSystem
-	from	IntersectType IT with(nolock) 
-			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
-
-			left join dbo.ArtifactType SAT with(nolock)			on IT.Subject = 'ArtifactType'			and SAT.ID = IT.SubjectID
-			left join dbo.ReferenceItemType SDT with(nolock)	on IT.Subject = 'ReferenceItemType'		and IT.SubjectID = 0
-			left join dbo.FusionAttributeType SFT with(nolock)	on IT.Subject = 'FusionAttributeType'	and SFT.ID = IT.SubjectID
-			left join dbo.IntersectType SIT with(nolock)		on IT.Subject = 'IntersectType'			and SIT.ID = IT.SubjectID
-			left join dbo.PolicyType SPT with(nolock)			on IT.Subject = 'PolicyType'			and SPT.ID = IT.SubjectID
-			left join (
-				select 1 as ID, 'Informational' as Name
-				union
-				select 2 as ID, 'Quality Check' as Name
-				union
-				select 3 as ID, 'Metric' as Name
-				union
-				select 4 as ID, 'Profile' as Name
-			) SRT												on IT.Subject = 'RuleType'				and SRT.ID = IT.SubjectID 
-			left join dbo.TaxonomyType STT with(nolock)			on IT.Subject = 'TaxonomyType'			and STT.ID = IT.SubjectID
-
-
-			left join dbo.ArtifactType OAT with(nolock)			on IT.Object = 'ArtifactType'			and OAT.ID = IT.ObjectID
-			left join dbo.ReferenceItemType ODT with(nolock)	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
-			left join dbo.FusionAttributeType OFT with(nolock)	on IT.Object = 'FusionAttributeType'	and OFT.ID = IT.ObjectID
-			left join dbo.IntersectType OIT with(nolock)		on IT.Object = 'IntersectType'			and OIT.ID = IT.ObjectID
-			left join dbo.PolicyType OPT with(nolock)			on IT.Object = 'PolicyType'				and OPT.ID = IT.ObjectID
-			left join (
-				select 1 as ID, 'Informational' as Name
-				union
-				select 2 as ID, 'Quality Check' as Name
-				union
-				select 3 as ID, 'Metric' as Name
-				union
-				select 4 as ID, 'Profile' as Name
-			) ORT												on IT.Object = 'RuleType'				and ORT.ID = IT.ObjectID
-			left join dbo.TaxonomyType OTT with(nolock)			on IT.Object = 'TaxonomyType'			and OTT.ID = IT.ObjectID
-
-			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType = IT.Subject and SIcon.ObjectID =	IT.SubjectID
-			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType = IT.Object and OIcon.ObjectID = IT.ObjectID
-	where	coalesce(SAT.ID, SDT.ID, SIT.ID, SFT.ID, SPT.ID, SRT.ID, STT.ID) is not null
-			and coalesce(OAT.ID, ODT.ID, [OFT].ID, OPT.ID, ORT.ID, OTT.ID) is not null
-GO
-
-alter view [dbo].[ResponsibilityDetail]
-as
-	select	P.Visible,
-			P.ResponsibilityID,
-			P.ResponsibilityTypeID,
-			P.AssigningItem as AssigningItemType,
-			P.AssigningItemID,
-			P.[Object] as ObjectType,
-			P.ObjectID,
-			P.ObjectName,
-			P.ObjectTypeID,
-			P.ObjectTypeName,
-			P.ObjectUrl,
-			P.ResponsibleObject as ResponsibleObjectType,
-			P.ResponsibleObjectID,
-			P.ResponsibleObjectName,
-			P.ResponsibleObjectUrl,
-			RODG.PrimaryOwnerResourceID,
-			RES.FirstName + ' ' + RES.LastName as PrimaryOwnerResourceName,
-			case 
-				when RODG.PrimaryOwnerResourceID is null then ''
-				else '#/resources/' + cast(RODG.PrimaryOwnerResourceID as varchar(10))
-			end as PrimaryOwnerResourceUrl,
-			P.ResponsibilityType as [Role],
-			dbo.GetObjectStatisticScore(P.[Object], P.ObjectID) as CurrentScore,
-			CI.ContextItems
-	from	cache.Responsibilities P
-			left join [Group] RODG on P.ResponsibleObject = 'Group' and RODG.ID = P.ResponsibleObjectID
-			left join [reporting].[Global_Resource] RES on RES.ResourceID = RODG.PrimaryOwnerResourceID
-			outer apply (
-						select (
-								select	D.Name + ': ' + I.Code + '; '
-								from	ResponsibilityContextItem C
-										inner join ReferenceItem I on C.ObjectType = 'ReferenceItem' and C.ObjectID = I.ID
-										inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
-								where	ResponsibilityID = P.ResponsibilityID
-								for xml path ('')--, root('items')
-								) as ContextItems
-						) CI
-	where	[ResponsibilityTypeGroup] = 1
-GO
-
-alter view [dbo].[StatisticTypeCheckOption]
-as
-	select	'ArtifactType' as ObjectType,
-			ID AS ObjectID,
-			Name,
-			'Artifact' as NamePrefix
-	from	ArtifactType
-	union
-	select	'AttributeType' as ObjectType,
-			ID AS ObjectID,
-			Name,
-			'Attribute' as NamePrefix
-	from	AttributeType
-	union
-	select	'ReferenceItemType' as ObjectType,
-			0 AS ObjectID,
-			'Reference List',
-			'ReferenceItemType' as NamePrefix
-	union
-	select	'IntersectType' as ObjectType,
-			ID AS ObjectID,
-			Name,
-			'Relationship' as NamePrefix
-	from	IntersectType
-	union
-	select	'ResponsibilityType' as ObjectType,
-			ID AS ObjectID,
-			Name,
-			'Ownership' as NamePrefix
-	from	ResponsibilityType
-	union
-	select	'TaxonomyType' as ObjectType,
-			ID AS ObjectID,
-			Name,
-			'Information Model' as NamePrefix
-	from	TaxonomyType
-GO
-
-alter view [utility].[ResponsibilityHierarchy]
-as
-	with 
-		IMTH as
-		(
-		select	'TaxonomyType' as AssigningItemType,
-				T.ID as AssigningItemID,
-				cast('TaxonomyType' as varchar(25)) as ObjectType,
-				T.ID,
-				R.ID as ResponsibilityID,
-				R.ResponsibilityTypeID
-		from	TaxonomyType T 
-				inner join Responsibility R on R.ObjectType = 'TaxonomyType' and R.ObjectID = T.ID
-		union all
-		select	
-				P.AssigningItemType,
-			    P.AssigningItemID,
-				cast('Taxonomy' as varchar(25)) as ObjectType,
-				C.ID,
-				P.ResponsibilityID,
-				P.ResponsibilityTypeID
-		from	Taxonomy C
-				inner join IMTH P on P.ID = C.TaxonomyTypeID
-		),
-		IMH as
-		(
-		select	'Taxonomy' as AssigningItemType, 
-				T.ID as AssigningItemID,
-				T.ID,
-				T.ParentID,
-				T.TaxonomyTypeID,
-				R.ID as ResponsibilityID,
-				R.ResponsibilityTypeID
-		from	Taxonomy T 
-				inner join Responsibility R on R.ObjectType = 'Taxonomy' and R.ObjectID = T.ID
-		union all
-		select	
-				P.AssigningItemType,
-			    COALESCE(R.ObjectID, P.AssigningItemID) as AssigningItemID,
-				C.ID,
-				C.ParentID,
-				C.TaxonomyTypeID,
-				COALESCE(R.ID, P.ResponsibilityID) as ResponsibilityID,
-				COALESCE(R.ResponsibilityTypeID, P.ResponsibilityTypeID) as ResponsibilityTypeID
-		from	Taxonomy C
-				inner join IMH P on P.TaxonomyTypeID = C.TaxonomyTypeID and C.ParentID = P.ID
-				outer apply (
-							select	*
-							from	Responsibility 
-							where	ResponsibilityTypeID = P.ResponsibilityTypeID
-									and ObjectType = 'Taxonomy' 
-									and ObjectID = C.ID
-							) R
-		),
-		PolicyHierarchy as
-		(
-		select	'Policy' as AssigningItemType, 
-				P.ID as AssigningItemID,
-				P.ID,
-				P.ParentID,
-				R.ID as ResponsibilityID,
-				R.ResponsibilityTypeID
-		from	Policy P 
-				inner join Responsibility R on R.ObjectType = 'Policy' and R.ObjectID = P.ID --and P.ParentID is null
-		union all
-		select	
-				P.AssigningItemType,
-			    COALESCE(R.ObjectID, P.AssigningItemID) as AssigningItemID,
-				C.ID,
-				C.ParentID,
-				COALESCE(R.ID, P.ResponsibilityID) as ResponsibilityID,
-				COALESCE(R.ResponsibilityTypeID, P.ResponsibilityTypeID) as ResponsibilityTypeID
-		from	Policy C
-				inner join PolicyHierarchy P on C.ParentID = P.ID
-				outer apply (
-							select	*
-							from	Responsibility 
-							where	ResponsibilityTypeID = P.ResponsibilityTypeID
-									and ObjectType = 'Policy' 
-									and ObjectID = C.ID
-							) R
-		),
-		PolicyHierarchyForRule as
-		(
-		select	'Policy' as AssigningItemType, 
-				P.ID as AssigningItemID,
-				P.ID,
-				P.ParentID,
-				R.ID as ResponsibilityID,
-				R.ResponsibilityTypeID
-		from	Policy P 
-				inner join Responsibility R on R.ObjectType = 'Policy' and R.ObjectID = P.ID
-		union all
-		select	
-				P.AssigningItemType,
-			    COALESCE(R.ObjectID, P.AssigningItemID) as AssigningItemID,
-				C.ID,
-				C.ParentID,
-				COALESCE(R.ID, P.ResponsibilityID) as ResponsibilityID,
-				COALESCE(R.ResponsibilityTypeID, P.ResponsibilityTypeID) as ResponsibilityTypeID
-		from	Policy C
-				inner join PolicyHierarchyForRule P on C.ParentID = P.ID
-				outer apply (
-							select	*
-							from	Responsibility 
-							where	ResponsibilityTypeID = P.ResponsibilityTypeID
-									and ObjectType = 'Policy' 
-									and ObjectID = C.ID
-							) R
-		),
-		RH as	
-		(
-		select	'Taxonomy' as AssigningItemType, 
-				T.ID as AssigningItemID,
-				T.ID,
-				T.ParentID,
-				T.TaxonomyTypeID,
-				R.ID as ResponsibilityID,
-				R.ResponsibilityTypeID
-		from	Taxonomy T 
-				inner join Responsibility R on R.ObjectType = 'Taxonomy' and R.ObjectID = T.ID
-		union all
-		select	
-				P.AssigningItemType,
-				P.AssigningItemID,
-				C.ID,
-				C.ParentID,
-				C.TaxonomyTypeID,
-				P.ResponsibilityID,
-				P.ResponsibilityTypeID
-		from	Taxonomy C
-				inner join RH P on P.TaxonomyTypeID = C.TaxonomyTypeID and C.ParentID = P.ID
-		)
-
-
-	select	P.ResponsibilityID,
-			R.ResponsibilityTypeID,
-			P.AssigningItemType,
-			P.AssigningItemID,
-			P.ObjectType,
-			P.ObjectID,
-			R.ResponsibleObjectType,
-			R.ResponsibleObjectID
-	from	(
-			select	AssigningItemType,
-					AssigningItemID,
-					ResponsibilityID,
-					'Policy' as ObjectType,
-					ID as ObjectID
-			from	PolicyHierarchy
-			union
-			select	'Rule' as AssigningItemType,
-					RU.ID as AssigningItemID,
-					R.ID as ResponsibilityID,
-					'Rule' as ObjectType,
-					RU.ID as ObjectID
-			from	[Rule] RU 
-					inner join Responsibility R on R.ObjectType = 'Rule' and R.ObjectID = RU.ID
-			union
-			select	AssigningItemType,
-					AssigningItemID,
-					ResponsibilityID,
-					ObjectType,
-					ID as ObjectID
-			from	IMTH
-			union 
-			select	AssigningItemType,
-					AssigningItemID,
-					ResponsibilityID,
-					'Taxonomy' as ObjectType,
-					ID as ObjectID
-			from	IMH
-			union
-			select	'ArtifactType' as AssigningItemType,
-					T.ID as AssigningItemID,
-					R.ID as ResponsibilityID,
-					'ArtifactType' as ObjectType,
-					T.ID as ObjectID
-			from	ArtifactType T 
-					inner join Responsibility R on R.ObjectType = 'ArtifactType' and R.ObjectID = T.ID
-			union
-			select	'ArtifactType' as AssigningItemType,
-					T.ID as AssigningItemID,
-					R.ID as ResponsibilityID,
-					'Artifact' as ObjectType,
-					A.ID as ObjectID
-			from	ArtifactType T 
-					inner join Responsibility R on R.ObjectType = 'ArtifactType' and R.ObjectID = T.ID
-					inner join Artifact A on A.ArtifactTypeID = T.ID
-			) P
-			inner join Responsibility R on R.ID = P.ResponsibilityID
-			inner join ResponsibilityType RT on RT.ID = R.ResponsibilityTypeID and RT.ResponsibilityTypeGroup = 1
-GO
-
-alter procedure [bulkload].[BusinessLineage]
---declare
-	@id int
---set @id = 237
-as
-begin
-	set nocount on;
-
-	declare @r int,
-			@dt datetime = getutcdate(),
-			@ActionColumn int = 1,
-			@SourceIntersectTypeColumn int = 2,
-			@SourceSubjectSubjectAreaColumn int = 3,
-			@SourceSubjectColumn int = 4,
-			@SourceObjectSubjectAreaColumn int = 5,
-			@SourceObjectColumn int = 6,
-			@SourceFusionConfigColumn int = 7,
-			@SourceFusionAttributeColumn int = 8,
-			@TargetIntersectTypeColumn int = 9,
-			@TargetSubjectSubjectAreaColumn int = 10,
-			@TargetSubjectColumn int = 11,
-			@TargetObjectSubjectAreaColumn int = 12,
-			@TargetObjectColumn int = 13,
-			@TargetFusionConfigColumn int = 14,
-			@TargetFusionAttributeColumn int = 15,
-			@TransformationColumn int = 16,
-			@RoleColumn int = 17
-
-	select	@r = UpdatedBy from [Load] where ID = @id
-
-	--Set the default Action to Add if blank or NULL.
-	update	LoadItemColumn
-	set		Value = 'Add'
-	where	LoadID = @id and ColumnIndex = @ActionColumn and (Value is null or Value = '')
-
-	exec bulkload.UpdateIntersectTypeColumn @id, @SourceIntersectTypeColumn																		-- source intersect type
-	exec bulkload.UpdateIntersectTypeColumn @id, @TargetIntersectTypeColumn																		-- target intersect type
-
-	exec bulkload.UpdateSubjectAreaColumn @id, @SourceSubjectSubjectAreaColumn																	-- source subject subject area
-	exec bulkload.UpdateSubjectAreaColumn @id, @SourceObjectSubjectAreaColumn																	-- source object subject area
-	exec bulkload.UpdateSubjectAreaColumn @id, @TargetSubjectSubjectAreaColumn																	-- target subject subject area
-	exec bulkload.UpdateSubjectAreaColumn @id, @TargetObjectSubjectAreaColumn																	-- target object subject area
-
-	exec bulkload.UpdateItemColumnByIntersectType @id, @SourceIntersectTypeColumn, 1, @SourceSubjectSubjectAreaColumn, @SourceSubjectColumn		-- source subject
-	exec bulkload.UpdateItemColumnByIntersectType @id, @SourceIntersectTypeColumn, 0, @SourceObjectSubjectAreaColumn, @SourceObjectColumn		-- source object
-	exec bulkload.UpdateItemColumnByIntersectType @id, @TargetIntersectTypeColumn, 1, @TargetSubjectSubjectAreaColumn, @TargetSubjectColumn		-- target subject
-	exec bulkload.UpdateItemColumnByIntersectType @id, @TargetIntersectTypeColumn, 0, @TargetObjectSubjectAreaColumn, @TargetObjectColumn		-- target object
-
-	exec bulkload.UpdateFusionConfigurationColumn @id, @SourceFusionConfigColumn																-- source fusion config
-	exec bulkload.UpdateFusionConfigurationColumn @id, @TargetFusionConfigColumn																-- target fusion config
-
-	exec bulkload.UpdateFusionAttributeColumn @id, @SourceFusionConfigColumn, @SourceFusionAttributeColumn										-- source fusion attribute
-	exec bulkload.UpdateFusionAttributeColumn @id, @TargetFusionConfigColumn, @TargetFusionAttributeColumn										-- target fusion attribute
-
-	exec bulkload.UpdateIntersectRoleColumn @id, @RoleColumn																					-- intersect role
-
-	drop table if exists #RemoveItems
-	drop table if exists #AddItems
---select * from #RemoveItems
-	BEGIN TRANSACTION [Tran1]
-
-	BEGIN TRY
-		-- HANDLE THE REMOVEs
-
-		-- Load Temp table that we are going to work from
-		select	SS.RowIndex,
-		
-				SIT.LookupObjectID as SourceIntersectTypeID,
-				SS.LookupObject as SourceSubject,
-				SS.LookupObjectID as SourceSubjectID,
-				SO.LookupObject as SourceObject,
-				SO.LookupObjectID as SourceObjectID,
-
-				TIT.LookupObjectID as TargetIntersectTypeID,
-				TS.LookupObject as TargetSubject,
-				TS.LookupObjectID as TargetSubjectID,
-				[TO].LookupObject as TargetObject,
-				[TO].LookupObjectID as TargetObjectID,
-
-				SI.ID as SourceIntersectID,
-				TI.ID as TargetIntersectID,
-				M.ID as MapItemID,
-
-				MRI.ID as MapRuleItemID,
-
-				cast(0 as bit) as Status,
-				cast('' as nvarchar(500)) as StatusMessage,
-
-				@r as ResourceID  --THE USER THAT ADDED THE LOAD
-		into	#RemoveItems
-		from	LoadItemColumn SS
-				inner join LoadItemColumn SO	on SO.LoadID = SS.LoadID	and SO.RowIndex = SS.RowIndex 	and SS.ColumnIndex = @SourceSubjectColumn 	and SO.ColumnIndex = @SourceObjectColumn
-				inner join LoadItemColumn SA	on SA.LoadID = SS.LoadID	and SA.RowIndex = SS.RowIndex 	and SA.ColumnIndex = @ActionColumn and SA.Value = 'Remove'
-				inner join LoadItemColumn SIT	on SIT.LoadID = SS.LoadID	and SIT.RowIndex = SS.RowIndex 	and SIT.ColumnIndex = @SourceIntersectTypeColumn
-				left join [Intersect] SI		on SIT.LookupObject = 'IntersectType' and SI.IntersectTypeID = SIT.LookupObjectID 
-												and SI.Subject = SS.LookupObject and SI.SubjectID = SS.LookupObjectID 
-												and SI.Object = SO.LookupObject and SI.ObjectID = SO.LookupObjectID
-
-				inner join LoadItemColumn TS 	on TS.LoadID = SS.LoadID 	and TS.RowIndex = SS.RowIndex	and TS.ColumnIndex = @TargetSubjectColumn
-				inner join LoadItemColumn [TO]	on [TO].LoadID = SS.LoadID	and [TO].RowIndex = SS.RowIndex	and [TO].ColumnIndex = @TargetObjectColumn
-				inner join LoadItemColumn TIT	on TIT.LoadID = SS.LoadID	and TIT.RowIndex = SS.RowIndex 	and TIT.ColumnIndex = @TargetIntersectTypeColumn
-				left join [Intersect] TI		on TIT.LookupObject = 'IntersectType' and TI.IntersectTypeID = TIT.LookupObjectID 
-												and TI.Subject = TS.LookupObject and TI.SubjectID = TS.LookupObjectID 
-												and TI.Object = [TO].LookupObject and TI.ObjectID = [TO].LookupObjectID
-
-				left join MapItem M				on M.SourceIntersectID = SI.ID and M.TargetIntersectID = TI.ID
-
-				left join LoadItemColumn SFA	on SFA.LoadID = SS.LoadID	and SFA.RowIndex = SS.RowIndex 	and SFA.ColumnIndex = @SourceFusionAttributeColumn
-				left join LoadItemColumn TFA	on TFA.LoadID = SS.LoadID	and TFA.RowIndex = SS.RowIndex 	and TFA.ColumnIndex = @TargetFusionAttributeColumn
-				left join MapRuleItem MRI		on	SFA.LookupObject = 'FusionAttribute' and MRI.SourceFusionAttributeID = SFA.LookupObjectID and
-													TFA.LookupObject = 'FusionAttribute' and MRI.TargetFusionAttributeID = TFA.LookupObjectID
-
-		where	SS.LoadID = @id
-
-
-		-- Add indexes to temp table
-		CREATE NONCLUSTERED INDEX [IX_TempRemoveItems_MapItem] ON #RemoveItems ( MapItemID ASC )
-		CREATE NONCLUSTERED INDEX [IX_TempRemoveItems_MapRuleItem] ON #RemoveItems ( MapRuleItemID ASC )
-		CREATE NONCLUSTERED INDEX [IX_TempRemoveItems_SourceIntersect] ON #RemoveItems ( SourceIntersectID ASC )
-		CREATE NONCLUSTERED INDEX [IX_TempRemoveItems_TargetIntersect] ON #RemoveItems ( TargetIntersectID ASC )
-
-		/*	BEGIN: REMOVE TECHNICAL MAPPINGS THAT ARE TIED TO FOUND MAP ITEMS */
-		declare @mapRuleItems table(MapRuleItemID int, MapRuleID int)
-		insert into @mapRuleItems
-			select	T.MapRuleItemID,
-					TJ.MapRuleID
-			from	MapRuleItemMapItem T
-					inner join #RemoveItems S on S.MapItemID = T.MapItemID
-					left join MapRuleItemMapRule TJ on TJ.MapRuleItemID = T.MapRuleItemID
-
-		delete	T
-		from	MapRuleItemMapItem T
-				inner join @mapRuleItems S on S.MapRuleItemID = T.MapRuleItemID
-
-		delete	T
-		from	MapRuleItemMapRule T
-				inner join @mapRuleItems S on S.MapRuleItemID = T.MapRuleItemID
-
-		delete	T
-		from	MapRule T
-				inner join @mapRuleItems S on S.MapRuleID = T.ID
-				left join MapRuleItemMapRule NTJ on NTJ.MapRuleID = S.MapRuleID and NTJ.MapRuleItemID <> S.MapRuleItemID	--get all map rules that are used only once.
-		where	NTJ.MapRuleID is null
-		/*	END: REMOVE TECHNICAL MAPPINGS THAT ARE TIED TO FOUND MAP ITEMS */
-
-		/*	BEGIN: REMOVE TECHNICAL MAPPING OPTIONALLY SPECIFIED IF NOT TIED ANYWHERE ELSE */
-		declare @mapRuleItemIDs table(MapRuleItemID int)
-		insert into @mapRuleItemIDs
-			select	S.MapRuleItemID
-			from	#RemoveItems S
-					left join MapRuleItemMapItem J on J.MapRuleItemID = S.MapRuleItemID
-			where	S.MapRuleItemID is not null;
-
-		delete	T
-		from	MapRuleItem T
-				inner join @mapRuleItemIDs S on S.MapRuleItemID = T.ID;
-
-		/*	END: REMOVE TECHNICAL MAPPING OPTIONALLY SPECIFIED IF NOT TIED ANYWHERE ELSE */
-
-		/*	BEGIN: MAPPINGS FOUND MAP ITEMS */
-		declare @mapItems table(MapItemID int, MapID int)
-		insert into @mapItems
-			select	S.MapItemID,
-					J.MapID
-			from	#RemoveItems S
-					left join MapItemMap J on J.MapItemID = S.MapItemID;
-
-		delete	T
-		from	MapItemMap T
-				inner join @mapItems S on S.MapItemID = T.MapItemID;
-
-		delete	T
-		from	MapSequence T
-				inner join @mapItems S on S.MapItemID = T.MapItemID;
-
-		delete	T
-		from	MapItem T
-				inner join @mapItems S on S.MapItemID = T.ID;
-
-		delete	T
-		from	MapRule T
-				inner join @mapRuleItems S on S.MapRuleID = T.ID
-				left join MapRuleItemMapRule NTJ on NTJ.MapRuleID = S.MapRuleID and NTJ.MapRuleItemID <> S.MapRuleItemID	--get all map rules that are used only once.
-		where	NTJ.MapRuleID is null;
-		/*	END: REMOVE FOUND MAP ITEMS */
-
-		/*	BEGIN: REMOVE SOURCE AND TARGET INTERSECTS THAT ARE NOT REFERENCED ANYWHERE ELSE */
-		delete	T
-		from	[Intersect] T
-				inner join #RemoveItems S on (S.SourceIntersectID = T.ID or S.TargetIntersectID = T.ID)
-				left join IntersectGroup CG on CG.IntersectID = T.ID
-				left join MapItem CSM on CSM.SourceIntersectID = T.ID
-				left join MapItem CTM on CTM.TargetIntersectID = T.ID
-				left join [Intersect] CI on (CI.Subject = 'Intersect' and CI.SubjectID = T.ID) or (CI.Object = 'Intersect' and CI.ObjectID = T.ID)
-		where	CG.ID is null and
-				CSM.ID is null and 
-				CTM.ID is null and
-				CI.ID is null;
-		/*	BEGIN: REMOVE SOURCE INTERSECTS THAT ARE NOT REFERENCED ANYWHERE ELSE */
-
-		-- update status & status message for Items table
-		
-		-- SUCCESS STATUS
-		update	T
-		set		T.Status = 1,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + 'Business map removed. '
-		from	#RemoveItems T
-				left join MapItem S on S.ID = T.MapItemID
-		where	T.MapItemID is not null and S.ID is null;
-
-		update	T
-		set		T.StatusMessage = coalesce(T.StatusMessage,'') + 'Source relationship removed. '
-		from	#RemoveItems T
-				left join [Intersect] S on S.ID = T.SourceIntersectID
-		where	T.SourceIntersectID is not null and S.ID is null;
-
-		update	T
-		set		T.StatusMessage = coalesce(T.StatusMessage,'') + 'Target relationship removed. '
-		from	#RemoveItems T
-				left join [Intersect] S on S.ID = T.TargetIntersectID
-		where	T.TargetIntersectID is not null and S.ID is null;
-
-		-- FAILED STATUS
-		update	T
-		set		T.Status = 0,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + 'Could not find source relationship. '
-		from	#RemoveItems T
-		where	SourceIntersectID is null;
-
-		update	T
-		set		T.Status = 0,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + 'Could not find target relationship. '
-		from	#RemoveItems T
-		where	TargetIntersectID is null;
-
-		update	T
-		set		T.Status = 0,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + 'Could not find business map. '
-		from	#RemoveItems T
-		where	MapItemID is null;
-
-
-		-- Now update LoadItems on original Load with status and messages created above
-		update	T
-		set		T.Status = S.Status,
-				T.StatusMessage = S.StatusMessage,
-				T.Object = case S.Status
-							when 1 then 'MapItem'
-							else NULL
-						   end,
-				T.ObjectID = case S.Status
-							when 1 then S.MapItemID
-							else NULL
-						   end
-		from	LoadItem T
-				inner join #RemoveItems S on T.LoadID = @id and S.RowIndex = T.RowIndex;
-
-
-
-		-- NOW HANDLE THE ADDs ---------------------------------------------------------------------------
-
-		-- Load Temp table that we are going to work from
-		select	SS.RowIndex,
-		
-				SIT.LookupObjectID as SourceIntersectTypeID,
-				SS.LookupObject as SourceSubject,
-				SS.LookupObjectID as SourceSubjectID,
-				SO.LookupObject as SourceObject,
-				SO.LookupObjectID as SourceObjectID,
-
-				TIT.LookupObjectID as TargetIntersectTypeID,
-				TS.LookupObject as TargetSubject,
-				TS.LookupObjectID as TargetSubjectID,
-				[TO].LookupObject as TargetObject,
-				[TO].LookupObjectID as TargetObjectID,
-
-				SFA.LookupObjectID as SourceFusionAttributeID,
-				SFA.Value as SourceFusionAttributeRaw,
-				TFA.LookupObjectID as TargetFusionAttributeID,
-				TFA.Value as TargetFusionAttributeRaw,
-
-				SI.ID as SourceIntersectID,
-				TI.ID as TargetIntersectID,
-				M.ID as MapItemID,
-				MRI.ID as MapRuleItemID,
-
-				SIFT.ID as SourceFusionIntersectTypeID,
-				TIFT.ID as TargetFusionIntersectTypeID,
-				SIF.ID as SourceFusionIntersectID,
-				TIF.ID as TargetFusionIntersectID,
-
-				cast(null as bit) as Status,
-				cast('' as nvarchar(500)) as StatusMessage,
-
-				@r as ResourceID  --THE USER THAT ADDED THE LOAD
-		into	#AddItems
-		from	LoadItemColumn SS
-				inner join LoadItemColumn SO	on SO.LoadID = SS.LoadID	and SO.RowIndex = SS.RowIndex 	and SS.ColumnIndex = @SourceSubjectColumn 	and SO.ColumnIndex = @SourceObjectColumn
-				inner join LoadItemColumn SA	on SA.LoadID = SS.LoadID	and SA.RowIndex = SS.RowIndex 	and SA.ColumnIndex = @ActionColumn and SA.Value = 'Add'
-				inner join LoadItemColumn SIT	on SIT.LoadID = SS.LoadID	and SIT.RowIndex = SS.RowIndex 	and SIT.ColumnIndex = @SourceIntersectTypeColumn
-				left join [Intersect] SI		on SIT.LookupObject = 'IntersectType' and SI.IntersectTypeID = SIT.LookupObjectID 
-												and SI.Subject = SS.LookupObject and SI.SubjectID = SS.LookupObjectID 
-												and SI.Object = SO.LookupObject and SI.ObjectID = SO.LookupObjectID
-
-				inner join LoadItemColumn TS 	on TS.LoadID = SS.LoadID 	and TS.RowIndex = SS.RowIndex	and TS.ColumnIndex = @TargetSubjectColumn
-				inner join LoadItemColumn [TO]	on [TO].LoadID = SS.LoadID	and [TO].RowIndex = SS.RowIndex	and [TO].ColumnIndex = @TargetObjectColumn
-				inner join LoadItemColumn TIT	on TIT.LoadID = SS.LoadID	and TIT.RowIndex = SS.RowIndex 	and TIT.ColumnIndex = @TargetIntersectTypeColumn
-				left join [Intersect] TI		on TIT.LookupObject = 'IntersectType' and TI.IntersectTypeID = TIT.LookupObjectID 
-												and TI.Subject = TS.LookupObject and TI.SubjectID = TS.LookupObjectID 
-												and TI.Object = [TO].LookupObject and TI.ObjectID = [TO].LookupObjectID
-
-				left join MapItem M				on M.SourceIntersectID = SI.ID and M.TargetIntersectID = TI.ID
-
-				left join LoadItemColumn SFA	on SFA.LoadID = SS.LoadID	and SFA.RowIndex = SS.RowIndex 	and SFA.ColumnIndex = @SourceFusionAttributeColumn
-				left join LoadItemColumn TFA	on TFA.LoadID = SS.LoadID	and TFA.RowIndex = SS.RowIndex 	and TFA.ColumnIndex = @TargetFusionAttributeColumn
-
-				left join MapRuleItem MRI		on	SFA.LookupObject = 'FusionAttribute' and MRI.SourceFusionAttributeID = SFA.LookupObjectID and
-													TFA.LookupObject = 'FusionAttribute' and MRI.TargetFusionAttributeID = TFA.LookupObjectID
-
-				left join FusionAttribute SFAO	on SFA.LookupObject = 'FusionAttribute' and SFAO.ID = SFA.LookupObjectID 
-				outer apply (
-						SELECT  MIN(ID) as ID
-						FROM    IntersectType
-						WHERE   Subject = 'IntersectType' and SubjectID = SIT.LookupObjectID and Object = 'FusionAttributeType' and ObjectID = SFAO.FusionAttributeTypeID
-				) SIFT
-				left join [Intersect] SIF		on	SIF.IntersectTypeID = SIFT.ID 
-													and SIF.Subject = 'Intersect' and SIF.SubjectID = SI.ID
-													and SIF.Object = SFA.LookupObject and SIF.ObjectID = SFA.LookupObjectID
-
-				left join FusionAttribute TFAO	on TFA.LookupObject = 'FusionAttribute' and TFAO.ID = TFA.LookupObjectID 
-				outer apply (
-						SELECT  MIN(ID) as ID
-						FROM    IntersectType
-						WHERE   Subject = 'IntersectType' and SubjectID = TIT.LookupObjectID and Object = 'FusionAttributeType' and ObjectID = TFAO.FusionAttributeTypeID
-				) TIFT
-				left join [Intersect] TIF		on	TIF.IntersectTypeID = TIFT.ID 
-													and TIF.Subject = 'Intersect' and TIF.SubjectID = TI.ID
-													and TIF.Object = TFA.LookupObject and TIF.ObjectID = TFA.LookupObjectID
-
-		where	SS.LoadID = @id
-
-		-- Add indexes to temp table
-		CREATE NONCLUSTERED INDEX [IX_SourceBusinessIntersect] ON #AddItems ( SourceIntersectTypeID ASC, SourceSubject ASC, SourceSubjectID ASC, SourceObject ASC, SourceObjectID ASC )
-/*
-update LoadItemColumn set Value = 'Bloomberg LP/Back Office Data License' where LoadID =  270 and RowIndex = 2 and ColumnIndex = 4
-select * from LoadItemColumn where LoadID = 270
-select * from #AddItems
-select * from LoadItem where LoadID = 270
-
-select I.LoadID, I.RowIndex, case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage
-from LoadItem I
-where I.LoadID = 270
-order by I.RowIndex
-*/
-		-- ERROR OUT THE ROWS THAT DO NOT HAVE THE APPROPRIATE FUSION INTERSECT TYPE IDs.
-		update	#AddItems
-		set		Status = 0,
-				StatusMessage = coalesce(StatusMessage,'') +
-								IIF(SourceFusionIntersectTypeID is null, 'Could not find source fusion relationship type. ', '') + 
-								IIF(SourceFusionAttributeID is null, 'Could not find source fusion path. ', '') + 
-								IIF(TargetFusionIntersectTypeID is null, 'Could not find target fusion relationship type. ', '') + 
-								IIF(TargetFusionAttributeID is null, 'Could not find target fusion path. ', '')
-		where	(SourceFusionAttributeRaw is not null and SourceFusionIntersectTypeID is null) OR (TargetFusionAttributeRaw is not null and TargetFusionIntersectTypeID is null);
-
-		-- ERROR OUT THE ROWS THAT DO NOT HAVE THE APPROPRIATE SOURCEs.
-		update	#AddItems
-		set		Status = 0,
-				StatusMessage = coalesce(StatusMessage,'') +
-								IIF(SourceSubjectID is null, 'Could not find source subject. ', '') + 
-								IIF(SourceObjectID is null, 'Could not find source object. ', '')
-		where	(SourceSubjectID is null) OR (SourceObjectID is null);
-
-		-- ERROR OUT THE ROWS THAT DO NOT HAVE THE APPROPRIATE TARGETs.
-		update	#AddItems
-		set		Status = 0,
-				StatusMessage = coalesce(StatusMessage,'') +
-								IIF(TargetSubjectID is null, 'Could not find target subject. ', '') + 
-								IIF(TargetObjectID is null, 'Could not find target object. ', '')
-		where	(TargetSubjectID is null) OR (TargetObjectID is null);
-
-
-
-
-		/*	BEGIN: SOURCE BUSINESS INTERSECT LOGIC */
-
-		-- insert source business relationships
-		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	SourceIntersectTypeID, 
-					SourceSubject, SourceSubjectID, 
-					SourceObject, SourceObjectID,
-					0, ResourceID, @dt, ResourceID, @dt
-			from	(
-					select		SourceIntersectTypeID, SourceSubject, SourceSubjectID, SourceObject, SourceObjectID, ResourceID
-					from		#AddItems
-					where		Status is null 
-								and SourceIntersectID is null
-					group by	SourceIntersectTypeID, SourceSubject, SourceSubjectID, SourceObject, SourceObjectID, ResourceID
-					) O
-
-
-		-- update rows with existing source business intersect
-		update	T
-		set		T.SourceIntersectID = S.ID,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Source business relationship created.'
-		from	#AddItems T
-				inner join [Intersect] S on S.IntersectTypeID = T.SourceIntersectTypeID 
-											and T.SourceSubject = S.Subject and T.SourceSubjectID = S.SubjectID 
-											and T.SourceObject = S.Object and T.SourceObjectID = S.ObjectID
-											and T.SourceIntersectID is null
-											and T.Status is null;
-		
-		-- update rows with existing target business intersect
-		update	T
-		set		T.TargetIntersectID = S.ID
-		from	#AddItems T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID 
-											and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID 
-											and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
-											and T.TargetIntersectID is null
-											and T.Status is null;
-
-		/*	END: SOURCE BUSINESS INTERSECT LOGIC */
-
-
-		/*	BEGIN: TARGET BUSINESS INTERSECT LOGIC */
-
-		-- insert target business relationships
-		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	TargetIntersectTypeID, 
-					TargetSubject, TargetSubjectID, 
-					TargetObject, TargetObjectID,
-					0, ResourceID, @dt, ResourceID, @dt
-			from	(
-					select		TargetIntersectTypeID, TargetSubject, TargetSubjectID, TargetObject, TargetObjectID, ResourceID
-					from		#AddItems
-					where		Status is null 
-								and TargetIntersectID is null
-					group by	TargetIntersectTypeID, TargetSubject, TargetSubjectID, TargetObject, TargetObjectID, ResourceID
-					) O
-
-		-- update rows with existing target business intersect
-		update	T
-		set		T.TargetIntersectID = S.ID,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Target business relationship created.'
-		from	#AddItems T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID 
-											and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID 
-											and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
-											and T.TargetIntersectID is null
-											and T.Status is null;
-
-		/*	END: TARGET BUSINESS INTERSECT LOGIC */
-
-
-		/*	BEGIN: SOURCE TECHNICAL INTERSECT LOGIC */
-
-		-- insert source technical relationships
-		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	SourceFusionIntersectTypeID, 
-					'Intersect', SourceIntersectID, 'FusionAttribute', SourceFusionAttributeID,
-					0, ResourceID, @dt, ResourceID, @dt
-			from	(
-					select		SourceFusionIntersectTypeID, SourceIntersectID, SourceFusionAttributeID, ResourceID
-					from		#AddItems
-					where		Status is null
-								and SourceFusionIntersectTypeID is not null
-								and SourceFusionIntersectID is null
-								and SourceIntersectID is not null
-								and SourceFusionAttributeID is not null
-					group by	SourceFusionIntersectTypeID, SourceIntersectID, SourceFusionAttributeID, ResourceID
-					) O;
-
-		-- update rows with new source technical intersect
-		update	T
-		set		T.SourceFusionIntersectID = S.ID,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Source technical relationship created.'
-		from	#AddItems T
-				inner join [Intersect] S on S.IntersectTypeID = T.SourceFusionIntersectTypeID 
-											and S.Subject = 'Intersect' and S.SubjectID = T.SourceIntersectID 
-											and S.Object = 'FusionAttribute' and S.ObjectID = T.SourceFusionAttributeID
-											and T.SourceFusionIntersectID is null 
-											and T.Status is null;
-
-		-- update rows with new target technical intersect
-		update	T
-		set		T.TargetFusionIntersectID = S.ID
-		from	#AddItems T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID 
-											and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID 
-											and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionAttributeID
-											and T.TargetFusionIntersectID is null 
-											and T.Status is null;
-
-		/*	END: SOURCE TECHNICAL INTERSECT LOGIC */
-
-
-		/*	BEGIN: TARGET TECHNICAL INTERSECT LOGIC */
-		
-		-- insert target technical relationships
-		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	TargetFusionIntersectTypeID, 
-					'Intersect', TargetIntersectID, 'FusionAttribute', TargetFusionAttributeID,
-					0, ResourceID, @dt, ResourceID, @dt
-			from	(
-					select		TargetFusionIntersectTypeID, TargetIntersectID, TargetFusionAttributeID, ResourceID
-					from		#AddItems
-					where		Status is null
-								and TargetFusionIntersectTypeID is not null
-								and TargetFusionIntersectID is null
-								and TargetIntersectID is not null
-								and TargetFusionAttributeID is not null			
-					group by	TargetFusionIntersectTypeID, TargetIntersectID, TargetFusionAttributeID, ResourceID
-					) O;
-
-		-- update rows with new target technical intersect
-		update	T
-		set		T.TargetFusionIntersectID = S.ID,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Target technical relationship created.'
-		from	#AddItems T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID 
-											and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID 
-											and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionAttributeID
-											and T.TargetFusionIntersectID is null 
-											and T.Status is null;
-
-		/*	END: TARGET TECHNICAL INTERSECT LOGIC */
-
-		-- insert new map items
-		insert into MapItem (SourceIntersectID, TargetIntersectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					SourceIntersectID, 
-					TargetIntersectID,
-					ResourceID,
-					@dt, 
-					ResourceID,
-					@dt
-			from	#AddItems
-			where	SourceIntersectID is not null 
-					and TargetIntersectID is not null 
-					and MapItemID is null
-					and Status is null;
-
-		-- update source data with newly created map item IDs
-		update	T
-		set		T.MapItemID = S.ID,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Business map created.'
-		from	#AddItems T
-				inner join [MapItem] S on	S.SourceIntersectID = T.SourceIntersectID 
-											and S.TargetIntersectID = T.TargetIntersectID 
-											and T.MapItemID is null 
-											and T.Status is null;
-
-		-- insert new map rule items
-		insert into MapRuleItem (SourceFusionAttributeID, TargetFusionAttributeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					SourceFusionAttributeID, 
-					TargetFusionAttributeID,
-					ResourceID,
-					@dt, 
-					ResourceID,
-					@dt
-			from	#AddItems
-			where	SourceIntersectID is not null 
-					and TargetIntersectID is not null
-					and SourceFusionAttributeID is not null 
-					and TargetFusionAttributeID is not null
-					and Status is null;
-
-		-- update source data with newly created map rule item IDs
-		update	T
-		set		T.MapRuleItemID = S.ID,
-				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Technical map created.'
-		from	#AddItems T
-				inner join [MapRuleItem] S on	S.SourceFusionAttributeID = T.SourceFusionAttributeID 
-												and S.TargetFusionAttributeID = T.TargetFusionAttributeID 
-												and T.MapRuleItemID is null 
-												and Status is null;
-
-		-- MERGE MapRuleItemMapItem with all the IDs above
-		merge	MapRuleItemMapItem as T
-		using	(
-				select		MapItemID, 
-							MapRuleItemID
-				from		#AddItems
-				where		MapItemID is not null
-							and MapRuleItemID is not null
-				group by	MapItemID, 
-							MapRuleItemID
-				) as S
-		on		T.MapRuleItemID = S.MapRuleItemID and T.MapItemID = S.MapItemID
-		when	not matched by target then
-				insert (MapRuleItemID, MapItemID)
-				values (S.MapRuleItemID, S.MapItemID);
-
-		
-		-- CALCULATE STATUS BASED ON POPULATED IDs
-		update	#AddItems
-		set		Status = 1
-		where	MapItemID is not null 
-				and (
-					(SourceFusionAttributeRaw is not null and TargetFusionAttributeRaw is not null and MapRuleItemID is not null) 
-					or 
-					(SourceFusionAttributeRaw is null and TargetFusionAttributeRaw is null)
-				);
-
-		-- Now update LoadItems on original Load with status and messages created above
-		update	T
-		set		T.Status = S.Status,
-				T.StatusMessage = S.StatusMessage,
-				T.Object = case S.Status
-							when 1 then 'MapItem'
-							else NULL
-						   end,
-				T.ObjectID = case S.Status
-							when 1 then S.MapItemID
-							else NULL
-						   end
-		from	LoadItem T
-				inner join #AddItems S on T.LoadID = @id and S.RowIndex = T.RowIndex;
-
-
---select *,  case [Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status] from LoadItem where LoadID = 270
-
-		-- NOW, Close out the Load job ----------------------------------------------------------------------------------
-		update	LoadItem
-		set		Status = cast(0 as bit),
-				StatusMessage = 'Incomplete : ' + coalesce(StatusMessage,''),
-				Object = null,
-				ObjectID = null
-		where	LoadID = @id and Status is null;
-
-		update	[Load]
-		set		DateCompleted = getutcdate()
-		where	ID = @id;
-
-		COMMIT TRANSACTION [Tran1]
-	END TRY
-	BEGIN CATCH
-		ROLLBACK TRANSACTION [Tran1]
-		select ERROR_MESSAGE()
-		update	[Load]
-		set		Notes = Notes + '<br/> ' + ERROR_MESSAGE()
-		where	ID = @id;
-	END CATCH
-end
-GO
-
-alter procedure [bulkload].[UpdateDynamicLookupFieldColumns]
-	@id int,
-	@startColumnIndex int,
-	@endColumnIndex int
-as
-begin
-	set nocount on;
-	update	T
-	set		T.LookupObject = S.LookupObject,
-			T.LookupObjectID = S.LookupObjectID
-	from	LoadItemColumn T
-			inner join	(
-						select	IC.LoadID,
-								IC.RowIndex,
-								IC.ColumnIndex,
-								case 
-									when L_A.ID is not null then 'Artifact'
-									when L_D.ID is not null then 'ReferenceItemType'
-									when L_DI.ID is not null then 'ReferenceItem'
-									when L_F.ID is not null then 'FusionAttribute'
-									when L_L.Value is not null then 'Lookup'
-									when L_T.ID is not null then 'Taxonomy'
-									else NULL
-								end as LookupObject,
-								coalesce(L_A.ID, L_D.ID, L_DI.ID, L_F.ID, L_L.Value, L_T.ID) as LookupObjectID -- L_I.ID,
-						from	FieldType F
-								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-								
-								left join Artifact L_A on F.LookupObjectType in ('Artifact', 'ArtifactType') and L_A.ArtifactTypeID = F.LookupObjectID and (L_A.[Name] = IC.Value OR L_A.TextPath = IC.Value)
-								left join ReferenceItemType L_D on F.LookupObjectType = 'ReferenceItemType' and L_D.ID = F.LookupObjectID and L_D.[Name] = IC.Value
-								left join ReferenceItem L_DI on F.LookupObjectType = 'ReferenceItem' and L_DI.ReferenceItemTypeID = F.LookupObjectID and L_DI.[Code] = IC.Value
-								left join FusionAttribute L_F on F.LookupObjectType = 'FusionAttributeType' and L_F.FusionAttributeTypeID = F.LookupObjectID and (L_F.[Name] = IC.Value OR L_F.TextPath = IC.Value)
-								left join [FieldLookupValue] L_L on F.ID = L_L.FieldTypeID and F.LookupObjectType = 'Lookup' and L_L.LookupObjectType = 'Lookup' and L_L.LookupObjectID = F.LookupObjectID and L_L.[Text] = IC.Value
-								left join Taxonomy L_T on F.LookupObjectType in ('Taxonomy', 'TaxonomyType') and L_T.TaxonomyTypeID = F.LookupObjectID and (L_T.[Name] = IC.Value OR L_T.TextPath = IC.Value)
-						where	C.ColumnIndex between @startColumnIndex and @endColumnIndex
-						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-
-	while @startColumnIndex <= @endColumnIndex
-	begin
-		update	T
-		set		T.StatusMessage = coalesce(T.StatusMessage, '') + S.StatusMessage
-		from	LoadItem T
-				inner join	(
-							select	IC.LoadID,
-									IC.RowIndex,
-									case 
-										when IC.LookupObjectID is null and IC.Value is not null and IC.Value <> '' then ' ' + F.Name + ' does not contain a valid value.'
-										else ''
-									end StatusMessage
-							from	FieldType F
-									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex and IC.columnIndex = @startColumnIndex and IC.LookupObjectID is null
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex
-		set @startColumnIndex = @startColumnIndex + 1
-	end
-end
-GO
-
-alter procedure [bulkload].[UpdateItemColumn]
-	@id int,
-	@globalTypeColumn int, 
-	@typeColumn int, 
-	@subjectAreaColumn int, 
-	@itemColumn int
-as
-begin
-	set nocount on;
-	update	T
-	set		T.LookupObject = TTT.Value,
-			T.LookupObjectID = coalesce(A.ID, D.ID, I.ID, P.ID, R.ID, TA.ID)
-	from	LoadItemColumn T
-			inner join LoadItemColumn TT on TT.LoadID = T.LoadID and T.LoadID = @id and TT.RowIndex = T.RowIndex and TT.ColumnIndex = @typeColumn and T.ColumnIndex = @itemColumn
-			inner join LoadItemColumn TS on TS.LoadID = T.LoadID and TS.RowIndex = T.RowIndex and TS.ColumnIndex = @subjectAreaColumn
-			inner join LoadItemColumn TTT on TTT.LoadID = T.LoadID and TTT.RowIndex = T.RowIndex and TTT.ColumnIndex = @globalTypeColumn
-			left join Artifact A on lower(A.TextPath) = lower(T.Value) and A.TaxonomyTypeID = TS.LookupObjectID and A.ArtifactTypeID = TT.LookupObjectID and TTT.Value = 'Artifact'
-			left join ReferenceItemType D on lower(D.Name) = lower(T.Value) and TTT.Value = 'ReferenceItemType'
-			left join [Intersect] I on lower(I.Name) = lower(T.Value) and I.IntersectTypeID = TT.LookupObjectID and TTT.Value = 'Intersect'
-			left join [Policy] P on lower(P.TextPath) = lower(T.Value) and P.PolicyTypeID = TT.LookupObjectID and TTT.Value = 'Policy'
-			left join [Rule] R on lower(R.Name) = lower(T.Value) and R.RuleType = TT.LookupObjectID and TTT.Value = 'Rule'
-			left join [Taxonomy] TA on lower(TA.TextPath) = lower(T.Value) and TA.TaxonomyTypeID = TT.LookupObjectID and TTT.Value = 'Taxonomy'
-	where	coalesce(A.ID, D.ID, I.ID, P.ID, R.ID, TA.ID) is not null
-end
-GO
-
-alter procedure [bulkload].[UpdateItemColumnByIntersectType]
-	@id int,
-	@intersectTypeColumn int, 
-	@isSubject bit,
-	@subjectAreaColumn int, 
-	@itemColumn int
-as
-begin
-	set nocount on;
-	update	T
-	set		T.LookupObject = replace(case when @isSubject = 1 then IT.Subject else IT.Object end, 'Type', ''),
-			T.LookupObjectID = coalesce(A.ID, D.ID, F.ID, I.ID, P.ID, R.ID, TA.ID)
-	from	LoadItemColumn T
-			inner join LoadItemColumn TI on TI.LoadID = T.LoadID and TI.RowIndex = T.RowIndex and TI.ColumnIndex = @intersectTypeColumn and T.ColumnIndex = @itemColumn
-			inner join IntersectType IT on TI.LookupObject = 'IntersectType' and IT.ID = TI.LookupObjectID
-			left join LoadItemColumn TS on TS.LoadID = T.LoadID and TS.RowIndex = T.RowIndex and TS.ColumnIndex = @subjectAreaColumn
-			left join Artifact A on lower(A.TextPath) = lower(T.Value) and A.TaxonomyTypeID = TS.LookupObjectID and A.ArtifactTypeID = case when @isSubject = 1 then IT.SubjectID else IT.ObjectID end and 'ArtifactType' = case when @isSubject = 1 then IT.Subject else IT.Object end
-			left join ReferenceItemType D on lower(D.Name) = lower(T.Value) and 'ReferenceItemType' = case when @isSubject = 1 then IT.Subject else IT.Object end
-			left join FusionAttribute F on lower(F.TextPath) = lower(T.Value) and F.FusionAttributeTypeID = case when @isSubject = 1 then IT.SubjectID else IT.ObjectID end and 'FusionAttributeType' = case when @isSubject = 1 then IT.Subject else IT.Object end
-			left join [Intersect] I on lower(I.Name) = lower(T.Value) and I.IntersectTypeID = case when @isSubject = 1 then IT.SubjectID else IT.ObjectID end and 'IntersectType' = case when @isSubject = 1 then IT.Subject else IT.Object end
-			left join [Policy] P on lower(P.TextPath) = lower(T.Value) and P.PolicyTypeID = case when @isSubject = 1 then IT.SubjectID else IT.ObjectID end and 'PolicyType' = case when @isSubject = 1 then IT.Subject else IT.Object end
-			left join [Rule] R on lower(R.Name) = lower(T.Value) and R.RuleType = case when @isSubject = 1 then IT.SubjectID else IT.ObjectID end and 'RuleType' = case when @isSubject = 1 then IT.Subject else IT.Object end
-			left join [Taxonomy] TA on lower(TA.TextPath) = lower(T.Value) and TA.TaxonomyTypeID = case when @isSubject = 1 then IT.SubjectID else IT.ObjectID end and 'TaxonomyType' = case when @isSubject = 1 then IT.Subject else IT.Object end
-	where	T.LoadID = @id and coalesce(A.ID, D.ID, F.ID, I.ID, P.ID, R.ID, TA.ID) is not null
-end
-GO
-
-alter procedure [bulkload].[UpdateItemColumnByType]
-	@id int,
-	@ObjectType varchar(50), 
-	@ObjectTypeID int,
-	@subjectAreaColumn int, 
-	@itemColumn int
-as
-begin
-	set nocount on;
-	update	T
-	set		T.LookupObject = replace(@ObjectType, 'Type', ''),
-			T.LookupObjectID = coalesce(A.ID, D.ID, F.ID, I.ID, P.ID, R.ID, TA.ID)
-	from	LoadItemColumn T
-			left join LoadItemColumn TS on TS.LoadID = T.LoadID and TS.RowIndex = T.RowIndex and TS.ColumnIndex = @subjectAreaColumn and T.ColumnIndex = @itemColumn
-			left join Artifact A on lower(A.TextPath) = lower(T.Value) and A.TaxonomyTypeID = TS.LookupObjectID and A.ArtifactTypeID = @ObjectTypeID and @ObjectType = 'ArtifactType'
-			left join ReferenceItemType D on lower(D.Name) = lower(T.Value) and @ObjectType = 'ReferenceItemType'
-			left join FusionAttribute F on lower(F.TextPath) = lower(T.Value) and F.FusionAttributeTypeID = @ObjectTypeID and @ObjectType = 'FusionAttributeType'
-			left join [Intersect] I on lower(I.Name) = lower(T.Value) and I.IntersectTypeID = @ObjectTypeID and @ObjectType = 'IntersectType'
-			left join [Policy] P on lower(P.TextPath) = lower(T.Value) and P.PolicyTypeID = @ObjectTypeID and @ObjectType = 'PolicyType'
-			left join [Rule] R on lower(R.Name) = lower(T.Value) and R.RuleType = @ObjectTypeID and @ObjectType = 'RuleType'
-			left join [Taxonomy] TA on lower(TA.TextPath) = lower(T.Value) and TA.TaxonomyTypeID = @ObjectTypeID and @ObjectType = 'TaxonomyType'
-	where	T.LoadID = @id and coalesce(A.ID, D.ID, F.ID, I.ID, P.ID, R.ID, TA.ID) is not null
-end
-GO
-
-alter procedure [bulkload].[UpdateTypeColumn]
-	@id int,
-	@typeColumn int,
-	@typeNameColumn int
-as
-begin
-	set nocount on;
-	update	T2
-	set		T2.LookupObject = T1.Value + 'Type',
-			T2.LookupObjectID = coalesce(A.ID, D.ID, P.ID, T.ID, R.ID)
-	from	LoadItemColumn T2
-			inner join LoadItemColumn T1 on T1.LoadID = T2.LoadID and T1.RowIndex = T2.RowIndex and T1.ColumnIndex = @typeColumn and T2.LoadID = @id and T2.ColumnIndex = @typeNameColumn
-			left join ArtifactType A on lower(A.Name) = lower(T2.Value) and T1.Value = 'Artifact'
-			left join ReferenceItemType D on lower(D.Name) = lower(T2.Value) and T1.Value = 'ReferenceItemType'
-			left join IntersectType I on lower(I.Name) = lower(T2.Value) and T1.Value = 'Intersect'
-			left join PolicyType P on lower(P.Name) = lower(T2.Value) and T1.Value = 'Policy'
-			left join TaxonomyType T on lower(T.Name) = lower(T2.Value) and T1.Value = 'Taxonomy'
 			left join	(
-						select 1 as ID, 'informational' as Name
-						union
-						select 2 as ID, 'quality check' as Name
-						union
-						select 3 as ID, 'metric' as Name
-						union
-						select 4 as ID, 'profile' as Name
-						) R on lower(R.Name) = lower(T2.Value) and T1.Value = 'Rule'	
-end
+						select 0 as ID, 'Reference List' as Name						
+			) O29 on D.[Object] = 'ReferenceItemType' and O29.ID = D.ObjectID
+			
+			left join ObjectStyle S with(nolock) on S.ObjectType = D.ObjectType and S.ObjectID = D.[ObjectTypeID]
 GO
 
 alter procedure [cache].[ReSynchronizeAllObjectDetails]
@@ -1940,11 +895,11 @@ begin
 			SELECT	@type, ID, @type, ID FROM FusionType;
 	end;
 
-	begin
+/*	begin
 		set @type = 'FusionAttribute';
 		insert into #Recache
 			SELECT	@type, ID, 'FusionAttributeType', FusionAttributeTypeID FROM FusionAttribute;
-	end;
+	end;*/
  
 	begin
 		set @type = 'FusionAttributeType';
@@ -2036,1502 +991,724 @@ begin
 end
 GO
 
-alter procedure [cache].[SynchronizeObjectDetails]
+alter procedure [dbo].[GetLineage]
 --declare 
 	@type varchar(50),
-	@id int
---set @type = 'IntersectType'
---set @id = 27
+	@id int,
+	@view int = 1
+
+--set @type = 'Artifact'
+--set @id = 2528--6381
+--set @view = 3
 as
 begin
-	set nocount on;
+	declare @links table ([from] varchar(250), [to] varchar(250), category varchar(50))
+	declare @nodes table (
+		[key] varchar(250), 
+		obj varchar(50), [objid] int, [type] varchar(50), typeName nvarchar(250), name nvarchar(500), 
+		back varchar(7), fore varchar(7), template varchar(50), other varchar(500),
 
-	declare @item table (
-		[Object] varchar(50) not null,
-		ObjectID int not null,
-		ObjectType varchar(25) not null,
-		ObjectTypeID int not null
-	);
+		HasSourceRules bit
+		)
+	declare @objects table (Type varchar(50), ID int)
 
-	if @type = 'Artifact'
+	if @view in (0, 1, 2)
 	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'ArtifactType', O.ArtifactTypeID
-			FROM	Artifact O
-			WHERE	O.ID = @id
-	end;
+		insert into @objects values (@type, @id)
 
-	if @type = 'ArtifactType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, @type, 0
-			FROM	ArtifactType O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'AttributeType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 
-					'AttributeType', 0
-			FROM	AttributeType O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'Group'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, ID, 'GroupType', 0
-			FROM	[Group]
-			WHERE	ID = @id;
-	end;
-
-	if @type = 'GroupType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			select	@type, 0, @type, 0
-	end;
-
-
-	if @type = 'Intersect'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'IntersectType', O.IntersectTypeID
-			FROM	[Intersect] O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'IntersectType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, ID, @type, 0
-			FROM	IntersectType
-			WHERE	ID = @id;
-	end;
-
-	if @type = 'Event'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'Rule', R.ID
-			FROM	[Event] O
-					INNER JOIN EventGroup G on G.ID = O.EventGroupID AND O.ID = @id
-					INNER JOIN [Rule] R on R.ID = G.RuleID;
-	end;
-
-	if @type = 'EventGroup'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'Rule', R.ID
-			FROM	EventGroup O
-					inner join [Rule] R on R.ID = O.RuleID and O.ID = @id;
-	end;
-
-	if @type = 'Lookup'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'LookupType', O.LookupTypeID
-			FROM	[Lookup] O
-					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id;
-	end;
-
-	if @type = 'LookupType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, ID, @type, 0
-			FROM	LookupType
-			WHERE	ID = @id;
-	end;
-
-	if @type = 'Fusion'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'FusionType', O.FusionTypeID
-			FROM	Fusion O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'FusionType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, ID, @type, 0
-			FROM	FusionType
-			WHERE	ID = @id;
-	end;
-
-	if @type = 'FusionAttribute'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'FusionAttributeType', O.FusionAttributeTypeID
-			FROM	FusionAttribute O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'FusionAttributeType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'FusionType', O.FusionTypeID
-			FROM	FusionAttributeType O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'Policy'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'PolicyType', O.PolicyTypeID
-			FROM	[Policy] O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'PolicyType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, T.ID, @type, T.PolicyTypeClassID
-			FROM	PolicyType T
-			WHERE	T.ID = @id;
-	end;
-
-	if @type = 'ReferenceItemType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, T.ID, @type, 0
-			FROM	ReferenceItemType T
-			WHERE	T.ID = @id;
-	end;
-
-	if @type = 'Resource'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			select	@type, ResourceID, 'ResourceType', 1
-			from	reporting.Global_Resource 
-			where	ResourceID = @id;
-	end;
-
-	if @type = 'ResourceType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			select	@type, 1, @type, 0
-	end;
-
-	if @type = 'ResponsibilityType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, ID, @type, 0
-			FROM	ResponsibilityType
-			WHERE	ID = @id;
-
-		--UPDATE	T
-		--SET		T.ResponsibilityType = S.Name
-		--FROM	cache.ResponsibilityItem T INNER JOIN @item S ON S.[Object] = @type and S.ObjectID = T.ResponsibilityTypeID
-	end;
-
-	if @type = 'Rule'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'RuleType', O.RuleType
-			FROM	[Rule] O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'Taxonomy'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, O.ID, 'TaxonomyType', O.TaxonomyTypeID
-			FROM	Taxonomy O
-			WHERE	O.ID = @id;
-	end;
-
-	if @type = 'TaxonomyType'
-	begin
-		insert into @item ([Object], ObjectID, ObjectType, ObjectTypeID)
-			SELECT	@type, T.ID, @type, T.TaxonomyTypeClassID
-			FROM	TaxonomyType T
-			WHERE	T.ID = @id;
-	end;
-
-	-- upsert the individual object into the cache table.
-	merge	cache.[Object] as T
-	using	(
-			SELECT	*
-			FROM	@item
-			) as S
-	on		(
-			T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-			)
-	when matched then
-			update	
-			set		T.ObjectType = S.ObjectType, 
-					T.ObjectTypeID = S.ObjectTypeID
-	when not matched then
-			insert ( [Object], ObjectID, ObjectType, ObjectTypeID )
-			values ( S.[Object], S.ObjectID, S.ObjectType, S.ObjectTypeID );
-end
-GO
-
-alter procedure [dbo].[AsyncDeleteObject]
-	@Object varchar(50),
-	@ObjectID int,
-	@ParentObject varchar(50),
-	@ParentObjectID int,
-	@ResourceID int
-as
-begin
-	set nocount on;
-	
-	declare @trans varchar(25) = 'Trans',
-			@current int = 1,
-			@max int,
-			@date datetime = getutcdate()
-
-	begin try
-		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Removed', @Object, @ObjectID
-	end try
-	begin catch
-
-	end catch
-
-	begin try
-		begin transaction @trans
-
-		--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority])
-		--values ('ObjectIndex', 'D', @Object, @ObjectID, 4)
-
-		--COMMON
-		delete CommentRelation					where ObjectType = @Object and ObjectID = @ObjectID
-		delete Field							where ObjectType = @Object and ObjectID = @ObjectID
-		delete Follow							where ObjectType = @Object and ObjectID = @ObjectID
-		delete Responsibility					where ObjectType = @Object and ObjectID = @ObjectID
-		--delete SurveyObjectCache				where ObjectType = @Object and ObjectID = @ObjectID
-		delete cache.[Object]					where [Object] = @Object and ObjectID = @ObjectID
-
-		if charindex('Type', @Object) > 0
+		if not exists(
+			select	MI.ID
+			from	MapItem MI
+					inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
+					inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
+			where 	( (SI.Subject = @type and SI.SubjectID = @id) OR (SI.Object = @type and SI.ObjectID = @id)  )
+					OR ( (TI.Subject = @type and TI.SubjectID = @id) OR (TI.Object = @type and TI.ObjectID = @id)  )
+		)
 		begin
-			delete AttributeTypeRelation			where ObjectType = @Object AND ObjectID = @ObjectID
-			delete FieldType						where [Object] = @Object AND ObjectID = @ObjectID
-			delete ResponsibilityTypeRelation		where ObjectType = @Object and ObjectID = @ObjectID
-			delete ResponsibilityTypeObjectClaim	where ObjectType = @Object and ObjectID = @ObjectID
-			delete StatisticType					where [Object] = @Object and ObjectID = @ObjectID
-			delete WorkflowTypeRelation				where [Object] = @Object and ObjectID = @ObjectID
-
-			if @Object in ('AttributeTypeRelation', 'AttributeTypeRelation', 'ResponsibilityTypeRelation', 'ResponsibilityType')
-			begin
-				exec utility.CalculateStatistics
-			end
-
-			if @Object = 'ArtifactType'
-			begin
-				declare @ah table (ID int);
-				with ah as	(
-							select	ID, 
-									ParentID
-							from	Artifact
-							where	ArtifactTypeID = @ObjectID
-							union all
-							select	C.ID,
-									C.ParentID
-							from	Artifact C
-									inner join ah P on P.ID = C.ParentID
-							)
-				insert into @ah 
-					select ID from ah
-			
-				delete Artifact where ID in (select ID from @ah)
-			end
-
-			if @Object = 'AttributeType'
-			begin
-				delete AttributeTypeRelation		where AttributeTypeID = @ObjectID
-			
-				declare @ath table (RowID int identity, ID int, ParentID int null, [Level] int);
-				with ath as	(
-							select	ID,
-									ParentID,
-									1 as [Level]
-							from	AttributeType
-							where	ID = @ObjectID
-							union all
-							select	C.ID,
-									C.ParentID,
-									P.[Level] + 1 as [Level]
-							from	AttributeType C
-									inner join ath P on P.ID = C.ParentID
-							)
-				insert into @ath 
-					select ID, ParentID, [Level] from ath order by [Level] desc
-
-				select @max = max(RowID) from @ath
-
-				while @current <= @max
-				begin
-					declare @attributeTypeID int
-					select @attributeTypeID = ID from @ath where RowID = @current
-					delete Attribute where AttributeTypeID = @attributeTypeID
-					delete AttributeType where ID = @attributeTypeID
-					set @current = @current + 1
-				end
-			end
-
-			if @Object = 'FieldType'
-			begin
-				delete Field where FieldTypeID = @ObjectID
-				delete FieldTypeFusionLookupDisplayField where FieldTypeID = @ObjectID
-				delete FieldType where ID = @ObjectID
-			end
-
-			if @Object = 'FusionAttributeType'
-			begin
-				declare @fath table (RowID int identity, ID int, ParentID int null, [Level] int);
-				with fath as	(
-							select	ID,
-									ParentID,
-									1 as [Level]
-							from	FusionAttributeType
-							where	ID = @ObjectID
-							union all
-							select	C.ID,
-									C.ParentID,
-									P.[Level] + 1 as [Level]
-							from	FusionAttributeType C
-									inner join fath P on P.ID = C.ParentID
-							)
-				insert into @fath 
-					select ID, ParentID, [Level] from fath order by [Level] desc
-
-				select @max = max(RowID) from @fath
-
-				while @current <= @max
-				begin
-					declare @fusionAttributeTypeID int
-					select @fusionAttributeTypeID = ID from @fath where RowID = @current
-					delete FusionAttribute where FusionAttributeTypeID = @fusionAttributeTypeID
-					delete FusionAttributeType where ID = @fusionAttributeTypeID
-					set @current = @current + 1
-				end
-			end
-
-			if @Object = 'FusionType'
-			begin
-				declare @fth table (RowID int identity, ID int, ParentID int null, [Level] int);
-				with fth as	(
-							select	ID,
-									ParentID,
-									1 as [Level]
-							from	FusionAttributeType
-							where	FusionTypeID = @ObjectID and ParentID is null
-							union all
-							select	C.ID,
-									C.ParentID,
-									P.[Level] + 1 as [Level]
-							from	FusionAttributeType C
-									inner join fth P on P.ID = C.ParentID
-							)
-				insert into @fth 
-					select ID, ParentID, [Level] from fth order by [Level] desc
-
-				select @max = max(RowID) from @fth
-
-				while @current <= @max
-				begin
-					declare @fattributeTypeID int
-					select @fattributeTypeID = ID from @fth where RowID = @current
-					delete FusionAttribute where FusionAttributeTypeID = @fattributeTypeID
-					delete FusionAttributeType where ID = @fattributeTypeID
-					set @current = @current + 1
-				end
-				delete FusionType where ID = @ObjectID
-			end
-
-			if @Object = 'IntersectType'
-			begin
-				delete [Intersect] where IntersectTypeID = @ObjectID
-				delete IntersectType where ID = @ObjectID
-			end
-
-			if @Object = 'LookupType'
-			begin
-				delete [Lookup] where LookupTypeID = @ObjectID
-			end
-
-			if @Object = 'PolicyType'
-			begin
-				delete Policy where PolicyTypeID = @ObjectID
-				delete PolicyTypeLevel where PolicyTypeID = @ObjectID
-			end
-
-			if @Object = 'ResponsibilityType'
-			begin
-				delete Responsibility where ResponsibilityTypeID = @ObjectID
-				delete ResponsibilityType where ID = @ObjectID
-			end
-
-			if @Object = 'SurveyType'
-			begin
-				--delete SurveyObjectCache where SurveyTypeID = @ObjectID
-				delete Survey where SurveyTypeID = @ObjectID
-				delete SurveyType where ID = @ObjectID
-			end
-
-			if @Object = 'TaxonomyType'
-			begin
-				delete Taxonomy where TaxonomyTypeID = @ObjectID
-				delete TaxonomyTypeLevel where TaxonomyTypeID = @ObjectID
-				delete TaxonomyType where ID = @ObjectID
-			end
-
-		end
-		else
-		begin
-			delete Attribute							where ObjectType = @Object and ObjectID = @ObjectID
-
-			BEGIN TRY
-				DECLARE @tblIntersectIDs table (ID int)
-
-				INSERT INTO @tblIntersectIDs
-					SELECT	ID
-					FROM	[Intersect]
-					WHERE	(Subject = @Object and SubjectID = @ObjectID) OR (Object = @Object and ObjectID = @ObjectID)
-
-				delete	MapItem 
-				where	SourceIntersectID in (select ID from @tblIntersectIDs) OR
-						TargetIntersectID in (select ID from @tblIntersectIDs)
-
-				delete [Intersect] where ID in (select ID from @tblIntersectIDs)
-			END TRY
-			BEGIN CATCH
-
-			END CATCH
-
-			if @Object = 'Responsibility'
-			begin
-				exec cache.SynchronizeResponsibilitiesForObject @ParentObject, @ParentObjectID 
-			end
-
-			if @Object = 'Taxonomy'
-			begin
-				declare @th table (ID int);
-				with th as	(
-							select	ID, 
-									ParentID
-							from	Taxonomy
-							where	ID = @ObjectID
-							union all
-							select	C.ID,
-									C.ParentID
-							from	Taxonomy C
-									inner join th P on P.ID = C.ParentID
-							)
-				insert into @th 
-					select ID from th
-			
-				delete Taxonomy where ID in (select ID from @th)
-
-				exec cache.SynchronizeResponsibilities
-			end
-		end
-		
-		commit transaction @trans
-	end try
-	begin catch
-		DECLARE @ErrorMessage NVARCHAR(4000);
-		DECLARE @ErrorSeverity INT;
-		DECLARE @ErrorState INT;
-
-		SELECT 
-			@ErrorMessage = ERROR_MESSAGE(),
-			@ErrorSeverity = ERROR_SEVERITY(),
-			@ErrorState = ERROR_STATE();
-
-		-- Use RAISERROR inside the CATCH block to return error
-		-- information about the original error that caused
-		-- execution to jump to the CATCH block.
-		RAISERROR (@ErrorMessage, -- Message text.
-				   @ErrorSeverity, -- Severity.
-				   @ErrorState -- State.
-				   );
-
-		rollback transaction @trans
-	end catch
-end
-GO
-
-alter procedure [dbo].[DeleteObject]
-	@Obj varchar(50),
-	@ObjectID int,
-	@ResourceID int
-as
-begin
-	set nocount on;
-	
-	declare @Object varchar(50) = @Obj,
-			@trans varchar(25) = 'Trans',
-			@current int = 1,
-			@max int
-
-	begin try
-		begin transaction @trans
-
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        VALUES (
-				'ObjectVersion', 
-				'<fields>
-				 <Action>Removed</Action>
-				 <ActionObject>' + @Obj + '</ActionObject>
-				 <ActionObjectID>' + cast(@ObjectID as varchar) + '</ActionObjectID>
-				 <ResourceID>' + cast(@ResourceID as varchar) + '</ResourceID>
-				</fields>', 
-				@Obj, 
-				@ObjectID)
-
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		values ('ObjectIndex', 'D', @Obj, @ObjectID)
-
-		--COMMON
-		delete CommentRelation					where ObjectType = @Object and ObjectID = @ObjectID
-		delete Field							where ObjectType = @Object and ObjectID = @ObjectID
-		delete Follow							where ObjectType = @Object and ObjectID = @ObjectID
-		delete Responsibility					where ObjectType = @Object and ObjectID = @ObjectID
-		--delete SurveyObjectCache				where ObjectType = @Object and ObjectID = @ObjectID
-		delete cache.[Object]					where [Object] = @Object and ObjectID = @ObjectID
-
-		if charindex('Type', @Object) > 0
-		begin
-			delete AttributeTypeRelation			where ObjectType = @Object AND ObjectID = @ObjectID
-			delete FieldType						where [Object] = @Object AND ObjectID = @ObjectID
-			delete ResponsibilityTypeRelation		where ObjectType = @Object and ObjectID = @ObjectID
-			delete ResponsibilityTypeObjectClaim	where ObjectType = @Object and ObjectID = @ObjectID
-			delete StatisticType					where [Object] = @Object and [ObjectID] = @ObjectID
-			delete WorkflowTypeRelation				where [Object] = @Object and ObjectID = @ObjectID
-
-			if @Object = 'ArtifactType'
-			begin
-				declare @ah table (ID int);
-				with ah as	(
-							select	ID, 
-									ParentID
-							from	Artifact
-							where	ArtifactTypeID = @ObjectID
-							union all
-							select	C.ID,
-									C.ParentID
-							from	Artifact C
-									inner join ah P on P.ID = C.ParentID
-							)
-				insert into @ah 
-					select ID from ah
-			
-				delete Artifact where ID in (select ID from @ah)
-			end
-
-			if @Object = 'AttributeType'
-			begin
-				delete AttributeTypeRelation		where AttributeTypeID = @ObjectID
-			
-				declare @ath table (RowID int identity, ID int, ParentID int null, [Level] int);
-				with ath as	(
-							select	ID,
-									ParentID,
-									1 as [Level]
-							from	AttributeType
-							where	ID = @ObjectID
-							union all
-							select	C.ID,
-									C.ParentID,
-									P.[Level] + 1 as [Level]
-							from	AttributeType C
-									inner join ath P on P.ID = C.ParentID
-							)
-				insert into @ath 
-					select ID, ParentID, [Level] from ath order by [Level] desc
-
-				select @max = max(RowID) from @ath
-
-				while @current <= @max
-				begin
-					declare @attributeTypeID int
-					select @attributeTypeID = ID from @ath where RowID = @current
-					delete Attribute where AttributeTypeID = @attributeTypeID
-					delete AttributeType where ID = @attributeTypeID
-					set @current = @current + 1
-				end
-			end
-
-			if @Object = 'FieldType'
-			begin
-				delete Field where FieldTypeID = @ObjectID
-				delete FieldType where ID = @ObjectID
-			end
-
-			if @Object = 'FusionAttributeType'
-			begin
-				declare @fath table (RowID int identity, ID int, ParentID int null, [Level] int);
-				with fath as	(
-							select	ID,
-									ParentID,
-									1 as [Level]
-							from	FusionAttributeType
-							where	ID = @ObjectID
-							union all
-							select	C.ID,
-									C.ParentID,
-									P.[Level] + 1 as [Level]
-							from	FusionAttributeType C
-									inner join fath P on P.ID = C.ParentID
-							)
-				insert into @fath 
-					select ID, ParentID, [Level] from fath order by [Level] desc
-
-				select @max = max(RowID) from @fath
-
-				while @current <= @max
-				begin
-					declare @fusionAttributeTypeID int
-					select @fusionAttributeTypeID = ID from @fath where RowID = @current
-					delete FusionAttribute where FusionAttributeTypeID = @fusionAttributeTypeID
-					delete FusionAttributeType where ID = @fusionAttributeTypeID
-					set @current = @current + 1
-				end
-			end
-
-			if @Object = 'FusionType'
-			begin
-				declare @fth table (RowID int identity, ID int, ParentID int null, [Level] int);
-				with fth as	(
-							select	ID,
-									ParentID,
-									1 as [Level]
-							from	FusionAttributeType
-							where	FusionTypeID = @ObjectID and ParentID is null
-							union all
-							select	C.ID,
-									C.ParentID,
-									P.[Level] + 1 as [Level]
-							from	FusionAttributeType C
-									inner join fth P on P.ID = C.ParentID
-							)
-				insert into @fth 
-					select ID, ParentID, [Level] from fth order by [Level] desc
-
-				select @max = max(RowID) from @fth
-
-				while @current <= @max
-				begin
-					declare @fattributeTypeID int
-					select @fattributeTypeID = ID from @fth where RowID = @current
-					delete FusionAttribute where FusionAttributeTypeID = @fattributeTypeID
-					delete FusionAttributeType where ID = @fattributeTypeID
-					set @current = @current + 1
-				end
-				delete FusionType where ID = @ObjectID
-			end
-
-			if @Object = 'IntersectType'
-			begin
-				delete [Intersect] where IntersectTypeID = @ObjectID
-				delete IntersectType where ID = @ObjectID
-			end
-
-			if @Object = 'LookupType'
-			begin
-				delete [Lookup] where LookupTypeID = @ObjectID
-			end
-
-			if @Object = 'PolicyType'
-			begin
-				delete Policy where PolicyTypeID = @ObjectID
-				delete PolicyTypeLevel where PolicyTypeID = @ObjectID
-			end
-
-			if @Object = 'ResponsibilityType'
-			begin
-				delete Responsibility where ResponsibilityTypeID = @ObjectID
-				delete ResponsibilityType where ID = @ObjectID
-			end
-
-			--if @Object = 'StatisticType'
-			--begin
-			--	delete [Statistic] where StatisticTypeID = @ObjectID
-			--end
-
-			if @Object = 'SurveyType'
-			begin
-				--delete SurveyObjectCache where SurveyTypeID = @ObjectID
-				delete Survey where SurveyTypeID = @ObjectID
-				delete SurveyType where ID = @ObjectID
-			end
-
-			if @Object = 'TaxonomyType'
-			begin
-				delete Taxonomy where TaxonomyTypeID = @ObjectID
-				delete TaxonomyTypeLevel where TaxonomyTypeID = @ObjectID
-				delete TaxonomyType where ID = @ObjectID
-			end
-
-		end
-		else
-		begin
-			delete Attribute							where ObjectType = @Object and ObjectID = @ObjectID
-
-			BEGIN TRY
-				DECLARE @tblIntersectIDs table (ID int)
-
-				INSERT INTO @tblIntersectIDs
-					SELECT	ID
-					FROM	[Intersect]
-					WHERE	(Subject = @Object and SubjectID = @ObjectID) OR (Object = @Object and ObjectID = @ObjectID)
-
-				delete	MapItem 
-				where	SourceIntersectID in (select ID from @tblIntersectIDs) OR
-						TargetIntersectID in (select ID from @tblIntersectIDs)
-
-				delete [Intersect] where ID in (select ID from @tblIntersectIDs)
-			END TRY
-			BEGIN CATCH
-
-			END CATCH
-
-			if @Object = 'Taxonomy'
-			begin
-				declare @th table (ID int);
-				with th as	(
-							select	ID, 
-									ParentID
-							from	Taxonomy
-							where	ID = @ObjectID
-							union all
-							select	C.ID,
-									C.ParentID
-							from	Taxonomy C
-									inner join th P on P.ID = C.ParentID
-							)
-				insert into @th 
-					select ID from th
-			
-				delete Taxonomy where ID in (select ID from @th)
-			end
-		end
-		
-		commit transaction @trans
-	end try
-	begin catch
-		 DECLARE @ErrorMessage NVARCHAR(4000);
-    DECLARE @ErrorSeverity INT;
-    DECLARE @ErrorState INT;
-
-    SELECT 
-        @ErrorMessage = ERROR_MESSAGE(),
-        @ErrorSeverity = ERROR_SEVERITY(),
-        @ErrorState = ERROR_STATE();
-
-    -- Use RAISERROR inside the CATCH block to return error
-    -- information about the original error that caused
-    -- execution to jump to the CATCH block.
-    RAISERROR (@ErrorMessage, -- Message text.
-               @ErrorSeverity, -- Severity.
-               @ErrorState -- State.
-               );
-
-		rollback transaction @trans
-	end catch
-end
-GO
-
-ALTER PROCEDURE [dbo].[GetRenderedTemplateBody]-- 'Tooltip', 'Resource', 2, 'Preview'
---declare
-	@TemplateType varchar(25),
-	@Type varchar(50),
-	@ID int,
-	@Action varchar(50)
---set @TemplateType = 'Lookup'
---set @Type = 'Artifact'
---set @ID = 7004--16435
---set @Action = 'Preview'--'Certificate'
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	declare @html nvarchar(max),
-			@link nvarchar(2500),
-			@icon nvarchar(250),
-			@hasDynamicFields bit = 0,
-			@hasStats bit = 0,
-			@typeID int,
-
-			@showIcon bit = 1,
-
-			@current int,
-			@max int,
-			@name nvarchar(250),
-			@value nvarchar(max);
-
-	declare @tbl table (ID int identity, Name nvarchar(250), Value nvarchar(max));
-
-	if @TemplateType = 'Email'
-	begin
-		select	@html = TemplateBody
-		from	EmailTemplate
-		where	Name = @Type
-				and [Action] = @Action
-	end
-
-	if @TemplateType = 'Tooltip'
-	begin
-		select	@html = TemplateBody
-		from	TooltipTemplate
-		where	Name = @Type
-				and [Action] = @Action
-	end
-
-	-- Get the static tokens, depending on the type.
-	declare @n nvarchar(250), @t nvarchar(250), @s nvarchar(25), @v int, @dc datetime, @du datetime, @d nvarchar(4000);
-
-	-- Get common fields
-	select	@typeID = ObjectTypeID,
-			@icon = '<div title=''' + ObjectTypeName + ''' class=''tooltip-icon'' style=''background-color: ' + IconBackColor + '; color: ' + IconForeColor + '''><i class=''fa fa-' + IconText + '''></i></div>',
-			@n = Name,
-			@t = ObjectTypeName,
-			@d = Description,
-			@link = Url
-	from	cache.ObjectDetails
-	where	[Object] = @Type
-			and ObjectID = @ID;
-
-	if @n is not null
-	begin
-		if @link is null
-		begin
-			insert into @tbl values ('Name', @n)
-		end
-		else
-		begin
-			insert into @tbl values ('Name', '<a href="' + @link + '">' + @n + '</a>')
-		end
-		insert into @tbl values ('Description', @d)
-	end
-	insert into @tbl values ('Type', @t)
-
-	if @Action = 'AssigningItemPreview'
-	begin
-		set @html = '<h3>{Name}</h3>'
-	end
-
-	if @Action = 'Certificate'
-	begin
-		set @html = '<h3>{Name}</h3>'
-
-		declare @workflowID uniqueidentifier,
-				@dateCertifiedOn varchar(10),
-				@certifiers nvarchar(2500),
-				@status varchar(50),
-				@certIconColor varchar(10)
-
-		select	@dateCertifiedOn = CONVERT(VARCHAR(10), DateLastCertified, 101),
-				@status = Status
-		from	Artifact A
-		where	A.ID = @ID
-
-		SELECT	@workflowID = W.ID,
-				@certifiers = COALESCE(@certifiers + ', ', '') + R.FirstName + ' ' + R.LastName 
-		from	(
-				select		top 1
-							ID,
-							Data.value('(/fields/ArtifactID)[1]', 'int') as ArtifactID,
-							DateCompleted
-				from		Workflow
-				where		WorkflowType = 2
-							and Data.exist('/fields/ArtifactID[text() = sql:variable("@ID")]') = 1
-				order by	DateCompleted desc
-				) W
-				inner join WorkflowResource WR on WR.WorkflowID = W.ID
-				inner join reporting.Global_Resource R on R.ResourceID = WR.ResourceID
-
-		if @dateCertifiedOn is null and @status != 'Certified'
-			begin
-				set @showIcon = 0
-
-				set @html = @html + '<div><b>Not yet certified</b></div>'
-				if @certifiers is not null
-				begin
-					set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
-				end
-				if @workflowID is not null
-				begin
-					set @html = @html + '<div><a class=''btn btn-info'' href=''#/workflow/' + cast(@workflowID as varchar(50)) + '/status''>Go to this workflow status</a>.</div>'
-				end
-			end
-		else
-			begin
-				if @status = 'Certified'
-					begin
-						set @certIconColor = '#EFC43D'
-					end
-				else 
-					begin
-						set @certIconColor = '#FFE183'
-					end
-				select	@icon = '<div style="background-color: transparent; color: ' + @certIconColor + '"><i class="fa fa-2x fa-certificate"></i></div>'
-				set @html = @html + '<div>Last Certified On: ';
-				if @dateCertifiedOn is null
-					begin
-						set @html = @html + 'Manually Certified';
-					end
-				else
-					begin
-						set @html = @html + '{CertifiedOn}';
-					end
-				set @html = @html + '</div>';
-				if @status = 'Certified'
-					begin
-						if @Certifiers is not null
-						begin
-							set @html = @html + '<div>Certified By: {Certifiers}</div>'
+			insert into @objects
+				select	case 
+							when I.Subject = @type and I.SubjectID = @id then I.Object
+							else I.Subject
+						end,
+						case 
+							when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
+							else I.SubjectID 
 						end
-					end
-				else 
-					begin
-						set @html = @html + '<div>Currently Under Certification Review</div>'
-						set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
-						if @workflowID is not null
-						begin
-							set @html = @html + '<div><a class=''btn btn-info'' href=''#/workflow/' + cast(@workflowID as varchar(50)) + '/status''>Go to this workflow status</a>.</div>'
-						end
-					end
-			end
+				from	[Intersect] I
+						inner join IntersectType T on T.ID = I.IntersectTypeID 
+						inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+				where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+		end
 
-		insert into @tbl values ('CertifiedOn', @dateCertifiedOn)
-		insert into @tbl values ('Certifiers', @certifiers)
-	end
-	if @Action = 'JoinRequest'
-	begin
-		set @html = ''
-	end
-	if @Action = 'LookupPreview'
-	begin
-		set @html = '{Items}'
+		declare @points table ( ID int, SourceIntersectID int, TargetIntersectID int )
 
-		if @Type = 'FusionAttribute'
-		begin
-			-- BUILD LIST HTML -----------------------------------------
-			declare @fusionAttributeItemsHtml nvarchar(max)
+		-- get all items directly tied to the focal object.
+		insert into @points
+			select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+			from	MapItem MI
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+					inner join @objects O on	( (SI.Subject = O.Type and SI.SubjectID = O.ID) OR (SI.Object = O.Type and SI.ObjectID = O.ID)  ) OR 
+												( (TI.Subject = O.Type and TI.SubjectID = O.ID) OR (TI.Object = O.Type and TI.ObjectID = O.ID)  )
 
-			set @fusionAttributeItemsHtml = '<div style="height: 200px; overflow-y: scroll"><table class="hoverable bordered striped" style="width:100%"><thead>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '<th style="margin-right: 15px">Name</th>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</thead><tbody>'
+		-- get all items not directly tied to the focal object, but still tied to maps involved above.
+		insert into @points
+			select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+			from	MapItem MI
+					inner join	(
+								select	ID.MapItemID
+								from	MapItemMap DM
+										inner join @points D on D.ID = DM.MapItemID
+										inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																												select ID from @points
+																												)
+								) O on O.MapItemID = MI.ID;
 
-			select		--top 10 
-						@fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '<tr>' 
-											+ '<td>' + Name + '</td>'
-											+ '</tr>'
-			from		FusionAttribute
-			where		ParentID = @ID
-			order by	Name asc
+		with cte as (
+			select	ID,
+					SourceIntersectID,
+					TargetIntersectID,
+					1 as [Level]
+			from	@points
+			union all
+			select	S.ID,
+					S.SourceIntersectID,
+					S.TargetIntersectID,
+					T.[Level] + 1 as [Level]
+			from	MapItem S
+					inner join cte T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID
+			where	T.[Level] <= 25
+		)
+		insert into @points
+			select ID, SourceIntersectID, TargetIntersectID from cte where ID not in (select ID from @points)
 
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</tbody>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</table></div>'
- 
-			insert into @tbl values ('Items', @fusionAttributeItemsHtml)
-			------------------------------------------------------------------
-		end;
 
-		if @Type = 'LookupType' OR @Type = 'Lookup'
-		begin
-			-- BUILD LOOKUP LIST HTML -----------------------------------------
-			declare @lookups table (RowID int identity, ID int)
-
-			declare @MyLookupTypeID int
-			if @Type = 'Lookup'
-				begin
-					select @MyLookupTypeID = LookupTypeID from [Lookup] where ID = @ID 
-				end
-			else
-				begin
-					set @MyLookupTypeID = @ID
-				end
-
-			insert into @lookups 
-				select top 10 ID from [Lookup] where LookupTypeID = @MyLookupTypeID order by ID desc
-		
-			declare @lookupFieldTypes table (ID int identity, Name nvarchar(250))
-			insert into @lookupFieldTypes
-				select FriendlyName from FieldType where [Object] = 'LookupType' and ObjectID = @MyLookupTypeID order by SortOrder asc
-
-			declare @lookupHtml nvarchar(max)
-
-			set @lookupHtml = '<table class="hoverable bordered striped" style="width:100%">'
-
-			-- Loop through field name list ---------
-			set @lookupHtml = @lookupHtml + '<thead>'
-			set		@current = 1
-			select	@max = max(ID) from @lookupFieldTypes
-			while @current <= @max
-			begin
-				select	@name = Name
-				from	@lookupFieldTypes
-				where	ID = @current
-
-				set @lookupHtml = @lookupHtml + '<th style="margin-right: 15px">' + @name  + '</th>'
-
-				set @current = @current + 1
-			end
-			set @lookupHtml = @lookupHtml + '</thead>'
-			-----------------------------------------
-
-			set @lookupHtml = @lookupHtml + '<tbody>'
-
-			-- Loop through event list --------------
-			select	@current = min(RowID) from @lookups
-			select	@max = max(RowID) from @lookups
-
-			while @current <= @max
-			begin
-				set @lookupHtml = @lookupHtml + '<tr>'	-- Open row for selected event.
-
-				declare @lookupFields table (Name nvarchar(250), Value nvarchar(4000))
+		declare @items table (
+			ID int,
+			SourceIntersectID int, 
+			SourceSubjectTypeName nvarchar(500), SourceSubjectName nvarchar(500), SourceSubject varchar(50), SourceSubjectID int, SourceSubjectIconBackColor varchar(7), SourceSubjectIconForeColor varchar(7), 
+			SourceObjectTypeName nvarchar(500), SourceObjectName nvarchar(500), SourceObject varchar(50), SourceObjectID int, SourceObjectIconBackColor varchar(7), SourceObjectIconForeColor varchar(7),
 			
-				declare @lookupID int
+			TargetIntersectID int, 
+			TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, TargetSubjectIconBackColor varchar(7), TargetSubjectIconForeColor varchar(7), 
+			TargetObjectTypeName nvarchar(500), TargetObjectName nvarchar(500), TargetObject varchar(50), TargetObjectID int, TargetObjectIconBackColor varchar(7), TargetObjectIconForeColor varchar(7),
 
-				select	@lookupID = ID from @lookups where RowID = @current
+			HasSourceRules bit
+		)
 
-				insert into @lookupFields
-					select		FriendlyName,
-								FormattedValue
-					from		FieldWithRelation
-					where		ObjectType = 'Lookup' 
-								and ObjectID = @lookupID
+		insert into @items
+			select	O.ID,
+				
+					O.SourceIntersectID,
+					SI.SubjectTypeName,
+					SI.SubjectName,
+					SI.Subject,
+					SI.SubjectID,
+					SI.SubjectIconBackColor,
+					SI.SubjectIconForeColor,
+					SI.ObjectTypeName,
+					SI.ObjectName,
+					SI.Object,
+					SI.ObjectID,
+					SI.ObjectIconBackColor,
+					SI.ObjectIconForeColor,
 
-					-- Loop through each field for this selected event --
-					declare @lfCurrent int,
-							@lfMax int
-					set		@lfCurrent = 1
-					select	@lfMax = max(ID) from @lookupFieldTypes
-					while @lfCurrent <= @lfMax
-					begin
-						select	@name = Name from @lookupFieldTypes where ID = @lfCurrent
+					O.TargetIntersectID,
+					TI.SubjectTypeName,
+					TI.SubjectName,
+					TI.Subject,
+					TI.SubjectID,
+					TI.SubjectIconBackColor,
+					TI.SubjectIconForeColor,
+					TI.ObjectTypeName,
+					TI.ObjectName,
+					TI.Object,
+					TI.ObjectID,
+					TI.ObjectIconBackColor,
+					TI.ObjectIconForeColor,
 
-						select @lookupHtml = @lookupHtml + '<td>' + coalesce(Value, '') + '</td>' from @lookupFields where Name = @name
-
-						set @lfCurrent = @lfCurrent + 1
-					end
-					-----------------------------------------------------
-
-				delete @lookupFields
-
-				set @lookupHtml = @lookupHtml + '</tr>'	-- Close off row for selected lookup.
-
-				set @current = @current + 1
-			end
-			-----------------------------------------
-
-			set @lookupHtml = @lookupHtml + '</tbody>'
-
-			set @lookupHtml = @lookupHtml + '</table>'
-
-			insert into @tbl values ('Items', @lookupHtml)
-			------------------------------------------------------------------
-		end;
-
-		if @Type = 'Resource' OR @Type = 'ResourceType'
-		begin
-			-- BUILD Resource LIST HTML -----------------------------------------
-			declare @resourceItemsHtml nvarchar(max)
-
-			set @resourceItemsHtml = '<table class="hoverable bordered striped" style="width:100%"><thead>'
-			set @resourceItemsHtml = @resourceItemsHtml + '<th style="margin-right: 15px">First Name</th><th style="margin-right: 15px">Last Name</th><th>Email</th>'
-			set @resourceItemsHtml = @resourceItemsHtml + '</thead><tbody>'
-
-			select		top 10 
-						@resourceItemsHtml = @resourceItemsHtml + '<tr>' + 
-											'<td>' + FirstName + '</td>' + 
-											'<td>' + LastName + '</td>' + 
-											'<td>' + Email + '</td>'
-											+ '</tr>'
-			from		reporting.Global_Resource
-			order by	LastName, FirstName asc
-
-			set @resourceItemsHtml = @resourceItemsHtml + '</tbody>'
-			set @resourceItemsHtml = @resourceItemsHtml + '</table>'
- 
-			insert into @tbl values ('Items', @resourceItemsHtml)
-			------------------------------------------------------------------
-		end;
-
-	end
-	
-	if @Action = 'None'
-	begin
-		set @html = '<h3>{Name}</h3><div>'
-	end
-
-	if @Action = 'Preview'
-	begin
-		set @html = '<h3>{Name} <small>{Type}</small></h3><div>{Description}</div>'
-		set @showIcon = 0
-
-		if @Type = 'Artifact'
-		begin
-			insert into @tbl
-			select	'Status', [Status]
-			from	Artifact
-			where	ID = @ID
-
-			insert into @tbl
-			select	'Path', TextPath
-			from	Artifact
-			where	ID = @ID
-
-			set @html = @html + '<div><b>Status:</b> {Status}</div>'
-			set @html = @html + '<div><b>Path:</b> {Path}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'Event'
-		begin
-			declare @so nvarchar(250)
-			select	@so = SourceID, 
-					@s = [Status]
-			from	[Event]
-			where	ID = @ID
-
-			insert into @tbl values ('Status', @s)
-			insert into @tbl values ('SourceID', @so)
-
-			set @html = @html + '<div><b>Status:</b> {Status}</div>'
-			set @html = @html + '<div><b>SourceID:</b> {SourceID}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'EventGroup'
-		begin
-			insert into @tbl
-				select	'Key', PublicID
-				from	EventGroup
-				where	ID = @ID
-
-			-- BUILD EVENT LIST HTML -----------------------------------------
-			declare @events table (ID int, SourceID nvarchar(250), Status varchar(25))
-			insert into @events 
-				select top 10 ID, SourceID, Status from [Event] where EventGroupID = @ID order by ID desc
+					case 
+						when HSR.C > 0 then cast(1 as bit)
+						else cast(0 as bit)
+					end as HasSourceRules
+			from	@points O
+					inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
+					inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID
+					cross apply (
+								select	count(1) as C
+								from	MapItem MI 
+										inner join MapSequence MS on MS.MapItemID = MI.ID and MI.TargetIntersectID = TI.ID
+								) HSR
 		
-			declare @eventFieldTypes table (ID int identity, Name nvarchar(250))
-			insert into @eventFieldTypes
-				select FriendlyName from FieldType where [Object] = 'Rule' and ObjectID = @typeID order by SortOrder asc
-			insert into @eventFieldTypes values ('Source ID')
-			insert into @eventFieldTypes values ('Status')
-
-			declare @eventHtml nvarchar(max)
-
-			set @eventHtml = '<table class="hoverable bordered striped" style="width:100%">'
-
-			-- Loop through field name list ---------
-			set @eventHtml = @eventHtml + '<thead>'
-			set		@current = 1
-			select	@max = max(ID) from @eventFieldTypes
-			while @current <= @max
-			begin
-				select	@name = Name
-				from	@eventFieldTypes
-				where	ID = @current
-
-				set @eventHtml = @eventHtml + '<th>' + @name  + '</th>'
-
-				set @current = @current + 1
-			end
-			set @eventHtml = @eventHtml + '</thead>'
-			-----------------------------------------
-
-			set @eventHtml = @eventHtml + '<tbody>'
-
-			-- Loop through event list --------------
-			select	@current = min(ID) from @events
-			select	@max = max(ID) from @events
-
-			while @current <= @max
-			begin
-				set @eventHtml = @eventHtml + '<tr>'	-- Open row for selected event.
-
-				declare @eventFields table (Name nvarchar(250), Value nvarchar(4000))
-			
-				insert into @eventFields
-					select		FriendlyName,
-								FormattedValue
-					from		FieldWithRelation
-					where		ObjectType = 'Event' 
-								and ObjectID = @current
-
-					-- Loop through each field for this selected event --
-					declare @fCurrent int,
-							@fMax int
-					set		@fCurrent = 1
-					select	@fMax = max(ID) from @eventFieldTypes
-					while @fCurrent <= @fMax
-					begin
-						select	@name = Name from @eventFieldTypes where ID = @fCurrent
-
-						select @eventHtml = @eventHtml + '<td>' + coalesce(Value, '') + '</td>' from @eventFields where Name = @name
-
-						set @fCurrent = @fCurrent + 1
-					end
-					-----------------------------------------------------
-
-					select @eventHtml = @eventHtml	+ 
-										'<td>' + [SourceID] + '</td>' + 
-										'<td>' + [Status] + '</td>' 
-					from	@events 
-					where	ID = @current
-
-				delete @eventFields
-
-				set @eventHtml = @eventHtml + '</tr>'	-- Close off row for selected event.
-
-				set @current = @current + 1
-			end
-			-----------------------------------------
-
-			set @eventHtml = @eventHtml + '</tbody>'
-
-			set @eventHtml = @eventHtml + '</table>'
-
-			insert into @tbl values ('Items', @eventHtml)
-
-			set @html = @html + '<div><b>Key:</b> {Key}</div>'
-			set @html = @html + '<div>Items: {Items}</div>'
-			------------------------------------------------------------------
-		end;
-
-		if @Type = 'Intersect'
+		if @view = 0
 		begin
-			insert into @tbl
-				select	'Classification',
-						case Classification
-							when 1 then 'Critical'
+			select (
+					select distinct
+					cast(SI.IntersectTypeID as varchar) + '.' 
+					+ cast(I.SourceSubjectID as varchar) + '.'
+					+ cast(I.SourceObjectID as varchar) as [sourcekey],
+					cast(TI.IntersectTypeID as varchar) + '.' 
+					+ cast(I.TargetSubjectID as varchar) + '.'
+					+ cast(I.TargetObjectID as varchar) as [targetkey],
+					I.*,
+					SI.IntersectTypeID as SourceIntersectTypeID,
+					SIT.[Name] as SourceIntersectTypeName,
+					TI.IntersectTypeID as TargetIntersectTypeID,
+					TIT.[Name] as TargetIntersectTypeName
+				from @items I
+				inner join [Intersect] SI on SI.ID = I.SourceIntersectID
+				inner join IntersectType SIT on SIT.ID = SI.IntersectTypeID
+				inner join [Intersect] TI on TI.ID = I.TargetIntersectID
+				inner join IntersectType TIT on TIT.ID = TI.IntersectTypeID
+				for json path
+			) as 'items'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end
+
+		if @view = 1
+		begin
+			insert into @links
+					select	distinct
+							S.SourceSubject + '.' + cast(S.SourceSubjectID as varchar) as [from],
+							S.TargetSubject + '.' + cast(S.TargetSubjectID as varchar) as [to],
+							'' as category
+					from	@items S
+			insert into @nodes
+					select	distinct
+							I.SourceSubject + '.' + cast(I.SourceSubjectID as varchar) as [key],
+							I.SourceSubject as [obj],
+							I.SourceSubjectID as [objid], 
+							I.SourceSubject as [type],
+							I.SourceSubjectTypeName as typeName,
+							I.SourceSubjectName as name,
+							I.SourceSubjectIconBackColor as back,
+							I.SourceSubjectIconForeColor as fore,
+							case 
+								when I.SourceSubject = @type and I.SourceSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							0 as HasSourceRules--I.HasSourceRules
+					from	@items I;
+			--insert into @nodes
+			merge	@nodes as T
+			using	(
+					select	distinct
+							I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) as [key],
+							I.TargetSubject as [obj],
+							I.TargetSubjectID as [objid], 
+							I.TargetSubject as [type],
+							I.TargetSubjectTypeName as typeName,
+							I.TargetSubjectName as name,
+							I.TargetSubjectIconBackColor as back,
+							I.TargetSubjectIconForeColor as fore,
+							case 
+								when I.TargetSubject = @type and I.TargetSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							I.HasSourceRules
+					from	@items I
+					) S
+			on		(T.[key] = S.[key])
+			when	matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	([key], obj, [objid], [type], typeName, name, back, fore, template, other, HasSourceRules)
+			values	(S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+					--where	I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) not in (select [key] from @nodes)
+
+			--select	* from	@items
+			--select	* from	@links
+			--select	* from	@nodes
+
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	I.*,
+							C.challenges,
+							E.issues
+					from	@nodes I
+							cross apply (
+											select count(1) as challenges   
+											from Workflow W            			                          
+											where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column("I.objid")]') = 1 and W.DateCompleted is null   
+										) C
+							cross apply (
+											select count(1) as issues   
+											from Workflow W            			                          
+											where W.WorkflowType = 3 and W.Data.exist('/fields/ArtifactID[text() = sql:column("I.objid")]') = 1 and W.DateCompleted is null   
+										) E
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end --view 1
+
+		if @view = 2
+		begin
+			insert into @links
+				select	distinct
+						SourceSubject + '.' + cast(SourceSubjectID as varchar) as 'from',
+						cast(SourceIntersectID as varchar) + '.S' as 'to',
+						'Support' as category
+				from	@items
+				union
+				select	distinct
+						cast(SourceIntersectID as varchar) + '.S' as 'from',
+						TargetSubject + '.' + cast(TargetSubjectID as varchar) as 'to',
+						'' as category
+				from	@items O
+				where	(SourceObject + cast(SourceObjectID as varchar)) = (TargetObject + cast(TargetObjectID as varchar))
+				union
+				select	distinct
+						cast(SourceIntersectID as varchar) + '.S' as 'from',
+						cast(TargetIntersectID as varchar) + '.T' as 'to',
+						'' as category
+				from	@items O
+				where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+				--where	TargetIntersectID in (select SourceIntersectID from @items)
+				union
+				select	distinct
+						cast(TargetIntersectID as varchar) + '.T' as 'from',
+						TargetSubject + '.' + cast(TargetSubjectID as varchar) as 'to',
+						'Support' as category
+				from	@items
+				where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+
+			insert into @nodes
+				select	distinct
+						SourceSubject + '.' + cast(SourceSubjectID as varchar) as [key],
+						SourceSubject as [obj],
+						SourceSubjectID as [objid], 
+						SourceSubject as [type],
+						SourceSubjectTypeName as typeName,
+						SourceSubjectName as name,
+						SourceSubjectIconBackColor as back,
+						SourceSubjectIconForeColor as fore,
+						case 
+							when SourceSubject = @type and SourceSubjectID = @id then 'Focal'
 							else 'Normal'
-						end
-				from	[Intersect]
-				where	ID = @ID
+						end as template,
+						null as other,
+						0 as HasSourceRules
+				from	@items 
 
-			set @html = @html + '<div><b>Classification:</b> {Classification}</div>'
-		end;
+			insert into @nodes
+				select	distinct
+						cast(SourceIntersectID as varchar) + '.S' as [key],
+						SourceObject as [obj],
+						SourceObjectID as [objid], 
+						SourceObject as [type],
+						SourceObjectTypeName as typeName,
+						SourceObjectName as name,
+						SourceObjectIconBackColor as back,
+						SourceObjectIconForeColor as fore,
+						case 
+							when SourceObject = @type and SourceObjectID = @id then 'SupportFocal'
+							else 'SupportNormal'
+						end as template,
+						null as other,
+						0 as HasSourceRules
+				from	@items
 
-		if @Type = 'Responsibility'
-		begin
-			select	@n = T.Name, 
-					@t = T.Name,
-					@d = T.[Description]
-			from	Responsibility O
-					inner join ResponsibilityType T on T.ID = O.ResponsibilityTypeID
-			where	O.ID = @ID
+			merge	@nodes as T
+			using	(
+					select	distinct
+							cast(TargetIntersectID as varchar) + '.T' as [key],
+							TargetObject as [obj],
+							TargetObjectID as [objid], 
+							TargetObject as [type],
+							TargetObjectTypeName as typeName,
+							TargetObjectName as name,
+							TargetObjectIconBackColor as back,
+							TargetObjectIconForeColor as fore,
+							case 
+								when TargetObject = @type and TargetObjectID = @id then 'SupportFocal'
+								else 'SupportNormal'
+							end as template,
+							null as other,
+							HasSourceRules
+					from	@items
+					where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+					) S
+			on		(T.[key] = S.[key])
+			when	matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	([key], obj, [objid], [type], typeName, name, back, fore, template, other, HasSourceRules)
+			values	(S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.back, S.fore, S.template, S.other, S.HasSourceRules);
 
-			declare @contextsHtml nvarchar(max)
-			set @contextsHtml = '<table class="hoverable bordered striped" style="width:100%">' + 
-								'<thead><th>List</th><th>Code</th></thead>' + 
-								'<tbody>' + 
-								(
-								select		(select D.Name as 'td' for xml path(''), type),
-											(select I.Code as 'td' for xml path(''), type)
-								from		ResponsibilityContextItem R
-											inner join ReferenceItem I on R.ResponsibilityID = @ID and R.ObjectType = 'ReferenceItem' and I.ID = R.ObjectID
-											inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
-								FOR XML RAW('tr'), ELEMENTS
-								) +
-								'</tbody>' + 
-								'</table>'
+			merge	@nodes as T
+			using	(
+					select	distinct
+							TargetSubject + '.' + cast(TargetSubjectID as varchar) as [key],
+							TargetSubject as [obj],
+							TargetSubjectID as [objid], 
+							TargetSubject as [type],
+							TargetSubjectTypeName as typeName,
+							TargetSubjectName as name,
+							TargetSubjectIconBackColor as back,
+							TargetSubjectIconForeColor as fore,
+							case 
+								when TargetSubject = @type and TargetSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							HasSourceRules
+					from	@items
+					) S
+			on		(T.[key] = S.[key])
+			when	matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	([key], obj, [objid], [type], typeName, name, back, fore, template, other, HasSourceRules)
+			values	(S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.back, S.fore, S.template, S.other, S.HasSourceRules);
 
-			insert into @tbl values ('Name', @n)
-			insert into @tbl values ('Type', @t)
-			insert into @tbl values ('Description', @d)
-			insert into @tbl values ('Contexts', @contextsHtml)
+			--select	* from	@links
+			--select	* from	@nodes
 
-			set @html = @html + '<div><b>Contexts:</b> {Contexts}</div>'
-		end;
-
-		if @Type = 'Resource'
-		begin
-			--declare @e nvarchar(500), @fn nvarchar(250), @ln nvarchar(250)
-			--select	@e = Email, @fn = FirstName, @ln = LastName
-			--from	reporting.Global_Resource
-			--where	ResourceID = @ID
-
-			--insert into @tbl values ('Email', @e)
-			--insert into @tbl values ('FirstName', @fn)
-			--insert into @tbl values ('LastName', @ln)
-			--insert into @tbl values ('Role', '')
-
-			--set @html = @html + '<div><b>Email:</b> {Email}</div>'
-			--set @html = @html + '<div><b>First Name:</b> {FirstName}</div>'
-			--set @html = @html + '<div><b>Last Name:</b> {LastName}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'Rule'
-		begin
-			insert into @tbl
-				select	'TextPath', TextPath
-				from	Taxonomy O
-				where	ID = @ID
-
-			set @html = @html + '<div><b>Path:</b> {TextPath}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'RuleDimension'
-		begin
-			insert into @tbl
-				select	'Description', [Description]
-				from	RuleDimension
-				where	ID = @ID
-			insert into @tbl
-				select	'Name', [Name]
-				from	RuleDimension
-				where	ID = @ID
-
-			--set @html = @html + '<div><b>Path:</b> {Description}</div>'
-						
-		end;
-
-		if @Type = 'Taxonomy'
-		begin
-			insert into @tbl
-				select	'TextPath', TextPath
-				from	Taxonomy O
-				where	ID = @ID
-
-			set @html = @html + '<div><b>Path:</b> {TextPath}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'TaxonomyType'
-		begin
-			insert into @tbl
-				select	'Name', Name
-				from	TaxonomyType O
-				where	ID = @ID
-
-			set @hasDynamicFields = 1
-		end;
-
-		-- If required, get dynamic fields to add to list.
-		if @hasDynamicFields = 1
-		begin
-			select	@html = @html + '<div><b>' + FriendlyName + '</b>: ' + '{' + Name + '}' + '</div>' 
-			from	FieldWithRelation
-			where	ObjectType = @Type
-					and ObjectID = @ID
-					and Name not in (select Name from @tbl)
-
-			insert into @tbl
-				select	Name,
-						FormattedValue
-				from	FieldWithRelation
-				where	ObjectType = @Type
-						and ObjectID = @ID
-						and Name not in (select Name from @tbl)
-		end;
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	I.*,
+							C.challenges,
+							E.issues
+					from	@nodes I
+							cross apply (
+											select count(1) as challenges   
+											from Workflow W            			                          
+											where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column("I.objid")]') = 1 and W.DateCompleted is null   
+										) C
+							cross apply (
+											select count(1) as issues   
+											from Workflow W            			                          
+											where W.WorkflowType = 3 and W.Data.exist('/fields/ArtifactID[text() = sql:column("I.objid")]') = 1 and W.DateCompleted is null   
+										) E
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end --view 2
 	end
 
-	if @Action = 'Statistics'
+	if @view = 3
 	begin
-		set @html = '<h3>{Name}</h3><div>{Statistics}</div>'
+		declare @tFusionPoints table ( ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int )
 
-		set @hasStats = case @Type
-							when 'Artifact' then 1
-							when 'Taxonomy' then 1
-							else 0
-						end
+		declare @tItems table (
+			MapItemID int, --MapID int,
 
-		-- If required, build statistics table
-		if @hasStats = 1
-		begin
-			-- BUILD STATS LIST HTML -----------------------------------------
-			declare @statsHtml nvarchar(max)
-
-			declare @stats table (ID int identity, Name nvarchar(250), Score int)
-			insert into @stats 
-				select	T.Name,
-						coalesce(S.SCore, 0) as Score
-				from	StatisticType T
-						outer apply (
-									select	top 1
-											*
-									from	Statistic
-									where	StatisticTypeID = T.ID
-											and ObjectType = @Type
-											and ObjectID = @ID
-									order by DateStart desc
-									) S
-				where	T.[Object] = @Type + 'Type' 
-						and T.ObjectID = @typeID
-						and T.PartOfScore = 1
-
-			set @statsHtml = '<table class="hoverable bordered striped" style="width:100%">'
-
-			-- Loop through field name list ---------
-			set @statsHtml = @statsHtml + '<tbody>'
-			set		@current = 1
-			select	@max = max(ID) from @stats
-			while @current <= @max
+			SourceIntersectID int, 
+			SourceSubjectTypeName nvarchar(500), SourceSubjectName nvarchar(500), SourceSubject varchar(50), SourceSubjectID int,
+			SourceObjectTypeName nvarchar(500), SourceObjectName nvarchar(500), SourceObject varchar(50), SourceObjectID int, 
+			
+			TargetIntersectID int, 
+			TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, 
+			TargetObjectTypeName nvarchar(500), TargetObjectName nvarchar(500), TargetObject varchar(50), TargetObjectID int
+		)
+	
+		if @type = 'FusionAttribute'
 			begin
-				select	@statsHtml = @statsHtml + '<tr><td>' + Name  + '</td>' + '<td>' + cast(Score as varchar(5))  + ' Points</td></tr>'
-				from	@stats
-				where	ID = @current
+				insert into @tFusionPoints
+					select	I.ID,
+							NULL,
+							I.SourceFusionAttributeID,
+							I.TargetFusionAttributeID
+					from	MapRuleItem I
+							inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
+					where	I.SourceFusionAttributeID = @id or I.TargetFusionAttributeID = @id;
 
-				set @current = @current + 1
+				with cte as (
+					select	ID,
+							SourceFusionAttributeID,
+							TargetFusionAttributeID,
+							1 as [Level]
+					from	@tFusionPoints
+					union all
+					select	S.ID,
+							S.SourceFusionAttributeID,
+							S.TargetFusionAttributeID,
+							T.[Level] + 1 as [Level]
+					from	MapRuleItem S
+							inner join cte T on T.SourceFusionAttributeID = S.TargetFusionAttributeID and S.ID <> T.ID
+					where	T.[Level] <= 25
+				)
+				insert into @tFusionPoints
+					select ID, NULL, SourceFusionAttributeID, TargetFusionAttributeID from cte where ID not in (select ID from @tFusionPoints)
+
+				-- get all items directly tied to the focal object.
+				insert into @tItems
+					select	MI.ID,
+					
+							MI.SourceIntersectID,
+							SI.SubjectTypeName,
+							SI.SubjectName,
+							SI.Subject,
+							SI.SubjectID,
+							SI.ObjectTypeName,
+							SI.ObjectName,
+							SI.Object,
+							SI.ObjectID,
+
+							MI.TargetIntersectID,
+							TI.SubjectTypeName,
+							TI.SubjectName,
+							TI.Subject,
+							TI.SubjectID,
+							TI.ObjectTypeName,
+							TI.ObjectName,
+							TI.Object,
+							TI.ObjectID
+
+					from	@tFusionPoints F
+							inner join MapRuleItemMapItem J on J.MapRuleItemID = F.ID
+							inner join MapItem MI on MI.ID = J.MapItemID
+							inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
+							inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
+
+
+				-- get all items not directly tied to the focal object, but still tied to maps involved above.
+				insert into @tItems
+					select	MI.ID,
+							--NULL,
+					
+							MI.SourceIntersectID,
+							SI.SubjectTypeName,
+							SI.SubjectName,
+							SI.Subject,
+							SI.SubjectID,
+							SI.ObjectTypeName,
+							SI.ObjectName,
+							SI.Object,
+							SI.ObjectID,
+
+							MI.TargetIntersectID,
+							TI.SubjectTypeName,
+							TI.SubjectName,
+							TI.Subject,
+							TI.SubjectID,
+							TI.ObjectTypeName,
+							TI.ObjectName,
+							TI.Object,
+							TI.ObjectID
+
+					from	MapItem MI
+							inner join	(
+										select	ID.MapItemID
+										from	MapItemMap DM
+												inner join @tItems D on D.MapItemID = DM.MapItemID
+												inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																														select MapItemID from @tItems
+																														)
+										) O on O.MapItemID = MI.ID
+							inner join [IntersectDetail] SI on SI.ID = MI.SourceIntersectID
+							inner join [IntersectDetail] TI on TI.ID = MI.TargetIntersectID
 			end
-			set @statsHtml = @statsHtml + '</tbody>'
-			-----------------------------------------
-
-			insert into @tbl values ('Statistics', @statsHtml)
-
-			------------------------------------------------------------------
-		end;
-	end
-
-	-- Replace the fields in the template with the appropriate text value.
-	set		@current = 1
-	select	@max = max(ID) from @tbl
-
-	while @current <= @max
-	begin
-		select	@name = '{' + Name + '}',
-				@value = COALESCE(Value, '')
-		from	@tbl 
-		where	ID = @current
-
-		if @showIcon = 1
-		begin
-			if @name = '{Name}' and @icon is not null
+		else
 			begin
-				update	@tbl 
-				set		Value = '<div class="pull-left" style="width: 30px">' + @icon + '</div>' + '<div class="pull-right">' + @value + '</div>'
-				where	ID = @current
-				--set @usedIconAlready = 1
+				declare @tBusinessPoints table ( ID int, SourceIntersectID int, TargetIntersectID int )
+
+				insert into @objects values (@type, @id)
+
+				if not exists(
+					select	MI.ID
+					from	MapItem MI
+							inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
+							inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
+					where 	( (SI.Subject = @type and SI.SubjectID = @id) OR (SI.Object = @type and SI.ObjectID = @id)  )
+							OR ( (TI.Subject = @type and TI.SubjectID = @id) OR (TI.Object = @type and TI.ObjectID = @id)  )
+				)
+				begin
+					insert into @objects
+						select	case 
+									when I.Subject = @type and I.SubjectID = @id then I.Object
+									else I.Subject
+								end,
+								case 
+									when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
+									else I.SubjectID 
+								end
+						from	[Intersect] I
+								inner join IntersectType T on T.ID = I.IntersectTypeID 
+								inner join [Predicate] P on P.ID = T.PredicateID and P.Type = 6
+						where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+				end
+
+				-- get all items directly tied to the focal object.
+				insert into @tBusinessPoints
+					select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+					from	MapItem MI
+							inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+							inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+							inner join @objects O on	( (SI.Subject = O.Type and SI.SubjectID = O.ID) OR (SI.Object = O.Type and SI.ObjectID = O.ID)  ) OR 
+														( (TI.Subject = O.Type and TI.SubjectID = O.ID) OR (TI.Object = O.Type and TI.ObjectID = O.ID)  )
+
+				-- get all items not directly tied to the focal object, but still tied to maps involved above.
+				insert into @tBusinessPoints
+					select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+					from	MapItem MI
+							inner join	(
+										select	ID.MapItemID
+										from	MapItemMap DM
+												inner join @tBusinessPoints D on D.ID = DM.MapItemID
+												inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																														select ID from @tBusinessPoints
+																														)
+										) O on O.MapItemID = MI.ID;
+
+				with cte as (
+					select	ID,
+							SourceIntersectID,
+							TargetIntersectID,
+							1 as [Level]
+					from	@tBusinessPoints
+					union all
+					select	S.ID,
+							S.SourceIntersectID,
+							S.TargetIntersectID,
+							T.[Level] + 1 as [Level]
+					from	MapItem S
+							inner join cte T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID
+					where	T.[Level] <= 25
+				)
+				insert into @tBusinessPoints
+					select ID, SourceIntersectID, TargetIntersectID from cte where ID not in (select ID from @tBusinessPoints)
+
+				insert into @tItems
+					select	O.ID,
+							--NULL,
+					
+							O.SourceIntersectID,
+							SI.SubjectTypeName,
+							SI.SubjectName,
+							SI.Subject,
+							SI.SubjectID,
+							SI.ObjectTypeName,
+							SI.ObjectName,
+							SI.Object,
+							SI.ObjectID,
+
+							O.TargetIntersectID,
+							TI.SubjectTypeName,
+							TI.SubjectName,
+							TI.Subject,
+							TI.SubjectID,
+							TI.ObjectTypeName,
+							TI.ObjectName,
+							TI.Object,
+							TI.ObjectID
+
+					from	@tBusinessPoints O
+							inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
+							inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID
+
+				insert into @tFusionPoints
+					select	J.MapRuleItemID,
+							J.MapItemID,
+							T.SourceFusionAttributeID,
+							T.TargetFusionAttributeID
+					from	@tItems I
+							inner join MapRuleItemMapItem J on J.MapItemID = I.MapItemID
+							inner join MapRuleItem T on T.ID = J.MapRuleItemID
+							inner join FusionAttribute SFA on SFA.ID = T.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = T.TargetFusionAttributeID and TFA.Deleted = 0
 			end
-		end
 
-		set @html = REPLACE(@html, @name, @value)
+			--Load tables we will return to caller.
+			insert into @links
+				select	distinct
+						cast(S.SourceFusionAttributeID as varchar) + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [from],
+						cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [to],
+						'' as category
+				from	@tFusionPoints S
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+			insert into @nodes
+				select	distinct
+						cast(S.SourceFusionAttributeID as varchar) + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [key],
+						'FusionAttribute' as [obj],
+						SourceFusionAttributeID as [objid], 
+						'FusionAttribute' as [type],
+						T.Name as typeName,
+						A.TextPath as name,
+						'#000' as back,
+						'#fff' as fore,
+						'Fusion' as template,
+						B.SourceSubjectTypeName + ' : ' + B.SourceSubjectName as other,
+						null
+				from	@tFusionPoints S
+						inner join FusionAttribute A on A.ID = S.SourceFusionAttributeID
+						inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+			insert into @nodes
+				select	distinct
+						cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [key],
+						'FusionAttribute' as [obj],
+						TargetFusionAttributeID as [objid], 
+						'FusionAttribute' as [type],
+						T.Name as typeName,
+						A.TextPath as name,
+						'#000' as back,
+						'#fff' as fore,
+						'Fusion' as template,
+						B.TargetSubjectTypeName + ' : ' + B.TargetSubjectName as other,
+						null
+				from	@tFusionPoints S
+						inner join FusionAttribute A on A.ID = S.TargetFusionAttributeID
+						inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+				where	cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') not in (select [key] from @nodes)
 
-		set @current = @current + 1
-	end
+				--gets rid of dupes
+				delete	@nodes 
+				where	other is null 
+						and (obj + cast([objid] as varchar)) in (
+																select	(obj + cast([objid] as varchar))
+																from	@nodes 
+																where	other is not null
+															  )
+				delete	T
+				from	@links T
+						left join @nodes S on S.[key] = T.[from] or S.[key] = T.[to]
+				where	S.[key] is null
 
-	--if @showIcon = 1 and @icon is not null
-	--begin
-	--	set @html = @icon + '<br/>' + @html
-	--end
+--select	* from	@links
+--select	* from	@nodes
 
-	-- Return the properly formatted values.
-	select	'' as Title,
-			@html as Body;
-END
+		select	(
+				select	*
+				from	@links O
+				for json path			
+				) as 'links',
+				(
+				select	*
+				from	@nodes
+				for json path			
+				) as 'nodes'
+		for json path, WITHOUT_ARRAY_WRAPPER
+	end --view 3
+end
 GO
 
-ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
+
+alter PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
 --declare
 	@TemplateType varchar(25),
 	@Type varchar(50),
 	@ID int,
-	@Action varchar(50)
+	@Action varchar(50),
+	@SubjectName VARCHAR (200) = 'Governing Domain'
 --set @TemplateType = 'Lookup'
 --set @Type = 'Artifact'
 --set @ID = 7004--16435
@@ -3574,7 +1751,7 @@ BEGIN
 
 	-- Get the static tokens, depending on the type.
 	declare @n nvarchar(250), @t nvarchar(250), @s nvarchar(25), @v int, @dc datetime, @du datetime, @d nvarchar(4000);
-
+		
 	-- Get common fields
 	select	@typeID = ObjectTypeID,
 			@icon = '<div title=''' + ObjectTypeName + ''' class=''tooltip-icon'' style=''background-color: ' + IconBackColor + '; color: ' + IconForeColor + '''><i class=''fa fa-' + IconText + '''></i></div>',
@@ -3585,6 +1762,19 @@ BEGIN
 	from	cache.ObjectDetails
 	where	[Object] = @Type
 			and ObjectID = @ID;
+
+	--fusion attributes arent in cache
+	if @Type = 'FusionAttribute'
+	begin		
+		select 
+			@typeID = fa.fusionattributetypeid,
+			@n = fa.name,
+			@t = fat.textpath,
+			@link = dbo.GenerateNgObjectUrl('FusionAttribute', fat.id, fa.id) 
+		from fusionattribute fa 
+			inner join fusionattributetype fat on (fa.fusionattributetypeid = fat.id) 
+		where fa.id = @ID
+	end
 
 	if @n is not null
 	begin
@@ -3925,6 +2115,13 @@ BEGIN
 			from	Artifact
 			where	ID = @ID
 
+			insert into @tbl 
+				select 'GoverningDomain', tt.name
+				from
+					artifact a
+					inner join taxonomytype tt on (a.taxonomytypeid = tt.id and a.id = @ID)
+
+			set @html = @html + '<div><b>' + @SubjectName + ':</b> {GoverningDomain}</div>'
 			set @html = @html + '<div><b>Status:</b> {Status}</div>'
 			set @html = @html + '<div><b>Path:</b> {Path}</div>'
 
@@ -4060,6 +2257,31 @@ BEGIN
 			set @html = @html + '<div><b>Classification:</b> {Classification}</div>'
 		end;
 
+		
+		if @Type = 'Issue'
+		begin
+			insert into @tbl values('Name', '')
+			insert into @tbl values('Description', '')
+					
+			if exists (select id from issue where id = @ID)
+			begin			
+				set @html = @html + '<div><b>Issue Type:</b> {IssueType}</div>'
+				set @html = @html + '<div><b>Criticality:</b> {Criticality}</div>'
+						
+				insert into @tbl 
+					select 'IssueType', it.name 
+					from issuetype it inner join issue i on(i.issuetypeid = it.id) 
+					where i.id = @ID
+
+				insert into @tbl 
+					select 'Criticality', case when i.Criticality = 0 then 'Negligible' when i.Criticality = 1 then 'Low' when i.Criticality = 2 then 'Medium' when i.Criticality = 3 then 'High'  when i.Criticality = 4 then 'Critical' else 'N/A' end
+					from issuetype it inner join issue i on(i.issuetypeid = it.id) 
+					where i.id = @ID
+
+				set @hasDynamicFields = 1
+			end			
+		end;
+
 		if @Type = 'Responsibility'
 		begin
 			select	@n = T.Name, 
@@ -4168,7 +2390,7 @@ BEGIN
 
 			set @hasDynamicFields = 1
 		end;
-
+		
 		-- If required, get dynamic fields to add to list.
 		if @hasDynamicFields = 1
 		begin
@@ -4283,379 +2505,1616 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE [dbo].[GetSiteNavigation]
+ALTER PROCEDURE [dbo].[ProcessEagleMCToEagleFieldRelations]
+	@StagingFileID int,
+	@FusionID int
 AS
-BEGIN
+BEGIN	
 	SET NOCOUNT ON;
-
-SELECT	n.Name as MenuID,
-		n.SortOrder,
-		0 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		NULL AS Items	
-FROM SiteNav n
-WHERE n.Name = '#Monitor'
-UNION ALL
-
-SELECT	n.Name as MenuID,
-		n.SortOrder,
-		0 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		NULL AS Items		
-FROM SiteNav n
-WHERE n.Name = '#Home'
-UNION ALL
-
-SELECT	n.Name as MenuID,
-		n.SortOrder,
-		0 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		(
-			SELECT	name,
-					url,
-					0 as feature,
-					dbo.ArtifactNgSiteNavigation(id) as items
-			FROM	(
-					SELECT		TOP 1000
-								a.id,
-								a.name,
-								dbo.GenerateNgObjectUrl('ArtifactType', a.ID, 0) As url
-					FROM		ArtifactType a
-					left join SiteNav v on v.ObjectID = a.ID and v.Object = 'ArtifactType'
-					WHERE		a.ParentID IS NULL and v.ObjectID is null
-					ORDER BY	a.name
-					) BG
-					FOR XML PATH('nav'), TYPE
-		) AS Items
-FROM SiteNav n
-WHERE n.Name = '#Glossary'
-
-UNION ALL
-
-SELECT	n.Name as MenuID,
-		n.SortOrder,
-		0 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		(
-		SELECT	ft.name, 
-				'model/classification/' + ft.name As url,
-				0 as feature,
-				(
-
-				SELECT	t.name, 
-						dbo.GenerateNgObjectUrl('TaxonomyType', 0, t.ID)  As url,
-						0 as feature
-				FROM	TaxonomyType t
-				LEFT JOIN SiteNav v on v.ObjectID = t.ID and v.Object = 'TaxonomyType'
-				WHERE	TaxonomyTypeClassID = FT.ID and v.ObjectID is null
-				FOR XML PATH('nav'), TYPE
-				) AS items	
-		FROM	(
-                select top 100 percent ID, name from TaxonomyTypeClass C where exists(select 1 from TaxonomyType where TaxonomyTypeClassID = C.ID) order by name
-				) FT
-		LEFT JOIN SiteNav v on v.ObjectID = FT.ID and v.Object ='TaxonomyTypeClass'
-		WHERE v.ObjectID IS NULL
-		FOR XML PATH('nav'), TYPE
-		) AS Items
-FROM SiteNav n
-WHERE n.Name = '#Models'
-
-UNION ALL
-
-SELECT	n.Name as MenuID,
-		n.SortOrder,
-		0 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		(
-		SELECT	ft.name, 				
-				'policy/classification/' + cast(ft.id as varchar(15)) As url,
-				0 as feature,
-				(
-				SELECT	t.name, 
-						dbo.GenerateNgObjectUrl('PolicyType', t.ID, 0)  As url,
-						0 as feature
-				FROM	PolicyType t
-				LEFT JOIN SiteNav v on v.ObjectID = t.ID and v.Object = 'PolicyType'
-				WHERE	PolicyTypeClassID = FT.ID and v.ObjectID is null
-				FOR XML PATH('nav'), TYPE
-				) AS items	
-		FROM	(
-                select top 100 percent ID, name from PolicyTypeClass C where exists(select 1 from PolicyType where PolicyTypeClassID = C.ID) order by name
-				) FT
-		LEFT JOIN SiteNav v on v.ObjectID = FT.ID and v.Object ='PolicyTypeClass'
-		WHERE v.ObjectID IS NULL
-		FOR XML PATH('nav'), TYPE
-		) AS Items
-		FROM SiteNav n
-WHERE n.Name = '#Policy'
 		
-UNION ALL
+	declare	@eagleStreamID int,
+			@streamToFieldIntersectTypeID int,				
+			@currentEagleFusionId int;
 
-SELECT	n.Name as MenuID,
-		n.SortOrder,
-		0 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		null AS Items
-FROM SiteNav n
-WHERE n.Name = '#Reference'
+	declare	@IDList Table(IntersectID int,StageID Int);
 
-UNION ALL
+	declare	@Intersects IDTable;
 
-SELECT	n.Name as MenuID,
-		n.SortOrder,
-		2 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		(
-		SELECT		name, 
-					dbo.GenerateNgObjectUrl('FusionType', FT.ID, 0)  As url,
-					2 as feature,
+	declare	@MessageStreamFussionAttributeID int,
+			@EagleFieldFusionAttributeID int;
+
+	select	@MessageStreamFussionAttributeID = 196;
+	select	@EagleFieldFusionAttributeID = 205;
+
+	-- load the stream that we want to add relations ships for    
+	select	@eagleStreamID = fusionattributeid 
+	from	[fusion].[stagingfile] 
+	where	id = @StagingFileID and 
+			fusionID = @FusionID;
+			
+	if @eagleStreamID is null
+	begin
+		raiserror('ERROR : UNABLE TO LOCATE SPECIFIED STREAM INFORMATION FOR INPUT FUSION ID / STAGING ID', 15, 1);
+		return;
+	end;
+
+	select @currentEagleFusionId = FusionID from [dbo].[fusionattribute] where id = @eagleStreamID
+
+	-- add relationships for Stream (196) to Eagle DB Columns (205)
+	-- using star tag field that is a field for for fusionattribute type 205 lookup fields to add rels for
+	-- todo pull to separate proc
+	if @eagleStreamID is not null
+	begin
+			Declare @StreamToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int,IntersectTypeID int, ID int);
+			
+			-- load the intersect type ids
+			select	@streamToFieldIntersectTypeID = ID
+			from	IntersectType
+			where	(Subject = 'FusionAttributeType' and Object = 'FusionAttributeType') 
+					and	( 
+						(SubjectID = @MessageStreamFussionAttributeID and ObjectID = @EagleFieldFusionAttributeID) OR
+						(SubjectID = @EagleFieldFusionAttributeID and ObjectID = @MessageStreamFussionAttributeID)
+						)
+
+			if @streamToFieldIntersectTypeID is null
+			begin
+				raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS FOR EAGLE TO EAGLE MESSAGE STREAMS', 15, 1);
+				return;
+			end;
+
+			-- insert into in memory table variable the values we want to add intersects for
+			insert into @StreamToFieldList
+				select		fa.id, 
+							sf.FusionAttributeID, 
+							@streamToFieldIntersectTypeID, 
+							ROW_NUMBER() OVER (Order by fa.id) AS 'RowNumber'
+				from		field f 
+							inner join FusionAttribute fa on f.ObjectID = fa.ID and fa.fusionid = @currentEagleFusionId
+							inner join FieldType ft on f.fieldtypeid = ft.id
+							inner join fusion.StagingFileItem sfi on sfi.tag = f.value				
+							inner join fusion.StagingFile sf on sfi.stagingfileid = sf.id
+							left join	(
+										select	SubjectID,
+												ObjectID,
+												1 as hasExisting
+										from	[Intersect]
+										where	Subject = 'FusionAttribute' and Object= 'FusionAttribute'
+										) existing on ( (existing.SubjectID = sf.FusionAttributeID and existing.ObjectID = fa.ID) OR (existing.SubjectID = fa.ID and existing.ObjectID = sf.FusionAttributeID) )
+				where		fa.fusionattributetypeid = @EagleFieldFusionAttributeID and 
+							ft.name = 'startag' and 
+							sfi.stagingfileid = @StagingFileID and 
+							existing.hasExisting is null
+				group by	fa.id, sf.FusionAttributeID  -- grouping is used to eliminate duplicate star tag relations
+
+			--insert intersect records and save there id's
+			-- trick is to use merge to keep the sequence id and staging row ids
+			-- http://stackoverflow.com/questions/15614261/using-output-clause-to-insert-value-not-in-inserted
+			MERGE
+				INTO    [Intersect] d
+				USING   (
+							SELECT	sr.IntersectTypeID, 
+									2 as class,
+									--sr.ID as srID,
+									'FusionAttribute' as Subject,
+									sr.StreamFusionAttributeID as SubjectID,
+									'FusionAttribute' as Object,
+									sr.FieldFusionAttributeID as ObjectID
+							FROM	@StreamToFieldList sr							
+						) s
+				ON      (
+						s.IntersectTypeID = d.IntersectTypeID 
+						and s.Subject = d.Subject and s.SubjectID = d.SubjectID 
+						and s.Object = d.Object and s.ObjectID = d.ObjectID
+						)
+				WHEN NOT MATCHED THEN
+				INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
+				VALUES  (s.IntersectTypeID, s.class, NULL, s.Subject, s.SubjectID, s.Object, s.ObjectID);
+				--OUTPUT  INSERTED.ID, s.srID into @IDList;
+	end;
+end
+GO
+
+ALTER PROCEDURE [fusion].[ProcessEagleMCToBBMnemonic]
+	@StagingFileID int,
+	@FusionID int
+AS
+BEGIN	
+	SET NOCOUNT ON;
+		
+	declare		@eagleStreamID int,
+				@streamToFieldIntersectTypeID int;
+
+	declare		@IDList Table(IntersectID int,StageID Int);
+
+	declare		@Intersects IDTable;
+
+	declare		@MessageStreamFussionAttributeID int = 196,
+				@BloombergMnemonicFusionID int = 301;
+				
+	-- load the stream that we want to add relations ships for    
+	select @eagleStreamID = fusionattributeid from [fusion].[stagingfile] where id = @StagingFileID and fusionID = @FusionID
+		
+	if @eagleStreamID is null
+	begin
+		raiserror('ERROR : UNABLE TO LOCATE SPECIFIED STREAM INFORMATION FOR INPUT FUSION ID / STAGING ID', 15, 1);
+		return;
+	end;
+
+	-- add relationships for Stream (196) to Eagle DB Columns (205)
+	-- using star tag field that is a field for for fusionattribute type 205 lookup fields to add rels for
+	-- todo pull to separate proc
+	if @eagleStreamID is not null
+	begin
+			Declare @StreamToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int, IntersectTypeID int, ID int);
+			
+			-- load the intersect type ids
+			select	@streamToFieldIntersectTypeID = ID
+			from	[IntersectType]
+			where	Subject = 'FusionAttributeType' and 
+					Object = 'FusionAttributeType' and 
 					(
-					SELECT		name, 
-								dbo.GenerateObjectUrl('Fusion', FT.ID, Fusion.ID)  As url,
-								'F' + cast(Fusion.ID as varchar(15)) as menuID,
-								2 as feature
-					FROM		Fusion
-					WHERE		Fusion.FusionTypeID = FT.ID
-					ORDER BY	name
-					FOR XML PATH('nav'), TYPE
-					) AS items	
-		FROM		FusionType FT
-		ORDER BY	name
-		FOR XML PATH('nav'), TYPE
-		) AS Items	
-	FROM SiteNav n
-WHERE n.Name = '#Fusion'
+						( SubjectID = @MessageStreamFussionAttributeID and ObjectID = @BloombergMnemonicFusionID ) OR
+						( SubjectID = @BloombergMnemonicFusionID and ObjectID = @MessageStreamFussionAttributeID )
+					)
+
+			if @streamToFieldIntersectTypeID is null
+			begin
+				raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS FOR EAGLE TO EAGLE MESSAGE STREAMS', 15, 1);
+				return;
+			end;
+
+			-- insert into in memory table variable the values we want to add intersects for
+			insert into @StreamToFieldList
+				select		fa.id, 
+							sf.FusionAttributeID, 
+							@streamToFieldIntersectTypeID, 
+							ROW_NUMBER() OVER (Order by fa.id) AS 'RowNumber'
+				from		fusionAttribute fa
+							inner join [fusion].[StagingFileItem] sfi on (sfi.value = fa.name)				
+							inner join [fusion].[StagingFile] sf on (sfi.stagingfileid = sf.id)
+							left join [Intersect] I on	I.IntersectTypeID = @streamToFieldIntersectTypeID and 
+														I.Subject = 'FusionAttribute' and 
+														I.Object ='FusionAttribute' and
+														(
+															( SubjectID = sf.FusionAttributeID and ObjectID = fa.ID ) OR
+															( SubjectID = fa.ID and ObjectID = sf.FusionAttributeID )
+														)
+					where		fa.fusionattributetypeid = @BloombergMnemonicFusionID and 
+								sfi.stagingfileid = @StagingFileID and 
+								I.ID is null
+					group by	fa.id, sf.FusionAttributeID  -- grouping is used to eliminate duplicate star tag relations
+
+			MERGE
+				INTO    [Intersect] d
+				USING   (
+							SELECT	IntersectTypeID, 
+									--ID,
+									'FusionAttribute' as Subject,
+									StreamFusionAttributeID as SubjectID,
+									'FusionAttribute' as Object,
+									FieldFusionAttributeID as ObjectID
+							FROM	@StreamToFieldList							
+						) s
+				ON      (
+						s.IntersectTypeID = d.IntersectTypeID 
+						and s.Subject = d.Subject and s.SubjectID = d.SubjectID 
+						and s.Object = d.Object and s.ObjectID = d.ObjectID
+						)
+				WHEN NOT MATCHED THEN
+					INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
+					VALUES  (s.IntersectTypeID, 2, NULL, s.Subject, s.SubjectID, s.Object, s.ObjectID);
+				--OUTPUT  INSERTED.ID, s.ID into @IDList;
+										
+			--insert into @Intersects 
+			--	select idl.intersectid from @IDList idl;
+			
+			--declare @IntersectCount int
+			--select @IntersectCount = count(1) from @Intersects
+			
+			--if @IntersectCount > 0 
+			--begin				
+			--	EXEC cache.SynchronizeRelationships @Intersects
+			--end
+	end;
+end
+GO
+
+ALTER PROCEDURE [fusion].[ProcessEagleMCToBloombergRelations]	
+	@StagingFileID int,
+	@FusionID int
+AS
+BEGIN	
+	SET NOCOUNT ON;
+	
+	
+	declare		@eagleStreamID int;				
+	declare		@IntersectCount int;
+	Declare		@IDList Table(IntersectID int,StageID Int);
+	declare		@Intersects IDTable;
+	declare		@fieldToBBIntersectTypeID int;
+
+	-- load the panel that we want to add relations ships for
+    
+	select @eagleStreamID = fusionattributeid from [fusion].[stagingfile] where id = @StagingFileID and fusionID = @FusionID
+	
+	if @eagleStreamID is null
+	begin
+		raiserror('ERROR : UNABLE TO LOCATE SPECIFIED STREAM INFORMATION FOR INPUT FUSION ID / STAGING ID', 15, 1);
+		return;
+	end;
+			
+	exec ProcessEagleMCToEagleFieldRelations @StagingFileID, @FusionID
+
+	exec [fusion].[ProcessEagleMCToBBMnemonic] @StagingFileID, @FusionID
+
+
+	-- add relations for Eagle Field (205) to Bloomberg mnemonic (301)
+	if @eagleStreamID is not null
+	begin
+		Declare @BBToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int, IntersectTypeID int, ID int);
 		
-UNION ALL
+		-- load the intersect id's for message stream to bb mnemonic	
 
-SELECT	n.Name as MenuID, 
-		n.SortOrder,
-		4 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		(
-        SELECT	'People' AS name, --'#People' as MenuID,
-                'community/groups' AS url, 		        
-                0 as feature,
-		        NULL AS Items
-        FOR XML PATH('nav'), TYPE
-        ) AS Items
-FROM SiteNav n
-WHERE n.Name = '#Community'
-UNION ALL
+		select	@fieldToBBIntersectTypeID = ID
+			from	[IntersectType]
+			where	Subject = 'FusionAttributeType' and 
+					Object = 'FusionAttributeType' and 
+					(
+						( SubjectID = 205 and ObjectID = 301 ) OR
+						( SubjectID = 301 and ObjectID = 205 )
+					)
 
-SELECT	'#Admin' as MenuID,
-		999 as SortOrder,
-		0 as Feature,
-		'fa-cogs' as Icon,
-		'Administration' as Title,
-		(
-			select	*
-			from	(
-					SELECT	'Security' AS name, 
-							'#/' AS url, 
-							0 as feature,
-							(
-							select	*
-							from	(
-									SELECT	'Groups' AS name, 
-											'#/groups/administration' AS url, 
-											--'Menu_A_S_G' as menuID,
-											0 as feature,
-											NULL AS items
-									union all
-									SELECT	'Users' AS name, 
-											'#/resources/administration' AS url, 
-											--'Menu_A_S_R' as menuID,
-											0 as feature,
-											NULL AS items
-									union all
-									SELECT	'Responsibilities' AS name, 
-											'#/governance/administration' AS url, 
-											0 as feature,
-											NULL AS items
-                            ) bg
-							FOR XML PATH('nav'), TYPE
-							) AS items
+		if @fieldToBBIntersectTypeID is null
+		begin
+			raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS FOR EAGLE TO BLOOMBERG INTERSECT', 15, 1);
+			return;
+		end
+
+		-- load into memory the id's that we need to add intersects for
+		insert into @BBToFieldList
+			select	fa.id as 'fieldID', faBB.id as 'bbID', @fieldToBBIntersectTypeID, ROW_NUMBER() OVER (Order by sfi.id) AS 'RowNumber'
+			from	field f 
+					inner join fusionAttribute fa on (f.ObjectID = fa.ID)
+					inner join fieldtype ft on (f.fieldtypeid = ft.id)
+					inner join [fusion].[StagingFileItem] sfi on (sfi.tag = f.value)				
+					inner join [fusion].[StagingFile] sf on (sfi.stagingfileid = sf.id)						
+					inner join fusionAttribute faBB on (faBB.Name = sfi.value and faBB.fusionattributetypeid = 301)		
+					left join [Intersect] I on	I.IntersectTypeID = @fieldToBBIntersectTypeID and 
+												I.Subject = 'FusionAttribute' and 
+												I.Object ='FusionAttribute' and
+												(
+													( I.SubjectID = faBB.ID and I.ObjectID = fa.ID ) OR
+													( I.SubjectID = fa.ID and I.ObjectID = faBB.ID )
+												)
+			where	fa.fusionattributetypeid = 205 and 
+					ft.name = 'startag' and 
+					sfi.stagingfileid = @StagingFileID and 
+					I.ID is null;
+
+			MERGE
+				INTO    [Intersect] d
+				USING   (
+							SELECT	IntersectTypeID, 
+									--ID,
+									'FusionAttribute' as Subject,
+									StreamFusionAttributeID as SubjectID,
+									'FusionAttribute' as Object,
+									FieldFusionAttributeID as ObjectID
+							FROM	@BBToFieldList
+						) s
+				ON      (
+						s.IntersectTypeID = d.IntersectTypeID 
+						and s.Subject = d.Subject and s.SubjectID = d.SubjectID 
+						and s.Object = d.Object and s.ObjectID = d.ObjectID
+						)
+				WHEN NOT MATCHED THEN
+				INSERT  (IntersectTypeID, Classification, Subject, SubjectID, Object, ObjectID)
+				VALUES  (s.IntersectTypeID, 2, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID);
+				--OUTPUT  INSERTED.ID, s.ID into @IDList;										
+
+			--insert into @Intersects 
+			--	select idl.intersectid from @IDList idl;
 						
-					union all
-
-					SELECT	'MetaModel' AS name, 
-							'#/' AS url,
-							0 as feature, 
-							(
-							select	*
-							from	(
-									SELECT	'Artifacts' AS name, 
-											'#/artifacts/administration' AS url, 
-											0 as feature,
-											NULL AS items
-									union all
-									SELECT	'Attributes' AS name, 
-											'#/attributes/administration' AS url, 
-											0 as feature,
-											NULL AS items
-									union all
-									SELECT	'Lookups' AS name, 
-											'#/lookups/administration' AS url, 
-											0 as feature,
-											NULL AS items
-									union all
-									SELECT	'Models' AS name, 
-											'#/catalogs/administration' AS url, 
-											0 as feature,
-											NULL AS items
-                                    union all
-									SELECT	'Policies' AS name, 
-											'#/policies/administration' AS url, 
-											1 as feature,
-											NULL AS items
-                                    union all
-									SELECT	'Relationships' AS name, 
-											'#/relations/administration' AS url, 
-											0 as feature,
-											NULL AS items
-                                    union all
-                                    SELECT	'Rules' AS name, 
-											'#/rules/administration' AS url, 
-											0 as feature,
-											NULL AS items
-									) bg
-							FOR XML PATH('nav'), TYPE
-							) AS items
-						
-					union all
-
-					SELECT	'Metrics' AS name, 
-							'#/' AS url,
-							0 as feature, 
-							(
-							select	*
-							from	(
-									SELECT	'Analytics' AS name, 
-											'#/analytics/administration' AS url, 
-											5 as feature,
-											NULL AS items
-									union all
-					                SELECT	'Dashboards' AS name, 
-							                '#/reporting/administration' AS url, 
-							                0 as feature,
-							                NULL AS items
-                                    union all
-					                SELECT	'Surveys' AS name, 
-							                '#/surveys/administration' AS url, 
-							                7 as feature,
-							                (
-							                SELECT	'Response Types' AS name, 
-									                '#/surveyresponsetypes/administration' AS url, 
-									                7 as feature,
-									                NULL AS items
-							                FOR XML PATH('nav'), TYPE
-							                ) AS items
-									) bg
-							FOR XML PATH('nav'), TYPE
-							) AS items
-						
-					union all
-
-					SELECT	'Reference' AS name, 
-							'#/domains/administration' AS url, 
-							0 as feature,
-							NULL AS items
-
-					union all
-
-					SELECT	'Workflow' AS name, 
-							'#/workflow/administration' AS url, 
-							0 as feature,
-							NULL AS items
-
-                    union all
-
-                    SELECT	'Templates' AS name, 
-							'#/templates/administration' AS url, 
-							0 as feature,
-							NULL AS items
-
-					union all
-
-					SELECT	'Integration' AS name, 
-							'#/' AS url, 
-							0 as feature,
-							(
-							select	*
-							from	(
-									SELECT	'Bulk Loader' AS name, 
-											'#/load' AS url, 
-											0 as feature,
-											NULL AS items
-									union all
-									SELECT	'Fusion' AS name, 
-											'#/fusion/administration' AS url, 
-											2 as feature,
-											NULL AS items
-									union all
-									SELECT	'API' AS name, 
-											'/swagger' AS url, 
-											0 as feature,
-											NULL AS items
-									) bg
-							FOR XML PATH('nav'), TYPE
-							) AS items
-
-                    union all
-
-                    SELECT	'Settings' AS name, 
-							'#/settings' AS url, 
-							0 as feature,
-							NULL AS items
-            ) bg
-			for xml path('nav'), type
-		) as Items
-
-	where 1 = 1
-
-	UNION ALL
-
-	SELECT	n.Name as MenuID,
-		n.SortOrder,
-		0 as Feature,
-		n.Icon as Icon,
-		n.Title as Title,
-		(
-		SELECT	'Rules' AS name, 
-		'quality/rule' AS url, 
-		0 as feature,
-		NULL AS items
-		for xml path('nav'), type
-		) AS Items
-	FROM SiteNav n
-	WHERE n.Name = '#Data Quality'
-
-	UNION ALL
-
-	SELECT 
-		'~' + Name AS MenuID,
-		s.SortOrder,
-		0 AS Feature,
-		s.Icon as Icon,
-		s.Title as Title,
-		dbo.CustomSiteNavigation(ID) AS Items
-	from SiteNav s
-	where ParentID IS NULL and Name not like '#%'
-
-	order by sortorder
+			--select @IntersectCount = count(1) from @Intersects
+			--if @IntersectCount > 0 
+			--begin
+			--	EXEC cache.SynchronizeRelationships @Intersects
+			--end
+	end;
 END
 GO
 
-ALTER PROCEDURE [fusion].[Rules] 
+
+alter procedure [fusion].[ProcessFusionCacheInQueue]
+--declare
+	@FusionID int
+--set @FusionID = 15
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	UPDATE  FusionAttribute
+	SET		TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
+	FROM	FusionAttribute 
+	WHERE	FusionID = @FusionID and deleted = 0
+
+end
+GO
+
+alter procedure [utility].[GetArtifactsUpForCertification]
+as
+begin
+	set nocount on;
+	declare @artifactTypes table (RowID int identity, ID int)
+	declare @subjectAreas table (RowID int identity, ID int)
+
+	-- loop control variables
+	declare @current int,
+			@max int
+
+	-- certification loop instance variables
+	declare @wt int = 2,
+			@id int,
+			@start datetime,
+			@end datetime,
+			@months int,
+			@days int,
+			@calculationDate datetime,
+			@difMonths int,
+			@calculationDateMinusDaysBefore date,
+			@lastStartDate datetime,
+			@minDate datetime = '1900-01-01 00:00:00.000',
+			@DateFieldExists bit = 0,
+			@currentDate datetime = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(getutcdate()) AS varchar) AS DATETIME)
+
+	-- 1. CHECK ARTIFACT TYPES -------------------------------------
+	-- get the artifact types that need to be checked
+	insert into @artifactTypes
+		select	T.ID
+		from	ArtifactType T
+				inner join WorkflowTypeRelation R on R.[Object] = 'ArtifactType' and R.ObjectID = T.ID and R.WorkflowType = @wt and R.[Enabled] = 1
+
+--select * from @artifactTypes
+
+	set @current = 1
+	select @max = MAX(RowID) from @artifactTypes
+	while @current <= @max
+	begin
+		-- set to default
+		set @start = null
+		set @end = null
+		set @months = null
+		set @days = null
+
+		select @id = ID from @artifactTypes where RowID = @current
+
+		select	@start = Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'),
+				@end = Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'),
+				@months = Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'),
+				@days = Fields.value('(/fields/DaysGivenToCompleteCertification)[1]', 'int'),
+				@calculationDate = Fields.value('(/fields/DateForScheduleCalculation)[1]', 'datetime'),
+				@lastStartDate = Fields.value('(/fields/CertificationStartDate)[1]', 'datetime')
+		from	WorkflowTypeRelation
+		where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
+
+		if @end is null
+		begin
+			set @end = @minDate
+		end
+
+--select DATEADD(d, -60, '2015-07-31 00:00:00.000')
+
+		set @calculationDateMinusDaysBefore = DATEADD(d, -@days, @calculationDate)
+		select @difMonths = DATEDIFF(mm, @calculationDateMinusDaysBefore, getutcdate())
+
+--select	@id as ArtifactTypeID,
+--		@calculationDate as CalculationDate,
+--		@calculationDateMinusDaysBefore as CalculationDateMinusDaysBefore,
+--		@difMonths as NumMonthsSinceLastCertification,
+--		@months as NumMonthsBetweenCertifications,
+--		@lastStartDate as LastStartDate
+
+		if ((@difMonths >= @months) and (DATEDIFF(mm, @end, getutcdate()) >= @months) OR @lastStartDate is null) --or (@difMonths % @months = 0)
+		begin
+			set @start = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(@calculationDateMinusDaysBefore) AS varchar) AS DATETIME) --CONVERT(date, getutcdate())
+			set @end = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(@calculationDate) AS varchar) AS DATETIME) --DATEADD(d, @days, CONVERT(date, getutcdate()))
+--select @start, @end, DATEDIFF(d, @start, @end)
+
+			if DATEDIFF(d, @start, @end) < @days
+			begin
+				set @start = @currentDate
+				set @end = DATEADD(d, @days, @currentDate)
+			end
+
+			select	@DateFieldExists = Fields.exist('fields/CertificationStartDate')
+			from	WorkflowTypeRelation
+			where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
+
+--select @start, @end
+--select @DateFieldExists as DateFieldExists
+
+			if @DateFieldExists = 1
+			begin
+				update	WorkflowTypeRelation
+				set		Fields.modify('delete (/fields/CertificationStartDate)')
+				where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
+			end
+
+			update	WorkflowTypeRelation
+			set		Fields.modify('insert <CertificationStartDate>{sql:variable("@start")}</CertificationStartDate> into (/fields)[1]')
+			where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
+
+			select	@DateFieldExists = Fields.exist('fields/CertificationEndDate')
+			from	WorkflowTypeRelation
+			where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
+
+			if @DateFieldExists = 1
+			begin
+				update	WorkflowTypeRelation
+				set		Fields.modify('delete (/fields/CertificationEndDate)')
+				where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
+			end
+
+			update	WorkflowTypeRelation
+			set		Fields.modify('insert <CertificationEndDate>{sql:variable("@end")}</CertificationEndDate> into (/fields)[1]')
+			where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
+		end
+
+		-- Increment
+		set @current = @current + 1
+	end
+
+	-- 2. CHECK VOCABULARIES ---------------------------------------
+	-- get the vocabularies that need to be checked
+	insert into @subjectAreas
+		select	T.ID
+		from	TaxonomyType T
+				inner join WorkflowTypeRelation R on R.[Object] = 'TaxonomyType' and R.ObjectID = T.ID and R.WorkflowType = @wt and R.[Enabled] = 1
+
+	set @current = 1
+	select @max = MAX(RowID) from @subjectAreas
+	while @current <= @max
+	begin
+	--	-- set to default
+		set @start = null
+		set @end = null
+		set @months = null
+		set @days = null
+	
+		select @id = ID from @subjectAreas where RowID = @current
+
+		select	@start = Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'),
+				@end = Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'),
+				@months = Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'),
+				@days = Fields.value('(/fields/DaysGivenToCompleteCertification)[1]', 'int'),
+				@calculationDate = Fields.value('(/fields/DateForScheduleCalculation)[1]', 'datetime'),
+				@lastStartDate = Fields.value('(/fields/CertificationStartDate)[1]', 'datetime')
+		from	WorkflowTypeRelation
+		where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
+	
+		if @months is not null and @days is not null
+		begin
+			if @end is null
+			begin
+				set @end = @minDate
+			end
+
+		set @calculationDateMinusDaysBefore = DATEADD(d, -@days, @calculationDate)
+		select @difMonths = DATEDIFF(mm, @calculationDateMinusDaysBefore, getutcdate())
+		
+		if ((@difMonths >= @months) and (DATEDIFF(mm, @end, getutcdate()) >= @months) OR @lastStartDate is null)
+			begin
+				set @start = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(@calculationDateMinusDaysBefore) AS varchar) AS DATETIME)
+				set @end = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(@calculationDate) AS varchar) AS DATETIME)
+
+				if DATEDIFF(d, @start, @end) < @days
+				begin
+					set @start = @currentDate
+					set @end = DATEADD(d, @days, @currentDate)
+				end
+
+				select	@DateFieldExists = Fields.exist('fields/CertificationStartDate')
+				from	WorkflowTypeRelation
+				where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
+
+				if @DateFieldExists = 1
+				begin
+					update	WorkflowTypeRelation
+					set		Fields.modify('delete (/fields/CertificationStartDate)')
+					where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
+				end
+
+				update	WorkflowTypeRelation
+				set		Fields.modify('insert <CertificationStartDate>{sql:variable("@start")}</CertificationStartDate> into (/fields)[1]')
+				where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
+
+				select	@DateFieldExists = Fields.exist('fields/CertificationEndDate')
+				from	WorkflowTypeRelation
+				where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
+
+				if @DateFieldExists = 1
+				begin
+					update	WorkflowTypeRelation
+					set		Fields.modify('delete (/fields/CertificationEndDate)')
+					where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
+				end
+
+				update	WorkflowTypeRelation
+				set		Fields.modify('insert <CertificationEndDate>{sql:variable("@end")}</CertificationEndDate> into (/fields)[1]')
+				where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
+			end
+		end
+
+		-- Increment
+		set @current = @current + 1
+	end
+
+	-- 3. CHECK ARTIFACTS ------------------------------------------
+--declare @wt int =2
+	select	A.ID as ArtifactID,
+--A.ArtifactTypeID,
+--W.DateStarted,
+			coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime')) as CertificationStartDate,
+			coalesce(V.Fields.value('(/fields/CertificationEndDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate/text())[1]', 'datetime')) as CertificationEndDate
+	from	Artifact A
+			left join WorkflowTypeRelation T on T.[Object] = 'ArtifactType' and T.ObjectID = A.ArtifactTypeID and T.WorkflowType = @wt and T.[Enabled] = 1  and T.Parent is null and T.ParentID is null
+			left join WorkflowTypeRelation V on V.[Object] = 'ArtifactType' and V.ObjectID = A.ArtifactTypeID and V.WorkflowType = @wt and V.[Enabled] = 1 and V.Parent = 'TaxonomyType' and V.ParentID = A.TaxonomyTypeID
+			outer apply (
+						select	max(DateStarted) as DateStarted
+						from	Workflow
+						where	artifactID = A.ID
+								--and DateCompleted is null
+						) W
+	where	(
+				W.DateStarted is null
+				or
+				(
+					W.DateStarted is not null 
+					and
+					DATEDIFF(m, W.DateStarted, 
+						coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'))
+					) > 0
+				)
+			)
+			and
+			(
+				A.DateLastCertified is null 
+				--or A.DateLastCertified < coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
+				or 
+				(
+					A.DateLastCertified is not null
+					and DATEDIFF(m, 
+						A.DateLastCertified, 
+						coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'))
+					) > coalesce(V.Fields.value('(/fields/MonthsUntilCertification/text())[1]', 'int'), T.Fields.value('(/fields/MonthsUntilCertification/text())[1]', 'int'))
+					and A.Status = 'Certified'
+				)
+				or A.Status <> 'Certified'
+			)
+			and A.Status <> 'Archived'
+			and coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime')) is not null
+			and A.ID not in (
+							select	artifactid
+							from	Workflow
+							where	WorkflowType = @wt 
+									and Data.value('(/fields/StartDate/text())[1]', 'datetime') between 
+											coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'))
+											and coalesce(V.Fields.value('(/fields/CertificationEndDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate/text())[1]', 'datetime'))
+							)
+			and A.ID not in (
+							select	ArtifactID
+							from	Workflow
+							where	WorkflowType = @wt 
+									and DateCompleted is null
+							)
+			and A.ID not in (
+							select	ArtifactID
+							from	Workflow
+							where	WorkflowType = @wt 
+									and DATEDIFF(m, 
+											DateStarted, 
+											coalesce(V.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate/text())[1]', 'datetime'))
+										) > coalesce(V.Fields.value('(/fields/MonthsUntilCertification/text())[1]', 'int'), T.Fields.value('(/fields/MonthsUntilCertification/text())[1]', 'int'))
+							)
+			and A.ID in (
+						select	RD.ObjectID 
+						from	[cache].[Responsibilities] RD
+								left join WorkflowTypeRelation WTR_V on WTR_V.[Object] = 'ArtifactType' and WTR_V.ObjectID = RD.ObjectTypeID and WTR_V.WorkflowType = @wt and WTR_V.[Enabled] = 1 and WTR_V.ResponsibilityTypeID = RD.ResponsibilityTypeID and WTR_V.Parent = 'TaxonomyType' and WTR_V.ParentID = A.TaxonomyTypeID
+								left join WorkflowTypeRelation WTR_T on WTR_T.[Object] = 'ArtifactType' and WTR_T.ObjectID = RD.ObjectTypeID and WTR_T.WorkflowType = @wt and WTR_T.[Enabled] = 1 and WTR_T.ResponsibilityTypeID = RD.ResponsibilityTypeID and WTR_T.Parent is null and WTR_T.ParentID is null
+						where	RD.[Object] = 'Artifact' 
+								and coalesce(WTR_V.ID, WTR_T.ID) is not null
+						)
+
+end
+GO
+
+CREATE TABLE [dbo].[FusionSchedule] (
+    [FusionID]    INT      NOT NULL,
+    [Day]         INT      NOT NULL,
+    [Time]        TIME (7) NOT NULL,
+    [FullRefresh] BIT      CONSTRAINT [DF_FusionSchedule_FullRefresh] DEFAULT ((0)) NOT NULL,
+    [CreatedOn]   DATETIME NULL,
+    [CreatedBy]   INT      NULL,
+    [UpdatedOn]   DATETIME NULL,
+    [UpdatedBy]   INT      NULL,
+    CONSTRAINT [PK_FusionSchedule] PRIMARY KEY CLUSTERED ([FusionID] ASC, [Day] ASC, [Time] ASC),
+    CONSTRAINT [FK_FusionSchedule_Fusion] FOREIGN KEY ([FusionID]) REFERENCES [dbo].[Fusion] ([ID]) ON DELETE CASCADE
+);
+GO
+
+CREATE PROCEDURE GetReferenceItemValues	
+	@listid int	
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+	
+	-- load the fields for this item
+	select id, 'Field' + cast(id as varchar(100)) as [Name] into #fieldtypes from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by sortorder
+	
+	DECLARE @tsqlSelect nvarchar(max);
+	DECLARE @tsqlFrom nvarchar(max);
+	DECLARE @tsqlWhere nvarchar(max);
+	DECLARE @tsql nvarchar(max);
+
+	set @tsqlSelect = 'select ri.id as [ID] ,ri.code as [Code]';
+	set @tsqlFrom = ' from [dbo].[referenceitem] ri';
+	set @tsqlWhere = ' where ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));
+	
+
+	DECLARE @id int;
+	DECLARE @index int = 0;
+	DECLARE @name nvarchar(250);
+
+	-- generate dynamic sql for each field
+	DECLARE cur CURSOR FOR SELECT id, name FROM #fieldtypes
+	OPEN cur
+
+	FETCH NEXT FROM cur INTO @id, @name
+
+	WHILE @@FETCH_STATUS = 0 BEGIN
+		
+		SET @tsqlSelect = @tsqlSelect + ',f'+ cast(@index as nvarchar(10)) + '.formattedvalue as [' + @name + ']';
+		SET @tsqlFrom = @tsqlFrom + ' left outer join [dbo].[field] f' + cast(@index as nvarchar(10)) + ' on (ri.id = f' + cast(@index as nvarchar(10)) + '.objectid and f' + cast(@index as nvarchar(10)) + '.[objecttype] = ''ReferenceItem'' and f' + cast(@index as nvarchar(10)) + '.fieldtypeid = ' + cast(@id as nvarchar(20)) + ')';
+
+		SET @index = @index + 1;
+		FETCH NEXT FROM cur INTO @id, @name
+	END
+
+	CLOSE cur    
+	DEALLOCATE cur
+
+	SET @tsql = @tsqlSelect + @tsqlFrom + @tsqlWhere;
+	--print @tsql
+	EXEC sp_executesql @tsql;
+
+END
+GO
+
+create procedure [fusion].[GenerateMarkitMapLineageData]
+	@fusionID int
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	declare @databaseName varchar(100) = 'INTRODUCTION_V95.';
+	declare @sourceFieldTypeID int = 52275;
+	declare @targetFieldTypeID int = 52276;
+	--declare @fusionID int = 58;
+	declare @mapFusionAttributeTypeID int = 710;
+
+
+	IF OBJECT_ID('tempdb..#maps') IS NOT NULL
+		DROP TABLE #maps;
+
+	create table #maps (	
+		ID int identity,	
+		SourceFusionAttributeID int,
+		SourceFusionAttributeTypeID int,
+		SourceObject nvarchar(500),		
+		SourceParentObject nvarchar(max),
+		SourceParentObjectFusionAttributeID int,
+		SourceParentObjectFusionAttributeTypeID int,
+		TargetFusionAttributeID int,
+		TargetFusionAttributeTypeID int,
+		TargetObject nvarchar(500),
+		TargetParentObject nvarchar(max),
+		TargetParentObjectFusionAttributeID int,
+		TargetParentObjectFusionAttributeTypeID int,				
+		[Object] varchar(50),
+		[ObjectID] int,
+		[Source] varchar(50),
+		[SourceID] int,
+		[Target] varchar(50),
+		[TargetID] int,
+	);
+
+	
+	insert into #maps
+		(SourceObject, TargetObject)
+		select 
+			replace(cast(F_source.formattedValue as nvarchar(500)), @databaseName, '') as SourceObject						
+			, replace(cast(F_target.formattedValue as nvarchar(500)), @databaseName, '') as TargetObject			
+		from 
+			FusionAttribute FA
+			inner join Field F_source on F_source.ObjectType = 'FusionAttribute' and F_source.ObjectID = FA.ID and F_source.FieldTypeID = @sourceFieldTypeID -- MAP SOURCE FIELD VALUE
+			inner join Field F_target on F_target.ObjectType = 'FusionAttribute' and F_target.ObjectID = FA.ID and F_target.FieldTypeID = @targetFieldTypeID -- TARGET SOURCE FIELD VALUE
+		where 
+			FA.FusionID = @fusionID
+				and
+			FA.FusionAttributeTypeID = @mapFusionAttributeTypeID
+				and
+			F_source.formattedValue like '%.cusip' -- **for testing to limit to just cusip**;
+			
+	--set the Source objects 
+	update	T
+	set		T.SourceFusionAttributeID = S.ID, T.SourceFusionAttributeTypeID = S.FusionAttributeTypeID
+	from	#maps T			
+			inner join fusionattribute S on (S.TextPath = T.SourceObject and S.FusionID = @fusionID)
+
+	--set the Target Objects
+	update	T
+	set		T.TargetFusionAttributeID = S.ID, T.TargetFusionAttributeTypeID = S.FusionAttributeTypeID
+	from	#maps T			
+			inner join fusionattribute S on (S.TextPath = T.TargetObject and S.FusionID = @fusionID)
+
+	--remove any source objects that we cant find the fusion attribute for
+	delete from #maps where SourceFusionAttributeID is null or TargetFusionAttributeID is null		
+	
+	--set the source parent objects
+	update T
+	set T.SourceParentObject = FA_p.TextPath, T.SourceParentObjectFusionAttributeID = FA_p.ID, T.SourceParentObjectFusionAttributeTypeID = FA_p.FusionAttributeTypeID
+	from #maps T
+		inner join fusionattribute FA on (FA.ID = T.SourceFusionAttributeID)
+		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
+
+	--set the target parent objects
+	update T
+	set T.TargetParentObject = FA_p.TextPath, T.TargetParentObjectFusionAttributeID = FA_p.ID, T.TargetParentObjectFusionAttributeTypeID = FA_p.FusionAttributeTypeID
+	from #maps T
+		inner join fusionattribute FA on (FA.ID = T.TargetFusionAttributeID)
+		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
+
+/*	IF OBJECT_ID('tempdb..#levelMap') IS NOT NULL
+		DROP TABLE #levelMap;
+	
+	;with C as
+			(
+			  select
+				ID,
+				SourceFusionAttributeID as SourceID,
+				TargetFusionAttributeID as TargetID,
+				ID as [UltimateParentID],
+				0 as [level] 
+			  from 
+					#maps
+			  where SourceFusionAttributeID not in(
+					select 
+						m_s.SourceFusionAttributeID
+					from 
+						#maps m_s
+						inner join #maps m_t on(m_s.SourceFusionAttributeID = m_t.TargetFusionAttributeID)
+						)	  	  
+			  union all
+			  select 
+					T.ID,
+					T.SourceFusionAttributeID as SourceID,			 
+					 T.TargetFusionAttributeID as TargetID,
+					 C.[UltimateParentID] as [UltimateParentID],
+					 C.[level] + 1
+			  from #maps as T
+				inner join C  
+				  on T.SourceFusionAttributeID = C.TargetID and T.SourceFusionAttributeID != T.TargetFusionAttributeID
+			)
+			select C.ID, C.[level], C.[UltimateParentID]
+			into #levelMap
+			from C
+			OPTION (MAXRECURSION 10) 
+
+	update T
+	set T.[level] = S.[level], T.[UltimateParentID] = S.[UltimateParentID]
+	from #maps T
+	inner join #levelMap S on S.ID = T.ID;
+	
+	--remove any that we cant find the level for
+	delete from #maps where [level] is null		*/
+
+
+	-- find any object related to column as the object
+	update T
+	set T.[object] = OI.[subject], T.[objectid] = OI.[subjectid]
+	from #maps T
+		inner join [IntersectDetail] OI on OI.Subject <> 'FusionAttribute' and OI.Object = 'FusionAttribute' and OI.ObjectID in (T.SourceFusionAttributeID, T.TargetFusionAttributeID) -- look for relation between non fusion object and source/target column
+
+	-- find any business terms related to source
+	update T
+	set T.[source] = OI.[subject], T.[sourceid] = OI.[subjectid]
+	from #maps T
+		inner join [IntersectDetail] OI on OI.Subject <> 'FusionAttribute' and OI.Object = 'FusionAttribute' and OI.ObjectID = T.SourceParentObjectFusionAttributeID 
+
+
+	-- find any business terms related to target
+	update T
+	set T.[target] = OI.[subject], T.[targetid] = OI.[subjectid]
+	from #maps T
+		inner join [IntersectDetail] OI on OI.Subject <> 'FusionAttribute' and OI.Object = 'FusionAttribute' and OI.ObjectID = T.TargetParentObjectFusionAttributeID 
+
+	/*testing only!!*/
+	--delete from #maps where ultimateparent not in (select ultimateparent from #maps where sourceobject = 'Back office sec.txt.cusip') -- for testing clear out some noise
+		
+	select * from #maps --order by [Level]
+	/*end testing only*/
+	
+	/*delete from mapruleitem where [owner] = 'MARKIT LINEAGE'
+
+	insert into [dbo].[MapRuleItem]
+		(SourceFusionAttributeID, TargetFusionAttributeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+		select
+			m.SourceFusionAttributeID,
+			m.TargetFusionAttributeID,
+			0,
+			getutcdate(),
+			0,
+			getutcdate(),
+			'MARKIT LINEAGE'
+		from #maps m*/
+end
+GO
+
+
+alter view [dbo].[IntersectTypeDetail]
+as
+	select	IT.ID,
+			IT.Subject,
+			IT.SubjectID,
+			case IT.Subject
+				when 'IntersectType' then utility.DeriveIntersectTypeName(SIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(SAT.Name, SDT.Name, SFT.TextPath, SPT.Name, SRT.Name, STT.Name) 
+			end as SubjectName,
+			coalesce(SIcon.IconBackColor, '#000') as SubjectIconBackColor,
+			coalesce(SIcon.IconForeColor, '#fff') as SubjectIconForeColor,
+			coalesce(SIcon.IconText, substring(coalesce(SAT.Name, SDT.Name, SFT.Name, SPT.Name, SRT.Name, STT.Name, ''), 1, 2)) as SubjectIconText,
+			
+			IT.Object,
+			IT.ObjectID,
+			case IT.Object
+				when 'IntersectType' then utility.DeriveIntersectTypeName(OIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(OAT.Name, ODT.Name, OFT.TextPath, OPT.Name, ORT.Name, OTT.Name) 
+			end as ObjectName,
+			coalesce(OIcon.IconBackColor, '#000') as ObjectIconBackColor,
+			coalesce(OIcon.IconForeColor, '#fff') as ObjectIconForeColor,
+			--coalesce(OIcon.IconText, 'leaf') as ObjectIconText,
+			coalesce(OIcon.IconText, substring(coalesce(OAT.Name, ODT.Name, OFT.Name, OPT.Name, ORT.Name, OTT.Name, ''), 1, 2)) as ObjectIconText,
+
+			IT.PredicateID,
+			P.Name as [PredicateName],
+			P.Type as PredicateType,
+			
+			coalesce(IT.IsSystem, cast(0 as bit)) as IsSystem
+	from	IntersectType IT with(nolock) 
+			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
+
+			left join dbo.ArtifactType SAT with(nolock)			on IT.Subject = 'ArtifactType'			and SAT.ID = IT.SubjectID
+			left join (
+				select 1 as ID, 'Reference List' as Name
+			) SDT												on IT.Subject = 'ReferenceItemType'		and IT.SubjectID = 0
+			left join dbo.FusionAttributeType SFT with(nolock)	on IT.Subject = 'FusionAttributeType'	and SFT.ID = IT.SubjectID
+			left join dbo.IntersectType SIT with(nolock)		on IT.Subject = 'IntersectType'			and SIT.ID = IT.SubjectID
+			left join dbo.PolicyType SPT with(nolock)			on IT.Subject = 'PolicyType'			and SPT.ID = IT.SubjectID
+			left join (
+				select 1 as ID, 'Informational' as Name
+				union
+				select 2 as ID, 'Quality Check' as Name
+				union
+				select 3 as ID, 'Metric' as Name
+				union
+				select 4 as ID, 'Profile' as Name
+			) SRT												on IT.Subject = 'RuleType'				and SRT.ID = IT.SubjectID 
+			left join dbo.TaxonomyType STT with(nolock)			on IT.Subject = 'TaxonomyType'			and STT.ID = IT.SubjectID
+			left join (
+				select 1 as ID, 'Resource' as Name				
+			) SRET												on IT.[Subject] = 'ResourceType'
+
+			left join dbo.ArtifactType OAT with(nolock)			on IT.Object = 'ArtifactType'			and OAT.ID = IT.ObjectID			
+			left join dbo.FusionAttributeType OFT with(nolock)	on IT.Object = 'FusionAttributeType'	and OFT.ID = IT.ObjectID
+			left join dbo.IntersectType OIT with(nolock)		on IT.Object = 'IntersectType'			and OIT.ID = IT.ObjectID
+			left join dbo.PolicyType OPT with(nolock)			on IT.Object = 'PolicyType'				and OPT.ID = IT.ObjectID
+			left join (
+				select 1 as ID, 'Informational' as Name
+				union
+				select 2 as ID, 'Quality Check' as Name
+				union
+				select 3 as ID, 'Metric' as Name
+				union
+				select 4 as ID, 'Profile' as Name
+			) ORT												on IT.Object = 'RuleType'				and ORT.ID = IT.ObjectID
+			left join dbo.TaxonomyType OTT with(nolock)			on IT.Object = 'TaxonomyType'			and OTT.ID = IT.ObjectID
+			left join (
+				select 1 as ID, 'Resource' as Name				
+			) ORET												on IT.[Object] = 'ResourceType'
+			left join (
+				select 1 as ID, 'Reference List' as Name
+			) ODT 	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
+
+			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType = IT.Subject and SIcon.ObjectID =	IT.SubjectID
+			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType = IT.Object and OIcon.ObjectID = IT.ObjectID
+	where	coalesce(SAT.ID, SDT.ID, SIT.ID, SFT.ID, SPT.ID, SRT.ID, STT.ID, SRET.ID) is not null
+			and coalesce(OAT.ID, ODT.ID, [OFT].ID, OPT.ID, ORT.ID, OTT.ID, ORET.ID) is not null
+GO
+
+alter VIEW [dbo].[WorkflowIssue]
+AS
+(
+(select		W.ID as WorkflowID
+		    ,W.Data.value('(fields/CommentID)[1]', 'int') as CommentID
+			,W.Data.value('(fields/ResourceID)[1]', 'int') as CreatingResourceID
+			,W.DateStarted
+			,W.DateCompleted	
+			,W.Step
+			,A.ObjectID
+			,A.Name
+			,A.[Object]
+			,A.Url
+			,R.FirstName + ' ' + R.LastName as RaisedBy			
+			,case when w.dateCompleted is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted	
+			,ws.data.value('(fields/Comment)[1]','nvarchar(500)') as Comments					
+			,case when W.Data.value('(fields/IssueType)[1]', 'int') is null then 0 else W.Data.value('(fields/IssueType)[1]', 'int') end as IssueType
+			,case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName
+			,0 as IssueID
+			,2 as Criticality
+			,'Medium' as CriticalityName
+			,case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays
+from	    Workflow W		
+			inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+			left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
+			left outer join workflowstatus ws on w.id = ws.workflowid and ws.recordnumber = 7
+			left outer join cache.ObjectDetails A on A.[Object] = CR.ObjectType and A.ObjectID = CR.ObjectID            		
+			left outer join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')			
+            where  W.WorkflowType = 3 and W.Data.value('(fields/IssueID)[1]', 'int') is null)
+)
+union
+(select		W.ID as WorkflowID
+		    ,W.Data.value('(fields/CommentID)[1]', 'int') as CommentID
+			,W.Data.value('(fields/ResourceID)[1]', 'int') as CreatingResourceID
+			,W.DateStarted
+			,W.DateCompleted	
+			,W.Step
+			,A.ObjectID
+			,A.Name
+			,A.[Object]
+			,A.Url
+			,R.FirstName + ' ' + R.LastName as RaisedBy			
+			,case when w.dateCompleted is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted	
+			,ws.data.value('(fields/Comment)[1]','nvarchar(500)') as Comments					
+			,IT.ID as IssueType
+            ,IT.Name as IssueTypeName
+			,I.ID as IssueID
+			,I.Criticality as Criticality
+			,case when I.Criticality = 0 then 'Negligible' when I.Criticality = 1 then 'Low' when I.Criticality = 2 then 'Medium' when I.Criticality = 3 then 'High'  when I.Criticality = 4 then 'Critical' else 'N/A' end as CriticalityName
+			,case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays
+from	    Workflow W		
+			inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+			inner join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
+			inner join IssueType IT on (I.IssueTypeID = IT.ID)			
+			left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
+			left outer join workflowstatus ws on w.id = ws.workflowid and ws.recordnumber = 7
+			left outer join cache.ObjectDetails A on A.[Object] = CR.ObjectType and A.ObjectID = CR.ObjectID            		
+			left outer join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')			
+            where  W.WorkflowType = 3
+)
+GO
+
+alter procedure [bulkload].[Promotions]
+--declare
+	@id int
+--set @id = 231
+as
+begin
+	set nocount on;
+
+	declare @Object varchar(50),
+			@ObjectID int,
+			@Action varchar(1),
+			@UpdatedOn datetime = getutcdate(),
+			@UpdatedBy int = 0,
+			@startDynamicFieldColumnIndex int,
+			@columnCount int
+
+	declare @ResolvedObjects table ([Object] varchar(50), ObjectID int, [Action] varchar(25), LoadID int, RowIndex int)	--This captures the INSERTED/UPDATED objects from the merge statements below.
+
+	drop table if exists #FieldValidationRows
+
+	create table #FieldValidationRows (
+		RowIndex int,
+		Valid bit
+	)
+
+	select	@Object = [Object],
+			@ObjectID = ObjectID,
+			@Action = [Action],
+			@UpdatedBy = UpdatedBy
+	from	[Load]
+	where	ID = @id;
+
+	update	LoadItem
+	set		Status = null,
+			StatusMessage = null
+	where	LoadID = @id;
+
+	select	@columnCount = count(1) from LoadColumn where LoadID = @id;
+
+	declare @ParentID int = null,	--Artifact
+			@currentLevel int,		--Taxonomy
+			@maxLevel int			--Taxonomy
+
+	if @Object = 'ArtifactType'
+	begin
+		select	@ParentID = ParentID 
+		from	ArtifactType 
+		where	ID = @ObjectID
+
+		if @ParentID is not null
+			begin
+				set @startDynamicFieldColumnIndex = 5
+			end
+		else
+			begin
+				set @startDynamicFieldColumnIndex = 4
+			end
+	end
+	else if @Object = 'AttributeType'
+	begin
+		set @startDynamicFieldColumnIndex = 4
+	end
+	else if @Object = 'ReferenceItemType'
+	begin
+		set @startDynamicFieldColumnIndex = 2
+	end
+	else if @Object = 'TaxonomyType'
+	begin
+		select	@currentLevel = 0,
+				@maxLevel = max(
+								case when isnumeric(replace(Name,'Level','')) = 1 then
+									replace(Name,'Level','') 
+								else 
+									0 
+								end) 
+		from	LoadColumn 
+		where	LoadID = @id 
+				and Name like 'Level%';
+
+		set @startDynamicFieldColumnIndex = @maxLevel + 1 + 1 -- the first 1 is for description.  the second 1 is to move to the start column of the dynamic fields, if any.
+	end
+
+	-- PARSE any dynamic fields that are specifically lookups.
+	exec [bulkload].[UpdateDynamicLookupFieldColumns] @id, @startDynamicFieldColumnIndex, @columnCount
+
+	--Note the dynamic field status for all load items.
+	insert into #FieldValidationRows
+		select	I.RowIndex,
+				case
+					when S.InvalidCount = 0 then cast(1 as bit)
+					else cast(0 as bit)
+				end
+		from	LoadItem I
+				inner join	(
+							select	I.LoadID,
+									I.RowIndex,
+									C.InvalidCount
+							from	[Load] L
+									inner join [LoadItem] I on I.LoadID = L.ID
+									cross apply (
+												select	count(1) as InvalidCount
+												from	[LoadItemColumn] IC
+														inner join FieldType F on L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+														inner join [LoadColumn] C on C.LoadID = IC.LoadID and F.Name = C.Name and C.ColumnIndex = IC.ColumnIndex and C.ColumnIndex between @startDynamicFieldColumnIndex and @columnCount
+												where	IC.LoadID = @id 
+														and IC.RowIndex = I.RowIndex
+														and IC.LookupObject is null and IC.LookupObjectID is null
+														and IC.Value is not null and IC.Value <> ''
+												) C
+							where	L.ID = @id
+							) S on I.LoadID = S.LoadID and S.RowIndex = I.RowIndex
+
+	if @Object = 'ArtifactType'
+	begin
+		exec bulkload.UpdateSubjectAreaColumn @id, 3
+
+		-- Mark the rows with invalid subject areas.
+		update	I
+		set		I.StatusMessage = I.StatusMessage + ' Subject area could not be found.'
+		from	LoadItem I
+				inner join LoadItemColumn S on I.LoadID = @id and S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 3 and S.LookupObjectID is null
+
+		-- Mark the rows with invalid names.
+		update	I
+		set		I.StatusMessage = I.StatusMessage + ' Name cannot be empty.'
+		from	LoadItem I
+				inner join LoadItemColumn N on I.LoadID = @id and N.LoadID = I.LoadID and N.RowIndex = I.RowIndex and N.ColumnIndex = 1 and N.Value is null
+
+		if @ParentID is not null
+			begin
+				-- Parse the parents, if any.
+				exec bulkload.UpdateItemColumnByType @id, 'ArtifactType', @ParentID, 3, 4
+
+				drop table if exists #ParentArtifacts
+
+				select	I.LoadID,
+						I.RowIndex,
+						I.LookupObjectID as ID,
+						@ObjectID as ArtifactTypeID,
+						I.Value as Name,
+						D.Value as Description,
+						S.LookupObjectID as TaxonomyTypeID,
+						P.LookupObjectID as ParentID,
+						T.ID as ExistingArtifactID
+				into	#ParentArtifacts
+				from	LoadItemColumn I
+						inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 3 and S.LookupObjectID is not null
+						inner join LoadItemColumn P on P.LoadID = I.LoadID and P.RowIndex = I.RowIndex and P.ColumnIndex = 4 and P.LookupObjectID is not null
+						inner join LoadItemColumn D on D.LoadID = I.LoadID and D.RowIndex = I.RowIndex and D.ColumnIndex = 2
+						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
+						left join Artifact T on T.ArtifactTypeID = @ObjectID and T.TaxonomyTypeID = S.LookupObjectID and T.ParentID = P.LookupObjectID and T.Name = I.Value
+				where	I.LoadID = @id and I.ColumnIndex = 1 AND I.Value IS NOT NULL;
+
+				update	T
+				set		--T.ParentID = null,
+						T.[Description] = S.[Description],
+						T.[Status] = 
+						( CASE  
+							WHEN (T.[Status] = 'Certified') THEN 'Draft' 							
+							ELSE  (T.[Status])
+							END 
+						),
+						T.UpdatedBy = @UpdatedBy,
+						T.UpdatedOn = @UpdatedOn
+				from	Artifact T
+						inner join #ParentArtifacts S on S.ExistingArtifactID = T.ID;
+
+				insert into @ResolvedObjects
+					select 'Artifact', ExistingArtifactID, 'UPDATE', LoadID, RowIndex from #ParentArtifacts where ExistingArtifactID is not null
+
+				insert into Artifact (ArtifactTypeID, TaxonomyTypeID, ParentID, Name, [Description], [Status], CreatedOn, UpdatedOn, UpdatedBy)
+					select	ArtifactTypeID, TaxonomyTypeID, ParentID, Name, [Description], 'Draft', @UpdatedOn, @UpdatedOn, @UpdatedBy
+					from	#ParentArtifacts 
+					where	ExistingArtifactID is null
+
+				insert into @ResolvedObjects
+					select	'Artifact', A.ID, 'INSERT', I.LoadID, I.RowIndex 
+					from	#ParentArtifacts I
+							inner join Artifact A on A.ArtifactTypeID = I.ArtifactTypeID and A.TaxonomyTypeID = I.TaxonomyTypeID and A.ParentID = I.ParentID and A.Name = I.Name and I.ExistingArtifactID is null
+
+				-- Mark the rows with invalid parents.
+				update	I
+				set		I.StatusMessage = 'Parent could not be found.'
+				from	LoadItem I
+						inner join LoadItemColumn P on I.LoadID = @id and P.LoadID = I.LoadID and P.RowIndex = I.RowIndex and P.ColumnIndex = 4 and P.LookupObjectID is null
+			end
+		else
+			begin
+				drop table if exists #NoParentArtifacts
+
+				select	I.LoadID,
+						I.RowIndex,
+						I.LookupObjectID as ID,
+						I.Value as Name,
+						D.Value as Description,
+						@ObjectID as ArtifactTypeID,
+						S.LookupObjectID as TaxonomyTypeID,
+						T.ID as ExistingArtifactID
+				into	#NoParentArtifacts
+				from	LoadItemColumn I
+						inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 3 and S.LookupObjectID is not null
+						inner join LoadItemColumn D on D.LoadID = I.LoadID and D.RowIndex = I.RowIndex and D.ColumnIndex = 2
+						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
+						left join Artifact T on T.ArtifactTypeID = @ObjectID and T.TaxonomyTypeID = S.LookupObjectID and T.Name = I.Value
+				where	I.LoadID = @id and I.ColumnIndex = 1 AND I.Value IS NOT NULL
+				
+				update	T
+				set		T.ParentID = null,
+						T.[Description] = S.[Description],						
+						T.[Status] = 
+						( CASE  
+							WHEN (T.[Status] = 'Certified') THEN 'Draft' 							
+							ELSE  (T.[Status])
+						  END 
+						),
+						T.UpdatedBy = @UpdatedBy,
+						T.UpdatedOn = @UpdatedOn
+				from	Artifact T
+						inner join #NoParentArtifacts S on S.ExistingArtifactID = T.ID;
+
+				insert into @ResolvedObjects
+					select 'Artifact', ExistingArtifactID, 'UPDATE', LoadID, RowIndex from #NoParentArtifacts where ExistingArtifactID is not null
+
+				insert into Artifact (ArtifactTypeID, TaxonomyTypeID, Name, [Description], [Status], CreatedOn, UpdatedOn, UpdatedBy)
+					select	ArtifactTypeID, TaxonomyTypeID, Name, [Description], 'Draft', @UpdatedOn, @UpdatedOn, @UpdatedBy
+					from	#NoParentArtifacts 
+					where	ExistingArtifactID is null
+
+				insert into @ResolvedObjects
+					select	'Artifact', A.ID, 'INSERT', I.LoadID, I.RowIndex 
+					from	#NoParentArtifacts I
+							inner join Artifact A on A.ArtifactTypeID = I.ArtifactTypeID and A.TaxonomyTypeID = I.TaxonomyTypeID and A.Name = I.Name and I.ExistingArtifactID is null
+			end
+	end
+	else if @Object = 'AttributeType'
+	begin
+		-- Clean Owner Type field.
+		update	LoadItemColumn
+		set		Value = case when charindex('Type', Value) > 0 then Value else Value + 'Type' end
+		where	LoadID = @id and ColumnIndex = 1;
+
+		-- PARSE Owner Type fields.
+		update	T
+		set		T.LookupObject = S.LookupObject,
+				T.LookupObjectID = S.LookupObjectID
+		from	LoadItemColumn T
+				inner join	(
+							select	LI.LoadID,
+									LI.RowIndex,
+									C2.ColumnIndex,
+									D.[Object] as LookupObject,
+									D.ObjectID as LookupObjectID
+							from	[Load] L
+									inner join LoadItem LI on LI.LoadID = L.ID and L.ID = @id
+									inner join [LoadItemColumn] C1 on C1.LoadID = LI.LoadID and C1.RowIndex = LI.RowIndex and C1.ColumnIndex = 1 --'Owner Type' 
+									inner join [LoadItemColumn] C2 on C2.LoadID = LI.LoadID and C2.RowIndex = LI.RowIndex and C2.ColumnIndex = 2 --'Owner Type Name'
+									inner join cache.ObjectDetails D on D.[Object] = C1.Value and D.[Name] = C2.Value
+							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex;
+
+		-- PARSE Owner fields.
+		update	T
+		set		T.LookupObject = S.LookupObject,
+				T.LookupObjectID = S.LookupObjectID
+		from	LoadItemColumn T
+				inner join	(
+							select	LI.LoadID,
+									LI.RowIndex,
+									C3.ColumnIndex,
+									D.[Object] as LookupObject,
+									D.ObjectID as LookupObjectID
+							from	[Load] L
+									inner join LoadItem LI on LI.LoadID = L.ID and L.ID = @id
+									--inner join [LoadItemColumn] C1 on	C1.LoadID = LI.LoadID	and C1.RowIndex = LI.RowIndex	and C1.ColumnIndex = 1 --'Owner Type' 
+									inner join [LoadItemColumn] C2 on C2.LoadID = LI.LoadID and C2.RowIndex = LI.RowIndex and C2.ColumnIndex = 2 --'Owner Type Name'
+									inner join [LoadItemColumn] C3 on C3.LoadID = LI.LoadID	and C3.RowIndex = LI.RowIndex and C3.ColumnIndex = 3 --'Owner Name'
+									inner join cache.ObjectDetails D on D.[ObjectType] = C2.[LookupObject] and D.ObjectTypeID = C2.LookupObjectID and D.[Name] = C3.Value
+							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex;
+
+		merge	[Attribute] T
+		using	(
+				select	I.LoadID,
+						I.RowIndex,
+						@ObjectID as AttributeTypeID,
+						C.LookupObject as [Object],
+						C.LookupObjectID as ObjectID
+				from	[LoadItem] I
+						inner join [LoadItemColumn] C on I.LoadID = @id and C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and C.ColumnIndex = 3
+						and C.LookupObject is not null
+						and C.LookupObjectID is not null
+						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
+				) S
+		on		(T.AttributeTypeID = S.AttributeTypeID and T.[ObjectType] = S.[Object] and T.[ObjectID] = S.[ObjectID] and T.ParentID = NULL)-- and T.Name = S.Name)
+		when	matched then
+				update	set T.[UpdatedOn] = getutcdate(),
+							T.UpdatedBy = @UpdatedBy
+		when	not matched then
+				insert (AttributeTypeID, ObjectType, ObjectID, UpdatedOn, UpdatedBy)
+				values (S.AttributeTypeID, S.[Object], S.ObjectID, getutcdate(), @UpdatedBy)
+		output	'Attribute', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;		
+	end
+	else if @Object = 'ReferenceItemType'
+	begin
+		-- Mark the rows with invalid codes.
+		update	I
+		set		I.StatusMessage = I.StatusMessage + ' Code cannot be empty.'
+		from	LoadItem I
+				inner join LoadItemColumn N on I.LoadID = @id and N.LoadID = I.LoadID and N.RowIndex = I.RowIndex and N.ColumnIndex = 1 and N.Value is null
+
+		merge	ReferenceItem T
+		using	(
+				select	I.LoadID,
+						I.RowIndex,
+						@ObjectID as ReferenceItemTypeID,
+						C.Value as Code
+				from	[LoadItem] I
+						inner join [LoadItemColumn] C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and C.ColumnIndex = 1 and C.Value is not null
+						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
+				where	I.LoadID = @id
+				) S
+		on		(T.ReferenceItemTypeID = S.ReferenceItemTypeID and T.Code = S.Code)
+		when	matched then
+				update	set T.[Code] = S.[Code],
+							T.UpdatedBy = @UpdatedBy,
+							T.UpdatedOn = @UpdatedOn
+		when	not matched then
+				insert (ReferenceItemTypeID, Code, UpdatedOn, UpdatedBy)
+				values (S.ReferenceItemTypeID, S.Code, @UpdatedOn, @UpdatedBy)
+		output	'ReferenceItem', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
+	end
+	else if @Object = 'TaxonomyType'
+	begin
+		declare @rowCount int,
+				@rowCurr int;
+
+		declare @levels table (id int, ColumnIndex int, RowIndex int, [Level] varchar(50), Value varchar(250),MaxLevel int, TaxonomyID int, ParentID int, [Status] varchar(50));
+
+		with v as
+		(
+			select	L.ID, 
+					L.Object, 
+					L.ObjectID, 
+					LC.Name, 
+					LC.ColumnIndex, 
+					IC.RowIndex, 
+					IC.Value, 
+					replace(LC.Name,'Level','') as [Level], 
+					T.ID as TaxonomyID 
+			from	[Load] L
+					join LoadColumn LC on LC.LoadID = L.ID
+					join LoadItemColumn IC on IC.LoadID = LC.LoadID AND IC.ColumnIndex = LC.ColumnIndex
+					left join Taxonomy T on T.TaxonomyTypeID = L.ObjectID and T.[Level] = replace(LC.Name,'Level','') and T.Name = IC.Value
+			where	L.ID = @id 
+					AND ltrim(rtrim(IC.Value)) != '' 
+					and LC.Name like 'Level%'  
+		)
+
+		insert into @levels
+			select		distinct
+						row_number() over (partition by 1 order by v.[Level]) as ID,
+						v.ColumnIndex,
+						v.RowIndex,
+						v.[Level],
+						v.Value,
+						m.[Level] as MaxLevel,
+						v.TaxonomyID,
+						p.TaxonomyID as ParentID,
+						'UPDATE' as [Status]
+			from		v	
+						left join v p on p.RowIndex = v.RowIndex and v.TaxonomyID is null and p.ColumnIndex = (v.ColumnIndex - 1)
+						inner join v m on m.RowIndex = v.RowIndex and m.[Level] = (select max([Level]) from v where RowIndex = m.RowIndex)
+			order by	v.[Level] asc;
+
+		-- calculate hierarchy
+		while @currentLevel <= @maxLevel
+		begin
+			set @currentLevel = @currentLevel + 1;
+				
+			update	LV
+			set		LV.ParentID = P.ID
+			from	@levels LV
+					left join @levels P on P.[Level] = (LV.[Level] - 1) AND LV.RowIndex = P.RowIndex
+			where	LV.[Level] = @currentLevel;
+		end
+
+		select @rowCurr = 0, @rowCount = count(*) from @levels;
+
+		while @rowCurr <= @rowCount
+		begin
+			set @rowCurr = @rowCurr + 1;
+
+			--parent does not exist or leading columns were not filled
+			if (select ParentID from @levels where id = @rowCurr) IS NULL AND (select Level from @levels where id = @rowCurr) > 1
+			begin
+				update	@levels 
+				set		[Status] = 'ERROR' 
+				where	rowIndex = (select rowindex from @levels where id = @rowCurr);
+				continue;
+			end
+
+			--update the TaxonomyID for records that do not yet have it
+			if (select level from @levels where id = @rowCurr) = 1
+			begin
+				update	LV
+				set		TaxonomyID = T.ID
+				from	@levels LV
+						join Load L on L.ID = @id
+						join Taxonomy T on T.Name = LV.Value and T.ParentID is NULL and T.Level = LV.Level and T.TaxonomyTypeID = L.ObjectID
+				where	LV.ID = @rowCurr;
+			end
+			else
+			begin
+				update	LV
+				set		TaxonomyID = T.ID
+				from	@levels LV
+						left join @levels P on P.ID = LV.ParentID
+						join Taxonomy T on T.Name = LV.Value and T.ParentID = P.TaxonomyID and T.Level = LV.Level
+				where	LV.ID = @rowCurr;
+			end
+
+			if (select TaxonomyID from @levels where id = @rowCurr) IS NULL
+			begin
+				--insert the new taxonomy
+				insert into Taxonomy (TaxonomyTypeID, ParentID, Name, [Description], UpdatedOn, UpdatedBy)
+					select	distinct
+							L.ObjectID as TaxonomyTypeID,
+							LVP.TaxonomyID as ParentID,
+							LV.Value as Name,
+							case 
+								when LV.Level = LV.MaxLevel then LI.Value
+								else ''
+							end as Description,
+							@UpdatedOn as UpdatedOn,
+							@UpdatedBy as UpdatedBy
+					from	@levels LV
+							left join @levels LVP on LVP.ID = LV.ParentID
+							join [Load] L on L.ID = @id
+							inner join LoadColumn LC on LC.Name = 'Description' and LC.LoadID = @id
+							inner join LoadItemColumn LI on LI.RowIndex = LV.RowIndex AND LI.ColumnIndex = LC.ColumnIndex AND LI.LoadID = @id
+							inner join #FieldValidationRows V on V.RowIndex = LI.RowIndex and V.Valid = 1
+					where	LV.ID = @rowCurr
+
+				update	@levels 
+				set		[Status] = 'INSERT' 
+				where	id = @rowCurr;
+
+				--set the levels taxonomy id after insert
+				update	LV
+				set		TaxonomyID = T.ID
+				from	@levels LV
+						left join @levels P on P.ID = LV.ParentID
+						join Taxonomy T on T.Name = LV.Value and coalesce(T.ParentID,-1) = coalesce(P.TaxonomyID,-1) and T.Level = LV.Level
+				where	LV.ID = @rowCurr;
+			end
+				
+			--if level = max, update the description
+			if (select level from @levels where id = @rowCurr) = (select maxlevel from @levels where id = @rowCurr)
+			begin
+				update	T
+				set		T.Description = case when LI.Value = '' then T.Description else LI.Value end,
+						T.UpdatedOn = getutcdate(),
+						T.UpdatedBy = @UpdatedBy
+				from	Taxonomy T
+						join @levels LV on LV.ID = @rowCurr and T.ID = LV.TaxonomyID
+						inner join LoadColumn LC on LC.Name = 'Description' and LC.LoadID = @id
+						inner join LoadItemColumn LI on LI.RowIndex = LV.RowIndex AND LI.ColumnIndex = LC.ColumnIndex AND LI.LoadID = @id
+						inner join #FieldValidationRows V on V.RowIndex = LI.RowIndex and V.Valid = 1;
+			end
+		end --end while
+			
+
+		--remove error rows
+		delete from @levels
+		where rowindex in (select rowindex from @levels where status is null or status = 'ERROR');
+
+					--insert object statuses
+		insert into @ResolvedObjects ([Object], ObjectID, [Action], LoadID, RowIndex)
+			select	'Taxonomy',
+					TaxonomyID,
+					[Status],
+					@id,
+					RowIndex
+			from	@levels;
+	end
+
+	-- Update the LoadItem table with the IDs we recieved in the merge statements above.
+	update	T
+	set		T.[Object] = S.[Object],
+			T.ObjectID = S.ObjectID,
+			T.[Status] = 1,
+			T.StatusMessage = case S.[Action]
+								when 'INSERT' then 'Added item'
+								when 'UPDATE' then 'Updated item'
+								else NULL
+								end
+	from	LoadItem T
+			inner join	@ResolvedObjects S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex;
+
+	-- Update the LoadItems that were not successfully added or updated.
+	update	LoadItem
+	set		[Status] = 0,
+			[StatusMessage] = coalesce([StatusMessage], 'Item could not be added nor updated.')
+	where	LoadID = @id
+			and [ObjectID] is null
+
+	update	LoadItem
+	set		[Status] = 0,
+			[StatusMessage] = coalesce([StatusMessage], 'Item could not be added nor updated.')
+	where	LoadID = @id
+			and RowIndex in (select RowIndex from #FieldValidationRows where Valid = 0)
+			and [ObjectID] is null
+
+	-- merge the dynamic fields involved with this load into the Fields table.  Needs to be here as this proc looks at the LaodItem table for the Object and ObjectID.
+	exec [bulkload].MergeDynamicLookupFields @id, @startDynamicFieldColumnIndex, @columnCount
+
+	--Finally, close out the Load.
+	update	[Load] 
+	set		DateCompleted = getutcdate()
+	where	ID = @id
+end
+GO
+
+alter PROCEDURE [dbo].[GetCommentDetailByID]
+	@id int
+AS
+BEGIN
+	with i (owner1, owner2) 
+	as
+	(
+		select primaryownerresourceid as owner1,secondaryownerresourceid as owner2 from responsibility r
+		join responsibilitytype rt on rt.id = r.responsibilitytypeid
+		join [group] g on g.id = rt.responsibilitytypegroup
+		where r.objecttype = (select ownerobjecttype from comment where id = @id)
+		and r.objectid = (select ownerobjectid from comment where id = @id)
+	),
+	P (ID, ParentID)
+	AS
+	(
+		SELECT		C.ID,
+					C.ParentID
+		FROM		Comment C
+		WHERE		ID = @id
+	/*	UNION ALL
+		SELECT	C.ID, 
+				C.ParentID
+		FROM	Comment C
+				INNER JOIN P PAR ON PAR.ID = C.ParentID*/
+	)
+
+	SELECT		C.*,
+				C.CreatingResourceID,
+				O.Name as ObjectName,				
+				O.Url as ObjectUrl,
+				case
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
+					ELSE 'Resource'
+				end as ObjectType,
+				O.Name as ResourceName,
+				case 
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
+					ELSE C.CreatingResourceID
+				end as ObjectID,
+				(
+				select	CRD.Object,
+						CRD.ObjectID,
+						CRD.TextPath,
+						CRD.ObjectTypeName,
+						CRD.Url,
+						CRD.IconForeColor,
+						CRD.IconBackColor,
+						CRD.NgUrl
+				from	CommentRelation CR
+						inner join cache.ObjectDetails CRD on CR.CommentID = C.ID and CR.ObjectType = CRD.[Object] and CR.ObjectID = CRD.ObjectID
+				for xml path('tag'), root('tags'), type
+				) as TagsXml,
+										(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML,
+			CASE WHEN (select count(*) from i where owner1 = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			WHEN (select count(*) from i where owner2 = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			ELSE
+				cast(0 as bit)
+			END as CreatorIsOwner
+	FROM		Comment C
+				--INNER JOIN CommentRelation CR ON CR.CommentID = C.ID
+				left join cache.ObjectDetails O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
+				INNER JOIN P ON C.ID = P.ID
+	ORDER BY	C.ParentID, C.DateCreated DESC
+END
+GO
+
+alter table fusion.RulePromotion add CreatedOn datetime CONSTRAINT [DF_RulePromotion_CreatedOn]  DEFAULT (getutcdate()) not null
+go
+
+alter table fusion.RulePromotion add UpdatedOn datetime CONSTRAINT [DF_RulePromotion_UpdatedOn]  DEFAULT (getutcdate()) not null
+go
+
+alter PROCEDURE [fusion].[Rules] 
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -4664,7 +4123,8 @@ BEGIN
 			@r int = 0,
 			@RuleID int,
 			@FusionID int,
-			@FusionAttributeID int,
+			@AttributeID int,
+			@ParentAttributeID int,
 			@ExecutionID int,
 			@NumberOfRules int,			
 			@NumberOfNewTaxonomies int,
@@ -4704,8 +4164,8 @@ BEGIN
 		FusionID int,
 		ObjectType varchar(25),
 		ObjectID int,
-		FilterFusionAttributeID int,
-		FilterFusionAttributeTypeID int
+		FilterAttributeID int,
+		FilterAttributeTypeID int
 	);
 
 	IF OBJECT_ID('tempdb..#attributes') IS NOT NULL
@@ -4716,9 +4176,11 @@ BEGIN
 		RuleID int,
 		RuleStepID int,
 		[Action] varchar(25),
-		FusionAttributeID int
+		AttributeID int,
+		ParentAttributeID int null,
+		AttributeType varchar(25)
 	);
-
+		
 	IF OBJECT_ID('tempdb..#fields') IS NOT NULL
 		DROP TABLE #fields;
 
@@ -4730,8 +4192,10 @@ BEGIN
 		SourceFieldTypeID int, 
 		TargetFieldName nvarchar(250), 
 		TargetFieldTypeID int, 
-		Value nvarchar(4000)
+		Value nvarchar(max)
 	);
+	
+	CREATE NONCLUSTERED INDEX [CIX_TempFields] ON #fields ( ID ASC, RuleID ASC );
 
 	IF OBJECT_ID('tempdb..#fieldValues') IS NOT NULL
 		DROP TABLE #fieldValues;
@@ -4740,20 +4204,24 @@ BEGIN
 		ObjectType varchar(50), 
 		ObjectID int, 
 		FieldTypeID int, 
-		Value nvarchar(4000)
+		Value nvarchar(max)
 	);
+
+	CREATE UNIQUE CLUSTERED INDEX PK_tempfieldValues ON #fieldValues ([ObjectType] ASC,[ObjectID] ASC,[FieldTypeID] ASC);
 	
 	insert into #rules
 		select	R.ID,
 				R.FusionID,
 				R.ObjectType,
 				R.ObjectID,
-				I.FusionAttributeID as FilterFusionAttributeID,
-				coalesce(A.FusionAttributeTypeID, R.ObjectID) as FilterFusionAttributeTypeID
+				I.ObjectID as FilterAttributeID,
+				coalesce(A.FusionAttributeTypeID, Q.ID, R.ObjectID) as FilterAttributeTypeID--coalesce(A.FusionAttributeTypeID, F.ObjectID, Q.ID, R.ObjectID) as FilterAttributeTypeID
 		from	[fusion].[Rule] R
 				inner join [fusion].[RuleItem] I on I.RuleID = R.ID and R.[Enabled] = 1
-				left join FusionAttribute A on A.ID = I.FusionAttributeID
-	
+				left join FusionAttribute A on A.ID = I.ObjectID AND I.ObjectType = 'FusionAttribute'
+				left join FusionQueryAttributeType Q on Q.ID = R.ObjectID and R.ObjectType = 'FusionQueryAttribute'
+				--left join FieldType F on F.ID = I.ObjectID and I.ObjectType = 'FusionQueryAttribute'
+
 	declare	@currentID int,
 			@maxID int
 
@@ -4767,76 +4235,115 @@ BEGIN
 	begin
 		declare @FusionObjectType varchar(25),
 				@FusionObjectID int,
-				@FilterFusionAttributeID int,
-				@FilterFusionAttributeTypeID int
-
+				@FilterAttributeID int,
+				@FilterAttributeTypeID int
 
 		select	@RuleID = RuleID,
 				@FusionObjectType = ObjectType,
 				@FusionObjectID = ObjectID,
 				@FusionID = FusionID,
-				@FilterFusionAttributeID = FilterFusionAttributeID,
-				@FilterFusionAttributeTypeID = FilterFusionAttributeTypeID
+				@FilterAttributeID = FilterAttributeID,
+				@FilterAttributeTypeID = FilterAttributeTypeID
 		from	#rules
 		where	ID = @currentID
 
-		if @FusionObjectID = @FilterFusionAttributeTypeID AND @FilterFusionAttributeID is not null
+		if @FusionObjectID = @FilterAttributeTypeID AND @FilterAttributeID is not null
 			begin
 				-- You are on a specific nodes of same type.  Just copy to target table.
 				insert into #attributes 
 					select	@RuleID, 
 							S.ID,
 							S.[Action],
-							@FilterFusionAttributeID
+							@FilterAttributeID,
+							A.ParentID,
+							@FusionObjectType
 					from	[fusion].[RuleStep] S
+							inner join FusionAttribute A on A.ID = @FilterAttributeID and A.Deleted = 0
 					where	S.RuleID = @RuleID
 					order by S.Step
 			end
 		else
 			begin
-				-- You are on an attribute higher up in hierarchy.
-				if @FilterFusionAttributeID is null
+				if @FusionObjectType = 'FusionQueryAttributeType'
 					begin
-						--  If there is NO filtered attribute ID, then you need to get every attribute in system for the partiular fusion instance.
-						insert into #attributes
-							select	@RuleID, 
-									S.ID,
-									S.[Action],
-									FA.ID
-							from	FusionAttribute FA 
-									inner join [fusion].[RuleStep] S on S.RuleID = @RuleID and FA.FusionID = @FusionID and FA.FusionAttributeTypeID = @FusionObjectID
-									left join #attributes A on A.FusionAttributeID = FA.ID and A.RuleID = S.RuleID and A.ID is null
-							order by FA.ID, S.Step
+						--take all query attributes
+						if @FilterAttributeID is null
+							begin
+								insert into #attributes
+									select	@RuleID,
+											S.ID,
+											S.[Action],
+											FT.ID,
+											NULL,
+											@FusionObjectType
+									from	FusionQueryAttribute FT
+											inner join fusion.RuleStep S on S.RuleID = @RuleID and FT.FusionQueryAttributeTypeID = @FusionObjectID and FT.Deleted = 0
+							end
+						else
+							--take specific query attribute
+							begin
+								insert into #attributes
+									select	@RuleID,
+											S.ID,
+											S.[Action],
+											FT.ID,
+											NULL,
+											@FusionObjectType
+									from	FusionQueryAttribute FT
+											inner join fusion.RuleStep S on S.RuleID = @RuleID and FT.FusionQueryAttributeTypeID = @FusionObjectID and FT.ID = @FilterAttributeID and FT.Deleted = 0
+							end
 					end
 				else
 					begin
-						-- If there is a filter attribute ID, then traverse the hierarchy and get all attributes of the specified type.
-						with FA as	(
-									select	ID,
-											ParentID,
-											FusionAttributeTypeID
-									from	FusionAttribute
-									where	ID = @FilterFusionAttributeID
-											and FusionID = @FusionID
-									union all
-									select	C.ID,
-											C.ParentID,
-											C.FusionAttributeTypeID
-									from	FusionAttribute C
-											inner join fa P on C.ParentID = P.ID --and P.ID <> C.ID
-									)
+						-- You are on an attribute higher up in hierarchy.	
+						if @FilterAttributeID is null
+						begin
+							--  If there is NO filtered attribute ID, then you need to get every attribute in system for the partiular fusion instance.
+							insert into #attributes
+								select	@RuleID, 
+										S.ID,
+										S.[Action],
+										FA.ID,
+										FA.ParentID,
+										@FusionObjectType
+								from	FusionAttribute FA 
+										inner join [fusion].[RuleStep] S on S.RuleID = @RuleID and FA.FusionID = @FusionID and FA.FusionAttributeTypeID = @FusionObjectID
+										left join #attributes A on A.AttributeID = FA.ID and A.AttributeType = 'FusionAttributeType' and A.RuleID = S.RuleID and A.ID is null
+								order by FA.ID, S.Step
+						end
+					else
+						begin
+							-- If there is a filter attribute ID, then traverse the hierarchy and get all attributes of the specified type.
+							with FA as	(
+										select	ID,
+												ParentID,
+												FusionAttributeTypeID
+										from	FusionAttribute
+										where	ID = @FilterAttributeID
+												and FusionID = @FusionID
+												and Deleted = 0
+										union all
+										select	C.ID,
+												C.ParentID,
+												C.FusionAttributeTypeID
+										from	FusionAttribute C
+												inner join fa P on C.ParentID = P.ID and C.Deleted = 0 --and P.ID <> C.ID
+										)
 	
-						insert into #attributes
-							select	@RuleID, 
-									S.ID,
-									S.[Action],
-									FA.ID
-							from	FA 
-									inner join [fusion].[RuleStep] S on S.RuleID = @RuleID and FA.FusionAttributeTypeID = @FusionObjectID
-									left join #attributes A on A.FusionAttributeID = FA.ID and A.RuleID = S.RuleID and A.ID is null
-							where	FA.FusionAttributeTypeID = @FusionObjectID
-							order by FA.ID, S.Step
-					end
+							insert into #attributes
+								select	@RuleID, 
+										S.ID,
+										S.[Action],
+										FA.ID,
+										FA.ParentID,
+										@FusionObjectType
+								from	FA 
+										inner join [fusion].[RuleStep] S on S.RuleID = @RuleID and FA.FusionAttributeTypeID = @FusionObjectID
+										left join #attributes A on A.AttributeID = FA.ID and A.AttributeType = 'FusionAttributeType' and A.RuleID = S.RuleID and A.ID is null
+								where	FA.FusionAttributeTypeID = @FusionObjectID
+								order by FA.ID, S.Step
+						end
+					end							
 			end
 
 		set @currentID = @currentID + 1
@@ -4859,41 +4366,81 @@ BEGIN
 					when M.IsConstantValue = 1 then M.ConstantValue
 				end				
 		from	[fusion].[RuleStepMapping] M
-				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID
+				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName in ('ID', 'Name', 'TextPath') OR M.IsConstantValue = 1)
 				inner join #attributes A on A.RuleID = RS.RuleID
-				inner join FusionAttribute FA on FA.ID = A.FusionAttributeID 
+				inner join FusionAttribute FA on FA.ID = A.AttributeID and A.AttributeType = 'FusionAttributeType' and FA.Deleted = 0
 
-	
+	insert into #fields
+		select	A.ID,
+				RS.RuleID,
+				M.RuleStepID,
+				M.SourceFieldName,
+				M.SourceFieldTypeID,
+				M.TargetFieldName,
+				M.TargetFieldTypeID,
+				F.FormattedValue
+		from	[fusion].[RuleStepMapping] M
+				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName not in ('ID', 'Name', 'TextPath') AND M.IsConstantValue = 0)
+				inner join #attributes A on A.RuleID = RS.RuleID and A.AttributeType = 'FusionAttributeType' --and A.AttributeID = M.SourceFieldTypeID
+				inner join Field F on F.ObjectType = 'FusionAttribute' and F.ObjectID = A.AttributeID
+				inner join FieldType FT on FT.ID = F.FieldTypeID and M.SourceFieldName = FT.Name
+
+
+	--insert fusion query attribute fields
+	insert into #fields
+		select	A.ID,
+				RS.RuleID,
+				M.RuleStepID,
+				M.SourceFieldName,
+				M.SourceFieldTypeID,
+				M.TargetFieldName,
+				M.TargetFieldTypeID,
+				case 
+					when M.SourceFieldName = 'ID' then cast(A.AttributeID as nvarchar)
+					when M.IsConstantValue = 1 then M.ConstantValue
+				end
+		from	[fusion].[RuleStepMapping] M
+				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName = 'ID' OR M.IsConstantValue = 1)
+				inner join #attributes A on A.RuleID = RS.RuleID and A.AttributeType = 'FusionQueryAttributeType'
+
+	insert into #fields
+		select	A.ID,
+				RS.RuleID,
+				M.RuleStepID,
+				M.SourceFieldName,
+				M.SourceFieldTypeID,
+				M.TargetFieldName,
+				M.TargetFieldTypeID,
+				F.FormattedValue
+		from	[fusion].[RuleStepMapping] M
+				inner join [fusion].[RuleStep] RS on M.RuleStepID = RS.ID and (M.SourceFieldName <> 'ID' AND M.IsConstantValue = 0)
+				inner join #attributes A on A.RuleID = RS.RuleID and A.AttributeType = 'FusionQueryAttributeType' --and A.AttributeID = M.SourceFieldTypeID
+				inner join Field F on F.ObjectType = 'FusionQueryAttribute' and F.ObjectID = A.AttributeID
+				inner join FieldType FT on FT.ID = F.FieldTypeID and M.SourceFieldName = FT.Name
+
 	-- Update the fields table above with values for all dynamic fields.
-	update	T
-	set		T.Value = S.Value
-	from	#fields T
-			inner join #attributes A on A.ID = T.ID
-			inner join Field S on S.ObjectType = 'FusionAttribute' and S.ObjectID = A.FusionAttributeID and S.FieldTypeID = T.SourceFieldTypeID 
+	--update	T
+	--set		T.Value = S.Value
+	--from	#fields T
+	--		inner join #attributes A on A.ID = T.ID and A.AttributeType = 'FusionQueryAttributeType'
+	--		inner join Field S on S.ObjectType = 'FusionQueryAttribute' and S.ObjectID = A.AttributeID;
+
+	--update	T
+	--set		T.Value = S.Value
+	--from	#fields T
+	--		inner join #attributes A on A.ID = T.ID and A.AttributeType = 'FusionAttributeType'
+	--		inner join Field S on S.ObjectType = 'FusionAttribute' and S.ObjectID = A.AttributeID and S.FieldTypeID = T.SourceFieldTypeID
 
 --BEGIN: TESTING ---------------------------------------
-/*
-select * from #rules
-select * from #attributes
-select * from #fields
-select * from FusionAttributePromotion where RuleID = 6
 
-select * from IntersectMap where ID = 1424
-select * from IntersectNode where ID = 720728
-select * from [Intersect] where ID = 362728
-delete FusionAttributePromotion where RuleID = 34
-select	A.ID,
-		R.RuleID,
-		R.FusionID,
-		R.ObjectID as FusionAttributeTypeID,
-		R.PromotionObjectType,
-		R.PromotionObjectID,
-		R.PromotionParentObjectType,
-		R.PromotionParentObjectID,
-		A.FusionAttributeID
-from	#rules R
-		inner join #attributes A on A.RuleID = R.RuleID
-*/
+--select * from #rules;
+--select * from #attributes order by ID;
+--select * from #fields order by ID;
+
+--drop table #attributes;
+--drop table #fields;
+--drop table #rules;
+
 --END: TESTING ------------------------------------------
 
 	set		@currentID = 1
@@ -4905,7 +4452,8 @@ from	#rules R
 	begin
 		begin try
 
-			declare @FusionAttributeTypeID int = null,
+			declare @AttributeTypeID int = null,
+					@AttributeType varchar(25) = null,
 					@RuleStepID int = null,
 					@Action varchar(25) = null,
 					@ResultObject varchar(50) = null,
@@ -4914,17 +4462,19 @@ from	#rules R
 			declare @fields table (SourceFieldName nvarchar(250), SourceFieldTypeID int, TargetFieldName nvarchar(250), TargetFieldTypeID int, Value nvarchar(4000))
 			declare @settings table (Name nvarchar(100), Value nvarchar(250))
 			
+
 			select	@RuleID = R.RuleID,
 					@RuleStepID = A.RuleStepID,
 					@Action = A.[Action],
 					@FusionID = R.FusionID,
-					@FusionAttributeTypeID = R.ObjectID,
-					@FusionAttributeID = A.FusionAttributeID,
+					@AttributeTypeID = R.ObjectID,
+					@AttributeID = A.AttributeID,
+					@AttributeType = replace(A.AttributeType,'Type',''),
 					@ResultObject = P.ObjectType,
 					@ResultObjectID = P.ObjectID
 			from	#rules R
 					inner join #attributes A on A.RuleID = R.RuleID and A.ID = @currentID
-					left join [Fusion].RulePromotion P on P.FusionAttributeID = A.FusionAttributeID and P.RuleID = R.RuleID and P.RuleStepID = A.RuleStepID
+					left join [Fusion].RulePromotion P on P.AttributeID = A.AttributeID and P.AttributeType = replace(A.AttributeType, 'Type','') and P.RuleID = R.RuleID and P.RuleStepID = A.RuleStepID
 
 			delete from @fields -- clear out previous fields
 			--Load fields were are working with for this loop instance.
@@ -4953,187 +4503,223 @@ from	#rules R
 				select	@ParentSearchObject			= Value from @settings where Name = 'ParentObject'
 				select	@ParentSearchObjectID		= Value from @settings where Name = 'ParentObjectID'
 
-				if exists(select 1 from @fields where TargetFieldName = 'Name')
+				if @ObjectTypeToPromoteTo = 'ReferenceItemType' OR @ObjectTypeToPromoteTo = 'ReferenceItem'
 				begin
-					declare @code nvarchar(50) = null,
-							@name nvarchar(250) = null,
-							@description nvarchar(4000) = null
-
-					select @code = Value from @fields where TargetFieldName = 'Code'
-					select @name = Value from @fields where TargetFieldName = 'Name'
-					select @description = coalesce(Value, '') from @fields where TargetFieldName = 'Description'
-
-					--BEGIN: Find parent based on search type
-					if @ParentObjectSearchType = 'Direct'
+					if exists(select 1 from @fields where TargetFieldName = 'Code')
 					begin
-						set @ParentObject = @ParentSearchObject
-						set @ParentObjectID = @ParentSearchObjectID
-					end
+						declare @code nvarchar(50) = null
 
-					if @ParentObjectSearchType = 'FusionOwner'
-					begin
-						select	@ParentObject = 'Artifact',
-								@ParentObjectID = ArtifactID
-						from	FusionOwner
-						where	@ParentSearchObject = 'Owner'
-								and FusionID = @FusionID
-								--and ID = @ParentSearchObjectID
-					end
+						select @code = Value from @fields where TargetFieldName = 'Code'
 
-					if @ParentObjectSearchType = 'ResultFromStep'
-					begin
-						select	@ParentObject = ObjectType,
-								@ParentObjectID = ObjectID
-						from	[fusion].[RulePromotion]
-						where	@ParentSearchObject = 'Step'
-								and RuleID = @RuleID
-								and RuleStepID = @ParentSearchObjectID
-								and FusionAttributeID = @FusionAttributeID
-					end
-					--END: Find parent based on search type
-
-					print @ParentObject
-					print @ParentObjectID
-
-					--BEGIN: Determine object type to promote as
-					if @ObjectTypeToPromoteTo = 'ArtifactType'
-					begin
-						set @ResultObject = 'Artifact'
-
-						if @ResultObjectID is null
-						begin
-							select	@ResultObjectID = ID
-							from	Artifact
-							where	ArtifactTypeID = @ObjectTypeIDToPromoteTo
-									and lower(Name) = lower(@name)
-						end
-
-						declare @modelTypeID int = null
-						declare @taxonomyTypeValue nvarchar(250)
-
-						select @taxonomyTypeValue = Value from @fields where TargetFieldName = 'TaxonomyTypeID'
-
---fusion.Rules
-						if (@taxonomyTypeValue <> '' and @taxonomyTypeValue is not null)
-						begin
-							select @modelTypeID = ID from TaxonomyType where Name = ltrim(rtrim(@taxonomyTypeValue))
-						end
-
-						if @taxonomyTypeValue is null
-						begin
-							select @modelTypeID = min(ID) from TaxonomyType
-						end
-
-						if @ResultObjectID is null
-							begin
-								if @ParentObjectID = 0
-								begin
-									set @ParentObjectID = null
-								end
-
-								if @modelTypeID is not null
-									begin
-										insert into Artifact ( ParentID, ArtifactTypeID, TaxonomyTypeID, Name, Description, Status, UpdatedOn, UpdatedBy )
-										values ( @ParentObjectID, @ObjectTypeIDToPromoteTo, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0 )
-
-										select @ResultObjectID =  SCOPE_IDENTITY()
-										set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
-									end
-							end
-						else
-							begin
-								declare @testArtifactName nvarchar(250) = null,
-										@testArtifactDescription nvarchar(4000) = null,
-										@testArtifactParentID int = null,
-										@testArtifactTaxonomyTypeID int = null
-
-								select	@testArtifactName = Name,
-										@testArtifactDescription = Description,
-										@testArtifactParentID = ParentID,
-										@testArtifactTaxonomyTypeID = TaxonomyTypeID
-								from	Artifact
-								where	ID = @ResultObjectID
-
-								if @modelTypeID is not null
-									begin
-										if (@testArtifactName <> @name) 
-											OR (@testArtifactDescription <> @description) 
-											OR (@testArtifactParentID <> @ParentObjectID) 
-											OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
-										begin
-											update	Artifact
-											set		Name = @name,
-													Description = @description,
-													ParentID = @ParentObjectID,
-													TaxonomyTypeID = @modelTypeID
-											where	ID = @ResultObjectID
-										end
-									end
-							end
-					end
-					--END: IF ArtifactType
-
-					if @ObjectTypeToPromoteTo = 'ReferenceItemType' OR @ObjectTypeToPromoteTo = 'ReferenceItem'
-					begin
 						-- You are promoting Reference items to a specific Reference (list)
 						set @ResultObject = 'ReferenceItem'
 
-						if @ResultObject is null and @ResultObjectID is null
+						if (@ResultObject is null and @ResultObjectID is null) or not exists(select 1 from ReferenceItem where ID = @ResultObjectID)
+						begin
+							select	@ResultObjectID = ID
+							from	ReferenceItem
+							where	ReferenceItemTypeID = @ObjectTypeIDToPromoteTo
+									and lower(Code) = lower(@code)
+
+							if not exists(select 1 from ReferenceItem where ID = @ResultObjectID)
 							begin
-								select	@ResultObjectID = ID
-								from	ReferenceItem
-								where	ReferenceItemTypeID = @ParentObjectID
-										and lower(Code) = lower(@code)
+								set @ResultObjectID = null
 							end
+						end
  
 						if @ResultObjectID is null
-							begin
-								insert into ReferenceItem ( ReferenceItemTypeID, Code )
-								values ( @ParentObject, @code )
+						begin
+							insert into ReferenceItem ( ReferenceItemTypeID, Code, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy )
+							values ( @ObjectTypeIDToPromoteTo, @code, getutcdate(), 0, getutcdate(), 0 )
 
-								select @ResultObjectID =  SCOPE_IDENTITY()
+							select @ResultObjectID =  SCOPE_IDENTITY()
 
-								set @NumberOfNewReferenceItems = @NumberOfNewReferenceItems +1;
-							end
-					end
-					--END: IF ReferenceType
-
-					if @ObjectTypeToPromoteTo = 'TaxonomyType'
+							set @NumberOfNewReferenceItems = @NumberOfNewReferenceItems +1;
+						end
+					end -- END check if Code is a TargetField
+				end	--END: IF ReferenceType
+				else
+				begin
+					if exists(select 1 from @fields where TargetFieldName = 'Name')
 					begin
-						set @ResultObject = 'Taxonomy'
+						declare @name nvarchar(250) = null,
+								@description nvarchar(4000) = null
 
-						if @ResultObjectID is null
+						select @name = Value from @fields where TargetFieldName = 'Name'
+						select @description = coalesce(Value, '') from @fields where TargetFieldName = 'Description'
+
+						--BEGIN: Find parent based on search type
+						if @ParentObjectSearchType = 'Direct'
+						begin
+							set @ParentObject = @ParentSearchObject
+							set @ParentObjectID = @ParentSearchObjectID
+						end
+
+						if @ParentObjectSearchType = 'FusionOwner'	--acts similarly to Direct
+						begin
+							set	@ParentObject = @ParentSearchObject
+							set @ParentObjectID = @ParentSearchObjectID
+						end
+
+						if @ParentObjectSearchType = 'ResultFromStep'
+						begin
+							select	@ParentObject = ObjectType,
+									@ParentObjectID = ObjectID
+							from	[fusion].[RulePromotion]
+							where	@ParentSearchObject = 'Step'
+									and RuleID = @RuleID
+									and RuleStepID = @ParentSearchObjectID
+									and AttributeID = @AttributeID
+									and AttributeType = @AttributeType
+						end
+						--END: Find parent based on search type
+
+						--BEGIN: Determine object type to promote as
+						if @ObjectTypeToPromoteTo = 'ArtifactType'
+						begin
+							set @ResultObject = 'Artifact'
+
+							if (@ResultObjectID is null) or not exists(select 1 from Artifact where ID = @ResultObjectID)
+							begin
+								select	@ResultObjectID = ID
+								from	Artifact
+								where	ArtifactTypeID = @ObjectTypeIDToPromoteTo
+										and lower(Name) = lower(@name)
+
+								if not exists(select 1 from Artifact where ID = @ResultObjectID)
+								begin
+									set @ResultObjectID = null
+								end
+							end
+
+							declare @modelTypeID int = null
+							declare @taxonomyTypeValue nvarchar(250)
+
+							select @taxonomyTypeValue = Value from @fields where TargetFieldName = 'TaxonomyTypeID'
+
+							if (@taxonomyTypeValue <> '' and @taxonomyTypeValue is not null)
+							begin
+								select @modelTypeID = ID from TaxonomyType where Name = ltrim(rtrim(@taxonomyTypeValue))
+							end
+
+							if @taxonomyTypeValue is null
+							begin
+								select @modelTypeID = min(ID) from TaxonomyType
+							end
+
+							if @ResultObjectID is null
+								begin
+									if @ParentObjectID = 0
+									begin
+										set @ParentObjectID = null
+									end
+
+									if @modelTypeID is not null
+										begin
+
+											--DEBUGGING------------------------
+											--select 
+											--	@ParentObjectID as ParentObjectID,
+											--	@ObjectTypeIDToPromoteTo as ObjectTypeIDToPromoteTo,
+											--	@modelTypeID as modelTypeID, 
+											--	@name as [name], 
+											--	@description as [description], 
+											--	@ResultObject as ResultObject, 
+											--	@ResultObjectID as ResultObjectID,
+											--    @RuleID as RuleID, @RuleStepID as RuleStepID;
+
+											-- select * from @fields;
+											------------------------------------
+
+											insert into Artifact ( ParentID, ArtifactTypeID, TaxonomyTypeID, Name, Description, Status, UpdatedOn, UpdatedBy, CreatedOn )
+											values ( @ParentObjectID, @ObjectTypeIDToPromoteTo, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0, getutcdate() )
+
+											select @ResultObjectID =  SCOPE_IDENTITY()
+											set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
+										end
+								end
+							else
+								begin
+									declare @testArtifactName nvarchar(250) = null,
+											@testArtifactDescription nvarchar(4000) = null,
+											@testArtifactParentID int = null,
+											@testArtifactTaxonomyTypeID int = null
+
+									select	@testArtifactName = Name,
+											@testArtifactDescription = Description,
+											@testArtifactParentID = ParentID,
+											@testArtifactTaxonomyTypeID = TaxonomyTypeID
+									from	Artifact
+									where	ID = @ResultObjectID
+
+									if @modelTypeID is not null
+										begin
+											if (@testArtifactName <> @name) 
+												OR (@testArtifactDescription <> @description) 
+												OR (@testArtifactParentID <> @ParentObjectID) 
+												OR (@testArtifactParentID is null and @ParentObjectID is not null)
+												OR (@testArtifactParentID is not null and @ParentObjectID is null)
+												OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
+											begin
+												update	Artifact
+												set		Name = @name,
+														Description = @description,
+														ParentID = @ParentObjectID,
+														TaxonomyTypeID = @modelTypeID,
+														UpdatedOn = getutcdate(),
+														UpdatedBy = 0
+												where	ID = @ResultObjectID
+											end
+										end
+								end
+						end
+						--END: IF ArtifactType
+
+						if @ObjectTypeToPromoteTo = 'TaxonomyType'
+						begin
+							set @ResultObject = 'Taxonomy'
+
+							if (@ResultObjectID is null) or not exists(select 1 from Taxonomy where ID = @ResultObjectID)
 							begin
 								select	@ResultObjectID = ID
 								from	Taxonomy
 								where	TaxonomyTypeID = @ObjectTypeIDToPromoteTo
 										and ParentID = @ParentObjectID
 										and lower(Name) = lower(@name)
+
+								if not exists(select 1 from Taxonomy where ID = @ResultObjectID)
+								begin
+									set @ResultObjectID = null
+								end
 							end
 
-						if @ResultObjectID is null
+							if @ResultObjectID is null
 							begin
-								insert into Taxonomy	( ParentID, TaxonomyTypeID, Name, Description )
-								values					( @ParentObjectID, @ObjectTypeIDToPromoteTo, @name, @description )
+								insert into Taxonomy	( ParentID, TaxonomyTypeID, Name, Description, UpdatedOn, UpdatedBy )
+								values					( @ParentObjectID, @ObjectTypeIDToPromoteTo, @name, @description, getutcdate(), 0 )
 
 								select @ResultObjectID =  SCOPE_IDENTITY()
 
 								set @NumberOfNewTaxonomies = @NumberOfNewTaxonomies +1;
 							end
-						else
+							else
 							begin
 								update	Taxonomy
 								set		Name = @Name,
-										Description = @Description--,
+										Description = @Description,
+										UpdatedOn = getutcdate(),
+										UpdatedBy = 0--,
 										--ParentID = @PromotionParentObjectID
 								where	ID = @ResultObjectID
  							end
-					end
-					--END: IF TaxonomyType
+						end
+						--END: IF TaxonomyType
 
-					--END: Determine object type to promote as
+						--END: Determine object type to promote as
 
-				end -- END: Check to see if Target Field called NAME is present
+					end -- END: Check to see if Target Field called NAME is present
+
+				end --End of the ELSE that checks to see if referencelist, or not.
 
 			end --END: Promote action
 
@@ -5165,8 +4751,8 @@ from	#rules R
 									select	@FindFilterFieldValue = Value
 									from	FieldWithRelation
 									where	FieldTypeID = @FindFilterField
-											and ObjectType = 'FusionAttribute'
-											and ObjectID = @FusionAttributeID
+											and ObjectType = @AttributeType
+											and ObjectID = @AttributeID
 								end
 							else
 								begin
@@ -5179,9 +4765,18 @@ from	#rules R
 						begin
 							if not exists(select 1 from @fields where SourceFieldName = 'Name')
 								begin
-									select	@FindFilterFieldValue = TextPath
-									from	FusionAttribute
-									where	ID = @FusionAttributeID
+									if @AttributeType = 'FusionQueryAttribute'
+										begin
+											select @FindFilterFieldValue = [Name]
+											from FieldType FT
+											where FT.ID = @AttributeID
+										end
+									else
+										begin
+											select	@FindFilterFieldValue = TextPath
+											from	FusionAttribute
+											where	ID = @AttributeID
+										end
 								end
 							else
 								begin
@@ -5193,13 +4788,29 @@ from	#rules R
 					
 					if @FindFilterFieldValue is not null
 					begin
-						select	top 1
-								@ResultObject = 'FusionAttribute',
-								@ResultObjectID = ID
-						from	FusionAttribute
-						where	@FindSearchObject = 'FusionAttributeType'
-								and FusionAttributeTypeID = @FindSearchObjectID
-								and (SourceID = @FindFilterFieldValue or TextPath = @FindFilterFieldValue or Name = @FindFilterFieldValue)
+						if @AttributeType = 'FusionQueryAttribute'
+							begin
+								select top 1 
+										@ResultObject = 'FusionQueryAttribute',
+										@ResultObjectID = ID
+								from	FieldType
+								where	@FindSearchObject = 'FusionQueryAttributeType'
+										and ObjectID = @FindSearchObjectID
+										and [Object] = 'FusionQueryAttributeType'
+										and Name = @FindFilterFieldValue
+							end
+						else
+							begin
+								select	top 1
+										@ResultObject = 'FusionAttribute',
+										@ResultObjectID = ID
+								from	FusionAttribute
+								where	@FindSearchObject = 'FusionAttributeType'
+										and FusionAttributeTypeID = @FindSearchObjectID
+										and (SourceID = @FindFilterFieldValue or TextPath = @FindFilterFieldValue or Name = @FindFilterFieldValue)
+							end
+
+
 					end
 				end
 
@@ -5220,9 +4831,18 @@ from	#rules R
 					end
 					else
 					begin
-						select	@FindFilterFieldValue = Value
-						from	@fields
-						where	SourceFieldName = 'Name'	
+						if @FindFilterField = -2
+							begin
+								select	@FindFilterFieldValue = Name
+								from	FusionAttribute
+								where	ID = @ParentAttributeID
+							end
+						else
+							begin
+								select	@FindFilterFieldValue = Value
+								from	@fields
+								where	SourceFieldName = 'Name'	
+							end
 					end
 
 					if @FindFilterFieldValue is not null
@@ -5269,7 +4889,9 @@ from	#rules R
 					where	@FindSearchObject = 'Step'
 							and rp.RuleID = @RuleID
 							and rp.RuleStepID = @FindSearchObjectID
-							and rp.FusionAttributeID = @FusionAttributeID
+							and rp.AttributeID = @AttributeID
+							and rp.AttributeType = @AttributeType
+
 				end
 
 				if @FindSearchType = 'ResultFromStep' and @FindParent is null
@@ -5280,7 +4902,8 @@ from	#rules R
 					where	@FindSearchObject = 'Step'
 							and RuleID = @RuleID
 							and RuleStepID = @FindSearchObjectID
-							and FusionAttributeID = @FusionAttributeID
+							and AttributeID = @AttributeID
+							and AttributeType = @AttributeType
 				end
 
 				if @FindSearchType = 'Promotion' and @FindTargetField is null --by parent
@@ -5288,10 +4911,10 @@ from	#rules R
 					select	@ResultObject = ObjectType,
 						    @ResultObjectID = ObjectID
 					from	[fusion].[RulePromotion]
-					join	FusionAttribute A on A.ID = @FusionAttributeID
+					join	FusionAttribute A on A.ID = @AttributeID
 					join	FusionAttribute AP on AP.ID = A.ParentID
 					where	RuleStepID = @PromotionRuleStepID
-							and FusionAttributeID = AP.ID
+							and AttributeID = AP.ID and AttributeType = 'FusionAttribute'
 				end
 
 				if @FindSearchType = 'Promotion' and @FindTargetField is not null -- by field
@@ -5299,16 +4922,17 @@ from	#rules R
 					select	@ResultObject = R.ObjectType, 
 							@ResultObjectID = R.ObjectID 
 					from	[fusion].[RulePromotion] R
-					join	FusionAttribute SA on SA.ID = R.FusionAttributeID
+					join	FusionAttribute SA on SA.ID = R.AttributeID
 					join	Field SF on SF.ObjectType = 'FusionAttribute' 
 							and SF.ObjectID = SA.ID 
 							and SF.FieldTypeID = @FindFilterField
-					join	FusionAttribute TA on TA.ID = @FusionAttributeID
+					join	FusionAttribute TA on TA.ID = @AttributeID
 					join	Field TF on TF.ObjectType = 'FusionAttribute' 
 							and TF.ObjectID = TA.ID 
 							and TF.FieldTypeID = @FindTargetField
 					where	R.RuleStepID = @PromotionRuleStepID 
 							and SF.Value = TF.Value
+							and R.AttributeType = 'FusionAttribute'
 				end
 
 				--END: Find based on search type
@@ -5336,13 +4960,14 @@ from	#rules R
 					from	[fusion].[RulePromotion]
 					where	RuleID = @RuleID
 							and RuleStepID = @FindSearchObjectID
-							and FusionAttributeID = @FusionAttributeID
+							and AttributeID = @AttributeID
+							and AttributeType = @AttributeType
 				end
 
 				if @SearchType = 'Self'
 				begin
 					set @FindRelationObject = 'FusionAttribute'
-					set @FindRelationObjectID = @FusionAttributeID
+					set @FindRelationObjectID = @AttributeID
 				end
 
 				if @FindRelationObject is not null and @FindRelationObjectID is not null
@@ -5402,7 +5027,8 @@ from	#rules R
 				from	[Fusion].[RulePromotion]
 				where	RuleID = @RuleID
 						and RuleStepID = @SubjectSearchID
-						and FusionAttributeID = @FusionAttributeID
+						and AttributeID = @AttributeID
+						and AttributeType = @AttributeType
 				--END: Find subject based on search type
 
 				--BEGIN: Find object based on search type
@@ -5411,7 +5037,8 @@ from	#rules R
 				from	[fusion].[RulePromotion]
 				where	RuleID = @RuleID
 						and RuleStepID = @ObjectSearchID
-						and FusionAttributeID = @FusionAttributeID
+						and AttributeID = @AttributeID
+						and AttributeType = @AttributeType
 				--END: Find object based on search type
 
 				declare @Map table (ID int)
@@ -5444,14 +5071,16 @@ from	#rules R
 					from	[Fusion].[RulePromotion]
 					where	RuleID = @RuleID
 							and RuleStepID = @TechnicalSubjectSearchID
-							and FusionAttributeID = @FusionAttributeID
+							and AttributeID = @AttributeID
+							and AttributeType = @AttributeType
 
 					select	@TechnicalObject = ObjectType,
 							@TechnicalObjectID = ObjectID
 					from	[fusion].[RulePromotion]
 					where	RuleID = @RuleID
 							and RuleStepID = @TechnicalObjectSearchID
-							and FusionAttributeID = @FusionAttributeID
+							and AttributeID = @AttributeID
+							and AttributeType = @AttributeType
 				end
 				--END: Find object based on search type
 
@@ -5544,13 +5173,14 @@ from	#rules R
 					where	@R_SubjectSearchObject = 'Step'
 							and RuleID = @RuleID
 							and RuleStepID = @R_SubjectSearchObjectID
-							and FusionAttributeID = @FusionAttributeID
+							and AttributeID = @AttributeID
+							and AttributeType = @AttributeType
 				end
 
 				if @R_SubjectSearchType = 'Self'
 				begin
-					set @R_Subject = 'FusionAttribute'
-					set @R_SubjectID = @FusionAttributeID
+					set @R_Subject = @AttributeType
+					set @R_SubjectID = @AttributeID
 				end
 				--END: Find subject based on search type
 				
@@ -5575,13 +5205,14 @@ from	#rules R
 					where	@R_ObjectSearchObject = 'Step'
 							and RuleID = @RuleID
 							and RuleStepID = @R_ObjectSearchObjectID
-							and FusionAttributeID = @FusionAttributeID
+							and AttributeID = @AttributeID
+							and AttributeType = @AttributeType
 				end
 
 				if @R_ObjectSearchType = 'Self'
 				begin
-					set @R_Object = 'FusionAttribute'
-					set @R_ObjectID = @FusionAttributeID
+					set @R_Object = @AttributeType
+					set @R_ObjectID = @AttributeID
 
 				end
 				--END: Find object based on search type
@@ -5675,7 +5306,8 @@ from	#rules R
 				-- Insert/Update the FusionAttributePromotion table to keep track of previously promoted objects.
 				MERGE	[fusion].[RulePromotion] AS T
 				USING	(
-						SELECT	@FusionAttributeID as FusionAttributeID, 
+						SELECT	@AttributeID as AttributeID,
+								@AttributeType as AttributeType, 
 								@ResultObject as ObjectType, 
 								@ResultObjectID as ObjectID, 
 								@RuleID as RuleID,
@@ -5684,15 +5316,17 @@ from	#rules R
 						) as S
 				ON		T.RuleID = S.RuleID
 						and T.RuleStepID = S.RuleStepID 
-						and T.FusionAttributeID = S.FusionAttributeID 
+						and T.AttributeID = S.AttributeID 
+						and T.AttributeType = S.AttributeType
 						and T.ObjectType = S.ObjectType 
 						and T.ObjectID = S.ObjectID
 				WHEN	MATCHED THEN
 						UPDATE SET	T.RuleID = S.RuleID, 
-									T.ObjectTypeID = S.PromotedObjectTypeID
+									T.ObjectTypeID = S.PromotedObjectTypeID,
+									T.UpdatedOn = getutcdate()
 				WHEN	NOT MATCHED THEN
-						INSERT (FusionAttributeID, ObjectType, ObjectID, RuleID, RuleStepID, ObjectTypeID) 
-						VALUES (S.FusionAttributeID, S.ObjectType, S.ObjectID, S.RuleID, S.RuleStepID, S.PromotedObjectTypeID);
+						INSERT (AttributeID, AttributeType, ObjectType, ObjectID, RuleID, RuleStepID, ObjectTypeID, CreatedOn, UpdatedOn) 
+						VALUES (S.AttributeID, S.AttributeType, S.ObjectType, S.ObjectID, S.RuleID, S.RuleStepID, S.PromotedObjectTypeID, getutcdate(), getutcdate());
 
 
 				-- Add/Update the dynamic fields involved.
@@ -5763,9 +5397,14 @@ from	#rules R
 
 					if @shouldInsert = 1
 					begin
-						If not EXISTS (SELECT 1 FROM #fieldValues where ObjectType = @ResultObject and ObjectID = @ResultObjectID and FieldTypeID = @targetFieldTypeID) --avoid duplicates this happens in gmo
+						--If not EXISTS (SELECT 1 FROM #fieldValues where ObjectType = @ResultObject and ObjectID = @ResultObjectID and FieldTypeID = @targetFieldTypeID) --avoid duplicates this happens in gmo
 						begin
-							insert into #fieldValues (ObjectType, ObjectID, FieldTypeID, Value) values(@ResultObject, @ResultObjectID, @targetFieldTypeID, @fieldValue)
+							begin try
+								insert into #fieldValues (ObjectType, ObjectID, FieldTypeID, Value) values(@ResultObject, @ResultObjectID, @targetFieldTypeID, @fieldValue)
+							end try
+							Begin Catch
+							--	print 'duplicate field value'
+							End Catch
 						end
 					end
 						
@@ -5779,7 +5418,8 @@ from	#rules R
 		end try
 		begin catch
 			SELECT 
-				ERROR_NUMBER() AS ErrorNumber
+				ERROR_LINE() as ErrorLine
+				,ERROR_NUMBER() AS ErrorNumber
 				,ERROR_MESSAGE() AS ErrorMessage;
 		end catch
 
@@ -5832,3105 +5472,15 @@ from	#rules R
 END
 GO
 
-alter procedure [utility].[AddAuditEntry]
---declare
+ALTER  FUNCTION [utility].[GetDirectlyAssignedResponsibilityList]
+(
 	@Object varchar(50),
 	@ObjectID int,
-	@ResourceID int,
-	@Date datetime,
-	@Action varchar(15),
-	@ActionObject varchar(50),
-	@ActionObjectID int
---set @Object = 'Taxonomy'--'Artifact'
---set @ObjectID = 229--733
---set @ResourceID = 1
---set @Action = 'Updated'
---set @ActionObject = 'Taxonomy' --'Artifact'
---set @ActionObjectID = 229 --733
-as
-begin
-	set nocount on;
-	declare @objectName nvarchar(250),
-			@actionObjectTypeName nvarchar(250),
-			@actionObjectName nvarchar(250),
-			@actionDescription nvarchar(max)
-	
-	declare @tbl table (ID int identity, FieldTypeID int, FieldName nvarchar(250), NewValue nvarchar(max), MostRecentVersion int, Updated bit)
-
-	-- Object Resolution --------------------------------------------------
-	if @Object = 'Artifact'				begin		select @objectName = Name from Artifact where ID = @ObjectID				end
-	if @Object = 'ArtifactType'			begin		select @objectName = Name from ArtifactType where ID = @ObjectID			end
-	if @Object = 'AttributeType'		begin		select @objectName = Name from AttributeType where ID = @ObjectID			end
-	if @Object = 'Fusion'				begin		select @objectName = Name from Fusion where ID = @ObjectID					end
-	if @Object = 'FusionAttribute'		begin		select @objectName = TextPath from FusionAttribute where ID = @ObjectID		end
-	if @Object = 'FusionAttributeType'	begin		select @objectName = Name from FusionAttributeType where ID = @ObjectID		end
-	if @Object = 'FusionType'			begin		select @objectName = Name from FusionType where ID = @ObjectID				end
-	if @Object = 'Group'				begin		select @objectName = Name from [Group] where ID = @ObjectID					end
-	if @Object = 'Intersect'			begin		select @objectName = Name from [Intersect] where ID = @ObjectID				end
-	if @Object = 'IntersectType'		begin		select @objectName = Name from IntersectType where ID = @ObjectID			end
-	if @Object = 'LoadType'				begin		select @objectName = Name from LoadType where ID = @ObjectID				end
-	if @Object = 'LookupType'			begin		select @objectName = Name from LookupType where ID = @ObjectID				end
-	if @Object = 'Policy'				begin		select @objectName = Name from Policy where ID = @ObjectID					end
-	if @Object = 'ReferenceItemType'	begin		select @objectName = Name from ReferenceItemType where ID = @ObjectID		end
-	if @Object = 'Report'				begin		select @objectName = Name from Report where ID = @ObjectID					end
-	if @Object = 'ResponsibilityType'	begin		select @objectName = Name from ResponsibilityType where ID = @ObjectID		end
-	if @Object = 'Rule'					begin		select @objectName = Name from [Rule] where ID = @ObjectID					end
-	if @Object = 'StatisticType'		begin		select @objectName = Name from StatisticType where ID = @ObjectID			end
-	if @Object = 'SurveyType'			begin		select @objectName = Name from SurveyType where ID = @ObjectID				end
-	if @Object = 'Taxonomy'				begin		select @objectName = Name from Taxonomy where ID = @ObjectID				end
-	if @Object = 'TaxonomyType'			begin		select @objectName = Name from TaxonomyType where ID = @ObjectID			end
-	----------------------------------------------------------------------
-
-	-- Action Object Resolution ------------------------------------------
-
-	-- Relevant ONLY to: Artifact, ArtifactType
-	if @ActionObject = 'Artifact'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.TextPath
-		from	Artifact O
-				inner join ArtifactType T on T.ID = O.ArtifactTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'TaxonomyTypeID', TaxonomyTypeID, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Status', Status, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'DateLastCertified', DateLastCertified, 0, 0 from Artifact where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: ArtifactType
-	if @ActionObject = 'ArtifactType'
-	begin
-		select	@actionObjectTypeName = 'Artifact Type',
-				@actionObjectName = O.Name 
-		from	ArtifactType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from ArtifactType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from ArtifactType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from ArtifactType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'CanOwnFusion', CanOwnFusion, 0, 0 from ArtifactType where ID = @ActionObjectID
-		--insert into @tbl  select 0, 'SourcingApplies', SourcingApplies, 0, 0 from ArtifactType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'AllowRelatedArtifacts', AllowRelatedArtifacts, 0, 0 from ArtifactType where ID = @ActionObjectID
-	end
-	
-	-- Relevant ONLY to: Artifact, Fusion, FusionAttribute, Intersect, Taxonomy
-	if @ActionObject = 'Attribute'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = T.Name + ' Attribute ' + cast(O.ID as nvarchar(15)) 
-		from	Attribute O
-				inner join AttributeType T on T.ID = O.AttributeTypeID
-		where	O.ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: AttributeType
-	if @ActionObject = 'AttributeType'
-	begin
-		select	@actionObjectTypeName = 'Attribute Type',
-				@actionObjectName = O.Name
-		from	AttributeType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from AttributeType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from AttributeType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from AttributeType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'TextFormatString', TextFormatString, 0, 0 from AttributeType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'AttributeTypeCategoryID', AttributeTypeCategoryID, 0, 0 from AttributeType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Rule
-	if @ActionObject = 'EventGroup'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	EventGroup O
-				inner join [Rule] T on T.ID = O.RuleID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from EventGroup where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PublicID', PublicID, 0, 0 from EventGroup where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Fusion
-	if @ActionObject = 'Fusion'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	Fusion O
-				inner join FusionType T on T.ID = O.FusionTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Fusion where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Fusion where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Enabled', Enabled, 0, 0 from Fusion where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Manual', Manual, 0, 0 from Fusion where ID = @ActionObjectID
-		insert into @tbl  select 0, 'LockPromotedItems', LockPromotedItems, 0, 0 from Fusion where ID = @ActionObjectID
-		insert into @tbl  select 0, 'IntervalType', IntervalType, 0, 0 from Fusion where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Interval', Interval, 0, 0 from Fusion where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ForceRefresh', ForceRefresh, 0, 0 from Fusion where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: FusionAttributeType, FusionType
-	if @ActionObject = 'FusionAttributeType'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	FusionAttributeType O
-				inner join FusionType T on T.ID = O.FusionTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionAttributeType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Assignable', Assignable, 0, 0 from FusionAttributeType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: FusionType
-	if @ActionObject = 'FusionType'
-	begin
-		select	@actionObjectTypeName = 'Fusion Type',
-				@actionObjectName = O.Name 
-		from	FusionType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from FusionType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Group
-	if @ActionObject = 'Group'
-	begin
-		select	@actionObjectTypeName = 'Group',
-				@actionObjectName = O.Name 
-		from	[Group] O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from [Group] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Group] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PrimaryOwnerResourceID', PrimaryOwnerResourceID, 0, 0 from [Group] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'SecondaryOwnerResourceID', SecondaryOwnerResourceID, 0, 0 from [Group] where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Artifact, FusionAttribute, Intersect, Taxonomy, Policy, Rule
-	if @ActionObject = 'Intersect'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	[Intersect] O
-				inner join [IntersectType] T on T.ID = O.IntersectTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Classification', Classification, 0, 0 from [Intersect] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Intersect] where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: IntersectType
-	if @ActionObject = 'IntersectType'
-	begin
-		select	@actionObjectTypeName = 'Intersect Type',
-				@actionObjectName = O.Name 
-		from	IntersectType O
-		where	O.ID = @ActionObjectID
-
-		--insert into @tbl  select 0, 'ReadOnly', [ReadOnly], 0, 0 from IntersectType where ID = @ActionObjectID
-		--insert into @tbl  select 0, 'IsTechnical', IsTechnical, 0, 0 from IntersectType where ID = @ActionObjectID
-		--insert into @tbl  select 0, 'AllowContext', AllowContext, 0, 0 from IntersectType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LoadType
-	if @ActionObject = 'LoadType'
-	begin
-		select	@actionObjectTypeName = 'Load Type',
-				@actionObjectName = O.Name 
-		from	LoadType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from LoadType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LoadType
-	if @ActionObject = 'LoadTypeField'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	LoadTypeField O
-				inner join LoadType T on T.ID = O.LoadTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from LoadTypeField where ID = @ActionObjectID
-		insert into @tbl  select 0, 'SortOrder', SortOrder, 0, 0 from LoadTypeField where ID = @ActionObjectID
-		insert into @tbl  select 0, 'LookupObjectType', LookupObjectType, 0, 0 from LoadTypeField where ID = @ActionObjectID
-		insert into @tbl  select 0, 'LookupObjectID', LookupObjectID, 0, 0 from LoadTypeField where ID = @ActionObjectID
-		insert into @tbl  select 0, 'LookupFieldName', LookupFieldName, 0, 0 from LoadTypeField where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LoadType
-	if @ActionObject = 'LoadTypeRule'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = T.Name + ' Rule ' + cast(O.ID as nvarchar(15))
-		from	LoadTypeRule O
-				inner join LoadType T on T.ID = O.LoadTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'LoadTypeRuleGroup', case LoadTypeRuleGroup when 1 then 'Promotion' when 2 then 'Relation' else 'Unknown' end, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'SortOrder', SortOrder, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'UniqueLoadTypeFieldID', UniqueLoadTypeFieldID, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LoadType
-	if @ActionObject = 'LoadTypeRuleItem'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = 'Rule Field ' + cast(O.ID as nvarchar(15))
-		from	LoadTypeRuleItem O
-				inner join LoadTypeRule R on R.ID = O.LoadTypeRuleID
-				inner join LoadType T on T.ID = R.LoadTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'SourceLoadTypeFieldID', SourceLoadTypeFieldID, 0, 0 from LoadTypeRuleItem where ID = @ActionObjectID
-		insert into @tbl  select 0, 'TargetFieldName', TargetFieldName, 0, 0 from LoadTypeRuleItem where ID = @ActionObjectID
-		insert into @tbl  select 0, 'IsCustomField', IsCustomField, 0, 0 from LoadTypeRuleItem where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LookupType
-	if @ActionObject = 'Lookup'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = T.Name + ' Lookup ' + cast(O.ID as nvarchar(15))
-		from	[Lookup] O
-				inner join LookupType T on T.ID = O.LookupTypeID
-		where	O.ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LookupType
-	if @ActionObject = 'LookupType'
-	begin
-		select	@actionObjectTypeName = 'Lookup Type',
-				@actionObjectName = O.Name 
-		from	LookupType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from LookupType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Policy
-	if @ActionObject = 'Policy'
-	begin
-		select	@actionObjectTypeName = 'Policy',
-				@actionObjectName = O.Name 
-		from	[Policy] O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from [Policy] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from [Policy] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Policy] where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: SurveyType
-	if @ActionObject = 'QuestionType'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	QuestionType O
-				inner join SurveyType T on T.ID = O.SurveyTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from QuestionType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'DisplayStyle', DisplayStyle, 0, 0 from QuestionType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from QuestionType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: ReferenceItem
-	if @ActionObject = 'ReferenceItem'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Code 
-		from	ReferenceItem O
-				inner join ReferenceItemType T on T.ID = O.ReferenceItemTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Code', Code, 0, 0 from ReferenceItem where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: ReferenceItemType
-	if @ActionObject = 'ReferenceItemType'
-	begin
-		select	@actionObjectTypeName = 'Reference Item Type',
-				@actionObjectName = O.Name
-		from	ReferenceItemType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from ReferenceItemType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from ReferenceItemType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from ReferenceItemType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Report
-	if @ActionObject = 'Report'
-	begin
-		select	@actionObjectTypeName = 'Report',
-				@actionObjectName = O.Name
-		from	Report O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Report where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Report where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from Report where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from Report where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ReportLayoutID', ReportLayoutID, 0, 0 from Report where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Report
-	if @ActionObject = 'ReportTile'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	ReportTile O
-				inner join Report T on T.ID = O.ReportID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from ReportTile where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ReportTileType', ReportTileType, 0, 0 from ReportTile where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ContentAreaNumber', ContentAreaNumber, 0, 0 from ReportTile where ID = @ActionObjectID
-		insert into @tbl  select 0, 'CommandText', CommandText, 0, 0 from ReportTile where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Settings', cast(Settings as nvarchar(max)), 0, 0 from ReportTile where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Artifact, ArtifactType, Intersect, Policy, Rule, Taxonomy, TaxonomyType, Vocabulary
-	if @ActionObject = 'Responsibility'
-	begin
-		select	@actionObjectTypeName = 'Responsibility',
-				@actionObjectName = T.Name 
-		from	Responsibility O
-				inner join ResponsibilityType T on T.ID = O.ResponsibilityTypeID
-
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Context', (
-				select	D.Name + ': ' + I.Code + '; '
-				from	ResponsibilityContextItem C
-						inner join ReferenceItem I on C.ObjectType = 'ReferenceItem' and C.ObjectID = I.ID
-						inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
-				where	ResponsibilityID = @ActionObjectID
-				for xml path ('')--, root('items')
-				), 0, 0 from Responsibility where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from Responsibility where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from Responsibility where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ResponsibleObjectType', ResponsibleObjectType, 0, 0 from Responsibility where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ResponsibleObjectID', ResponsibleObjectID, 0, 0 from Responsibility where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: ResponsibilityType
-	if @ActionObject = 'ResponsibilityType'
-	begin
-		select	@actionObjectTypeName = 'Responsibility Type',
-				@actionObjectName = O.Name 
-		from	ResponsibilityType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from ResponsibilityType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ResponsibilityTypeGroup', ResponsibilityTypeGroup, 0, 0 from ResponsibilityType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from ResponsibilityType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Rule
-	if @ActionObject = 'Rule'
-	begin
-		select	@actionObjectTypeName = 'Rule',
-				@actionObjectName = O.Name 
-		from	[Rule] O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from [Rule] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Rule] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'RuleType', RuleType, 0, 0 from [Rule] where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: StatisticType
-	if @ActionObject = 'StatisticType'
-	begin
-		select	@actionObjectTypeName = 'Statistic Type',
-				@actionObjectName = O.Name 
-		from	StatisticType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from StatisticType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'CheckType', CheckType, 0, 0 from StatisticType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from StatisticType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PartOfScore', PartOfScore, 0, 0 from StatisticType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Configuration', cast(Configuration as nvarchar(max)), 0, 0 from StatisticType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: SurveyType
-	if @ActionObject = 'SurveyType'
-	begin
-		select	@actionObjectTypeName = 'Survey Type',
-				@actionObjectName = O.Name 
-		from	SurveyType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from SurveyType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Object', Object, 0, 0 from SurveyType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from SurveyType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Taxonomy, TaxonomyType
-	if @ActionObject = 'Taxonomy'
-	begin
-		select	@actionObjectTypeName = T.Name + ' model',
-				@actionObjectName = O.TextPath
-		from	Taxonomy O
-				inner join TaxonomyType T on T.ID = O.TaxonomyTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Taxonomy where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from Taxonomy where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Taxonomy where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Level', [Level], 0, 0 from Taxonomy where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: TaxonomyType
-	if @ActionObject = 'TaxonomyType'
-	begin
-		select	@actionObjectTypeName = 'Model Type',
-				@actionObjectName = O.Name
-		from	TaxonomyType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from TaxonomyType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from TaxonomyType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'MaximumDepth', MaximumDepth, 0, 0 from TaxonomyType where ID = @ActionObjectID
-		--insert into @tbl  select 0, 'Class', Class, 0, 0 from TaxonomyType where ID = @ActionObjectID
-	end
-
-	-- Get the dynamic fields for the actional object, if available for this type.
-	if @ActionObject in ('Artifact', 'Attribute', 'Event', 'Fusion', 'FusionAttribute', 'Lookup', 'Resource', 'Taxonomy') 
-	begin
-		insert into @tbl  
-			select	FieldTypeID, 
-					FriendlyName, 
-					FormattedValue, 
-					0, 
-					0 
-			from	FieldWithRelation
-			where	ObjectType = @ActionObject 
-					and ObjectID = @ActionObjectID
-	end
-	----------------------------------------------------------------------
-
-
-	-- Now, determine the description, and whether to create audit row ---
-
-	update	T
-	set		T.MostRecentVersion = coalesce(S.[Version], 0),
-			T.Updated = case 
-							when T.NewValue = S.Value then 0
-							when T.NewValue is null and S.Value is null then 0
-							else 1
-						end
-	from	@tbl T
-			left join (
-						select	V.*,
-								F.Value
-						from	reporting.Global_Audit A
-								inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @Object and A.ObjectID = @ObjectID and A.ActionObject = @ActionObject and A.ActionObjectID = @ActionObjectID
-								inner join (
-											select		F.FieldTypeID,
-														F.FieldName,
-														max([Version]) as [Version]
-											from		reporting.Global_Audit A
-														inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @Object and A.ObjectID = @ObjectID and A.ActionObject = @ActionObject and A.ActionObjectID = @ActionObjectID
-											group by	F.FieldTypeID,
-														F.FieldName
-											) V on V.FieldTypeID = F.FieldTypeID and V.FieldName = F.FieldNAme and V.[Version] = F.[Version]
-						) S on (S.FieldTypeID = 0 and S.FieldTypeID = T.FieldTypeID and S.FieldName = T.FieldName) or (S.FieldTypeID > 0 and S.FieldTypeID = T.FieldTypeID)
-
-	declare	@auditID bigint,
-			@current int = 1, 
-			@max int,
-			@fieldTypeID int,
-			@fieldName nvarchar(250),
-			@version int,
-			@value nvarchar(max),
-			@updated bit
-	select	@max = max(ID) from @tbl
-
-	if @Action = 'Created'
-		begin
-			set @actionDescription = @actionObjectTypeName + ' created.'
-		end
-	else
-		begin
-			while @current <= @max
-			begin
-				select	@fieldTypeID = FieldTypeID,
-						@fieldName = FieldName,
-						@version = MostRecentVersion,
-						@value = NewValue,
-						@updated = Updated
-				from	@tbl
-				where	ID = @current
-
-				if @updated = 1
-				begin
-					set @actionDescription = coalesce(@actionDescription + ', ', '') + @fieldName + case when @version > 0 then ' updated' else ' added' end
-				end
-
-				set @current = @current + 1
-			end
-		end
-	
-	--select @Object, @ObjectID, @ObjectName, @ResourceID, @Date, @Action, @ActionObject, @ActionObjectID, @actionObjectTypeName, @actionObjectName, @actionDescription
-
-	if @actionDescription is not null and @objectName is not null
-	begin
-		set @actionDescription = @actionDescription + '.'
-
-		insert into [reporting].[Global_Audit] values (@Object, @ObjectID, @objectName, coalesce(@ResourceID, 0), @Date, @Action, @ActionObject, @ActionObjectID, @actionObjectTypeName, @actionObjectName, @actionDescription)
-		select @auditID = SCOPE_IDENTITY()
-
-		set @current = 1
-		while @current <= @max
-		begin
-			select	@fieldTypeID = FieldTypeID,
-					@fieldName = FieldName,
-					@version = MostRecentVersion,
-					@value = NewValue,
-					@updated = Updated
-			from	@tbl
-			where	ID = @current
-
-			if @updated = 1
-			begin
-				insert into [reporting].[Global_FieldAudit] 
-				values	(
-						@auditID, 
-						@fieldTypeID, 
-						@fieldName, 
-						@version + 1, 
-						@value --case FormattedValue when '' then 'EMPTY' else coalesce(FormattedValue, 'NULL') end
-						) 		
-			end
-
-			set @current = @current + 1
-		end
-	end
-	----------------------------------------------------------------------
-end
-GO
-
-ALTER  FUNCTION [utility].[ObjectDetail]
-(
---declare
-	@type varchar(50), 
-	@id int
---set @type = 'Domain'
---set @id = 1
+	@Priority int
 )
-RETURNS @tbl TABLE 
+RETURNS 
+@tbl TABLE 
 (
-	ID int,
-	Name nvarchar(250),
-	TextPath nvarchar(2500),
-	Description nvarchar(4000),
-	ParentID int null,
-	ParentType nvarchar(250),
-	Url nvarchar(2500),
-	TypeID int,
-	[Type] varchar(25),
-	[TypeName] nvarchar(250),
-	IconBackColor varchar(15),
-	IconForeColor varchar(15),
-	IconText varchar(15),
-	Status nvarchar(25) null
-) 
-AS
-BEGIN
-	if @type = 'Artifact'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName, Status)
-			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, O.ArtifactTypeID, O.ID),	O.ArtifactTypeID,	'ArtifactType',	T.Name, O.Status
-			FROM	Artifact O
-					INNER JOIN ArtifactType T ON O.ArtifactTypeID = T.ID and O.ID = @id
-	end
-
-	if @type = 'ArtifactType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Artifact Type'
-			FROM	ArtifactType O
-			WHERE	ID = @id
-	end
-
-	if @type = 'Attribute'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
-			SELECT			O.ID,	'',		'',			'',				O.ParentID,	@type,		D.Url,	O.AttributeTypeID,	'AttributeType',	T.Name
-			FROM	[Attribute] O
-					INNER JOIN AttributeType T ON O.AttributeTypeID = T.ID and O.ID = @id
-					cross apply  utility.ObjectDetail(O.ObjectType, O.ObjectID) D
-	end
-
-	if @type = 'AttributeType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		Description,	ParentID,	@type,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Attribute Type'
-			FROM	AttributeType
-			WHERE	ID = @id
-	end
-
-	if @type = 'Group'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	0,		@type,	'Group'
-			FROM	[Group]
-			WHERE	ID = @id
-	end
-
-	if @type = 'Intersect'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		'',				NULL,		@type,		dbo.GenerateObjectUrl(@type, O.IntersectTypeID, O.ID),	O.IntersectTypeID,	'IntersectType',	T.Name
-			FROM	[Intersect] O
-					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
-	end
-
-	if @type = 'IntersectType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Intersect Type'
-			FROM	IntersectType
-			WHERE	ID = @id
-	end
-
-	if @type = 'Event'
-	begin
-		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
-			SELECT			O.ID,	T.Name + ' event',	T.Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, T.RuleID, O.ID),	T.RuleID,	'Rule',	T.Name
-			FROM	[Event] O
-					INNER JOIN EventGroup T ON O.EventGroupID = T.ID AND O.ID = @id
-	end
-
-	if @type = 'EventGroup'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID,			[Type], TypeName)
-			SELECT			ID,		Name,	Name,		'',				NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, ID),	RuleID,	'Rule',	'Rule'
-			FROM	EventGroup O
-			WHERE	ID = @id
-	end
-
-	if @type = 'Lookup'
-	begin
-		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
-			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name
-			FROM	[Lookup] O
-					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
-	end
-
-	if @type = 'LookupType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateObjectUrl(@type, ID, 0),	ID,		@type,	'Lookup Type'
-			FROM	LookupType O
-			WHERE	ID = @id
-	end
-
-	if @type = 'Fusion'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		'',				NULL,		@type,		dbo.GenerateObjectUrl(@type, O.FusionTypeID, O.ID),	O.FusionTypeID,	'FusionType',	T.Name
-			FROM	Fusion O
-					INNER JOIN FusionType T ON O.FusionTypeID = T.ID and O.ID = @id
-	end
-
-	if @type = 'FusionType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Fusion Type'
-			FROM	FusionType O
-			WHERE	ID = @id
-	end
-
-	if @type = 'FusionAttribute'
-	begin
-		insert into @tbl (	ID,		Name,		TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,						[Type],					TypeName)
-			SELECT			O.ID,	coalesce(O.TextPath, O.Name),	O.TextPath,	'',				O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, FT.ID, O.ID),
-																											O.FusionAttributeTypeID,	'FusionAttributeType',	T.Name
-			FROM	FusionAttribute O
-					INNER JOIN FusionAttributeType T ON O.FusionAttributeTypeID = T.ID and O.ID = @id
-					INNER JOIN FusionType FT ON T.FusionTypeID = FT.ID
-	end
-
-	if @type = 'FusionAttributeType'
-	begin
-		insert into @tbl (	ID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,	O.Name,	O.TextPath,	'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Fusion Attribute Type'
-			FROM	FusionAttributeType O
-			WHERE	ID = @id
-	end
-
-	if @type = 'FusionQueryAttributeType'
-	begin
-		insert into @tbl (	ID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,	O.Name,	O.Name,	'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Fusion Query Attribute Type'
-			FROM	FusionQueryAttributeType O
-			WHERE	ID = @id
-	end
-
-	if @type = 'Policy'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	T.ID,	'PolicyType',	T.Name
-			FROM	[Policy] O
-					INNER JOIN PolicyType T ON O.PolicyTypeID = T.ID AND O.ID = @id
-	end
-
-	if @type = 'PolicyType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID,	[Type],	TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, O.ID, O.ID),	C.ID,	@type,	C.Name
-			FROM	PolicyType O
-					inner join PolicyTypeClass C on C.ID = O.PolicyTypeClassID
-			WHERE	O.ID = @id
-	end
-
-	if @type = 'ReferenceItemType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Reference Item Type'
-			FROM	ReferenceItemType
-			WHERE	ID = @id
-	end
-
-	if @type = 'Report'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report'
-			FROM	Report O
-			WHERE	O.ID = @id
-	end
-
-	if @type = 'Resource'
-	begin
-		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
-			select	ResourceID, FirstName + ' ' + LastName, dbo.GenerateObjectUrl(@type, 1, @id), 1, 'ResourceType', 'Employee'
-			from	reporting.Global_Resource 
-			where	ResourceID = @id
-	end
-
-		if @type = 'ResponsibilityType'
-	begin
-		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Responsibility Type'
-			FROM	ResponsibilityType O
-			WHERE	ID = @id
-	end
-
-	if @type = 'ResourceType'
-	begin
-		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
-		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type')
-	end
-
-	if @type = 'Rule'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
-			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	O.RuleType,	'RuleType',	'Rule', case O.Status when 1 then 'Draft' when 2 then 'Active' else 'Inactive' end
-			FROM	[Rule] O
-			WHERE	O.ID = @id
-	end
-
-	if @type = 'StatisticType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Analytic Type'
-			FROM	StatisticType O
-			WHERE	ID = @id
-	end
-
-	if @type = 'Taxonomy'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, O.TaxonomyTypeID, O.ID),	O.TaxonomyTypeID,	'TaxonomyType',	C.Name + ' Model'
-			FROM	Taxonomy O
-					INNER JOIN TaxonomyType T ON O.TaxonomyTypeID = T.ID AND O.ID = @id
-					inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
-	end
-
-	if @type = 'TaxonomyType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID,	[Type],	TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, O.ID),	C.ID,	@type,	C.Name
-			FROM	TaxonomyType O
-					inner join TaxonomyTypeClass C on C.ID = O.TaxonomyTypeClassID
-			WHERE	O.ID = @id
-	end
-
-	update	T
-	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
-			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
-			T.IconText =	--case @type
-							--	when 'Taxonomy' then 'IM'
-							--	when 'TaxonomyType' then 'IM'
-								--else 
-								COALESCE(S.IconText, 'leaf') 
-							--end
-	from	@tbl T
-			left join ObjectStyle S ON S.ObjectType = T.[Type] and S.ObjectID = T.TypeID
-
-	RETURN
-END
-GO
-
-ALTER FUNCTION [dbo].[ArtifactNgSiteNavigation](@id int)
-RETURNS XML
-WITH RETURNS NULL ON NULL INPUT
-BEGIN 
-	RETURN 
-	(
-	SELECT	name,
-			url,
-			'Menu_AT' + cast(id as varchar(15)) as menuID,
-			0 as feature,
-			dbo.ArtifactNgSiteNavigation(id) as items
-	FROM	(
-			--SELECT	A.name,
-			--		A.url,
-			--		NULL AS items
-			--FROM	(
-					SELECT		TOP 1000
-								a.id,
-								a.name,
-								dbo.GenerateNgObjecturl('ArtifactType', a.ID, 0) As url
-					FROM		ArtifactType a
-					LEFT JOIN SiteNav v on v.ObjectID = a.ID and v.Object = 'ArtifactType'
-					WHERE		a.ParentID = @id AND v.ObjectID IS NULL
-					ORDER BY	a.name
-			--		) A
-			) BG
-			FOR XML PATH('nav'), TYPE
-	)
-END
-GO
-
-ALTER FUNCTION [dbo].[GenerateNgObjectUrl] 
-(
-	@Type varchar(50),
-	@TypeID int,
-	@ObjectID int = 0
-)
-RETURNS varchar(500)
-AS
-BEGIN
-	DECLARE @Prefix varchar(5) = ''--'a/'
-	DECLARE @Url varchar(500)
-	SET @Url = @Prefix
-
-	SET @Url = CASE @Type
-		WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
-		WHEN 'ArtifactType' THEN 'artifact/' + CAST(@TypeID as varchar)
-		WHEN 'Domain' THEN 'domain/' +  + CAST(@TypeID as varchar) + '/' +  + CAST(@ObjectID as varchar)
-		WHEN 'DomainType' THEN 'domain/' + CAST(@TypeID as varchar)
-		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(@TypeID as varchar)-- + '/' +  + CAST(@ObjectID as varchar)
-		WHEN 'ReferenceItemType' THEN 'reference/' + CAST(@TypeID as varchar)
-		WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)		
-		WHEN 'Fusion' THEN 'fusion/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
-		WHEN 'FusionType' THEN 'fusion/' + CAST(@TypeID as varchar)
-		WHEN 'Group' THEN 'groups/' + CAST(@ObjectID as varchar)	
-		WHEN 'Lookup' THEN 'admin/lookups/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
-		WHEN 'LookupType' THEN 'admin/lookups/' + CAST(@TypeID as varchar)
-		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar)
-		WHEN 'PolicyType' THEN 'policy/' + CAST(@TypeID as varchar) + '/structure'		
-		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)
-		WHEN 'ResourceType' THEN 'resource/list/' + CAST(@TypeID as varchar)
-		WHEN 'Rule' THEN 'quality/rule/' + CAST(@ObjectID as varchar)
-		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)
-		WHEN 'TaxonomyType' THEN 'model/' + CAST(@ObjectID as varchar) + '/structure'		
-	END
-
-	SET @Url = @Prefix + @Url
-
-	RETURN @Url
-END
-GO
-
-ALTER FUNCTION [utility].[DeriveIntersectName] 
-(	
-	@id int
-)
-RETURNS nvarchar(500)
-AS
-BEGIN
-	DECLARE @result nvarchar(500)
-
-	SET @result =	(
-					SELECT	COALESCE(SA.TextPath, SD.Name, SF.TextPath, SP.TextPath, SR.Name, ST.TextPath, SI.Name, '') + ' / ' + COALESCE(OA.TextPath, OD.Name, [OF].TextPath, OP.TextPath, [OR].Name, OT.TextPath, '')
-					FROM	[Intersect] I
-							left join Artifact SA on I.Subject = 'Artifact' and SA.ID = I.SubjectID
-							left join Artifact OA on I.Object = 'Artifact' and OA.ID = I.ObjectID
-
-							left join ReferenceItemType SD on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
-							left join ReferenceItemType OD on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
-
-							left join [FusionAttribute] SF on I.Subject = 'FusionAttribute' and SF.ID = I.SubjectID
-							left join [FusionAttribute] [OF] on I.Object = 'FusionAttribute' and [OF].ID = I.ObjectID
-
-
-							left join [Intersect] SI on I.Subject = 'Intersect' and SI.ID = I.SubjectID
-
-							left join [Policy] SP on I.Subject = 'Policy' and SP.ID = I.SubjectID
-							left join [Policy] OP on I.Object = 'Policy' and OP.ID = I.ObjectID
-
-							left join [Rule] SR on I.Subject = 'Rule' and SR.ID = I.SubjectID
-							left join [Rule] [OR] on I.Object = 'Rule' and [OR].ID = I.ObjectID
-
-							left join [Taxonomy] ST on I.Subject = 'Taxonomy' and ST.ID = I.SubjectID
-							left join [Taxonomy] OT on I.Object = 'Taxonomy' and OT.ID = I.ObjectID
-
-					WHERE	I.ID = @id
-					FOR XML PATH('')
-					)
-
-	RETURN @result
-END
-GO
-
-ALTER FUNCTION [utility].[DeriveIntersectTypeName] 
-(
---declare
-	@id int
---set @id = 17
-)
-RETURNS nvarchar(500)
-AS
-BEGIN
-	DECLARE @result nvarchar(500)
-
-	SET @result =	(
-					SELECT	COALESCE(SA.Name, SD.Name, SF.TextPath, SP.Name, ST.Name, SI.Name, case I.Subject when 'RuleType' then 'Rule' else '' end) + 
-							' ' + coalesce(P.Name,'/') + ' ' + 
-							COALESCE(OA.Name, OD.Name, [OF].TextPath, OP.Name, OT.Name, case I.Object when 'RuleType' then 'Rule' else '' end)
-					FROM	[IntersectType] I
-							left join ArtifactType SA on I.Subject = 'ArtifactType' and SA.ID = I.SubjectID
-							left join ArtifactType OA on I.Object = 'ArtifactType' and OA.ID = I.ObjectID
-
-							left join ReferenceItemType SD on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
-							left join ReferenceItemType OD on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
-
-							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
-							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID
-
-
-							left join [IntersectType] SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
-
-							left join [PolicyType] SP on I.Subject = 'PolicyType' and SP.ID = I.SubjectID
-							left join [PolicyType] OP on I.Object = 'PolicyType' and OP.ID = I.ObjectID
-
-							left join [TaxonomyType] ST on I.Subject = 'TaxonomyType' and ST.ID = I.SubjectID
-							left join [TaxonomyType] OT on I.Object = 'TaxonomyType' and OT.ID = I.ObjectID
-
-							left join [Predicate] P on P.ID = I.PredicateID
-					WHERE	I.ID = @id
-					FOR XML PATH('')
-					)
-
-	RETURN @result
-END
-GO
-
-ALTER FUNCTION [utility].[GetBreadcrumb]
-(
-	@Type varchar(50),
-	@ID int
-)
-RETURNS XML
-AS
-BEGIN
-	-- Declare the return variable here
-	DECLARE @breadcrumb xml
-	SET @breadcrumb = '<root/>'
-
-	IF (@Type = 'Artifact')
-	BEGIN
-		WITH H (Name, ParentID, ID, [level])
-		AS
-		(
-			SELECT	Name, 
-					ParentID, 
-					ID, 
-					0
-			FROM	Artifact
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Artifact	P
-					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
-		)
-	
-		SELECT @breadcrumb =	(
-								SELECT (
-										SELECT	H.ID as "node/@id",
-												H.Name as "node/@name"
-										FROM	H
-										ORDER BY H.level DESC
-										FOR XML PATH(''), type
-										) AS hierachy
-								FOR XML PATH('')
-								)
-	END
-
-	IF (@Type = 'FusionAttribute')
-	BEGIN
-		WITH H
-		AS
-		(
-			SELECT	A.Name, 
-					T.Name as [Type],
-					A.ParentID, 
-					A.ID, 
-					0 as [Level]
-			FROM	FusionAttribute A
-					inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
-			WHERE	A.ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					T.Name as [Type],
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1 as [Level]
-			FROM	FusionAttribute	P
-					inner join FusionAttributeType T on T.ID = P.FusionAttributeTypeID and @@NESTLEVEL < 6
-					INNER JOIN H AS C ON C.ParentID = P.ID
-		)
-	
-		SELECT @breadcrumb =	(
-								SELECT (
-										SELECT	H.ID as "node/@id",
-												H.Name as "node/@name",
-												H.Type as "node/@type"
-										FROM	H
-										ORDER BY H.level DESC
-										FOR XML PATH(''), type
-										) AS hierachy
-								FOR XML PATH('')
-								)
-	END
-
-	IF (@Type = 'FusionAttributeType')
-	BEGIN
-		WITH H (Name, ParentID, ID, [level])
-		AS
-		(
-			SELECT	Name, 
-					ParentID, 
-					ID, 
-					0
-			FROM	FusionAttributeType
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	FusionAttributeType	P
-					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
-		)
-	
-		SELECT @breadcrumb =	(
-								SELECT (
-										SELECT	H.ID as "node/@id",
-												H.Name as "node/@name"
-										FROM	H
-										ORDER BY H.level DESC
-										FOR XML PATH(''), type
-										) AS hierachy
-								FOR XML PATH('')
-								)
-	END
-
-	IF (@Type = 'Taxonomy')
-	BEGIN
-		WITH H (Name, CatalogID, ParentID, ID, [level])
-		AS
-		(
-			SELECT	Name, 
-					TaxonomyTypeID, 
-					ParentID, 
-					ID, 
-					0
-			FROM	Taxonomy
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					P.TaxonomyTypeID, 
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Taxonomy	P
-					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
-		)
-	
-		SELECT @breadcrumb =	(
-								SELECT (
-										SELECT	H.ID as "node/@id",
-												H.Name as "node/@name"
-										FROM	H
-										ORDER BY H.level DESC
-										FOR XML PATH(''), type
-										) AS hierachy
-								FOR XML PATH('')
-								)
-
-		DECLARE @cName nvarchar(250)
-		DECLARE @cID int
-		SELECT	@cID = TT.ID,
-				@cName = TT.Name
-		FROM	TaxonomyType TT
-				INNER JOIN Taxonomy T ON T.TaxonomyTypeID = TT.ID
-		WHERE	T.ID = @ID
-		SET @breadcrumb.modify('insert <catalog id="" name="" /> as first into (/hierachy)[1]') 
-		SET @breadcrumb.modify(
-		'replace value of (//catalog/@id)[1] 
-		 with sql:variable("@cID")'
-		)
-		SET @breadcrumb.modify(
-		'replace value of (//catalog/@name)[1] 
-		 with sql:variable("@cName")'
-		)
-	END
-
-	RETURN @breadcrumb
-END
-GO
-
-ALTER FUNCTION [utility].[GetBreadcrumbString]
-(
-	@Type varchar(50),
-	@ID int,
-	@Delimiter varchar(10)
-)
-RETURNS nvarchar(1000)
-AS
-BEGIN
-	-- Declare the return variable here
-	DECLARE @breadcrumb nvarchar(1000)
-
-	IF (@Type = 'Artifact')
-	BEGIN
-		WITH H
-		AS
-		(
-			SELECT	Name, 
-					ParentID, 
-					ID, 
-					0 as [Level]
-			FROM	Artifact
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Artifact	P
-					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
-		)
-
-		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.Name
-								FROM	H
-								ORDER BY H.level DESC
-
-	END
-
-	IF (@Type = 'FusionAttribute')
-	BEGIN
-		WITH H (Name, ParentID, ID, [level])
-		AS
-		(
-			SELECT	Name, 
-					ParentID, 
-					ID, 
-					0
-			FROM	FusionAttribute
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	FusionAttribute	P
-					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
-		)
-	
-		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.Name
-								FROM	H
-								ORDER BY H.level DESC
-	END
-
-	IF (@Type = 'FusionAttributeType')
-	BEGIN
-		WITH H (Name, ParentID, ID, [level])
-		AS
-		(
-			SELECT	Name, 
-					ParentID, 
-					ID, 
-					0
-			FROM	FusionAttributeType
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	FusionAttributeType	P
-					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
-		)
-	
-		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.Name
-								FROM	H
-								ORDER BY H.level DESC
-
-		SELECT	@breadcrumb = FT.Name + @Delimiter + @breadcrumb
-		FROM	FusionAttributeType FAT
-				inner join FusionType FT on FAT.FusionTypeID = FT.ID and FAT.ID = @ID
-	END
-
-	IF (@Type = 'Policy')
-	BEGIN
-		WITH H
-		AS
-		(
-			SELECT	Name, 
-					ParentID, 
-					ID, 
-					0 as [Level]
-			FROM	Policy
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Policy	P
-					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
-		)
-
-		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.Name
-								FROM	H
-								ORDER BY H.level DESC
-
-	END
-
-	IF (@Type = 'Taxonomy')
-	BEGIN
-		WITH H (Name, CatalogID, ParentID, ID, [level])
-		AS
-		(
-			SELECT	Name, 
-					TaxonomyTypeID, 
-					ParentID, 
-					ID, 
-					0
-			FROM	Taxonomy
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.Name, 
-					P.TaxonomyTypeID, 
-					P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Taxonomy	P
-					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
-		)
-	
-		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.Name
-								FROM	H
-								ORDER BY H.level DESC
-
-		SELECT	@breadcrumb = T.Name + @Delimiter +  @breadcrumb
-		FROM	TaxonomyType T 
-				INNER JOIN Taxonomy O ON T.ID = O.TaxonomyTypeID WHERE O.ID = @ID 
-	END
-
-	RETURN @breadcrumb
-END
-GO
-
-ALTER FUNCTION [utility].[GetFormattedFieldLookupValue]
-(
-	@Type varchar(25),
-	@DisplayFormat nvarchar(250),
-	@LookupObjectType varchar(25),
-	@LookupObjectID int,
-	@Value nvarchar(max)
-)
-RETURNS nvarchar(max)
-AS
-BEGIN
-	declare @formattedValue nvarchar(max)
-	
-	if @LookupObjectType is null
-	begin
-		set @formattedValue  = @Value
-
-		if @Type = 'Link' OR @Type = 'UncLink'
-		begin
-			declare @linkName nvarchar(max),
-					@linkUrl nvarchar(max)
-
-			if charindex('|', @Value, 1) > 1
-				begin
-					SELECT @linkName = SUBSTRING(@Value, 1, PATINDEX('%|%', @Value)-1)
-					SELECT @linkUrl = SUBSTRING(@Value, PATINDEX('%|%', @Value)+1, LEN(@Value))
-
-					set @formattedValue = '<a href="' + @linkUrl + '" target="_blank">' + @linkName + '</a>'
-				end
-			else
-				begin
-					if @Value <> '' AND @Value <> '|' AND @Value IS NOT NULL
-						begin
-							if LEFT(@Value, 1) = '|'
-								begin
-									--no name, default to url
-									set @formattedValue = '<a href="' + SUBSTRING(@Value,2, LEN(@Value)) + '" target="_blank">' + SUBSTRING(@Value,2, LEN(@Value)) + '</a>'
-								end
-							else
-								begin
-									set @formattedValue = '<a href="' + @Value + '" target="_blank">' + @Value + '</a>'
-								end
-						end
-					else
-						begin
-							set @formattedValue = null
-						end
-				end
-		end
-
-	end	
-	else
-	begin
-		if @LookupObjectType = 'ReferenceItemType'
-		begin
-			select @formattedValue = Name from ReferenceItemType where id = @Value;		
-		end
-		else
-		begin
-			declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
-			declare @fieldValues table(Field nvarchar(100), Value nvarchar(max), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
-
-			set @formattedValue = @DisplayFormat
-	
-			while patindex('%{%',@formattedValue) > 0
-			 begin
-				declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
-				insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
-				set @formattedValue = replace(@formattedValue, @txt, '')
-			end
-
-			insert into @fieldValues
-				select	distinct
-						V.Name,
-						V.Value,
-						V.LookupObjectType,
-						V.LookupObjectID,
-						V.LookupDisplayFormat
-				from	(
-						SELECT	ID,
-								Name,
-								'Artifact' as ObjectType
-						FROM	ArtifactType
-						WHERE	@LookupObjectType = 'Artifact' and ID = @LookupObjectID
-						UNION
-						SELECT	ID,
-								Name,
-								'Lookup' as ObjectType
-						FROM	[LookupType]
-						WHERE	@LookupObjectType = 'Lookup' and ID = @LookupObjectID
-						UNION
-						SELECT	ID,
-								Name,
-								'ReferenceItem' as ObjectType
-						FROM	[ReferenceItemType]
-						WHERE	@LookupObjectType = 'ReferenceItem' and ID = @LookupObjectID
-						UNION										
-						SELECT	1 as ID,
-								'User' as Name,
-								'Resource' as ObjectType
-						WHERE	@LookupObjectType = 'Resource'-- and ID = @LookupObjectID
-						UNION
-						SELECT	ID,
-								Name,
-								'Taxonomy' as ObjectType
-						FROM	TaxonomyType
-						WHERE	@LookupObjectType = 'Taxonomy' and ID = @LookupObjectID
-						) L
-						outer apply (
-
-									SELECT	IT.Name,
-											[IF].Value,
-											[IT].LookupObjectType,
-											COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
-											[IT].LookupDisplayFormat
-									FROM	Field [IF]
-											inner join FieldType IT ON [IF].FieldTypeID = IT.ID 
-																	and [IF].ObjectType = L.ObjectType
-																	and [IF].ObjectID = case 
-																							when dbo.IsInteger(@Value) = 1 then @Value
-																							else 0
-																						end
-								
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description,
-													CAST(TextPath as nvarchar(max)) as TextPath
-											FROM	Artifact A
-											WHERE	A.ID = CAST(@Value as int)
-													and L.ObjectType = 'Artifact'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Name, Description, TextPath)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description,
-													CAST(TextPath as nvarchar(max)) as TextPath
-											FROM	Taxonomy A
-											WHERE	A.ID = CAST(@Value as int)
-													and L.ObjectType = 'Taxonomy'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Name, Description, TextPath)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Code as nvarchar(max)) as Code
-											FROM	ReferenceItem A
-											WHERE	A.ID = @Value
-													and L.ObjectType = 'ReferenceItem'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Code)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description
-											FROM	ReferenceItemType A
-											WHERE	A.ID = @Value
-													and L.ObjectType = 'ReferenceItemType'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Name, Description)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ResourceID as ID,
-													CAST(FirstName as nvarchar(max)) as FirstName,
-													CAST(LastName as nvarchar(max)) as LastName,
-													CAST(Email as nvarchar(max)) as Email
-											FROM	reporting.Global_Resource A
-											WHERE	A.ResourceID = @Value
-													and L.ObjectType = 'Resource'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (FirstName, LastName, Email)
-													) p
-									) V
-
-			declare @current int,
-					@max int
-
-			set @current = 1
-			select @max = Max(ID) from @tokens
-
-			set @formattedValue = @DisplayFormat
-
-			while(@current <= @max)
-			begin
-				declare @currentToken nvarchar(100) = null,
-						@currentField nvarchar(100) = null,
-						@currentValue nvarchar(max) = null,
-						@lkpType nvarchar(250) = null, 
-						@lkpID int = null, 
-						@lkpFormat nvarchar(250) = null
-
-				select	@currentField = Field, 
-						@currentToken = Token 
-				from	@tokens
-				where	ID = @current
-
-				select	@currentValue = Value,
-						@lkpType = LookupObjectType,
-						@lkpID = LookupObjectID,
-						@lkpFormat = LookupDisplayFormat
-				from	@fieldValues 
-				where	Field = @currentField
-
-				if @currentValue is not null
-				begin
-					if @lookupObjectType is not null and @lkpID is not null
-					begin
-						select @currentValue = utility.GetFormattedFieldLookupValue(@Type, @lkpFormat, @lkpType, @lkpID, @currentValue)
-					end
-
-					SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
-				end
-
-				SET @current = @current + 1
-			end
-		end
-	end
-
-	return @formattedValue
-END
-GO
-
-ALTER FUNCTION [utility].[GetObjectLevel]
-(
-	@Type varchar(50),
-	@ID int
-)
-RETURNS int
-AS
-BEGIN
-	DECLARE @level int
-
-	IF (@Type = 'Artifact')
-	BEGIN
-		WITH H (ParentID, ID, [level])
-		AS
-		(
-			SELECT	ParentID, 
-					ID, 
-					1
-			FROM	Artifact
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Artifact	P
-					INNER JOIN H AS C ON C.ParentID = P.ID	
-		)
-		SELECT @level =	MAX([level]) FROM H
-	END
-
-	IF (@Type = 'FusionAttribute')
-	BEGIN
-		WITH H (ParentID, ID, [level])
-		AS
-		(
-			SELECT	ParentID, 
-					ID, 
-					1
-			FROM	FusionAttribute
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	FusionAttribute	P
-					INNER JOIN H AS C ON C.ParentID = P.ID	
-		)
-		SELECT @level =	MAX([level]) FROM H
-	END
-
-	IF (@Type = 'FusionAttributeType')
-	BEGIN
-		WITH H (ParentID, ID, [level])
-		AS
-		(
-			SELECT	ParentID, 
-					ID, 
-					1
-			FROM	FusionAttributeType
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	FusionAttributeType	P
-					INNER JOIN H AS C ON C.ParentID = P.ID	
-		)
-		SELECT @level =	MAX([level]) FROM H
-	END
-
-	IF (@Type = 'Policy')
-	BEGIN
-		WITH H (ParentID, ID, [level])
-		AS
-		(
-			SELECT	ParentID, 
-					ID, 
-					1
-			FROM	Policy
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Policy	P
-					INNER JOIN H AS C ON C.ParentID = P.ID
-		)
-		SELECT @level =	MAX([level]) FROM H
-	END
-
-	IF (@Type = 'Taxonomy')
-	BEGIN
-		WITH H (ParentID, ID, [level])
-		AS
-		(
-			SELECT	ParentID, 
-					ID, 
-					1
-			FROM	Taxonomy
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	Taxonomy	P
-					INNER JOIN H AS C ON C.ParentID = P.ID
-		)
-		SELECT @level =	MAX([level]) FROM H
-	END
-
-	RETURN @level
-END
-GO
-
-
-ALTER FUNCTION [utility].[GetResponsibilityContextHash]
-(
-	@ID int
-)
-RETURNS varchar(50)
-AS
-BEGIN
-	DECLARE @hash varchar(50)
-
-
-	DECLARE @HashThis nvarchar(1000);
-	SELECT @HashThis = coalesce(STUFF((SELECT ';' + cast(DI.ID as nvarchar(10))
-			  FROM ResponsibilityContextItem RCI
-					inner join ReferenceItem DI on DI.ID = RCI.ObjectID and RCI.ObjectType = 'ReferenceItem' and RCI.ResponsibilityID = @ID
-			  ORDER BY DI.ID
-			  FOR XML PATH('')), 1, 1, ''), '')
-
-	SELECT @hash = CONVERT(Char,HashBytes('SHA1', @HashThis),2) --SUBSTRING(master.dbo.fn_varbintohexstr(HashBytes('SHA1', @HashThis)), 3, 32)
-
-	RETURN @hash
-END
-GO
-
-CREATE TABLE [dbo].[RuleResultQualifierType] (
-    [ID]                      INT            IDENTITY (1, 1) NOT NULL,
-    [RuleID]                  INT            NOT NULL,
-    [Name]                    NVARCHAR (250) NOT NULL,
-    [Order]                   INT            NOT NULL,
-    [ResolutionObject]        VARCHAR (50)   NULL,
-    [ResolutionObjectID]      INT            NULL,
-    [ResolutionFieldTypeID]   INT            NULL,
-    [ResolutionFieldTypeName] NVARCHAR (250) NULL,
-    CONSTRAINT [PK_RuleResultQualifierType] PRIMARY KEY NONCLUSTERED ([ID] ASC),
-    CONSTRAINT [FK_RuleResultQualifierType_Rule] FOREIGN KEY ([RuleID]) REFERENCES [dbo].[Rule] ([ID])
-);
-GO
-
-CREATE TABLE [dbo].[RuleResultQualifier] (
-    [RuleResultID]              INT             NOT NULL,
-    [RuleResultQualifierTypeID] INT             NOT NULL,
-    [Value]                     NVARCHAR (1000) NULL,
-    [ResolvedObject]            VARCHAR (50)    NULL,
-    [ResolvedObjectID]          INT             NULL,
-    CONSTRAINT [PK_RuleResultQualifier] PRIMARY KEY NONCLUSTERED ([RuleResultID] ASC, [RuleResultQualifierTypeID] ASC),
-    CONSTRAINT [FK_RuleResultQualifier_RuleResult] FOREIGN KEY ([RuleResultID]) REFERENCES [dbo].[RuleResult] ([ID]),
-    CONSTRAINT [FK_RuleResultQualifier_RuleResultQualifierType] FOREIGN KEY ([RuleResultQualifierTypeID]) REFERENCES [dbo].[RuleResultQualifierType] ([ID])
-);
-GO
-
-alter table cache.ResponsibilityItem alter column [ResponsibilityType] NVARCHAR(250) NULL
-go
-
-alter table [Field] alter column [ObjectType] VARCHAR (50) NOT NULL
-go
-
-alter TRIGGER [dbo].[Field_AfterUpsert]
-	ON [dbo].[Field]
-	FOR INSERT, UPDATE
-AS
-	SET NOCOUNT ON;
-
-	
-	UPDATE	T
-	SET		T.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value)
-	FROM	Field T 
-			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID
-			INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID
-
-
-	UPDATE	TF
-	SET		TF.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value)
-	from	Field TF
-			inner join FieldType FT on FT.ID = TF.FieldTypeID
-			inner join	inserted SF on FT.LookupObjectType = SF.ObjectType and TF.Value = cast(SF.ObjectID as varchar(50))
-GO
-
-DROP INDEX [IX_FusionAttribute_FusionAttributeTypeID] ON [dbo].[FusionAttribute]
-GO
-
-CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionAttributeTypeID]
-    ON [dbo].[FusionAttribute]([FusionAttributeTypeID] ASC)
-    INCLUDE([ID], [Name]);
-GO
-
-
-ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
---declare
-	@TemplateType varchar(25),
-	@Type varchar(50),
-	@ID int,
-	@Action varchar(50)
---set @TemplateType = 'Lookup'
---set @Type = 'Artifact'
---set @ID = 7004--16435
---set @Action = 'Preview'--'Certificate'
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	declare @html nvarchar(max),
-			@link nvarchar(2500),
-			@icon nvarchar(250),
-			@hasDynamicFields bit = 0,
-			@hasStats bit = 0,
-			@typeID int,
-
-			@showIcon bit = 1,
-
-			@current int,
-			@max int,
-			@name nvarchar(250),
-			@value nvarchar(max);
-
-	declare @tbl table (ID int identity, Name nvarchar(250), Value nvarchar(max));
-
-	if @TemplateType = 'Email'
-	begin
-		select	@html = TemplateBody
-		from	EmailTemplate
-		where	Name = @Type
-				and [Action] = @Action
-	end
-
-	if @TemplateType = 'Tooltip'
-	begin
-		select	@html = TemplateBody
-		from	TooltipTemplate
-		where	Name = @Type
-				and [Action] = @Action
-	end
-
-	-- Get the static tokens, depending on the type.
-	declare @n nvarchar(250), @t nvarchar(250), @s nvarchar(25), @v int, @dc datetime, @du datetime, @d nvarchar(4000);
-
-	-- Get common fields
-	select	@typeID = ObjectTypeID,
-			@icon = '<div title=''' + ObjectTypeName + ''' class=''tooltip-icon'' style=''background-color: ' + IconBackColor + '; color: ' + IconForeColor + '''><i class=''fa fa-' + IconText + '''></i></div>',
-			@n = Name,
-			@t = ObjectTypeName,
-			@d = Description,
-			@link = NgUrl
-	from	cache.ObjectDetails
-	where	[Object] = @Type
-			and ObjectID = @ID;
-
-	if @n is not null
-	begin
-		if @link is null
-		begin
-			insert into @tbl values ('Name', @n)
-		end
-		else
-		begin
-			insert into @tbl values ('Name', '<a routerLink="/' + @link + '">' + @n + '</a>')
-		end
-		insert into @tbl values ('Description', @d)
-	end
-	insert into @tbl values ('Type', @t)
-
-	if @Action = 'AssigningItemPreview'
-	begin
-		set @html = '<h3>{Name}</h3>'
-	end
-
-	if @Action = 'Certificate'
-	begin
-		set @html = '<h3>{Name}</h3>'
-
-		declare @workflowID uniqueidentifier,
-				@dateCertifiedOn varchar(10),
-				@certifiers nvarchar(2500),
-				@status varchar(50),
-				@certIconColor varchar(10)
-
-		select	@dateCertifiedOn = CONVERT(VARCHAR(10), DateLastCertified, 101),
-				@status = Status
-		from	Artifact A
-		where	A.ID = @ID
-
-		SELECT	@workflowID = W.ID,
-				@certifiers = COALESCE(@certifiers + ', ', '') + R.FirstName + ' ' + R.LastName 
-		from	(
-				select		top 1
-							ID,
-							Data.value('(/fields/ArtifactID)[1]', 'int') as ArtifactID,
-							DateCompleted
-				from		Workflow
-				where		WorkflowType = 2
-							and Data.exist('/fields/ArtifactID[text() = sql:variable("@ID")]') = 1
-				order by	DateCompleted desc
-				) W
-				inner join WorkflowResource WR on WR.WorkflowID = W.ID
-				inner join reporting.Global_Resource R on R.ResourceID = WR.ResourceID
-
-		if @dateCertifiedOn is null and @status != 'Certified'
-			begin
-				set @showIcon = 0
-
-				set @html = @html + '<div><b>Not yet certified</b></div>'
-				if @certifiers is not null
-				begin
-					set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
-				end
-				if @workflowID is not null
-				begin
-					set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/status/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
-				end
-			end
-		else
-			begin
-				if @status = 'Certified'
-					begin
-						set @certIconColor = '#EFC43D'
-					end
-				else 
-					begin
-						set @certIconColor = '#FFE183'
-					end
-				select	@icon = '<div style="background-color: transparent; color: ' + @certIconColor + '"><i class="fa fa-2x fa-certificate"></i></div>'
-				set @html = @html + '<div>Last Certified On: ';
-				if @dateCertifiedOn is null
-					begin
-						set @html = @html + 'Manually Certified';
-					end
-				else
-					begin
-						set @html = @html + '{CertifiedOn}';
-					end
-				set @html = @html + '</div>';
-				if @status = 'Certified'
-					begin
-						if @Certifiers is not null
-						begin
-							set @html = @html + '<div>Certified By: {Certifiers}</div>'
-						end
-					end
-				else 
-					begin
-						set @html = @html + '<div>Currently Under Certification Review</div>'
-						set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
-						if @workflowID is not null
-						begin
-							set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/status/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
-						end
-					end
-			end
-
-		insert into @tbl values ('CertifiedOn', @dateCertifiedOn)
-		insert into @tbl values ('Certifiers', @certifiers)
-	end
-	if @Action = 'JoinRequest'
-	begin
-		set @html = ''
-	end
-	if @Action = 'LookupPreview'
-	begin
-		set @html = '{Items}'
-		
-		if @Type = 'FusionAttribute'
-		begin
-			-- BUILD LIST HTML -----------------------------------------
-			declare @fusionAttributeItemsHtml nvarchar(max)
-
-			set @fusionAttributeItemsHtml = '<div style="height: 200px; overflow-y: scroll"><table class="hoverable bordered striped" style="width:100%"><thead>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '<th style="margin-right: 15px">Name</th>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</thead><tbody>'
-
-			select		--top 10 
-						@fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '<tr>' 
-											+ '<td>' + Name + '</td>'
-											+ '</tr>'
-			from		FusionAttribute
-			where		ParentID = @ID
-			order by	Name asc
-
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</tbody>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</table></div>'
- 
-			insert into @tbl values ('Items', @fusionAttributeItemsHtml)
-			------------------------------------------------------------------
-		end;
-
-		if @Type = 'LookupType' OR @Type = 'Lookup'
-		begin
-			-- BUILD LOOKUP LIST HTML -----------------------------------------
-			declare @lookups table (RowID int identity, ID int)
-
-			declare @MyLookupTypeID int
-			if @Type = 'Lookup'
-				begin
-					select @MyLookupTypeID = LookupTypeID from [Lookup] where ID = @ID 
-				end
-			else
-				begin
-					set @MyLookupTypeID = @ID
-				end
-
-			insert into @lookups 
-				select top 10 ID from [Lookup] where LookupTypeID = @MyLookupTypeID order by ID desc
-		
-			declare @lookupFieldTypes table (ID int identity, Name nvarchar(250))
-			insert into @lookupFieldTypes
-				select FriendlyName from FieldType where [Object] = 'LookupType' and ObjectID = @MyLookupTypeID order by SortOrder asc
-
-			declare @lookupHtml nvarchar(max)
-
-			set @lookupHtml = '<table class="hoverable bordered striped" style="width:100%">'
-
-			-- Loop through field name list ---------
-			set @lookupHtml = @lookupHtml + '<thead>'
-			set		@current = 1
-			select	@max = max(ID) from @lookupFieldTypes
-			while @current <= @max
-			begin
-				select	@name = Name
-				from	@lookupFieldTypes
-				where	ID = @current
-
-				set @lookupHtml = @lookupHtml + '<th style="margin-right: 15px">' + @name  + '</th>'
-
-				set @current = @current + 1
-			end
-			set @lookupHtml = @lookupHtml + '</thead>'
-			-----------------------------------------
-
-			set @lookupHtml = @lookupHtml + '<tbody>'
-
-			-- Loop through event list --------------
-			select	@current = min(RowID) from @lookups
-			select	@max = max(RowID) from @lookups
-
-			while @current <= @max
-			begin
-				set @lookupHtml = @lookupHtml + '<tr>'	-- Open row for selected event.
-
-				declare @lookupFields table (Name nvarchar(250), Value nvarchar(4000))
-			
-				declare @lookupID int
-
-				select	@lookupID = ID from @lookups where RowID = @current
-
-				insert into @lookupFields
-					select		FriendlyName,
-								FormattedValue
-					from		FieldWithRelation
-					where		ObjectType = 'Lookup' 
-								and ObjectID = @lookupID
-
-					-- Loop through each field for this selected event --
-					declare @lfCurrent int,
-							@lfMax int
-					set		@lfCurrent = 1
-					select	@lfMax = max(ID) from @lookupFieldTypes
-					while @lfCurrent <= @lfMax
-					begin
-						select	@name = Name from @lookupFieldTypes where ID = @lfCurrent
-
-						select @lookupHtml = @lookupHtml + '<td>' + coalesce(Value, '') + '</td>' from @lookupFields where Name = @name
-
-						set @lfCurrent = @lfCurrent + 1
-					end
-					-----------------------------------------------------
-
-				delete @lookupFields
-
-				set @lookupHtml = @lookupHtml + '</tr>'	-- Close off row for selected lookup.
-
-				set @current = @current + 1
-			end
-			-----------------------------------------
-
-			set @lookupHtml = @lookupHtml + '</tbody>'
-
-			set @lookupHtml = @lookupHtml + '</table>'
-
-			insert into @tbl values ('Items', @lookupHtml)
-			------------------------------------------------------------------
-		end;
-
-		if @Type = 'Resource' OR @Type = 'ResourceType'
-		begin
-			-- BUILD Resource LIST HTML -----------------------------------------
-			declare @resourceItemsHtml nvarchar(max)
-
-			set @resourceItemsHtml = '<table class="hoverable bordered striped" style="width:100%"><thead>'
-			set @resourceItemsHtml = @resourceItemsHtml + '<th style="margin-right: 15px">First Name</th><th style="margin-right: 15px">Last Name</th><th>Email</th>'
-			set @resourceItemsHtml = @resourceItemsHtml + '</thead><tbody>'
-
-			select		top 10 
-						@resourceItemsHtml = @resourceItemsHtml + '<tr>' + 
-											'<td>' + FirstName + '</td>' + 
-											'<td>' + LastName + '</td>' + 
-											'<td>' + Email + '</td>'
-											+ '</tr>'
-			from		reporting.Global_Resource
-			order by	LastName, FirstName asc
-
-			set @resourceItemsHtml = @resourceItemsHtml + '</tbody>'
-			set @resourceItemsHtml = @resourceItemsHtml + '</table>'
- 
-			insert into @tbl values ('Items', @resourceItemsHtml)
-			------------------------------------------------------------------
-		end;
-
-		if @Type = 'ReferenceItem'
-		begin
-
-			declare @myReferenceListID int
-
-			select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
-			-- BUILD LIST HTML -----------------------------------------
-			declare @referenceItemHtml nvarchar(max)
-
-			set @referenceItemHtml = '<table class="hoverable bordered striped" style="width:100%">'
-			set @referenceItemHtml = @referenceItemHtml + '<thead><th style="margin-right: 15px">Name</th></thead>'
-			set @referenceItemHtml = @referenceItemHtml + '<tbody>'
-
-
-
-			select		top 10 
-						@referenceItemHtml = @referenceItemHtml + '<tr>' + '<td>' + DisplayValue + '</td>' + '</tr>'             
-			from		ReferenceItem
-			where		ReferenceItemTypeID = @myReferenceListID
-			order by	DisplayValue desc
-
-			set @referenceItemHtml = @referenceItemHtml + '</tbody>'
-			set @referenceItemHtml = @referenceItemHtml + '</table>'
- 
-			insert into @tbl values ('Items', @referenceItemHtml)
-			------------------------------------------------------------------
-		end;
-
-		if @Type = 'ReferenceItemType'
-		begin
-
-		--	declare @myReferenceListID int
-
-			--select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
-			-- BUILD LIST HTML -----------------------------------------
-			declare @referenceItemTypeHtml nvarchar(max)
-
-			set @referenceItemTypeHtml = '<table class="hoverable bordered striped" style="width:100%">'
-			set @referenceItemTypeHtml = @referenceItemTypeHtml + '<thead><th style="margin-right: 15px">Display Value</th></thead>'
-			set @referenceItemTypeHtml = @referenceItemTypeHtml + '<tbody>'
-
-
-
-			select		top 10 
-						@referenceItemTypeHtml = @referenceItemTypeHtml + '<tr>' + '<td>' + DisplayValue + '</td>' + '</tr>'             
-			from		ReferenceItem
-			where		ReferenceItemTypeID = @ID
-			order by	DisplayValue desc
-
-			set @referenceItemTypeHtml = @referenceItemTypeHtml + '</tbody>'
-			set @referenceItemTypeHtml = @referenceItemTypeHtml + '</table>'
- 
-			insert into @tbl values ('Items', @referenceItemTypeHtml)
-			------------------------------------------------------------------
-		end;
-
-	end
-	
-	if @Action = 'None'
-	begin
-		set @html = '<h3>{Name}</h3><div>'
-	end
-
-	if @Action = 'Preview'
-	begin
-		set @html = '<h3>{Name} <small style="right: 5px;">{Type}</small></h3><div>{Description}</div>'
-		set @showIcon = 0
-
-		if @Type = 'Artifact'
-		begin
-			insert into @tbl
-			select	'Status', [Status]
-			from	Artifact
-			where	ID = @ID
-
-			insert into @tbl
-			select	'Path', TextPath
-			from	Artifact
-			where	ID = @ID
-
-			set @html = @html + '<div><b>Status:</b> {Status}</div>'
-			set @html = @html + '<div><b>Path:</b> {Path}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'Event'
-		begin
-			declare @so nvarchar(250)
-			select	@so = SourceID, 
-					@s = [Status]
-			from	[Event]
-			where	ID = @ID
-
-			insert into @tbl values ('Status', @s)
-			insert into @tbl values ('SourceID', @so)
-
-			set @html = @html + '<div><b>Status:</b> {Status}</div>'
-			set @html = @html + '<div><b>SourceID:</b> {SourceID}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'EventGroup'
-		begin
-			insert into @tbl
-				select	'Key', PublicID
-				from	EventGroup
-				where	ID = @ID
-
-			-- BUILD EVENT LIST HTML -----------------------------------------
-			declare @events table (ID int, SourceID nvarchar(250), Status varchar(25))
-			insert into @events 
-				select top 10 ID, SourceID, Status from [Event] where EventGroupID = @ID order by ID desc
-		
-			declare @eventFieldTypes table (ID int identity, Name nvarchar(250))
-			insert into @eventFieldTypes
-				select FriendlyName from FieldType where [Object] = 'Rule' and ObjectID = @typeID order by SortOrder asc
-			insert into @eventFieldTypes values ('Source ID')
-			insert into @eventFieldTypes values ('Status')
-
-			declare @eventHtml nvarchar(max)
-
-			set @eventHtml = '<table class="hoverable bordered striped" style="width:100%">'
-
-			-- Loop through field name list ---------
-			set @eventHtml = @eventHtml + '<thead>'
-			set		@current = 1
-			select	@max = max(ID) from @eventFieldTypes
-			while @current <= @max
-			begin
-				select	@name = Name
-				from	@eventFieldTypes
-				where	ID = @current
-
-				set @eventHtml = @eventHtml + '<th>' + @name  + '</th>'
-
-				set @current = @current + 1
-			end
-			set @eventHtml = @eventHtml + '</thead>'
-			-----------------------------------------
-
-			set @eventHtml = @eventHtml + '<tbody>'
-
-			-- Loop through event list --------------
-			select	@current = min(ID) from @events
-			select	@max = max(ID) from @events
-
-			while @current <= @max
-			begin
-				set @eventHtml = @eventHtml + '<tr>'	-- Open row for selected event.
-
-				declare @eventFields table (Name nvarchar(250), Value nvarchar(4000))
-			
-				insert into @eventFields
-					select		FriendlyName,
-								FormattedValue
-					from		FieldWithRelation
-					where		ObjectType = 'Event' 
-								and ObjectID = @current
-
-					-- Loop through each field for this selected event --
-					declare @fCurrent int,
-							@fMax int
-					set		@fCurrent = 1
-					select	@fMax = max(ID) from @eventFieldTypes
-					while @fCurrent <= @fMax
-					begin
-						select	@name = Name from @eventFieldTypes where ID = @fCurrent
-
-						select @eventHtml = @eventHtml + '<td>' + coalesce(Value, '') + '</td>' from @eventFields where Name = @name
-
-						set @fCurrent = @fCurrent + 1
-					end
-					-----------------------------------------------------
-
-					select @eventHtml = @eventHtml	+ 
-										'<td>' + [SourceID] + '</td>' + 
-										'<td>' + [Status] + '</td>' 
-					from	@events 
-					where	ID = @current
-
-				delete @eventFields
-
-				set @eventHtml = @eventHtml + '</tr>'	-- Close off row for selected event.
-
-				set @current = @current + 1
-			end
-			-----------------------------------------
-
-			set @eventHtml = @eventHtml + '</tbody>'
-
-			set @eventHtml = @eventHtml + '</table>'
-
-			insert into @tbl values ('Items', @eventHtml)
-
-			set @html = @html + '<div><b>Key:</b> {Key}</div>'
-			set @html = @html + '<div>Items: {Items}</div>'
-			------------------------------------------------------------------
-		end;
-
-		if @Type = 'Intersect'
-		begin
-			insert into @tbl
-				select	'Classification',
-						case Classification
-							when 1 then 'Critical'
-							else 'Normal'
-						end
-				from	[Intersect]
-				where	ID = @ID
-
-			set @html = @html + '<div><b>Classification:</b> {Classification}</div>'
-		end;
-
-		if @Type = 'Responsibility'
-		begin
-			select	@n = T.Name, 
-					@t = T.Name,
-					@d = T.[Description]
-			from	Responsibility O
-					inner join ResponsibilityType T on T.ID = O.ResponsibilityTypeID
-			where	O.ID = @ID
-			
-			declare @contextsHtml nvarchar(max)
-
-			set @contextsHtml = '<table class="hoverable bordered striped" style="width:100%">' + 
-								'<thead><th>List</th><th>Code</th></thead>' + 
-								'<tbody>' + 
-								(
-								select		(select D.Name as 'td' for xml path(''), type),
-											(select I.Code as 'td' for xml path(''), type)
-								from		ResponsibilityContextItem R
-											inner join ReferenceItem I on R.ResponsibilityID = @ID and R.ObjectType = 'ReferenceItem' and I.ID = R.ObjectID
-											inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
-								FOR XML RAW('tr'), ELEMENTS
-								) +
-								'</tbody>' + 
-								'</table>'
-
-			insert into @tbl values ('Name', @n)
-			insert into @tbl values ('Type', @t)
-			insert into @tbl values ('Description', @d)
-			insert into @tbl values ('Contexts', @contextsHtml)
-
-			set @html = @html + '<div><b>Contexts:</b> {Contexts}</div>'
-		end;
-
-		if @Type = 'Resource'
-		begin
-			--declare @e nvarchar(500), @fn nvarchar(250), @ln nvarchar(250)
-			--select	@e = Email, @fn = FirstName, @ln = LastName
-			--from	reporting.Global_Resource
-			--where	ResourceID = @ID
-
-			--insert into @tbl values ('Email', @e)
-			--insert into @tbl values ('FirstName', @fn)
-			--insert into @tbl values ('LastName', @ln)
-			--insert into @tbl values ('Role', '')
-
-			--set @html = @html + '<div><b>Email:</b> {Email}</div>'
-			--set @html = @html + '<div><b>First Name:</b> {FirstName}</div>'
-			--set @html = @html + '<div><b>Last Name:</b> {LastName}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'Rule'
-		begin
-			insert into @tbl
-				select	'Name', Name
-				from	[Rule] O
-				where	ID = @ID
-			insert into @tbl
-				select	'Description', Description
-				from	[Rule] O
-				where	ID = @ID
-			--insert into @tbl
-			--	select	'Status', Status
-			--	from	[Rule] O
-			--	where	ID = @ID
-
-			--set @html = @html + '<div><b>Status:</b> {Status}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'RuleDimension'
-		begin
-			insert into @tbl
-				select	'Description', [Description]
-				from	RuleDimension
-				where	ID = @ID
-			insert into @tbl
-				select	'Name', [Name]
-				from	RuleDimension
-				where	ID = @ID
-
-			--set @html = @html + '<div><b>Path:</b> {Description}</div>'
-						
-		end;
-
-		if @Type = 'Taxonomy'
-		begin
-			insert into @tbl
-				select	'TextPath', TextPath
-				from	Taxonomy O
-				where	ID = @ID
-
-			set @html = @html + '<div><b>Path:</b> {TextPath}</div>'
-
-			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'TaxonomyType'
-		begin
-			insert into @tbl
-				select	'Name', Name
-				from	TaxonomyType O
-				where	ID = @ID
-
-			set @hasDynamicFields = 1
-		end;
-
-		-- If required, get dynamic fields to add to list.
-		if @hasDynamicFields = 1
-		begin
-			select	@html = @html + '<div><b>' + FriendlyName + '</b>: ' + '{' + Name + '}' + '</div>' 
-			from	FieldWithRelation
-			where	ObjectType = @Type
-					and ObjectID = @ID
-					and Name not in (select Name from @tbl)
-
-			insert into @tbl
-				select	Name,
-						FormattedValue
-				from	FieldWithRelation
-				where	ObjectType = @Type
-						and ObjectID = @ID
-						and Name not in (select Name from @tbl)
-		end;
-	end
-
-	if @Action = 'Statistics'
-	begin
-		set @html = '<h3>{Name}</h3><div>{Statistics}</div>'
-
-		set @hasStats = case @Type
-							when 'Artifact' then 1
-							when 'Taxonomy' then 1
-							else 0
-						end
-
-		-- If required, build statistics table
-		if @hasStats = 1
-		begin
-			-- BUILD STATS LIST HTML -----------------------------------------
-			declare @statsHtml nvarchar(max)
-
-			declare @stats table (ID int identity, Name nvarchar(250), Score int)
-			insert into @stats 
-				select	T.Name,
-						coalesce(S.SCore, 0) as Score
-				from	StatisticType T
-						outer apply (
-									select	top 1
-											*
-									from	Statistic
-									where	StatisticTypeID = T.ID
-											and ObjectType = @Type
-											and ObjectID = @ID
-									order by DateStart desc
-									) S
-				where	T.[Object] = @Type + 'Type' 
-						and T.ObjectID = @typeID
-						and T.PartOfScore = 1
-
-			set @statsHtml = '<table class="hoverable bordered striped" style="width:100%">'
-
-			-- Loop through field name list ---------
-			set @statsHtml = @statsHtml + '<tbody>'
-			set		@current = 1
-			select	@max = max(ID) from @stats
-			while @current <= @max
-			begin
-				select	@statsHtml = @statsHtml + '<tr><td>' + Name  + '</td>' + '<td>' + cast(Score as varchar(5))  + ' Points</td></tr>'
-				from	@stats
-				where	ID = @current
-
-				set @current = @current + 1
-			end
-			set @statsHtml = @statsHtml + '</tbody>'
-			-----------------------------------------
-
-			insert into @tbl values ('Statistics', @statsHtml)
-
-			------------------------------------------------------------------
-		end;
-	end
-
-	-- Replace the fields in the template with the appropriate text value.
-	set		@current = 1
-	select	@max = max(ID) from @tbl
-
-	while @current <= @max
-	begin
-		select	@name = '{' + Name + '}',
-				@value = COALESCE(Value, '')
-		from	@tbl 
-		where	ID = @current
-
-		if @showIcon = 1
-		begin
-			if @name = '{Name}' and @icon is not null
-			begin
-				update	@tbl 
-				set		Value = '<div class="pull-left" style="width: 30px">' + @icon + '</div>' + '<div class="pull-right">' + @value + '</div>'
-				where	ID = @current
-				--set @usedIconAlready = 1
-			end
-		end
-
-		set @html = REPLACE(@html, @name, @value)
-
-		set @current = @current + 1
-	end
-
-	--if @showIcon = 1 and @icon is not null
-	--begin
-	--	set @html = @icon + '<br/>' + @html
-	--end
-
-	-- Return the properly formatted values.
-	select	'' as Title,
-			@html as Body;
-END
-GO
-
-ALTER FUNCTION [dbo].[GenerateNgObjectUrl] 
-(
-	@Type varchar(50),
-	@TypeID int,
-	@ObjectID int = 0
-)
-RETURNS varchar(500)
-AS
-BEGIN
-	DECLARE @Prefix varchar(5) = ''--'a/'
-	DECLARE @Url varchar(500)
-	SET @Url = @Prefix
-
-	SET @Url = CASE @Type
-		WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
-		WHEN 'ArtifactType' THEN 'artifact/' + CAST(@TypeID as varchar)
-		WHEN 'Domain' THEN 'domain/' +  + CAST(@TypeID as varchar) + '/' +  + CAST(@ObjectID as varchar)
-		WHEN 'DomainType' THEN 'domain/' + CAST(@TypeID as varchar)
-		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(@TypeID as varchar)-- + '/' +  + CAST(@ObjectID as varchar)
-		WHEN 'ReferenceItemType' THEN 'reference/' + CAST(@TypeID as varchar)
-		WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)		
-		WHEN 'Fusion' THEN 'fusion/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
-		WHEN 'FusionType' THEN 'fusion/' + CAST(@TypeID as varchar)
-		WHEN 'Group' THEN 'groups/' + CAST(@ObjectID as varchar)	
-		WHEN 'Lookup' THEN 'admin/lookups/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
-		WHEN 'LookupType' THEN 'admin/lookups/' + CAST(@TypeID as varchar)
-		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar)
-		WHEN 'PolicyType' THEN 'policy/' + CAST(@TypeID as varchar) + '/structure'		
-		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)
-		WHEN 'ResourceType' THEN 'resource/list/' + CAST(@TypeID as varchar)
-		WHEN 'Rule' THEN 'quality/rule/' + CAST(@ObjectID as varchar)
-		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)
-		WHEN 'TaxonomyType' THEN 'model/' + CAST(@ObjectID as varchar) + '/structure'		
-	END
-
-	SET @Url = @Prefix + @Url
-
-	RETURN @Url
-END
-GO
-
-
-ALTER FUNCTION [utility].[GetFormattedFieldLookupValue]
-(
-	@Type varchar(25),
-	@DisplayFormat nvarchar(250),
-	@LookupObjectType varchar(25),
-	@LookupObjectID int,
-	@Value nvarchar(max)
-)
-RETURNS nvarchar(max)
-AS
-BEGIN
-	declare @formattedValue nvarchar(max)
-	
-	if @LookupObjectType is null
-	begin
-		set @formattedValue  = @Value
-
-		if @Type = 'Link' OR @Type = 'UncLink'
-		begin
-			declare @linkName nvarchar(max),
-					@linkUrl nvarchar(max)
-
-			if charindex('|', @Value, 1) > 1
-				begin
-					SELECT @linkName = SUBSTRING(@Value, 1, PATINDEX('%|%', @Value)-1)
-					SELECT @linkUrl = SUBSTRING(@Value, PATINDEX('%|%', @Value)+1, LEN(@Value))
-
-					set @formattedValue = '<a href="' + @linkUrl + '" target="_blank">' + @linkName + '</a>'
-				end
-			else
-				begin
-					if @Value <> '' AND @Value <> '|' AND @Value IS NOT NULL
-						begin
-							if LEFT(@Value, 1) = '|'
-								begin
-									--no name, default to url
-									set @formattedValue = '<a href="' + SUBSTRING(@Value,2, LEN(@Value)) + '" target="_blank">' + SUBSTRING(@Value,2, LEN(@Value)) + '</a>'
-								end
-							else
-								begin
-									set @formattedValue = '<a href="' + @Value + '" target="_blank">' + @Value + '</a>'
-								end
-						end
-					else
-						begin
-							set @formattedValue = null
-						end
-				end
-		end
-
-	end	
-	else
-	begin
-		if @LookupObjectType = 'ReferenceItemType'
-		begin
-			select @formattedValue = Name from ReferenceItemType where id = @Value;		
-		end
-		else
-		begin
-			declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
-			declare @fieldValues table(Field nvarchar(100), Value nvarchar(max), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
-
-			set @formattedValue = @DisplayFormat
-	
-			while patindex('%{%',@formattedValue) > 0
-			 begin
-				declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
-				insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
-				set @formattedValue = replace(@formattedValue, @txt, '')
-			end
-
-			insert into @fieldValues
-				select	distinct
-						V.Name,
-						V.Value,
-						V.LookupObjectType,
-						V.LookupObjectID,
-						V.LookupDisplayFormat
-				from	(
-						SELECT	ID,
-								Name,
-								'Artifact' as ObjectType
-						FROM	ArtifactType
-						WHERE	@LookupObjectType = 'Artifact' and ID = @LookupObjectID
-						UNION
-						SELECT	ID,
-								Name,
-								'Lookup' as ObjectType
-						FROM	[LookupType]
-						WHERE	@LookupObjectType = 'Lookup' and ID = @LookupObjectID
-						UNION
-						SELECT	ID,
-								Name,
-								'ReferenceItem' as ObjectType
-						FROM	[ReferenceItemType]
-						WHERE	@LookupObjectType = 'ReferenceItem' and ID = @LookupObjectID
-						UNION										
-						SELECT	1 as ID,
-								'User' as Name,
-								'Resource' as ObjectType
-						WHERE	@LookupObjectType = 'Resource'-- and ID = @LookupObjectID
-						UNION
-						SELECT	ID,
-								Name,
-								'Taxonomy' as ObjectType
-						FROM	TaxonomyType
-						WHERE	@LookupObjectType = 'Taxonomy' and ID = @LookupObjectID
-						) L
-						outer apply (
-
-									SELECT	IT.Name,
-											[IF].Value,
-											[IT].LookupObjectType,
-											COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
-											[IT].LookupDisplayFormat
-									FROM	Field [IF]
-											inner join FieldType IT ON [IF].FieldTypeID = IT.ID 
-																	and [IF].ObjectType = L.ObjectType
-																	and [IF].ObjectID = case 
-																							when dbo.IsInteger(@Value) = 1 then @Value
-																							else 0
-																						end
-								
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description,
-													CAST(TextPath as nvarchar(max)) as TextPath
-											FROM	Artifact A
-											WHERE	A.ID = CAST(@Value as int)
-													and L.ObjectType = 'Artifact'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Name, Description, TextPath)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description,
-													CAST(TextPath as nvarchar(max)) as TextPath
-											FROM	Taxonomy A
-											WHERE	A.ID = CAST(@Value as int)
-													and L.ObjectType = 'Taxonomy'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Name, Description, TextPath)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Code as nvarchar(max)) as Code
-											FROM	ReferenceItem A
-											WHERE	A.ID = @Value
-													and L.ObjectType = 'ReferenceItem'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Code)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description
-											FROM	ReferenceItemType A
-											WHERE	A.ID = @Value
-													and L.ObjectType = 'ReferenceItemType'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (Name, Description)
-													) p
-
-									UNION
-
-									SELECT	P.FieldName as Name,
-											p.FieldValue as Value,
-											NULL as LookupObjectType,
-											NULL as LookupObjectID,
-											NULL as LookupDisplayFormat
-									FROM	(
-											SELECT	ResourceID as ID,
-													CAST(FirstName as nvarchar(max)) as FirstName,
-													CAST(LastName as nvarchar(max)) as LastName,
-													CAST(Email as nvarchar(max)) as Email
-											FROM	reporting.Global_Resource A
-											WHERE	A.ResourceID = @Value
-													and L.ObjectType = 'Resource'
-											) A
-											unpivot	(
-													FieldValue for FieldName in (FirstName, LastName, Email)
-													) p
-									) V
-
-			declare @current int,
-					@max int
-
-			set @current = 1
-			select @max = Max(ID) from @tokens
-
-			set @formattedValue = @DisplayFormat
-
-			while(@current <= @max)
-			begin
-				declare @currentToken nvarchar(100) = null,
-						@currentField nvarchar(100) = null,
-						@currentValue nvarchar(max) = null,
-						@lkpType nvarchar(250) = null, 
-						@lkpID int = null, 
-						@lkpFormat nvarchar(250) = null
-
-				select	@currentField = Field, 
-						@currentToken = Token 
-				from	@tokens
-				where	ID = @current
-
-				select	@currentValue = Value,
-						@lkpType = LookupObjectType,
-						@lkpID = LookupObjectID,
-						@lkpFormat = LookupDisplayFormat
-				from	@fieldValues 
-				where	Field = @currentField
-
-				if @currentValue is not null
-				begin
-					if @lookupObjectType is not null and @lkpID is not null
-					begin
-						select @currentValue = utility.GetFormattedFieldLookupValue(@Type, @lkpFormat, @lkpType, @lkpID, @currentValue)
-					end
-
-					SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
-				end
-
-				SET @current = @current + 1
-			end
-		end
-	end
-
-	return @formattedValue
-END
-GO
-
-BEGIN TRANSACTION
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowProcessScheme')
-BEGIN
-	CREATE TABLE [WorkflowProcessScheme](
-		[Id] [uniqueidentifier] NOT NULL,
-		[Scheme] [ntext] NOT NULL,
-		[DefiningParameters] [ntext] NOT NULL,
-		[DefiningParametersHash] [nvarchar](1024) NOT NULL,
-		[SchemeCode] [nvarchar](max) NOT NULL,
-		[IsObsolete] [bit] NOT NULL DEFAULT (0),
-		[RootSchemeCode] nvarchar (max) NULL,
-		[RootSchemeId]  uniqueidentifier NULL,
-		[AllowedActivities] nvarchar (max) NULL,
-		[StartingTransition] nvarchar (max) NULL,
-		CONSTRAINT [PK_WorkflowProcessScheme] PRIMARY KEY CLUSTERED([Id] ASC)
-	 )
-
-	PRINT 'WorkflowProcessScheme CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowProcessInstance')
-BEGIN
-	CREATE TABLE [WorkflowProcessInstance](
-		[Id] [uniqueidentifier] NOT NULL,
-		[StateName] [nvarchar](max) NOT NULL,
-		[ActivityName] [nvarchar](max) NOT NULL,
-		[SchemeId] [uniqueidentifier] NULL,
-		[PreviousState] [nvarchar](max) NULL,
-		[PreviousStateForDirect] [nvarchar](max) NULL,
-		[PreviousStateForReverse] [nvarchar](max) NULL,
-		[PreviousActivity] [nvarchar](max) NULL,
-		[PreviousActivityForDirect] [nvarchar](max) NULL,
-		[PreviousActivityForReverse] [nvarchar](max) NULL,
-		[ParentProcessId] uniqueidentifier NULL,
-		[RootProcessId] uniqueidentifier NOT NULL,
-		[IsDeterminingParametersChanged] [bit] NOT NULL DEFAULT ((0)),
-		CONSTRAINT [PK_WorkflowProcessInstance_1] PRIMARY KEY CLUSTERED ([Id] ASC)
-	)
-
-	PRINT 'WorkflowProcessInstance CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowProcessInstancePersistence')
-BEGIN
-	CREATE TABLE [WorkflowProcessInstancePersistence](
-		[Id] [uniqueidentifier] NOT NULL,
-		[ProcessId] [uniqueidentifier] NOT NULL,
-		[ParameterName] [nvarchar](max) NOT NULL,
-		[Value] [ntext] NOT NULL,
-		CONSTRAINT [PK_WorkflowProcessInstancePersistence] PRIMARY KEY CLUSTERED ([Id] ASC)
-	 )
-
-	PRINT 'WorkflowProcessInstancePersistence CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowProcessTransitionHistory')
-BEGIN
-	CREATE TABLE [WorkflowProcessTransitionHistory](
-		[Id] [uniqueidentifier] NOT NULL,
-		[ProcessId] [uniqueidentifier] NOT NULL,
-		[ExecutorIdentityId] [nvarchar](max) NOT NULL,
-		[ActorIdentityId] [nvarchar](max) NOT NULL,
-		[FromActivityName] [nvarchar](max) NOT NULL,
-		[ToActivityName] [nvarchar](max) NOT NULL,
-		[ToStateName] [nvarchar](max) NULL,
-		[TransitionTime] [datetime] NOT NULL,
-		[TransitionClassifier] [nvarchar](max) NOT NULL,
-		[IsFinalised] [bit] NOT NULL,
-		[FromStateName] [nvarchar](max) NULL,
-		[TriggerName] [nvarchar](max) NULL,
-		CONSTRAINT [PK_WorkflowProcessTransitionHistory] PRIMARY KEY CLUSTERED ([Id] ASC)
-	 )
-
-	PRINT 'WorkflowProcessTransitionHistory CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowProcessInstanceStatus')
-BEGIN
-	CREATE TABLE [WorkflowProcessInstanceStatus](
-		[Id] [uniqueidentifier] NOT NULL,
-		[Status] [tinyint] NOT NULL,
-		[Lock] [uniqueidentifier] NOT NULL,
-		CONSTRAINT [PK_WorkflowProcessInstanceStatus] PRIMARY KEY CLUSTERED ([Id] ASC)
-	 )
-
-	PRINT 'WorkflowProcessInstanceStatus CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM sys.procedures WHERE name = N'spWorkflowProcessResetRunningStatus')
-BEGIN
-	EXECUTE('CREATE PROCEDURE [spWorkflowProcessResetRunningStatus]
-	AS
-	BEGIN
-		UPDATE [WorkflowProcessInstanceStatus] SET [WorkflowProcessInstanceStatus].[Status] = 2 WHERE [WorkflowProcessInstanceStatus].[Status] = 1
-	END')
-
-	PRINT 'spWorkflowProcessResetRunningStatus CREATE PROCEDURE'
-END
-
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowRuntime')
-BEGIN
-	CREATE TABLE [WorkflowRuntime](
-		[RuntimeId] [uniqueidentifier] NOT NULL,
-		[Timer] [nvarchar](max) NOT NULL,
-		CONSTRAINT [PK_WorkflowRuntime] PRIMARY KEY CLUSTERED([RuntimeId] ASC)
-	)
-	PRINT 'WorkflowRuntime CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowScheme')
-BEGIN
-	-- Simple schemestorage
-	CREATE TABLE [WorkflowScheme](
-	 [Code] [nvarchar](256) NOT NULL,
-	 [Scheme] [nvarchar](max) NOT NULL,
-	 CONSTRAINT [PK_WorkflowScheme] PRIMARY KEY CLUSTERED([Code] ASC)
-	)
-	PRINT 'WorkflowScheme CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM sys.procedures WHERE name = N'DropWorkflowProcess')
-BEGIN
-	EXECUTE('CREATE PROCEDURE [DropWorkflowProcess] 
-		@id uniqueidentifier
-	AS
-	BEGIN
-		BEGIN TRAN
-	
-		DELETE FROM dbo.WorkflowProcessInstance WHERE Id = @id
-		DELETE FROM dbo.WorkflowProcessInstanceStatus WHERE Id = @id
-		DELETE FROM dbo.WorkflowProcessInstancePersistence  WHERE ProcessId = @id
-	
-		COMMIT TRAN
-	END')
-	PRINT 'DropWorkflowProcess CREATE PROCEDURE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM sys.procedures WHERE name = N'DropWorkflowProcesses')
-BEGIN
-	EXECUTE('CREATE TYPE IdsTableType AS TABLE 
-	( Id uniqueidentifier );')
-
-	PRINT 'IdsTableType CREATE TYPE'
-
-	EXECUTE('CREATE PROCEDURE [DropWorkflowProcesses] 
-		@Ids  IdsTableType	READONLY
-	AS	
-	BEGIN
-		BEGIN TRAN
-	
-		DELETE dbo.WorkflowProcessInstance FROM dbo.WorkflowProcessInstance wpi  INNER JOIN @Ids  ids ON wpi.Id = ids.Id 
-		DELETE dbo.WorkflowProcessInstanceStatus FROM dbo.WorkflowProcessInstanceStatus wpi  INNER JOIN @Ids  ids ON wpi.Id = ids.Id 
-		DELETE dbo.WorkflowProcessInstanceStatus FROM dbo.WorkflowProcessInstancePersistence wpi  INNER JOIN @Ids  ids ON wpi.ProcessId = ids.Id 
-	
-
-		COMMIT TRAN
-	END')
-	PRINT 'DropWorkflowProcesses CREATE PROCEDURE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowInbox')
-BEGIN
-	CREATE TABLE [WorkflowInbox](
-		[Id] [uniqueidentifier] NOT NULL,
-		[ProcessId] [uniqueidentifier] NOT NULL,
-		[IdentityId] [uniqueidentifier] NOT NULL,
-		CONSTRAINT [PK_WorkflowInbox] PRIMARY KEY CLUSTERED([Id] ASC)
-	 )
-	PRINT 'WorkflowInbox CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM sys.procedures WHERE name = N'DropWorkflowInbox')
-BEGIN
-	EXECUTE('CREATE PROCEDURE [DropWorkflowInbox] 
-		@processId uniqueidentifier
-	AS
-	BEGIN
-		BEGIN TRAN	
-		DELETE FROM dbo.WorkflowInbox WHERE ProcessId = @processId	
-		COMMIT TRAN
-	END')
-	PRINT 'DropWorkflowInbox CREATE PROCEDURE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowProcessTimer')
-BEGIN
-	CREATE TABLE [dbo].[WorkflowProcessTimer](
-		[Id] [uniqueidentifier] NOT NULL,
-		[ProcessId] [uniqueidentifier] NOT NULL,
-		[Name] [nvarchar](max) NOT NULL,
-		[NextExecutionDateTime] [datetime] NOT NULL,
-		[Ignore] [bit] NOT NULL,
-	 CONSTRAINT [PK_WorkflowProcessTimer] PRIMARY KEY CLUSTERED ([Id] ASC)
-	 )
-
-	PRINT 'WorkflowProcessTimer CREATE TABLE'
-END
-
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowGlobalParameter')
-BEGIN
-CREATE TABLE [dbo].[WorkflowGlobalParameter](
-	[Id] [uniqueidentifier] NOT NULL,
-	[Type] [nvarchar](max) NOT NULL,
-	[Name] [nvarchar](max) NOT NULL,
-	[Value]  [nvarchar](max) NOT NULL
- CONSTRAINT [PK_WorkflowGlobalParameter] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-
-PRINT 'WorkflowGlobalParameter CREATE TABLE'
-
-END
-
-COMMIT TRANSACTION
-
-
-create function [cache].[SynchronizeObjectResponsibilities]
-(
---declare
-	@Object varchar(50),
-	@ObjectID int
---set @Object = 'ArtifactType'
---set @ObjectID = 11
-)
-returns	@Responsibilities table
-(
-	ID int identity,
 	[Source] varchar(50), 
 	Visible bit,
 	ResponsibilityID int,
@@ -8942,122 +5492,597 @@ returns	@Responsibilities table
 	ContextHash varchar(50),
 	[Priority] int
 )
-as
-begin
-	insert into @Responsibilities
-		select * from utility.GetVerticalResponsibilityList(@Object, @ObjectID, 1);
-	insert into @Responsibilities
-		select * from utility.GetHierarchyAssignedResponsibilityList(@Object, @ObjectID, 4);
-	insert into @Responsibilities
-		select * from utility.GetDirectlyAssignedResponsibilityList(@Object, @ObjectID, 7);
+AS
+BEGIN
 
-	--delete cache.ResponsibilityItem where [Object] = @Object and ObjectID = @ObjectID
-	--DELETE	T
-	--FROM	cache.ResponsibilityItem T
-	--		INNER JOIN @Responsibilities S ON S.[Object] = T.[Object] 
-	--										and S.[ObjectID] = T.[ObjectID] 
-	--										and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-	--										and S.ContextHash = T.ContextHash;
-
-	declare @current int = 1,
-			@max int,
-			@ResponsibilityID int,
-			@ResponsibilityTypeID int,
-			@AssigningItem varchar(50),
-			@AssigningItemID int,
-			@Obj varchar(50),
-			@ObjID int,
-			@ContextHash varchar(50),
-			@Priority int;
-
-	select @max = max(ID) from @Responsibilities;
-
-	while @current <= @max
-	begin
-		if exists(select 1 from @Responsibilities where ID = @current)
+	if @Object = 'Artifact'
 		begin
-			select	@ResponsibilityID = ResponsibilityID,
-					@ResponsibilityTypeID = ResponsibilityTypeID,
-					@AssigningItem = AssigningItem,
-					@AssigningItemID = AssigningItemID,
-					@Obj = [Object],
-					@ObjID = ObjectID,
-					@ContextHash = ContextHash,
-					@Priority = [Priority]
-			from	@Responsibilities
-			where	ID = @current;
-
-			delete	@Responsibilities
-			where	ResponsibilityTypeID = @ResponsibilityTypeID
-					and [Object] = @Obj
-					and ObjectID = @ObjID
-					and ContextHash = @ContextHash
-					and [Priority] < @Priority
-					and ResponsibilityTypeID <> 0;
+			insert into @tbl
+				select	'Artifact Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	Artifact T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID 
+							and (
+									(T.ID = @ObjectID and @ObjectID is not null)
+									or (@ObjectID is null)
+								);
 		end
-		set @current = @current + 1
+	if @Object = 'ArtifactType'
+		begin
+			insert into @tbl
+				select	'Artifact Type Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	ArtifactType T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID 
+							and (
+									(T.ID = @ObjectID and @ObjectID is not null)
+									or (@ObjectID is null)
+								);
+		end
+	if @Object = 'Fusion'
+		begin
+			insert into @tbl
+				select	'Fusion Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	Fusion T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
+							and (
+									(T.ID = @ObjectID and @ObjectID is not null)
+									or (@ObjectID is null)
+								);
+		end
+	if @Object = 'FusionType'
+		begin
+			insert into @tbl
+				select	'Fusion Type Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	FusionType T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
+							and (
+									(T.ID = @ObjectID and @ObjectID is not null)
+									or (@ObjectID is null)
+								);
+		end
+	if @Object = 'Rule'
+		begin
+			insert into @tbl
+				select	'Rule Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						RU.ID as AssigningItemID,
+						@Object as ObjectType,
+						RU.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	[Rule] RU 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = RU.ID
+							and (
+								(RU.ID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
+								);
+		end
+	if @Object = 'RuleType'
+		begin
+			insert into @tbl
+				select	'Rule Type Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						@ObjectID as AssigningItemID,
+						@Object as ObjectType,
+						@ObjectID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	Responsibility R where R.ObjectType = @Object and R.ObjectID = @ObjectID;				
+		end
+	if @Object = 'Taxonomy'
+		begin
+			insert into @tbl
+				select	'Taxonomy Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	Taxonomy T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
+							and (
+								(T.ID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
+								)
+		end
+	if @Object = 'TaxonomyType'
+		begin
+			insert into @tbl
+				select	'Taxonomy Type Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	TaxonomyType T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
+							and (
+								(T.ID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
+								)
+		end
+		if @Object = 'ReferenceItemType'
+		begin
+			insert into @tbl
+				select	'Reference Item Type Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	ReferenceItemType T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
+							and (
+									(T.ID = @ObjectID and @ObjectID is not null)
+									or (@ObjectID is null)
+								);
+		end
+		if @Object = 'PolicyType'
+		begin
+			insert into @tbl
+				select	'Policy Type Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	PolicyType T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
+							and (
+								(T.ID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
+								)
+		end
+	RETURN 
+END
+GO
+
+ALTER FUNCTION [dbo].[GenerateObjectUrl] 
+(
+	@Type varchar(50),
+	@TypeID int,
+	@ObjectID int = 0
+)
+RETURNS varchar(500)
+AS
+BEGIN
+	DECLARE @Prefix varchar(5) = ''--'a/'
+	DECLARE @Url varchar(500)
+	SET @Url = @Prefix
+
+	SET @Url = CASE @Type
+		WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'ArtifactType' THEN 'artifact/' + CAST(@TypeID as varchar)
+		WHEN 'Domain' THEN 'domain/' +  + CAST(@TypeID as varchar) + '/' +  + CAST(@ObjectID as varchar)
+		WHEN 'DomainType' THEN 'domain/' + CAST(@TypeID as varchar)
+		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(@TypeID as varchar)-- + '/' +  + CAST(@ObjectID as varchar)
+		WHEN 'ReferenceItemType' THEN 'reference/' + CAST(@TypeID as varchar)
+		WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)		
+		WHEN 'Fusion' THEN 'fusion/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
+		WHEN 'FusionType' THEN 'fusion/' + CAST(@TypeID as varchar)
+		WHEN 'Group' THEN 'groups/' + CAST(@ObjectID as varchar)	
+		WHEN 'Lookup' THEN 'admin/lookups/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
+		WHEN 'LookupType' THEN 'admin/lookups/' + CAST(@TypeID as varchar)
+		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar)
+		WHEN 'PolicyType' THEN 'policy/' + CAST(@TypeID as varchar) + '/structure'		
+		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)
+		WHEN 'ResourceType' THEN 'resource/list/' + CAST(@TypeID as varchar)
+		WHEN 'Rule' THEN 'quality/rule/' + CAST(@ObjectID as varchar)
+		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)
+		WHEN 'TaxonomyType' THEN 'model/' + CAST(@ObjectID as varchar) + '/structure'		
+	END
+
+	SET @Url = @Prefix + @Url
+
+	RETURN @Url
+END
+GO
+
+ALTER FUNCTION [utility].[GetFormattedFieldLookupValue]
+(
+	@Type varchar(25),
+	@DisplayFormat nvarchar(250),
+	@LookupObjectType varchar(25),
+	@LookupObjectID int,
+	@Value nvarchar(max)	
+)
+RETURNS nvarchar(max)
+AS
+BEGIN
+	declare @formattedValue nvarchar(max)
+	
+	if @LookupObjectType is null
+	begin
+		set @formattedValue  = @Value
+
+		if @Type = 'Link' OR @Type = 'UncLink'
+		begin
+			declare @linkName nvarchar(max),
+					@linkUrl nvarchar(max)
+
+			if charindex('|', @Value, 1) > 1
+				begin
+					SELECT @linkName = SUBSTRING(@Value, 1, PATINDEX('%|%', @Value)-1)
+					SELECT @linkUrl = SUBSTRING(@Value, PATINDEX('%|%', @Value)+1, LEN(@Value))
+
+					set @formattedValue = '<a href="' + @linkUrl + '" target="_blank">' + @linkName + '</a>'
+				end
+			else
+				begin
+					if @Value <> '' AND @Value <> '|' AND @Value IS NOT NULL
+						begin
+							if LEFT(@Value, 1) = '|'
+								begin
+									--no name, default to url
+									set @formattedValue = '<a href="' + SUBSTRING(@Value,2, LEN(@Value)) + '" target="_blank">' + SUBSTRING(@Value,2, LEN(@Value)) + '</a>'
+								end
+							else
+								begin
+									set @formattedValue = '<a href="' + @Value + '" target="_blank">' + @Value + '</a>'
+								end
+						end
+					else
+						begin
+							set @formattedValue = null
+						end
+				end
+		end
+
+	end	
+	else
+	begin
+		if @LookupObjectType = 'ReferenceItemType'
+		begin
+			select @formattedValue = Name from ReferenceItemType where id = @Value;		
+		end
+		else
+		begin
+			declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
+			declare @fieldValues table(Field nvarchar(100), Value nvarchar(max), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
+
+			set @formattedValue = @DisplayFormat
+	
+			while patindex('%{%',@formattedValue) > 0
+			 begin
+				declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
+				insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
+				set @formattedValue = replace(@formattedValue, @txt, '')
+			end
+
+			insert into @fieldValues
+				select	distinct
+						V.Name,
+						V.Value,
+						V.LookupObjectType,
+						V.LookupObjectID,
+						V.LookupDisplayFormat
+				from	(
+						SELECT	ID,
+								Name,
+								'Artifact' as ObjectType
+						FROM	ArtifactType
+						WHERE	@LookupObjectType = 'Artifact' and ID = @LookupObjectID
+						UNION
+						SELECT	ID,
+								Name,
+								'Lookup' as ObjectType
+						FROM	[LookupType]
+						WHERE	@LookupObjectType = 'Lookup' and ID = @LookupObjectID
+						UNION
+						SELECT	ID,
+								Name,
+								'ReferenceItem' as ObjectType
+						FROM	[ReferenceItemType]
+						WHERE	@LookupObjectType = 'ReferenceItem' and ID = @LookupObjectID
+						UNION										
+						SELECT	1 as ID,
+								'User' as Name,
+								'Resource' as ObjectType
+						WHERE	@LookupObjectType = 'Resource'-- and ID = @LookupObjectID
+						UNION
+						SELECT	ID,
+								Name,
+								'Taxonomy' as ObjectType
+						FROM	TaxonomyType
+						WHERE	@LookupObjectType = 'Taxonomy' and ID = @LookupObjectID
+						) L
+						outer apply (
+
+									SELECT	IT.Name,
+											[IF].Value,
+											[IT].LookupObjectType,
+											COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+											[IT].LookupDisplayFormat
+									FROM	Field [IF]
+											inner join FieldType IT ON [IF].FieldTypeID = IT.ID 
+																	and [IF].ObjectType = L.ObjectType
+																	and [IF].ObjectID = case 
+																							when dbo.IsInteger(@Value) = 1 then @Value
+																							else 0
+																						end
+								
+									UNION
+
+									SELECT	P.FieldName as Name,
+											p.FieldValue as Value,
+											NULL as LookupObjectType,
+											NULL as LookupObjectID,
+											NULL as LookupDisplayFormat
+									FROM	(
+											SELECT	ID as AID,
+													CAST(ID as nvarchar(max)) as ID,
+													CAST(Name as nvarchar(max)) as Name,
+													CAST(Description as nvarchar(max)) as Description,
+													CAST(TextPath as nvarchar(max)) as TextPath
+											FROM	Artifact A
+											WHERE	A.ID = CAST(@Value as int)
+													and L.ObjectType = 'Artifact'
+											) A
+											unpivot	(
+													FieldValue for FieldName in (ID, Name, Description, TextPath)
+													) p
+
+									UNION
+
+									SELECT	P.FieldName as Name,
+											p.FieldValue as Value,
+											NULL as LookupObjectType,
+											NULL as LookupObjectID,
+											NULL as LookupDisplayFormat
+									FROM	(
+											SELECT	ID,
+													CAST(Name as nvarchar(max)) as Name,
+													CAST(Description as nvarchar(max)) as Description,
+													CAST(TextPath as nvarchar(max)) as TextPath
+											FROM	Taxonomy A
+											WHERE	A.ID = CAST(@Value as int)
+													and L.ObjectType = 'Taxonomy'
+											) A
+											unpivot	(
+													FieldValue for FieldName in (Name, Description, TextPath)
+													) p
+
+									UNION
+
+									SELECT	P.FieldName as Name,
+											p.FieldValue as Value,
+											NULL as LookupObjectType,
+											NULL as LookupObjectID,
+											NULL as LookupDisplayFormat
+									FROM	(
+											SELECT	ID,
+													CAST(Code as nvarchar(max)) as Code
+											FROM	ReferenceItem A
+											WHERE	A.ID = @Value
+													and L.ObjectType = 'ReferenceItem'
+											) A
+											unpivot	(
+													FieldValue for FieldName in (Code)
+													) p
+
+									UNION
+
+									SELECT	P.FieldName as Name,
+											p.FieldValue as Value,
+											NULL as LookupObjectType,
+											NULL as LookupObjectID,
+											NULL as LookupDisplayFormat
+									FROM	(
+											SELECT	ID,
+													CAST(Name as nvarchar(max)) as Name,
+													CAST(Description as nvarchar(max)) as Description
+											FROM	ReferenceItemType A
+											WHERE	A.ID = @Value
+													and L.ObjectType = 'ReferenceItemType'
+											) A
+											unpivot	(
+													FieldValue for FieldName in (Name, Description)
+													) p
+
+									UNION
+
+									SELECT	P.FieldName as Name,
+											p.FieldValue as Value,
+											NULL as LookupObjectType,
+											NULL as LookupObjectID,
+											NULL as LookupDisplayFormat
+									FROM	(
+											SELECT	ResourceID as ID,
+													CAST(FirstName as nvarchar(max)) as FirstName,
+													CAST(LastName as nvarchar(max)) as LastName,
+													CAST(Email as nvarchar(max)) as Email
+											FROM	reporting.Global_Resource A
+											WHERE	A.ResourceID = @Value
+													and L.ObjectType = 'Resource'
+											) A
+											unpivot	(
+													FieldValue for FieldName in (FirstName, LastName, Email)
+													) p
+									) V
+
+			declare @current int,
+					@max int
+
+			set @current = 1
+			select @max = Max(ID) from @tokens
+
+			set @formattedValue = @DisplayFormat
+
+			while(@current <= @max)
+			begin
+				declare @currentToken nvarchar(100) = null,
+						@currentField nvarchar(100) = null,
+						@currentValue nvarchar(max) = null,
+						@lkpType nvarchar(250) = null, 
+						@lkpID int = null, 
+						@lkpFormat nvarchar(250) = null
+
+				select	@currentField = Field, 
+						@currentToken = Token 
+				from	@tokens
+				where	ID = @current
+
+				select	@currentValue = Value,
+						@lkpType = LookupObjectType,
+						@lkpID = LookupObjectID,
+						@lkpFormat = LookupDisplayFormat
+				from	@fieldValues 
+				where	Field = @currentField
+
+				if @currentValue is not null
+				begin
+					if @lookupObjectType is not null and @lkpID is not null
+					begin
+						select @currentValue = utility.GetFormattedFieldLookupValue(@Type, @lkpFormat, @lkpType, @lkpID, @currentValue)
+					end
+
+					SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
+				end
+
+				SET @current = @current + 1
+			end
+		end
+	end
+
+	return @formattedValue
+END
+GO
+
+ALTER FUNCTION [utility].[ShouldPromotionRun]
+(
+)
+RETURNS bit
+AS
+BEGIN	
+	DECLARE @lastPromotionRun datetime;
+	
+	-- if there are no enabled rules then say no
+	if not exists(select 1 from [fusion].[Rule] where [Enabled] = 1)
+	begin
+		return 0;
 	end;
 
---select * from #Responsibilities
+	-- GET LAST RUN OF THE PROMOTON PROCESS FROM DBO.FUSIONATTRIBUTEPROMOTIONLOGSUMMARY
+	select @lastPromotionRun = max(DateStarted) from fusion.RuleLog
+		
+	if(@lastPromotionRun is null)
+	begin
+	 set @lastPromotionRun = '1970-01-01';
+	end;
 
-	--insert into cache.ResponsibilityItem
-	--(
-	--	[ResponsibilityID], [ResponsibilityTypeID], [ResponsibilityType], 
-	--	[AssigningItem], [AssigningItemID], 
-	--	[Object], [ObjectID], 
-	--	[ResponsibleObject], [ResponsibleObjectID], 
-	--	[ContextHash], [ResponsibilityTypeGroup], Visible
-	--)
-	--	select	distinct
-	--			TR.ResponsibilityID,
-	--			TR.ResponsibilityTypeID,
-	--			RT.Name as ResponsibilityType,
-	--			TR.AssigningItem,
-	--			TR.AssigningItemID,
-	--			TR.[Object],
-	--			TR.ObjectID,
-	--			R.ResponsibleObjectType as ResponsibleObject,
-	--			R.ResponsibleObjectID,
-	--			TR.ContextHash,
-	--			RT.ResponsibilityTypeGroup,
-	--			TR.Visible
-	--	from	@Responsibilities TR
-	--			inner join Responsibility R on R.ID = TR.ResponsibilityID
-	--			inner join ResponsibilityType RT on RT.ID = R.ResponsibilityTypeID;
-	
-	return;
+	-- promotion should not run if there is a current job out there that has not completed and this job was started within the last day
+	if exists (select 1 from fusion.RuleLog where DateCompleted is null and DateStarted > DATEADD(day,-1,CURRENT_TIMESTAMP))
+	begin
+		return 0; --should not run already running 
+	end;
+
+	--PROMOTION ONLY NEEDS TO RUN IF FUSION HAS COMPLETED ON A FUSION ID THAT HAS RULES SETUP AGAINST IT.
+	if exists	(
+				select	1 
+				from	fusion.Execution E 
+						inner join [fusion].[Rule] R on R.fusionid = E.fusionid	
+				where	R.[enabled] = 1 
+						and E.datecompleted > @lastPromotionRun
+						and (E.Adds + E.Updates + E.Deletes) > 0
+				)
+
+	begin		
+		RETURN 1;		
+	end;
+
+	-- OR THE PROMOTION RULES HAVE BEEN MODIFIED, ADDED OR DELETED SINCE LAST RUN OF PROMOTION	
+	if exists (select 1 from fusion.[Rule] where UpdatedOn > @lastPromotionRun)
+	begin
+		return 1;
+	end;
+		
+	RETURN 0;
+END
+GO
+
+CREATE procedure [fusion].[UpdateFusionTextPaths]
+	@FusionID int
+as
+begin
+	set nocount on;
+
+	WITH hierarchy (id, itempath) AS
+	(
+		SELECT id, cast(name as nvarchar(2500))
+		FROM fusionattribute
+		WHERE fusionid = @FusionID and parentid is null
+
+		UNION ALL
+
+		SELECT gp.id, cast(gps.itempath + '.' + gp.name as nvarchar(2500))
+		FROM fusionattribute gp
+		JOIN hierarchy gps ON gps.id = gp.parentid
+	)
+	UPDATE T
+	set T.textpath = cte.itempath
+	from fusionattribute T
+	inner join 
+		hierarchy cte
+	on cte.id = T.id
+	OPTION (MAXRECURSION 10)
 end
 GO
 
-
---insert referenceitemtype into cache object so it shows up correctly on relationshiptype def screen
-insert into cache.[object] ([object],[objectid],[objecttype],[objecttypeid]) values('ReferenceItemType',0,'ReferenceItemType',0)
+update predicate set name = 'Synonym', inverse = 'Synonym' where issystem = 1 and name = 'synonym of' and [type]  = 6
 go
 
------Remove unique guid from fusion results table for performance / as it is not used and is slow------------------
-
--- drop old primary key
-ALTER TABLE [fusion].[result]
-DROP CONSTRAINT PK_FusionResult;
-GO
-
--- drop the constraint that generates the id
-ALTER TABLE [fusion].[result]
-DROP CONSTRAINT DF_FusionResult_ID;
-GO
-
--- make the unique id column nullable
-ALTER TABLE [fusion].[result] ALTER COLUMN [ID] uniqueidentifier NULL ;
-GO
-
-
--- add index on fusion id deleted, and parent id to fusion attribute table
-
-CREATE INDEX IX_FusionAttribute_FusionID_Deleted_ParentID 
-	ON FusionAttribute (FusionID, Deleted, ParentID)
-GO
-
--- remove fusionattributes from the cache... this may take a few moments
-
-delete from [cache].[object] where [object] = 'FusionAttribute';
+insert into cache.[object] ([object],[objectid],[objecttype],[objecttypeid]) values('ReferenceItemType',0,'ReferenceItemType',0)
 go

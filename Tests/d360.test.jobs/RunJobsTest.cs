@@ -23,7 +23,7 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 49; //10
+            var companyID = 38; //10
             var fusionTypeID = 1;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
@@ -54,7 +54,7 @@ SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Nam
                 company.Execute(@"
 if not exists(select 1 from IntersectType where Subject = @type and SubjectID = @si and Object = @type and ObjectID = @ti) 
 BEGIN 
-			INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy) values (@type, @si, @type, @ti, getutcdate(), 0)
+			INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy, IsSystem) values (@type, @si, @type, @ti, getutcdate(), 0, 1)
 END", 
                 new { type = "FusionAttributeType", si = t.StartFusionAttributeTypeID, ti = t.EndFusionAttributeTypeID, ro = t.ReadOnly });
             });
@@ -110,12 +110,12 @@ END",
         [TestMethod]
         public void SaveCertificate_Success()
         {
-            var companyID = 23;
+            var companyID = 4;
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("NM-Dev-2017.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Northwestern Mutual - 2017 - Development", File = bytes };
+            var bytes = File.ReadAllBytes("Thrivent.prod.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Thrivent - 2017 - Production", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

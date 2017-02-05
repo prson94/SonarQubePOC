@@ -152,10 +152,10 @@ namespace d360.web.Controllers.Services
         
     
 
-    /// <summary>
-    /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
-    /// </summary>
-    /// <returns>A list of available fusion configurations.</returns>
+        /// <summary>
+        /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
+        /// </summary>
+        /// <returns>A list of available fusion configurations.</returns>
         [Route("{id:int}/configurations")]
         public HttpResponseMessage GetConfigurationsByType(int id, bool useFieldName = true)
         {
@@ -272,6 +272,25 @@ where A.FusionTypeID = @id", columns, joins);
                 return Request.CreateResponse(HttpStatusCode.OK);
             }
         }
+
+        /// <summary>
+        /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
+        /// </summary>
+        /// <returns>A list of available fusion configurations.</returns>
+        [Route("{fusionTypeID:int}/configurations/{fusionID:int}/schedules")]
+        public IQueryable<FusionSchedule> GetConfigurationsByType(int fusionTypeID, int fusionID)
+        {
+            if (Company.CurrentResourceIsAdmin)
+            {
+                //return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration schedules.");
+                return Company.Filter<FusionSchedule>(i => i.FusionID == fusionID);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
 
         #region History/Errors/Results
 

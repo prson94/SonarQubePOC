@@ -7,6 +7,7 @@ using d360.web.Models.Attributes;
 using SpreadsheetLight;
 using System.IO;
 using Newtonsoft.Json;
+using d360.web.Models;
 
 namespace d360.web.Controllers
 {
@@ -170,7 +171,7 @@ from	RuleResult A
         {0}
 where   A.RuleID = @id";
 
-            var ruleQualifiers = Company.Query<string>(@"select Name from RuleResultQualifierType where RuleID = @id", new { id }).ToList();
+            var ruleQualifiers = Company.Query<RuleQualifierTypeField>(@"select Name as Header, replace(Name, ' ', '') as Field from RuleResultQualifierType where RuleID = @id order by [Order]", new { id }).ToList();
             var qualifierFieldsSql = "";
 
             if (ruleQualifiers.Count > 0)
@@ -178,7 +179,7 @@ where   A.RuleID = @id";
                 qualifierFieldsSql = @"
                         left join
 		                        (select * from
-			                        (select q.RuleResultID as ResID, QT.[Name] as N, Q.[Value] as Val from RuleResultQualifierType QT
+			                        (select q.RuleResultID as ResID, replace(QT.[Name], ' ', '') as N, Q.[Value] as Val from RuleResultQualifierType QT
 			                        join RuleResultQualifier Q on Q.RuleResultQualifierTypeID = QT.ID
 			                        where QT.RuleID = @id) as vt
 			                        pivot
@@ -188,7 +189,7 @@ where   A.RuleID = @id";
 			                        )
 			                        ) as qr) as RQ on RQ.ResID = A.ID
                                     ";
-                qualifierFieldsSql = string.Format(qualifierFieldsSql, string.Join(",", ruleQualifiers));
+                qualifierFieldsSql = string.Format(qualifierFieldsSql, string.Join(",", ruleQualifiers.Select(q => q.Field)));
             }
 
             querySql = string.Format(querySql, qualifierFieldsSql, (ruleQualifiers.Count > 0) ? ",RQ.*" : "");

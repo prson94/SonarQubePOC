@@ -111,6 +111,7 @@
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttribute.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttributeType.cs" />
+    <Compile Include="entities\Fusion\FusionSchedule.cs" />
     <Compile Include="entities\Issue.cs" />
     <Compile Include="entities\IssueType.cs" />
     <Compile Include="entities\Reference\ReferenceItemType.cs" />

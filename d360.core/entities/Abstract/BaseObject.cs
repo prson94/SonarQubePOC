@@ -118,4 +118,40 @@ namespace d360.core.entities
 
         private DateTime? updatedon = null;
     }
+
+    [Serializable, DataContract(Namespace = NAMESPACE)]
+    public abstract class BaseCreatedAndUpdatedObject : BaseObject
+    {
+        public int? CreatedBy { get; set; }
+
+        public DateTime? CreatedOn
+        {
+            get
+            {
+                return this.createdon.HasValue
+                   ? this.createdon.Value
+                   : DateTime.UtcNow;
+            }
+
+            set { this.createdon = value; }
+        }
+
+        private DateTime? createdon = null;
+
+        public int? UpdatedBy { get; set; }
+
+        public DateTime? UpdatedOn
+        {
+            get
+            {
+                return this.updatedon.HasValue
+                   ? this.updatedon.Value
+                   : DateTime.UtcNow;
+            }
+
+            set { this.updatedon = value; }
+        }
+
+        private DateTime? updatedon = null;
+    }
 }

@@ -5608,17 +5608,20 @@ namespace d360.web.Controllers
             var sourceFields = Company.Filter<FieldType>(i => i.Object == ruleStep.FusionRule.ObjectType && i.ObjectID == ruleStep.FusionRule.ObjectID)
                 .OrderBy(i => i.FriendlyName)
                 .ToList()
-                //.Where(i => !sourceFieldIDs.Contains(i.ID))
                 .Select(i => new SelectListItem
                 {
                     Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
                     Value = string.Format("{0}|{1}", i.Name, i.ID)
                 })
                 .ToList();
-            //if (!sourceFieldNames.Contains("Name"))
-            sourceFields.Insert(0, new SelectListItem { Text = "ID", Value = "ID|0" });
-            sourceFields.Insert(1, new SelectListItem { Text = "Name", Value = "Name|0" });
-            sourceFields.Insert(2, new SelectListItem { Text = "TextPath", Value = "TextPath|0" });
+            
+            //These fields do not exists, by default, for fusion query attributes.
+            if (ruleStep.FusionRule.ObjectType != SystemObjects.FusionQueryAttributeType.ToString())
+            {
+                sourceFields.Insert(0, new SelectListItem { Text = "ID", Value = "ID|0" });
+                sourceFields.Insert(1, new SelectListItem { Text = "Name", Value = "Name|0" });
+                sourceFields.Insert(2, new SelectListItem { Text = "TextPath", Value = "TextPath|0" });
+            }
 
             #endregion
 

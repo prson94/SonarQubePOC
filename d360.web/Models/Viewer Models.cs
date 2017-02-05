@@ -605,6 +605,17 @@ namespace d360.web.Models
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
+    public class RuleQualifierTypeField
+    {
+        [DataMember]
+        public string Field { get; set; }
+
+        [DataMember]
+        public string Header { get; set; }
+
+    }
+
+    [DataContract(Namespace = constants.NAMESPACE)]
     public class ReadOnlyField
     {
         [DataMember]

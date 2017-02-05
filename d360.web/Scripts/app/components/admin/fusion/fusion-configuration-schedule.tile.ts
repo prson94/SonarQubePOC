@@ -1,32 +1,27 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { Router } from '@angular/router';
 import { FusionConfiguration, FusionType, FusionFilter } from '../../../models/fusion.model';
 import { FusionService } from '../../../services/fusion.service';
 import { GridColumn } from '../../../models/grid-definition.model';
 import { BaseComponent } from '../../shared/base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-
+ 
 @Component({
-    selector: 'd3s-fusion-configuration-tile',
-    templateUrl: './fusion-configuration.tile.html',
+    selector: 'd3s-fusion-configuration-schedule-tile',
+    templateUrl: './fusion-configuration-schedule.tile.html',
     providers: [FusionService]
 })
 
-export class FusionConfigurationTile extends BaseComponent implements OnChanges {
-    @Input() fusionType: FusionType;
-    @Input() title: string = 'Configurations';
-    
+export class FusionConfigurationScheduleTile extends BaseComponent implements OnChanges {
+    @Input() fusionID: number;
+    @Input() title: string = 'Agent Execution Schedule';
+    @Output() onClose = new EventEmitter();
+
     formMode: FormModeConfig = FormModeConfig.Default;
     FormModeConfig = FormModeConfig;
 
-    fusionConfigurations: any[];
+    fusionConfigurationSchedules: any[];
     selectedRow: any;
-
-    fusionFilters: FusionFilter[];
-    selectedFusionFilter: FusionFilter;
-
-
-    columns: GridColumn[];
 
     constructor(private router: Router, private fusionService: FusionService) {
         super();
@@ -43,25 +38,18 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
 
     load(): void {
         this.isLoading = true;
-        if (this.fusionType == null) {
-            this.formMode = FormModeConfig.Default;
-            this.fusionConfigurations = null;
+        if (this.fusionID == null) {
+            //this.formMode = FormModeConfig.Default;
+            this.fusionConfigurationSchedules = null;
             this.selectedRow = null;
             this.isLoading = false;
             return;
         }
-        this.fusionService.getFusionConfigurationGridDefinition(this.fusionType.ID)
-            .then(data => { this.columns = data; })
-            .then(() => this.fusionService.getFusionConfigurationsByType(this.fusionType.ID))
+        this.fusionService.getFusionConfigurationSchedules(1, this.fusionID)
             .then(data => {
-                this.fusionConfigurations = data;
-                this.selectedRow = this.fusionConfigurations[0];
+                this.fusionConfigurationSchedules = data;
                 this.isLoading = false;
             });
-    }
-
-    private openFusion(fusion) {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${fusion.ID}`);
     }
 }
 

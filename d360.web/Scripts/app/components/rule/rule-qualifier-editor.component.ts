@@ -15,7 +15,7 @@ import { QualifierType, ResolutionObjectType } from '../../models/qualifier.mode
                         <div class="row">
                             <div class="col s4 offset-s4">
                                 <div class="FieldName" style="display:block;">Name</div>
-                                <input type="text" [(ngModel)]="qualifier.Name" name="name" required style="width: 95%"/>
+                                <input type="text" [(ngModel)]="qualifier.Name" name="name" required style="width: 95%" (keyup)="updateQualifierName($event)"/>
                             </div>
                         </div>
                         <div class="row">
@@ -113,6 +113,10 @@ export class RuleQualifierEditorComponent extends BaseComponent implements OnIni
     private changeResolutionObject() {
         this.qualifier.ResolutionFieldTypeID = null;
         this.loadResolutionFields();
+    }
+
+    private updateQualifierName(event) {
+        this.qualifier.Name = event.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
     }
 
     private save() {

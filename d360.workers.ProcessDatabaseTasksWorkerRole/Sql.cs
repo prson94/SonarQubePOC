@@ -43,7 +43,7 @@ where (select count(*) from comment where parentID = @CommentID) > 0 OR C.DateCr
 R.FirstName + ' ' + R.LastName as Name,
 R.Email
 from	CommentRelation CR
-inner join FollowWithChildren F on F.ObjectType = CR.ObjectType and F.ObjectID = CR.ObjectID  and CR.CommentID = @CommentID
+inner join FollowDetail F on F.ObjectType = CR.ObjectType and F.ObjectID = CR.ObjectID  and CR.CommentID = @CommentID
 inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID and R.Email not like '%?subject=%'
 union
 select	coalesce(RG.ResourceID, R.ResponsibleObjectID) as ResourceID,

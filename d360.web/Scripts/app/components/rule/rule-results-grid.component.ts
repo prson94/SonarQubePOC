@@ -35,7 +35,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                                 </template>
                             </p-column>
                             <p-column field="FusionAttribute" header="Fusion" [sortable]="true" [style]="{width:'200px'}"></p-column>
-                            <p-column *ngFor="let q of results?.qualifiers" [field]="q" [header]="q" [sortable]="true" [style]="{width:'200px'}"></p-column>
+                            <p-column *ngFor="let q of results?.qualifiers" [field]="q.Field" [header]="q.Header" [sortable]="true" [style]="{width:'200px'}"></p-column>
                         </p-dataTable>
                 </span>                
                 `,

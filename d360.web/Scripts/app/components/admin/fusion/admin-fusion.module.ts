@@ -22,6 +22,7 @@ import { D3SSharedModule } from '../../shared/shared.module';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
+import { FusionConfigurationScheduleTile } from './fusion-configuration-schedule.tile';
 
 import { AdminFusionRoutingModule } from './admin-fusion.routes';
 
@@ -72,6 +73,7 @@ import {
         AdminFusionComponent,
         FusionAttributesTile,
         FusionConfigurationTile,
+        FusionConfigurationScheduleTile
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

@@ -32,10 +32,10 @@ import * as _ from 'lodash';
                                                 </template>
                             </p-column>
                             <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}" [filter]="!showSimpleFilter">
-                                                <template let-item="rowData" pTemplate type="body">
-                                                    <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
-                                                    <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
-                                                </template>
+                                <template let-item="rowData" pTemplate type="body">
+                                    <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
+                                    <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
+                                </template>
                             </p-column>
                             <p-column [style]="{width:'30px'}">
                                 <template let-item="rowData" pTemplate type="body">

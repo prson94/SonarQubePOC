@@ -3425,7 +3425,7 @@ from    (
                     {
                         if (artifact.Parent != null)
                         {
-                            var parentDetails = GetObjectDetail(SystemObjects.Artifact, artifact.Parent.ID);
+                            var parentUrl = Company.Query<string>($"select dbo.GenerateObjectUrl('Artifact', {artifact.Parent.ArtifactTypeID}, {artifact.Parent.ID})").First();
 
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
@@ -3434,7 +3434,7 @@ from    (
                                     new ReadOnlyField { Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Name), Value = $"<b>{artifact.Name}</b>" }
                                 },
                                 SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.ParentID), FieldName = "ArtifactParentName", FieldDescription = artifact.GetDescription(i => i.ParentID), Value = artifact.Parent.Name, TooltipUrl = parentDetails.Url, TooltipType="Artifact", TooltipContext="Preview", TooltipID = artifact.Parent.ID }
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.ParentID), FieldName = "ArtifactParentName", FieldDescription = artifact.GetDescription(i => i.ParentID), Value = artifact.Parent.Name, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = artifact.Parent.ID }
                                 }
                             });
                         }
