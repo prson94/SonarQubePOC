@@ -112,27 +112,32 @@ namespace d360.extensions.powerbi
                         await client.Datasets.SetAllConnectionsAsync(workspaceCollectionName, workspaceId, dataset.Id, connectionParameters);
                     }
 
-                    // Get the datasources from the dataset
-                    var datasources = await client.Datasets.GetGatewayDatasourcesAsync(workspaceCollectionName, workspaceId, dataset.Id);
-
-                    if ((datasources.Value[datasources.Value.Count - 1].DatasourceType ?? "").ToUpper() == "SQL")
+                    try
                     {
-                        // Reset your connection credentials
-                        var delta = new GatewayDatasource
+                        // Get the datasources from the dataset
+                        var datasources = await client.Datasets.GetGatewayDatasourcesAsync(workspaceCollectionName, workspaceId, dataset.Id);
+
+                        if ((datasources.Value[datasources.Value.Count - 1].DatasourceType ?? "").ToUpper() == "SQL")
                         {
-                            CredentialType = "Basic",
-                            BasicCredentials = new BasicCredentials
+                            // Reset your connection credentials
+                            var delta = new GatewayDatasource
                             {
-                                Username = username,
-                                Password = password
-                            }
-                        };
+                                CredentialType = "Basic",
+                                BasicCredentials = new BasicCredentials
+                                {
+                                    Username = username,
+                                    Password = password
+                                }
+                            };
 
-                        // Update the datasource with the specified credentials
-                        await client.Gateways.PatchDatasourceAsync(workspaceCollectionName, workspaceId, datasources.Value[datasources.Value.Count - 1].GatewayId, datasources.Value[datasources.Value.Count - 1].Id, delta);
+                            // Update the datasource with the specified credentials
+                            await client.Gateways.PatchDatasourceAsync(workspaceCollectionName, workspaceId, datasources.Value[datasources.Value.Count - 1].GatewayId, datasources.Value[datasources.Value.Count - 1].Id, delta);
 
-                        return;
+                            return;
+                        }
                     }
+                    catch
+                    { }
                 }                
             }
         }
