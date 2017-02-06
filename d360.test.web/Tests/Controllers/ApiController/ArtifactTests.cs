@@ -1,37 +1,111 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using d360.web.Controllers;
-using d360.model;
-using d360.extensions;
-using d360.extensions.caching;
-using d360.extensions.queue;
+using System.Web.Http;
+using System.Net;
+using d360.web.Models;
+using System;
+using System.Collections.Generic;
 
-namespace d360.test.web
+namespace d360.test.web.Tests.Controllers.ApiController
 {
     [TestClass]
-    public class ArtifactTests
+    public class ArtifactTests : BaseApiTest
     {
 
-        [TestMethod, Description("")]
+        public ArtifactTests(): base()
+        { }
+
+        [TestMethod, TestCategory("ApiController"), TestCategory("Artifacts")]
         public void GetArtifact()
         {
-            
-            ICachingProvider cache = new DummyCachingProvider();
-            IQueueSource queue = new DummyQueueSource();
-            ISecurityContextProvider context = new DummySecurityContextProvider();
-            context.CompanyID = 4;
-            context.CompanyPrefix = "demo.dev";
-            context.IsAdministrator = true;
-            context.ResourceID = 3243;
-            var community = new CommunityContext(cache, queue, context);
-            var company = new CompanyContext(community, cache, queue, context, true);
+            var testArtifactId = 4651;
+            var result = controller.GetArtifact(testArtifactId);
 
-            var api = new D3SApiController(community, company, context);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result["ID"].ToString(), testArtifactId.ToString());
 
-            var testId = 4651;
-            var model = api.GetArtifact(testId);
-
-            Assert.IsNotNull(model);
-            Assert.AreEqual(model["ID"].ToString(), testId.ToString());
         }
+
+        [TestMethod, TestCategory("ApiController"), TestCategory("Artifacts")]
+        public void GetArtifactNegative()
+        {
+            bool threw = false;
+            ArtifactModelRequest result = null;
+
+            try
+            {
+                result = controller.GetArtifact(-1);
+            } catch (Exception ex)
+            {
+                threw = true;
+                Assert.IsInstanceOfType(ex, typeof(HttpResponseException));
+                Assert.AreEqual(((HttpResponseException)ex).Response.StatusCode, HttpStatusCode.NotFound);
+            }
+            Assert.IsNull(result);
+            Assert.IsTrue(threw);
+        }
+
+        [TestMethod, TestCategory("ApiController"), TestCategory("Artifacts")]
+        public void GetArtifactType()
+        {
+            var testArtifactTypeId = 1;
+
+            var result = controller.GetArtifactType(testArtifactTypeId);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result["ID"].ToString(), testArtifactTypeId.ToString());
+        }
+
+        [TestMethod, TestCategory("ApiController"), TestCategory("Artifacts")]
+        public void GetArtifactTypeNegative()
+        {
+            bool threw = false;
+            Dictionary<string, object> result = null;
+
+            try
+            {
+                result = controller.GetArtifactType(-1);
+            } catch (Exception ex)
+            {
+                threw = true;
+                Assert.IsInstanceOfType(ex, typeof(HttpResponseException));
+                Assert.AreEqual(((HttpResponseException)ex).Response.StatusCode, HttpStatusCode.NotFound);
+            }
+
+            Assert.IsNull(result);
+            Assert.IsTrue(threw);
+        }
+
+        [TestMethod, TestCategory("ApiController"), TestCategory("Artifacts")]
+        public void GetArtifactTypes()
+        {
+            var result = controller.GetArtifactTypes();
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod, TestCategory("ApiController"), TestCategory("Artifacts")]
+        public void GetArtifacts()
+        {
+            var testArtifactTypeId = 1;
+            var count = 5;
+            var result = controller.GetArtifacts(testArtifactTypeId, count);
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Count <= count);
+
+            result = controller.GetArtifacts(-1, count);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.Count, 0);
+
+        }
+
+        [TestMethod, TestCategory("ApiController"), TestCategory("Artifacts")]
+        public void GetArtifactTypePossibleOwners()
+        {
+            var testArtifactTypeId = 1;
+            var result = controller.GetArtifactTypePossibleOwners(testArtifactTypeId);
+
+            Assert.AreEqual(result.StatusCode, HttpStatusCode.OK);
+        }
+
     }
 }

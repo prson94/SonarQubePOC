@@ -2047,6 +2047,45 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }
 
+        [Route("lineage/query/relationshiptypes"), HttpGet]
+        public HttpResponseMessage QueryRelationshipTypes(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return Request.CreateResponse(HttpStatusCode.OK, "");
+            query = sanitizeQueryString(query);
+            var types = Company.Query<IntersectType>(@"select * from IntersectType where [Subject] != 'FusionAttributeType' and [Object] != 'FusionAttributeType'
+                and [name] like @query", new { query });
+
+            return Request.CreateResponse(HttpStatusCode.OK, types);
+        }
+
+        [Route("lineage/query/objects/{type}/{id:int}"), HttpGet]
+        public HttpResponseMessage QueryObjects(string type, int id, string query, int maxResults = 50)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return Request.CreateResponse(HttpStatusCode.OK, "");
+            query = sanitizeQueryString(query);
+
+            var objects = Company.Query<dynamic>($@"select top {maxResults} 
+	                [Object],
+	                ObjectID,
+	                TextPath,
+	                ObjectTypeName,
+	                IconBackColor,
+	                IconForeColor
+                 from cache.ObjectDetails
+                where [ObjectType] = @type and ObjectTypeId=@id and TextPath like @query", new { type, id, query });
+
+            return Request.CreateResponse(HttpStatusCode.OK, objects);
+        }
+
+        string sanitizeQueryString(string query)
+        {
+            query = query ?? "";
+            query = query.Replace("%", "[%]").Replace("_", "[_]").TrimStart(' ');
+            query = '%' + query + '%';
+            return query;
+        }
         #endregion
 
         #region Complex Lookup Fields
@@ -2211,6 +2250,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                             DisplayColumn = (ft.Type == "Boolean") ? $"lower({tbPrefix}.FormattedValue)" : $"{tbPrefix}.FormattedValue",
                             text = i.OverrideDisplayName ?? ft.FriendlyName,
                             datafield = $"{dataField}",
+                            SortColumn = ft.SortOrder > 0 ? $"{dataField}" : string.Empty,
                             OutputColumn = true
                         };
                         setColumnTypeInfo(ft, i, fc);
@@ -2256,7 +2296,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         var oc = new ComplexColumnModel
                         {
                             DisplayColumn = $"A{pos}.{i.FieldTypeName}",
-                            SortColumn = $"{dataField}",
+                            SortColumn = i.SortOrder > 0 ? $"{dataField}" : string.Empty,
                             datafield = $"{dataField}",
                             text = i.OverrideDisplayName ?? i.FieldTypeName,
                             OutputColumn = true
@@ -2654,7 +2694,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 //wrap in distinct to avoid appearance of duplicate records when unique columns are not displayed
                 sqlQuery = $"select distinct * from ({sqlQuery}) z ";
 
-                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && !string.IsNullOrEmpty(i.SortColumn)).OrderBy(i => i.SortOrder).Select(i => i.SortColumn));
+                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && i.SortOrder > 0 && !string.IsNullOrEmpty(i.SortColumn)).OrderBy(i => i.SortOrder).Select(i => i.SortColumn));
                 if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;
                 sqlQuery += orderQuery;
 
@@ -2835,6 +2875,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
             return msg;
         }
+
 
         #endregion
 
