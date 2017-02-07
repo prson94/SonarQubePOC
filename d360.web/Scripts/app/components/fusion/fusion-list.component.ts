@@ -47,7 +47,8 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
     
 
     constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, rightSidebarService: RightSidebarService ) {
-        super(rightSidebarService);
+        super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {

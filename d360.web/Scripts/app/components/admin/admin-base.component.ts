@@ -14,7 +14,8 @@ export class AdminBaseComponent extends BaseComponent {
     public area: string = "Administration";
 
     constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected titleService: Title, rightSidebarService?: RightSidebarService) {
-        super(rightSidebarService);        
+        super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     setCommonItems() {

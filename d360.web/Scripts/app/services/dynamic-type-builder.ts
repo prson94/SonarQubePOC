@@ -1,7 +1,7 @@
 ﻿import { CommonModule }       from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {Component, ComponentFactory, NgModule, Input, Injectable} from '@angular/core';
-import {RuntimeCompiler} from '@angular/compiler';
+import {JitCompiler} from '@angular/compiler';
 import * as _ from 'lodash';
 
 export interface IHaveDynamicData { 
@@ -13,7 +13,7 @@ export class DynamicTypeBuilder {
 
     // wee need Dynamic component builder
     constructor(
-        protected compiler: RuntimeCompiler
+        protected compiler: JitCompiler
     ) { }
 
     // this object is singleton - so we can use this as a cache

@@ -98,8 +98,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             protected permissionsService: PermissionsService,
             protected surveysService: SurveysService
     ) {
-        super(rightSidebarService);
-
+        super();
+        this.rightSidebarService = rightSidebarService;
         this.setCommonRightSideBar(true, true, false, true, true, true, true);
         this.rightSidebarService.showItem(<RightSidebarItem>{
             active: false,

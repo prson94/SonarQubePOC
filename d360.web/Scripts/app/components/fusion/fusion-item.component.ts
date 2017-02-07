@@ -94,8 +94,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             protected titleService: Title,
             protected permissionsService: PermissionsService
     ) {
-        super(rightSidebarService);
-        
+        super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {

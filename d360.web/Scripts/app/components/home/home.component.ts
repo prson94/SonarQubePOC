@@ -35,7 +35,9 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         webAnalyticsService: WebAnalyticsService,
         protected router: Router,
         rightSidebarService: RightSidebarService) {
-        super(rightSidebarService, webAnalyticsService);
+        super();
+        this.rightSidebarService = rightSidebarService;
+        this.webAnalyticsService = webAnalyticsService;
     }
 
     ngOnInit() {

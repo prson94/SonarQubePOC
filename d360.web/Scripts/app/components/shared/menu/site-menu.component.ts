@@ -129,10 +129,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                         
                 if (result.IsAdmin) this.buildAdminMenu();
 
-                // used to enable guard that allows access to administrative routes                
-                this.authenticationService.admin$.next(result.IsAdmin);
-                this.authenticationService.admin$.complete();
-
+                // used to enable guard that allows access to administrative routes                                
+                this.authenticationService.isAdmin = result.IsAdmin;
                 this.isAdmin = result.IsAdmin;
 
                 this.ref.markForCheck();

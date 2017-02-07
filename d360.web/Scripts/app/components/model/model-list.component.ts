@@ -67,7 +67,8 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
                 protected titleService: Title,
                 protected headerBreadcrumbService: HeaderBreadcrumbService,
                 protected modelsService: ModelsService) {
-        super(rightSidebarService);
+        super();
+        this.rightSidebarService = rightSidebarService;
         this.setCommonRightSideBar(true, true);
     }
 

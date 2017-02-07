@@ -110,7 +110,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private permissionsService: PermissionsService
     ) {
 
-        super(rightSidebarService);
+        super();
+        this.rightSidebarService = rightSidebarService;
         this.clearSidebar();
         this.setCommonRightSideBar(true, true);
 

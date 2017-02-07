@@ -94,7 +94,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             protected headerBreadcrumbService: HeaderBreadcrumbService,
             protected permissionsService: PermissionsService
     ) {
-        super(rightSidebarService);
+        super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {        

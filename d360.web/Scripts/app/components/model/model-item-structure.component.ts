@@ -109,7 +109,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService
     ) {
-        super(rightSidebarService);
+        super();
+        this.rightSidebarService = rightSidebarService;
 
         this.setCommonRightSideBar(true, true);
         this.rightSidebarService.showItem({

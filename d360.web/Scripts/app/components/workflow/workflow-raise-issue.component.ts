@@ -90,7 +90,9 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         protected headerBreadcrumbService: HeaderBreadcrumbService,        
         webAnalyticsService: WebAnalyticsService,
         rightSidebarService: RightSidebarService) {
-        super(rightSidebarService, webAnalyticsService);
+        super();
+        this.rightSidebarService = rightSidebarService;
+        this.webAnalyticsService = webAnalyticsService;
     }
 
     ngOnInit() {

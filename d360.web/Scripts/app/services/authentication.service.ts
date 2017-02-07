@@ -2,10 +2,6 @@
 import { Subject } from 'rxjs/Subject';
 
 @Injectable()
-export class AuthenticationService {
-    admin$ = <Subject<boolean>>new Subject();  
-
-    admin() {        
-        return this.admin$;
-    }
+export class AuthenticationService {    
+    isAdmin: boolean = false;    
 }

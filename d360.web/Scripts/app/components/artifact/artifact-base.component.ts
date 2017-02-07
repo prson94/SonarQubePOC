@@ -21,8 +21,9 @@ export class ArtifactBaseComponent extends BaseComponent {
     isAuditVisible: boolean = false;
 
     constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, rightSidebarService?: RightSidebarService, webAnalyticsService?: WebAnalyticsService) {
-        super(rightSidebarService, webAnalyticsService);
-        
+        super();
+        this.rightSidebarService = rightSidebarService;
+        this.webAnalyticsService = webAnalyticsService;
     }        
 
     setBrowserTitle(tileService: Title, area: string) {

@@ -32,7 +32,8 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
     
 
     constructor(protected el: ElementRef, protected dashboardService: DashboardService, webAnalyticsService: WebAnalyticsService) {
-        super(undefined, webAnalyticsService);            
+        super();            
+        this.webAnalyticsService = webAnalyticsService;
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

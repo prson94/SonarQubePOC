@@ -74,8 +74,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         private route: ActivatedRoute
     ) {
-        super(rightSidebarService);
-
+        super();
+        this.rightSidebarService = rightSidebarService;
         this.setCommonRightSideBar(true, true, false, true, true, true);
     }
 

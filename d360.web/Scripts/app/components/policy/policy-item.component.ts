@@ -82,7 +82,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         rightSidebarService: RightSidebarService,
         private permissionsService: PermissionsService
     ) {
-        super(rightSidebarService);
+        super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {

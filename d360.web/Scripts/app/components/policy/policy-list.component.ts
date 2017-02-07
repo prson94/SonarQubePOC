@@ -68,7 +68,8 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected policiesService: PoliciesService) {
-        super(rightSidebarService);
+        super();
+        this.rightSidebarService = rightSidebarService;
         this.setCommonRightSideBar(true, true);
     }
 
