@@ -269,6 +269,9 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         gears.items.push({
             label: 'Source Rules'
         });
+        gears.items.push({
+            label: 'Edit Lineage'
+        });
 
         let eye: MenuItem = {
             icon: 'fa-eye menu-icon',
@@ -440,6 +443,9 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         } else if (e.label == 'Source Rules') {
             this.headerText = 'Manage Source Rules';
             this.diagramMode = DiagramMode.SourceRuleEditor;
+        } else if (e.label == 'Edit Lineage') {
+            this.headerText = 'Edit Lineage';
+            this.diagramMode = DiagramMode.LineageEditor;
         }
     }
 
@@ -969,5 +975,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
 enum DiagramMode {
     Diagram,
-    SourceRuleEditor
+    SourceRuleEditor,
+    LineageEditor
 }

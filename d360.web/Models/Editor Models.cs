@@ -966,4 +966,56 @@ namespace d360.web.Models
 
         public List<SelectListItem> ResponsibilityTypes { get; set; }
     }    
+
+    public class LineageEditorModel
+    {
+        public List<LineageEditorRow> Existing { get; set; }
+        public List<LineageEditorRow> Adds { get; set; }
+        public List<LineageEditorRow> Deletes { get; set; }
+    }
+
+    public class LineageEditorRow
+    {
+
+        public int ID { get; set; }
+
+        public string sourcekey { get; set; }
+        public string targetkey { get; set; }
+
+        public SystemObjects FocalObject { get; set; }
+        public int FocalID { get; set; }
+
+        public int SourceIntersectID { get; set; }
+        public string SourceIntersectTypeName { get; set; }
+        public int SourceIntersectTypeID { get; set; }
+        public string SourceSubjectName { get; set; }
+        public int SourceSubjectID { get; set; }
+        public SystemObjects SourceSubject { get; set; }
+        public string SourceObjectName { get; set; }
+        public int SourceObjectID { get; set; }
+        public SystemObjects SourceObject { get; set; }
+
+        public int TargetIntersectID { get; set; }
+        public string TargetIntersectTypeName { get; set; }
+        public int TargetIntersectTypeID { get; set; }
+        public string TargetSubjectName { get; set; }
+        public int TargetSubjectID { get; set; }
+        public SystemObjects TargetSubject { get; set; }
+        public string TargetObjectName { get; set; }
+        public int TargetObjectID { get; set; }
+        public SystemObjects TargetObject { get; set; }
+
+        public bool HasError { get; set; }
+        public string ErrorMessage { get; set; }
+
+        public List<LineageEditorTechnicalRow> TechnicalAdds { get; set; }
+
+        public List<LineageEditorTechnicalRow> TechnicalDeletes { get; set; }
+
+    }
+
+    public class LineageEditorTechnicalRow
+    {
+
+    }
 }

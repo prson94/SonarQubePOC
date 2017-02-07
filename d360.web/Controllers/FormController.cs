@@ -8276,6 +8276,124 @@ for json path");
             };
         }
 
+        [HttpPost, Route("UpdateLineageSummary")]
+        public JsonNetResult LineageUpdateSummary(LineageEditorModel model)
+        {
+            return null;
+        }
+
+        [HttpPost, Route("UpdateLineage")]
+        public JsonNetResult UpdateLineage(LineageEditorModel model)
+        {
+            model.Deletes?.ForEach(d =>
+            {
+                var mapItem = Company.GetById<MapItem>(d.ID);
+                
+                var leftMaps = Company.MapItems.Where(m => m.TargetIntersectID == d.SourceIntersectID);
+                var rightMaps = Company.MapItems.Where(m => m.SourceIntersectID == d.TargetIntersectID);
+                
+                try
+                {
+                    leftMaps.ToList().ForEach(l =>
+                    {
+                        //remove map items from map
+                        l.Maps.ToList().ForEach(m =>
+                        {
+                            m.MapItems.Remove(l);
+                        });
+
+                        //remove map sequences and contexts
+                        Company.MapSequences.RemoveRange(l.MapSequences);
+                        //remove the map item
+                        Company.MapItems.Remove(l);
+
+                    });
+
+                    rightMaps.ToList().ForEach(r =>
+                    {
+                        r.Maps.ToList().ForEach(m =>
+                        {
+                            m.MapItems.Remove(r);
+                        });
+                        Company.MapSequences.RemoveRange(r.MapSequences);
+                        Company.MapItems.Remove(r);
+
+                    });
+
+                    mapItem.Maps.ToList().ForEach(m =>
+                    {
+                        m.MapItems.Remove(mapItem);
+                    });
+                    Company.MapSequences.RemoveRange(mapItem.MapSequences);
+                    Company.MapItems.Remove(mapItem);
+
+                    Company.SaveChanges();
+
+                } catch (Exception ex)
+                {
+                    //reset state on fail to avoid future errors in SaveChanges()
+                    if (mapItem != null)
+                        Company.Entry(mapItem).State = System.Data.Entity.EntityState.Unchanged;
+
+                    d.HasError = true;
+                    d.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+            model.Adds?.ForEach(a =>
+            {
+                try
+                {
+                    var sourceIntersect = Company.IntersectDetails.Where(i =>
+                    i.IntersectTypeID == a.SourceIntersectTypeID &&
+                    i.SubjectID == a.SourceSubjectID &&
+                    i.ObjectID == a.SourceObjectID).SingleOrDefault();
+
+                    if (sourceIntersect == null)  //add source intersect if it doesn't exist
+                        sourceIntersect = Company.AddIntersect(a.SourceIntersectTypeID, a.SourceSubject, a.SourceSubjectID, a.SourceObject, a.SourceObjectID);
+
+
+                    var targetIntersect = Company.IntersectDetails.Where(i =>
+                    i.IntersectTypeID == a.TargetIntersectTypeID &&
+                    i.SubjectID == a.TargetSubjectID &&
+                    i.ObjectID == a.TargetObjectID).SingleOrDefault();
+
+                    if (targetIntersect == null)//add target intersect
+                        targetIntersect = Company.AddIntersect(a.TargetIntersectTypeID, a.TargetSubject, a.TargetSubjectID, a.TargetObject, a.TargetObjectID);
+
+                    //add map item
+                    var mapItem = Company.MapItems.Where(i => i.SourceIntersectID == sourceIntersect.ID && i.TargetIntersectID == targetIntersect.ID).SingleOrDefault();
+
+                    if (mapItem == null)
+                        mapItem = Company.MapItems.Add(new MapItem()
+                        {
+                            SourceIntersectID = sourceIntersect.ID,
+                            TargetIntersectID = targetIntersect.ID,
+                            CreatedBy = Company.CurrentResourceID,
+                            UpdatedBy = Company.CurrentResourceID
+                        });
+                    
+                    Company.SaveChanges();
+                    a.SourceIntersectID = sourceIntersect.ID;
+                    a.TargetIntersectID = targetIntersect.ID;
+                    a.ID = mapItem.ID;
+                }
+                catch (Exception ex)
+                {
+                    a.HasError = true;
+                    a.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+
+
+            return new JsonNetResult
+            {
+                Data = model,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         #endregion
 
         #region Load

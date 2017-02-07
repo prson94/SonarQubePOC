@@ -116,6 +116,7 @@
     <Compile Include="entities\IssueType.cs" />
     <Compile Include="entities\Reference\ReferenceItemType.cs" />
     <Compile Include="entities\Reference\ReferenceItem.cs" />
+    <Compile Include="entities\Relation\MapItemMap.cs" />
     <Compile Include="entities\Social\Favorite.cs" />
     <Compile Include="entities\FieldTypeLookup.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDefinition.cs" />

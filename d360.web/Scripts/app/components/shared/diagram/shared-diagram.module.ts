@@ -9,11 +9,14 @@ import {
     DataTableModule,
     EditorModule,
     SharedModule,
+    AutoCompleteModule,
+    ButtonModule,
 
 } from 'primeng/primeng';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage.component';
+import { LineageEditorComponent } from './lineage-editor.component';
 import { LineageFusionComponent } from './lineage-fusion.component';
 import { LineageMappingRulesComponent } from './lineage-mapping-rules.component';
 import { LineageObjectDetailComponent } from './lineage-object-detail.component';
@@ -48,10 +51,14 @@ import { SharedFormMessageModule } from '../form-message.part'
         DataTableModule,  
         EditorModule,      
         SharedModule,
+        AutoCompleteModule,
+        ButtonModule,
+
     ],
     declarations: [
         ImpactComponent,        
         LineageComponent,
+        LineageEditorComponent,
         LineageFusionComponent,
         LineageMappingRulesComponent,
         LineageObjectDetailComponent,

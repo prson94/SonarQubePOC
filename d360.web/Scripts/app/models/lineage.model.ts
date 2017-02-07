@@ -149,3 +149,125 @@ export class RelationItem {
     Name: string;
     Url: string;
 }
+
+export class AutoCompleteItem {
+    valueField: string;
+    labelField: string;
+    value: number;
+    label: string;
+
+    data: any;
+}
+
+export class LineageEditorRow {
+    sourcekey: string;
+    targetkey: string;
+    ID: number;
+
+    FocalObject: string;
+    FocalID: number;
+
+    SourceIntersectID: number;
+    SourceIntersectTypeID: number = 0;
+    SourceIntersectTypeName: string = '\u200B';
+    SourceSubjectTypeName: string = '';
+    SourceSubjectTypeID: number = 0;
+    SourceSubjectType: string = '';
+    SourceSubjectName: string = '';
+    SourceSubject: string = '';
+    SourceSubjectID: number = 0;
+    SourceSubjectIconBackColor: string;
+    SourceSubjectIconForeColor: string;
+    SourceObjectTypeName: string = '';
+    SourceObjectTypeID: number = 0;
+    SourceObjectType: string = '';
+    SourceObjectName: string = '';
+    SourceObject: string = '';
+    SourceObjectID: number = 0;
+    SourceObjectIconBackColor: string;
+    SourceObjectIconForeColor: string;
+    TargetIntersectID: number;
+    TargetIntersectTypeID: number = 0;
+    TargetIntersectTypeName: string = '';
+    TargetSubjectTypeName: string = '';
+    TargetSubjectTypeID: number = 0;
+    TargetSubjectType: string = '';
+    TargetSubjectName: string = '';
+    TargetSubject: string = '';
+    TargetSubjectID: number = 0;
+    TargetSubjectIconBackColor: string;
+    TargetSubjectIconForeColor: string;
+    TargetObjectTypeName: string = '';
+    TargetObjectTypeID: number = 0;
+    TargetObjectType: string = '';
+    TargetObjectName: string = '';
+    TargetObject: string = '';
+    TargetObjectID: number = 0;
+    TargetObjectIconBackColor: string;
+    TargetObjectIconForeColor: string;
+    HasSourceRules: boolean;
+    HasError: boolean = false;
+    ErrorMessage: string = '';
+
+    TechnicalAdds: LineageEditorTechnicalRow[] = [];
+    TechnicalDeletes: LineageEditorTechnicalRow[] = [];
+
+    //workaround p-autoComplete but where value = '' shows as [object Object]
+    //setting to string by default fixes this
+    //https://github.com/primefaces/primeng/issues/910
+
+    selectedSourceRelationshipType: AutoCompleteItem | string;
+    selectedTargetRelationshipType: AutoCompleteItem | string;
+    selectedSourceSubject: AutoCompleteItem | string;
+    selectedSourceObject: AutoCompleteItem | string;
+    selectedTargetSubject: AutoCompleteItem | string;
+    selectedTargetObject: AutoCompleteItem | string;
+
+    isNew: boolean = false;
+    isDeleting: boolean = false;
+    showTechnical = false;
+    isConnected = true;
+
+}
+
+export class LineageEditorTechnicalRow {
+
+}
+
+export class LineageEditorModel {
+    Adds: LineageEditorRow[] = [];
+    Deletes: LineageEditorRow[] = [];
+    Existing: LineageEditorRow[] = [];
+}
+
+export class IntersectDetail {
+    ID: number;
+    IntersectTypeID: number;
+    Classification: number; 
+    Description: string;
+    Subject: string;
+    SubjectID: number;
+    SubjectName: string;
+    SubjectUrl: string;
+    SubjectType: string;
+    SubjectTypeID: number;
+    SubjectTypeName: string;
+    SubjectIconBackColor: string;
+    SubjectIconForeColor: string;
+    SubjectIconText: string;
+    Object: string;
+    ObjectID: number;
+    ObjectName: string;
+    ObjectUrl: string;
+    ObjectType: string;
+    ObjectTypeID: number;
+    ObjectTypeName: string;
+    ObjectIconBackColor: string;
+    ObjectIconForeColor: string;
+    ObjectIconText: string;
+    PredicateID: number;
+    PredicateName: string;
+    PredicateType: number;
+}
+
+

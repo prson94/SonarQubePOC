@@ -1,0 +1,220 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div *ngIf="!showSummary">
+        <header>
+            Manage Lineage
+            <d3s-tile-actions hasClose="true" hasAdd="true" hasSave="true" (closeClick)="onClose.emit()" (addClick)="add()" (saveClick)="valid ? summarize() : null"></d3s-tile-actions>
+        </header>
+        <div class="row">
+            <div class="col s12">
+                <table class="responsive-table lineage-editor-table">
+                    <thead style="background-color:#999;color:#fff;font-weight: bold;">
+                        <tr>
+                            <th style="width:10px;"></th>
+                            <th>
+                                Source Relationship Type
+                            </th>
+                            <th>
+                                Source Subject
+                            </th>
+                            <th>
+                                Source Object
+                            </th>
+                            <th>
+                                Target Relationship Type
+                            </th>
+                            <th>
+                                Target Subject
+                            </th>
+                            <th>
+                                Target Object
+                            </th>
+                            <th>
+
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody *ngFor="let i of lineage; let x=index;" [style.background-color]="x%2==0 ? '#fff' : '#DEF1FD'">
+                        <tr *ngIf="i.isNew">
+                            <td style="width:10px; font-weight: bold">*</td>
+                            <td>
+                                <p-autoComplete [(ngModel)]="i.selectedSourceRelationshipType"
+                                                [suggestions]="queryResults"
+                                                (completeMethod)="query('selectedSourceRelationshipType', i, $event)"
+                                                (onSelect)="select('selectedSourceRelationshipType', i, $event)"
+                                                field="label"
+                                                (blur)="blur('selectedSourceRelationshipType', i)"
+                                                placeholder="Search..."
+                                                [tabindex]="(x * 6) + 1"
+                                                [style]="{ 'width':'95%' }"
+                                                [inputStyle]="{ 'width':'95%' }">
+                                </p-autoComplete>
+                                <div *ngIf="i.SourceIntersectTypeID < 1" class="errorMessage">* Required</div>
+                            </td>
+                            <td>
+                                <p-autoComplete [(ngModel)]="i.selectedSourceSubject"
+                                                [suggestions]="queryResults"
+                                                (completeMethod)="query('selectedSourceSubject', i, $event)"
+                                                (onSelect)="select('selectedSourceSubject', i, $event)"
+                                                field="label"
+                                                (blur)="blur('selectedSourceSubject', i)"
+                                                placeholder="Search..."
+                                                [tabindex]="(x * 6) + 2"
+                                                [style]="{ 'width':'95%' }"
+                                                [inputStyle]="{ 'width':'95%' }"
+                                                [disabled]="i.SourceIntersectTypeID < 1">
+                                </p-autoComplete>
+                                <div *ngIf="i.SourceSubjectID < 1" class="errorMessage">* Required</div>
+                            </td>
+                            <td>
+                                <p-autoComplete [(ngModel)]="i.selectedSourceObject"
+                                                [suggestions]="queryResults"
+                                                (completeMethod)="query('selectedSourceObject', i, $event)"
+                                                (onSelect)="select('selectedSourceObject', i, $event)"
+                                                field="label"
+                                                (blur)="blur('selectedSourceObject', i)"
+                                                placeholder="Search..."
+                                                [tabindex]="(x * 6) + 3"
+                                                [style]="{ 'width':'95%' }"
+                                                [inputStyle]="{ 'width':'95%' }"
+                                                [disabled]="i.SourceIntersectTypeID < 1">
+                                </p-autoComplete>
+                                <div *ngIf="i.SourceObjectID < 1" class="errorMessage">* Required</div>
+                            </td>
+                            <td>
+                                <p-autoComplete [(ngModel)]="i.selectedTargetRelationshipType"
+                                                [suggestions]="queryResults"
+                                                (completeMethod)="query('selectedTargetRelationshipType', i, $event)"
+                                                (onSelect)="select('selectedTargetRelationshipType', i, $event)"
+                                                field="label"
+                                                (blur)="blur('selectedTargetRelationshipType', i)"
+                                                placeholder="Search..."
+                                                [tabindex]="(x * 6) + 4"
+                                                [style]="{ 'width':'95%' }"
+                                                [inputStyle]="{ 'width':'95%' }">
+                                </p-autoComplete>
+                                <div *ngIf="i.TargetIntersectTypeID < 1" class="errorMessage">* Required</div>
+                            </td>
+                            <td>
+                                <p-autoComplete [(ngModel)]="i.selectedTargetSubject"
+                                                [suggestions]="queryResults"
+                                                (completeMethod)="query('selectedTargetSubject', i, $event)"
+                                                (onSelect)="select('selectedTargetSubject', i, $event)"
+                                                field="label"
+                                                (blur)="blur('selectedTargetSubject', i)"
+                                                placeholder="Search..."
+                                                [tabindex]="(x * 6) + 5"
+                                                [style]="{ 'width':'95%' }"
+                                                [inputStyle]="{ 'width':'95%' }"
+                                                [disabled]="i.TargetIntersectTypeID < 1">
+                                </p-autoComplete>
+                                <div *ngIf="i.TargetSubjectID < 1" class="errorMessage">* Required</div>
+                            </td>
+                            <td>
+                                <p-autoComplete [(ngModel)]="i.selectedTargetObject"
+                                                [suggestions]="queryResults"
+                                                (completeMethod)="query('selectedTargetObject', i, $event)"
+                                                (onSelect)="select('selectedTargetObject', i, $event)"
+                                                field="label"
+                                                (blur)="blur('selectedTargetObject', i)"
+                                                placeholder="Search..."
+                                                [tabindex]="(x * 6) + 6"
+                                                [style]="{ 'width':'95%' }"
+                                                [inputStyle]="{ 'width':'95%' }"
+                                                [disabled]="i.TargetIntersectTypeID < 1">
+                                </p-autoComplete>
+                                <div *ngIf="i.TargetObjectID < 1" class="errorMessage">* Required</div>
+                            </td>
+                            <td class="RowTools"><a (click)="delete(i)" style="cursor: pointer"><i class="fa fa-trash"></i></a></td>
+                        </tr>
+                        <tr *ngIf="i.isNew && !i.isConnected">
+                            <td style="width: 10px"></td>
+                            <td colspan="7" class="errorMessage">This record is not connected to anything on the lineage</td>
+                        </tr>
+
+                        <tr *ngIf="!i.isNew" [style.color]="i.isDeleting ? '#aaa' : '#000'">
+                            <td style="width:10px;"></td>
+                            <td>
+                                <div style="width:95%">
+                                    {{i.SourceIntersectTypeName}}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="width:95%">
+                                    {{i.SourceSubjectName}}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="width:95%">
+                                    {{i.SourceObjectName}}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="width:95%">
+                                    {{i.TargetIntersectTypeName}}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="width:95%">
+                                    {{i.TargetSubjectName}}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="width:95%">
+                                    {{i.TargetObjectName}}
+                                </div>
+                            </td>
+                            <td class="RowTools">
+                                <a *ngIf="!i.isDeleting" (click)="delete(i)" style="cursor: pointer"><i class="fa fa-trash"></i></a>
+                                <a *ngIf="i.isDeleting" (click)="delete(i)" style="cursor: pointer"><i class="fa fa-trash-o"></i></a>
+                            </td>
+                        </tr>
+
+                        <tr *ngIf="i.showTechnical">
+                            <td style="width:10px;"></td>
+                            <td colspan="7">
+                                <table>
+                                    <thead>
+
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="width:10px"></td>
+                            <td *ngIf="!i.showTechnical" colspan="7" style="padding:0 3px 3px 0; text-align: right;"><a (click)="i.showTechnical = true" style="cursor:pointer;"><i class="fa fa-plus-square-o"></i> show technical mapping</a></td>
+                            <td *ngIf="i.showTechnical" colspan="7" style="padding:0 3px 3px 0; text-align: right;"><a (click)="i.showTechnical = false" style="cursor:pointer;"><i class="fa fa-minus-square-o"></i> hide technical mapping</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="showSummary">
+        <header>
+            Confirm Lineage Changes
+        </header>
+        <div class="row" *ngIf="showSummary">
+            <div class="col s12">
+                <div *ngFor="let i of model.Adds">
+                    <div>+ Add a mapping between {{i.SourceSubjectName}} and {{i.TargetSubjectName}}</div>
+                    <div *ngIf="i.HasError" style="color:red">&nbsp;&nbsp;&nbsp;Add failed: {{i.ErrorMessage}}</div>
+                </div>
+                <div *ngFor="let i of model.Deletes">
+                    <div>- Delete the mapping between {{i.SourceSubjectName}} and {{i.TargetSubjectName}}</div>
+                    <div *ngIf="i.HasError" style="color:red">&nbsp;&nbsp;&nbsp;Delete failed: {{i.ErrorMessage}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <button *ngIf="!saveComplete" pButton type="button" label="Save" (click)="save()"></button>
+                <button pButton type="button" label="Back to editor" (click)="showSummary = false"></button>
+            </div>
+        </div>
+    </div>
+</div>

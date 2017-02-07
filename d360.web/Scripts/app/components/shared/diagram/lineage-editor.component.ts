@@ -1,0 +1,474 @@
+﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
+import { DiagramService } from '../../../services/diagram.service';
+import { MessagesService } from '../../../services/messages.service';
+import { PermissionsService } from '../../../services/permissions.service';
+import { BaseComponent } from '../base.component';
+import { Permission } from '../../../models/permission.model';
+import {
+    LineageEditorRow,
+    AutoCompleteItem,
+    LineageEditorModel
+} from '../../../models/lineage.model';
+
+import * as _ from 'lodash';
+
+@Component({
+    selector: 'd3s-lineage-editor',
+    templateUrl: './lineage-editor.component.html',
+    styles: [
+        `
+.lineage-editor-table>thead>tr>th {
+    border-radius: 0 !important;
+    padding: 5px;
+}
+.lineage-editor-table>tbody>tr>td {
+    border-radius: 0 !important;
+    padding: 3px;
+}
+
+`
+        ],
+    providers: [DiagramService]
+})
+
+export class LineageEditorComponent extends BaseComponent implements OnInit {
+    @Input() object: string;
+    @Input() objectId: number;
+    @Output() onClose = new EventEmitter();
+    @Output() onSaveComplete = new EventEmitter();
+
+    permissions: Permission[] = [];
+    lineage: LineageEditorRow[] = [];
+    model: LineageEditorModel;
+    queryResults: AutoCompleteItem[] = [];
+    valid = false;
+
+    intersectTypes: AutoCompleteItem[] = [];
+
+    isLoading = false;
+    showSummary = false;
+    saveComplete = false;
+    
+
+    constructor(private diagramService: DiagramService, protected messagesService: MessagesService, protected permissionsService: PermissionsService) {
+        super();
+    }
+
+    ngOnInit() {
+        this.load();
+        this.permissionsService.getPermissions(this.objectId, this.object)
+            .then(data => {
+                this.permissions = data;
+            });
+    }
+
+    load() {
+        this.isLoading = true;
+        this.diagramService.getLineageDiagram(this.object, this.objectId, 0)
+            .then(r => {
+                this.lineage = r.items;
+                this.lineage.forEach(i => {
+                    this.initializeLineageRow(i);
+                });
+                this.isLoading = false;
+                //console.log(this.lineage);
+            });
+    }
+
+
+    select(field: string, i: LineageEditorRow, e: any) {
+        this.setObjectValue(i, i[field]);
+
+        let data = i[field].data;
+
+        switch (field) {
+            case 'selectedSourceRelationshipType':
+                i.SourceSubjectType = data.Subject;
+                i.SourceSubjectTypeID = data.SubjectID;
+                i.SourceObjectType = data.Object;
+                i.SourceObjectTypeID = data.ObjectID;
+                break;
+            case 'selectedSourceSubject':
+                i.SourceSubject = data.Object;
+                break;
+            case 'selectedSourceObject':
+                i.SourceObject = data.Object;
+                break;
+            case 'selectedTargetRelationshipType':
+                i.TargetSubjectType = data.Subject;
+                i.TargetSubjectTypeID = data.SubjectID;
+                i.TargetObjectType = data.Object;
+                i.TargetObjectTypeID = data.ObjectID;
+                break;
+            case 'selectedTargetSubject':
+                i.TargetSubject = data.Object;
+                break;
+            case 'selectedTargetObject':
+                i.TargetObject = data.Object;
+                break;
+        }
+
+        //update source and target keys
+        if (i.SourceIntersectTypeID != null && i.SourceSubjectID != null && i.SourceObjectID != null)
+            i.sourcekey = `${i.SourceIntersectTypeID}.${i.SourceSubjectID}.${i.SourceObjectID}`;
+        if (i.TargetIntersectTypeID != null && i.TargetSubjectID != null && i.TargetObjectID != null)
+            i.targetkey = `${i.TargetIntersectTypeID}.${i.TargetSubjectID}.${i.TargetObjectID}`;
+
+        //update connection checks
+        this.updateConnections()
+
+        //console.log('select: ', i);
+    }
+
+    query(field: string, i: LineageEditorRow, e: any) {
+        switch (field) {
+            case 'selectedSourceRelationshipType':
+                this.diagramService.queryRelationshipTypes(e.query)
+                    .then(r => {
+                        this.queryResults = [];
+                        r.forEach(i => {
+                            let a = new AutoCompleteItem();
+                            a.label = i.Name;
+                            a.value = i.ID;
+                            a.labelField = 'SourceIntersectTypeName';
+                            a.valueField = 'SourceIntersectTypeID';
+                            a.data = {
+                                Subject: i.Subject,
+                                SubjectID: i.SubjectID,
+                                Object: i.Object,
+                                ObjectID: i.ObjectID
+                            }
+                            this.queryResults.push(a);
+                        });
+                    });
+                break;
+            case 'selectedSourceSubject':
+                this.diagramService.queryObjects(i.SourceSubjectType, i.SourceSubjectTypeID, e.query)
+                    .then(r => {
+                        this.queryResults = [];
+                        r.forEach(i => {
+                            let a = new AutoCompleteItem();
+                            a.label = i.TextPath;
+                            a.value = i.ObjectID;
+                            a.labelField = 'SourceSubjectName';
+                            a.valueField = 'SourceSubjectID';
+                            a.data = {
+                                Object: i.Object
+                            }
+                            this.queryResults.push(a);
+                        });
+                    });
+                break;
+            case 'selectedSourceObject':
+                this.diagramService.queryObjects(i.SourceObjectType, i.SourceObjectTypeID, e.query)
+                    .then(r => {
+                        this.queryResults = [];
+                        r.forEach(i => {
+                            let a = new AutoCompleteItem();
+                            a.label = i.TextPath;
+                            a.value = i.ObjectID;
+                            a.labelField = 'SourceObjectName';
+                            a.valueField = 'SourceObjectID';
+                            a.data = {
+                                Object: i.Object
+                            }
+                            this.queryResults.push(a);
+                        });
+                    });
+                break;
+
+
+            case 'selectedTargetRelationshipType':
+                this.diagramService.queryRelationshipTypes(e.query)
+                    .then(r => {
+                        this.queryResults = [];
+                        r.forEach(i => {
+                            let a = new AutoCompleteItem();
+                            a.label = i.Name;
+                            a.value = i.ID;
+                            a.labelField = 'TargetIntersectTypeName';
+                            a.valueField = 'TargetIntersectTypeID';
+                            a.data = {
+                                Subject: i.Subject,
+                                SubjectID: i.SubjectID,
+                                Object: i.Object,
+                                ObjectID: i.ObjectID
+                            }
+                            this.queryResults.push(a);
+                        });
+                    });
+                break;
+            case 'selectedTargetSubject':
+                this.diagramService.queryObjects(i.TargetSubjectType, i.TargetSubjectTypeID, e.query)
+                    .then(r => {
+                        this.queryResults = [];
+                        r.forEach(i => {
+                            let a = new AutoCompleteItem();
+                            a.label = i.TextPath;
+                            a.value = i.ObjectID;
+                            a.labelField = 'TargetSubjectName';
+                            a.valueField = 'TargetSubjectID';
+                            a.data = {
+                                Object: i.Object
+                            }
+                            this.queryResults.push(a);
+                        });
+                    });
+                break;
+            case 'selectedTargetObject':
+                this.diagramService.queryObjects(i.TargetObjectType, i.TargetObjectTypeID, e.query)
+                    .then(r => {
+                        this.queryResults = [];
+                        if (r == null)
+                            return;
+                        r.forEach(i => {
+                            let a = new AutoCompleteItem();
+                            a.label = i.TextPath;
+                            a.value = i.ObjectID;
+                            a.labelField = 'TargetObjectName';
+                            a.valueField = 'TargetObjectID';
+                            a.data = {
+                                Object: i.Object
+                            }
+                            this.queryResults.push(a);
+                        });
+                    });
+                break;
+            default:
+                console.warn(`Invalid field '${field}' passed to query()`);
+                break;
+        }
+    }
+
+    blur(field: string, i: LineageEditorRow) {
+        this.setAutoCompleteValue(i, i[field]);
+        console.log(i);
+    }
+
+    add() {
+        let l = new LineageEditorRow();
+        this.initializeLineageRow(l);
+        l.ID = this.lineage.length * -1;
+        l.isNew = true;
+        l.selectedSourceObject = "";
+        l.selectedSourceSubject = "";
+        l.selectedTargetObject = "";
+        l.selectedTargetRelationshipType = "";
+        l.selectedTargetSubject = "";
+        l.selectedSourceRelationshipType = "";
+        this.lineage.push(l);
+
+        console.log(l);
+    }
+
+    delete(i: LineageEditorRow) {
+        if (i.isNew) {
+            let x = this.lineage.indexOf(i);
+            if (x >= 0) {
+                this.lineage.splice(x, 1);
+            }
+        } else {
+            //toggle mark for deletion
+            //if (i.isDeleting)
+            //    this.recursiveUnDelete(i);
+            //else
+            //    this.recursiveDelete(i);
+            i.isDeleting = !i.isDeleting;
+        }
+
+        this.updateConnections();
+
+    }
+
+  
+
+    updateConnections() {
+        this.lineage.filter(l => l.isNew).forEach(l => l.isConnected = this.checkConnected(l));
+        if (this.lineage.findIndex(l => l.isNew && !l.isConnected) >= 0)
+            this.valid = false;
+        else
+            this.valid = true;
+    }
+
+    initializeLineageRow(i: LineageEditorRow) {
+        i.isNew = false;
+        i.isConnected = true;
+        i.isDeleting = false;
+        i.showTechnical = false;
+
+        i.selectedSourceRelationshipType = new AutoCompleteItem();
+        (<AutoCompleteItem>i.selectedSourceRelationshipType).labelField = 'SourceIntersectTypeName';
+        (<AutoCompleteItem>i.selectedSourceRelationshipType).valueField = 'SourceIntersectTypeID';
+
+        i.selectedTargetRelationshipType = new AutoCompleteItem();
+         (<AutoCompleteItem>i.selectedTargetRelationshipType).labelField = 'TargetIntersectTypeName';
+         (<AutoCompleteItem>i.selectedTargetRelationshipType).valueField = 'TargetIntersectTypeID';
+
+        i.selectedSourceSubject = new AutoCompleteItem();
+         (<AutoCompleteItem>i.selectedSourceSubject).labelField = 'SourceSubjectName';
+         (<AutoCompleteItem>i.selectedSourceSubject).valueField = 'SourceSubjectID';
+
+        i.selectedSourceObject = new AutoCompleteItem();
+         (<AutoCompleteItem>i.selectedSourceObject).labelField = 'SourceObjectName';
+         (<AutoCompleteItem>i.selectedSourceObject).valueField = 'SourceObjectID';
+
+        i.selectedTargetSubject = new AutoCompleteItem();
+         (<AutoCompleteItem>i.selectedTargetSubject).labelField = 'TargetSubjectName';
+         (<AutoCompleteItem>i.selectedTargetSubject).valueField = 'TargetSubjectID';
+
+        i.selectedTargetObject = new AutoCompleteItem();
+         (<AutoCompleteItem>i.selectedTargetObject).labelField = 'TargetObjectName';
+         (<AutoCompleteItem>i.selectedTargetObject).valueField = 'TargetObjectID';
+
+        this.setAutoCompleteValue(i,  (<AutoCompleteItem>i.selectedSourceRelationshipType));
+        this.setAutoCompleteValue(i,  (<AutoCompleteItem>i.selectedTargetRelationshipType));
+        this.setAutoCompleteValue(i,  (<AutoCompleteItem>i.selectedSourceSubject));
+        this.setAutoCompleteValue(i,  (<AutoCompleteItem>i.selectedSourceObject));
+        this.setAutoCompleteValue(i,  (<AutoCompleteItem>i.selectedTargetSubject));
+        this.setAutoCompleteValue(i, (<AutoCompleteItem>i.selectedTargetObject));
+
+    }
+
+    setAutoCompleteValue(obj: any, i: AutoCompleteItem) {
+        i.label = obj[i.labelField];
+        i.value = obj[i.valueField];
+    }
+
+    setObjectValue(obj: any, i: AutoCompleteItem) {
+        obj[i.labelField] = i.label;
+        obj[i.valueField] = i.value;
+    }
+
+
+    summarize() {
+        this.model = new LineageEditorModel();
+
+        this.model.Adds = this.lineage.filter(l => l.isNew);
+        this.model.Deletes = this.lineage.filter(l => l.isDeleting);
+        this.model.Existing = this.lineage.filter(l => !l.isNew);
+        this.showSummary = true;
+        this.saveComplete = false;
+    }
+
+
+    save() {
+        if (this.isLoading) return;
+
+        this.isLoading = true;
+
+        this.diagramService.updateLineage(this.model)
+            .then(r => {
+                this.model = r;
+
+                let addErrors = (this.model.Adds == null) ? null : this.model.Adds.filter(m => m.HasError);
+                let deleteErrors = (this.model.Deletes == null) ? null : this.model.Deletes.filter(m => m.HasError);
+
+                this.onSaveComplete.emit();
+
+                if ((addErrors && addErrors.length > 0) || (deleteErrors && deleteErrors.length > 0)) {
+                    this.saveComplete = true;
+                    this.isLoading = false;
+
+                    //remove successful items
+                    if (this.model.Adds)
+                        this.model.Adds.filter(a => !a.HasError).forEach(a => {
+                            let added = this.lineage.findIndex(l => l.sourcekey == a.sourcekey && l.targetkey == a.targetkey);
+                            if (added >= 0) {
+                                this.lineage[added] = a; this.lineage[added].isNew = false;
+                            }
+                        });
+                    if (this.model.Deletes)
+                        this.model.Deletes.filter(d => !d.HasError).forEach(d => {
+                            let deleted = this.lineage.findIndex(l => l.ID == d.ID);
+                            if (deleted >= 0) this.lineage.splice(deleted, 1);
+                        });
+                } else {
+                    this.messagesService.showInfoMessage("Save Successful", "Mappings were added/removed from the lineage successfully.");
+                    this.load();
+                    this.showSummary = false;
+                }
+                
+            });
+    }
+
+    checkConnected(i: LineageEditorRow, rows: LineageEditorRow[] = null) {
+        if (rows == null)
+            rows = this.lineage;
+
+        //incomplete record
+        if (i.SourceIntersectTypeID < 1 ||
+            i.TargetIntersectTypeID < 1 ||
+            i.SourceSubjectID < 1 ||
+            i.SourceObjectID < 1 ||
+            i.TargetSubjectID < 1 ||
+            i.TargetObjectID < 1) {
+            return false;
+        }
+
+        //has intersect related to focal
+        if ((i.SourceSubjectID == this.objectId && i.SourceSubject == this.object) ||
+            (i.SourceObjectID == this.objectId && i.SourceObject == this.object) ||
+            (i.TargetSubjectID == this.objectId && i.TargetSubject == this.object) ||
+            (i.TargetObjectID == this.objectId && i.TargetObject == this.object) && !i.isDeleting) {
+            return true;
+        }
+       
+        //get a copy of rows
+        let r = _.cloneDeep(rows);
+        //remove this row from the list
+        let x = r.findIndex(s => s.ID == i.ID);
+        if (x >= 0) r.splice(x, 1);
+
+        for (let j = 0; j < r.length; j++) {
+            if (r[j].isDeleting) //can't connect to a record marked for deletion
+                continue;
+            if (i.sourcekey == r[j].targetkey || i.targetkey == r[j].sourcekey) {
+                let a = this.checkConnected(r[j], r);
+                return a;
+            }
+        }
+        return false;
+
+    }
+
+
+    //#region unused
+
+      //recursiveDelete(i: LineageEditorRow, rows: LineageEditorRow[] = null) {
+    //    if (rows == null)
+    //        rows = this.lineage;
+    //    let r = _.cloneDeep(rows);
+    //    let x = r.findIndex(l => l.ID == i.ID);
+
+    //    i.isDeleting = true;
+    //    if (x >= 0) {
+    //        this.lineage[x].isDeleting = true;
+    //        r.splice(x, 1);
+    //    }
+
+    //    r.filter(l => !l.isNew && l.targetkey == i.sourcekey).forEach(l => {
+    //        this.recursiveDelete(l, r);
+    //    });
+    //}
+
+    //recursiveUnDelete(i: LineageEditorRow, rows: LineageEditorRow[] = null) {
+    //    if (rows == null)
+    //        rows = this.lineage;
+    //    let r = _.cloneDeep(rows);
+    //    let x = r.findIndex(l => l.ID == i.ID);
+
+    //    i.isDeleting = false;
+    //    if (x >= 0) {
+    //        this.lineage[x].isDeleting = false;
+    //        r.splice(x, 1);
+    //    }
+    //    r.filter(l => !l.isNew && l.sourcekey == i.targetkey).forEach(l => {
+    //        this.recursiveUnDelete(l, r);
+    //    });
+    //}
+
+    //#endregion
+
+}
+
+

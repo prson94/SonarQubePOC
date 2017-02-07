@@ -2,7 +2,17 @@
 import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
-import { MapItem, DiagramObjectType, LinkModel, NodeModel, Responsibility, TechnicalRelation, SourceRule, RelationItem } from '../models/lineage.model';
+import {
+    MapItem,
+    DiagramObjectType,
+    LinkModel,
+    NodeModel,
+    Responsibility,
+    TechnicalRelation,
+    SourceRule,
+    RelationItem,
+    LineageEditorModel,
+} from '../models/lineage.model';
 import { ImpactDiagramModel } from '../models/impact.model';
 import { HierarchyDiagramModel } from '../models/model.model';
 
@@ -100,4 +110,33 @@ export class DiagramService extends BaseService {
             .then(response => <RelationItem[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    public queryRelationshipTypes(query: string): Promise<any> {
+        return this.http.get(`api/lineage/query/relationshiptypes?query=${query}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public queryObjects(type: string, id: number, query: string): Promise<any> {
+        return this.http.get(`api/lineage/query/objects/${type}/${id}?query=${query}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public deleteIntersect(intersectID: number) {
+        return this.http.delete(`form/DeleteIntersect?id=${intersectID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public updateLineage(model: LineageEditorModel): Promise<LineageEditorModel> {
+        return this.http.post('form/UpdateLineage', model)
+            .toPromise()
+            .then(response => <LineageEditorModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

@@ -19,7 +19,7 @@ begin
 		)
 	declare @objects table (Type varchar(50), ID int)
 
-	if @view = 1 OR @view = 2
+	if @view in (0, 1, 2)
 	begin
 		insert into @objects values (@type, @id)
 
@@ -146,6 +146,31 @@ begin
 								from	MapItem MI 
 										inner join MapSequence MS on MS.MapItemID = MI.ID and MI.TargetIntersectID = TI.ID
 								) HSR
+		
+		if @view = 0
+		begin
+			select (
+					select distinct
+					cast(SI.IntersectTypeID as varchar) + '.' 
+					+ cast(I.SourceSubjectID as varchar) + '.'
+					+ cast(I.SourceObjectID as varchar) as [sourcekey],
+					cast(TI.IntersectTypeID as varchar) + '.' 
+					+ cast(I.TargetSubjectID as varchar) + '.'
+					+ cast(I.TargetObjectID as varchar) as [targetkey],
+					I.*,
+					SI.IntersectTypeID as SourceIntersectTypeID,
+					SIT.[Name] as SourceIntersectTypeName,
+					TI.IntersectTypeID as TargetIntersectTypeID,
+					TIT.[Name] as TargetIntersectTypeName
+				from @items I
+				inner join [Intersect] SI on SI.ID = I.SourceIntersectID
+				inner join IntersectType SIT on SIT.ID = SI.IntersectTypeID
+				inner join [Intersect] TI on TI.ID = I.TargetIntersectID
+				inner join IntersectType TIT on TIT.ID = TI.IntersectTypeID
+				for json path
+			) as 'items'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end
 
 		if @view = 1
 		begin
