@@ -32,7 +32,7 @@ import * as _ from 'lodash';
                         </div>
                         <div [ngSwitch]="filter.Type" class="col s4">
                             <span *ngSwitchCase="filterFieldType.Relationship">
-                                <p-multiSelect name="predicates" [options]="relationshipValues" [style]="{width:'100%'}" [ngModel]="filter?.Data?.objectIds" (ngModelChange)="filter.Data.objectIds = $event"></p-multiSelect>
+                                <p-multiSelect required name="predicates" [options]="relationshipValues" [style]="{width:'100%'}" [ngModel]="filter?.Data?.objectIds" (ngModelChange)="filter.Data.objectIds = $event"></p-multiSelect>
                                 <p-selectButton name="relationIncludeType" [options]="connectors" [ngModel]="filter?.Data?.includeType" (ngModelChange)="filter.Data.includeType = $event;"></p-selectButton>
                             </span>
                             <span *ngSwitchCase="filterFieldType.Attribute">
@@ -190,9 +190,9 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 this.attributeFilter = internalFilter.Data;
                 hasAttributeFilter = true;
             }
-            else if (internalFilter.Type == FilterFieldType.Relationship) {
+            else if (internalFilter.Type == FilterFieldType.Relationship) {                
                 this.relationshipFilter = internalFilter.Data;
-                hasRelationFilter = true;
+                hasRelationFilter = true;                
             }
             else if (internalFilter.Type == FilterFieldType.Owner) {
                 this.ownerFilter = new GridOwnerFilter();
