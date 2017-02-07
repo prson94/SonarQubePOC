@@ -31,6 +31,7 @@ export class ArtifactService extends BaseService {
 
             //related filter fields
             let rellFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Relation);
+            
             count = 0;
 
             uri += '&relfilterscount=' + rellFilters.length;
@@ -57,8 +58,8 @@ export class ArtifactService extends BaseService {
         }
 
         if (relationships != undefined) {
-            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}`;
-        }
+            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}&RelationshipIntersectTypeID=${relationships.relationshipType.IntersectTypeID}`;
+        }        
 
         if (simpleFilter != undefined) {
             uri += `&filter=${encodeURIComponent(simpleFilter)}`;
@@ -126,7 +127,7 @@ export class ArtifactService extends BaseService {
         }
 
         if (relationships != undefined) {
-            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}`;
+            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}&RelationshipIntersectTypeID=${relationships.relationshipType.IntersectTypeID}`;
         }
 
         if (simpleFilter != undefined) {

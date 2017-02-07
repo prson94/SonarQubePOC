@@ -190,7 +190,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 this.attributeFilter = internalFilter.Data;
                 hasAttributeFilter = true;
             }
-            else if (internalFilter.Type == FilterFieldType.Relationship) {                
+            else if (internalFilter.Type == FilterFieldType.Relationship) {                                
                 this.relationshipFilter = internalFilter.Data;
                 hasRelationFilter = true;                
             }

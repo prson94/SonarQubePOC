@@ -947,13 +947,15 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
             var RelationshipIncludeType = Request.Form.AllKeys.Any(i => i == "RelationshipIncludeType") ? Request["RelationshipIncludeType"] : "";
             var RelationshipObjectType = Request.Form.AllKeys.Any(i => i == "RelationshipObjectType") ? Request["RelationshipObjectType"] : "";
             var RelationshipObjectIDs = Request.Form.AllKeys.Any(i => i == "RelationshipObjectIDs") ? Server.UrlDecode(Request["RelationshipObjectIDs"]) : "";
+            var RelationshipIntersectTypeID = Request.Form.AllKeys.Any(i => i == "RelationshipIntersectTypeID") ? Server.UrlDecode(Request["RelationshipIntersectTypeID"]) : "";
 
             //check querystring
-            if(string.IsNullOrEmpty(RelationshipObjectIDs))
+            if (string.IsNullOrEmpty(RelationshipObjectIDs))
             {
                 RelationshipIncludeType = query.AllKeys.Any(i => i == "RelationshipIncludeType") ? query["RelationshipIncludeType"] : "";
                 RelationshipObjectType = query.AllKeys.Any(i => i == "RelationshipObjectType") ? query["RelationshipObjectType"] : "";
                 RelationshipObjectIDs = query.AllKeys.Any(i => i == "RelationshipObjectIDs") ? Server.UrlDecode(query["RelationshipObjectIDs"]) : "";
+                RelationshipIntersectTypeID = query.AllKeys.Any(i => i == "RelationshipIntersectTypeID") ? Server.UrlDecode(query["RelationshipIntersectTypeID"]) : "";
             }
 
             if (!string.IsNullOrEmpty(RelationshipObjectIDs))
@@ -968,7 +970,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                         int idInt = 0;
 
                         if(int.TryParse(ID,out idInt)) //convert to integer to avoid sql injection
-                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID = " + idInt + ")";
+                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID = " + idInt + " and IntersectTypeID = "+ int.Parse(RelationshipIntersectTypeID) + ")";
                     });
                 }
                 else
@@ -984,7 +986,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
                     dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
 
-                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID in (" + idList + "))";
+                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID in (" + idList + ") and IntersectTypeID = " + int.Parse(RelationshipIntersectTypeID) + ")";
                 }
             }
 
