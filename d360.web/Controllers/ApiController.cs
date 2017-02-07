@@ -2790,7 +2790,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] 
                             from reporting.Global_Resource A 
                             inner join [Intersect] I on ( (I.Subject = 'Resource' and A.ResourceID = I.SubjectID) OR (I.Object = 'Resource' and A.ResourceID = I.ObjectID) ) 
-                            order by A.LastName, A.FirstName";
+                            order by 1";
                     break;
                 case SystemObjects.Rule:
                     sql = @"select distinct A.Name, A.ID, 'Rule' as [Type] 
