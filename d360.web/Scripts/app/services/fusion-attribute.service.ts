@@ -97,8 +97,8 @@ export class FusionAttributeService extends BaseService {
         }
     }
     
-    getFusionAttributeDetails(fusionAttributeId: number): Promise<FusionAttributeValueDetails> {
-        return this.http.get(`internal/fusion/details/FusionAttribute/${fusionAttributeId}`)
+    getFusionAttributeDetails(fusionAttributeType: string, fusionAttributeId: number): Promise<FusionAttributeValueDetails> {
+        return this.http.get(`internal/fusion/details/${fusionAttributeType}/${fusionAttributeId}`)
             .toPromise()
             .then(response => <FusionAttributeValueDetails>response.json())
             .catch(err => this.handleError(err));

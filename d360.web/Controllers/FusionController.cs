@@ -962,29 +962,26 @@ where   A.FusionQueryAttributeTypeID = @t
         [Route("details/{type}/{id:int}")]
         public JsonResult FusionItemDetails(SystemObjects type, int id)
         {
-            var name = "";
-            var textpath = "";
-            var fusionID = 0;
-            var typeID = 0;
+            Dictionary<string, object> model = new Dictionary<string, object>();
             switch (type)
             {
                 case SystemObjects.FusionAttribute:
                     var fusionAttribute = Company.GetById<FusionAttribute>(id);
                     if (fusionAttribute != null)
                     {
-                        name = fusionAttribute.Name;
-                        textpath = fusionAttribute.TextPath;
-                        fusionID = fusionAttribute.FusionID;
-                        typeID = fusionAttribute.FusionAttributeTypeID;
+                        model["Name"] = fusionAttribute.Name;
+                        model["TextPath"] = fusionAttribute.TextPath;
+                        model["FusionID"] = fusionAttribute.FusionID;
+                        model["FusionAttributeTypeID"] = fusionAttribute.FusionAttributeTypeID;                        
                     }
                     break;
                 case SystemObjects.FusionQueryAttribute:
                     var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id, i => i.FusionQueryAttributeType);
                     if (fusionQueryAttribute != null)
                     {
-                        name = fusionQueryAttribute.SourceID;
-                        fusionID = fusionQueryAttribute.FusionQueryAttributeType.FusionID;
-                        typeID = fusionQueryAttribute.FusionQueryAttributeTypeID;
+                     //   model["Name"] = fusionQueryAttribute.SourceID;
+                        model["FusionID"] = fusionQueryAttribute.FusionQueryAttributeType.FusionID;
+                        model["FusionAttributeTypeID"]= fusionQueryAttribute.FusionQueryAttributeTypeID;
                     }
                     break;
             }
@@ -1015,13 +1012,8 @@ where   A.FusionQueryAttributeTypeID = @t
                     Value = item.FormattedValue
                 });
             }
-
-            var model = new
-            {
-                Fields = res,
-                Name = name, TextPath = textpath,
-                FusionID = fusionID, FusionAttributeTypeID = typeID
-            };
+                        
+            model["Fields"] = res;            
 
             return Json(model, JsonRequestBehavior.AllowGet);
         }

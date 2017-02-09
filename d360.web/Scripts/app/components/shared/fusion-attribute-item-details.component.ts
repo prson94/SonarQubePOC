@@ -13,13 +13,13 @@ import { CoreModule } from './core.module';
                 <header>{{name}} Details</header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading" class="row">
-                    <div class="col l6 m6">
+                    <div class="col l6 m6" *ngIf="fusionAttributeValueDetails.Name">
                         <div class="FieldName">Name</div>
-                        <div class="FieldContent">{{fusionAttributeValueDetails?.Name}}</div>
+                        <div class="FieldContent">{{fusionAttributeValueDetails.Name}}</div>
                     </div>
-                    <div class="col l6 m6">
+                    <div class="col l6 m6" *ngIf="fusionAttributeValueDetails.TextPath">
                         <div class="FieldName">Path</div>
-                        <div class="FieldContent">{{fusionAttributeValueDetails?.TextPath}}</div>
+                        <div class="FieldContent">{{fusionAttributeValueDetails.TextPath}}</div>
                     </div>
                     <div *ngFor="let field of fusionAttributeValueDetails?.Fields" class="col l6 m6">
                         <div class="FieldName">{{field.Name}}</div>
@@ -42,6 +42,7 @@ import { CoreModule } from './core.module';
 export class FusionAttributeItemDetailsComponent extends BaseComponent implements OnChanges {
     @Input() fusionAttributeId: number;
     @Input() name: string;
+    @Input() objectType: string = "FusionAttribute";
 
     private fusionAttributeValueDetails: FusionAttributeValueDetails;
 
@@ -57,7 +58,7 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
 
     private load() {
         this.isLoading = true;
-        this.fusionAttributeService.getFusionAttributeDetails(this.fusionAttributeId)
+        this.fusionAttributeService.getFusionAttributeDetails(this.objectType, this.fusionAttributeId)
             .then(res => {
                 this.isLoading = false;
                 this.fusionAttributeValueDetails = res;
