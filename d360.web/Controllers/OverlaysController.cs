@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.model;
 using d360.web.Models.Attributes;
+using Dapper;
 using SpreadsheetLight;
 using System.Diagnostics;
 using System.IO;
@@ -63,8 +64,8 @@ namespace d360.web.Controllers
                 var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
                 var sql = string.Format(@"select * from ({0}) A", querySql);
 
-                var dbArgs = new Dapper.DynamicParameters();
-                dbArgs.Add("objType", type.ToString());
+                var dbArgs = new Dapper.DynamicParameters();                
+                dbArgs.Add("objType", new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 });
                 dbArgs.Add("objId", id);
 
                 countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
@@ -112,7 +113,7 @@ namespace d360.web.Controllers
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
             var dbArgs = new Dapper.DynamicParameters();
-            dbArgs.Add("objType", type.ToString());
+            dbArgs.Add("objType", new DbString {Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 });
             dbArgs.Add("objId", id);
 
             sql = applyFilteringSuffixBind(sql, Request, dbArgs);

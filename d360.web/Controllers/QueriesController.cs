@@ -182,14 +182,14 @@ order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityT
         [Route("{type}/{id:int}/ScoreHistoryByObject")]
         public JsonNetResult GetScoreHistoryByObject(SystemObjects type, int id)
         {
-            var query = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id });
+            var query = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id });
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [Route("{type}/{id:int}/AverageScoreByObjectType")]
         public JsonNetResult GetAverageScoreByObjectType(SystemObjects type, int id)
         {
-            var query = Company.Query<dynamic>(@"EXEC GetAverageScoreByObjectType @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).SingleOrDefault();
+            var query = Company.Query<dynamic>(@"EXEC GetAverageScoreByObjectType @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id }).SingleOrDefault();
             return new JsonNetResult{ Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 

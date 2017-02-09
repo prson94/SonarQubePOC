@@ -14,6 +14,7 @@ using d360.web.Repositories;
 using d360.workflow;
 using d360.workflow.entities;
 using d360.workflow.models;
+using Dapper;
 using Newtonsoft.Json.Linq;
 using Resources;
 using SpreadsheetLight;
@@ -865,7 +866,7 @@ namespace d360.web.Controllers
             query = query.Replace("%", "[%]");
             return new JsonNetResult
             {
-                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = "Artifact", typeID, query }),
+                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = new DbString { Value = "Artifact", IsAnsi = true, IsFixedLength = true, Length = 50 }, typeID, query }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -14743,7 +14744,7 @@ from    [IntersectType] RT
 
 
             var list = new List<EditableField>();
-            var items = Company.Query<dynamic>(string.Format(QueryConstants.SynonymOptions, joinStatement), new { predicateId,  type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objectId = objId, typeId, query }).ToList();
+            var items = Company.Query<dynamic>(string.Format(QueryConstants.SynonymOptions, joinStatement), new { predicateId,  type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objectId = objId, typeId, query }).ToList();
             var typeIsSubject = true;
             if (items.Count > 0)
             {
@@ -14770,7 +14771,7 @@ from    [IntersectType] RT
             //    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
+            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id }).ToList();
             var typeIsSubject = true;
             if (items.Count > 0)
             {
@@ -15135,7 +15136,7 @@ order by TextPath
                     ";
             return new JsonNetResult
             {
-                Data = Company.Query<dynamic>((id > 0) ? sql : QueryConstants.SimilarItems, new { type = "Taxonomy", typeID, id, query }),
+                Data = Company.Query<dynamic>((id > 0) ? sql : QueryConstants.SimilarItems, new { type = new DbString { Value = "Taxonomy", IsFixedLength = true, IsAnsi = true, Length = 50 }, typeID, id, query }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

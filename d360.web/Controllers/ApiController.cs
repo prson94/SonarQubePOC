@@ -27,6 +27,7 @@ using System.IO;
 using SpreadsheetLight;
 using d360.extensions;
 using System.Threading.Tasks;
+using Dapper;
 
 namespace d360.web.Controllers
 {
@@ -846,7 +847,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 model.Add("AllowAttributes", (bool)row.AllowAttributes);
                                 
                 //get synonyms based on relations and allocations
-                var synonymTypes = Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = a.ArtifactTypeID, ot = "ArtifactType" });
+                var synonymTypes = Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = a.ArtifactTypeID, ot = new DbString { Value = "ArtifactType", IsFixedLength = true, Length = 50, IsAnsi = true} });
                 
                 model.Add("NymTypes", synonymTypes);   //allow synonyms on all artifacts as custom synonyms are allowed everywhere.
                 model.Add("AllowPredicateHierarchies", (bool)row.AllowPredicateHierarchies);
@@ -3034,7 +3035,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "PolicyTypeClass", row.PolicyTypeClass },
                     { "PolicyTypeClassID", row.PolicyTypeClassID },
-                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = "PolicyType" }) },
+                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                 }
             );
         }
@@ -3506,7 +3507,7 @@ from    (
 
                         var owningModels = Company.Query<dynamic>(
                             QueryConstants.ObjectRelationships,
-                            new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }
+                            new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id }
                         ).Where(i => i.Type == "TaxonomyType" && i.TypeID == artifact.TaxonomyTypeID)
                         .Select(i => new
                         {
@@ -5296,7 +5297,7 @@ from    (
         {
             if(obj == SystemObjects.FusionAttribute)
                 return Company.Query<dynamic>(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, new { objid });
-            return Company.Query<dynamic>(QueryConstants.ObjectRelationshipAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objid });
+            return Company.Query<dynamic>(QueryConstants.ObjectRelationshipAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
         }
 
         [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}/fields")]
@@ -5391,7 +5392,7 @@ from    (
         [Route("{type}/{id:int}/relations")]
         public IEnumerable<dynamic> GetRelationships(SystemObjects type, int id)
         {
-            return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
+            return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id });
         }
 
         [Route("{type}/{id:int}/relations/critical")]
@@ -5813,7 +5814,7 @@ SELECT (
 		FOR XML PATH('Report')";
 
             var sType = type.ToString();
-            var models = Company.Query<string>(sql, new { SurveyTypeID = typeID, Object = type.ToString(), ObjectID = id });
+            var models = Company.Query<string>(sql, new { SurveyTypeID = typeID, Object = new DbString {Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, ObjectID = id });
             var xmlString = string.Join("", models);
             var xml = XElement.Parse(xmlString);
             string json = JsonConvert.SerializeXNode(xml);
@@ -5952,7 +5953,7 @@ SELECT (
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
-                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = "TaxonomyType" }) },
+                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "ClassificationName", row.ClassificationName },
                     { "HasDashboards", row.HasDashboards }
                 }
