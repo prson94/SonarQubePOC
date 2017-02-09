@@ -6086,3 +6086,17 @@ go
 
 insert into cache.[object] ([object],[objectid],[objecttype],[objecttypeid]) values('ReferenceItemType',0,'ReferenceItemType',0)
 go
+
+
+--add owner columns used by markit lineage
+alter table mapruleitem add [Owner] varchar(100) null;
+go
+
+alter table mapitem add [Owner] varchar(100) null;
+go
+
+alter table mapruleitemmapitem add [Owner] varchar(100) null;
+go
+
+alter table [intersect] add [Owner] varchar(100) null;
+go

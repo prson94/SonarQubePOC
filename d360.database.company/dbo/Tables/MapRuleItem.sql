@@ -10,6 +10,7 @@
     [CreatedOn]               DATETIME     NOT NULL,
     [UpdatedBy]               INT          NOT NULL,
     [UpdatedOn]               DATETIME     NOT NULL,
+	[Owner]					  VARCHAR (50) NULL,
     CONSTRAINT [PK_MapRuleItem] PRIMARY KEY NONCLUSTERED ([ID] ASC)
 );
 

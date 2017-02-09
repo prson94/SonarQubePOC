@@ -13,6 +13,7 @@
     [CreatedOn]       DATETIME        CONSTRAINT [DF_Intersect_CreatedOn] DEFAULT (getutcdate()) NULL,
     [UpdatedBy]       INT             CONSTRAINT [DF_Intersect_UpdatedBy] DEFAULT ((0)) NULL,
     [UpdatedOn]       DATETIME        CONSTRAINT [DF_Intersect_UpdatedOn] DEFAULT (getutcdate()) NULL,
+	[Owner]			  VARCHAR (50)	  NULL,
     CONSTRAINT [PK_Intersect] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Intersect_IntersectType] FOREIGN KEY ([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [UQ_Intersect] UNIQUE NONCLUSTERED ([IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC)
