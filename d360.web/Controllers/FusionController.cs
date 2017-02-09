@@ -988,8 +988,21 @@ where   A.FusionQueryAttributeTypeID = @t
                     }
                     break;
             }
+                    
+            var sql = @"
+                select 
+	                F.FormattedValue as FormattedValue,
+	                FT.FriendlyName as FriendlyName
+                from
+	                [dbo].field F
+	                inner join [dbo].fieldtype FT on (F.FieldTypeID = FT.ID)
+                where
+	                F.[objectType] = @objectType
+		                and
+	                F.[objectId] = @objectId;    
+            ";
 
-            var fields = Company.Filter<FieldWithRelation>(i => i.ObjectType == type.ToString() && i.ObjectID == id);
+            var fields = Company.Query<dynamic>(sql, new { objectType = new Dapper.DbString { Value = type.ToString(), IsFixedLength = true, Length = 50, IsAnsi = true }, objectId = id });
             List<dynamic> res = new List<dynamic>();
 
             foreach (var item in fields)
