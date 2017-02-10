@@ -19,7 +19,8 @@ import { Count} from '../../models/counts.model';
                                     <a (click)="doSelect(item)">{{item.Name}}</a>
                             </template>
                         </p-column>                                                                           
-                        <p-column field="New" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
+                        <p-column field="New" header="New" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
+                        <p-column field="Total" header="Modified" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
                     </p-dataTable>                      
                     <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">No activity for this timeframe</div>                    
                 </div>

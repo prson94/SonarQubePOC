@@ -69,9 +69,13 @@ namespace d360.core.entities
 
         #endregion
 
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "UpdatedOn_Name", Description = "UpdatedOn_Description")]
+        [DataMember]
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "CreatedOn_Name", Description = "CreatedOn_Description")]
+        [DataMember]
         public DateTime CreatedOn
         {
             get

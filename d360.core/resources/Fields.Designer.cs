@@ -745,6 +745,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The date that this item was created in Data3Sixty..
+        /// </summary>
+        public static string CreatedOn_Description {
+            get {
+                return ResourceManager.GetString("CreatedOn_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date Created.
+        /// </summary>
+        public static string CreatedOn_Name {
+            get {
+                return ResourceManager.GetString("CreatedOn_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The resource who created this item..
         /// </summary>
         public static string CreatingResource_Description {
@@ -3081,6 +3099,24 @@ namespace d360.core.resources {
         public static string Type_Name {
             get {
                 return ResourceManager.GetString("Type_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The date that this item was last modified in Data3Sixty..
+        /// </summary>
+        public static string UpdatedOn_Description {
+            get {
+                return ResourceManager.GetString("UpdatedOn_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date Last Modified.
+        /// </summary>
+        public static string UpdatedOn_Name {
+            get {
+                return ResourceManager.GetString("UpdatedOn_Name", resourceCulture);
             }
         }
         

@@ -3501,7 +3501,7 @@ from    (
                                 }
                             });
                         }
-
+                        
                         var nodes = "None assigned";
                         var values = new List<ReadOnlyFieldValue>();
 
@@ -3543,6 +3543,30 @@ from    (
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
+
+                        if (artifact.UpdatedOn.HasValue)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.CreatedOn), FieldName = "ArtifactCreatedOn", FieldDescription = artifact.GetDescription(i => i.CreatedOn), Value = artifact.CreatedOn.ToShortDateString() }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.UpdatedOn), FieldName = "ArtifactUpdatedOn", FieldDescription = artifact.GetDescription(i => i.UpdatedOn), Value = artifact.UpdatedOn.GetValueOrDefault().ToShortDateString() }
+                                }
+                            });
+                        }
+                        else
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.CreatedOn), FieldName = "ArtifactCreatedOn", FieldDescription = artifact.GetDescription(i => i.CreatedOn), Value = artifact.CreatedOn.ToShortDateString() }
+                                }
+                            });
+                        }
                     }
                     artifact = null;
                     break;
@@ -5999,16 +6023,16 @@ SELECT (
         #region Counts
 
         [Route("CountItems/Activity/{artifactTypeId}/{days}")]
-        public IQueryable GetAreaActivityItems(int artifactTypeId, int days)
+        public IQueryable<Artifact> GetAreaActivityItems(int artifactTypeId, int days)
         {
             if (days != 0)
             {
                 DateTime startDate = DateTime.Now.AddDays(days * -1);
 
-                return Company.Filter<Artifact>(i => i.CreatedOn > startDate && i.ArtifactTypeID == artifactTypeId).AsQueryable();
+                return Company.Filter<Artifact>(i => (i.CreatedOn > startDate || i.UpdatedOn > startDate) && i.ArtifactTypeID == artifactTypeId);
             }
 
-            return Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactTypeId).AsQueryable();
+            return Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactTypeId);
         }
 
         [Route("Count/{area}/{days}")]

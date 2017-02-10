@@ -1167,4 +1167,16 @@
   <data name="DisplayFormat_Name" xml:space="preserve">
     <value>Display Format</value>
   </data>
+  <data name="CreatedOn_Description" xml:space="preserve">
+    <value>The date that this item was created in Data3Sixty.</value>
+  </data>
+  <data name="CreatedOn_Name" xml:space="preserve">
+    <value>Date Created</value>
+  </data>
+  <data name="UpdatedOn_Description" xml:space="preserve">
+    <value>The date that this item was last modified in Data3Sixty.</value>
+  </data>
+  <data name="UpdatedOn_Name" xml:space="preserve">
+    <value>Date Last Modified</value>
+  </data>
 </root>

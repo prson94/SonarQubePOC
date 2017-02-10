@@ -45,17 +45,33 @@ from    FusionStatusLog S
         ";
 
         public static string ArtifactActivitySpecificDateCountList = @"
-select  at.name as Name,
-	    count(1) as New,        					
+select 
+	Name,
+	sum(New) as New,
+	sum(Total) as Total,
+	Id
+from
+(select  at.name as Name,
+	    1 as New,        					
+		0 as Total,
         at.id as Id		
 from    Artifact a
         inner join artifacttype at on a.artifacttypeid = at.id
 where   a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
-group by at.name,at.id order by at.name";
+union all
+select  at.name as Name,
+	    0 as New,   
+		1 as Total,     					
+        at.id as Id		
+from    Artifact a
+        inner join artifacttype at on a.artifacttypeid = at.id
+where a.updatedon > dateadd(day, @d, CURRENT_TIMESTAMP)) T
+group by Name, Id";
 
         public static string ArtifactActivityAllDateCountList = @"
 select  at.name as Name,
 	    count(1) as New,        					
+        count(1) as Total,
         at.id as Id								
 from    Artifact a
         inner join artifacttype at on a.artifacttypeid = at.id                        
