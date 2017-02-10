@@ -39,7 +39,8 @@ import * as _ from 'lodash';
                             <d3s-loading [isLoading]="isDetailsLoading"></d3s-loading>
                             <span *ngIf="!isDetailsLoading">
                                 <div class="form-instructions">Items in the selected workflow step.</div>                                    
-                                <p-dataTable #dt [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selectedWorkflowStepItem" [value]="workflowStepDetails?.Data" selectionMode="single" scrollable="true" scrollWidth="100%" >                    
+                                <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                                <p-dataTable [globalFilter]="gb" #dt [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selectedWorkflowStepItem" [value]="workflowStepDetails?.Data" selectionMode="single" scrollable="true" scrollWidth="100%" >                    
                                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                     <p-column *ngFor="let column of workflowStepDetails?.Columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'200px'}">                                
                                     <template let-item="rowData" pTemplate type="body">                                    
