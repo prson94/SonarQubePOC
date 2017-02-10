@@ -2629,3 +2629,8 @@ go
 
 alter table [intersect] add [Owner] varchar(100) null;
 go
+
+
+-- Remove the unused xml nullable column path from fusionattribute table, its not used anywhere and just makes the tables rows bigger
+ALTER TABLE fusionattribute DROP COLUMN [path]
+go
