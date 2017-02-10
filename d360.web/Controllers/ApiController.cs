@@ -2075,7 +2075,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	                IconBackColor,
 	                IconForeColor
                  from cache.ObjectDetails
-                where [ObjectType] = @type and ObjectTypeId=@id and TextPath like @query", new { type, id, query });
+                where [ObjectType] = @type and ObjectTypeId=@id and TextPath like @query", new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id, query });
 
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }

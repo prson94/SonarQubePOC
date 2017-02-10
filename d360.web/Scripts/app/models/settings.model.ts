@@ -71,7 +71,7 @@ export module SettingsHelper {
             { title: "Glossary", value: "Artifact", selected: false },
             { title: "Group", value: "Group", selected: false },
             { title: "Model", value: "Taxonomy", selected: false },
-            { title: "Reference", value: "Domain", selected: false },
+            { title: "Reference", value: "Reference", selected: false },
             { title: "User", value: "Users", selected: false },
             { title: "Grammatic Type", value: "Synonym", selected: false }
         ];
