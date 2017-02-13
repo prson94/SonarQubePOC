@@ -6,7 +6,6 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-dynamic-lookup-grid',

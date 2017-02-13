@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     Layout = null;
     var CurrentResourceID = ViewData["ResourceID"].ToString();
     var VersionNumber = ViewData["VersionNumber"].ToString();
@@ -7,7 +6,10 @@
     var settingsJson = "";
     foreach (var k in settings.Keys)
     {
-        settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
+        if (k != "PowerBIAccessKey" && k != "PowerBIWorkspaceId")
+        {
+            settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
+        }
     }
     settingsJson = "{" + settingsJson + "}";
     var companyLogo = settings["CompanyLogo"];
@@ -33,42 +35,26 @@
     <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
-
     <script type="text/javascript">
-        //var appInsights=window.appInsights||function(config){
-        //    function s(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},r=document,f=window,e="script",o=r.createElement(e),i,u;for(o.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",r.getElementsByTagName(e)[0].parentNode.appendChild(o),t.cookie=r.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)s("track"+i.pop());return config.disableExceptionTracking||(i="onerror",s("_"+i),u=f[i],f[i]=function(config,r,f,e,o){var s=u&&u(config,r,f,e,o);return s!==!0&&t["_"+i](config,r,f,e,o),s}),t
-        //}({
-        //    instrumentationKey:"f73a9469-9371-4409-8bd5-2ee7f1a7c667"
-        //});
-
-        //window.appInsights=appInsights;
-        //appInsights.trackPageView();
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
     </script>
     <link rel="stylesheet" type="text/css" href="/node_modules/primeng/resources/primeng.min.css" />
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
     <link rel="stylesheet" type="text/css" href="/Content/primeng/d3s/theme.css" />
-
     <style type="text/css">
-        .nav-top .profile a {
-            color: @(settings["HeaderProfileLinkColor"]);
-        }
         nav.top .logo {
-            background-color: @(settings["HeaderBackgroundColor"]);
-            background-image: url(@(companyLogo));
-            background-repeat: no-repeat;
-            background-position: left top;
+            background-color:@(settings["HeaderBackgroundColor"]);
+            background-image:url(@(companyLogo));
+            background-repeat:no-repeat;
+            background-position:left top;
             background-size: auto 40px;
-            height: 40px;
+            height:40px;
             width:200px;
             display:inline-block;
         }
-        nav.top .logo:hover{
-            background-color: @(settings["HeaderBackgroundColor"]);
-        }
         nav.top{
-            border-bottom: 1px solid @(settings["HeaderBackgroundColor"]);
+            border-bottom:1px solid @(settings["HeaderBackgroundColor"]);
         }
         .header-search .search-child {
             border-bottom:1px solid @(settings["HeaderBackgroundColor"]);
@@ -76,12 +62,12 @@
             border-left:1px solid @(settings["HeaderBackgroundColor"]);
         }
         .ng-loading{
-            position: fixed;
-            height: 100%;
-            width: 100%;
-            top: 0;
-            left: 0;
-            background: #54a4da;
+            position:fixed;
+            height:100%;
+            width:100%;
+            top:0;
+            left:0;
+            background:#54a4da;
         }
         .ng-loading-wrap{
             position:fixed;
@@ -89,28 +75,16 @@
             left:50%;
             color:white;
         }
-        .ng-loading-image{
-            background-image: url(/Content/images/logo.new.png);background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-80px;
-        }
+        .ng-loading-image{background-image: url(/Content/images/logo.new.png);background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-80px;}
     </style>
-
-    <!-- Additional dependencies-->
-    <script src="/Scripts/jquery-2.2.4.min.js"></script>    
+    <script src="/Scripts/jquery-2.2.4.min.js"></script>
     <script src="/Scripts/jquery.qtip.min.js"></script>
     <script src="https://cdn.quilljs.com/1.1.2/quill.min.js"></script>
     <script type="text/javascript" src="/Scripts/powerbi.min.js"></script>
 </head>
 <body>
-    <d3s-app>
-        <div class="ng-loading">
-            <div class="ng-loading-wrap">
-                <div class="ng-loading-image">&nbsp;</div>Loading...
-            </div>
-        </div>
-    </d3s-app>
+    <d3s-app><div class="ng-loading"><div class="ng-loading-wrap"><div class="ng-loading-image">&nbsp;</div>Loading...</div></div></d3s-app>
     <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
-
-    <!-- Angular 2 -->
     <script src="scripts/app/polyfills.bundle.js"></script>
     <script src="scripts/app/vendor.bundle.js"></script>
     <script src="scripts/app/main.bundle.js"></script>

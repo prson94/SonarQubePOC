@@ -1,14 +1,15 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 
-import { AceEditorComponent } from 'ng2-ace-editor';
+
+import { AceEditorDirective } from 'ng2-ace-editor';
 
 @NgModule({
     declarations: [
-        AceEditorComponent,
+        AceEditorDirective,
     ],
     exports: [
-        AceEditorComponent,        
+        AceEditorDirective,        
     ]    
 
 })

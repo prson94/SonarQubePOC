@@ -4,7 +4,7 @@ import { FollowerService } from '../../../services/follower.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
-import * as _ from 'lodash';
+
 
 @Component({
     selector: 'd3s-header-follow',    

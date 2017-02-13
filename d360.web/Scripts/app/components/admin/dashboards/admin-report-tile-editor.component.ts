@@ -27,13 +27,11 @@ import * as _ from 'lodash';
                         </div>
                         <div class="col s12">
                             <div class="FieldName">SQL</div>
-                            <div>
-                                <ace-editor
-                                    [text]="initialSql" 
-                                    (textChanged)="editedTile.CommandText=$event" 
+                            <div ace-editor
+                                    [(text)]="editedTile.CommandText" 
                                     [mode]="'sql'"
                                     theme="eclipse"
-                                    #editor style="height:400px;"></ace-editor>                                 
+                                    style="height:400px;"></ace-editor>                                 
                             </div>
                         </div>                        
                         <div class="col s12" *ngIf="editedTile.ID">
@@ -60,7 +58,7 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
     action: string = "Edit";
     urlPrefix: string;
     editedTile: ReportTile;
-    initialSql: string;
+    
     
     constructor(private companySettingsService: CompanySettingsService) {
         super();        
@@ -76,9 +74,7 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
             this.editedTile.ReportID = this.reportId;
             this.action = "New";
         }
-
-        this.initialSql = this.editedTile.CommandText;
-
+        
         this.load();
     }
     

@@ -4,7 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/fusion.service';
 import { Fusion } from '../../models/fusion.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import * as _ from 'lodash';
+
 
 @Component({
     selector: 'd3s-fusion-configuration',

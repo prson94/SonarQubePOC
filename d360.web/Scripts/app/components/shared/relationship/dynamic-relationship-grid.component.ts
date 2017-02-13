@@ -6,7 +6,6 @@ import { MessagesService } from '../../../services/messages.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { RelationshipsService} from '../../../services/relationships.service';
 import { BaseComponent } from '../base.component';
-import * as _ from 'lodash';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 declare var CompanySettings;
@@ -47,7 +46,7 @@ declare var CompanySettings;
                             </template> 
                         </p-column>                                                                                                                                                                              
                         <p-column header="Classification" field="ClassificationText" sortable="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>                            
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
                         <p-column></p-column>
                     </p-dataTable>   
                 </span>
@@ -186,12 +185,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
             this.relationshipRemoved.emit();
         });
-    }
-
-    private columnSort(event) {        
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending                        
-        this.relations = _.orderBy(this.relations, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 
     selectObject(item) {

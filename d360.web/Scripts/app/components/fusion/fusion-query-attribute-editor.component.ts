@@ -19,13 +19,11 @@ import * as _ from 'lodash';
                         </div>   
                         <div class="col s12">
                             <div class="FieldName">SQL</div>
-                            <div>
-                                <ace-editor
-                                    [text]="initialSql" 
-                                    (textChanged)="editedQuery.Query=$event" 
-                                    [mode]="'sql'"
-                                    theme="eclipse"
-                                    #editor style="height:400px;"></ace-editor>                                 
+                            <div ace-editor
+                                    [(text)]="editedQuery.Query"                                     
+                                    [mode]="'sql'"                                    
+                                    theme="eclipse"  
+                                    style="height:400px;">
                             </div>
                         </div>                                                                            
                         <div class="col s12">&nbsp;</div>
@@ -42,9 +40,8 @@ import * as _ from 'lodash';
 export class FusionQueryAttributeEditorComponent extends BaseComponent {    
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();    
-    action: string = "Edit";
-    initialSql: string = "";
-    error: any;
+    action: string = "Edit";   
+    
 
     @Input() query: FusionQueryAttributeType;
     editedQuery: FusionQueryAttributeType;
@@ -52,10 +49,8 @@ export class FusionQueryAttributeEditorComponent extends BaseComponent {
     constructor(private fusionService: FusionService) { super();}
 
     ngOnInit() {
-
         if (this.query) {
-            this.editedQuery = _.cloneDeep(this.query);
-            this.initialSql = this.query.Query;
+            this.editedQuery = _.cloneDeep(this.query);          
         }
         else {
             this.editedQuery = new FusionQueryAttributeType();            
@@ -66,5 +61,5 @@ export class FusionQueryAttributeEditorComponent extends BaseComponent {
     onSubmit() {
         //save the item back to the save or edit url        
         this.saveClick.emit({ query: this.editedQuery, action: this.query ? "new" : "edit" });
-    }
+    }    
 };

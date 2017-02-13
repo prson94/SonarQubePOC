@@ -3,7 +3,6 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { MessagesService  } from '../../../services/messages.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-relationships-list',
@@ -18,13 +17,13 @@ import * as _ from 'lodash';
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                    
                         <p-dataTable #dt [globalFilter]="gb" [value]="relationships" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)" (onRowDblclick)="selected=$event.data;selectedChange.emit(selected);showEditor=true;" >                            
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="SubjectName" header="Subject" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter">
+                            <p-column field="SubjectName" header="Subject" sortable="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></span>
                                 </template>
                             </p-column>
-                            <p-column field="PredicateName" header="Predicate" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                                
-                            <p-column field="ObjectName" header="Side 2 Name" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter">
+                            <p-column field="PredicateName" header="Predicate" sortable="true" [filter]="!showSimpleFilter"></p-column>                                
+                            <p-column field="ObjectName" header="Side 2 Name" sortable="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></span>
                                 </template>
@@ -153,11 +152,5 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     displayTypeName(type: string) {
         if (!type) return "";
         return type.replace("Type", "");
-    }
-
-    private columnSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending                        
-        this.relationships = _.orderBy(this.relationships, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 }

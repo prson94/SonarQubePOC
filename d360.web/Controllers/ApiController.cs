@@ -5844,16 +5844,7 @@ SELECT (
             string json = JsonConvert.SerializeXNode(xml);
             return JObject.Parse(json);
         }
-
-        [Route("surveys/{type}/{id}/randomquestion")]
-        public JObject GetRandomSurveyQuestion(SystemObjects type, int id)
-        {
-            /*    var xml = Company.GetRandomSurveyQuestionForUser(type, id);
-                string json = JsonConvert.SerializeXNode(xml);
-                return JObject.Parse(json);*/
-            return null;
-        }
-
+        
         [Route("surveys/{parentType}/{parentId}/{type}/{id}/survey")]
         public ObjectSurveyModel GetSurvey(SystemObjects parentType, int parentId, SystemObjects type, int id)
         {
@@ -5867,7 +5858,7 @@ SELECT (
                     )
             ";
 
-            var surveys = Company.Query<ObjectSurveyModel>(sql, new { parObj = parentType.ToString(), parObjId = parentId, resource = Company.CurrentResourceID, obj = type.ToString(), objId = id }).ToList();
+            var surveys = Company.Query<ObjectSurveyModel>(sql, new { parObj = new DbString { Value = parentType.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, parObjId = parentId, resource = Company.CurrentResourceID, obj = new DbString { Value = type.ToString(), IsFixedLength = true, IsAnsi = true, Length = 50 }, objId = id }).ToList();
 
             if (surveys == null || surveys.Count == 0) return null;
 

@@ -573,6 +573,7 @@
     <Content Include="Scripts\jquery.qtip.min.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />
+    <Content Include="Scripts\quill.min.js" />
     <Content Include="Scripts\worker-json.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />

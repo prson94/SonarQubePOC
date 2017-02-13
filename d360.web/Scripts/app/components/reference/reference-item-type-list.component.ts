@@ -5,7 +5,7 @@ import { ReferenceService } from '../../services/reference.service';
 import { MessagesService } from '../../services/messages.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';
-import * as _ from 'lodash';
+
 
 @Component({
     selector: 'd3s-reference-item-type-list',

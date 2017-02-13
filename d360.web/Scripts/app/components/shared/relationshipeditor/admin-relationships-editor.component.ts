@@ -3,7 +3,6 @@ import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipDetail } from '../../../models/relationship.model';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-relationships-editor',
