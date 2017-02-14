@@ -202,10 +202,10 @@ namespace d360.web.Controllers
                         true,
                         false);
 
-            dt.SetTypeName("LineageRow");
+            dt.SetTypeName("LineageTable");
             parameters.Add("rows", dt);
 
-            var list = Company.Query<string>("exec getlineage @type, @id, @view, @rows", parameters);
+            var list = Company.Query<string>("exec GetLineage @type, @id, @view, @rows", parameters);
 
             var json = string.Join("", list);
             var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
