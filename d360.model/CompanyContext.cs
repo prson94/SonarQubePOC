@@ -452,7 +452,7 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
                 .Query<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID, @IntersectID", 
                 new 
                 { 
-                    SourceType = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, 
+                    SourceType = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, 
                     SourceTypeID = id, 
                     IntersectID = intersectID 
                 }).ToList();
