@@ -27,7 +27,7 @@ begin
 	end
 
 	-- determine the database name
-	select top 1 @databaseName = replace(sourceid, name,'') from fusionattribute where fusionid = 58 and fusionattributetypeid = 711;
+	select top 1 @databaseName = replace(sourceid, name,'') from fusionattribute where fusionid = @fusionID and fusionattributetypeid = 711;
 
 	if @databaseName is null
 	begin
