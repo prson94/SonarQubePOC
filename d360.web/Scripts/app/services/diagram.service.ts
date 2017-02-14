@@ -139,4 +139,11 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    public previewLineage(type: string, id: number, view: number, model: LineageEditorModel): Promise<any> {
+        return this.http.post(`diagrams/${type}/${id}/lineagepreview/${view}`, model)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

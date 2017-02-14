@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data.Entity.Design.PluralizationServices;
 using d360.web.Models.Attributes;
+using Dapper;
 
 namespace d360.web.Controllers
 {
@@ -137,6 +138,82 @@ namespace d360.web.Controllers
             {
                 Data = obj,
                 Formatting = Formatting.None
+            };
+        }
+
+        [HttpPost, Route("{type}/{id:int}/lineagepreview/{view:int}")]
+        public JsonNetResult GetLineagePreview(SystemObjects type, int id, int view, LineageEditorModel model)
+        {
+
+            var parameters = new DynamicParameters();
+            var dt = new System.Data.DataTable();
+
+            parameters.Add("type", type.ToString());
+            parameters.Add("id", id);
+            parameters.Add("view", view);
+
+            #region DT Columns
+
+            dt.Columns.Add(new System.Data.DataColumn("ID"));
+            dt.Columns.Add(new System.Data.DataColumn("SourceIntersectID"));
+            dt.Columns.Add(new System.Data.DataColumn("SourceSubject"));
+            dt.Columns.Add(new System.Data.DataColumn("SourceSubjectID"));
+            dt.Columns.Add(new System.Data.DataColumn("SourceObject"));
+            dt.Columns.Add(new System.Data.DataColumn("SourceObjectID"));
+            dt.Columns.Add(new System.Data.DataColumn("TargetIntersectID"));
+            dt.Columns.Add(new System.Data.DataColumn("TargetSubject"));
+            dt.Columns.Add(new System.Data.DataColumn("TargetSubjectID"));
+            dt.Columns.Add(new System.Data.DataColumn("TargetObject"));
+            dt.Columns.Add(new System.Data.DataColumn("TargetObjectID"));
+            dt.Columns.Add(new System.Data.DataColumn("Deleting"));
+            dt.Columns.Add(new System.Data.DataColumn("Adding"));
+
+            #endregion
+
+            if (model.Adds != null)
+                foreach (var row in model.Adds)
+                    dt.Rows.Add(row.ID,
+                        row.SourceIntersectID,
+                        row.SourceSubject,
+                        row.SourceSubjectID,
+                        row.SourceObject,
+                        row.SourceObjectID,
+                        row.TargetIntersectID,
+                        row.TargetSubject,
+                        row.TargetSubjectID,
+                        row.TargetObject,
+                        row.TargetObjectID,
+                        false,
+                        true);
+
+            if (model.Deletes != null)
+                foreach (var row in model.Deletes)
+                    dt.Rows.Add(row.ID,
+                        row.SourceIntersectID,
+                        row.SourceSubject,
+                        row.SourceSubjectID,
+                        row.SourceObject,
+                        row.SourceObjectID,
+                        row.TargetIntersectID,
+                        row.TargetSubject,
+                        row.TargetSubjectID,
+                        row.TargetObject,
+                        row.TargetObjectID,
+                        true,
+                        false);
+
+            dt.SetTypeName("LineageRow");
+            parameters.Add("rows", dt);
+
+            var list = Company.Query<string>("exec getlineage @type, @id, @view, @rows", parameters);
+
+            var json = string.Join("", list);
+            var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
+
+            return new JsonNetResult
+            {
+                Data = obj,
+                Formatting = Newtonsoft.Json.Formatting.None
             };
         }
 

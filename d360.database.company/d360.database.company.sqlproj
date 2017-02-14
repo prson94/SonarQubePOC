@@ -546,6 +546,7 @@
     <None Include="dbo\Functions\GetWorkflowArtifactID.sql" />
     <None Include="dbo\Stored Procedures\GetReferenceItemValues.sql" />
     <None Include="dbo\Stored Procedures\GenerateMarkitMapLineageData.sql" />
+    <None Include="dbo\User Defined Types\LineageTable.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

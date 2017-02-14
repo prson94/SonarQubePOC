@@ -212,7 +212,7 @@ export class LineageEditorRow {
     TechnicalAdds: LineageEditorTechnicalRow[] = [];
     TechnicalDeletes: LineageEditorTechnicalRow[] = [];
 
-    //workaround p-autoComplete but where value = '' shows as [object Object]
+    //workaround p-autoComplete bug where value = '' shows as [object Object]
     //setting to string by default fixes this
     //https://github.com/primefaces/primeng/issues/910
 
@@ -227,6 +227,7 @@ export class LineageEditorRow {
     isDeleting: boolean = false;
     showTechnical = false;
     isConnected = true;
+    isDupe = false;
 
 }
 
@@ -235,6 +236,9 @@ export class LineageEditorTechnicalRow {
 }
 
 export class LineageEditorModel {
+    FocalID: number;
+    Focal: string;
+
     Adds: LineageEditorRow[] = [];
     Deletes: LineageEditorRow[] = [];
     Existing: LineageEditorRow[] = [];

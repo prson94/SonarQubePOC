@@ -2,10 +2,11 @@
 --declare 
 	@type varchar(50),
 	@id int,
-	@view int = 1
+	@view int = 1,
+	@rows LineageTable readonly
 
 --set @type = 'Artifact'
---set @id = 2528--6381
+--set @id = 974086
 --set @view = 3
 as
 begin
@@ -104,8 +105,7 @@ begin
 		)
 
 		insert into @items
-			select	O.ID,
-				
+			select	O.ID,				
 					O.SourceIntersectID,
 					SI.SubjectTypeName,
 					SI.SubjectName,
@@ -119,7 +119,6 @@ begin
 					SI.ObjectID,
 					SI.ObjectIconBackColor,
 					SI.ObjectIconForeColor,
-
 					O.TargetIntersectID,
 					TI.SubjectTypeName,
 					TI.SubjectName,
@@ -133,7 +132,6 @@ begin
 					TI.ObjectID,
 					TI.ObjectIconBackColor,
 					TI.ObjectIconForeColor,
-
 					case 
 						when HSR.C > 0 then cast(1 as bit)
 						else cast(0 as bit)
@@ -146,6 +144,55 @@ begin
 								from	MapItem MI 
 										inner join MapSequence MS on MS.MapItemID = MI.ID and MI.TargetIntersectID = TI.ID
 								) HSR
+
+		--if editor data is being passed
+		if EXISTS (SELECT 1 FROM @rows)
+		begin
+			delete I
+			from @items I
+			inner join @rows R on R.Deleting = 1  
+				AND R.SourceSubjectID = I.SourceSubjectID 
+				AND R.SourceObjectID = I.SourceObjectID
+				AND R.TargetSubjectID = I.TargetSubjectID
+				AND R.TargetObjectID = I.TargetObjectID;
+
+			insert into @items
+			select
+				R.ID,
+				R.SourceIntersectID,
+				SS.ObjectTypeName as SourceSubjectTypeName,
+				coalesce(SS.TextPath, SS.Name) as SourceSubjectName,
+				R.SourceSubject,
+				R.SourceSubjectID,
+				SS.IconBackColor as SourceSubjectIconBackColor,
+				SS.IconForeColor as SourceSubjectIconForeColor,
+				SO.ObjectTypeName as SourceObjectTypeName,
+				coalesce(SO.TextPath, SO.Name) as SourceObjectName,
+				R.SourceObject,
+				R.SourceObjectID,
+				SO.IconBackColor as SourceObjectIconBackColor,
+				SO.IconForeColor as SourceObjectIconForeColor,
+				R.TargetIntersectID,
+				TS.ObjectTypeName as TargetSubjectTypeName,
+				coalesce(TS.TextPath, TS.Name) as TargetSubjectName,
+				R.TargetSubject,
+				R.TargetSubjectID,
+				TS.IconBackColor as TargetSubjectIconBackColor,
+				TS.IconForeColor as TargetSubjectIconForeColor,
+				TB.ObjectTypeName as TargetObjectTypeName,
+				coalesce(TB.TextPath, TB.Name)  as TargetObjectName,
+				R.TargetObject,
+				R.TargetObjectID,
+				TB.IconBackColor as TargetObjectIconBackColor,
+				TB.IconForeColor as TargetObjectIconForeColor,
+				0 as HasSourceRules
+			from @rows R 
+			inner join cache.ObjectDetails SS on SS.[Object] = R.SourceSubject AND SS.ObjectID = R.SourceSubjectID
+			inner join cache.ObjectDetails SO on SO.[Object] = R.SourceObject AND SO.ObjectID = R.SourceObjectID
+			inner join cache.ObjectDetails TS on TS.[Object] = R.TargetSubject AND TS.ObjectID = R.TargetSubjectID
+			inner join cache.ObjectDetails TB on TB.[Object] = R.TargetObject AND TB.ObjectID = R.TargetObjectID
+			where R.Adding = 1;
+		end
 		
 		if @view = 0
 		begin
@@ -408,7 +455,7 @@ begin
 
 	if @view = 3
 	begin
-		declare @tFusionPoints table ( ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int )
+		declare @tFusionPoints table ( ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int)--, [to] varchar(250), [from] varchar(250) )
 
 		declare @tItems table (
 			MapItemID int, --MapID int,
@@ -450,7 +497,12 @@ begin
 					where	T.[Level] <= 25
 				)
 				insert into @tFusionPoints
-					select ID, NULL, SourceFusionAttributeID, TargetFusionAttributeID from cte where ID not in (select ID from @tFusionPoints)
+					select	ID, 
+							NULL, 
+							SourceFusionAttributeID, 
+							TargetFusionAttributeID
+					from	cte 
+					where	ID not in (select ID from @tFusionPoints)
 
 				-- get all items directly tied to the focal object.
 				insert into @tItems
@@ -529,8 +581,8 @@ begin
 				if not exists(
 					select	MI.ID
 					from	MapItem MI
-							inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
-							inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
+							inner join [Intersect] SI on SI.ID = MI.SourceIntersectID --IntersectDetail
+							inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID --IntersectDetail
 					where 	( (SI.Subject = @type and SI.SubjectID = @id) OR (SI.Object = @type and SI.ObjectID = @id)  )
 							OR ( (TI.Subject = @type and TI.SubjectID = @id) OR (TI.Object = @type and TI.ObjectID = @id)  )
 				)
@@ -627,21 +679,78 @@ begin
 							inner join MapRuleItemMapItem J on J.MapItemID = I.MapItemID
 							inner join MapRuleItem T on T.ID = J.MapRuleItemID
 							inner join FusionAttribute SFA on SFA.ID = T.SourceFusionAttributeID and SFA.Deleted = 0
-							inner join FusionAttribute TFA on TFA.ID = T.TargetFusionAttributeID and TFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = T.TargetFusionAttributeID and TFA.Deleted = 0;
+
+				
+				with cteFusionForward as (
+					select	ID, 
+							MapItemID, 
+							SourceFusionAttributeID, 
+							TargetFusionAttributeID,
+							1 as [Level]
+					from	@tFusionPoints
+					union all
+					select	S.ID,
+							T.MapItemID,
+							S.SourceFusionAttributeID,
+							S.TargetFusionAttributeID,
+							T.[Level] + 1 as [Level]
+					from	MapRuleItem S
+							inner join cteFusionForward T on T.SourceFusionAttributeID = S.TargetFusionAttributeID and S.ID <> T.ID
+							inner join FusionAttribute SFA on SFA.ID = S.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = S.TargetFusionAttributeID and TFA.Deleted = 0
+					where	T.[Level] <= 25
+				)
+
+				insert into @tFusionPoints
+					select	ID,
+							NULL,
+							SourceFusionAttributeID,
+							TargetFusionAttributeID
+					from	cteFusionForward
+					where	ID not in (select ID from @tFusionPoints);
+
+				with cteFusionBackward as (
+					select	ID, 
+							MapItemID, 
+							SourceFusionAttributeID, 
+							TargetFusionAttributeID,
+							1 as [Level]
+					from	@tFusionPoints
+					union all
+					select	S.ID,
+							T.MapItemID,
+							S.SourceFusionAttributeID,
+							S.TargetFusionAttributeID,
+							T.[Level] + 1 as [Level]
+					from	MapRuleItem S
+							inner join cteFusionBackward T on T.TargetFusionAttributeID = S.SourceFusionAttributeID and S.ID <> T.ID
+							inner join FusionAttribute SFA on SFA.ID = S.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = S.TargetFusionAttributeID and TFA.Deleted = 0
+					where	T.[Level] <= 25
+				)
+
+				insert into @tFusionPoints
+					select	ID,
+							NULL,
+							SourceFusionAttributeID,
+							TargetFusionAttributeID
+					from	cteFusionBackward
+					where	ID not in (select ID from @tFusionPoints);
 			end
 
 			--Load tables we will return to caller.
 			insert into @links
 				select	distinct
-						cast(S.SourceFusionAttributeID as varchar) + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [from],
-						cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [to],
+						cast(S.SourceFusionAttributeID as varchar),-- + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [from],
+						cast(S.TargetFusionAttributeID as varchar),-- + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [to],
 						'' as category
 				from	@tFusionPoints S
 						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
 						left join @tItems B on B.MapItemID = J.MapItemID
 			insert into @nodes
 				select	distinct
-						cast(S.SourceFusionAttributeID as varchar) + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [key],
+						cast(S.SourceFusionAttributeID as varchar),-- + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [key],
 						'FusionAttribute' as [obj],
 						SourceFusionAttributeID as [objid], 
 						'FusionAttribute' as [type],
@@ -659,7 +768,7 @@ begin
 						left join @tItems B on B.MapItemID = J.MapItemID
 			insert into @nodes
 				select	distinct
-						cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [key],
+						cast(S.TargetFusionAttributeID as varchar),-- + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [key],
 						'FusionAttribute' as [obj],
 						TargetFusionAttributeID as [objid], 
 						'FusionAttribute' as [type],
@@ -699,7 +808,8 @@ begin
 				for json path			
 				) as 'links',
 				(
-				select	*
+				select	distinct
+						*
 				from	@nodes
 				for json path			
 				) as 'nodes'

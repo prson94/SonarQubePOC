@@ -969,6 +969,8 @@ namespace d360.web.Models
 
     public class LineageEditorModel
     {
+        public SystemObjects Focal { get; set; }
+        public int FocalID { get; set; }
         public List<LineageEditorRow> Existing { get; set; }
         public List<LineageEditorRow> Adds { get; set; }
         public List<LineageEditorRow> Deletes { get; set; }

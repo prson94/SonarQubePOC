@@ -46,8 +46,10 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
     intersectTypes: AutoCompleteItem[] = [];
 
     isLoading = false;
-    showSummary = false;
     saveComplete = false;
+
+    mode: LineageEditorMode = LineageEditorMode.Default;
+    LineageEditorMode = LineageEditorMode;
     
 
     constructor(private diagramService: DiagramService, protected messagesService: MessagesService, protected permissionsService: PermissionsService) {
@@ -60,6 +62,9 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
             .then(data => {
                 this.permissions = data;
             });
+        this.model = new LineageEditorModel();
+        this.model.Focal = this.object;
+        this.model.FocalID = this.objectId;
     }
 
     load() {
@@ -116,8 +121,6 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
 
         //update connection checks
         this.updateConnections()
-
-        //console.log('select: ', i);
     }
 
     query(field: string, i: LineageEditorRow, e: any) {
@@ -280,14 +283,21 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
 
     }
 
-  
-
     updateConnections() {
         this.lineage.filter(l => l.isNew).forEach(l => l.isConnected = this.checkConnected(l));
         if (this.lineage.findIndex(l => l.isNew && !l.isConnected) >= 0)
             this.valid = false;
         else
             this.valid = true;
+
+        this.lineage.filter(l => l.isNew).forEach(l => l.isDupe = false);
+
+        this.lineage.filter(l => l.isNew).forEach(l => {
+            let other = this.lineage.find(o => o.ID != l.ID &&
+                o.sourcekey == l.sourcekey && o.targetkey == l.targetkey);
+            if (other)
+                l.isDupe = true;
+        });
     }
 
     initializeLineageRow(i: LineageEditorRow) {
@@ -339,17 +349,28 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
         obj[i.valueField] = i.value;
     }
 
-
     summarize() {
-        this.model = new LineageEditorModel();
-
         this.model.Adds = this.lineage.filter(l => l.isNew);
         this.model.Deletes = this.lineage.filter(l => l.isDeleting);
         this.model.Existing = this.lineage.filter(l => !l.isNew);
-        this.showSummary = true;
+        this.mode = LineageEditorMode.Summary;
         this.saveComplete = false;
     }
 
+    preview() {
+        let valid = this.lineage.filter(l => l.isDeleting || (l.isNew &&
+            l.SourceObjectID != null &&
+            l.SourceSubjectID != null &&
+            l.TargetObjectID != null &&
+            l.TargetSubjectID != null &&
+            l.SourceIntersectTypeID != null &&
+            l.TargetIntersectTypeID != null));
+
+        this.model.Adds = valid.filter(l => l.isNew);
+        this.model.Deletes = valid.filter(l => l.isDeleting);
+        this.model.Existing = this.lineage.filter(l => !l.isNew);
+        this.mode = LineageEditorMode.Preview;
+    }
 
     save() {
         if (this.isLoading) return;
@@ -359,6 +380,8 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
         this.diagramService.updateLineage(this.model)
             .then(r => {
                 this.model = r;
+                this.model.Focal = this.object;
+                this.model.FocalID = this.objectId;
 
                 let addErrors = (this.model.Adds == null) ? null : this.model.Adds.filter(m => m.HasError);
                 let deleteErrors = (this.model.Deletes == null) ? null : this.model.Deletes.filter(m => m.HasError);
@@ -385,7 +408,7 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
                 } else {
                     this.messagesService.showInfoMessage("Save Successful", "Mappings were added/removed from the lineage successfully.");
                     this.load();
-                    this.showSummary = false;
+                    this.mode = LineageEditorMode.Default;
                 }
                 
             });
@@ -422,7 +445,7 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
         for (let j = 0; j < r.length; j++) {
             if (r[j].isDeleting) //can't connect to a record marked for deletion
                 continue;
-            if (i.sourcekey == r[j].targetkey || i.targetkey == r[j].sourcekey) {
+            if (i.sourcekey == r[j].targetkey || i.targetkey == r[j].sourcekey || i.targetkey == r[j].targetkey) {
                 let a = this.checkConnected(r[j], r);
                 return a;
             }
@@ -431,8 +454,7 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
 
     }
 
-
-    //#region unused
+    //#region recursive delete/undelete
 
       //recursiveDelete(i: LineageEditorRow, rows: LineageEditorRow[] = null) {
     //    if (rows == null)
@@ -469,6 +491,12 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
 
     //#endregion
 
+}
+
+enum LineageEditorMode {
+    Default,
+    Preview,
+    Summary
 }
 
 

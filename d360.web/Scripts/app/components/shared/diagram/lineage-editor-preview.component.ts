@@ -1,99 +1,54 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
-import { PermissionsService } from '../../../services/permissions.service';
+﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter, ViewChild, AfterViewInit } from '@angular/core';
 import { DiagramService } from '../../../services/diagram.service';
+import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../base.component';
-import { DiagramObjectType, LinkModel, NodeModel, MapItem, Responsibility, TechnicalRelation } from '../../../models/lineage.model';
+import {
+    LineageEditorRow,
+    LineageEditorModel,
+    DiagramObjectType,
+    LinkModel,
+    NodeModel,
+    MapItem,
+    Responsibility,
+    TechnicalRelation,
+} from '../../../models/lineage.model';
 
-import { MenuItem } from 'primeng/primeng';
-
-import * as go from 'gojs';
 import * as _ from 'lodash';
-
-declare var window: any;
+import * as go from 'gojs';
 
 @Component({
-    selector: 'd3s-lineage',
-    templateUrl: './lineage.component.html',
-    providers: [ PermissionsService, DiagramService ]
+    selector: 'd3s-lineage-editor-preview',
+    template: `
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div id="LineagePreviewDiagram" #diagram></div>
+`,
+    providers: [DiagramService]
 })
 
-export class LineageComponent extends BaseComponent implements OnInit, AfterViewInit  {
-    @Input() objectID: number = 0;
-    @Input() objectType: string;
-    @Input() objectName: string;
-    @Input() readonly: boolean = true;
+export class LineageEditorPreviewComponent extends BaseComponent implements OnInit, AfterViewInit {
+    @Input() model: LineageEditorModel;
+    @Input() type: string;
+    @Input() id: number;
+    @Input() view: number = 1;
+    @Input() height: number = 300;
     @ViewChild('diagram') diagramRef;
 
-    DiagramObjectType = DiagramObjectType;
-
-    private originalObject: string;
-    private originalObjectID: number;
-    private viewID: number = 1;
-    private fullscreen: boolean = false;
-    private selectedData = null;
-
-    private initialLinks: go.Link[] = [];
-    private initialNodes: go.Node[] = [];
-    private newLink: go.Link = null;
-    private overlayEditLinkKey = null;
-    private selection = null;
-
-    private source: string;
-    private sourceId: number;
-    private target: string;
-    private targetId: string;
-
-    private diagramMode: DiagramMode = DiagramMode.Diagram;
-    DiagramMode = DiagramMode;
-
-    //control properties
-    private isWindowVisible = true;
-    private showNodeTabs = false;
-    private showLinkTabs = false;
-    private menuItems: MenuItem[] = [];
-    private tab: string = 'info';
-    private headerText = 'Info';
-    private zoomLevel: number = 50;
-
-    //diagram properties
     private g = go.GraphObject.make;
     private myDiagram: go.Diagram;
 
-    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService, private renderer: Renderer) {
+    private initialLinks: go.Link[] = [];
+    private initialNodes: go.Node[] = [];
+
+    constructor(private diagramService: DiagramService, protected messagesService: MessagesService) {
         super();
     }
 
-    public ngOnInit() {
-
-        this.originalObject = this.objectType;
-        this.originalObjectID = this.objectID;
-
-        this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
-
+    ngOnInit() {
         this.initializeDiagram();
-        
     }
 
-    public ngAfterViewInit() {
+    ngAfterViewInit() {
         this.resizeDiagram();
-    }
-
-    public ngOnDestroy() {
-        //garbage collection
-        this.myDiagram.div = null;
-    }
-
-    //#region helper methods
-
-    private sizePanel() {
-        //var windowHeight = $(window).innerHeight();
-        //var tileTopOffset = $(w).offset();
-        //var height = windowHeight - tileTopOffset.top - 75; //height();
-        //$('#LineageDiagram').height(height);
-    }
-
-    private unsubscribe() {
-        
     }
 
     private initializeDiagram() {
@@ -108,9 +63,9 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.myDiagram.linkTemplateMap.add("", this.createDefaultLink());
         this.myDiagram.linkTemplateMap.add("Support", this.createSupportLink());
 
-        this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
-        this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
-        this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        //this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
+       // this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
+        //this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
 
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -120,22 +75,17 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.populateDiagram();
     }
 
+
     private populateDiagram(): Promise<any> {
         this.isLoading = true;
-        let windowVisible = this.isWindowVisible;
-
-        this.isWindowVisible = false;
-        return this.diagramService.getLineageDiagram(this.objectType, this.objectID, this.viewID)
+        this.model.Existing = [];
+        return this.diagramService.previewLineage(this.type, this.id, this.view, this.model)
             .then(data => {
-                //console.log(data);
                 this.parseData(data);
             })
             .then(() => {
-                this.reOrderLayout();
                 this.myDiagram.zoomToFit();
-                this.zoomLevel = _.clamp(this.myDiagram.scale * 75, 0, 100);
                 this.isLoading = false;
-                this.isWindowVisible = windowVisible;
             });
     }
 
@@ -155,7 +105,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                 var d = data.nodes[i];
                 var model = new NodeModel();
 
-                var isFocalPoint = (d.obj == this.objectType && d.objid == this.objectID);
+                var isFocalPoint = (d.obj == this.model.Focal && d.objid == this.model.FocalID);
 
                 model.template = d.template;
                 model.key = d.key;
@@ -222,10 +172,10 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(modelList);
 
-        this.refreshControls(null);  //set buttons/expanders to defaults
+        //this.refreshControls(null);  //set buttons/expanders to defaults
 
         this.myDiagram.commitTransaction("load_all_data");
-        this.reOrderLayout();
+        //this.reOrderLayout();
     }
 
     private htmlDecode(val: string): string {
@@ -238,148 +188,10 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         return val;
     }
 
-    private refreshControls(data: any) {
-        this.setSourceValues(data);
-        this.toggleTabs(data);
-        this.toggleMenuItems(data);
-    }
-
-    private toggleTabs(data: NodeModel | LinkModel) {
-        if (data) {
-            this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
-            this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
-
-            if (this.showLinkTabs) this.selectTab('exchange');
-            else if (this.showNodeTabs) this.selectTab('info');
-        } else {
-            this.showNodeTabs = false;
-            this.showLinkTabs = false;
-            this.tab = '';
-        }
-    }
-
-    private toggleMenuItems(data: NodeModel | LinkModel) {
-        this.menuItems = [];
-
-        let gears: MenuItem = {
-            icon: 'fa-gears menu-icon',
-            items: []
-        }
-
-        gears.items.push({
-            label: 'Source Rules'
-        });
-        gears.items.push({
-            label: 'Edit Lineage'
-        });
-
-        let eye: MenuItem = {
-            icon: 'fa-eye menu-icon',
-            items: []
-        }
-
-        eye.items.push({
-            label: 'Business System Flow'
-        });
-        eye.items.push({
-            label: 'Business Data Flow'
-        });
-        eye.items.push({
-            label: 'Technical Lineage'
-        });
-
-        this.menuItems.push(gears);
-        this.menuItems.push(eye); 
-
-        this.menuItems.push({
-            icon: 'fa-search-minus menu-icon'
-        });
-
-        this.menuItems.push({
-            icon: 'fa-search-plus menu-icon'
-        });
-
-        this.menuItems.push({
-            icon: 'fa-refresh menu-icon'
-        });
-
-        this.menuItems.push({
-            icon: 'fa-info-circle menu-icon'
-        });
-
-
-    }
-
-    private setSourceValues(data: any) {
-        if (!data || data == null) {
-            this.source = null;
-            this.sourceId = null;
-            this.target = null;
-            this.targetId = null;
-        } else {
-            if (data.diagramObjectType == DiagramObjectType.Node) {
-                this.source = this.objectType;
-                this.sourceId = this.objectID;
-
-                if (data.obj && data.objid) {                   
-                    this.target = data.obj;
-                    this.targetId = data.objid;
-                }
-
-            } else if (data.diagramObjectType == DiagramObjectType.Link) {
-
-                var from = this.myDiagram.model.findNodeDataForKey(data.from);
-                var to = this.myDiagram.model.findNodeDataForKey(data.to);
-
-                if (from.obj && from.objid) {
-                    this.source = from.obj;
-                    this.sourceId = from.objid;
-                }
-                if (to.obj && to.objid) {
-                    this.target = to.obj;
-                    this.targetId = to.objid;
-                }
-            }
-        }
-    }
-
-    private reOrderLayout() {
-        this.myDiagram.layout.invalidateLayout();
-        this.myDiagram.requestUpdate();
-    }
-    
-    private selectTab(val: string) {
-        switch (val) {
-            case 'info': this.headerText = 'Info'; break;
-            case 'code': this.headerText = 'Source Rules'; break;
-            case 'user': this.headerText = 'Responsibilities'; break;
-            case 'database': this.headerText = 'Fusion Relationships'; break;
-            case 'exchange': this.headerText = 'Mapping Rules'; break;
-            default: this.headerText = ''; break;
-        }
-        this.tab = val;
-    }
-    //#endregion
-
     //#region events
 
-    @HostListener('window:resize', ['$event'])
-    private onResize(event) {
-        this.resizeDiagram();
-    }
-
     private resizeDiagram() {
-        //set the diagram div to a specific height
-        //required for GoJS
-
-        let offset = this.diagramRef.nativeElement.offsetTop;
-        let height = window.innerHeight;
-
-        if (this.diagramRef.nativeElement.offsetParent) {
-            offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
-        }
-
-        this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
+        this.diagramRef.nativeElement.style.height = this.height + 'px';
     }
 
     private onMouseEnterNode(e: any, node: go.Node) {
@@ -390,102 +202,22 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         node.isShadowed = false;
     }
 
-    private zoomDiagram(v: number) {
-        this.myDiagram.scale = v;
-        //console.log('zoomDiagram', v, this.myDiagram);
-    }
 
-    private ViewPortBoundsChanged() {
-        //var s = this.myDiagram.scale;
-        //var h = 500;
-        //if (s > 1) {
-        //    h = h * s;
-        //}
-        //this.zoomLevel = this.myDiagram.scale;
-    }
-
-    private ChangedSelection(e: any) {
-        this.selection = e.diagram.selection;
-
-        if (this.selection.count == 0) {
-            this.selectedData = null;
-        } else {
-            //get a deep copy of the selection as an array
-            var sel = _.cloneDeep(this.selection.toArray());
-
-            if (sel != null && sel.length != 0) {
-                this.selectedData = sel[0].data;
-            }
-        }
-
-        this.refreshControls(this.selectedData);
-    }
-
-    private ObjectDoubleClicked(e: any) {
-        var obj = e.diagram.selection.first().data;
-        if (obj != null) {
-            if (obj.diagramObjectType == DiagramObjectType.Node) {
-                this.objectType = obj.obj;
-                this.objectID = obj.objid;
-
-                this.populateDiagram();
-            }
-        }
-    }
-
-    private menuClick(e: MenuItem) {
-        if (e.icon == 'fa-refresh menu-icon') {
-            this.objectType = this.originalObject;
-            this.objectID = this.originalObjectID;
-            this.populateDiagram();
-        } else if (e.icon == 'fa-search-plus menu-icon') {
-            this.myDiagram.scale += .1;
-            if (this.myDiagram.scale > 2.5)
-                this.myDiagram.scale = 2.5;
-        } else if (e.icon == 'fa-search-minus menu-icon') {
-            this.myDiagram.scale -= .1;
-            if (this.myDiagram.scale < .1)
-                this.myDiagram.scale = .1;
-        } else if (e.icon == 'fa-info-circle menu-icon') {
-            this.isWindowVisible = !this.isWindowVisible;
-        } else if (e.label == 'Business System Flow') {
-            this.viewID = 1;
-            this.populateDiagram();
-        } else if (e.label == 'Business Data Flow') {
-            this.viewID = 2;
-            this.populateDiagram();
-        } else if (e.label == 'Technical Lineage') {
-            this.viewID = 3;
-            this.populateDiagram();
-        } else if (e.label == 'Source Rules') {
-            this.headerText = 'Manage Source Rules';
-            this.diagramMode = DiagramMode.SourceRuleEditor;
-        } else if (e.label == 'Edit Lineage') {
-            this.headerText = 'Edit Lineage';
-            this.diagramMode = DiagramMode.LineageEditor;
-        }
-    }
-
-    private closeEditor() {
-        this.headerText = 'Lineage';
-        this.diagramMode = DiagramMode.Diagram;
-    }
 
     //#endregion
+  
 
     //#region templates
 
     private createDiagram(): go.Diagram {
-
-
-        let dg = this.g(go.Diagram, 'LineageDiagram', {
+        let dg = this.g(go.Diagram, 'LineagePreviewDiagram', {
             initialContentAlignment: go.Spot.Left,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
             initialPosition: new go.Point(125, 125),
             layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
-            "undoManager.isEnabled": true
+            "undoManager.isEnabled": false
         });
 
         dg.model.class = go.GraphLinksModel;
@@ -495,8 +227,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         dg.model.nodeDataArray = [];
         dg.model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
-        dg.toolManager.linkingTool.isEnabled = !this.readonly;
-        dg.model.isReadOnly = this.readonly;
+        dg.toolManager.linkingTool.isEnabled = false;
+        dg.model.isReadOnly = true;
 
         return dg;
     }
@@ -988,10 +720,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     //#endregion
-}
 
-enum DiagramMode {
-    Diagram,
-    SourceRuleEditor,
-    LineageEditor
+
 }

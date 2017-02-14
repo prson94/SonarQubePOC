@@ -984,6 +984,7 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-editor-preview.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />

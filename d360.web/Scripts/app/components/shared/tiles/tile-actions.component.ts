@@ -33,8 +33,9 @@ import {MenuItem} from 'primeng/primeng';
                             <li class="left" *ngIf="hasUser"><a class="Action" (click)="userClick()" pTooltip="Show my items only">
                                 <i class="fa fa-user fa-fw" [ngClass]="{'red-text darken-2':userMode}"></i>                                
                             </a></li>
-                            
-                            <!-- close should always be leftmost -->
+                            <li class="left" *ngIf="hasView"><a class="Action" (click)="viewClick.emit()" pTooltip="Preview"><i class="fa fa-eye fa-fw"></i></a></li>                        
+
+<!-- close should always be leftmost -->
                             <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" pTooltip="Close"><i class="fa fa-remove fa-fw"></i></a></li>
                         </ul>
                     </div>
@@ -57,6 +58,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() passwordClick = new EventEmitter();
     @Output() suggestClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
+    @Output() viewClick = new EventEmitter();
 
     @Input() userMode: boolean = false;
     @Output() userModeChange = new EventEmitter();
@@ -80,6 +82,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasSuggest: boolean = false;
     @Input() hasSave: boolean = false;
     @Input() hasUser: boolean = false;
+    @Input() hasView: boolean = false;
 
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];

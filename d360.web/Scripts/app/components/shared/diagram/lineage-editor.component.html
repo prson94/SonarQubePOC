@@ -1,9 +1,17 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <div *ngIf="!showSummary">
+    <div *ngIf="mode == LineageEditorMode.Default">
         <header>
             Manage Lineage
-            <d3s-tile-actions hasClose="true" hasAdd="true" hasSave="true" (closeClick)="onClose.emit()" (addClick)="add()" (saveClick)="valid ? summarize() : null"></d3s-tile-actions>
+            <d3s-tile-actions 
+                              hasClose="true" 
+                              hasAdd="true" 
+                              hasSave="true" 
+                              hasView="true"
+                              (viewClick)="preview()"
+                              (closeClick)="onClose.emit()" 
+                              (addClick)="add()" 
+                              (saveClick)="valid ? summarize() : null"></d3s-tile-actions>
         </header>
         <div class="row">
             <div class="col s12">
@@ -131,6 +139,10 @@
                             <td style="width: 10px"></td>
                             <td colspan="7" class="errorMessage">This record is not connected to anything on the lineage</td>
                         </tr>
+                        <tr *ngIf="i.isNew && i.isDupe">
+                            <td style="width: 10px"></td>
+                            <td colspan="7" class="errorMessage">This record is a duplicate of an existing record on the lineage</td>
+                        </tr>
 
                         <tr *ngIf="!i.isNew" [style.color]="i.isDeleting ? '#aaa' : '#000'">
                             <td style="width:10px;"></td>
@@ -194,26 +206,34 @@
             </div>
         </div>
     </div>
-    <div *ngIf="showSummary">
+    <div *ngIf="mode == LineageEditorMode.Preview">
+        <header>
+            Preview Lineage Changes
+        </header>
+        <div class="row">
+            <div class="col s12">
+                <d3s-lineage-editor-preview [type]="object" [id]="objectId" [model]="model" height="500" view="1"></d3s-lineage-editor-preview>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <button pButton type="button" label="Back to editor" (click)="mode = LineageEditorMode.Default"></button>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="mode == LineageEditorMode.Summary">
         <header>
             Confirm Lineage Changes
         </header>
-        <div class="row" *ngIf="showSummary">
+        <div class="row">
             <div class="col s12">
-                <div *ngFor="let i of model.Adds">
-                    <div>+ Add a mapping between {{i.SourceSubjectName}} and {{i.TargetSubjectName}}</div>
-                    <div *ngIf="i.HasError" style="color:red">&nbsp;&nbsp;&nbsp;Add failed: {{i.ErrorMessage}}</div>
-                </div>
-                <div *ngFor="let i of model.Deletes">
-                    <div>- Delete the mapping between {{i.SourceSubjectName}} and {{i.TargetSubjectName}}</div>
-                    <div *ngIf="i.HasError" style="color:red">&nbsp;&nbsp;&nbsp;Delete failed: {{i.ErrorMessage}}</div>
-                </div>
+                <d3s-lineage-editor-preview [type]="object" [id]="objectId" [model]="model" height="500" view="1"></d3s-lineage-editor-preview>
             </div>
         </div>
         <div class="row">
             <div class="col s12">
                 <button *ngIf="!saveComplete" pButton type="button" label="Save" (click)="save()"></button>
-                <button pButton type="button" label="Back to editor" (click)="showSummary = false"></button>
+                <button pButton type="button" label="Back to editor" (click)="mode = LineageEditorMode.Default"></button>
             </div>
         </div>
     </div>

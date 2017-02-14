@@ -8277,12 +8277,6 @@ for json path");
             };
         }
 
-        [HttpPost, Route("UpdateLineageSummary")]
-        public JsonNetResult LineageUpdateSummary(LineageEditorModel model)
-        {
-            return null;
-        }
-
         [HttpPost, Route("UpdateLineage")]
         public JsonNetResult UpdateLineage(LineageEditorModel model)
         {

@@ -17,6 +17,7 @@ import {
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage.component';
 import { LineageEditorComponent } from './lineage-editor.component';
+import { LineageEditorPreviewComponent } from './lineage-editor-preview.component';
 import { LineageFusionComponent } from './lineage-fusion.component';
 import { LineageMappingRulesComponent } from './lineage-mapping-rules.component';
 import { LineageObjectDetailComponent } from './lineage-object-detail.component';
@@ -59,6 +60,7 @@ import { SharedFormMessageModule } from '../form-message.part'
         ImpactComponent,        
         LineageComponent,
         LineageEditorComponent,
+        LineageEditorPreviewComponent,
         LineageFusionComponent,
         LineageMappingRulesComponent,
         LineageObjectDetailComponent,
