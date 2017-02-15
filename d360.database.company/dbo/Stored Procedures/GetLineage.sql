@@ -148,6 +148,7 @@ begin
 		--if editor data is being passed
 		if EXISTS (SELECT 1 FROM @rows)
 		begin
+			--remove deleting items
 			delete I
 			from @items I
 			inner join @rows R on R.Deleting = 1  
@@ -156,6 +157,7 @@ begin
 				AND R.TargetSubjectID = I.TargetSubjectID
 				AND R.TargetObjectID = I.TargetObjectID;
 
+			--insert adding items and fill in missing data
 			insert into @items
 			select
 				R.ID,
@@ -284,19 +286,14 @@ begin
 					) as 'links',
 					(
 					select	I.*,
-							C.challenges,
-							E.issues
+							A.actions
 					from	@nodes I
 							cross apply (
-											select count(1) as challenges   
-											from Workflow W            			                          
-											where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column("I.objid")]') = 1 and W.DateCompleted is null   
-										) C
-							cross apply (
-											select count(1) as issues   
-											from Workflow W            			                          
-											where W.WorkflowType = 3 and W.Data.exist('/fields/ArtifactID[text() = sql:column("I.objid")]') = 1 and W.DateCompleted is null   
-										) E
+											select count(1) as actions   
+											from Workflow W  
+											left join issue S on S.ID = W.data.value('(/fields//IssueID/node())[1]', 'nvarchar(max)')          			                          
+											where W.WorkflowType = 3 AND W.DateCompleted is null AND S.ObjectID = I.objid AND S.Object = I.obj  
+										) A
 					for json path			
 					) as 'nodes'
 			for json path, WITHOUT_ARRAY_WRAPPER
@@ -434,19 +431,14 @@ begin
 					) as 'links',
 					(
 					select	I.*,
-							C.challenges,
-							E.issues
+							A.actions
 					from	@nodes I
 							cross apply (
-											select count(1) as challenges   
-											from Workflow W            			                          
-											where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column("I.objid")]') = 1 and W.DateCompleted is null   
-										) C
-							cross apply (
-											select count(1) as issues   
-											from Workflow W            			                          
-											where W.WorkflowType = 3 and W.Data.exist('/fields/ArtifactID[text() = sql:column("I.objid")]') = 1 and W.DateCompleted is null   
-										) E
+											select count(1) as actions   
+											from Workflow W  
+											left join issue S on S.ID = W.data.value('(/fields//IssueID/node())[1]', 'nvarchar(max)')          			                          
+											where W.WorkflowType = 3 AND W.DateCompleted is null AND S.ObjectID = I.objid AND S.Object = I.obj  
+										) A
 					for json path			
 					) as 'nodes'
 			for json path, WITHOUT_ARRAY_WRAPPER
@@ -670,6 +662,8 @@ begin
 							inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
 							inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID
 
+							--select * from @tItems;
+
 				insert into @tFusionPoints
 					select	J.MapRuleItemID,
 							J.MapItemID,
@@ -738,6 +732,8 @@ begin
 					from	cteFusionBackward
 					where	ID not in (select ID from @tFusionPoints);
 			end
+
+			--select * from @tFusionPoints;
 
 			--Load tables we will return to caller.
 			insert into @links

@@ -6,13 +6,12 @@ import {MenuItem} from 'primeng/primeng';
     styles: [`
      :host{
             text-transform:none;
-        }
-    
+        }   
   `],
     template: `
                 <div class="TileTools"> 
                     <p-menubar *ngIf="hasDate" [model]="dateMenuItems"></p-menubar><!--workaround to position bug in menu-->
-                    <p-menubar *ngIf="hasMenu && menuItems.length > 0" [model]="menuItems"></p-menubar>
+                    <p-menubar *ngIf="hasMenu" [model]="menuItems"></p-menubar>
                     <div *ngIf="!hasDate && !hasMenu">
                         <ul>                                                      
                             <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" pTooltip="Add"><i class="fa fa-plus fa-fw"></i></a></li>
@@ -123,7 +122,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     private setMenuItemCommands(items: MenuItem[]) {
         items.forEach(i => {
-            i.command = () => this.menuClick.emit(i);
+            i.command = (e) => this.menuClick.emit(e.item);
             if (i.items && i.items.length > 0) {
                 this.setMenuItemCommands(i.items);
             }

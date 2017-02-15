@@ -2,7 +2,15 @@
 import { PermissionsService } from '../../../services/permissions.service';
 import { DiagramService } from '../../../services/diagram.service';
 import { BaseComponent } from '../base.component';
-import { DiagramObjectType, LinkModel, NodeModel, MapItem, Responsibility, TechnicalRelation } from '../../../models/lineage.model';
+import {
+    DiagramObjectType,
+    LinkModel,
+    NodeModel,
+    MapItem,
+    Responsibility,
+    TechnicalRelation,
+    LineageView,
+} from '../../../models/lineage.model';
 
 import { MenuItem } from 'primeng/primeng';
 
@@ -28,7 +36,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
     private originalObject: string;
     private originalObjectID: number;
-    private viewID: number = 1;
+    private view: LineageView = LineageView.SystemFlow;
     private fullscreen: boolean = false;
     private selectedData = null;
 
@@ -125,7 +133,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         let windowVisible = this.isWindowVisible;
 
         this.isWindowVisible = false;
-        return this.diagramService.getLineageDiagram(this.objectType, this.objectID, this.viewID)
+        return this.diagramService.getLineageDiagram(this.objectType, this.objectID, this.view)
             .then(data => {
                 //console.log(data);
                 this.parseData(data);
@@ -173,12 +181,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                 model.mappingRuleCount = d.mappingRuleCount;
                 model.hasSourceRules = d.HasSourceRules;
                 model.hasMappingRules = (d.mappingRuleCount > 0);
-                model.challengeCount = d.challenges;
-                model.hasChallenges = (d.challenges > 0);
-                model.openEventCount = d.openEventCount;
-                model.hasOpenEvents = (d.openEventCount > 0);
-                model.openIssueCount = d.issues;
-                model.hasOpenIssues = (d.issues > 0);
+                model.actionCount = d.actions;
+                model.hasActions = (d.actions > 0);
                 model.hasTransformations = (d.transformationCount > 0);
 
                 model.mapItems = d.mapItems;
@@ -262,7 +266,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.menuItems = [];
 
         let gears: MenuItem = {
-            icon: 'fa-gears menu-icon',
+            icon: 'fa-gears',
             items: []
         }
 
@@ -274,7 +278,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         });
 
         let eye: MenuItem = {
-            icon: 'fa-eye menu-icon',
+            icon: 'fa-eye',
             items: []
         }
 
@@ -292,19 +296,19 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.menuItems.push(eye); 
 
         this.menuItems.push({
-            icon: 'fa-search-minus menu-icon'
+            icon: 'fa-search-minus'
         });
 
         this.menuItems.push({
-            icon: 'fa-search-plus menu-icon'
+            icon: 'fa-search-plus'
         });
 
         this.menuItems.push({
-            icon: 'fa-refresh menu-icon'
+            icon: 'fa-refresh'
         });
 
         this.menuItems.push({
-            icon: 'fa-info-circle menu-icon'
+            icon: 'fa-info-circle'
         });
 
 
@@ -434,28 +438,28 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     private menuClick(e: MenuItem) {
-        if (e.icon == 'fa-refresh menu-icon') {
+        if (e.icon == 'fa-refresh') {
             this.objectType = this.originalObject;
             this.objectID = this.originalObjectID;
             this.populateDiagram();
-        } else if (e.icon == 'fa-search-plus menu-icon') {
+        } else if (e.icon == 'fa-search-plus') {
             this.myDiagram.scale += .1;
             if (this.myDiagram.scale > 2.5)
                 this.myDiagram.scale = 2.5;
-        } else if (e.icon == 'fa-search-minus menu-icon') {
+        } else if (e.icon == 'fa-search-minus') {
             this.myDiagram.scale -= .1;
             if (this.myDiagram.scale < .1)
                 this.myDiagram.scale = .1;
-        } else if (e.icon == 'fa-info-circle menu-icon') {
+        } else if (e.icon == 'fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
         } else if (e.label == 'Business System Flow') {
-            this.viewID = 1;
+            this.view = LineageView.SystemFlow;
             this.populateDiagram();
         } else if (e.label == 'Business Data Flow') {
-            this.viewID = 2;
+            this.view = LineageView.DataFlow;
             this.populateDiagram();
         } else if (e.label == 'Technical Lineage') {
-            this.viewID = 3;
+            this.view = LineageView.Technical;
             this.populateDiagram();
         } else if (e.label == 'Source Rules') {
             this.headerText = 'Manage Source Rules';
@@ -531,13 +535,13 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                         alignment: go.Spot.BottomLeft,
                         margin: 5
                     },
-                    this.makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+                    this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
-                    this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -603,13 +607,13 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                         alignment: go.Spot.BottomLeft,
                         margin: 5
                     },
-                    this.makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+                    this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
-                    this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -675,13 +679,13 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                         alignment: go.Spot.BottomLeft,
                         margin: 5
                     },
-                    this.makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+                    this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
-                    this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -748,13 +752,13 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                         alignment: go.Spot.BottomLeft,
                         margin: 5
                     },
-                    this.makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+                    this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
-                    this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    ///this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+                    ///this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    ///this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {

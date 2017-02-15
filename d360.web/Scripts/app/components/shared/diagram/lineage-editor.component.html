@@ -207,12 +207,14 @@
         </div>
     </div>
     <div *ngIf="mode == LineageEditorMode.Preview">
-        <header>
-            Preview Lineage Changes
-        </header>
         <div class="row">
             <div class="col s12">
-                <d3s-lineage-editor-preview [type]="object" [id]="objectId" [model]="model" height="500" view="1"></d3s-lineage-editor-preview>
+                <d3s-lineage-editor-preview 
+                                            [type]="object" 
+                                            [id]="objectId" 
+                                            [model]="model" 
+                                            [(view)]="view"
+                                            height="500"></d3s-lineage-editor-preview>
             </div>
         </div>
         <div class="row">
@@ -222,12 +224,15 @@
         </div>
     </div>
     <div *ngIf="mode == LineageEditorMode.Summary">
-        <header>
-            Confirm Lineage Changes
-        </header>
         <div class="row">
             <div class="col s12">
-                <d3s-lineage-editor-preview [type]="object" [id]="objectId" [model]="model" height="500" view="1"></d3s-lineage-editor-preview>
+                <d3s-lineage-editor-preview 
+                                            [type]="object" 
+                                            [id]="objectId" 
+                                            [model]="model" 
+                                            [(view)]="view"
+                                            height="500" 
+                                            header="Confirm Lineage Changes"></d3s-lineage-editor-preview>
             </div>
         </div>
         <div class="row">

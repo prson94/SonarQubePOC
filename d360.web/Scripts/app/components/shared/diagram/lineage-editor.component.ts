@@ -7,7 +7,9 @@ import { Permission } from '../../../models/permission.model';
 import {
     LineageEditorRow,
     AutoCompleteItem,
-    LineageEditorModel
+    LineageEditorModel,
+    LineageView,
+    LineageEditorMode,
 } from '../../../models/lineage.model';
 
 import * as _ from 'lodash';
@@ -36,6 +38,7 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
     @Input() objectId: number;
     @Output() onClose = new EventEmitter();
     @Output() onSaveComplete = new EventEmitter();
+    @Output() onSaveSuccess = new EventEmitter();
 
     permissions: Permission[] = [];
     lineage: LineageEditorRow[] = [];
@@ -50,6 +53,7 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
 
     mode: LineageEditorMode = LineageEditorMode.Default;
     LineageEditorMode = LineageEditorMode;
+    view: LineageView = LineageView.SystemFlow;
     
 
     constructor(private diagramService: DiagramService, protected messagesService: MessagesService, protected permissionsService: PermissionsService) {
@@ -69,12 +73,13 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
 
     load() {
         this.isLoading = true;
-        this.diagramService.getLineageDiagram(this.object, this.objectId, 0)
+        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.ItemList)
             .then(r => {
                 this.lineage = r.items;
-                this.lineage.forEach(i => {
-                    this.initializeLineageRow(i);
-                });
+                if (this.lineage != null && this.lineage.length > 0)
+                    this.lineage.forEach(i => {
+                        this.initializeLineageRow(i);
+                    });
                 this.isLoading = false;
                 //console.log(this.lineage);
             });
@@ -493,10 +498,6 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
 
 }
 
-enum LineageEditorMode {
-    Default,
-    Preview,
-    Summary
-}
+
 
 

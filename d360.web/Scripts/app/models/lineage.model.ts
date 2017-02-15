@@ -38,12 +38,8 @@ export class NodeModel {
     hasMappingRules: boolean = false;
     mappingRuleCount: number = 0;
     hasSourceRules: boolean = false;
-    challengeCount: number = 0;
-    hasChallenges: boolean = false;
-    openEventCount: number = 0;
-    hasOpenEvents: boolean = false;
-    openIssueCount: number = 0;
-    hasOpenIssues: boolean = false;
+    actionCount: number = 0;
+    hasActions: boolean = false;
     transformationCount: number = 0;
     hasTransformations: boolean = false;
     mapItems = null;
@@ -102,11 +98,6 @@ export class SourceRule {
     SubjectName: string;
     SubjectTypeName: string;
     SubjectUrl: string;
-}
-
-export enum DiagramObjectType {
-    Link,
-    Node
 }
 
 export class MapSequenceModel {
@@ -273,5 +264,28 @@ export class IntersectDetail {
     PredicateName: string;
     PredicateType: number;
 }
+
+
+//#region enumerations
+
+export enum DiagramObjectType {
+    Link,
+    Node
+}
+
+export enum LineageView {
+    ItemList = 0,
+    SystemFlow = 1,
+    DataFlow = 2,
+    Technical = 3
+}
+
+export enum LineageEditorMode {
+    Default,
+    Preview,
+    Summary
+}
+
+//#endregion
 
 

@@ -11,7 +11,10 @@ import {
     MapItem,
     Responsibility,
     TechnicalRelation,
+    LineageView,
 } from '../../../models/lineage.model';
+
+import { MenuItem } from 'primeng/primeng';
 
 import * as _ from 'lodash';
 import * as go from 'gojs';
@@ -19,7 +22,11 @@ import * as go from 'gojs';
 @Component({
     selector: 'd3s-lineage-editor-preview',
     template: `
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<header>
+    <span>{{header}}</span>
+    <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
+    <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
+</header>
 <div id="LineagePreviewDiagram" #diagram></div>
 `,
     providers: [DiagramService]
@@ -29,8 +36,10 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
     @Input() model: LineageEditorModel;
     @Input() type: string;
     @Input() id: number;
-    @Input() view: number = 1;
+    @Input() view: LineageView = LineageView.SystemFlow;
     @Input() height: number = 300;
+    @Input() header: string = "Preview Lineage Changes"
+    @Output() viewChange = new EventEmitter();
     @ViewChild('diagram') diagramRef;
 
     private g = go.GraphObject.make;
@@ -39,11 +48,14 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
     private initialLinks: go.Link[] = [];
     private initialNodes: go.Node[] = [];
 
+    private menuItems: MenuItem[] = [];
+
     constructor(private diagramService: DiagramService, protected messagesService: MessagesService) {
         super();
     }
 
     ngOnInit() {
+        this.initializeMenuItems();
         this.initializeDiagram();
     }
 
@@ -52,6 +64,8 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
     }
 
     private initializeDiagram() {
+        
+
         this.myDiagram = this.createDiagram();
 
         this.myDiagram.nodeTemplateMap.add("Focal", this.createFocalNode());
@@ -63,16 +77,65 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         this.myDiagram.linkTemplateMap.add("", this.createDefaultLink());
         this.myDiagram.linkTemplateMap.add("Support", this.createSupportLink());
 
-        //this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
-       // this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
-        //this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
-
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
         this.populateDiagram();
+    }
+
+    private initializeMenuItems() {
+        this.menuItems = [];
+
+        let eye: MenuItem = {
+            icon: 'fa-eye',
+            items: []
+        }
+
+        eye.items.push({
+            label: 'Business System Flow'
+        });
+        eye.items.push({
+            label: 'Business Data Flow'
+        });
+        eye.items.push({
+            label: 'Technical Lineage'
+        });
+
+        this.menuItems.push(eye);
+
+        this.menuItems.push({
+            icon: 'fa-search-minus'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-search-plus'
+        });
+    }
+
+    private menuClick(e: MenuItem) {
+        if (e.icon == 'fa-search-plus') {
+            this.myDiagram.scale += .1;
+            if (this.myDiagram.scale > 2.5)
+                this.myDiagram.scale = 2.5;
+        } else if (e.icon == 'fa-search-minus') {
+            this.myDiagram.scale -= .1;
+            if (this.myDiagram.scale < .1)
+                this.myDiagram.scale = .1;
+        } else if (e.label == 'Business System Flow') {
+            this.view = LineageView.SystemFlow;
+            this.viewChange.emit(LineageView.SystemFlow);
+            this.populateDiagram();
+        } else if (e.label == 'Business Data Flow') {
+            this.view = LineageView.DataFlow;
+            this.viewChange.emit(LineageView.DataFlow);
+            this.populateDiagram();
+        } else if (e.label == 'Technical Lineage') {
+            this.view = LineageView.Technical;
+            this.viewChange.emit(LineageView.Technical);
+            this.populateDiagram();
+        }
     }
 
 
@@ -123,12 +186,8 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                 model.mappingRuleCount = d.mappingRuleCount;
                 model.hasSourceRules = d.HasSourceRules;
                 model.hasMappingRules = (d.mappingRuleCount > 0);
-                model.challengeCount = d.challenges;
-                model.hasChallenges = (d.challenges > 0);
-                model.openEventCount = d.openEventCount;
-                model.hasOpenEvents = (d.openEventCount > 0);
-                model.openIssueCount = d.issues;
-                model.hasOpenIssues = (d.issues > 0);
+                model.actionCount = d.actions;
+                model.hasActions = (d.actions> 0);
                 model.hasTransformations = (d.transformationCount > 0);
 
                 model.mapItems = d.mapItems;
@@ -172,10 +231,7 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(modelList);
 
-        //this.refreshControls(null);  //set buttons/expanders to defaults
-
         this.myDiagram.commitTransaction("load_all_data");
-        //this.reOrderLayout();
     }
 
     private htmlDecode(val: string): string {
@@ -263,13 +319,12 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                         alignment: go.Spot.BottomLeft,
                         margin: 5
                     },
-                    this.makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+                    this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
-                    this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -335,13 +390,13 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                         alignment: go.Spot.BottomLeft,
                         margin: 5
                     },
-                    this.makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+                    this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
-                    this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -407,13 +462,13 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                         alignment: go.Spot.BottomLeft,
                         margin: 5
                     },
-                    this.makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+                    this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
-                    this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -480,13 +535,13 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                         alignment: go.Spot.BottomLeft,
                         margin: 5
                     },
-                    this.makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+                    this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
-                    this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {

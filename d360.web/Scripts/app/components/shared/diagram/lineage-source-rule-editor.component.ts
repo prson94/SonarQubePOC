@@ -90,11 +90,11 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
     ngOnInit() {
 
         this.menuItems.push({
-            icon: 'fa-floppy-o menu-icon'
+            icon: 'fa-floppy-o'
         });
 
         this.menuItems.push({
-            icon: 'fa-close menu-icon'
+            icon: 'fa-close'
         });
 
         this.load();
@@ -187,9 +187,9 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
 
 
     menuAction(e: MenuItem) {
-        if (e.icon == 'fa-close menu-icon') {
+        if (e.icon == 'fa-close') {
             this.close();
-        } else if (e.icon == 'fa-floppy-o menu-icon') {
+        } else if (e.icon == 'fa-floppy-o') {
             this.save();
         }
     }
