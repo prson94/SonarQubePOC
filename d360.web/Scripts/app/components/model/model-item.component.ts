@@ -104,7 +104,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.showHierarchy(id);  
             });
         
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe(params => {            
             this.hideSidebarItems();
             let newModelId = +params['modelId'];
             let hierarchyId = +params['id'];// if hierarchyId is passed via alternative route to workaround bug with router escaping ; = and other chars.
@@ -117,16 +117,17 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             else
                 this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', newModelId);
 
-            if (this.modelId != newModelId) {
+            if (this.modelId != newModelId) {                
                 this.modelId = newModelId;
                 this.isLoading = true;
-                this.load(hierarchyId).then(() => this.isLoading = false);
-              
+                this.load(hierarchyId).then(() => this.isLoading = false);              
             }
             else {
                 // pop last breadcrumb
                 this.headerBreadcrumbService.popLastBreadcrumb();
-                this.selectModelHierarchy(hierarchyId)
+                this.selectModelHierarchy(hierarchyId);
+                this.clearSidebar();
+                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
             }
             
         });        
