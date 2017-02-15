@@ -30,6 +30,8 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     @Input() showFusionQueryConfig: boolean;
     @Output() showFusionQueryConfigChange = new EventEmitter();
 
+    @Output() loaded = new EventEmitter();
+
     private treeItems: TreeNode[];
     private selected: TreeNode;
 
@@ -84,6 +86,8 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
                     if (this.fusionAttributeTypeId > 0)
                         this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
                 }    
+
+                this.loaded.emit();
 
                 this.isLoading = false;
             });

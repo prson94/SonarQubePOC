@@ -14,8 +14,10 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
 import { SharedDeleteFormModule } from '../shared/delete.form';
+import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedFusionAttributeItemDetailsModule } from '../shared/fusion-attribute-item-details.component';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
@@ -28,6 +30,7 @@ import { FusionRuleModule } from './rules/fusion-rule.module';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
 import { FusionAgentErrorsComponent } from './fusion-agent-errors.component';
+import { FusionAttributeDetailsComponent } from './fusion-attribute-details.component';
 import { FusionAttributeItemComponent } from './fusion-attribute-item.component';
 import { FusionAttributeSummaryComponent } from './fusion-attribute-summary.component';
 import { FusionComponent } from './fusion.component';
@@ -97,9 +100,11 @@ import {
         AceEditorModule,
         CoreModule,
         D3SSharedModule,        
-        PipesModule,        
+        PipesModule,      
+        SharedAuditModule,  
         SharedDashboardModule,
         SharedDeleteFormModule,
+        SharedDiagramModule,
         SharedDynamicGridEditorModule,
         SharedFieldDefinitionModule,
         SharedFusionAttributeItemDetailsModule,
@@ -111,6 +116,7 @@ import {
     declarations: [
         FusionAgentErrorsComponent,
         FusionAgentHistoryComponent,  
+        FusionAttributeDetailsComponent,
         FusionAttributeItemComponent,      
         FusionAttributeSummaryComponent,
         FusionAttributeSummaryFiltersComponent,

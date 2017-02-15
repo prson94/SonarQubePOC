@@ -13,7 +13,7 @@ import { TreeNode } from 'primeng/primeng';
     host: {
         '(document:click)': 'onClick($event)',
     },  
-    template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
+    template: ` <a *ngIf="breadcrumb.hasLink()" (click)="navigateToLink(breadcrumb.link)" class="breadcrumb" style="cursor:pointer">{{ breadcrumb.text }}</a>
                 <div *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</div>
                 <p-autoComplete size="40"                                                      
                             *ngIf="showSearch" 
@@ -107,5 +107,9 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
             'font-weight': node.data.hasRelations ? 'bold' : 'normal',            
         };
         return styles;
+    }
+
+    private navigateToLink(url: string) {
+        this.router.navigateByUrl(url);
     }
 }

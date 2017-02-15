@@ -1,5 +1,5 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { BaseComponent } from '../shared/base.component';
@@ -8,6 +8,8 @@ import { LazyLoadEvent } from 'primeng/primeng';
 import { FusionAttributePagedResults, FusionAttributeFilter } from '../../models/fusion-attribute.model';
 import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StateService } from '../../services/state.service';
 
 @Component({
     selector: 'd3s-fusion-attribute-summary',
@@ -16,11 +18,17 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                     <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
-                        <p-dataTable #dt resizableColumns="true" columnResizeMode="expand" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                            
-                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
+                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
+                        <p-dataTable #dt resizableColumns="true" columnResizeMode="expand" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="stateService.fusionFilters.rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                        
+                           <p-column [style]="{width:'35px'}">
+                                    <template let-item="rowData" pTemplate type="body">
+                                        <a style="cursor:pointer;" (click)="selectItem(item)" title="details"><i class="fa fa-info" aria-hidden="true"></i></a>                                                                            
+                                    </template>
+                            </p-column>                                                        
+                            <p-column *ngFor="let column of columns;let first = first" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <span *ngIf="item[column.datafield]" [innerHtml]="item[column.datafield]"></span>
+                                    <a *ngIf="first && item[column.datafield]" (click)="selectItem(item)">{{item[column.datafield]}}</a>
+                                    <span *ngIf="!first && item[column.datafield]" [innerHtml]="item[column.datafield]"></span>
                                 </template>
                             </p-column>                            
                         </p-dataTable>                   
@@ -47,40 +55,35 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     private fusionObject: string = 'FusionAttributeType';
     private fusionObjectID: number = 0;
-    private filters: FusionAttributeFilter[] = [];
-                
-    private rowsPerPage: number = this.defaultInitialItemsPerPage;
+   
     private results: FusionAttributePagedResults;    
     columns: GridColumn[] = [];    
     filtercolumns: GridFilterColumn[] = [];
-
-    currentPageNumber: number = 0;
-    sortField: string = "";
-    sortOrder: SortOrder = SortOrder.None;
-
     
-    constructor(private gridDefinitionService: GridDefinitionService, private fusionAttributeService: FusionAttributeService) {
+    
+    constructor(private gridDefinitionService: GridDefinitionService, private fusionAttributeService: FusionAttributeService, private router: Router, private stateService: StateService) {
         super();
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {
+        if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {            
             this.fusionObject = 'FusionAttributeType';
             this.fusionObjectID = this.fusionAttributeTypeId;
             this.fusionQueryAttributeTypeId = null;
             if (this.initialFusionAttributeId > 0)
-                this.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
-            else   
-                this.filters = [];
+                this.stateService.fusionFilters.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
 
-            this.getFieldsDefinition();
+            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID);      
+
+            this.getFieldsDefinition();            
         } 
         else if (changes['fusionQueryAttributeTypeId'] && this.fusionQueryAttributeTypeId) {
             this.fusionObject = 'FusionQueryAttributeType';            
             this.fusionObjectID = this.fusionQueryAttributeTypeId;
-            this.fusionAttributeTypeId = null;
-            this.filters = [];
-            this.getFieldsDefinition();
+            this.fusionAttributeTypeId = null;            
+            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID);      
+
+            this.getFieldsDefinition();            
         } 
     }
     
@@ -98,8 +101,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
 
     private doFilterResults(event) {        
-        this.filters = event;
-        this.currentPageNumber = 0;        
+        this.stateService.fusionFilters.filters = event;
+        this.stateService.fusionFilters.currentPageNumber = 0;        
         this.getData();
     }
 
@@ -110,17 +113,17 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         }
 
         //remove any invalid filters
-        if (this.filters && this.filters.length > 0) {
-            for (var i = this.filters.length - 1; i >= 0; i--) {
-                if (!this.filters[i].dataField || !this.filters[i].value) {
+        if (this.stateService.fusionFilters.filters && this.stateService.fusionFilters.filters.length > 0) {
+            for (var i = this.stateService.fusionFilters.filters.length - 1; i >= 0; i--) {
+                if (!this.stateService.fusionFilters.filters[i].dataField || !this.stateService.fusionFilters.filters[i].value) {
                     console.log("REMOVING FILTER", i);
-                    this.filters.splice(i, 1);
+                    this.stateService.fusionFilters.filters.splice(i, 1);
                 }
             }
         }
 
         if (this.fusionObject == "FusionQueryAttributeType") {
-            this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters)
+            this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
                 .then(res => {
                     this.results = res;
 
@@ -131,7 +134,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                 });
         }
         else {
-            this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionObjectID, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters)
+            this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionObjectID, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
                 .then(res => {
                     this.results = res;
 
@@ -151,15 +154,19 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
 
-        this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
-        this.rowsPerPage = event.rows;
-        this.currentPageNumber = event.first / event.rows;
+        this.stateService.fusionFilters.sortOrder = event.sortOrder;
+        this.stateService.fusionFilters.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.stateService.fusionFilters.rowsPerPage = event.rows;
+        this.stateService.fusionFilters.currentPageNumber = event.first / event.rows;
         
         this.getData();
     }
 
     private doExport() {
-        this.fusionAttributeService.getFusionAttributeExcel(this.fusionObject, this.fusionId, (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId, this.sortField, this.sortOrder, this.filters);        
+        this.fusionAttributeService.getFusionAttributeExcel(this.fusionObject, this.fusionId, (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters);        
+    }
+
+    private selectItem(item) {        
+        this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT + '/' + SiteUrlHelpers.SITE_URL_FUSION_ATTRIBUTE_DETAILS + '/' + item.Type + '/' + item.ID + '/' + (item.Name ? encodeURIComponent(item.Name) : 'Fusion Query Attribute'));
     }
 };

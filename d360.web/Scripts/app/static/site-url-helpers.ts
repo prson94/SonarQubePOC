@@ -36,8 +36,9 @@
     static SITE_URL_WORKFLOW_LIST = 'workflowlist';
     
     //fusion child routes
-    static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute'
+    static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute';
     static SITE_URL_FUSION_LIST = '';
+    static SITE_URL_FUSION_ATTRIBUTE_DETAILS = 'details';
 
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;

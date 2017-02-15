@@ -2,6 +2,7 @@
 import { Subject } from 'rxjs/Subject';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
+import { FusionAttributeFilter } from '../models/fusion-attribute.model';
 
 export class ArtifactTypeFilters {
     artifactTypeId: number;
@@ -16,13 +17,24 @@ export class ArtifactTypeFilters {
     showSimpleFilter: boolean = true;
 }
 
+export class FusionFilters {
+    id: number;
+    type: string;
+    currentPageNumber: number = 0;
+    sortField: string = "";
+    sortOrder: SortOrder = SortOrder.None;
+    rowsPerPage: number = 25;
+    filters: FusionAttributeFilter[] = [];    
+}
 
 @Injectable()
 export class StateService {
     constructor() {
-        this.artifactTypeFilters = new ArtifactTypeFilters();        
+        this.artifactTypeFilters = new ArtifactTypeFilters();       
+        this.fusionFilters = new FusionFilters(); 
     }
     public artifactTypeFilters: ArtifactTypeFilters;
+    public fusionFilters: FusionFilters;
     private siteMenuRequiresReloadSource = new Subject<boolean>();
 
     siteMenuRequiresReload$ = this.siteMenuRequiresReloadSource.asObservable();
@@ -32,6 +44,14 @@ export class StateService {
         if (this.artifactTypeFilters.artifactTypeId != artifactTypeId) {            
             this.artifactTypeFilters = new ArtifactTypeFilters();
             this.artifactTypeFilters.artifactTypeId = artifactTypeId;
+        }
+    }
+
+    public resetFusionAttributeFilterIfRequired(type: string, id: number) {
+        if (this.fusionFilters.id != id || this.fusionFilters.type != type) {
+            this.fusionFilters = new FusionFilters();
+            this.fusionFilters.id = id;
+            this.fusionFilters.type= type;
         }
     }
 

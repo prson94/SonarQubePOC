@@ -45,16 +45,13 @@ import { StringConstants } from '../../static/string-constants';
                     <div class="col l3 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
-                            <d3s-fusion-structure-tree #tree [fusion]="fusion" [showFusionQueryConfig]="isQueryConfigVisible" (showFusionQueryConfigChange)="showQueryConfig($event)" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
+                            <d3s-fusion-structure-tree #tree [fusion]="fusion" (loaded)="buildBreadcrumb()" [showFusionQueryConfig]="isQueryConfigVisible" (showFusionQueryConfigChange)="showQueryConfig($event)" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
                         </div>
                     </div>
                     <div class="col l9 m12 s12" *ngIf="!isQueryConfigVisible">
                         <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>                        
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
                             <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"></d3s-fusion-attribute-item-details>
-                        </div>
-                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-                            <d3s-object-relationships [objectPermissions]="permissions" [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
                         </div>                        
                     </div>
                     <div class="col l9 m12 s12" *ngIf="isQueryConfigVisible">
@@ -146,7 +143,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o']));           
     }
     
-    private buildBreadcrumb() {
+    private buildBreadcrumb() {        
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion', SiteUrlHelpers.SITE_URL_FUSION_ROOT));
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.fusion.Name));
@@ -162,9 +159,9 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         }
     }
 
-    private addFusionAttributeTypeBreadcrumb(id: number) {
+    private addFusionAttributeTypeBreadcrumb(id: number) {        
         var items = this.fusionTreeComponent.fusionAttributeTypes.filter(x => x.ID == id);
-
+        
         if (items.length > 0) {
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(items[0].Name, `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${items[0].ID}`));            
         }
