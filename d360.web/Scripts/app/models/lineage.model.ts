@@ -200,9 +200,6 @@ export class LineageEditorRow {
     HasError: boolean = false;
     ErrorMessage: string = '';
 
-    TechnicalAdds: LineageEditorTechnicalRow[] = [];
-    TechnicalDeletes: LineageEditorTechnicalRow[] = [];
-
     //workaround p-autoComplete bug where value = '' shows as [object Object]
     //setting to string by default fixes this
     //https://github.com/primefaces/primeng/issues/910
@@ -216,14 +213,27 @@ export class LineageEditorRow {
 
     isNew: boolean = false;
     isDeleting: boolean = false;
-    showTechnical = false;
     isConnected = true;
     isDupe = false;
 
 }
 
 export class LineageEditorTechnicalRow {
+    ID: number;
+    SourceOwner: string;
+    SourceOwnerID: number;
+    SourceFusionAttributeID: number;
+    SourceAttributeName: string;
+    TargetOwner: string;
+    TargetOwnerID: number;
+    TargetFusionAttributeID: number;
+    TargetAttributeName: string;
 
+    selectedSourceFusionAttribute: AutoCompleteItem | string;
+    selectedTargetFusionAttribute: AutoCompleteItem | string;
+
+    isNew: boolean = false;
+    isDeleting: boolean = false;
 }
 
 export class LineageEditorModel {
@@ -233,6 +243,15 @@ export class LineageEditorModel {
     Adds: LineageEditorRow[] = [];
     Deletes: LineageEditorRow[] = [];
     Existing: LineageEditorRow[] = [];
+}
+
+export class LineageEditorTechnicalModel {
+    FocalID: number;
+    Focal: string;
+
+    Adds: LineageEditorTechnicalRow[] = [];
+    Deletes: LineageEditorTechnicalRow[] = [];
+    Existing: LineageEditorTechnicalRow[] = [];
 }
 
 export class IntersectDetail {

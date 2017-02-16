@@ -2,6 +2,7 @@
 
     <header [hidden]="diagramMode != DiagramMode.Diagram">
         <span>Lineage</span>
+        <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
         <div class="TileTools" style="right: 5px; top: 5px; z-index:1000;width:100%">
             <div>
                 <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)" *ngIf="diagramMode == DiagramMode.Diagram"></d3s-tile-actions>
@@ -55,8 +56,11 @@
     <div *ngIf="diagramMode == DiagramMode.SourceRuleEditor">
         <d3s-lineage-source-rule-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()"></d3s-lineage-source-rule-editor>
     </div>
-    <div *ngIf="diagramMode == DiagramMode.LineageEditor">
-        <d3s-lineage-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()" (onSaveComplete)="populateDiagram()"></d3s-lineage-editor>
+    <div *ngIf="diagramMode == DiagramMode.BusinessLineageEditor">
+        <d3s-lineage-business-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()" (onSaveComplete)="populateDiagram()"></d3s-lineage-business-editor>
+    </div>
+    <div *ngIf="diagramMode == DiagramMode.TechnicalLineageEditor">
+        <d3s-lineage-technical-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()" (onSaveComplete)="populateDiagram()"></d3s-lineage-technical-editor>
     </div>
 
 </div>

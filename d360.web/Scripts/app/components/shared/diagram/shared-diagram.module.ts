@@ -16,7 +16,8 @@ import {
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage.component';
-import { LineageEditorComponent } from './lineage-editor.component';
+import { LineageBusinessEditorComponent } from './lineage-business-editor.component';
+import { LineageTechnicalEditorComponent } from './lineage-technical-editor.component';
 import { LineageEditorPreviewComponent } from './lineage-editor-preview.component';
 import { LineageFusionComponent } from './lineage-fusion.component';
 import { LineageMappingRulesComponent } from './lineage-mapping-rules.component';
@@ -59,7 +60,8 @@ import { SharedFormMessageModule } from '../form-message.part'
     declarations: [
         ImpactComponent,        
         LineageComponent,
-        LineageEditorComponent,
+        LineageBusinessEditorComponent,
+        LineageTechnicalEditorComponent,
         LineageEditorPreviewComponent,
         LineageFusionComponent,
         LineageMappingRulesComponent,

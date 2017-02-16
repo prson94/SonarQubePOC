@@ -1,0 +1,40 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div *ngIf="mode == LineageEditorMode.Default">
+        <header>
+            Manage Technical Lineage
+            <d3s-tile-actions hasClose="true"
+                              hasAdd="true"
+                              hasSave="true"
+                              hasView="true"
+                              (viewClick)="preview()"
+                              (closeClick)="onClose.emit()"
+                              (addClick)="add()"
+                              (saveClick)="valid ? summarize() : null"></d3s-tile-actions>
+        </header>
+        <div class="row">
+            <div class="col s12">
+                <table class="responsive-table lineage-editor-table">
+                    <thead style="background-color:#999;color:#fff;font-weight: bold;">
+                        <tr>
+                            <th>
+                                Source Fusion Attribute
+                            </th>
+                            <th style="width:30px"></th>
+                            <th>
+                                Target Fusion Attribute
+                            </th>
+                            <th>
+                                Related To
+                            </th>
+                            <th>
+
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

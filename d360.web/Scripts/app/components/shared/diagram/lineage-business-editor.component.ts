@@ -15,8 +15,8 @@ import {
 import * as _ from 'lodash';
 
 @Component({
-    selector: 'd3s-lineage-editor',
-    templateUrl: './lineage-editor.component.html',
+    selector: 'd3s-lineage-business-editor',
+    templateUrl: './lineage-business-editor.component.html',
     styles: [
         `
 .lineage-editor-table>thead>tr>th {
@@ -33,7 +33,7 @@ import * as _ from 'lodash';
     providers: [DiagramService]
 })
 
-export class LineageEditorComponent extends BaseComponent implements OnInit {
+export class LineageBusinessEditorComponent extends BaseComponent implements OnInit {
     @Input() object: string;
     @Input() objectId: number;
     @Output() onClose = new EventEmitter();
@@ -80,11 +80,12 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
                     this.lineage.forEach(i => {
                         this.initializeLineageRow(i);
                     });
+                else
+                    this.lineage = [];
                 this.isLoading = false;
                 //console.log(this.lineage);
             });
     }
-
 
     select(field: string, i: LineageEditorRow, e: any) {
         this.setObjectValue(i, i[field]);
@@ -309,7 +310,6 @@ export class LineageEditorComponent extends BaseComponent implements OnInit {
         i.isNew = false;
         i.isConnected = true;
         i.isDeleting = false;
-        i.showTechnical = false;
 
         i.selectedSourceRelationshipType = new AutoCompleteItem();
         (<AutoCompleteItem>i.selectedSourceRelationshipType).labelField = 'SourceIntersectTypeName';

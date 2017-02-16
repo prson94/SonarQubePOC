@@ -565,7 +565,8 @@
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-relate.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-promote.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-find.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage-business-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage-technical-editor.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
     <Content Include="Scripts\app\vendor.bundle.js" />
@@ -986,7 +987,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-editor-preview.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-business-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-technical-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationship-roles.component.ts" />

@@ -247,7 +247,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private refreshControls(data: any) {
         this.setSourceValues(data);
         this.toggleTabs(data);
-        this.toggleMenuItems(data);
+        this.loadMenuItems();
     }
 
     private toggleTabs(data: NodeModel | LinkModel) {
@@ -264,7 +264,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         }
     }
 
-    private toggleMenuItems(data: NodeModel | LinkModel) {
+    private loadMenuItems() {
+        console.log('toggle menu items');
         this.menuItems = [];
 
         let gears: MenuItem = {
@@ -273,11 +274,14 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         }
 
         gears.items.push({
-            label: 'Source Rules'
+            label: 'Edit Source Rules'
         });
         gears.items.push({
-            label: 'Edit Lineage'
+            label: 'Edit Business Lineage'
         });
+        //gears.items.push({
+        //    label: 'Edit Technical Lineage'
+        //});
 
         let eye: MenuItem = {
             icon: 'fa-eye',
@@ -440,6 +444,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     private menuClick(e: MenuItem) {
+        //TODO: this is a hack, need a better way to handle these clicks
         if (e.icon == 'fa-refresh') {
             this.objectType = this.originalObject;
             this.objectID = this.originalObjectID;
@@ -463,18 +468,22 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         } else if (e.label == 'Technical Lineage') {
             this.view = LineageView.Technical;
             this.populateDiagram();
-        } else if (e.label == 'Source Rules') {
+        } else if (e.label == 'Edit Source Rules') {
             this.headerText = 'Manage Source Rules';
             this.diagramMode = DiagramMode.SourceRuleEditor;
-        } else if (e.label == 'Edit Lineage') {
-            this.headerText = 'Edit Lineage';
-            this.diagramMode = DiagramMode.LineageEditor;
+        } else if (e.label == 'Edit Business Lineage') {
+            this.headerText = 'Edit Business Lineage';
+            this.diagramMode = DiagramMode.BusinessLineageEditor;
+        } else if (e.label == 'Edit Technical Lineage') {
+            this.headerText = 'Edit Technical Lineage';
+            this.diagramMode = DiagramMode.TechnicalLineageEditor;
         }
     }
 
     private closeEditor() {
         this.headerText = 'Lineage';
         this.diagramMode = DiagramMode.Diagram;
+        this.loadMenuItems();
     }
 
     //#endregion
@@ -999,5 +1008,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 enum DiagramMode {
     Diagram,
     SourceRuleEditor,
-    LineageEditor
+    BusinessLineageEditor,
+    TechnicalLineageEditor
 }

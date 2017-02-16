@@ -2,7 +2,7 @@
 <div *ngIf="!isLoading">
     <div *ngIf="mode == LineageEditorMode.Default">
         <header>
-            Manage Lineage
+            Manage Business Lineage
             <d3s-tile-actions 
                               hasClose="true" 
                               hasAdd="true" 
@@ -18,24 +18,34 @@
                 <table class="responsive-table lineage-editor-table">
                     <thead style="background-color:#999;color:#fff;font-weight: bold;">
                         <tr>
+                            <th colspan="4" style="text-align: center">
+                                FROM
+                            </th>
+                            <th style="width:30px"></th>
+                            <th colspan="4" style="text-align: center">
+                                TO
+                            </th>
+                        </tr>
+                        <tr>
                             <th style="width:10px;"></th>
                             <th>
-                                Source Relationship Type
+                                Relationship Type
                             </th>
                             <th>
-                                Source Subject
+                                Subject
                             </th>
                             <th>
-                                Source Object
+                                Object
+                            </th>
+                            <th style="width:30px"></th>
+                            <th>
+                                Relationship Type
                             </th>
                             <th>
-                                Target Relationship Type
+                                Subject
                             </th>
                             <th>
-                                Target Subject
-                            </th>
-                            <th>
-                                Target Object
+                                Object
                             </th>
                             <th>
 
@@ -89,6 +99,7 @@
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceObjectID < 1" class="errorMessage">* Required</div>
                             </td>
+                            <td style="width:30px"></td>
                             <td>
                                 <p-autoComplete [(ngModel)]="i.selectedTargetRelationshipType"
                                                 [suggestions]="queryResults"
@@ -137,11 +148,11 @@
                         </tr>
                         <tr *ngIf="i.isNew && !i.isConnected">
                             <td style="width: 10px"></td>
-                            <td colspan="7" class="errorMessage">This record is not connected to anything on the lineage</td>
+                            <td colspan="8" class="errorMessage">This record is not connected to anything on the lineage</td>
                         </tr>
                         <tr *ngIf="i.isNew && i.isDupe">
                             <td style="width: 10px"></td>
-                            <td colspan="7" class="errorMessage">This record is a duplicate of an existing record on the lineage</td>
+                            <td colspan="8" class="errorMessage">This record is a duplicate of an existing record on the lineage</td>
                         </tr>
 
                         <tr *ngIf="!i.isNew" [style.color]="i.isDeleting ? '#aaa' : '#000'">
@@ -161,6 +172,7 @@
                                     {{i.SourceObjectName}}
                                 </div>
                             </td>
+                            <td style="width:30px"></td>
                             <td>
                                 <div style="width:95%">
                                     {{i.TargetIntersectTypeName}}
@@ -180,26 +192,6 @@
                                 <a *ngIf="!i.isDeleting" (click)="delete(i)" style="cursor: pointer"><i class="fa fa-trash"></i></a>
                                 <a *ngIf="i.isDeleting" (click)="delete(i)" style="cursor: pointer"><i class="fa fa-trash-o"></i></a>
                             </td>
-                        </tr>
-
-                        <tr *ngIf="i.showTechnical">
-                            <td style="width:10px;"></td>
-                            <td colspan="7">
-                                <table>
-                                    <thead>
-
-                                    </thead>
-                                    <tbody>
-
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td style="width:10px"></td>
-                            <td *ngIf="!i.showTechnical" colspan="7" style="padding:0 3px 3px 0; text-align: right;"><a (click)="i.showTechnical = true" style="cursor:pointer;"><i class="fa fa-plus-square-o"></i> show technical mapping</a></td>
-                            <td *ngIf="i.showTechnical" colspan="7" style="padding:0 3px 3px 0; text-align: right;"><a (click)="i.showTechnical = false" style="cursor:pointer;"><i class="fa fa-minus-square-o"></i> hide technical mapping</a></td>
                         </tr>
                     </tbody>
                 </table>
