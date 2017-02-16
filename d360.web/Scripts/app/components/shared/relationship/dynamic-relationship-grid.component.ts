@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
 import { Router } from '@angular/router';
 import { Lookup, LookupItem } from '../../../models/lookup.model';
-import { GridDefinition, GridColumn } from '../../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
 import { MessagesService } from '../../../services/messages.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { RelationshipsService} from '../../../services/relationships.service';
@@ -46,7 +46,11 @@ declare var CompanySettings;
                             </template> 
                         </p-column>                                                                                                                                                                              
                         <p-column header="Classification" field="ClassificationText" sortable="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>                            
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  [filter]="!simpleFilter">
+                            <template let-item="rowData" pTemplate type="body">
+                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
+                            </template>
+                        </p-column>        
                         <p-column></p-column>
                     </p-dataTable>   
                 </span>
@@ -79,6 +83,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
 
     @Input() simpleFilter: boolean;
+
+    private fields: GridField[] = [];
 
     get taxonomyName() {
         return CompanySettings.ArtifactType_TaxonomyTypeID || '';
@@ -116,6 +122,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType')
             .then(result => {
                 this.columns = result.Columns;
+                this.fields = result.Fields;
                 if (result.Fields.findIndex(x => x.name == 'TaxonomyType') >= 0) {
                     this.columns.unshift({
                         text: this.taxonomyName,
