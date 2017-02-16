@@ -23,7 +23,7 @@ import { BaseComponent } from '../../shared/base.component';
                                 </template>
                             </p-column>
                             <p-column field="PredicateName" header="Predicate" sortable="true" [filter]="!showSimpleFilter"></p-column>                                
-                            <p-column field="ObjectName" header="Side 2 Name" sortable="true" [filter]="!showSimpleFilter">
+                            <p-column field="ObjectName" header="Object" sortable="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></span>
                                 </template>
