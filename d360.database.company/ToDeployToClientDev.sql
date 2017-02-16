@@ -2634,3 +2634,7 @@ go
 -- Remove the unused xml nullable column path from fusionattribute table, its not used anywhere and just makes the tables rows bigger
 ALTER TABLE fusionattribute DROP COLUMN [path]
 go
+
+
+CREATE INDEX IX_MapRuleItem_SourceFusionAttributeID_TargetFusionAttributeID ON [dbo].[MapRuleItem] (SourceFusionAttributeID asc, TargetFusionAttributeID asc); 
+go

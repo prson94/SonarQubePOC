@@ -9,6 +9,7 @@ begin
 	declare @sourceFieldTypeID int;
 	declare @targetFieldTypeID int;		
 	declare @mapFusionAttributeTypeID int = 710; -- this is fixed for all clients
+	declare @viewColumnFusionAttributeTypeID int = 715; -- this is fixed for all clients
 	
 	-- load the field ids for the source / target from mappings
 	select @sourceFieldTypeID = id from fieldtype where [object] = 'FusionAttributeType' and [objectid] = @mapFusionAttributeTypeID and name = 'source';
@@ -57,11 +58,22 @@ begin
 	declare @fusionName nvarchar(250);
 	select @fusionName = name from [dbo].[fusion] where id = @fusionID;
 
-	print 'Running For Fusion:' + @fusionName;
-	print 'Using Target Field ID:' + cast(@targetFieldTypeID as varchar(100));
-	print 'Using Source Field ID:' + cast(@sourceFieldTypeID as varchar(100));
-	print 'Using Database prefix:' + @databaseName;
+	begin
+		print 'Running For Fusion:' + @fusionName;
+		print 'Using Target Field ID:' + cast(@targetFieldTypeID as varchar(100));
+		print 'Using Source Field ID:' + cast(@sourceFieldTypeID as varchar(100));
+		print 'Using Database prefix:' + @databaseName;
+	end
 	-- end logging
+
+	-- get the intersecttypeid for view -> table intersects
+	declare @viewTableIntersectTypeId int;
+	select @viewTableIntersectTypeId = id from intersecttype where [object] = 'FusionAttributeType' and [Subject] = 'FusionAttributeType' and [subjectid] = 714 and [objectid] = 712
+	if @viewTableIntersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for markit view/table relations', 16, -1);
+		return;
+	end
 
 	IF OBJECT_ID('tempdb..#maps') IS NOT NULL
 		DROP TABLE #maps;
@@ -164,6 +176,70 @@ begin
 	from #maps T
 		inner join fusionattribute FA on (FA.ID = T.TargetFusionAttributeID)
 		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
+
+
+	--this query adds in the view to table mapings its disabled for now because a bug in the technical lineage
+	-- add in any view column to table column records
+
+	--this query adds in the view to table mapings its disabled for now because a bug in the technical lineage
+	-- add in any view column to table column records
+	-- table / view maps for targets that are missing connection
+	insert into #maps
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.TargetFusionAttributeID as SourceFusionAttributeID,
+			m.TargetFusionAttributeTypeID as SourceFusionAttributeTypeID,
+			m.TargetObject as SourceObject,
+			m.TargetParentObjectFusionAttributeID as SourceParentObjectFusionAttributeID,
+			m.TargetParentObject as SourceParentObject,
+			m.TargetParentObjectFusionAttributeTypeID as SourceParentObjectFusionAttributeTypeID,
+			T.id as TargetFusionAttributeID,
+			T.fusionattributetypeid as TargetFusionAttributeTypeID,
+			T.textpath as TargetObject,
+			i.objectid as TargetParentObjectFusionAttributeID,
+			T_p.name as TargetParentObject,
+			T_p.fusionattributetypeid as TargetParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.TargetParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.TargetObject,m.TargetParentObject,'')) -- we are doing this to avoid messing with the name column that doesnt have an index
+		where 
+			m.TargetFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewTableIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = m.TargetFusionAttributeID and m_2.TargetFusionAttributeID = T.Id) or (m_2.TargetFusionAttributeID = m.TargetFusionAttributeID and m_2.SourceFusionAttributeID = T.id)) -- dont insert duplicates
+	
+	-- table / view maps for sources that are missing connection
+	insert into #maps
+		(TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID, SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.SourceFusionAttributeID as TargetFusionAttributeID,
+			m.SourceFusionAttributeTypeID as TargetFusionAttributeTypeID,
+			m.SourceObject as TargetObject,
+			m.SourceParentObjectFusionAttributeID as TargetParentObjectFusionAttributeID,
+			m.SourceParentObject as TargetParentObject,
+			m.SourceParentObjectFusionAttributeTypeID as TargetParentObjectFusionAttributeTypeID,
+			T.id as SourceFusionAttributeID,
+			T.fusionattributetypeid as SourceFusionAttributeTypeID,
+			T.textpath as SourceObject,
+			i.objectid as SourceParentObjectFusionAttributeID,
+			T_p.name as SourceParentObject,
+			T_p.fusionattributetypeid as SourceParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.SourceParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.SourceObject,m.SourceParentObject,'')) -- we are doing this to avoid messing with the name column that doesnt have an index
+		where 
+			m.SourceFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewTableIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = T.Id and m_2.TargetFusionAttributeID = m.SourceFusionAttributeID) or (m_2.TargetFusionAttributeID = T.id  and m_2.SourceFusionAttributeID = m.SourceFusionAttributeID)) -- dont insert duplicates
+						
+	-- end table / view maps
 
 
 	-- populate the previous step id this also duplicates items that have multiple paths and is very important
@@ -332,7 +408,8 @@ begin
 	from #objectmap OM
 		inner join #maps T on (OM.MapID = T.ID)
 		inner join [IntersectDetail] OI on OI.[Subject] = T.[Target] and OI.SubjectID = T.[TargetID] and OI.[Object] = OM.[Object] and OI.[ObjectID] = OM.[ObjectID] and OM.targetintersectid is null;
-			
+	
+
 	/*testing only!!*/			
 --	select * from #maps order by [ultimateparentid], [level]
 	/*end testing only*/
@@ -422,5 +499,6 @@ begin
 
 	declare @mapitemCount int;
 	select @mapitemCount = count(1) from mapitem where [owner] = 'MARKIT LINEAGE'
-	print 'Inserted [' + cast(@mapitemCount as varchar) + '] mapitem records';			
+	print 'Inserted [' + cast(@mapitemCount as varchar) + '] mapitem records';
+			
 end

@@ -13,6 +13,8 @@
 	[Owner]					  VARCHAR (50) NULL,
     CONSTRAINT [PK_MapRuleItem] PRIMARY KEY NONCLUSTERED ([ID] ASC)
 );
+go
 
 
-
+CREATE INDEX IX_MapRuleItem_SourceFusionAttributeID_TargetFusionAttributeID ON [dbo].[MapRuleItem] (SourceFusionAttributeID asc, TargetFusionAttributeID asc); 
+go

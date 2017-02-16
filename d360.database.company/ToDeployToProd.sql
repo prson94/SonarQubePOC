@@ -6100,3 +6100,6 @@ go
 
 alter table [intersect] add [Owner] varchar(100) null;
 go
+
+CREATE INDEX IX_MapRuleItem_SourceFusionAttributeID_TargetFusionAttributeID ON [dbo].[MapRuleItem] (SourceFusionAttributeID, TargetFusionAttributeID); 
+go

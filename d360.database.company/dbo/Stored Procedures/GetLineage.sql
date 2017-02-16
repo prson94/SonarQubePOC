@@ -1,4 +1,4 @@
-﻿CREATE procedure [dbo].[GetLineage]
+﻿create procedure [dbo].[GetLineage]
 --declare 
 	@type varchar(50),
 	@id int,
@@ -447,8 +447,8 @@ begin
 
 	if @view = 3
 	begin
-		declare @tFusionPoints table ( ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int)--, [to] varchar(250), [from] varchar(250) )
-
+		declare @tFusionPoints table (	ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int);
+	
 		declare @tItems table (
 			MapItemID int, --MapID int,
 
@@ -473,6 +473,7 @@ begin
 							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
 					where	I.SourceFusionAttributeID = @id or I.TargetFusionAttributeID = @id;
 
+				-- backward items
 				with cte as (
 					select	ID,
 							SourceFusionAttributeID,
@@ -489,12 +490,36 @@ begin
 					where	T.[Level] <= 25
 				)
 				insert into @tFusionPoints
-					select	ID, 
+					select distinct	ID, 
 							NULL, 
 							SourceFusionAttributeID, 
 							TargetFusionAttributeID
 					from	cte 
-					where	ID not in (select ID from @tFusionPoints)
+					where	ID not in (select ID from @tFusionPoints);
+
+				-- forward items
+				with cte as (
+					select	ID,
+							SourceFusionAttributeID,
+							TargetFusionAttributeID,
+							1 as [Level]
+					from	@tFusionPoints
+					union all
+					select	S.ID,
+							S.SourceFusionAttributeID,
+							S.TargetFusionAttributeID,
+							T.[Level] + 1 as [Level]
+					from	MapRuleItem S
+							inner join cte T on T.TargetFusionAttributeID = S.SourceFusionAttributeID and S.ID <> T.ID
+					where	T.[Level] <= 25
+				)
+				insert into @tFusionPoints
+					select distinct	ID, 
+							NULL, 
+							SourceFusionAttributeID, 
+							TargetFusionAttributeID
+					from	cte 
+					where	ID not in (select ID from @tFusionPoints);
 
 				-- get all items directly tied to the focal object.
 				insert into @tItems
@@ -697,12 +722,13 @@ begin
 				)
 
 				insert into @tFusionPoints
-					select	ID,
+					select distinct	ID,
 							NULL,
 							SourceFusionAttributeID,
 							TargetFusionAttributeID
 					from	cteFusionForward
-					where	ID not in (select ID from @tFusionPoints);
+					where	ID not in (select ID from @tFusionPoints)
+					OPTION (MAXRECURSION 20) ;
 
 				with cteFusionBackward as (
 					select	ID, 
@@ -725,12 +751,13 @@ begin
 				)
 
 				insert into @tFusionPoints
-					select	ID,
+					select distinct	ID,
 							NULL,
 							SourceFusionAttributeID,
 							TargetFusionAttributeID
 					from	cteFusionBackward
-					where	ID not in (select ID from @tFusionPoints);
+					where	ID not in (select ID from @tFusionPoints)
+					OPTION (MAXRECURSION 20) ;
 			end
 
 			--select * from @tFusionPoints;
@@ -752,14 +779,15 @@ begin
 						'FusionAttribute' as [type],
 						T.Name as typeName,
 						A.TextPath as name,
-						'#000' as back,
-						'#fff' as fore,
+						COALESCE(ST.IconBackColor, '#000') as back,
+						COALESCE(ST.IconForeColor, '#fff') as fore,
 						'Fusion' as template,
 						B.SourceSubjectTypeName + ' : ' + B.SourceSubjectName as other,
 						null
 				from	@tFusionPoints S
 						inner join FusionAttribute A on A.ID = S.SourceFusionAttributeID
 						inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+						left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
 						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
 						left join @tItems B on B.MapItemID = J.MapItemID
 			insert into @nodes
@@ -770,14 +798,15 @@ begin
 						'FusionAttribute' as [type],
 						T.Name as typeName,
 						A.TextPath as name,
-						'#000' as back,
-						'#fff' as fore,
+						COALESCE(ST.IconBackColor, '#000') as back,
+						COALESCE(ST.IconForeColor, '#fff') as fore,
 						'Fusion' as template,
 						B.TargetSubjectTypeName + ' : ' + B.TargetSubjectName as other,
 						null
 				from	@tFusionPoints S
 						inner join FusionAttribute A on A.ID = S.TargetFusionAttributeID
 						inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+						left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
 						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
 						left join @tItems B on B.MapItemID = J.MapItemID
 				where	cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') not in (select [key] from @nodes)
