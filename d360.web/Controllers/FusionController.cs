@@ -5,15 +5,12 @@ using d360.core.entities;
 using d360.model;
 using d360.core;
 using Newtonsoft.Json;
-using System.Diagnostics;
 using d360.extensions;
-using System.Text;
 using d360.web.Models.Attributes;
 using SpreadsheetLight;
 using System.IO;
 using System.Xml.Linq;
 using System;
-using System.Text.RegularExpressions;
 using d360.core.exceptions;
 using System.Net;
 using d360.fusion;
@@ -36,8 +33,7 @@ namespace d360.web.Controllers
         }
 
         #endregion
-
-        private static Regex _invalidXMLChars = new Regex(@"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled);
+                
 
         #region Partials
 
@@ -520,7 +516,7 @@ select * from h where ID <> @t order by h.[Level] desc;
 
             fields.ForEach(f => {
                 var name = $"Field{f.ID}";
-                //var name = f.Name.Replace("'", "''").Replace("--", "");
+                
                 sqlFieldModels.Add(new SqlFieldModel
                 {
                     FieldColumnName = $"{name}",
@@ -810,7 +806,7 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             fields.ForEach(f => {
                 var name = $"Field{f.ID}";
-                //var name = f.Name.Replace("'", "''").Replace("--", "");
+                
                 sqlFieldModels.Add(new SqlFieldModel
                 {
                     FieldColumnName = $"{name}",
@@ -828,7 +824,7 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             #region Query
 
-            string columns = string.Join(", ", sqlFieldModels.Select(c => c.FieldName)); //.Where(c => !c.FieldName.Contains("P.IntersectType"))
+            string columns = string.Join(", ", sqlFieldModels.Select(c => c.FieldName)); 
             string joins = string.Join(" ", sqlFieldModels.Where(o => !string.IsNullOrEmpty(o.FieldJoin)).OrderBy(o => o.JoinOrder).Select(o => o.FieldJoin));
 
             var sql = $@"
@@ -863,7 +859,7 @@ where   A.FusionQueryAttributeTypeID = @t
                 document.SetCellValue(row, col, prop.FieldFriendlyName);
                 col++;
             }
-            //document.FreezePanes(1, col);
+            
             #endregion
 
             foreach (var item in query)
@@ -978,8 +974,7 @@ where   A.FusionQueryAttributeTypeID = @t
                 case SystemObjects.FusionQueryAttribute:
                     var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id, i => i.FusionQueryAttributeType);
                     if (fusionQueryAttribute != null)
-                    {
-                     //   model["Name"] = fusionQueryAttribute.SourceID;
+                    {                     
                         model["FusionID"] = fusionQueryAttribute.FusionQueryAttributeType.FusionID;
                         model["FusionAttributeTypeID"]= fusionQueryAttribute.FusionQueryAttributeTypeID;
                     }

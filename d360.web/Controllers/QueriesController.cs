@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.model;
 using d360.web.Models.Attributes;
+using Dapper;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -208,7 +209,7 @@ outer apply (
 					and ObjectID = @id
 			order by DateStart desc
 			) S
-order by	T.Name", new { type = type.ToString(), id = id });
+order by	T.Name", new { type = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -297,7 +298,7 @@ from	Comment C
 		inner join CommentRelation R	on R.CommentID = C.ID 
 										and R.ObjectType = @type 
 										and R.ObjectID = @id
-                                        and C.ParentID is null", new { type = new Dapper.DbString { Value = type, IsAnsi = true }, id = id });
+                                        and C.ParentID is null", new { type = new Dapper.DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50}, id = id });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
