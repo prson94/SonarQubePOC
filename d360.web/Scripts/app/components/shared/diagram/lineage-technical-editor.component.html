@@ -28,10 +28,63 @@
                                 Related To
                             </th>
                             <th>
-
+                                
                             </th>
                         </tr>
                     </thead>
+                    <tbody *ngFor="let i of lineage; let x=index;" [style.background-color]="x%2==0 ? '#fff' : '#DEF1FD'">
+                        <tr *ngIf="!i.isNew">
+                            <td>
+                                {{i.SourceFusionAttributeName}}
+                            </td>
+                            <td style="width:30px"></td>
+                            <td>
+                                {{i.TargetFusionAttributeName}}
+                            </td>
+                            <td>
+                                {{i.MapItemID}}
+                            </td>
+                            <td class="RowTools">
+                                <a *ngIf="!i.isDeleting" (click)="delete(i)" style="cursor: pointer"><i class="fa fa-trash"></i></a>
+                                <a *ngIf="i.isDeleting" (click)="delete(i)" style="cursor: pointer"><i class="fa fa-trash-o"></i></a>
+                            </td>
+                        </tr>
+                        <tr *ngIf="i.isNew">
+                            <td>
+                                <p-autoComplete [(ngModel)]="i.selectedSourceFusionAttribute"
+                                                [suggestions]="queryResults"
+                                                (completeMethod)="query('selectedSourceFusionAttribute', i, $event)"
+                                                (onSelect)="select('selectedSourceFusionAttribute', i, $event)"
+                                                field="label"
+                                                (blur)="blur('selectedSourceFusionAttribute', i)"
+                                                placeholder="Search..."
+                                                [tabindex]="(x * 6) + 1"
+                                                [style]="{ 'width':'95%' }"
+                                                [inputStyle]="{ 'width':'95%' }">
+                                </p-autoComplete>
+                            </td>
+                            <td style="width:30px"></td>
+                            <td>
+                                <p-autoComplete [(ngModel)]="i.selectedTargetFusionAttribute"
+                                                [suggestions]="queryResults"
+                                                (completeMethod)="query('selectedTargetFusionAttribute', i, $event)"
+                                                (onSelect)="select('selectedTargetFusionAttribute', i, $event)"
+                                                field="label"
+                                                (blur)="blur('selectedTargetFusionAttribute', i)"
+                                                placeholder="Search..."
+                                                [tabindex]="(x * 6) + 1"
+                                                [style]="{ 'width':'95%' }"
+                                                [inputStyle]="{ 'width':'95%' }">
+                                </p-autoComplete>
+                            </td>
+                            <td>
+                                <!--<select style="width:95%;" placeholder="Choose a value" [ngModel]="i.MapItemID" (ngModelChange)="null">
+                                    <option></option>
+                                    <option *ngFor="let m of mapItems" [value]="m.ID">{{m.SourceSubjectName}} to {{m.TargetSubjectName}}</option>
+                                </select>-->
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>

@@ -976,6 +976,16 @@ namespace d360.web.Models
         public List<LineageEditorRow> Deletes { get; set; }
     }
 
+    public class LineageEditorTechnicalModel
+    {
+        public SystemObjects Focal { get; set; }
+        public int FocalID { get; set; }
+        public List<LineageEditorTechnicalRow> Existing { get; set; }
+        public List<LineageEditorTechnicalRow> Adds { get; set; }
+        public List<LineageEditorTechnicalRow> Deletes { get; set; }
+    }
+
+
     public class LineageEditorRow
     {
 
@@ -1018,6 +1028,15 @@ namespace d360.web.Models
 
     public class LineageEditorTechnicalRow
     {
+        public int ID { get; set; }
+        public int MapItemID { get; set; }
 
+        public int SourceFusionAttributeID { get; set; }
+        public int TargetFusionAttributeID { get; set; }
+        public string SourceFusionAttributeName { get; set; }
+        public string TargetFusionAttributeName { get; set; }
+
+        public bool HasError { get; set; } = false;
+        public string ErrorMessage { get; set; }
     }
 }

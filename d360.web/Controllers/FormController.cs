@@ -8389,6 +8389,85 @@ for json path");
             };
         }
 
+        [HttpPost, Route("UpdateTechnicalLineage")]
+        public JsonNetResult UpdateTechnicalLineage(LineageEditorTechnicalModel model)
+        {
+            model.Deletes?.ForEach(d =>
+            {
+                var mapRuleItem = Company.GetById<MapRuleItem>(d.ID);
+
+            var leftMaps = Company.MapRuleItems.Where(m => m.TargetFusionAttributeID == d.SourceFusionAttributeID);
+            var rightMaps = Company.MapRuleItems.Where(m => m.SourceFusionAttributeID == d.TargetFusionAttributeID);
+
+                try
+                {
+                    leftMaps.ToList().ForEach(l =>
+                    {
+                    //remove map items from map
+                    l.MapRules.ToList().ForEach(m =>
+                        {
+                            m.MapRuleItems.Remove(l);
+                        });
+
+                    //remove the map item
+                    Company.MapRuleItems.Remove(l);
+
+                    });
+
+                    rightMaps.ToList().ForEach(r =>
+                    {
+                        r.MapRules.ToList().ForEach(m =>
+                        {
+                            m.MapRuleItems.Remove(r);
+                        });
+
+                    //remove the map item
+                    Company.MapRuleItems.Remove(r);
+
+                    });
+
+                    mapRuleItem.MapRules.ToList().ForEach(m =>
+                    {
+                        m.MapRuleItems.Remove(mapRuleItem);
+                    });
+
+                    Company.MapRuleItems.Remove(mapRuleItem);
+
+                    Company.SaveChanges();
+                } catch (Exception ex)
+                {
+                    d.HasError = true;
+                    d.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+            model.Adds?.ForEach(a =>
+            {
+                try
+                {
+
+
+                    //add map rule item
+                    Company.MapRuleItems.Add(new MapRuleItem()
+                    {
+                        SourceFusionAttributeID = a.SourceFusionAttributeID,
+                        TargetFusionAttributeID = a.TargetFusionAttributeID
+                    });
+                    Company.SaveChanges();
+
+                } catch (Exception ex)
+                {
+                    a.HasError = true;
+                    a.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+            return new JsonNetResult
+            {
+                Data = model,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         #endregion
 
         #region Load

@@ -445,10 +445,10 @@ begin
 		end --view 2
 	end
 
-	if @view = 3
+	if @view in (3,4)
 	begin
-		declare @tFusionPoints table (	ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int);
 	
+		declare @tFusionPoints table (	ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int);
 		declare @tItems table (
 			MapItemID int, --MapID int,
 
@@ -760,84 +760,103 @@ begin
 					OPTION (MAXRECURSION 20) ;
 			end
 
-			--select * from @tFusionPoints;
 
-			--Load tables we will return to caller.
-			insert into @links
-				select	distinct
-						cast(S.SourceFusionAttributeID as varchar),-- + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [from],
-						cast(S.TargetFusionAttributeID as varchar),-- + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [to],
-						'' as category
-				from	@tFusionPoints S
-						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
-						left join @tItems B on B.MapItemID = J.MapItemID
-			insert into @nodes
-				select	distinct
-						cast(S.SourceFusionAttributeID as varchar),-- + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [key],
-						'FusionAttribute' as [obj],
-						SourceFusionAttributeID as [objid], 
-						'FusionAttribute' as [type],
-						T.Name as typeName,
-						A.TextPath as name,
-						COALESCE(ST.IconBackColor, '#000') as back,
-						COALESCE(ST.IconForeColor, '#fff') as fore,
-						'Fusion' as template,
-						B.SourceSubjectTypeName + ' : ' + B.SourceSubjectName as other,
-						null
-				from	@tFusionPoints S
-						inner join FusionAttribute A on A.ID = S.SourceFusionAttributeID
-						inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
-						left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
-						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
-						left join @tItems B on B.MapItemID = J.MapItemID
-			insert into @nodes
-				select	distinct
-						cast(S.TargetFusionAttributeID as varchar),-- + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [key],
-						'FusionAttribute' as [obj],
-						TargetFusionAttributeID as [objid], 
-						'FusionAttribute' as [type],
-						T.Name as typeName,
-						A.TextPath as name,
-						COALESCE(ST.IconBackColor, '#000') as back,
-						COALESCE(ST.IconForeColor, '#fff') as fore,
-						'Fusion' as template,
-						B.TargetSubjectTypeName + ' : ' + B.TargetSubjectName as other,
-						null
-				from	@tFusionPoints S
-						inner join FusionAttribute A on A.ID = S.TargetFusionAttributeID
-						inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
-						left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
-						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
-						left join @tItems B on B.MapItemID = J.MapItemID
-				where	cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') not in (select [key] from @nodes)
 
-				--gets rid of dupes
-				delete	@nodes 
-				where	other is null 
-						and (obj + cast([objid] as varchar)) in (
-																select	(obj + cast([objid] as varchar))
-																from	@nodes 
-																where	other is not null
-															  )
-				delete	T
-				from	@links T
-						left join @nodes S on S.[key] = T.[from] or S.[key] = T.[to]
-				where	S.[key] is null
+		if @view = 3
+		begin
+		--Load tables we will return to caller.
+		insert into @links
+			select	distinct
+					cast(S.SourceFusionAttributeID as varchar),-- + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [from],
+					cast(S.TargetFusionAttributeID as varchar),-- + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [to],
+					'' as category
+			from	@tFusionPoints S
+					left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+					left join @tItems B on B.MapItemID = J.MapItemID
+		insert into @nodes
+			select	distinct
+					cast(S.SourceFusionAttributeID as varchar),-- + '.' + coalesce(B.SourceSubject, '0') + '.' + coalesce(cast(B.SourceSubjectID as varchar), '0') as [key],
+					'FusionAttribute' as [obj],
+					SourceFusionAttributeID as [objid], 
+					'FusionAttribute' as [type],
+					T.Name as typeName,
+					A.TextPath as name,
+					COALESCE(ST.IconBackColor, '#000') as back,
+					COALESCE(ST.IconForeColor, '#fff') as fore,
+					'Fusion' as template,
+					B.SourceSubjectTypeName + ' : ' + B.SourceSubjectName as other,
+					null
+			from	@tFusionPoints S
+					inner join FusionAttribute A on A.ID = S.SourceFusionAttributeID
+					inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+					left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
+					left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+					left join @tItems B on B.MapItemID = J.MapItemID
+		insert into @nodes
+			select	distinct
+					cast(S.TargetFusionAttributeID as varchar),-- + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') as [key],
+					'FusionAttribute' as [obj],
+					TargetFusionAttributeID as [objid], 
+					'FusionAttribute' as [type],
+					T.Name as typeName,
+					A.TextPath as name,
+					COALESCE(ST.IconBackColor, '#000') as back,
+					COALESCE(ST.IconForeColor, '#fff') as fore,
+					'Fusion' as template,
+					B.TargetSubjectTypeName + ' : ' + B.TargetSubjectName as other,
+					null
+			from	@tFusionPoints S
+					inner join FusionAttribute A on A.ID = S.TargetFusionAttributeID
+					inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+					left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
+					left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+					left join @tItems B on B.MapItemID = J.MapItemID
+			where	cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') not in (select [key] from @nodes)
 
---select	* from	@links
---select	* from	@nodes
+			--gets rid of dupes
+			delete	@nodes 
+			where	other is null 
+					and (obj + cast([objid] as varchar)) in (
+															select	(obj + cast([objid] as varchar))
+															from	@nodes 
+															where	other is not null
+															)
+			delete	T
+			from	@links T
+					left join @nodes S on S.[key] = T.[from] or S.[key] = T.[to]
+			where	S.[key] is null
 
-		select	(
-				select	*
-				from	@links O
-				for json path			
-				) as 'links',
-				(
-				select	distinct
-						*
-				from	@nodes
-				for json path			
-				) as 'nodes'
-		for json path, WITHOUT_ARRAY_WRAPPER
-	end --view 3
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	distinct
+							*
+					from	@nodes
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end --view 3
+
+		if @view = 4
+		begin
+			select (
+				select distinct
+					F.ID,
+					I.MapItemID,
+					F.SourceFusionAttributeID,
+					FS.TextPath as SourceFusionAttributeName,
+					F.TargetFusionAttributeID,
+					FT.TextPath as TargetFusionAttributeName 
+				from @tFusionPoints F
+				left join @tItems I on I.MapItemID = F.MapItemID
+				inner join FusionAttribute FS on FS.ID = F.SourceFusionAttributeID
+				inner join FusionAttribute FT on FT.ID = F.TargetFusionAttributeID
+				for json path
+				) as 'items'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end --view 4
+	end
 end

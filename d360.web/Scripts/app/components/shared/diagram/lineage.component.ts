@@ -265,7 +265,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     private loadMenuItems() {
-        console.log('toggle menu items');
         this.menuItems = [];
 
         let gears: MenuItem = {
@@ -279,9 +278,9 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         gears.items.push({
             label: 'Edit Business Lineage'
         });
-        //gears.items.push({
-        //    label: 'Edit Technical Lineage'
-        //});
+        gears.items.push({
+            label: 'Edit Technical Lineage'
+        });
 
         let eye: MenuItem = {
             icon: 'fa-eye',

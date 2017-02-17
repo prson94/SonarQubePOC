@@ -6,6 +6,7 @@ import { BaseComponent } from '../base.component';
 import { Permission } from '../../../models/permission.model';
 import {
     LineageEditorTechnicalRow,
+    LineageEditorRow,
     AutoCompleteItem,
     LineageEditorTechnicalModel,
     LineageView,
@@ -42,9 +43,10 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
 
     permissions: Permission[] = [];
     lineage: LineageEditorTechnicalRow[] = [];
+    mapItems: LineageEditorRow[] = [];
     model: LineageEditorTechnicalModel;
     queryResults: AutoCompleteItem[] = [];
-    valid = false;
+    valid = true;
 
     isLoading = false;
     saveComplete = false;
@@ -71,18 +73,22 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
 
     load() {
         this.isLoading = true;
-        //this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.ItemList)
-        //    .then(r => {
-        //        this.lineage = r.items;
-        //        if (this.lineage != null && this.lineage.length > 0)
-        //            this.lineage.forEach(i => {
-        //                this.initializeLineageRow(i);
-        //            });
-        //        else
-        //            this.lineage = [];
-        //        this.isLoading = false;
-        //        //console.log(this.lineage);
-        //    });
+        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapItemList)
+            .then(r => {
+                this.mapItems = r;
+            })
+            .then(() => this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapRuleItemList))
+            .then(r => {
+                this.lineage = r.items;
+                if (this.lineage != null && this.lineage.length > 0)
+                    this.lineage.forEach(i => {
+                        this.initializeLineageRow(i);
+                    });
+                else
+                    this.lineage = [];
+                this.isLoading = false;
+                console.log(this.lineage);
+            });
         this.isLoading = false;
     }
 
@@ -92,7 +98,7 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
         let data = i[field].data;
 
         switch (field) {
-            case 'selectedSourceSubject':
+            case 'selectedSourceFusionAttribute':
                // i.SourceSubject = data.Object;
                 break;
           
@@ -103,7 +109,36 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
     }
 
     query(field: string, i: LineageEditorTechnicalRow, e: any) {
-        
+        switch (field) {
+            case 'selectedSourceFusionAttribute':
+                this.diagramService.queryFusionAttributes(e.query)
+                    .then(r => {
+                        this.queryResults = [];
+                        r.forEach(i => {
+                            let a = new AutoCompleteItem();
+                            a.label = i.Name;
+                            a.value = i.ID;
+                            a.labelField = 'SourceFusionAttributeName';
+                            a.valueField = 'SourceFusionAttributeID';
+                            this.queryResults.push(a);
+                        });
+                    });
+                break;
+            case 'selectedTargetFusionAttribute':
+                this.diagramService.queryFusionAttributes(e.query)
+                    .then(r => {
+                        this.queryResults = [];
+                        r.forEach(i => {
+                            let a = new AutoCompleteItem();
+                            a.label = i.Name;
+                            a.value = i.ID;
+                            a.labelField = 'TargetFusionAttributeName';
+                            a.valueField = 'TargetFusionAttributeID';
+                            this.queryResults.push(a);
+                        });
+                    });
+                break;
+        }
     }
 
     blur(field: string, i: LineageEditorTechnicalRow) {
@@ -183,11 +218,13 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
     }
 
     summarize() {
+        this.model = new LineageEditorTechnicalModel();
         this.model.Adds = this.lineage.filter(l => l.isNew);
         this.model.Deletes = this.lineage.filter(l => l.isDeleting);
         this.model.Existing = this.lineage.filter(l => !l.isNew);
-        this.mode = LineageEditorMode.Summary;
+        //this.mode = LineageEditorMode.Summary;
         this.saveComplete = false;
+        this.save();
     }
 
     preview() {
@@ -210,6 +247,20 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
 
         this.isLoading = true;
 
+        this.diagramService.updateTechnicalLineage(this.model)
+            .then(r => {
+                this.model = r;
+                this.onSaveComplete.emit();
+                this.saveComplete = true;
+                let addErrors = (this.model.Adds == null) ? null : this.model.Adds.filter(m => m.HasError);
+                let deleteErrors = (this.model.Deletes == null) ? null : this.model.Deletes.filter(m => m.HasError);
+                if (addErrors != null && addErrors.length > 0)
+                    console.log('the following add records errored out: ', addErrors);
+                if (deleteErrors != null && deleteErrors.length > 0)
+                    console.log('the following delete records errored out: ', deleteErrors);
+                this.isLoading = false;
+                this.load();
+            });
         //this.diagramService.updateLineage(this.model)
         //    .then(r => {
         //        this.model = r;

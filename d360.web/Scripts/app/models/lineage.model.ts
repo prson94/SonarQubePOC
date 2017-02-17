@@ -112,6 +112,7 @@ export class MapSequenceItem {
     SourceIntersectID: number;
     Target: string;
     TargetIntersectID: number;
+    isDeleting = false;
 }
 
 export class MapContext {
@@ -220,20 +221,20 @@ export class LineageEditorRow {
 
 export class LineageEditorTechnicalRow {
     ID: number;
-    SourceOwner: string;
-    SourceOwnerID: number;
+    MapItemID: number;
     SourceFusionAttributeID: number;
-    SourceAttributeName: string;
-    TargetOwner: string;
-    TargetOwnerID: number;
+    SourceFusionAttributeName: string;
     TargetFusionAttributeID: number;
-    TargetAttributeName: string;
+    TargetFusionAttributeName: string;
 
     selectedSourceFusionAttribute: AutoCompleteItem | string;
     selectedTargetFusionAttribute: AutoCompleteItem | string;
 
     isNew: boolean = false;
     isDeleting: boolean = false;
+
+    HasError: boolean = false;
+    ErrorMessage: string = '';
 }
 
 export class LineageEditorModel {
@@ -293,7 +294,8 @@ export enum DiagramObjectType {
 }
 
 export enum LineageView {
-    ItemList = 0,
+    MapItemList = 0,
+    MapRuleItemList = 4,
     SystemFlow = 1,
     DataFlow = 2,
     Technical = 3

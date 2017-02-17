@@ -12,6 +12,7 @@ import {
     SourceRule,
     RelationItem,
     LineageEditorModel,
+    LineageEditorTechnicalModel
 } from '../models/lineage.model';
 import { ImpactDiagramModel } from '../models/impact.model';
 import { HierarchyDiagramModel } from '../models/model.model';
@@ -125,6 +126,13 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    public queryFusionAttributes(query: string): Promise<any> {
+        return this.http.get(`api/lineage/query/fusionattributes?query=${query}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     public deleteIntersect(intersectID: number) {
         return this.http.delete(`form/DeleteIntersect?id=${intersectID}`)
             .toPromise()
@@ -136,6 +144,13 @@ export class DiagramService extends BaseService {
         return this.http.post('form/UpdateLineage', model)
             .toPromise()
             .then(response => <LineageEditorModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public updateTechnicalLineage(model: LineageEditorTechnicalModel): Promise<LineageEditorTechnicalModel> {
+        return this.http.post('form/UpdateTechnicalLineage', model)
+            .toPromise()
+            .then(response => <LineageEditorTechnicalModel>response.json())
             .catch(err => this.handleError(err));
     }
 

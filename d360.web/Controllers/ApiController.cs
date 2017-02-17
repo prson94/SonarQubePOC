@@ -2080,6 +2080,21 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }
 
+        [Route("lineage/query/fusionattributes"), HttpGet]
+        public HttpResponseMessage QueryFusionAttributes(string query, int maxResults = 50)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return Request.CreateResponse(HttpStatusCode.OK, "");
+            query = sanitizeQueryString(query);
+
+            var objects = Company.Query<dynamic>($@"select top {maxResults}
+			    ID,
+	            TextPath as Name
+                from FusionAttribute
+                where TextPath like @query", new { query = query });
+
+            return Request.CreateResponse(HttpStatusCode.OK, objects);
+        }
         string sanitizeQueryString(string query)
         {
             query = query ?? "";

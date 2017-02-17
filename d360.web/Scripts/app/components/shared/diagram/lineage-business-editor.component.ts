@@ -73,7 +73,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
 
     load() {
         this.isLoading = true;
-        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.ItemList)
+        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapItemList)
             .then(r => {
                 this.lineage = r.items;
                 if (this.lineage != null && this.lineage.length > 0)
