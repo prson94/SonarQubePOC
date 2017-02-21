@@ -515,6 +515,7 @@
     <Build Include="workflow\Tables\VersionStepTransition.sql" />
     <Build Include="dbo\Tables\NymRelation.sql" />
     <Build Include="fusion\Stored Procedures\GenerateMarkitMapLineageData.sql" />
+    <None Include="fusion\Stored Procedures\GenerateEagleLineageData.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
