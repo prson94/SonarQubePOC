@@ -120,14 +120,15 @@ namespace d360.web.Controllers
 
         #region Lineage Diagram
 
-        [HttpGet, Route("{type}/{id:int}/lineage/{view:int}")]
-        public JsonNetResult GetLineageByObject(SystemObjects type, int id, int view)
+        [HttpGet, Route("{type}/{id:int}/lineage/{view:int}/{usageOnly:bool}")]
+        public JsonNetResult GetLineageByObject(SystemObjects type, int id, int view, bool usageOnly)
         {
-            var list = Company.Query<string>(@"exec GetLineage @type, @id, @view", 
+            var list = Company.Query<string>(@"exec GetLineage @type, @id, @view, @usageOnly", 
                 new {
                     type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
                     id,
-                    view
+                    view,
+                    usageOnly
                 }
             ).ToList();
 
@@ -150,6 +151,7 @@ namespace d360.web.Controllers
 
             parameters.Add("type", type.ToString());
             parameters.Add("id", id);
+            parameters.Add("usageOnly", false);
             parameters.Add("view", view);
 
             #region DT Columns
@@ -205,7 +207,7 @@ namespace d360.web.Controllers
             dt.SetTypeName("LineageTable");
             parameters.Add("rows", dt);
 
-            var list = Company.Query<string>("exec GetLineage @type, @id, @view, @rows", parameters);
+            var list = Company.Query<string>("exec GetLineage @type, @id, @view, @usageOnly, @rows", parameters);
 
             var json = string.Join("", list);
             var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);

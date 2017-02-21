@@ -6388,8 +6388,8 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             if (p > 0)
                 list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
-            //else
-            //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Tab", Name = "Tab Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Tab", true, "^[a-zA-Z0-9]+$", 1, 250, "cannot contain any spaces") });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "ScanEnabled", Name = "Agent Scanning Enabled?", FieldDescription = "Allow the fusion agent to scan for this metadata. If disabled on a parent, scanning will also be disabled on all child attribute types.", FieldType = DataType.Boolean.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -6414,13 +6414,27 @@ namespace d360.web.Controllers
         public JsonResult FusionAttributeType_EditFields(int id)
         {
             var list = new List<EditableField>();
-            var a = Company.GetById<FusionAttributeType>(id);
+            var a = Company.GetById<FusionAttributeType>(id, i => i.Parent);
 
             if (!Company.HasPermission(SystemObjects.FusionType, a.FusionTypeID, Claim.Update))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            bool scanEnabledIsReadOnly = false;
+            bool scanEnabledValue = a.ScanEnabled;
+            if (a.Parent != null)
+            {
+                scanEnabledIsReadOnly = !a.Parent.ScanEnabled;
+                if (!a.Parent.ScanEnabled)
+                {
+                    scanEnabledValue = false;
+                }
+            }
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, ReadOnly = scanEnabledIsReadOnly, FieldName = "ScanEnabled", Name = "Agent Scanning Enabled?", FieldDescription = "Allow the fusion agent to scan for this metadata. If disabled on a parent, scanning will also be disabled on all child attribute types.", FieldType = DataType.Boolean.ToString(), Value = scanEnabledValue.FormatBooleanReadOnlyValue() });
+
+
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -6452,7 +6466,8 @@ namespace d360.web.Controllers
                 {
                     FusionTypeID = typeID,
                     ParentID = parentID,
-                    Name = parseTextField(form, "Name")
+                    Name = parseTextField(form, "Name"),
+                    ScanEnabled = parseBooleanField(form, "ScanEnabled")
                 };
 
                 Company.Add<FusionAttributeType>(model);
@@ -6487,7 +6502,8 @@ namespace d360.web.Controllers
                 {
                     FusionTypeID = typeID,
                     ParentID = parentID,
-                    Name = fusion.Name
+                    Name = fusion.Name,
+                    ScanEnabled = fusion.ScanEnabled
                 };
 
                 Company.Add<FusionAttributeType>(model);
@@ -6556,8 +6572,10 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
+                model.ScanEnabled = parseBooleanField(form, "ScanEnabled");
 
                 Company.Update<FusionAttributeType>(model);
+                Company.PerformObjectActionAfterSaveChanges(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Name = model.Name });
             }
@@ -6577,15 +6595,24 @@ namespace d360.web.Controllers
         {
             try
             {
-                var model = Company.GetById<FusionAttributeType>(fusion.ID);
+                var model = Company.GetById<FusionAttributeType>(fusion.ID, p => p.Parent);
                 if (model == null) throw new NotFoundException("fusion attibute type");
 
                 if (!Company.HasPermission(SystemObjects.FusionType, model.FusionTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = fusion.Name;
+                if (model.Parent != null)
+                {
+                    model.ScanEnabled = (model.Parent.ScanEnabled) ? fusion.ScanEnabled : false;
+                }
+                else
+                {
+                    model.ScanEnabled = fusion.ScanEnabled;
+                }
 
                 Company.Update<FusionAttributeType>(model);
+                Company.PerformObjectActionAfterSaveChanges(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
             }

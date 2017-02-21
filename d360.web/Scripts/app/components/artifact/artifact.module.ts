@@ -38,6 +38,7 @@ import { ArtifactItemChildrenComponent } from './artifact-item-children.componen
 import { ArtifactItemChildGridComponent } from './artifact-item-child-grid.component';
 
 import {    
+    InputSwitchModule,
     InputTextModule,    
     DataTableModule,
     TreeTableModule,
@@ -58,6 +59,7 @@ import {
         ArtifactRoutingModule,
 
         //primeng        
+        InputSwitchModule,
         InputTextModule,        
         DataTableModule,
         TreeTableModule,

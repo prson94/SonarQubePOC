@@ -73,11 +73,11 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
 
     load() {
         this.isLoading = true;
-        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapItemList)
+        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapItemList, false)
             .then(r => {
                 this.mapItems = r;
             })
-            .then(() => this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapRuleItemList))
+            .then(() => this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapRuleItemList, false))
             .then(r => {
                 this.lineage = r.items;
                 if (this.lineage != null && this.lineage.length > 0)

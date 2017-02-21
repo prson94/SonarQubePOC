@@ -30,6 +30,7 @@ import { PolicyListComponent } from './policy-list.component';
 
 import {
     GrowlModule,
+    InputSwitchModule,
     InputTextModule,
     InputMaskModule,
     DataTableModule,
@@ -55,6 +56,7 @@ import {
 
         //primeng
         GrowlModule,
+        InputSwitchModule,
         InputTextModule,
         InputMaskModule,
         DataTableModule,

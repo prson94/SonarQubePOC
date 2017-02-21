@@ -23,7 +23,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
                         </div>
                     </div>
                 </div>         
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="id" [objectName]="name" [objectType]="type"></d3s-lineage>                
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="id" [objectName]="name" [objectType]="type" [usageOnly]="false"></d3s-lineage>                
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="id" [objectName]="name" [objectType]="type"></d3s-audit>              
                  <div class="row" *ngIf="!isLoading && !isOwnershipVisible && !isAuditVisible && !isLineageVisible && !isRelationshipsVisible">    
                     <div class="col s12">

@@ -11,6 +11,7 @@ export class FusionAttributeType {
     ParentID: number;
     FusionTypeID: number;
     Assignable: boolean;
+    ScanEnabled: boolean;
     Name: string;
     Path: string;
     TextPath: string;

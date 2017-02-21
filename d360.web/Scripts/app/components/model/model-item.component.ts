@@ -19,7 +19,7 @@ import { StringConstants } from '../../static/string-constants';
     selector: 'd3s-model-item',
     providers: [ModelsService, SurveysService, PermissionsService],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-lineage>
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'" [usageOnly]="true"></d3s-lineage>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-dashboard-tab>
                 <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-impact>
                 <div class="row" *ngIf="!isLoading && isRelationshipsVisible">

@@ -20,7 +20,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
     providers: [RulesService, PermissionsService, SurveysService],    
     template: ` 
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-lineage>
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'" [usageOnly]="false"></d3s-lineage>
                 <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-impact>
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
                     <div class="col s12">

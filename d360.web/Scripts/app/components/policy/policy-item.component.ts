@@ -17,7 +17,7 @@ import { StringConstants } from '../../static/string-constants';
     selector: 'd3s-policy-item',
     template: `
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'"></d3s-audit>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'"></d3s-lineage>
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'" [usageOnly]="false"></d3s-lineage>
                 <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'"></d3s-impact>
                 <div *ngIf="!isLoading && isRelationshipsVisible" class="row">
                     <div class="col s12">

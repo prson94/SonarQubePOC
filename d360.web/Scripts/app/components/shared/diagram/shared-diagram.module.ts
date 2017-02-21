@@ -8,6 +8,7 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 import {    
     DataTableModule,
     EditorModule,
+    InputSwitchModule,
     SharedModule,
     AutoCompleteModule,
     ButtonModule,
@@ -51,7 +52,8 @@ import { SharedFormMessageModule } from '../form-message.part'
 
         //prime        
         DataTableModule,  
-        EditorModule,      
+        EditorModule,     
+        InputSwitchModule, 
         SharedModule,
         AutoCompleteModule,
         ButtonModule,

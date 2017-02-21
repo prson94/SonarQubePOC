@@ -106,7 +106,18 @@ namespace d360.core.enums
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false)
         ]
-        SeeAlso = 9
+        SeeAlso = 9,
+        [
+            Name("Usage"),
+            Graph("Lineage"),
+            Description("This type of predicate allows for items to be acts as filters within a greater lineage diagram to indicate that only certain paths are used."),
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(true)
+        ]
+        Usage = 10
     }
 
     public class PredicateTypeInfo

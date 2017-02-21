@@ -25,6 +25,8 @@ export class NodeModel {
     obj = null;
     objid = null;
     name = null;
+    textpath = null;
+    shortname = null;
     typeName = null;
     type = null;
     back = null;

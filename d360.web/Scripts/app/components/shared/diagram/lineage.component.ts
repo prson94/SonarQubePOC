@@ -30,6 +30,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     @Input() objectType: string;
     @Input() objectName: string;
     @Input() readonly: boolean = true;
+    @Input() usageOnly: boolean = true;
+    @Input() nameOnly: boolean = true;
     @ViewChild('diagram') diagramRef;
 
     DiagramObjectType = DiagramObjectType;
@@ -106,6 +108,22 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         
     }
 
+    changeUsageOnly(e) {
+        this.usageOnly = e.target.checked;//e.checked;
+        this.populateDiagram();
+    }
+
+    changeNameOnly(e) {
+        this.nameOnly = e.target.checked;//e.checked;
+        //this.populateDiagram();
+        for (var i = 0; i < this.myDiagram.model.nodeDataArray.length; i++) {
+            let model: NodeModel = this.myDiagram.model.nodeDataArray[i] as NodeModel;
+            model.name = this.nameOnly ? model.shortname : model.textpath;
+            console.log(model.name);
+        }
+        this.myDiagram.rebuildParts();
+    }
+
     private initializeDiagram() {
         this.myDiagram = this.createDiagram();
 
@@ -135,7 +153,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         let windowVisible = this.isWindowVisible;
 
         this.isWindowVisible = false;
-        return this.diagramService.getLineageDiagram(this.objectType, this.objectID, this.view)
+
+        return this.diagramService.getLineageDiagram(this.objectType, this.objectID, this.view, this.usageOnly)
             .then(data => {
                 //console.log(data);
                 this.parseData(data);
@@ -172,7 +191,17 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                 model.obj = d.obj;
                 model.objid = d.objid;
                 model.type = d.obj;
-                model.name = this.htmlDecode(d.name);
+                model.textpath = this.htmlDecode(d.name);
+                model.shortname = this.htmlDecode(d.shortname);
+
+                if (this.nameOnly) {
+                    model.name = model.shortname;
+                }
+                else {
+                    model.name = model.textpath;
+                }
+                
+
                 model.typeName = d.typeName;
                 model.fore = d.fore;
                 model.back = d.back;
@@ -368,6 +397,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         }
         this.tab = val;
     }
+
     //#endregion
 
     //#region events
@@ -514,7 +544,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
         return dg;
     }
-
 
     private createFocalNode(): go.Node {
         let nodeWidth = 200;

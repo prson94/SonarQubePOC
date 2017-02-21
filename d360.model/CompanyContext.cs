@@ -2843,6 +2843,19 @@ order by Name", new { workflowType, type, id });
             return returnValue;
         }
 
+        public void PerformObjectActionAfterSaveChanges(BaseObject obj)
+        {
+            if (obj is FusionAttributeType)
+            {
+                var o = obj as FusionAttributeType;
+
+                if (!o.ScanEnabled)
+                {
+                    var cmd = Database.Connection.Execute($"exec UpdateObject @Object, @ObjectID, @ResourceID", new { Object = "FusionAttributeType", ObjectID = o.ID, ResourceID = CurrentResourceID });
+                }
+            }
+        }
+
 #endregion
     }
 }

@@ -21,8 +21,8 @@ import { HierarchyDiagramModel } from '../models/model.model';
 export class DiagramService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    public getLineageDiagram(type: string, id: number, viewID: number): Promise<any> {
-        return this.http.get(`diagrams/${type}/${id}/lineage/${viewID}`)
+    public getLineageDiagram(type: string, id: number, viewID: number, usageOnly: boolean): Promise<any> {
+        return this.http.get(`diagrams/${type}/${id}/lineage/${viewID}/${usageOnly}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

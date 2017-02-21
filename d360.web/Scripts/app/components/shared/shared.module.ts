@@ -9,17 +9,18 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 
 import {
     GrowlModule,
+    InputSwitchModule,
     InputTextModule,    
     DataTableModule,
     TreeTableModule,
-    ButtonModule,
+    ButtonModule, 
     DropdownModule,        
     SelectButtonModule,
     AutoCompleteModule,
     MultiSelectModule,    
     EditorModule,
-    TooltipModule,        
-    SharedModule,                
+    TooltipModule,
+    SharedModule
 } from 'primeng/primeng';
 
 
@@ -83,6 +84,7 @@ import { UserListComponent } from './user-list.component';
         
         //primeng
         GrowlModule,
+        InputSwitchModule,
         InputTextModule,        
         DataTableModule,
         TreeTableModule,

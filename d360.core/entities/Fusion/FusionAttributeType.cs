@@ -23,6 +23,12 @@ namespace d360.core.entities
         [ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
         public string TextPath { get; set; }
 
+        //[DataMember]
+        //public bool Assignable { get; set; }
+
+        [DataMember]
+        public bool ScanEnabled { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 

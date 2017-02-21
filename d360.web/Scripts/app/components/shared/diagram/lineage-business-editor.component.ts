@@ -11,7 +11,7 @@ import {
     LineageView,
     LineageEditorMode,
 } from '../../../models/lineage.model';
-
+//import { InputSwitchModule } from 'primeng/primeng';
 import * as _ from 'lodash';
 
 @Component({
@@ -73,7 +73,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
 
     load() {
         this.isLoading = true;
-        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapItemList)
+        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapItemList, false)
             .then(r => {
                 this.lineage = r.items;
                 if (this.lineage != null && this.lineage.length > 0)

@@ -47,7 +47,7 @@ import { StringConstants } from '../../static/string-constants';
                         </div>
                     </div>
                 </div>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'" [usageOnly]="false"></d3s-lineage>
                 <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-impact>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactTypeId" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>
