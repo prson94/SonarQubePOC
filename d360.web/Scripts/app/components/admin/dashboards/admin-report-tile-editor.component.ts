@@ -31,8 +31,7 @@ import * as _ from 'lodash';
                                     [(text)]="editedTile.CommandText" 
                                     [mode]="'sql'"
                                     theme="eclipse"
-                                    style="height:400px;"></ace-editor>                                 
-                            </div>
+                                    style="height:400px;"></div>                                                             
                         </div>                        
                         <div class="col s12" *ngIf="editedTile.ID">
                             <div class="FieldName" pTooltip="You can use this URI within a JSON-compatible reporting system to pull this data directly.">Tile URI</div>
