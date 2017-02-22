@@ -24,6 +24,7 @@ begin
 	declare @eagleReferenceDataCenterStrategyTypeId int = 215;
 	declare @eagleReferenceDataCenterValidationTypeId int = 216;
 	declare @eagleReferenceDataCenterFieldGroupTypeId int = 218;
+	declare @eagleReferenceDataCenterGoldCopyTypeId int = 217;
 
 	-- validate the provided fusion id that its of fusiontype id 16	
 	declare @fusionTypeId int;
@@ -267,6 +268,31 @@ begin
 	if @intersectTypeId is null
 	begin
 		raiserror('ERROR - Cannot identify the intersecttypeid for eagle field attribute/ rdc data strategy', 16, -1);
+		return;
+	end
+
+	insert into #maps 
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject)
+		select
+			FA_s.ID as SourceFusionAttributeID,
+			FA_s.FusionAttributeTypeID as SourceFusionAttributeTypeID,
+			FA_s.Name as SourceObject,
+			FA_t.ID as TargetFusionAttributeID,
+			FA_t.FusionAttributeTypeID as TargetFusionAttributeTypeID,
+			FA_t.Name as TargetObject
+		from
+			[dbo].[intersect] I
+			inner join [dbo].FusionAttribute FA_t on (FA_t.ID = I.subjectID and I.intersecttypeid = @intersectTypeId and FA_t.FusionID = @fusionId)
+			inner join [dbo].FusionAttribute FA_s on (FA_s.ID = I.objectID and I.intersecttypeid = @intersectTypeId and FA_s.FusionID = @fusionId);
+	
+	set @intersectTypeId = null;
+	----------------------------------------------------------
+	-- RDC Data Strategy to RDC Gold Copy
+	----------------------------------------------------------	
+	select @intersectTypeId = id from intersecttype where subjectid = @eagleReferenceDataCenterGoldCopyTypeId and [subject] = 'FusionAttributeType' and objectid = @eagleReferenceDataCenterStrategyTypeId and [object] = 'FusionAttributeType';
+	if @intersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for eagle rdc gold copy / rdc data strategy', 16, -1);
 		return;
 	end
 
