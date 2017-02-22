@@ -20,6 +20,7 @@ begin
 	declare @eagleFieldAttributeTypeId int = 201;
 	declare @eagleInventoryOfFieldTypeId int = 205;
 	declare @eagleFieldRuleTypeId int = 206;
+	declare @eagleSourceRuleTypeId int = 208;
 	declare @eagleGroupingRuleTypeId int = 210;
 	declare @eagleReferenceDataCenterStrategyTypeId int = 215;
 	declare @eagleReferenceDataCenterValidationTypeId int = 216;
@@ -382,6 +383,81 @@ begin
 	
 	set @intersectTypeId = null;
 	----------------------------------------------------------
+	-- Report Rule to Source Rule
+	----------------------------------------------------------	
+	select @intersectTypeId = id from intersecttype where subjectid = @eagleReportRuleTypeId  and [subject] = 'FusionAttributeType' and objectid = @eagleSourceRuleTypeId and [object] = 'FusionAttributeType';
+	if @intersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for eagle report rule / source rule', 16, -1);
+		return;
+	end
+
+	insert into #maps 
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject)
+		select
+			FA_s.ID as SourceFusionAttributeID,
+			FA_s.FusionAttributeTypeID as SourceFusionAttributeTypeID,
+			FA_s.Name as SourceObject,
+			FA_t.ID as TargetFusionAttributeID,
+			FA_t.FusionAttributeTypeID as TargetFusionAttributeTypeID,
+			FA_t.Name as TargetObject
+		from
+			[dbo].[intersect] I
+			inner join [dbo].FusionAttribute FA_t on (FA_t.ID = I.subjectID and I.intersecttypeid = @intersectTypeId and FA_t.FusionID = @fusionId)
+			inner join [dbo].FusionAttribute FA_s on (FA_s.ID = I.objectID and I.intersecttypeid = @intersectTypeId and FA_s.FusionID = @fusionId);
+	
+	set @intersectTypeId = null;
+	----------------------------------------------------------
+	-- Reference Data Center Data Strategy to Source Rule
+	----------------------------------------------------------	
+	select @intersectTypeId = id from intersecttype where subjectid = @eagleReferenceDataCenterStrategyTypeId  and [subject] = 'FusionAttributeType' and objectid = @eagleSourceRuleTypeId and [object] = 'FusionAttributeType';
+	if @intersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for eagle data strategy / source rule', 16, -1);
+		return;
+	end
+
+	insert into #maps 
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject)
+		select
+			FA_s.ID as SourceFusionAttributeID,
+			FA_s.FusionAttributeTypeID as SourceFusionAttributeTypeID,
+			FA_s.Name as SourceObject,
+			FA_t.ID as TargetFusionAttributeID,
+			FA_t.FusionAttributeTypeID as TargetFusionAttributeTypeID,
+			FA_t.Name as TargetObject
+		from
+			[dbo].[intersect] I
+			inner join [dbo].FusionAttribute FA_t on (FA_t.ID = I.subjectID and I.intersecttypeid = @intersectTypeId and FA_t.FusionID = @fusionId)
+			inner join [dbo].FusionAttribute FA_s on (FA_s.ID = I.objectID and I.intersecttypeid = @intersectTypeId and FA_s.FusionID = @fusionId);
+	
+	set @intersectTypeId = null;
+	----------------------------------------------------------
+	-- Datamart model to Source Rule
+	----------------------------------------------------------	
+	select @intersectTypeId = id from intersecttype where subjectid = @eagleDatamartModelTypeId  and [subject] = 'FusionAttributeType' and objectid = @eagleSourceRuleTypeId and [object] = 'FusionAttributeType';
+	if @intersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for eagle datamart model / source rule', 16, -1);
+		return;
+	end
+
+	insert into #maps 
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject)
+		select
+			FA_s.ID as SourceFusionAttributeID,
+			FA_s.FusionAttributeTypeID as SourceFusionAttributeTypeID,
+			FA_s.Name as SourceObject,
+			FA_t.ID as TargetFusionAttributeID,
+			FA_t.FusionAttributeTypeID as TargetFusionAttributeTypeID,
+			FA_t.Name as TargetObject
+		from
+			[dbo].[intersect] I
+			inner join [dbo].FusionAttribute FA_t on (FA_t.ID = I.subjectID and I.intersecttypeid = @intersectTypeId and FA_t.FusionID = @fusionId)
+			inner join [dbo].FusionAttribute FA_s on (FA_s.ID = I.objectID and I.intersecttypeid = @intersectTypeId and FA_s.FusionID = @fusionId);
+	
+	set @intersectTypeId = null;	
+	----------------------------------------------------------
 	-- Portal Query to Report Profile 
 	----------------------------------------------------------	
 	select @intersectTypeId = id from intersecttype where subjectid = @eaglePortalQueryTypeId and [subject] = 'FusionAttributeType' and objectid = @eagleReportProfileTypeId and [object] = 'FusionAttributeType';
@@ -405,7 +481,7 @@ begin
 			inner join [dbo].FusionAttribute FA_t on (FA_t.ID = I.subjectID and I.intersecttypeid = @intersectTypeId and FA_t.FusionID = @fusionId)
 			inner join [dbo].FusionAttribute FA_s on (FA_s.ID = I.objectID and I.intersecttypeid = @intersectTypeId and FA_s.FusionID = @fusionId);
 	
-	set @intersectTypeId = null;
+	set @intersectTypeId = null;	
 	----------------------------------------------------------
 	-- INSERT 
 	-- update the map rule item id's of already inserted items
