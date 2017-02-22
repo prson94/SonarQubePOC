@@ -12,7 +12,8 @@ import {
     SourceRule,
     RelationItem,
     LineageEditorModel,
-    LineageEditorTechnicalModel
+    LineageEditorTechnicalModel,
+    LineagePreviewModel,
 } from '../models/lineage.model';
 import { ImpactDiagramModel } from '../models/impact.model';
 import { HierarchyDiagramModel } from '../models/model.model';
@@ -154,7 +155,10 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    public previewLineage(type: string, id: number, view: number, model: LineageEditorModel): Promise<any> {
+    public previewLineage(type: string, id: number, view: number, businessModel: LineageEditorModel = null, technicalModel: LineageEditorTechnicalModel = null): Promise<any> {
+        let model: LineagePreviewModel = new LineagePreviewModel();
+        model.BusinessModel = businessModel;
+        model.TechnicalModel = technicalModel;
         return this.http.post(`diagrams/${type}/${id}/lineagepreview/${view}`, model)
             .toPromise()
             .then(response => response.json())

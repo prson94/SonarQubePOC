@@ -231,9 +231,12 @@ export class LineageEditorTechnicalRow {
 
     selectedSourceFusionAttribute: AutoCompleteItem | string;
     selectedTargetFusionAttribute: AutoCompleteItem | string;
+    selectedMapItem: LineageEditorRow;
 
     isNew: boolean = false;
     isDeleting: boolean = false;
+    isConnected = true;
+    isDupe = false;
 
     HasError: boolean = false;
     ErrorMessage: string = '';
@@ -285,6 +288,11 @@ export class IntersectDetail {
     PredicateID: number;
     PredicateName: string;
     PredicateType: number;
+}
+
+export class LineagePreviewModel {
+    BusinessModel: LineageEditorModel;
+    TechnicalModel: LineageEditorTechnicalModel;
 }
 
 

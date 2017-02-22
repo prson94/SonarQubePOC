@@ -3,13 +3,11 @@
     <header [hidden]="diagramMode != DiagramMode.Diagram">
         <span>Lineage</span>
         <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
-        <div class="TileTools" style="right: 160px; top: 5px; z-index:1000;width:100%">
+        <div class="TileTools" style="top: 5px; z-index:1000;width:100%">
             <div>
                 <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)" *ngIf="diagramMode == DiagramMode.Diagram"></d3s-tile-actions>
             </div>
         </div>
-        <div style="font-size: 10px !important; position: absolute; top: 15px; right: 85px; text-transform: none;"><input type="checkbox" [(ngModel)]="usageOnly" (change)="changeUsageOnly($event)" /> Usage Only?</div>
-        <div style="font-size: 10px !important; position: absolute; top: 15px; right: 5px; text-transform: none;"><input type="checkbox" [(ngModel)]="nameOnly" (change)="changeNameOnly($event)" /> Name Only?</div>
     </header>
 
     <div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">

@@ -985,6 +985,12 @@ namespace d360.web.Models
         public List<LineageEditorTechnicalRow> Deletes { get; set; }
     }
 
+    public class LineagePreviewModel
+    {
+        public LineageEditorModel BusinessModel { get; set; }
+        public LineageEditorTechnicalModel TechnicalModel { get; set; }
+    }
+
 
     public class LineageEditorRow
     {

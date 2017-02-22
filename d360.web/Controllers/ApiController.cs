@@ -2091,7 +2091,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 			    ID,
 	            TextPath as Name
                 from FusionAttribute
-                where TextPath like @query", new { query = query });
+                where Deleted = 0 AND TextPath like @query order by TextPath", new { query = query });
 
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }

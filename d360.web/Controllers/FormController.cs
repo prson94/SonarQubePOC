@@ -8316,31 +8316,31 @@ for json path");
                 
                 try
                 {
-                    leftMaps.ToList().ForEach(l =>
-                    {
-                        //remove map items from map
-                        l.Maps.ToList().ForEach(m =>
-                        {
-                            m.MapItems.Remove(l);
-                        });
+                    //leftMaps.ToList().ForEach(l =>
+                    //{
+                    //    //remove map items from map
+                    //    l.Maps.ToList().ForEach(m =>
+                    //    {
+                    //        m.MapItems.Remove(l);
+                    //    });
 
-                        //remove map sequences and contexts
-                        Company.MapSequences.RemoveRange(l.MapSequences);
-                        //remove the map item
-                        Company.MapItems.Remove(l);
+                    //    //remove map sequences and contexts
+                    //    Company.MapSequences.RemoveRange(l.MapSequences);
+                    //    //remove the map item
+                    //    Company.MapItems.Remove(l);
 
-                    });
+                    //});
 
-                    rightMaps.ToList().ForEach(r =>
-                    {
-                        r.Maps.ToList().ForEach(m =>
-                        {
-                            m.MapItems.Remove(r);
-                        });
-                        Company.MapSequences.RemoveRange(r.MapSequences);
-                        Company.MapItems.Remove(r);
+                    //rightMaps.ToList().ForEach(r =>
+                    //{
+                    //    r.Maps.ToList().ForEach(m =>
+                    //    {
+                    //        m.MapItems.Remove(r);
+                    //    });
+                    //    Company.MapSequences.RemoveRange(r.MapSequences);
+                    //    Company.MapItems.Remove(r);
 
-                    });
+                    //});
 
                     mapItem.Maps.ToList().ForEach(m =>
                     {
@@ -8350,7 +8350,7 @@ for json path");
                     Company.MapItems.Remove(mapItem);
 
                     Company.SaveChanges();
-
+                    
                 } catch (Exception ex)
                 {
                     //reset state on fail to avoid future errors in SaveChanges()
@@ -8423,35 +8423,42 @@ for json path");
             {
                 var mapRuleItem = Company.GetById<MapRuleItem>(d.ID);
 
-            var leftMaps = Company.MapRuleItems.Where(m => m.TargetFusionAttributeID == d.SourceFusionAttributeID);
-            var rightMaps = Company.MapRuleItems.Where(m => m.SourceFusionAttributeID == d.TargetFusionAttributeID);
+                var mapRuleItemMapItem = Company.MapRuleItemMapItems.Where(m => m.MapRuleItemID == mapRuleItem.ID).FirstOrDefault();
+
+                var leftMaps = Company.MapRuleItems.Where(m => m.TargetFusionAttributeID == d.SourceFusionAttributeID);
+                var rightMaps = Company.MapRuleItems.Where(m => m.SourceFusionAttributeID == d.TargetFusionAttributeID);
 
                 try
                 {
-                    leftMaps.ToList().ForEach(l =>
+                    if (mapRuleItemMapItem != null)
                     {
-                    //remove map items from map
-                    l.MapRules.ToList().ForEach(m =>
-                        {
-                            m.MapRuleItems.Remove(l);
-                        });
+                        Company.MapRuleItemMapItems.Remove(mapRuleItemMapItem);
+                    }   
 
-                    //remove the map item
-                    Company.MapRuleItems.Remove(l);
+                    //leftMaps.ToList().ForEach(l =>
+                    //{
+                    //    //remove map items from map
+                    //    l.MapRules.ToList().ForEach(m =>
+                    //        {
+                    //            m.MapRuleItems.Remove(l);
+                    //        });
 
-                    });
+                    //    //remove the map item
+                    //    Company.MapRuleItems.Remove(l);
 
-                    rightMaps.ToList().ForEach(r =>
-                    {
-                        r.MapRules.ToList().ForEach(m =>
-                        {
-                            m.MapRuleItems.Remove(r);
-                        });
+                    //});
 
-                    //remove the map item
-                    Company.MapRuleItems.Remove(r);
+                    //rightMaps.ToList().ForEach(r =>
+                    //{
+                    //    r.MapRules.ToList().ForEach(m =>
+                    //    {
+                    //        m.MapRuleItems.Remove(r);
+                    //    });
 
-                    });
+                    //    //remove the map item
+                    //    Company.MapRuleItems.Remove(r);
+
+                    //});
 
                     mapRuleItem.MapRules.ToList().ForEach(m =>
                     {
@@ -8461,7 +8468,8 @@ for json path");
                     Company.MapRuleItems.Remove(mapRuleItem);
 
                     Company.SaveChanges();
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     d.HasError = true;
                     d.ErrorMessage = ex.GetFullExceptionData();
@@ -8472,17 +8480,27 @@ for json path");
             {
                 try
                 {
-
+                    var mapRuleItem = new MapRuleItem();
+                    mapRuleItem.SourceFusionAttributeID = a.SourceFusionAttributeID;
+                    mapRuleItem.TargetFusionAttributeID = a.TargetFusionAttributeID;
 
                     //add map rule item
-                    Company.MapRuleItems.Add(new MapRuleItem()
-                    {
-                        SourceFusionAttributeID = a.SourceFusionAttributeID,
-                        TargetFusionAttributeID = a.TargetFusionAttributeID
-                    });
+                    Company.MapRuleItems.Add(mapRuleItem);
                     Company.SaveChanges();
 
-                } catch (Exception ex)
+                    //add map rule item map item
+                    if (a.MapItemID > 0)
+                    {
+                        Company.MapRuleItemMapItems.Add(new MapRuleItemMapItem()
+                        {
+                            MapItemID = a.MapItemID,
+                            MapRuleItemID = mapRuleItem.ID
+                            
+                        });
+                        Company.SaveChanges();
+                    }
+                }
+                catch (Exception ex)
                 {
                     a.HasError = true;
                     a.ErrorMessage = ex.GetFullExceptionData();

@@ -12,6 +12,8 @@ import {
     Responsibility,
     TechnicalRelation,
     LineageView,
+    LineageEditorTechnicalModel,
+    LineagePreviewModel,
 } from '../../../models/lineage.model';
 
 import { MenuItem } from 'primeng/primeng';
@@ -33,7 +35,8 @@ import * as go from 'gojs';
 })
 
 export class LineageEditorPreviewComponent extends BaseComponent implements OnInit, AfterViewInit {
-    @Input() model: LineageEditorModel;
+    @Input() businessModel: LineageEditorModel = new LineageEditorModel();
+    @Input() technicalModel: LineageEditorTechnicalModel = new LineageEditorTechnicalModel();
     @Input() type: string;
     @Input() id: number;
     @Input() view: LineageView = LineageView.SystemFlow;
@@ -141,8 +144,11 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
 
     private populateDiagram(): Promise<any> {
         this.isLoading = true;
-        this.model.Existing = [];
-        return this.diagramService.previewLineage(this.type, this.id, this.view, this.model)
+        this.businessModel.Existing = [];
+        this.technicalModel.Existing = [];
+
+
+        return this.diagramService.previewLineage(this.type, this.id, this.view, this.businessModel, this.technicalModel)
             .then(data => {
                 this.parseData(data);
             })
@@ -168,7 +174,7 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                 var d = data.nodes[i];
                 var model = new NodeModel();
 
-                var isFocalPoint = (d.obj == this.model.Focal && d.objid == this.model.FocalID);
+                var isFocalPoint = (d.obj == this.businessModel.Focal && d.objid == this.businessModel.FocalID);
 
                 model.template = d.template;
                 model.key = d.key;

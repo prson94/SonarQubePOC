@@ -143,11 +143,15 @@ namespace d360.web.Controllers
         }
 
         [HttpPost, Route("{type}/{id:int}/lineagepreview/{view:int}")]
-        public JsonNetResult GetLineagePreview(SystemObjects type, int id, int view, LineageEditorModel model)
+        public JsonNetResult GetLineagePreview(SystemObjects type, int id, int view, LineagePreviewModel model)
         {
 
+            LineageEditorModel businessModel = model.BusinessModel;
+            LineageEditorTechnicalModel technicalModel = model.TechnicalModel;
+
             var parameters = new DynamicParameters();
-            var dt = new System.Data.DataTable();
+            var dtBusiness = new System.Data.DataTable();
+            var dtTechnical = new System.Data.DataTable();
 
             parameters.Add("type", type.ToString());
             parameters.Add("id", id);
@@ -156,58 +160,82 @@ namespace d360.web.Controllers
 
             #region DT Columns
 
-            dt.Columns.Add(new System.Data.DataColumn("ID"));
-            dt.Columns.Add(new System.Data.DataColumn("SourceIntersectID"));
-            dt.Columns.Add(new System.Data.DataColumn("SourceSubject"));
-            dt.Columns.Add(new System.Data.DataColumn("SourceSubjectID"));
-            dt.Columns.Add(new System.Data.DataColumn("SourceObject"));
-            dt.Columns.Add(new System.Data.DataColumn("SourceObjectID"));
-            dt.Columns.Add(new System.Data.DataColumn("TargetIntersectID"));
-            dt.Columns.Add(new System.Data.DataColumn("TargetSubject"));
-            dt.Columns.Add(new System.Data.DataColumn("TargetSubjectID"));
-            dt.Columns.Add(new System.Data.DataColumn("TargetObject"));
-            dt.Columns.Add(new System.Data.DataColumn("TargetObjectID"));
-            dt.Columns.Add(new System.Data.DataColumn("Deleting"));
-            dt.Columns.Add(new System.Data.DataColumn("Adding"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("ID"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("SourceIntersectID"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("SourceSubject"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("SourceSubjectID"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("SourceObject"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("SourceObjectID"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("TargetIntersectID"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("TargetSubject"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("TargetSubjectID"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("TargetObject"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("TargetObjectID"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("Deleting"));
+            dtBusiness.Columns.Add(new System.Data.DataColumn("Adding"));
+
+            dtTechnical.Columns.Add(new System.Data.DataColumn("ID"));
+            dtTechnical.Columns.Add(new System.Data.DataColumn("MapItemID"));
+            dtTechnical.Columns.Add(new System.Data.DataColumn("SourceFusionAttributeID"));
+            dtTechnical.Columns.Add(new System.Data.DataColumn("TargetFusionAttributeID"));
+            dtTechnical.Columns.Add(new System.Data.DataColumn("Deleting"));
+            dtTechnical.Columns.Add(new System.Data.DataColumn("Adding"));
 
             #endregion
+            if (businessModel != null)
+            {
+                if (businessModel.Adds != null)
+                    foreach (var row in businessModel.Adds)
+                        dtBusiness.Rows.Add(row.ID,
+                            row.SourceIntersectID,
+                            row.SourceSubject,
+                            row.SourceSubjectID,
+                            row.SourceObject,
+                            row.SourceObjectID,
+                            row.TargetIntersectID,
+                            row.TargetSubject,
+                            row.TargetSubjectID,
+                            row.TargetObject,
+                            row.TargetObjectID,
+                            false,
+                            true);
 
-            if (model.Adds != null)
-                foreach (var row in model.Adds)
-                    dt.Rows.Add(row.ID,
-                        row.SourceIntersectID,
-                        row.SourceSubject,
-                        row.SourceSubjectID,
-                        row.SourceObject,
-                        row.SourceObjectID,
-                        row.TargetIntersectID,
-                        row.TargetSubject,
-                        row.TargetSubjectID,
-                        row.TargetObject,
-                        row.TargetObjectID,
-                        false,
-                        true);
+                if (businessModel.Deletes != null)
+                    foreach (var row in businessModel.Deletes)
+                        dtBusiness.Rows.Add(row.ID,
+                            row.SourceIntersectID,
+                            row.SourceSubject,
+                            row.SourceSubjectID,
+                            row.SourceObject,
+                            row.SourceObjectID,
+                            row.TargetIntersectID,
+                            row.TargetSubject,
+                            row.TargetSubjectID,
+                            row.TargetObject,
+                            row.TargetObjectID,
+                            true,
+                            false);
+            }
 
-            if (model.Deletes != null)
-                foreach (var row in model.Deletes)
-                    dt.Rows.Add(row.ID,
-                        row.SourceIntersectID,
-                        row.SourceSubject,
-                        row.SourceSubjectID,
-                        row.SourceObject,
-                        row.SourceObjectID,
-                        row.TargetIntersectID,
-                        row.TargetSubject,
-                        row.TargetSubjectID,
-                        row.TargetObject,
-                        row.TargetObjectID,
-                        true,
-                        false);
+            if (technicalModel != null)
+            {
+                if (technicalModel.Adds != null)
+                    foreach (var row in technicalModel.Adds)
+                        dtTechnical.Rows.Add(row.ID, row.MapItemID, row.SourceFusionAttributeID, row.TargetFusionAttributeID, false, true);
 
-            dt.SetTypeName("LineageTable");
-            parameters.Add("rows", dt);
+                if (technicalModel.Deletes != null)
+                    foreach (var row in technicalModel.Deletes)
+                        dtTechnical.Rows.Add(row.ID, row.MapItemID, row.SourceFusionAttributeID, row.TargetFusionAttributeID, true, false);
+            }
 
-            var list = Company.Query<string>("exec GetLineage @type, @id, @view, @usageOnly, @rows", parameters);
+
+            dtBusiness.SetTypeName("LineageTable");
+            parameters.Add("rows", dtBusiness);
+
+            dtTechnical.SetTypeName("LineageTechnicalTable");
+            parameters.Add("technicalRows", dtTechnical);
+
+            var list = Company.Query<string>("exec GetLineage @type, @id, @view, @usageOnly, @rows, @technicalRows", parameters);
 
             var json = string.Join("", list);
             var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);

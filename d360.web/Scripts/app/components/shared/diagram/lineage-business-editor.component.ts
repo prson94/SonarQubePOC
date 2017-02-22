@@ -251,7 +251,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
 
     blur(field: string, i: LineageEditorRow) {
         this.setAutoCompleteValue(i, i[field]);
-        console.log(i);
+        //console.log(i);
     }
 
     add() {
@@ -267,7 +267,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
         l.selectedSourceRelationshipType = "";
         this.lineage.push(l);
 
-        console.log(l);
+        //console.log(l);
     }
 
     delete(i: LineageEditorRow) {
@@ -410,6 +410,10 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             let deleted = this.lineage.findIndex(l => l.ID == d.ID);
                             if (deleted >= 0) this.lineage.splice(deleted, 1);
                         });
+
+                    this.messagesService.showError("Error occurred", "Not all mappings were added/removed successfully.");
+                    this.mode = LineageEditorMode.Default;
+
                 } else {
                     this.messagesService.showInfoMessage("Save Successful", "Mappings were added/removed from the lineage successfully.");
                     this.load();

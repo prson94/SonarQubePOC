@@ -548,6 +548,7 @@
     <None Include="dbo\Functions\GetWorkflowArtifactID.sql" />
     <None Include="dbo\Stored Procedures\GetReferenceItemValues.sql" />
     <None Include="dbo\User Defined Types\LineageTable.sql" />
+    <None Include="dbo\User Defined Types\LineageTechnicalTable.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

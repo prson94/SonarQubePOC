@@ -146,6 +146,10 @@
                             </td>
                             <td class="RowTools"><a (click)="delete(i)" style="cursor: pointer"><i class="fa fa-trash"></i></a></td>
                         </tr>
+                        <tr *ngIf="i.HasError">
+                            <td style="width: 10px"></td>
+                            <td colspan="5" class="errorMessage">Record was not saved successfully: {{i.ErrorMessage}}</td>
+                        </tr>
                         <tr *ngIf="i.isNew && !i.isConnected">
                             <td style="width: 10px"></td>
                             <td colspan="8" class="errorMessage">This record is not connected to anything on the lineage</td>
@@ -204,7 +208,7 @@
                 <d3s-lineage-editor-preview 
                                             [type]="object" 
                                             [id]="objectId" 
-                                            [model]="model" 
+                                            [businessModel]="model" 
                                             [(view)]="view"
                                             height="500"></d3s-lineage-editor-preview>
             </div>
@@ -221,7 +225,7 @@
                 <d3s-lineage-editor-preview 
                                             [type]="object" 
                                             [id]="objectId" 
-                                            [model]="model" 
+                                            [businessModel]="model" 
                                             [(view)]="view"
                                             height="500" 
                                             header="Confirm Lineage Changes"></d3s-lineage-editor-preview>

@@ -108,18 +108,11 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         
     }
 
-    changeUsageOnly(e) {
-        this.usageOnly = e.target.checked;//e.checked;
-        this.populateDiagram();
-    }
-
-    changeNameOnly(e) {
-        this.nameOnly = e.target.checked;//e.checked;
-        //this.populateDiagram();
+    changeNameOnly() {
         for (var i = 0; i < this.myDiagram.model.nodeDataArray.length; i++) {
             let model: NodeModel = this.myDiagram.model.nodeDataArray[i] as NodeModel;
             model.name = this.nameOnly ? model.shortname : model.textpath;
-            console.log(model.name);
+            //console.log(model.name);
         }
         this.myDiagram.rebuildParts();
     }
@@ -296,38 +289,54 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private loadMenuItems() {
         this.menuItems = [];
 
-        let gears: MenuItem = {
-            icon: 'fa-gears',
+        let edit: MenuItem = {
+            icon: 'fa-pencil',
             items: []
         }
 
-        gears.items.push({
+        edit.items.push({
             label: 'Edit Source Rules'
         });
-        gears.items.push({
+        edit.items.push({
             label: 'Edit Business Lineage'
         });
-        gears.items.push({
+        edit.items.push({
             label: 'Edit Technical Lineage'
         });
 
-        let eye: MenuItem = {
+        let view: MenuItem = {
             icon: 'fa-eye',
             items: []
         }
 
-        eye.items.push({
+        view.items.push({
             label: 'Business System Flow'
         });
-        eye.items.push({
+        view.items.push({
             label: 'Business Data Flow'
         });
-        eye.items.push({
+        view.items.push({
             label: 'Technical Lineage'
         });
 
-        this.menuItems.push(gears);
-        this.menuItems.push(eye); 
+        let settings: MenuItem = {
+            icon: 'fa-gears',
+            items: []
+        };
+
+        settings.items.push({
+            icon: this.usageOnly ? 'fa-check-square-o' : 'fa-square-o',
+            label: 'Usage only?'
+        });
+
+        settings.items.push({
+            icon: this.nameOnly ? 'fa-check-square-o' : 'fa-square-o',
+            label: 'Name only?'
+        });
+
+        this.menuItems.push(edit);
+        this.menuItems.push(view); 
+        this.menuItems.push(settings);
 
         this.menuItems.push({
             icon: 'fa-search-minus'
@@ -506,6 +515,14 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         } else if (e.label == 'Edit Technical Lineage') {
             this.headerText = 'Edit Technical Lineage';
             this.diagramMode = DiagramMode.TechnicalLineageEditor;
+        } else if (e.label == 'Usage only?') {
+            this.usageOnly = !this.usageOnly;
+            e.icon = this.usageOnly ? 'fa-check-square-o' : 'fa-square-o';
+            this.populateDiagram();
+        } else if (e.label == 'Name only?') {
+            this.nameOnly = !this.nameOnly;
+            e.icon = this.nameOnly ? 'fa-check-square-o' : 'fa-square-o';
+            this.changeNameOnly();
         }
     }
 
