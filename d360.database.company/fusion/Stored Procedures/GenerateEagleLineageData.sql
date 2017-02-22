@@ -337,15 +337,9 @@ begin
 	
 	set @intersectTypeId = null;
 	----------------------------------------------------------
-	-- DataMart Model to DataMart Measure
+	-- DataMart Model to DataMart Measure - uses parent child relation from fusion...
 	----------------------------------------------------------	
-	select @intersectTypeId = id from intersecttype where subjectid = @eagleDatamartFieldTypeId  and [subject] = 'FusionAttributeType' and objectid = @eagleDatamartModelTypeId and [object] = 'FusionAttributeType';
-	if @intersectTypeId is null
-	begin
-		raiserror('ERROR - Cannot identify the intersecttypeid for eagle datamart model/ datamart field', 16, -1);
-		return;
-	end
-
+	
 	insert into #maps 
 		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject)
 		select
@@ -356,9 +350,10 @@ begin
 			FA_t.FusionAttributeTypeID as TargetFusionAttributeTypeID,
 			FA_t.Name as TargetObject
 		from
-			[dbo].[intersect] I
-			inner join [dbo].FusionAttribute FA_t on (FA_t.ID = I.subjectID and I.intersecttypeid = @intersectTypeId and FA_t.FusionID = @fusionId)
-			inner join [dbo].FusionAttribute FA_s on (FA_s.ID = I.objectID and I.intersecttypeid = @intersectTypeId and FA_s.FusionID = @fusionId);
+			[dbo].FusionAttribute FA_s
+			inner join [dbo].FusionAttribute FA_t on (FA_t.ParentID = FA_s.ID and FA_t.FusionAttributeTypeId = @eagleDatamartFieldTypeId)
+		where
+			FA_s.FusionAttributeTypeId = @eagleDatamartModelTypeId and FA_s.FusionID = @fusionId
 	
 	set @intersectTypeId = null;
 	----------------------------------------------------------
