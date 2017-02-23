@@ -19,7 +19,7 @@ import { FusionRule } from '../../../models/fusion.model';
     </p-column>
     <p-column header="Name" field="ObjectName" [filter]="!showSimpleFilter"></p-column>
     <p-column header="Description" field="Description" [filter]="!showSimpleFilter"></p-column>
-    <p-column header="">
+    <p-column header="" [style]="{ 'width' : '100px'}">
         <template pTemplate type="body" let-row="rowData">
             <div class="RowTools">
                 <a (click)="edit(row);"><i class="fa fa-pencil"></i></a>
