@@ -477,6 +477,7 @@ begin
 							null as other,
 							HasSourceRules
 					from	@items
+					where	TargetSubject + '.' + cast(TargetSubjectID as varchar) not in (select [key] from @nodes)
 					) S
 			on		(T.[key] = S.[key])
 			when	matched then

@@ -3,7 +3,7 @@
     <header [hidden]="diagramMode != DiagramMode.Diagram">
         <span>Lineage</span>
         <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
-        <div class="TileTools" style="top: 5px; z-index:1000;width:100%">
+        <div class="TileTools" style="top: 5px; z-index:900;width:100%">
             <div>
                 <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)" *ngIf="diagramMode == DiagramMode.Diagram"></d3s-tile-actions>
             </div>
