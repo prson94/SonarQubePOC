@@ -78,6 +78,28 @@ begin
 								) O on O.MapItemID = MI.ID
 			where not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = MI.ID);
 
+			--join editor rows to any existing intersects
+			if exists(select 1 from @rows)
+			begin
+				insert into @points
+				select 
+					R.ID,
+					D1.ID as SourceIntersectID,
+					D2.ID as TargetIntersectID
+				from @rows R
+				inner join IntersectDetail D1 on 
+					R.SourceSubject = D1.[Subject] AND 
+					R.SourceObject = D1.[Object] AND 
+					R.SourceSubjectID = D1.SubjectID AND 
+					R.SourceObjectID = D1.ObjectID
+				inner join IntersectDetail D2 on 
+					R.TargetSubject = D2.[Subject] AND 
+					R.TargetObject = D2.[Object] AND 
+					R.TargetSubjectID = D2.SubjectID AND 
+					R.TargetObjectID = D2.ObjectID
+				where R.Adding = 1 
+			end;
+
 		with cte as (
 			select	ID,
 					SourceIntersectID,
@@ -238,6 +260,7 @@ begin
 
 		if @view = 1
 		begin
+
 			insert into @links
 					select	distinct
 							S.SourceSubject + '.' + cast(S.SourceSubjectID as varchar) as [from],
@@ -262,6 +285,7 @@ begin
 							null as other,
 							0 as HasSourceRules--I.HasSourceRules
 					from	@items I;
+
 			--insert into @nodes
 			merge	@nodes as T
 			using	(
@@ -282,6 +306,7 @@ begin
 							null as other,
 							I.HasSourceRules
 					from	@items I
+					where	I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) not in (select [key] from @nodes)
 					) S
 			on		(T.[key] = S.[key])
 			when	matched then

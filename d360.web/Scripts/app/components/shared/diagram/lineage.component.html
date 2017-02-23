@@ -54,7 +54,7 @@
         <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
     </div>
     <div *ngIf="diagramMode == DiagramMode.SourceRuleEditor">
-        <d3s-lineage-source-rule-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()"></d3s-lineage-source-rule-editor>
+        <d3s-lineage-source-rule-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()" (onSaveComplete)="populateDiagram()"></d3s-lineage-source-rule-editor>
     </div>
     <div *ngIf="diagramMode == DiagramMode.BusinessLineageEditor">
         <d3s-lineage-business-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()" (onSaveComplete)="populateDiagram()"></d3s-lineage-business-editor>
@@ -62,5 +62,4 @@
     <div *ngIf="diagramMode == DiagramMode.TechnicalLineageEditor">
         <d3s-lineage-technical-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()" (onSaveComplete)="populateDiagram()"></d3s-lineage-technical-editor>
     </div>
-
 </div>

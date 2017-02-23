@@ -2,10 +2,17 @@
 import { DiagramService } from '../../../services/diagram.service';
 import { MessagesService } from '../../../services/messages.service';
 import { PermissionsService } from '../../../services/permissions.service';
-import { MapSequenceItem, MapSequenceModel, MapContext, MapReferenceItem } from '../../../models/lineage.model';
+import {
+    MapSequenceItem,
+    MapSequenceModel,
+    MapContext,
+    MapReferenceItem,
+    SourceRuleItem,
+    SourceRuleSequence,
+    SourceRuleSource,
+} from '../../../models/lineage.model';
 import { BaseComponent } from '../base.component';
 import { Permission } from '../../../models/permission.model';
-import { MenuItem } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-lineage-source-rule-editor',
@@ -14,9 +21,9 @@ import { MenuItem } from 'primeng/primeng';
         <div *ngIf="!isLoading">
             <header>
                 Manage Source Rules 
-                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)"></d3s-tile-actions>
+                <d3s-tile-actions hasSave="true" hasClose="true" (saveClick)="save()" (closeClick)="close()"></d3s-tile-actions>
             </header>
-            <div class="row" *ngFor="let item of topItems">
+            <div class="row" *ngFor="let item of items">
                 <div style="margin-top: 25px" class="col s12">
                     <h4>{{item.Name}}</h4>
                 </div>
@@ -49,16 +56,16 @@ import { MenuItem } from 'primeng/primeng';
                             </tr>
                         </thead>
                         <tbody *ngFor="let s of item.Selected; let i = index">
-                            <tr>
+                            <tr *ngIf="(s.IsDeleting || false) == false">
                                 <td style="vertical-align: top">{{s.SourceName}}</td>
                                 <td style="vertical-align: top">{{s.Sequence}}</td>
                                 <td style="vertical-align: top; background-color: #fff;">
                                     <p-editor [(ngModel)]="s.Description"></p-editor>
                                 </td>
                                 <td style="vertical-align: top; text-align: center; width: 25px">
-                                    <i class="fa fa-lg fa-trash red-text" (click)="remove(item, s.Sequence)"></i>
-                                    <i class="fa fa-lg fa-arrow-up black-text"></i>
-                                    <i class="fa fa-lg fa-arrow-down black-text"></i>
+                                    <a style="cursor: pointer"><i class="fa fa-lg fa-trash red-text" (click)="remove(s)"></i></a>
+                                    <a style="cursor: pointer"><i class="fa fa-lg fa-arrow-up black-text" (click)="moveUp(item, s)"></i></a>
+                                    <a style="cursor: pointer"><i class="fa fa-lg fa-arrow-down black-text" (click)="moveDown(item, s)"></i></a>
                                 </td>
                             </tr>
                         </tbody>
@@ -75,28 +82,19 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
     @Input() objectId: number;
 
     @Output() onClose = new EventEmitter();
+    @Output() onSaveComplete = new EventEmitter();
 
     model: MapSequenceModel;
-    topItems: any[] = [];
+    items: SourceRuleItem[] = [];
     permissions: Permission[] = [];
 
     isLoading = false;
-    menuItems: MenuItem[] = [];
 
     constructor(private diagramService: DiagramService, protected messagesService: MessagesService, protected permissionsService: PermissionsService) {
         super();
     }
 
     ngOnInit() {
-
-        this.menuItems.push({
-            icon: 'fa-floppy-o'
-        });
-
-        this.menuItems.push({
-            icon: 'fa-close'
-        });
-
         this.load();
         this.permissionsService.getPermissions(this.objectId, this.object)
             .then(data => {
@@ -111,7 +109,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
                 this.model = data;
 
                 this.model.Available.forEach(i => {
-                    let top = this.topItems.find(t => t.TargetIntersectID == i.TargetIntersectID);
+                    let top = this.items.find(t => t.TargetIntersectID == i.TargetIntersectID);
                     let topItem: any;
 
                     if (!top) {
@@ -156,7 +154,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
                                 topItem.Selected.push(selectedItem);
                             }
                         });
-                        this.topItems.push(topItem);
+                        this.items.push(topItem);
                     }
                 });
 
@@ -173,25 +171,15 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
             Contexts: null,
             Description: '',
             SourceName: item.Name || '',
-            TargetName: parent.Name || ''
+            TargetName: parent.Name || '',
         };
-        this.setSequenceNumbers(parent);
+        this.setSequenceNumbers();
         parent.Selected.push(newItem);
     }
 
-    private remove(parent: any, index: number) {
-        let i = parent.Selected.findIndex(s => s.Sequence == index);
-        parent.Selected.splice(i, 1);
-        this.setSequenceNumbers(parent);
-    }
-
-
-    menuAction(e: MenuItem) {
-        if (e.icon == 'fa-close') {
-            this.close();
-        } else if (e.icon == 'fa-floppy-o') {
-            this.save();
-        }
+    private remove(seq: SourceRuleSequence) {
+        seq.IsDeleting = true;
+        this.setSequenceNumbers();
     }
 
     close() {
@@ -207,35 +195,71 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
             return;
 
         this.isLoading = true;
-        
+
+        this.setSequenceNumbers();
         let model = { Items: [] };
 
-        this.topItems.forEach(i => {
-            this.setSequenceNumbers(i);
+        if (this.items == null)
+            this.items = [];
+        this.items.forEach(i => {
             i.Selected.forEach(s => {
-                let item = {
-                    ID: s.ID,
-                    MapItemID: s.MapItemID,
-                    Description: s.Description,
-                    Contexts: [],
-                    Sequence: s.Sequence
-                }
-                model.Items.push(item);
+                model.Items.push(s);
             });
         });
+
+        //console.log(model);
 
         this.diagramService.postLineageMapSequence(this.object, this.objectId, model)
             .then(r => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, r);
+                this.onSaveComplete.emit();
             });
     }
 
-    private setSequenceNumbers(item: any) {
-        if (item && item.Selected) {
-            for (let i = 0; i < item.Selected.length; i++) {
-                item.Selected[i].Sequence = i + 1;
+    private setSequenceNumbers() {
+        this.items.forEach(i => {
+            if (i.Selected != null) {
+                let index = 1;
+                for (let s = 0; s < i.Selected.length; s++) {
+                    if (i.Selected[s].IsDeleting)
+                        continue;
+                    i.Selected[s].Sequence = index++;
+                }
             }
-        }
+        });
     }
+
+    moveUp(item: SourceRuleItem, seq: SourceRuleSequence) {
+        this.setSequenceNumbers();
+        let previousIndex = item.Selected.findIndex(i => i == seq) - 1;
+        //console.log(item, seq, previousIndex);
+
+        if (previousIndex < 0)
+            return;
+
+        let previous = item.Selected[previousIndex];
+        seq.Sequence--;
+        previous.Sequence++;
+
+        item.Selected[previousIndex] = seq;
+        item.Selected[previousIndex + 1] = previous;
+    }
+
+    moveDown(item: SourceRuleItem, seq: SourceRuleSequence) {
+        this.setSequenceNumbers();
+        let nextIndex = item.Selected.findIndex(i => i == seq) + 1;
+        //console.log(item, seq, nextIndex);
+
+        if (nextIndex >= item.Selected.length)
+            return;
+
+        let next = item.Selected[nextIndex];
+        seq.Sequence++;
+        next.Sequence--;
+
+        item.Selected[nextIndex] = seq;
+        item.Selected[nextIndex - 1] = next;
+    }
+
 }

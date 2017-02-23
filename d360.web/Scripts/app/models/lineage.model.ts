@@ -295,6 +295,29 @@ export class LineagePreviewModel {
     TechnicalModel: LineageEditorTechnicalModel;
 }
 
+export class SourceRuleItem {
+    Available: SourceRuleSource[] = [];
+    ID: number;
+    Name: string;
+    Selected: SourceRuleSequence[] = [];
+    TargetIntersectID: number;
+}
+
+export class SourceRuleSequence {
+    Contexts: any[] = [];
+    Description: string;
+    ID: number;
+    MapItemID: number;
+    Sequence: number;
+    SourceName: string;
+    IsDeleting: boolean = false;
+}
+
+export class SourceRuleSource {
+    MapItemID: number;
+    Name: string;
+    SourceIntersectID: number;
+}
 
 //#region enumerations
 

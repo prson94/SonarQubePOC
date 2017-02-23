@@ -14175,6 +14175,7 @@ order by	T.Name, I.DisplayValue";
             public string Description { get; set; }
             public int Sequence { get; set; }
             public List<BaseObjectModel> Contexts { get; set; }
+            public bool IsDeleting { get; set; } = false;
         }
 
         [HttpGet, Route("mapsequence/{type}/{id:int}/mapitems")]
@@ -14244,27 +14245,46 @@ order by	T.Name, I.DisplayValue";
                         mapSequence = Company.GetById<MapSequence>(m.ID, i => i.MapSequenceContexts);
                     }
 
-                    if (mapSequence == null)
+                    if (m.IsDeleting)
                     {
-                        mapSequence = new MapSequence { };
+                        if (mapSequence == null)
+                        {
+                            //return jsonException($"Map Sequence ID {m.ID} not found", HttpStatusCode.Forbidden);
+                            return;
+                        }
+
+                        Company.MapSequences.Remove(mapSequence);
+                        Company.SaveChanges();
                     }
+                    else
+                    {
+                        if (mapSequence == null)
+                        {
+                            mapSequence = new MapSequence { };
+                        }
 
-                    mapSequence.Description = m.Description;
-                    mapSequence.MapItemID = m.MapItemID;
-                    mapSequence.Sequence = m.Sequence;
 
-                    if (m.Contexts.Count > 0) {
-                        m.Contexts.ForEach(c => {
-                            mapSequence.MapSequenceContexts.Add(
-                                new MapSequenceContext {
-                                    Object = c.Object,
-                                    ObjectID = c.ObjectID
-                                }
-                            );
-                        });
+
+                        mapSequence.Description = m.Description;
+                        mapSequence.MapItemID = m.MapItemID;
+                        mapSequence.Sequence = m.Sequence;
+
+                        if (m.Contexts.Count > 0)
+                        {
+                            m.Contexts.ForEach(c => {
+                                mapSequence.MapSequenceContexts.Add(
+                                    new MapSequenceContext
+                                    {
+                                        Object = c.Object,
+                                        ObjectID = c.ObjectID
+                                    }
+                                );
+                            });
+                        }
+
+                        Company.SaveOrUpdate<MapSequence>(mapSequence);
                     }
-
-                    Company.SaveOrUpdate<MapSequence>(mapSequence);
+                  
                 });
 
                 return jsonSuccess("Source Conditions successfully created.", "0", "add", HttpStatusCode.Created, null);
