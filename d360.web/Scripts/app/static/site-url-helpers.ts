@@ -1,27 +1,23 @@
 ﻿export class SiteUrlHelpers {
-    //prefix route for all routes
-    // THIS SETTING NEEDS TO BE IN SYNC WITH THE SETTING IN D360.WEB / STARTUP.CS SO THE APPROPRIATE HTML PAGE IS INITIALLY SERVED
-    static SITE_URL_PREFIX = '';// a/
-
-
+    
     //main site routes
     // WARNING!! - SOME URLS SUCH AS TOOLTIPS ARE BURNED IN THE DB DO NOT CHANGES THE BELOW WITHOUT 
     // UPDATING BOTH!!
-    static SITE_URL_FUSION_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}fusion`;
-    static SITE_URL_REFERENCE_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}reference`;
-    static SITE_URL_ARTIFACT_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}artifact`;
-    static SITE_URL_COMMUNITY_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}community`;
-    static SITE_URL_HELP_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}help`;
-    static SITE_URL_MONITOR_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}monitor`;
-    static SITE_URL_POLICY_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}policy`;
-    static SITE_URL_GROUP_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}group`;
-    static SITE_URL_RESOURCE_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}resource`;
-    static SITE_URL_RULE_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}quality/rule`;
-    static SITE_URL_SEARCH_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}search`;
-    static SITE_URL_WORKFLOW_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}workflow`;
-    static SITE_URL_MODEL_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}model`;
-    static SITE_URL_ADMIN_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}admin`;
-    static SITE_URL_HOME_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}home`;
+    static SITE_URL_FUSION_ROOT = 'fusion';
+    static SITE_URL_REFERENCE_ROOT = 'reference';
+    static SITE_URL_ARTIFACT_ROOT = 'artifact';
+    static SITE_URL_COMMUNITY_ROOT = 'community';
+    static SITE_URL_HELP_ROOT = 'help';
+    static SITE_URL_MONITOR_ROOT = 'monitor';
+    static SITE_URL_POLICY_ROOT = 'policy';
+    static SITE_URL_GROUP_ROOT = 'group';
+    static SITE_URL_RESOURCE_ROOT = 'resource';
+    static SITE_URL_RULE_ROOT = 'quality/rule';
+    static SITE_URL_SEARCH_ROOT = 'search';
+    static SITE_URL_WORKFLOW_ROOT = 'workflow';
+    static SITE_URL_MODEL_ROOT = 'model';
+    static SITE_URL_ADMIN_ROOT = 'admin';
+    static SITE_URL_HOME_ROOT = 'home';
 
     //model child routes
     static SITE_URL_MODEL_CLASSIFICATION = 'classification';
