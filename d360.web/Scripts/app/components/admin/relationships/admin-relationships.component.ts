@@ -9,14 +9,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-relationships-component',
-    template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="[selected?.SourceName] + ' / ' + [selected?.TargetName]" [objectType]="'IntersectType'"></d3s-audit>
-                <div *ngIf="isPredicatesVisible" class="row">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-predicates-list></d3s-predicates-list>
-                        </div>
-                    </div>
-                </div>
+    template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="[selected?.SourceName] + ' / ' + [selected?.TargetName]" [objectType]="'IntersectType'"></d3s-audit>                
                 <div *ngIf="isRolesVisible" class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">
@@ -24,7 +17,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!isAuditVisible && !isPredicatesVisible && !isRolesVisible" class="row">
+                <div *ngIf="!isAuditVisible && !isRolesVisible" class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
                             <d3s-admin-relationships-list [(selected)]="selected"></d3s-admin-relationships-list>
@@ -43,8 +36,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                 `
 })
 
-export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {
-    private isPredicatesVisible: boolean = false;
+export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {   
     private isRolesVisible: boolean = false;
     private selected: RelationshipType;
     
@@ -53,8 +45,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         this.areaName = "Relationship Types";
         this.setCommonItems();
         this.setCommonRightSideBar(true);    
-
-        this.rightSidebarService.showItem(new RightSidebarItem('Predicates', 'predicates', ['fa-map-signs']));
+                
         this.rightSidebarService.showItem(new RightSidebarItem('Relationship Roles', 'roles', ['fa-user']));
     }
     
@@ -63,7 +54,6 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
     }
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        if (activatedItem.tag == 'predicates') this.isPredicatesVisible = !this.isPredicatesVisible;        
-        else if (activatedItem.tag == 'roles') this.isRolesVisible = !this.isRolesVisible; 
+        if (activatedItem.tag == 'roles') this.isRolesVisible = !this.isRolesVisible; 
     }
 }

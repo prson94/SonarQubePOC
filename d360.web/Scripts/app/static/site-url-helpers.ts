@@ -60,6 +60,7 @@
     static SITE_URL_ADMIN_TEMPLATES = 'templates';
     static SITE_URL_ADMIN_WORKFLOW = 'workflow';    
     static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
+    static SITE_URL_ADMIN_PREDICATES = 'predicates';
 
     // getObjectUrl - Generates the url for an object based on its type
     static getObjectUrl(objectType: string, objectId: number, parentId?: number, objectName?: string) : string {

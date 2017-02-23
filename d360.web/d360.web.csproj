@@ -549,6 +549,7 @@
     <Content Include="Scripts\app\33.chunk.js" />
     <Content Include="Scripts\app\34.chunk.js" />
     <Content Include="Scripts\app\35.chunk.js" />
+    <Content Include="Scripts\app\36.chunk.js" />
     <Content Include="Scripts\app\4.chunk.js" />
     <Content Include="Scripts\app\5.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
@@ -948,6 +949,9 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-taxonomies.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-taxonomies.routes.ts" />
@@ -1240,7 +1244,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\relationships\predicates-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rule-dimensions.component.ts" />

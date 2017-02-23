@@ -9,18 +9,13 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
-import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
-import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
-import { AdminRelationshipsComponent } from './admin-relationships.component';
-import { AdminRelationshipRolesComponent } from './admin-relationship-roles.component';
+import { AdminPredicatesComponent } from './admin-predicates.component';
 
-
-import { AdminRelationshipsRoutingModule } from './admin-relationships.routes';
+import { AdminPredicateRoutingModule } from './admin-predicates.routes';
 
 import {
     ButtonModule,
@@ -35,29 +30,28 @@ import {
         FormsModule,
         HttpModule,
 
-        AdminRelationshipsRoutingModule,
+        AdminPredicateRoutingModule,
 
-        //prime        
+        //prime
+        ButtonModule,
+        InputTextModule,
         SharedModule,
-        DataTableModule,        
+        DataTableModule,
+        GrowlModule,
 
         //d3s        
-        AdminRelationshipEditorModule,
         CoreModule,
-        PipesModule,
-        SharedAuditModule,
+        PipesModule,        
         SharedDeleteFormModule,
-        SharedDynamicGridEditorModule,
-        SharedFieldDefinitionModule,
+        SharedDynamicGridEditorModule,        
         SharedGridPagingInfoModule,
         TilesModule,
     ],
-    declarations: [
-        AdminRelationshipsComponent,        
-        AdminRelationshipRolesComponent,        
-    ],    
+    declarations: [        
+        AdminPredicatesComponent,
+    ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
-export class AdminRelationshipsModule { }
+export class AdminPredicatesModule { }
