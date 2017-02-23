@@ -21,6 +21,7 @@ begin
 	declare @eagleInventoryOfFieldTypeId int = 205;
 	declare @eagleFieldRuleTypeId int = 206;
 	declare @eagleSourceRuleTypeId int = 208;
+	declare @eagleSourceRuleItemTypeId int = 209;
 	declare @eagleGroupingRuleTypeId int = 210;
 	declare @eagleReferenceDataCenterStrategyTypeId int = 215;
 	declare @eagleReferenceDataCenterValidationTypeId int = 216;
@@ -482,6 +483,24 @@ begin
 			inner join [dbo].FusionAttribute FA_s on (FA_s.ID = I.objectID and I.intersecttypeid = @intersectTypeId and FA_s.FusionID = @fusionId);
 	
 	set @intersectTypeId = null;	
+	----------------------------------------------------------
+	-- Source Rule to Source Interface
+	----------------------------------------------------------
+	insert into #maps 
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject)
+			select
+					FA_s.ID as SourceFusionAttributeID,
+					FA_s.FusionAttributeTypeID as SourceFusionAttributeTypeID,
+					FA_s.Name as SourceObject,
+					FA_t.ID as TargetFusionAttributeID,
+					FA_t.FusionAttributeTypeID as TargetFusionAttributeTypeID,
+					FA_t.Name as TargetObject
+				from
+					[dbo].FusionAttribute FA_t
+					inner join [dbo].FusionAttribute FA_s on (FA_s.ParentID = FA_t.ID and FA_s.FusionAttributeTypeId = @eagleSourceRuleItemTypeId)
+				where
+					FA_t.FusionAttributeTypeId = @eagleSourceRuleTypeId and FA_t.FusionID = @fusionId;
+
 	----------------------------------------------------------
 	-- INSERT 
 	-- update the map rule item id's of already inserted items
