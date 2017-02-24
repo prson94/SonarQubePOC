@@ -14,10 +14,10 @@
     ],
     "outDir": "lib",
     "skipLibCheck": true,
-    "rootDir": "."
+    "rootDir": "."   
   },
   "angularCompilerOptions": {
     "genDir": "./app/ngfactory",
     "entryModule": "app/app.module#AppModule"
-  }
+  } 
 }
