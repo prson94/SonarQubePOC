@@ -2638,3 +2638,24 @@ go
 
 CREATE INDEX IX_MapRuleItem_SourceFusionAttributeID_TargetFusionAttributeID ON [dbo].[MapRuleItem] (SourceFusionAttributeID asc, TargetFusionAttributeID asc); 
 go
+
+
+-- add id column to fusion schedule table
+alter table fusionschedule add ID INT IDENTITY (1, 1) NOT NULL;
+go
+
+-- drop the constraint
+ALTER TABLE dbo.fusionschedule
+DROP CONSTRAINT PK_FusionSchedule;
+GO
+
+-- add back constraint
+ALTER TABLE dbo.fusionschedule
+ADD CONSTRAINT PK_FusionSchedule PRIMARY KEY CLUSTERED
+([ID] ASC) ;
+GO
+
+
+-- add constraint
+ALTER TABLE dbo.fusionschedule ADD CONSTRAINT Con_FusionScheduleUniqueFusionIDDayTime UNIQUE (FusionID,Day,Time);
+go

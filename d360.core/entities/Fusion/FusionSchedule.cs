@@ -6,15 +6,15 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class FusionSchedule : BaseCreatedAndUpdatedObject
+    public class FusionSchedule : BaseCreatedAndUpdatedIntObject
     {
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember]
         public int FusionID { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember]
         public DayOfWeek Day { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
+        [DataMember]
         public TimeSpan Time { get; set; }
 
         [DataMember]

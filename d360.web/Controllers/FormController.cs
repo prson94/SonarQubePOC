@@ -418,7 +418,7 @@ namespace d360.web.Controllers
                     return IssueType_AddFields();
                 case "ISSUE":
                     return Issue_AddFields(objectID.GetValueOrDefault());
-                
+
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -509,6 +509,8 @@ namespace d360.web.Controllers
                     return EditFusionQueryAttribute(form);
                 case "ISSUETYPE":
                     return EditIssueType(form);
+                case "FUSIONSCHEDULE":
+                    return EditFusionSchedule(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -578,6 +580,8 @@ namespace d360.web.Controllers
                     return DeleteSynonym(form);
                 case "CUSTOMSYNONYM":
                     return DeleteCustomSynonym(form);
+                case "FUSIONSCHEDULE":
+                    return DeleteFusionSchedule(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -659,7 +663,9 @@ namespace d360.web.Controllers
                 case "ISSUE":
                     return AddIssue(form);
                 case "CUSTOMSYNONYM":
-                    return AddCustomSynonym(form);                
+                    return AddCustomSynonym(form);
+                case "FUSIONSCHEDULE":
+                    return AddFusionSchedule(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -16859,6 +16865,112 @@ order by TextPath
             }
         }
 
+
+        #endregion
+
+        #region Fusion Schedule
+
+        [HttpDelete, Route("DeleteFusionSchedule")]
+        public JsonResult DeleteFusionSchedule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("delete fusion schedule");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.FusionSchedule>(id);
+                if (model == null) throw new NotFoundException("fusion schedule");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<core.entities.FusionSchedule>(i => i.ID == id);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionSchedule")]
+        public JsonResult AddFusionSchedule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionschedule");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new FusionSchedule
+                {                    
+                    FusionID = parseIntField(form,"FusionID"),
+                    FullRefresh = parseBooleanField(form, "FullRefresh"),
+                    Day = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), form["Day"]),
+                    Time = TimeSpan.Parse(parseTextField(form,"Time")),
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                };
+                
+                Company.Add<FusionSchedule>(a);
+
+                return jsonSuccess("Fusion schedule successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("EditFusionSchedule")]
+        public JsonResult EditFusionSchedule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionschedule");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<FusionSchedule>(id);
+
+                if (model == null) throw new NotFoundException("issuetype");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.FullRefresh = parseBooleanField(form, "FullRefresh");
+                model.Day = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), form["Day"]);
+                model.Time = TimeSpan.Parse(parseTextField(form, "Time"));                
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+
+                Company.Update<core.entities.FusionSchedule>(model);
+
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
 
         #endregion
 

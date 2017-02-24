@@ -23,17 +23,17 @@
             <p-column [style]="{ 'width': '30px' }">
                 <template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
-                        <a (click)="selectedRow = item; formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                    </div>
-                </template>
-            </p-column>
-            <!--<p-column [style]="{ 'width': '30px' }">
-                <template let-col let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
                         <a (click)="selectedRow = item; formMode = FormModeConfig.Scheduling" style="cursor:pointer;"><i class="fa fa-calendar"></i></a>
                     </div>
                 </template>
-            </p-column>-->
+            </p-column>
+            <p-column [style]="{ 'width': '30px' }">
+                <template let-col let-item="rowData" pTemplate type="body">
+                    <div class="RowTools">
+                        <a (click)="selectedRow = item; formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                    </div>
+                </template>
+            </p-column>            
         </p-dataTable>
     </div>
     <div *ngSwitchCase="FormModeConfig.Adding">
@@ -63,8 +63,10 @@
                          (onDeleteComplete)="formMode = FormModeConfig.Default; load();">
         </d3s-delete-form>
     </div>
-    <!--<div *ngSwitchCase="FormModeConfig.Scheduling">
-        <d3s-fusion-configuration-schedule-tile [fusionID]="selectedRow.ID">
-        </d3s-fusion-configuration-schedule-tile>
-    </div>-->
+    <div *ngSwitchCase="FormModeConfig.Scheduling">
+        <d3s-fusion-schedule [fusionId]="selectedRow.ID" 
+                                           [fusionTypeId]="selectedRow.FusionTypeID"
+                                           (onClose)="formMode = FormModeConfig.Default;">
+        </d3s-fusion-schedule>
+    </div>
 </div>

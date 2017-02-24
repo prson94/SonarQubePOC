@@ -22,15 +22,17 @@ import { D3SSharedModule } from '../../shared/shared.module';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
-import { FusionConfigurationScheduleTile } from './fusion-configuration-schedule.tile';
+import { FusionScheduleComponent } from './fusion-schedule.component';
+import { FusionScheduleEditorComponent } from './fusion-schedule-editor.component';
 
 import { AdminFusionRoutingModule } from './admin-fusion.routes';
 
 import {
     ButtonModule,
-    CalendarModule,
+    CalendarModule,    
     EditorModule,
     GrowlModule,
+    InputMaskModule,
     InputTextModule,
     SharedModule,
     DataTableModule,
@@ -49,6 +51,7 @@ import {
         CalendarModule,
         EditorModule,
         GrowlModule,
+        InputMaskModule,
         InputTextModule,
         SharedModule,
         DataTableModule,
@@ -73,7 +76,8 @@ import {
         AdminFusionComponent,
         FusionAttributesTile,
         FusionConfigurationTile,
-        FusionConfigurationScheduleTile
+        FusionScheduleComponent,
+        FusionScheduleEditorComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

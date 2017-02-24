@@ -126,12 +126,22 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionConfigurationSchedules(fusionTypeId: number, fusionId: number): Promise<FusionSchedule[]> {
-        console.log('getFusionConfigurationSchedules');
+    getFusionConfigurationSchedules(fusionTypeId: number, fusionId: number): Promise<FusionSchedule[]> {     
         return this.http.get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/schedules?$orderby=Day,Time`)
             .toPromise()
             .then(response => <FusionSchedule[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    deleteFusionConfigurationSchedule(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'fusionschedule', id);
+    }
+
+    saveFusionConfigurationSchedule(schedule: any): Promise<JsonResult> {
+        if (schedule.ID == undefined || !schedule.ID) {
+            return this.postDynamic(this.http, 'fusionschedule', schedule);
+        }
+        return this.putDynamic(this.http, 'fusionschedule', schedule);
     }
 
     getFusionProcessErrorHistory(maxRows?: number, days?: number): Promise<FusionProcessError[]> {

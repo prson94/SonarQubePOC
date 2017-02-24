@@ -96,7 +96,7 @@ export class FusionAgentExecutionStats {
     Success: boolean;
 }
 
-enum FusionScheduleDay {
+export enum FusionScheduleDay {
     Sunday = 0,
     Monday = 1,
     Tuesday = 2,
@@ -107,7 +107,9 @@ enum FusionScheduleDay {
 }
 
 export class FusionSchedule {
+    ID: number;
     Day: FusionScheduleDay;
+    DayText: string;
     Time: string;
     FullRefresh: boolean;
     FusionID: number;
