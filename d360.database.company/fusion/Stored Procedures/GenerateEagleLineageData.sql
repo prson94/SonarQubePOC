@@ -162,6 +162,32 @@ begin
 	set @intersectTypeId = null;
 
 	----------------------------------------------------------
+	-- FIELD ATTRIBUTE TO FIELD ATTRIBUTE - This is for computed fields ie fields which use other fields
+	----------------------------------------------------------
+	
+	select @intersectTypeId = id from intersecttype where subjectid = @eagleFieldAttributeTypeId and [subject] = 'FusionAttributeType' and objectid = @eagleFieldAttributeTypeId and [object] = 'FusionAttributeType';
+	if @intersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for eagle field attribute/ eagle field attribute', 16, -1);
+		return;
+	end
+
+	insert into #maps 
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject)
+		select
+			FA_s.ID as SourceFusionAttributeID,
+			FA_s.FusionAttributeTypeID as SourceFusionAttributeTypeID,
+			FA_s.Name as SourceObject,
+			FA_t.ID as TargetFusionAttributeID,
+			FA_t.FusionAttributeTypeID as TargetFusionAttributeTypeID,
+			FA_t.Name as TargetObject
+		from
+			[dbo].[intersect] I
+			inner join [dbo].FusionAttribute FA_s on (FA_s.ID = I.subjectID and I.intersecttypeid = @intersectTypeId and FA_s.FusionID = @fusionId)
+			inner join [dbo].FusionAttribute FA_t on (FA_t.ID = I.objectID and I.intersecttypeid = @intersectTypeId and FA_t.FusionID = @fusionId);
+	set @intersectTypeId = null;
+
+	----------------------------------------------------------
 	-- FIELD ATTRIBUTE TO GROUPING RULES	
 	----------------------------------------------------------
 	
