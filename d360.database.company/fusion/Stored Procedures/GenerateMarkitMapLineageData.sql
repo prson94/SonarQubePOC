@@ -75,6 +75,15 @@ begin
 		return;
 	end
 
+	-- get the intersecttypeid for view -> view intersects
+	declare @viewViewIntersectTypeId int;
+	select @viewViewIntersectTypeId = id from intersecttype where [object] = 'FusionAttributeType' and [Subject] = 'FusionAttributeType' and [subjectid] = 714 and [objectid] = 714
+	if @viewViewIntersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for markit view/view relations', 16, -1);
+		return;
+	end
+
 	IF OBJECT_ID('tempdb..#maps') IS NOT NULL
 		DROP TABLE #maps;
 
@@ -178,10 +187,8 @@ begin
 		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
 
 
-	--this query adds in the view to table mapings its disabled for now because a bug in the technical lineage
-	-- add in any view column to table column records
-
-	--this query adds in the view to table mapings its disabled for now because a bug in the technical lineage
+	
+	--this query adds in the view to table mapings
 	-- add in any view column to table column records
 	-- table / view maps for targets that are missing connection
 	insert into #maps
@@ -240,6 +247,122 @@ begin
 			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = T.Id and m_2.TargetFusionAttributeID = m.SourceFusionAttributeID) or (m_2.TargetFusionAttributeID = T.id  and m_2.SourceFusionAttributeID = m.SourceFusionAttributeID)) -- dont insert duplicates
 						
 	-- end table / view maps
+
+	
+
+	--this query adds in the view to view mapings
+	-- add in any view column to view column records
+	-- view / view maps for targets that are missing connection
+	/*insert into #maps
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.TargetFusionAttributeID as SourceFusionAttributeID,
+			m.TargetFusionAttributeTypeID as SourceFusionAttributeTypeID,
+			m.TargetObject as SourceObject,
+			m.TargetParentObjectFusionAttributeID as SourceParentObjectFusionAttributeID,
+			m.TargetParentObject as SourceParentObject,
+			m.TargetParentObjectFusionAttributeTypeID as SourceParentObjectFusionAttributeTypeID,
+			T.id as TargetFusionAttributeID,
+			T.fusionattributetypeid as TargetFusionAttributeTypeID,
+			T.textpath as TargetObject,
+			i.objectid as TargetParentObjectFusionAttributeID,
+			T_p.name as TargetParentObject,
+			T_p.fusionattributetypeid as TargetParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.TargetParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.TargetObject,m.TargetParentObject,'')) -- we are doing this to avoid messing with the name column that doesnt have an index
+		where 
+			m.TargetFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewViewIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = m.TargetFusionAttributeID and m_2.TargetFusionAttributeID = T.Id) or (m_2.TargetFusionAttributeID = m.TargetFusionAttributeID and m_2.SourceFusionAttributeID = T.id)) -- dont insert duplicates
+	*/
+	insert into #maps
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.TargetFusionAttributeID as SourceFusionAttributeID,
+			m.TargetFusionAttributeTypeID as SourceFusionAttributeTypeID,
+			m.TargetObject as SourceObject,
+			m.TargetParentObjectFusionAttributeID as SourceParentObjectFusionAttributeID,
+			m.TargetParentObject as SourceParentObject,
+			m.TargetParentObjectFusionAttributeTypeID as SourceParentObjectFusionAttributeTypeID,
+			T.id as TargetFusionAttributeID,
+			T.fusionattributetypeid as TargetFusionAttributeTypeID,
+			T.textpath as TargetObject,
+			i.objectid as TargetParentObjectFusionAttributeID,
+			T_p.name as TargetParentObject,
+			T_p.fusionattributetypeid as TargetParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.objectid = m.TargetParentObjectFusionAttributeID and i.[object] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.subjectid)
+			inner join fusionattribute T on(T.FusionId = @fusionId and T.deleted = 0 and T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.TargetObject,m.TargetParentObject,'')) -- we are doing this to avoid messing with the name column that doesnt have an index
+		where 
+			m.TargetFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewViewIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = m.TargetFusionAttributeID and m_2.TargetFusionAttributeID = T.Id) or (m_2.TargetFusionAttributeID = m.TargetFusionAttributeID and m_2.SourceFusionAttributeID = T.id)) -- dont insert duplicates
+
+	-- view / view maps for sources that are missing connection
+	insert into #maps
+		(TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID, SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.SourceFusionAttributeID as TargetFusionAttributeID,
+			m.SourceFusionAttributeTypeID as TargetFusionAttributeTypeID,
+			m.SourceObject as TargetObject,
+			m.SourceParentObjectFusionAttributeID as TargetParentObjectFusionAttributeID,
+			m.SourceParentObject as TargetParentObject,
+			m.SourceParentObjectFusionAttributeTypeID as TargetParentObjectFusionAttributeTypeID,
+			T.id as SourceFusionAttributeID,
+			T.fusionattributetypeid as SourceFusionAttributeTypeID,
+			T.textpath as SourceObject,
+			i.objectid as SourceParentObjectFusionAttributeID,
+			T_p.name as SourceParentObject,
+			T_p.fusionattributetypeid as SourceParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.SourceParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.FusionId = @fusionId and T.deleted = 0 and T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.SourceObject,m.SourceParentObject,'')) -- we are doing this to avoid messing with the name column that doesnt have an index
+		where 
+			m.SourceFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewViewIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = T.Id and m_2.TargetFusionAttributeID = m.SourceFusionAttributeID) or (m_2.TargetFusionAttributeID = T.id  and m_2.SourceFusionAttributeID = m.SourceFusionAttributeID)) -- dont insert duplicates
+
+	/*	insert into #maps
+		(TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID, SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.SourceFusionAttributeID as TargetFusionAttributeID,
+			m.SourceFusionAttributeTypeID as TargetFusionAttributeTypeID,
+			m.SourceObject as TargetObject,
+			m.SourceParentObjectFusionAttributeID as TargetParentObjectFusionAttributeID,
+			m.SourceParentObject as TargetParentObject,
+			m.SourceParentObjectFusionAttributeTypeID as TargetParentObjectFusionAttributeTypeID,
+			T.id as SourceFusionAttributeID,
+			T.fusionattributetypeid as SourceFusionAttributeTypeID,
+			T.textpath as SourceObject,
+			i.objectid as SourceParentObjectFusionAttributeID,
+			T_p.name as SourceParentObject,
+			T_p.fusionattributetypeid as SourceParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.objectid = m.SourceParentObjectFusionAttributeID and i.[object] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.subjectid)
+			inner join fusionattribute T on(T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.SourceObject,m.SourceParentObject,'')) -- we are doing this to avoid messing with the name column that doesnt have an index
+		where 
+			m.SourceFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewViewIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = T.Id and m_2.TargetFusionAttributeID = m.SourceFusionAttributeID) or (m_2.TargetFusionAttributeID = T.id  and m_2.SourceFusionAttributeID = m.SourceFusionAttributeID)) -- dont insert duplicates
+		*/				
+	-- end view / view maps
 
 
 	-- populate the previous step id this also duplicates items that have multiple paths and is very important
@@ -502,3 +625,4 @@ begin
 	print 'Inserted [' + cast(@mapitemCount as varchar) + '] mapitem records';
 			
 end
+go
