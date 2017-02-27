@@ -33,6 +33,7 @@ export class NodeModel {
     category: string;
     visible: boolean = true;
     childCount: number;
+    isLeaf: boolean = false;
 }
 
 export class ImpactFilter {

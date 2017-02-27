@@ -1320,7 +1320,7 @@ where	T.ID = @id";
 
         public static string ImpactAnalysisDiagram = @"
 declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
-declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateid int, intersectid int)
+declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateid int, intersectid int, isLeaf bit)
 
 	insert into @nodes
 		select	D.Object + cast(D.ObjectID as varchar),
@@ -1338,7 +1338,8 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 					else coalesce(P.Inverse, 'used in')
 				end as [Predicate],
 				P.ID as PredicateID,
-				I.ID
+				I.ID,
+				1 as isLeaf
 		from	[Intersect] I
 				inner join cache.ObjectDetails D on 
 									D.Object = case 
@@ -1379,9 +1380,22 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 				D.IconForeColor,
 				null,
 				null,
-				null
+				null,
+				1 as isLeaf
 		from	cache.ObjectDetails D
 		where	Object = @type and ObjectID = @id
+
+		--check for downstream relationships to pre-emptively show/hide expander button
+		update n
+		set isLeaf = 0
+		from @nodes n
+		inner join [Intersect] I on ((I.[Subject] = n.[obj] AND I.[SubjectID] = n.[objid])
+			OR (I.[Object] = n.[obj] AND I.[ObjectID] = n.[objid])) 
+			AND I.ID <> n.intersectid;
+
+		update @nodes
+		set isLeaf = 0
+		where intersectid is null;
 
 	select	(
 			select * from @links for json path			

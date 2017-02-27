@@ -42,11 +42,14 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     private myDiagram: go.Diagram;
 
     private zoomLevel: number = 50;
-    private tab: string = 'filter';
-    private headerText: string = 'Filter';
+    private tab: string = 'info';
+    private headerText: string = 'Info';
     private isWindowVisible = false;
+    private isFilterVisible = false;
+    private allSelected = true;
+    private noneSelected = false;
+    private canApplyFilter = false;
     private menuItems: MenuItem[] = [];
-    private showRelationsTable = false;
 
     private filters: ImpactFilter[] = [];
     FilterType = FilterType;
@@ -64,13 +67,23 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
         this.menuItems.push({
-            icon: 'fa-refresh menu-icon'
+            icon: 'fa-filter'
         });
-        //this.menuItems.push({
-        //    icon: 'fa-table menu-icon'
-        //});
+
         this.menuItems.push({
-            icon: 'fa-info-circle menu-icon'
+            icon: 'fa-search-minus'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-search-plus'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-refresh'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-info-circle'
         });
 
         this.initializeDiagram();
@@ -131,7 +144,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.diagramService.getImpactDiagram(this.objectType, this.objectID)
             .then(data => {
                 this.model = data;
-
+                console.log(data);
                 this.model.nodes.forEach(n => {
                     let isFocal = (n.obj == this.objectType && n.objid == this.objectID);
                     if (isFocal) focal = n;
@@ -141,15 +154,17 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                     n.category = isFocal ? "" : "NonFocal";
 
                     let predicate = this.filters.find(p => p.type == FilterType.Predicate && p.key == (n.predicateid || '').toString());
-                    if (predicate == null && n.predicateid != null)
+                    if (predicate == null && n.predicateid != null) {
                         this.filters.push({
                             key: n.predicateid.toString(),
                             name: n.predicate,
                             type: FilterType.Predicate,
                             selected: true
                         });
-
+                    }
                 });
+
+
                 if (this.model.links) {
                     this.model.links.forEach(l => {
                         l.isTreeLink = true;
@@ -160,6 +175,19 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
 
                 this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
+
+                if (this.model.nodes.length == 1) {
+                    //there are no relationships, hide the expand/collapse
+                    this.myDiagram.nodes.first().findObject('TREEBUTTON').visible = false;
+                }
+
+                this.myDiagram.nodes.each(n => {
+                    if (n.data.isLeaf)
+                        n.findObject('TREEBUTTON').visible = false;
+                });
+
+
+
                 this.isLoading = false;
             });
     }
@@ -274,6 +302,11 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         }
 
         //this.aggregatePredicates(this.model.nodes, this.model.links);
+
+        this.myDiagram.nodes.each(n => {
+            if (n.data.isLeaf)
+                n.findObject('TREEBUTTON').visible = false;
+        });
 
         this.myDiagram.links.each(l => {
             let k = this.model.links.find(i => i.to == l.data.to && i.from == l.data.from);
@@ -390,16 +423,50 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     }
 
     private menuAction(e: MenuItem) {
-        if (e.icon == 'fa-refresh menu-icon') {
+        if (e.icon == 'fa-refresh') {
             this.refreshDiagram();
-        } else if (e.icon == 'fa-info-circle menu-icon') {
+        } else if (e.icon == 'fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
-        } else if (e.icon == 'fa-table menu-icon') {
-            this.showRelationsTable = !this.showRelationsTable;
+            this.isFilterVisible = false;
+        } else if (e.icon == 'fa-search-plus') {
+            this.myDiagram.scale += .1;
+            if (this.myDiagram.scale > 2.5)
+                this.myDiagram.scale = 2.5;
+        } else if (e.icon == 'fa-search-minus') {
+            this.myDiagram.scale -= .1;
+            if (this.myDiagram.scale < .1)
+                this.myDiagram.scale = .1;
+        } else if (e.icon == 'fa-filter') {
+            this.isFilterVisible = !this.isFilterVisible;
+            this.isWindowVisible = false;
         }
     }
 
+    private selectAll() {
+        this.canApplyFilter = true;
+        this.filters.forEach(f => {
+            f.selected = true;
+        });
+    }
+
+    private selectNone() {
+        this.canApplyFilter = true;
+        this.filters.forEach(f => {
+            f.selected = false;
+        });
+    }
+
+    private checkFilter() {
+        this.canApplyFilter = true;
+
+        if (this.filters.filter(f => !f.selected).length == 0)
+            this.allSelected = true;
+        if (this.filters.filter(f => f.selected).length == 0)
+            this.noneSelected = true;
+    }
+
     private filterView() {
+        this.canApplyFilter = false;
         this.myDiagram.startTransaction("filterView");
 
         this.myDiagram.nodes.each(n => {
@@ -567,7 +634,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         } else {
             this.selectedObject = null;
             this.selectedObjectID = null;
-            this.selectTab('filter');
+            this.selectTab('info');
         }
     }
 
@@ -578,7 +645,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         if (obj != null) {
             if (obj.key != null) {
                 let node = this.myDiagram.findNodeForKey(obj.key);
-                this.expandNode(node);
+                if (node && node.findObject('TREEBUTTON').visible)
+                    this.expandNode(node);
             }
         }
     }
