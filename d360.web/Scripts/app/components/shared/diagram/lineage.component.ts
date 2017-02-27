@@ -78,7 +78,10 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.originalObject = this.objectType;
         this.originalObjectID = this.objectID;
 
-        if (this.objectType == 'FusionAttribute') this.view = LineageView.Technical;//start fusion at the technical view.
+        if (this.objectType == 'FusionAttribute') {
+            this.view = LineageView.Technical;//start fusion at the technical view.
+            this.nameOnly = false; //dont start with name only true in tech view it is very confusing
+        }
 
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
