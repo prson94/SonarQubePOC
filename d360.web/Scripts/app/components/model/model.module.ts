@@ -30,7 +30,6 @@ import { ModelItemStructureComponent } from './model-item-structure.component';
 
 import {
     GrowlModule,
-    InputSwitchModule,
     InputTextModule,
     InputMaskModule,
     DataTableModule,
@@ -55,7 +54,6 @@ import {
 
         //primeng
         GrowlModule,
-        InputSwitchModule,
         InputTextModule,
         InputMaskModule,
         DataTableModule,

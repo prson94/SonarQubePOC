@@ -31,6 +31,8 @@
         public const string ARTIFACT_STATUS_REVIEW = "Under Review";
         public const string ARTIFACT_STATUS_CERTIFIED = "Certified";
 
+        public const string EVENTS_SERVICE_BUS = "Endpoint=sb://d3sevent.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=0AvdgR0EA0djFqV+EqSewmChgWHdqOPGZPUK+KJ8LZQ=";
+
         //azure container names
         public const string AZURE_CLOUD_FUSION_CONTAINER = "cloud-fusion-data";
 

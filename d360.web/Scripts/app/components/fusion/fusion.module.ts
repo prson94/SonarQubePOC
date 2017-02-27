@@ -55,7 +55,6 @@ import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-ed
 
 import {
     GrowlModule,
-    InputSwitchModule,
     InputTextModule,
     InputMaskModule,
     DataTableModule,
@@ -81,7 +80,6 @@ import {
 
         //primeng
         GrowlModule,
-        InputSwitchModule,
         InputTextModule,
         InputMaskModule,
         DataTableModule,

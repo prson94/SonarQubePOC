@@ -1,18 +1,15 @@
-﻿using System.Collections.Generic;
-using d360.core.queue;
-using Newtonsoft.Json.Linq;
-using System.Net;
-using System;
-using Newtonsoft.Json;
-using System.Linq;
-using System.Text;
+﻿using d360.core;
 using d360.core.entities;
-using d360.core;
-using System.Data.SqlClient;
+using d360.core.queue;
 using Dapper;
-using System.Diagnostics;
 using MoreLinq;
-using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Net;
+using System.Text;
 
 namespace d360.extensions.search
 {

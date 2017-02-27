@@ -94,6 +94,16 @@ namespace d360.core
         }
     }
 
+    public class EnableAuditAttribute : Attribute
+    {
+        public bool Enabled { get; set; }
+
+        public EnableAuditAttribute(bool enabled)
+        {
+            Enabled = enabled;
+        }
+    }
+
     public class ObjectTypeAttribute : Attribute
     {
         public int ObjectTypeID { get; set; }

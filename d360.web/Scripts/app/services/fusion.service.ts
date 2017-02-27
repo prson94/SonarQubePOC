@@ -262,15 +262,15 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    postFusionAttributeType(fusionAttributeType: FusionAttributeType): Promise<any>{
-        return this.http.post('form/FusionAttributeType', fusionAttributeType)
+    postFusionAttributeType(fusionAttributeType: FusionAttributeType, objectStyle: ObjectStyle = null): Promise<any>{
+        return this.http.post('form/FusionAttributeType', { fusion: fusionAttributeType, style: objectStyle })
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 
-    putFusionAttributeType(fusionAttributeType: FusionAttributeType): Promise<any> {
-        return this.http.put('form/FusionAttributeType', fusionAttributeType)
+    putFusionAttributeType(fusionAttributeType: FusionAttributeType, objectStyle: ObjectStyle = null): Promise<any> {
+        return this.http.put('form/FusionAttributeType', { fusion: fusionAttributeType, style: objectStyle })
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

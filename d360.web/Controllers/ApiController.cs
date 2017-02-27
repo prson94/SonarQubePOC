@@ -356,15 +356,6 @@ namespace d360.web.Controllers
             #region Resolve to underlying types
             switch (type)
             {
-                case SystemObjects.EventGroup:
-                    var eventGroup = Company.GetById<EventGroup>(id);
-                    if (eventGroup != null)
-                    {
-                        type = SystemObjects.Rule;
-                        id = eventGroup.RuleID ?? 0;
-                        eventGroup = null;
-                    }
-                    break;
                 case SystemObjects.Fusion:
                     var fusionType = Company.GetById<Fusion>(id);
                     if (fusionType != null)
@@ -4441,84 +4432,6 @@ from    (
                         #endregion
                     }
                     responsibilityType = null;
-                    break;
-                #endregion
-                case SystemObjects.Event:
-                    #region Fields
-                    var evt = Company.GetById<Event>(id);
-                    if (evt != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = evt.GetName(i => i.Status), FieldName = "EventStatus", FieldDescription = evt.GetDescription(i => i.Status), Value = evt.Status }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = evt.GetName(i => i.SourceID), FieldName = "EventSourceID", FieldDescription = evt.GetDescription(i => i.SourceID), Value = evt.SourceID }
-                            }
-                        });
-
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
-                    }
-                    evt = null;
-                    break;
-                #endregion
-                case SystemObjects.EventGroup:
-                    #region Fields
-                    var evtgrp = Company.Filter<EventGroup>(i => i.ID == id).Select(i => new
-                    {
-                        i.ID,
-                        i.Name,
-                        i.PublicID,
-                        RuleName = i.Rule.Name,
-                        i.RuleID,
-                        EventCount = i.Events.Count
-                    }).SingleOrDefault();
-                    if (evtgrp != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = core.resources.Fields.PublicID_Name, FieldName = "EventGroupPublicID", FieldDescription = core.resources.Fields.PublicID_Description, Value = evtgrp.PublicID }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = core.resources.Fields.ID_Name, FieldName = "EventGroupID", FieldDescription = core.resources.Fields.ID_Description, Value = evtgrp.ID.ToString() }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = core.resources.Fields.Name_Name, FieldName = "EventGroupName", FieldDescription = core.resources.Fields.Name_Description, Value = evtgrp.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "# Event Details", FieldName = "EventGroupEventCount", Value = evtgrp.EventCount.ToString() }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = core.resources.Fields.Rule_Name, FieldName = "EventGroupRuleName", FieldDescription = core.resources.Fields.Rule_Description, Value = evtgrp.RuleName }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Rule ID", FieldName = "EventGroupRuleID", Value = evtgrp.RuleID.ToString() }
-                            }
-                        });
-                    }
-                    evtgrp = null;
                     break;
                 #endregion
                 case SystemObjects.PolicyType:

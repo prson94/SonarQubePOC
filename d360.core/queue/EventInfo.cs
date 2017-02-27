@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 
 namespace d360.core.queue
 {
-    public class EventInfo: QueueObject
+    public class EventInfo
     {
         public string DomainPrefix { get; set; }
+
+        public int CompanyID { get; set; }
 
         public int ResourceID { get; set; }
 

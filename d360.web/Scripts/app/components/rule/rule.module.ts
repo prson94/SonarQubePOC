@@ -33,7 +33,6 @@ import {
     GrowlModule,
     InputTextModule,
     InputMaskModule,
-    InputSwitchModule,
     DataTableModule,
     TreeTableModule,
     ButtonModule,
@@ -55,7 +54,6 @@ import {
 
         //primeng
         GrowlModule,
-        InputSwitchModule,
         InputTextModule,
         InputMaskModule,
         DataTableModule,

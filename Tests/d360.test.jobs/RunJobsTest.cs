@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.queue;
 using d360.extensions.caching;
 using d360.extensions.info;
+using d360.extensions.powerbi;
 using d360.extensions.queue;
 using d360.extensions.search;
 using d360.extensions.storage;
@@ -23,8 +24,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 6; //10
-            var fusionTypeID = 13;//13;
+            var companyID = 1; //10
+            var fusionTypeID = 1;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -114,8 +115,8 @@ END",
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("Thrivent.prod.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Thrivent - 2017 - Production", File = bytes };
+            var bytes = File.ReadAllBytes("adfs365.txt.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Infogix - 2017 - Office 365", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

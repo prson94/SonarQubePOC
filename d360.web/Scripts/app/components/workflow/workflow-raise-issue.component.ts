@@ -25,7 +25,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <header>Report a problem</header>                        
+                        <header>Take Action</header>                        
                             <div class="row">
                                 <div class="col s12">
                                     <div class="FieldName">What item would you like to report a problem with?</div>

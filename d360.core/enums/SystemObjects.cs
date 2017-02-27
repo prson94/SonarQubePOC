@@ -2,151 +2,124 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Linq;
 
 namespace d360.core
 {
     public enum SystemObjects
     {
-        [Description("Artifact")]
+        [Description("Artifact"), EnableAudit(true)]
         Artifact = 1,
-        [Description("Synonym"), AllowSurvey(false)]
-        Synonym = 2,
-        [Description("Synonym Type"), AllowSurvey(false)]
-        SynonymType = 3,
-        [Description("Artifact Type"), AllowSurvey(true)]
-        ArtifactType = 4,
-        [Description("Attribute"), AllowOwnership(false)]
-        Attribute = 5,
-        [Description("Attribute Group")]
-        AttributeType = 6,
-        [Description("D_omain List")]
-        D_omain = 7,
-        [Description("D_omain List Group"), AllowOwnership(false)]
-        D_omainGroup = 8,
-        [Description("D_omain List Item"), AllowOwnership(false)]
-        D_omainItem = 9,
-        [Description("D_omain List Type"), AllowSurvey(true)]
-        D_omainType = 10,
-        [Description("Email Template"), AllowOwnership(false)]
-        EmailTemplate = 11,
-        [Description("Event")]
-        Event = 12,
-        [Description("Event Type")]
-        EventType = 13,
-        [Description("Fusion")]
-        Fusion = 14,
-        [Description("Fusion Attribute")]
-        FusionAttribute = 15,
-        [Description("Fusion Attribute Type")]
-        FusionAttributeType = 16,
-        [Description("FusionIntersect")]
-        FusionIntersect = 17,
-        [Description("Fusion Intersect Type")]
-        FusionIntersectType = 18,
-        [Description("Fusion Type")]
-        FusionType = 19,
-        [Description("Group")]
-        Group = 20,
-        [Description("Intersect")]
-        Intersect = 21,
-        [Description("Intersect Type")]
-        IntersectType = 22,
-        [Description("Lookup Item")]
-        Lookup = 23,
-        [Description("Lookup Type"), AllowSurvey(true)]
-        LookupType = 24,
-        [Description("Ownership"), AllowOwnership(false)]
-        Ownership = 25,
-        [Description("Ownership Type"), AllowOwnership(false)]
-        OwnershipType = 26,
-        [Description("Resource"), AllowOwnership(false)]
-        Resource = 27,
-        [Description("Resource Type"), AllowOwnership(false), AllowSurvey(true)]
-        ResourceType = 28,
-        [Description("Role"), AllowOwnership(false), AllowSurvey(true)]
-        Role = 29,
-        [Description("Survey Type"), AllowSurvey(false)]
-        SurveyType = 30,
-        [Description("Taxonomy")]
-        Taxonomy = 31,
-        [Description("Taxonomy Type"), AllowSurvey(true)]
-        TaxonomyType = 32,
-        [Description("Tooltip  Template"), AllowOwnership(false)]
-        TooltipTemplate = 33,
-        [Description("Event Group")]
-        EventGroup = 34,
-        [Description("Field")]
-        Field = 35,
-        [Description("Field Type"), AllowSurvey(false)]
-        FieldType = 36,
-        [Description("Resolution"), AllowSurvey(true)]
-        Resolution = 37,
-        [Description("Response Type"), AllowSurvey(false)]
-        ResponseType = 38,
-        [Description("Statistic"), AllowSurvey(false)]
-        Statistic = 39,
-        [Description("Statistic Type"), AllowSurvey(false)]
-        StatisticType = 40,
-        [Description("Responsibility"), AllowSurvey(false)]
-        Responsibility = 41,
-        [Description("Responsibility Type"), AllowSurvey(false)]
-        ResponsibilityType = 42,
-        [Description("Responsibility Type Claim"), AllowSurvey(false)]
-        ResponsibilityTypeClaim = 43,
-        [Description("Responsibility Type Group"), AllowSurvey(false)]
-        ResponsibilityTypeGroup = 44,
-        [Description("Claim"), AllowSurvey(false)]
-        Claim = 45,
-        [Description("Bulk Load"), AllowSurvey(false)]
-        Load = 46,
-        [Description("Report"), AllowSurvey(false)]
-        Report = 47,
-        [Description("Attribute Type Category"), AllowSurvey(false)]
-        AttributeTypeCategory = 48,
-        [Description("Policy"), AllowSurvey(false)]
-        Policy = 49,
-        [Description("Policy Type"), AllowSurvey(false)]
-        PolicyType = 50,
-        [Description("Policy Type Class"), AllowSurvey(false)]
-        PolicyTypeClass = 51,
-        [Description("Rule"), AllowSurvey(false)]
-        Rule = 52,
-        [Description("Rule Type"), AllowSurvey(false)]
-        RuleType = 53,
-        [Description("Fusion Execution"), AllowSurvey(false)]
-        FusionExecution = 54,
-        [Description("Workflow Relation"), AllowSurvey(false)]
-        WorkflowTypeRelation = 55,
-        [Description("Taxonomy Type Class"), AllowSurvey(false)]
-        TaxonomyTypeClass = 56,
-        [Description("Predicate"), AllowSurvey(false)]
-        Predicate = 57,
-        [Description("Group Type"), AllowSurvey(false)]
-        GroupType = 58,
-        [Description("Relation")]
-        Relation = 59,
-        [Description("Relation Type")]
-        RelationType = 60,
-        [Description("Rule Dimension"), AllowSurvey(false)]
-        RuleDimension = 61,        
-        [Description("Map"), AllowSurvey(false)]
-        Map= 62,
-        [Description("Intersect Role"), AllowSurvey(false)]
-        IntersectRole = 63,
-        [Description("Reference Item"), AllowSurvey(false)]
-        ReferenceItem = 64,
-        [Description("Reference Item Type"), AllowSurvey(false)]
-        ReferenceItemType = 65,
-        [Description("Fusion Query Attribute")]
-        FusionQueryAttribute = 66,
-        [Description("Fusion Query Attribute Type")]
-        FusionQueryAttributeType = 67,
-        [Description("Monitor"), AllowSurvey(false)]
-        Monitor = 68,
-        [Description("Issue Type")]
-        IssueType= 69,
-        [Description("Issue")]
-        Issue = 70,
+        [Description("Synonym"), AllowSurvey(false), EnableAudit(false)]
+        Synonym,
+        [Description("Synonym Type"), AllowSurvey(false), EnableAudit(false)]
+        SynonymType,
+        [Description("Artifact Type"), AllowSurvey(true), EnableAudit(true)]
+        ArtifactType,
+        [Description("Attribute"), AllowOwnership(false), EnableAudit(true)]
+        Attribute,
+        [Description("Attribute Group"), EnableAudit(false)]
+        AttributeType,
+        [Description("Email Template"), AllowOwnership(false), EnableAudit(true)]
+        EmailTemplate,
+        [Description("Fusion"), EnableAudit(true)]
+        Fusion,
+        [Description("Fusion Attribute"), EnableAudit(false)]
+        FusionAttribute,
+        [Description("Fusion Attribute Type"), EnableAudit(true)]
+        FusionAttributeType,
+        [Description("Fusion Type"), EnableAudit(true)]
+        FusionType,
+        [Description("Group"), EnableAudit(true)]
+        Group,
+        [Description("Intersect"), EnableAudit(false)]
+        Intersect,
+        [Description("Intersect Type"), EnableAudit(true)]
+        IntersectType,
+        [Description("Lookup Item"), EnableAudit(false)]
+        Lookup,
+        [Description("Lookup Type"), AllowSurvey(true), EnableAudit(true)]
+        LookupType,
+        [Description("Resource"), AllowOwnership(false), EnableAudit(false)]
+        Resource,
+        [Description("Resource Type"), AllowOwnership(false), AllowSurvey(true), EnableAudit(false)]
+        ResourceType,
+        [Description("Role"), AllowOwnership(false), AllowSurvey(true), EnableAudit(false)]
+        Role,
+        [Description("Survey Type"), AllowSurvey(false), EnableAudit(true)]
+        SurveyType,
+        [Description("Taxonomy"), EnableAudit(true)]
+        Taxonomy,
+        [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true)]
+        TaxonomyType,
+        [Description("Tooltip  Template"), AllowOwnership(false), EnableAudit(false)]
+        TooltipTemplate,
+        [Description("Field"), EnableAudit(false)]
+        Field,
+        [Description("Field Type"), AllowSurvey(false), EnableAudit(true)]
+        FieldType,
+        [Description("Response Type"), AllowSurvey(false), EnableAudit(false)]
+        ResponseType,
+        [Description("Statistic"), AllowSurvey(false), EnableAudit(false)]
+        Statistic,
+        [Description("Statistic Type"), AllowSurvey(false), EnableAudit(true)]
+        StatisticType,
+        [Description("Responsibility"), AllowSurvey(false), EnableAudit(true)]
+        Responsibility,
+        [Description("Responsibility Type"), AllowSurvey(false), EnableAudit(true)]
+        ResponsibilityType,
+        [Description("Responsibility Type Claim"), AllowSurvey(false), EnableAudit(false)]
+        ResponsibilityTypeClaim,
+        [Description("Claim"), AllowSurvey(false), EnableAudit(false)]
+        Claim,
+        [Description("Bulk Load"), AllowSurvey(false), EnableAudit(false)]
+        Load,
+        [Description("Report"), AllowSurvey(false), EnableAudit(true)]
+        Report,
+        [Description("Attribute Type Category"), AllowSurvey(false), EnableAudit(false)]
+        AttributeTypeCategory,
+        [Description("Policy"), AllowSurvey(false), EnableAudit(true)]
+        Policy,
+        [Description("Policy Type"), AllowSurvey(false), EnableAudit(true)]
+        PolicyType,
+        [Description("Policy Type Class"), AllowSurvey(false), EnableAudit(true)]
+        PolicyTypeClass,
+        [Description("Rule"), AllowSurvey(false), EnableAudit(true)]
+        Rule,
+        [Description("Rule Type"), AllowSurvey(false), EnableAudit(true)]
+        RuleType,
+        [Description("Fusion Execution"), AllowSurvey(false), EnableAudit(false)]
+        FusionExecution,
+        [Description("Workflow Relation"), AllowSurvey(false), EnableAudit(false)]
+        WorkflowTypeRelation,
+        [Description("Taxonomy Type Class"), AllowSurvey(false), EnableAudit(true)]
+        TaxonomyTypeClass,
+        [Description("Predicate"), AllowSurvey(false), EnableAudit(true)]
+        Predicate,
+        [Description("Group Type"), AllowSurvey(false), EnableAudit(false)]
+        GroupType,
+        [Description("Rule Dimension"), AllowSurvey(false), EnableAudit(true)]
+        RuleDimension,        
+        [Description("Map"), AllowSurvey(false), EnableAudit(true)]
+        Map,
+        [Description("Map Type"), AllowSurvey(false), EnableAudit(true)]
+        MapType,
+        [Description("Intersect Role"), AllowSurvey(false), EnableAudit(true)]
+        IntersectRole,
+        [Description("Reference Item"), AllowSurvey(false), EnableAudit(true)]
+        ReferenceItem,
+        [Description("Reference Item Type"), AllowSurvey(false), EnableAudit(true)]
+        ReferenceItemType,
+        [Description("Fusion Query Attribute"), EnableAudit(false)]
+        FusionQueryAttribute,
+        [Description("Fusion Query Attribute Type"), EnableAudit(true)]
+        FusionQueryAttributeType,
+        [Description("Monitor"), AllowSurvey(false), EnableAudit(false)]
+        Monitor,
+        [Description("Issue Type"), EnableAudit(true)]
+        IssueType,
+        [Description("Issue"), EnableAudit(false)]
+        Issue,
     }
 
     public class SystemObjectInfo
@@ -155,11 +128,16 @@ namespace d360.core
         public string Name { get; set; }
         public string Description { get; set; }
         //public bool AllowOwnership { get; set; }
-        //public bool AllowSurvey { get; set; }
+        public bool EnableAudit { get; set; }
     }
 
     public static class SystemObjectExtensions
     {
+        public static bool IsAuditEnabled(this SystemObjects type)
+        {
+            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<EnableAuditAttribute>().Enabled;
+        }
+
         public static List<SystemObjectInfo> GetSystemObjectInfoList(this SystemObjects type)
         {
             var list = new List<SystemObjectInfo>();
@@ -167,11 +145,10 @@ namespace d360.core
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
                 //var aAttrOwnership = ((AllowOwnershipAttribute)tm.GetCustomAttribute(typeof(AllowOwnershipAttribute)));
-                //var aAttrSurvey = ((AllowSurveyAttribute)tm.GetCustomAttribute(typeof(AllowSurveyAttribute)));
                 list.Add(new SystemObjectInfo
                 {
                     //AllowOwnership = (aAttrOwnership != null) ? aAttrOwnership.Allowed : true,
-                    //AllowSurvey = (aAttrSurvey != null) ? aAttrSurvey.Allowed : false,
+                    EnableAudit = ((EnableAuditAttribute)tm.GetCustomAttribute(typeof(EnableAuditAttribute))).Enabled,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                     ID = (SystemObjects)Enum.Parse(typeof(SystemObjects), tm.Name),
                     Name = tm.Name

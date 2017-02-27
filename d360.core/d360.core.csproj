@@ -116,6 +116,7 @@
     <Compile Include="entities\IssueType.cs" />
     <Compile Include="entities\Reference\ReferenceItemType.cs" />
     <Compile Include="entities\Reference\ReferenceItem.cs" />
+    <Compile Include="entities\Relation\MapType.cs" />
     <Compile Include="entities\Social\Favorite.cs" />
     <Compile Include="entities\FieldTypeLookup.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDefinition.cs" />
@@ -286,6 +287,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="entities\Workflow\Models.cs" />
+    <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\Workflow\LinkType.cs" />
     <Compile Include="enums\Workflow\ChangeType.cs" />
     <Compile Include="enums\Workflow\TransitionType.cs" />

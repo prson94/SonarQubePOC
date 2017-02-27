@@ -1,20 +1,12 @@
-﻿using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.PowerBI.Api.V1;
+﻿using Microsoft.PowerBI.Api.V1;
 using Microsoft.PowerBI.Api.V1.Models;
 using Microsoft.Rest;
-using System.IO;
-using Microsoft.PowerBI.Security;
-using System.Threading;
-using Microsoft.Rest.Serialization;
-using System.Net.Http.Headers;
-using System.Configuration;
-using System.Net;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace d360.extensions.powerbi
 {

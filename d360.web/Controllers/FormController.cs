@@ -175,11 +175,6 @@ namespace d360.web.Controllers
                     statusList.Add(new SelectListItem { Text = "Certified", Value = "Certified" });
                     statusList.Add(new SelectListItem { Text = "Archived", Value = "Archived" });
                     break;
-                case SystemObjects.Event:
-                    statusList.Add(new SelectListItem { Text = "Open", Value = "Open" });
-                    statusList.Add(new SelectListItem { Text = "Assigned", Value = "Assigned" });
-                    statusList.Add(new SelectListItem { Text = "Closed", Value = "Closed" });
-                    break;
                 case SystemObjects.Policy:
                     statusList.Add(new SelectListItem { Text = "Draft", Value = "Draft" });
                     statusList.Add(new SelectListItem { Text = "Active", Value = "Active" });
@@ -6197,39 +6192,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionType")]
-        public JsonResult AddFusionType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.FusionType, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("fusion type");
-
-                var model = new FusionType
-                {
-                    Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name")
-                };
-
-                Company.Add<FusionType>(model);
-
-                upsertObjectStyle(SystemObjects.FusionType, model.ID, form, model.Name);
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Name = model.Name });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-        
         [ActionName("FusionType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("FusionType")]
         public JsonResult PostFusionType(FusionType fusion, ObjectStyle style = null)
         {
@@ -6303,39 +6265,6 @@ namespace d360.web.Controllers
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteFusionType(form);
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditFusionType")]
-        public JsonResult EditFusionType(FormCollection form)//(int typeID, int id, FusionAttributeType model)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion type");
-
-                var model = Company.GetById<FusionType>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("fusion type");
-
-                if (!Company.HasPermission(SystemObjects.FusionType, model.ID, Claim.Update, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name");
-
-                Company.Update<FusionType>(model);
-
-                upsertObjectStyle(SystemObjects.FusionType, model.ID, form, model.Name);
-
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Name = model.Name });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
         }
 
         [ActionName("FusionType"), HttpPut, ValidateInput(false), Route("FusionType")]
@@ -6449,49 +6378,8 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionAttributeType")]
-        public JsonResult AddFusionAttributeType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion attribute type");
-
-                int typeID = parseIntField(form, "FusionTypeID");
-                int? parentID = null;
-                if (form.AllKeys.Contains("ParentID"))
-                {
-                    parentID = parseIntField(form, "ParentID");
-                }
-                var type = Company.GetById<FusionType>(typeID);
-                if (type == null) throw new NotFoundException("fusion type");
-
-                if (!Company.HasPermission(SystemObjects.FusionType, typeID, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var model = new FusionAttributeType
-                {
-                    FusionTypeID = typeID,
-                    ParentID = parentID,
-                    Name = parseTextField(form, "Name"),
-                    ScanEnabled = parseBooleanField(form, "ScanEnabled")
-                };
-
-                Company.Add<FusionAttributeType>(model);
-                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = model.ParentID, Type = "FusionAttributeType", Name = model.Name });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [ActionName("FusionAttributeType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("FusionAttributeType")]
-        public JsonResult PostFusionAttributeType(FusionAttributeType fusion)
+        public JsonResult PostFusionAttributeType(FusionAttributeType fusion, ObjectStyle style = null)
         {
             try
             {
@@ -6513,6 +6401,10 @@ namespace d360.web.Controllers
                 };
 
                 Company.Add<FusionAttributeType>(model);
+
+                if (style != null)
+                    upsertObjectStyle(SystemObjects.FusionAttributeType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
+
                 return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
             }
             catch (BaseException ex)
@@ -6564,40 +6456,8 @@ namespace d360.web.Controllers
             return DeleteFusionAttributeType(form);
         }
 
-        [HttpPut, ValidateInput(false), Route("EditFusionAttributeType")]
-        public JsonResult EditFusionAttributeType(FormCollection form)//(int typeID, int id, FusionAttributeType model)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion attibute type");
-
-                var model = Company.GetById<FusionAttributeType>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("fusion attibute type");
-
-                if (!Company.HasPermission(SystemObjects.FusionType, model.FusionTypeID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-                model.ScanEnabled = parseBooleanField(form, "ScanEnabled");
-
-                Company.Update<FusionAttributeType>(model);
-                Company.PerformObjectActionAfterSaveChanges(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Name = model.Name });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [ActionName("FusionAttributeType"), HttpPut, ValidateInput(false), Route("FusionAttributeType")]
-        public JsonResult PutFusionAttributeType(FusionAttributeType fusion)
+        public JsonResult PutFusionAttributeType(FusionAttributeType fusion, ObjectStyle style = null)
         {
             try
             {
@@ -6618,6 +6478,10 @@ namespace d360.web.Controllers
                 }
 
                 Company.Update<FusionAttributeType>(model);
+
+                if (style != null)
+                    upsertObjectStyle(SystemObjects.FusionAttributeType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
+
                 Company.PerformObjectActionAfterSaveChanges(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
