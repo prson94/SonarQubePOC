@@ -18,6 +18,7 @@
     static SITE_URL_MODEL_ROOT = 'model';
     static SITE_URL_ADMIN_ROOT = 'admin';
     static SITE_URL_HOME_ROOT = 'home';
+    static SITE_URL_MAPPING_ROOT = 'mapping';
 
     //model child routes
     static SITE_URL_MODEL_CLASSIFICATION = 'classification';

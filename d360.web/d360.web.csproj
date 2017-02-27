@@ -550,6 +550,7 @@
     <Content Include="Scripts\app\34.chunk.js" />
     <Content Include="Scripts\app\35.chunk.js" />
     <Content Include="Scripts\app\36.chunk.js" />
+    <Content Include="Scripts\app\37.chunk.js" />
     <Content Include="Scripts\app\4.chunk.js" />
     <Content Include="Scripts\app\5.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
@@ -983,6 +984,9 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-mapping-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />

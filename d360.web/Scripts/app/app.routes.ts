@@ -22,6 +22,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_HOME_ROOT, loadChildren: './components/home/home.module#HomeModule?chunkName=homeChunk'}, 
     { path: SiteUrlHelpers.SITE_URL_SEARCH_ROOT, loadChildren: './components/search/search.module#SearchModule?chunkName=searchChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT, loadChildren: './components/workflow/workflow.module#WorkflowModule?chunkName=workflowChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_MAPPING_ROOT, loadChildren: './components/mapping/mapping.module#MappingModule?chunkName=mappingChunk' }, 
 ];
 
 @NgModule({
