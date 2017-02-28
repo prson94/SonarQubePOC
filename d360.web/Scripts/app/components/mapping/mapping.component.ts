@@ -1,28 +1,77 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { DiagramService } from '../../services/diagram.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-mapping-component',
     template: `
         <div class="row">
-            <div class="col s10 offset-s1">
-                <div class="tile tile-detail">
-                    <header>
-                        Mappings
-                    </header>
+            <div class="col s12">
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Mapping'"></d3s-audit>
+                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible">                            
+                    <header>Mappings
+                                <d3s-tile-actions [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    </header>  
+                    <span *ngIf="!showDelete && !showEditor">
+                        <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                   
+                        <p-dataTable #dt sortField="Name" sortOrder="1" [globalFilter]="gb" [value]="mappings" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected">
+                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                            <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="MapTypeID" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column [style]="{width:'28px'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                    </div>
+                                </template>
+                            </p-column>                            
+                            <p-column  [style]="{width:'28px'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools">                                
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                    </div>
+                                </template>
+                            </p-column>    
+                        </p-dataTable>      
+                    </span>
+                    <d3s-delete-form *ngIf="showDelete"
+                        [callback]="theDeleteCallback"
+                        [itemId]="selected?.ID"
+                        [method]="'callback'"
+                        [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                        (onCancel)="showDelete=false;"
+                    ></d3s-delete-form> 
                 </div>
             </div>
         </div>
          `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [DiagramService]
+    //changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class MappingComponent extends BaseComponent implements OnInit {
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+export class MappingComponent extends BaseComponent implements OnInit, OnDestroy {
+    private mappings: any[] = [];
+    private selected: any = null;
+    private showEditor: boolean = false;
+    private showDelete: boolean = false;
+    private theDeleteCallback: Function;
+
+    constructor(protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected diagramService: DiagramService,
+        rightSidebarService: RightSidebarService
+    ) {
         super();
+        this.rightSidebarService = rightSidebarService;
+
+        this.setCommonRightSideBar(true);
+
+        this.theDeleteCallback = this.deleteMapping.bind(this);
     }
 
     ngOnInit() {
@@ -31,5 +80,24 @@ export class MappingComponent extends BaseComponent implements OnInit {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Mappings'));
+
+        this.load();
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();        
+    }
+
+    private load(): void {
+        this.isLoading = true;
+        this.diagramService.getLineageMappings()
+            .then(res => {
+                this.isLoading = false;
+                this.mappings = res;
+            });
+    }
+
+    private deleteMapping(id: number): void {
+        this.diagramService.deleteLineageMapping(id);
     }
 };

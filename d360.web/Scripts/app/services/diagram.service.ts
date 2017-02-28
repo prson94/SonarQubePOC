@@ -17,6 +17,7 @@ import {
 } from '../models/lineage.model';
 import { ImpactDiagramModel } from '../models/impact.model';
 import { HierarchyDiagramModel } from '../models/model.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class DiagramService extends BaseService {
@@ -165,4 +166,14 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    public getLineageMappings() : Promise<any[]> {
+        return this.http.get('api/lineage/mappings')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public deleteLineageMapping(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'lineagemapping', id);
+    }
 }

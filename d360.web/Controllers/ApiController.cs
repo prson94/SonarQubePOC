@@ -377,7 +377,7 @@ namespace d360.web.Controllers
             var filterColumns = new List<GridFilterColumn>();
             var groups = new List<GridColumnGroup>();
             decimal dynamicFieldWidth = 0;
-            int remainingWidth = 0;            
+            int remainingWidth = 0;
             int staticFieldCount = 0;
             ObjectDetail detail = null;
 
@@ -398,7 +398,7 @@ namespace d360.web.Controllers
                         hasParentType = artifactType.ParentID.HasValue;
 
                     staticFieldCount = hasParentType ? 4 : 3;
-                    
+
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
 
                     if (hasParentType)
@@ -487,7 +487,7 @@ namespace d360.web.Controllers
                     {
                         fields.Add(new GridField { name = "TaxonomyType", type = "string", });
                     }
-                    
+
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "ObjectID", type = "number" });
                     fields.Add(new GridField { name = "Object", type = "string" });
@@ -527,7 +527,7 @@ namespace d360.web.Controllers
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "ParentID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });                    
+                    fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "PolicyTypeID", type = "number" });
                     break;
                 #endregion                                
@@ -537,7 +537,7 @@ namespace d360.web.Controllers
                     remainingWidth = 85;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code"});
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -574,7 +574,7 @@ namespace d360.web.Controllers
                     remainingWidth = 75;
 
                     detail = Company.GetObjectDetail(type, id);
-                    
+
                     #region Parents
 
                     var parentSql = @"
@@ -646,7 +646,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
                         filterColumns.Add(col);
                     });
-                    
+
                     break;
                 #endregion
                 case SystemObjects.FusionQueryAttributeType:
@@ -715,7 +715,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     break;
                     #endregion
             }
-            
+
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
                 Title = (detail != null) ? detail.PluralizedName : "Child Items",
@@ -819,7 +819,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("TypeName", a.ArtifactType.Name);
             model.Add("AllowRelatedArtifacts", a.ArtifactType.AllowRelatedArtifacts);
             model.Add("Status", a.Status);
-            
+
             //check if this object has dashboards             
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();
             model.Add("HasDashboards", hasDashboards);
@@ -830,16 +830,16 @@ where   h.ID <> @t order by h.[Level] desc;
             //chick if this object has any child objects
             bool hasChildren = Company.Filter<Artifact>(x => x.ParentID == a.ID).Any();
             model.Add("HasChildArtifacts", hasChildren);
-            
+
             try
             {
                 var row = Company.Query<dynamic>(QueryConstants.ArtifactSettingsItem, new { id = a.ArtifactTypeID }).Single();
 
                 model.Add("AllowAttributes", (bool)row.AllowAttributes);
-                                
+
                 //get synonyms based on relations and allocations
-                var synonymTypes = Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = a.ArtifactTypeID, ot = new DbString { Value = "ArtifactType", IsFixedLength = true, Length = 50, IsAnsi = true} });
-                
+                var synonymTypes = Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = a.ArtifactTypeID, ot = new DbString { Value = "ArtifactType", IsFixedLength = true, Length = 50, IsAnsi = true } });
+
                 model.Add("NymTypes", synonymTypes);   //allow synonyms on all artifacts as custom synonyms are allowed everywhere.
                 model.Add("AllowPredicateHierarchies", (bool)row.AllowPredicateHierarchies);
             }
@@ -881,13 +881,13 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("AllowRelatedArtifacts", artifactType.AllowRelatedArtifacts);
             model.Add("ParentID", artifactType.ParentID);
             model.Add("CanOwnFusion", artifactType.CanOwnFusion);
-            
+
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType == "powerbi").Any();
             model.Add("HasDashboards", hasDashboards);
 
             var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == typeID && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
             model.Add("HasSuggestWorkflow", workflowEnabled);
-            
+
             return model;
         }
 
@@ -2093,6 +2093,15 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             query = '%' + query + '%';
             return query;
         }
+
+
+        [Route("lineage/mappings"), HttpGet]
+        public HttpResponseMessage GetLineageMaps()
+        {
+            var list = Company.Maps;
+            return Request.CreateResponse(HttpStatusCode.OK, list);
+        }
+
         #endregion
 
         #region Complex Lookup Fields

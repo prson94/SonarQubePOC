@@ -7,10 +7,19 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { CoreModule } from '../shared/core.module';
+import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedAuditModule } from '../shared/audit/shared-audit.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedDeleteFormModule } from '../shared/delete.form';
 
 import { MappingRoutingModule } from './mapping.routes';
 
 import { MappingComponent } from './mapping.component';
+
+import {    
+    DataTableModule,        
+    SharedModule,
+} from 'primeng/primeng';
 
 @NgModule({
     imports: [CommonModule,
@@ -23,6 +32,14 @@ import { MappingComponent } from './mapping.component';
 
         //d3s        
         CoreModule,
+        SharedAuditModule,
+        SharedDeleteFormModule,
+        SharedGridPagingInfoModule,
+        TilesModule,
+
+        //prime
+        DataTableModule,
+        SharedModule,
     ],
     declarations: [
         MappingComponent,

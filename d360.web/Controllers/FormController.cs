@@ -577,6 +577,8 @@ namespace d360.web.Controllers
                     return DeleteCustomSynonym(form);
                 case "FUSIONSCHEDULE":
                     return DeleteFusionSchedule(form);
+                case "LINEAGEMAPPING":
+                    return DeleteLineageMapping(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -17087,6 +17089,39 @@ order by TextPath
             }
         }
 
+
+        #endregion
+
+        #region Lineage Mapping
+
+        [HttpDelete, Route("DeleteLineageMapping")]
+        public JsonResult DeleteLineageMapping(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("lineage mapping");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.Map>(id);
+                if (model == null) throw new NotFoundException("mapping");
+
+                if (!Company.HasPermission(SystemObjects.Map, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<core.entities.Map>(i => i.ID == id);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
 
         #endregion
     }
