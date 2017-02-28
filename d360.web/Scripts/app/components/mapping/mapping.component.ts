@@ -5,6 +5,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { DiagramService } from '../../services/diagram.service';
 import { RightSidebarService } from '../../services/right-sidebar.service';
+import { MessagesService } from '../../services/messages.service';
 
 @Component({
     selector: 'd3s-mapping-component',
@@ -13,7 +14,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
             <div class="col s12">
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Map'"></d3s-audit>
-                <div class="row"  *ngIf="!isLoading && isRelationshipsVisible">
+                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-object-relationships [objectType]="'Map'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
@@ -21,7 +22,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
                     </div>
                 </div>    
                 <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isRelationshipsVisible">                            
-                    <header>Mappings
+                    <header *ngIf="!showDelete && !showEditor">Mappings
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                     </header>  
                     <span *ngIf="!showDelete && !showEditor">
@@ -49,6 +50,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
                             </p-column>    
                         </p-dataTable>      
                     </span>
+                    <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Map'" [title]="'Map'" [selection]="selected" (saveClick)="saveMap($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
                     <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"
                         [itemId]="selected?.ID"
@@ -74,6 +76,7 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
     constructor(protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected diagramService: DiagramService,
+        protected messagesService: MessagesService,
         rightSidebarService: RightSidebarService
     ) {
         super();
@@ -107,10 +110,24 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
                     if (item.MapClass == 1) item.MapClassName = "Source To Target";
                 }
                 this.mappings = res;
+                if (this.selected == null && this.mappings.length > 0) this.selected = this.mappings[0];
             });
     }
 
     private deleteMapping(id: number): void {
-        this.diagramService.deleteLineageMapping(id);
+        this.diagramService.deleteLineageMapping(id);        
+        this.mappings = this.mappings.filter(x => x.ID != id);
+        this.showDelete = false;
+    }
+
+    private saveMap(event): void {
+        this.diagramService.saveLineageMapping(event.item)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {
+                    this.load();                                        
+                }
+                this.showEditor = false;
+            });        
     }
 };

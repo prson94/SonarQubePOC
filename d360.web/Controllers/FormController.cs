@@ -361,7 +361,9 @@ namespace d360.web.Controllers
                 case "RELATIONSHIPROLE":
                     return IntersectRole_EditFields(ID);
                 case "ISSUETYPE":
-                    return IssueType_EditFields(ID);                        
+                    return IssueType_EditFields(ID);
+                case "MAP":
+                    return Map_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -413,6 +415,8 @@ namespace d360.web.Controllers
                     return IssueType_AddFields();
                 case "ISSUE":
                     return Issue_AddFields(objectID.GetValueOrDefault());
+                case "MAP":
+                    return Map_AddFields();
 
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -506,6 +510,8 @@ namespace d360.web.Controllers
                     return EditIssueType(form);
                 case "FUSIONSCHEDULE":
                     return EditFusionSchedule(form);
+                case "MAP":
+                    return EditMap(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -663,6 +669,8 @@ namespace d360.web.Controllers
                     return AddCustomSynonym(form);
                 case "FUSIONSCHEDULE":
                     return AddFusionSchedule(form);
+                case "MAP":
+                    return AddMap(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -17093,6 +17101,126 @@ order by TextPath
         #endregion
 
         #region Lineage Mapping
+
+        [Route("Map_AddFields"), NonNullableParameters]
+        public JsonResult Map_AddFields()
+        {
+            var list = new List<EditableField>();
+            
+            if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var mapTypes = new List<SelectListItem>();            
+            
+            foreach (var item in Company.MapTypes)
+            {
+                mapTypes.Add(new SelectListItem { Text = item.Name, Value = item.ID.ToString() });
+            }
+                        
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = "" });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = "" });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes });            
+            
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("Map_EditFields"), NonNullableParameters]
+        public JsonResult Map_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<core.entities.Map>(id);
+
+            if (!Company.HasPermission(SystemObjects.Map, a.ID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var mapTypes = new List<SelectListItem>();
+
+            foreach (var item in Company.MapTypes)
+            {
+                mapTypes.Add(new SelectListItem { Text = item.Name, Value = item.ID.ToString() });
+            }
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = a.Transformation });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes, Value = a.MapTypeID.ToString() });            
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddMap")]
+        public JsonResult AddMap(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("Map");
+
+                var map = new Map
+                {
+                    Name = parseTextField(form,"Name"),
+                    Transformation= parseTextField(form, "Transform"),
+                    MapTypeID = parseIntField(form, "MapType"),
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                };
+
+                Company.Add<Map>(map);
+
+                return jsonSuccess("Map successfully allocated.", map.ID.ToString(), "add", HttpStatusCode.Created);
+                
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditMap")]
+        public JsonResult EditMap(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("Map");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.Map>(id);
+                
+                if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Update, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                
+                model.Name = parseTextField(form, "Name");
+                model.Transformation = parseTextField(form, "Transform");                
+                model.MapTypeID = parseIntField(form, "MapType");                
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+                
+                Company.Update<Map>(model);
+
+                return jsonSuccess("Map successfully updated.", model.ID.ToString(), "update", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
 
         [HttpDelete, Route("DeleteLineageMapping")]
         public JsonResult DeleteLineageMapping(FormCollection form)

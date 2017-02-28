@@ -176,4 +176,11 @@ export class DiagramService extends BaseService {
     public deleteLineageMapping(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'lineagemapping', id);
     }
+
+    public saveLineageMapping(map: any): Promise<JsonResult> {
+        if (map.ID == undefined || !map.ID) {
+            return this.postDynamic(this.http, 'map', map);
+        }
+        return this.putDynamic(this.http, 'map', map);
+    }
 }
