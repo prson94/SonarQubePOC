@@ -134,6 +134,8 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
                             a.value = i.ID;
                             a.labelField = 'SourceFusionAttributeName';
                             a.valueField = 'SourceFusionAttributeID';
+                            a.templateValue = this.formTemplateString(i.Name, e.query);
+
                             this.queryResults.push(a);
                         });
                     });
@@ -148,6 +150,8 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
                             a.value = i.ID;
                             a.labelField = 'TargetFusionAttributeName';
                             a.valueField = 'TargetFusionAttributeID';
+                            a.templateValue = this.formTemplateString(i.Name, e.query);
+
                             this.queryResults.push(a);
                         });
                     });
@@ -345,6 +349,11 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
         }
         return false;
 
+    }
+
+    formTemplateString(val: string, query: string): string {
+        let x = val.toLowerCase().indexOf(query.toLowerCase());
+        return val.substring(0, x) + '<strong>' + val.substr(x, query.length) + '</strong>' + val.substring(x + query.length);
     }
 }
 

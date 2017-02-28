@@ -2072,7 +2072,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     end as rnk
                  from cache.ObjectDetails
                 where [ObjectType] = @type and ObjectTypeId=@id and TextPath like '%' + @query + '%'
-                order by rnk", new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id, query });
+                order by rnk, TextPath", new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id, query });
 
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }
@@ -2093,8 +2093,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     10
                 end as rnk
                 from FusionAttribute
-                where Deleted = 0 AND TextPath like  '%' + @query + '%' order by TextPath
-                order by rnk", new { query = query });
+                where Deleted = 0 AND TextPath like  '%' + @query + '%'
+                order by rnk, TextPath", new { query = query });
 
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }

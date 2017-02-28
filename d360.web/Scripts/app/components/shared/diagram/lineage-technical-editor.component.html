@@ -37,11 +37,11 @@
                         <tr *ngIf="!i.isNew" [style.color]="i.isDeleting ? '#aaa' : '#000'">
                             <td style="width: 10px"></td>
                             <td>
-                                {{i.SourceFusionAttributeName}}
+                                <d3s-tooltip tooltipType="preview" objectType="FusionAttribute" [objectId]="i.SourceFusionAttributeID">{{i.SourceFusionAttributeName}}</d3s-tooltip>
                             </td>
                             <td style="width:30px"></td>
                             <td>
-                                {{i.TargetFusionAttributeName}}
+                                <d3s-tooltip tooltipType="preview" objectType="FusionAttribute" [objectId]="i.TargetFusionAttributeID">{{i.TargetFusionAttributeName}}</d3s-tooltip>
                             </td>
                             <td>
                                 <span *ngIf="i.selectedMapItem != null">
@@ -66,6 +66,9 @@
                                                 [tabindex]="(x * 6) + 1"
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }">
+                                    <template let-item pTemplate="item2">
+                                        <div [innerHTML]="item.templateValue"></div>
+                                    </template>
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceFusionAttributeID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -81,6 +84,9 @@
                                                 [tabindex]="(x * 6) + 1"
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }">
+                                    <template let-item pTemplate="item2">
+                                        <div [innerHTML]="item.templateValue"></div>
+                                    </template>
                                 </p-autoComplete>
                                 <div *ngIf="i.TargetFusionAttributeID < 1" class="errorMessage">* Required</div>
                             </td>
