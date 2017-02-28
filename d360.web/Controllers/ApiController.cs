@@ -2109,7 +2109,23 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         [Route("lineage/mappings"), HttpGet]
         public HttpResponseMessage GetLineageMaps()
         {
-            var list = Company.Maps;
+            var sql = @"
+                        select
+                            M.ID
+	                        ,M.Name
+	                        ,M.Transformation
+	                        ,M.MapTypeID as 'MapTypeID'
+	                        ,MT.Name as 'MapType'
+	                        ,MT.Description as 'MapTypeDescription'
+	                        ,MT.MapClass as 'MapClass'
+                        from
+                            map M
+                            inner join maptype MT on (M.MapTypeID = MT.ID);
+                    ";
+
+            var list = Company.Query<dynamic>(sql);
+
+
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }
 

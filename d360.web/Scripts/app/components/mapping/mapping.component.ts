@@ -12,8 +12,15 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
         <div class="row">
             <div class="col s12">
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Mapping'"></d3s-audit>
-                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible">                            
+                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Map'"></d3s-audit>
+                <div class="row"  *ngIf="!isLoading && isRelationshipsVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-object-relationships [objectType]="'Map'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
+                        </div>
+                    </div>
+                </div>    
+                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isRelationshipsVisible">                            
                     <header>Mappings
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                     </header>  
@@ -22,7 +29,10 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
                         <p-dataTable #dt sortField="Name" sortOrder="1" [globalFilter]="gb" [value]="mappings" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected">
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="MapTypeID" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Transformation" header="Transformation" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="MapClassName" header="Classification" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="MapType" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="MapTypeDescription" header="Type Description" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
@@ -69,7 +79,7 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
         super();
         this.rightSidebarService = rightSidebarService;
 
-        this.setCommonRightSideBar(true);
+        this.setCommonRightSideBar(true, false,false,false,false,true);
 
         this.theDeleteCallback = this.deleteMapping.bind(this);
     }
@@ -93,6 +103,9 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
         this.diagramService.getLineageMappings()
             .then(res => {
                 this.isLoading = false;
+                for (let item of res) {
+                    if (item.MapClass == 1) item.MapClassName = "Source To Target";
+                }
                 this.mappings = res;
             });
     }
