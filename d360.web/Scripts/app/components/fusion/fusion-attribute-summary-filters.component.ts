@@ -31,9 +31,10 @@ import * as _ from 'lodash';
                         <button pButton type="button" (click)="removeFilter(i)" label="-" ></button>
                     </div>
                     <div class="col s4" *ngIf="last">
-                        <button pButton type="button" (click)="removeAllFilters()" label="Clear All"></button>
-                        <button pButton type="submit" label="Filter"></button>
-                    </div>
+                        <button *ngIf="!isFiltering" pButton type="button" (click)="removeAllFilters()" label="Clear All"></button>
+                        <button *ngIf="!isFiltering" pButton type="submit" label="Filter"></button>                        
+                        <i *ngIf="isFiltering" class="fa fa-spinner fa-spin fa-2x"></i>                        
+                    </div>                    
                 </div>
                 </form>
                 `,
@@ -46,6 +47,7 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
     @Output() filtersChange = new EventEmitter();
 
     @Input() filterColumns: GridFilterColumn[];
+    @Input() isFiltering: boolean = false;
 
     private internalFilters: FusionAttributeFilter[] = [];
 

@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
@@ -18,7 +18,7 @@ import { StateService } from '../../services/state.service';
                     <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
+                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
                         <p-dataTable #dt resizableColumns="true" columnResizeMode="expand" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="stateService.fusionFilters.rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                        
                            <p-column [style]="{width:'35px'}">
                                     <template let-item="rowData" pTemplate type="body">
@@ -37,6 +37,7 @@ import { StateService } from '../../services/state.service';
                 </div>
                 `,
     providers: [FusionAttributeService, GridDefinitionService],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class FusionAttributeSummaryComponent extends BaseComponent implements OnChanges {
@@ -55,13 +56,19 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     private fusionObject: string = 'FusionAttributeType';
     private fusionObjectID: number = 0;
-   
-    private results: FusionAttributePagedResults;    
-    columns: GridColumn[] = [];    
+       
+    private results: FusionAttributePagedResults;
+    columns: GridColumn[] = [];
     filtercolumns: GridFilterColumn[] = [];
+    private isFiltering: boolean = false;
     
     
-    constructor(private gridDefinitionService: GridDefinitionService, private fusionAttributeService: FusionAttributeService, private router: Router, private stateService: StateService) {
+    constructor(private gridDefinitionService: GridDefinitionService,
+        private fusionAttributeService: FusionAttributeService,
+        private router: Router,
+        private stateService: StateService,
+        private changeDetectorRef: ChangeDetectorRef
+    ) {
         super();
     }
         
@@ -97,6 +104,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                     this.filtercolumns = result.FilterColumns;
                 }                
                 this.isLoading = false;
+                this.changeDetectorRef.markForCheck();
             });
     }
 
@@ -121,27 +129,31 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                 }
             }
         }
-
+        this.isFiltering = true;
         if (this.fusionObject == "FusionQueryAttributeType") {
             this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
                 .then(res => {
                     this.results = res;
-
+                    this.isFiltering = false;
                     if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
                         this.fusionAttribute = this.results.results[0];
-                        this.fusionAttributeChange.emit(this.fusionAttribute);
+                        
+                        this.fusionAttributeChange.emit(this.fusionAttribute);                        
                     }
+                    this.changeDetectorRef.markForCheck();
                 });
         }
         else {
             this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionObjectID, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
                 .then(res => {
                     this.results = res;
-
+                    this.isFiltering = false;
                     if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
                         this.fusionAttribute = this.results.results[0];
-                        this.fusionAttributeChange.emit(this.fusionAttribute);
+                       
+                        this.fusionAttributeChange.emit(this.fusionAttribute);                        
                     }
+                    this.changeDetectorRef.markForCheck();
                 });
         }
     }
