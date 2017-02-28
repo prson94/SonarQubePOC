@@ -2474,18 +2474,48 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                 #endregion
                                 break;
                             default:
-                                #region Default
-                                var dc = new ComplexColumnModel
+                                if (i.Object == "ReferenceItemType" && i.ObjectID == 0)
                                 {
-                                    DisplayColumn = objectDisplayColumn,
-                                    text = objectFriendlyName,
-                                    datafield = $"{dataField}",
-                                    SortColumn = objectSortColumn,
-                                    OutputColumn = true
-                                };
-                                setColumnTypeInfo(ft, i, dc);
-                                columnModels.Add(dc);
-                                #endregion
+                                    #region ReferenceItemType
+                                    //Create the column/field to display the visible column cell.
+                                    var ric = new ComplexColumnModel
+                                    {
+                                        DisplayColumn = objectDisplayColumn,
+                                        text = objectFriendlyName,
+                                        datafield = $"{dataField}",
+                                        OutputColumn = true,
+                                        contextfield = $"{dataField}_Context",
+                                        objectfield = $"{dataField}_Object",
+                                        objectidfield = $"{dataField}_ObjectID",
+                                        SortColumn = objectSortColumn,
+                                        urlfield = $"{dataField}_Url"
+                                    };
+                                    setColumnTypeInfo(ft, i, ric);
+                                    ric.datafieldtype = "lookup"; //must be done after function call above.
+                                    columnModels.Add(ric);
+
+                                    // Add the fields that you need to create link in Angular component.
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'ReferenceItemType'", datafield = $"{dataField}_Object" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('ReferenceItemType', A{pos}.ID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                    #endregion
+                                }
+                                else
+                                {
+                                    #region Default
+                                    var dc = new ComplexColumnModel
+                                    {
+                                        DisplayColumn = objectDisplayColumn,
+                                        text = objectFriendlyName,
+                                        datafield = $"{dataField}",
+                                        SortColumn = objectSortColumn,
+                                        OutputColumn = true
+                                    };
+                                    setColumnTypeInfo(ft, i, dc);
+                                    columnModels.Add(dc);
+                                    #endregion
+                                }
                                 break;
                         }
 
@@ -2507,7 +2537,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             for (var i = 0; i < def.Relations.Count; i++)
             {
                 var join = def.Relations[i];
-                var currentObj = join.Object.Replace("Type", "");
+                var currentObj = join.Object;
+                if (join.ObjectID > 0)
+                    currentObj = currentObj.Replace("Type", "");
+
                 var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
                 var objColumn = "";
                 var objIDColumn = "";
@@ -2661,7 +2694,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 for (var i = 0; i < def.Relations.Count; i++)
                 {
                     var join = def.Relations[i];
-                    var currentObj = join.Object.Replace("Type", "");
+                    var currentObj = join.Object;
+                    if (join.ObjectID > 0)
+                        currentObj = currentObj.Replace("Type", "");
+
                     var addDeletedCheck = currentObj.Equals("FusionAttribute", StringComparison.CurrentCultureIgnoreCase);
                     var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
                     var objColumn = "";

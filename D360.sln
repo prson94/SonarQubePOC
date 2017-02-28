@@ -94,8 +94,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.MatchTechnicalMap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workflow.extensions", "d360.workflow.extensions\d360.workflow.extensions.csproj", "{A024F008-E4F1-415D-A532-EAAE377B687D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.queue.ProcessEvent", "Jobs\d360.jobs.queue.ProcessEvent\d360.jobs.queue.ProcessEvent.csproj", "{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.test.web", "d360.test.web\d360.test.web.csproj", "{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Topic Subscribers", "Topic Subscribers", "{EF5589EF-1E6B-46A8-AF58-9C5F62639F0D}"
@@ -1092,36 +1090,6 @@ Global
 		{A024F008-E4F1-415D-A532-EAAE377B687D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A024F008-E4F1-415D-A532-EAAE377B687D}.Release|x86.ActiveCfg = Release|Any CPU
 		{A024F008-E4F1-415D-A532-EAAE377B687D}.Release|x86.Build.0 = Release|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Client Development|Any CPU.ActiveCfg = Client Development|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Client Development|Any CPU.Build.0 = Client Development|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Client Development|Mixed Platforms.ActiveCfg = Client Development|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Client Development|Mixed Platforms.Build.0 = Client Development|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Client Development|x86.ActiveCfg = Client Development|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Client Development|x86.Build.0 = Client Development|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Debug|x86.Build.0 = Debug|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Nightly|Any CPU.ActiveCfg = Nightly|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Nightly|Any CPU.Build.0 = Nightly|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Nightly|Mixed Platforms.ActiveCfg = Nightly|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Nightly|Mixed Platforms.Build.0 = Nightly|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Nightly|x86.ActiveCfg = Nightly|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Nightly|x86.Build.0 = Nightly|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Production|Any CPU.ActiveCfg = Production|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Production|Any CPU.Build.0 = Production|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Production|Mixed Platforms.ActiveCfg = Production|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Production|Mixed Platforms.Build.0 = Production|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Production|x86.ActiveCfg = Production|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Production|x86.Build.0 = Production|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|x86.ActiveCfg = Release|Any CPU
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D}.Release|x86.Build.0 = Release|Any CPU
 		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|Any CPU.ActiveCfg = Release|Any CPU
 		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|Any CPU.Build.0 = Release|Any CPU
 		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}.Client Development|Mixed Platforms.ActiveCfg = Release|Any CPU
@@ -1250,7 +1218,6 @@ Global
 		{E433760E-2688-4A92-B1B4-42C628C83AC7} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{A024F008-E4F1-415D-A532-EAAE377B687D} = {DF896E70-6A4C-4E11-B0AF-0780094E0BEF}
-		{860E9F24-4233-450D-A2F5-3E4CB05B5A8D} = {BA377137-34B5-4D67-86AA-5803B3D1957E}
 		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6} = {313B4C9B-F3D7-4718-97A5-2F04A3B12589}
 		{EF5589EF-1E6B-46A8-AF58-9C5F62639F0D} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{C63C3913-ACDD-49A2-BDFC-133B2EF518EA} = {EF5589EF-1E6B-46A8-AF58-9C5F62639F0D}
@@ -1260,7 +1227,7 @@ Global
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 37
+		SccNumberOfProjects = 36
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/
 		SccLocalPath0 = .
@@ -1392,22 +1359,18 @@ Global
 		SccProjectTopLevelParentUniqueName32 = D360.sln
 		SccProjectName32 = Jobs/d360.jobs.MatchTechnicalMappingsToBusinessMappings
 		SccLocalPath32 = Jobs\\d360.jobs.MatchTechnicalMappingsToBusinessMappings
-		SccProjectUniqueName33 = Jobs\\d360.jobs.queue.ProcessEvent\\d360.jobs.queue.ProcessEvent.csproj
+		SccProjectUniqueName33 = d360.test.web\\d360.test.web.csproj
 		SccProjectTopLevelParentUniqueName33 = D360.sln
-		SccProjectName33 = Jobs/d360.jobs.queue.ProcessEvent
-		SccLocalPath33 = Jobs\\d360.jobs.queue.ProcessEvent
-		SccProjectUniqueName34 = d360.test.web\\d360.test.web.csproj
+		SccProjectName33 = d360.test.web
+		SccLocalPath33 = d360.test.web
+		SccProjectUniqueName34 = Jobs\\d360.jobs.subscriber.Audit\\d360.jobs.subscriber.Audit.csproj
 		SccProjectTopLevelParentUniqueName34 = D360.sln
-		SccProjectName34 = d360.test.web
-		SccLocalPath34 = d360.test.web
-		SccProjectUniqueName35 = Jobs\\d360.jobs.subscriber.Audit\\d360.jobs.subscriber.Audit.csproj
+		SccProjectName34 = Jobs/d360.jobs.subscriber.Audit
+		SccLocalPath34 = Jobs\\d360.jobs.subscriber.Audit
+		SccProjectUniqueName35 = Jobs\\d360.jobs.subscriber.Workflow\\d360.jobs.subscriber.Workflow.csproj
 		SccProjectTopLevelParentUniqueName35 = D360.sln
-		SccProjectName35 = Jobs/d360.jobs.subscriber.Audit
-		SccLocalPath35 = Jobs\\d360.jobs.subscriber.Audit
-		SccProjectUniqueName36 = Jobs\\d360.jobs.subscriber.Workflow\\d360.jobs.subscriber.Workflow.csproj
-		SccProjectTopLevelParentUniqueName36 = D360.sln
-		SccProjectName36 = Jobs/d360.jobs.subscriber.Workflow
-		SccLocalPath36 = Jobs\\d360.jobs.subscriber.Workflow
+		SccProjectName35 = Jobs/d360.jobs.subscriber.Workflow
+		SccLocalPath35 = Jobs\\d360.jobs.subscriber.Workflow
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi
