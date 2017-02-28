@@ -150,6 +150,8 @@ export class AutoCompleteItem {
     value: number;
     label: string;
 
+    templateValue: string;
+
     data: any;
 }
 

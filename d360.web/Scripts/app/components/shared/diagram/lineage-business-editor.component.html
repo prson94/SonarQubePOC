@@ -66,6 +66,9 @@
                                                 [tabindex]="(x * 6) + 1"
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }">
+                                    <template let-item pTemplate="item2">
+                                        <div [innerHTML]="item.templateValue"></div>
+                                    </template>
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceIntersectTypeID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -81,6 +84,9 @@
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }"
                                                 [disabled]="i.SourceIntersectTypeID < 1">
+                                    <template let-item pTemplate="item2">
+                                        <div [innerHTML]="item.templateValue"></div>
+                                    </template>
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceSubjectID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -96,6 +102,9 @@
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }"
                                                 [disabled]="i.SourceIntersectTypeID < 1">
+                                    <template let-item pTemplate="item2">
+                                        <div [innerHTML]="item.templateValue"></div>
+                                    </template>
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceObjectID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -111,6 +120,9 @@
                                                 [tabindex]="(x * 6) + 4"
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }">
+                                    <template let-item pTemplate="item2">
+                                        <div [innerHTML]="item.templateValue"></div>
+                                    </template>
                                 </p-autoComplete>
                                 <div *ngIf="i.TargetIntersectTypeID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -126,6 +138,9 @@
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }"
                                                 [disabled]="i.TargetIntersectTypeID < 1">
+                                    <template let-item pTemplate="item2">
+                                        <div [innerHTML]="item.templateValue"></div>
+                                    </template>
                                 </p-autoComplete>
                                 <div *ngIf="i.TargetSubjectID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -141,6 +156,9 @@
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }"
                                                 [disabled]="i.TargetIntersectTypeID < 1">
+                                    <template let-item pTemplate="item2">
+                                        <div [innerHTML]="item.templateValue"></div>
+                                    </template>
                                 </p-autoComplete>
                                 <div *ngIf="i.TargetObjectID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -168,12 +186,12 @@
                             </td>
                             <td>
                                 <div style="width:95%">
-                                    {{i.SourceSubjectName}}
+                                    <d3s-tooltip tooltipType="preview" [objectType]="i.SourceSubject" [objectId]="i.SourceSubjectID">{{i.SourceSubjectName}}</d3s-tooltip>
                                 </div>
                             </td>
                             <td>
                                 <div style="width:95%">
-                                    {{i.SourceObjectName}}
+                                    <d3s-tooltip tooltipType="preview" [objectType]="i.SourceObject" [objectId]="i.SourceObjectID">{{i.SourceObjectName}}</d3s-tooltip>
                                 </div>
                             </td>
                             <td style="width:30px"></td>
@@ -184,12 +202,12 @@
                             </td>
                             <td>
                                 <div style="width:95%">
-                                    {{i.TargetSubjectName}}
+                                    <d3s-tooltip tooltipType="preview" [objectType]="i.TargetSubject" [objectId]="i.TargetSubjectID">{{i.TargetSubjectName}}</d3s-tooltip>
                                 </div>
                             </td>
                             <td>
                                 <div style="width:95%">
-                                    {{i.TargetObjectName}}
+                                    <d3s-tooltip tooltipType="preview" [objectType]="i.TargetObject" [objectId]="i.TargetObjectID">{{i.TargetObjectName}}</d3s-tooltip>
                                 </div>
                             </td>
                             <td class="RowTools">

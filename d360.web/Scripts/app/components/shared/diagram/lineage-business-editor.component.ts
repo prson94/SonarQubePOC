@@ -11,7 +11,6 @@ import {
     LineageView,
     LineageEditorMode,
 } from '../../../models/lineage.model';
-//import { InputSwitchModule } from 'primeng/primeng';
 import * as _ from 'lodash';
 
 @Component({
@@ -141,6 +140,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.value = i.ID;
                             a.labelField = 'SourceIntersectTypeName';
                             a.valueField = 'SourceIntersectTypeID';
+                            a.templateValue = this.formTemplateString(i.Name, e.query);
+
                             a.data = {
                                 Subject: i.Subject,
                                 SubjectID: i.SubjectID,
@@ -161,6 +162,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.value = i.ObjectID;
                             a.labelField = 'SourceSubjectName';
                             a.valueField = 'SourceSubjectID';
+                            a.templateValue = this.formTemplateString(i.TextPath, e.query);
+
                             a.data = {
                                 Object: i.Object
                             }
@@ -178,6 +181,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.value = i.ObjectID;
                             a.labelField = 'SourceObjectName';
                             a.valueField = 'SourceObjectID';
+                            a.templateValue = this.formTemplateString(i.TextPath, e.query);
+
                             a.data = {
                                 Object: i.Object
                             }
@@ -197,6 +202,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.value = i.ID;
                             a.labelField = 'TargetIntersectTypeName';
                             a.valueField = 'TargetIntersectTypeID';
+                            a.templateValue = this.formTemplateString(i.Name, e.query);
+
                             a.data = {
                                 Subject: i.Subject,
                                 SubjectID: i.SubjectID,
@@ -217,6 +224,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.value = i.ObjectID;
                             a.labelField = 'TargetSubjectName';
                             a.valueField = 'TargetSubjectID';
+                            a.templateValue = this.formTemplateString(i.TextPath, e.query);
+
                             a.data = {
                                 Object: i.Object
                             }
@@ -236,6 +245,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.value = i.ObjectID;
                             a.labelField = 'TargetObjectName';
                             a.valueField = 'TargetObjectID';
+                            a.templateValue = this.formTemplateString(i.TextPath, e.query);
+
                             a.data = {
                                 Object: i.Object
                             }
@@ -461,6 +472,11 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
         }
         return false;
 
+    }
+
+    formTemplateString(val: string, query: string): string {
+        let x = val.toLowerCase().indexOf(query.toLowerCase());
+        return val.substring(0, x) + '<strong>' + val.substr(x, query.length) + '</strong>' + val.substring(x + query.length);
     }
 
     //#region recursive delete/undelete

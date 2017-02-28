@@ -28,7 +28,7 @@
         top: 0;
         display: block;
         box-shadow: 2px 2px 7px 0px rgba(0,0,0,0.5);
-        z-index: 999;
+        z-index: 899;
         border: 1px solid #ccc;
 }
 `

@@ -2046,13 +2046,13 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 return Request.CreateResponse(HttpStatusCode.OK, "");
             query = sanitizeQueryString(query);
             var types = Company.Query<IntersectType>(@"select * from IntersectType where [Subject] != 'FusionAttributeType' and [Object] != 'FusionAttributeType'
-                and [name] like @query", new { query });
+                and [name] like '%' + @query + '%'", new { query });
 
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
 
         [Route("lineage/query/objects/{type}/{id:int}"), HttpGet]
-        public HttpResponseMessage QueryObjects(string type, int id, string query, int maxResults = 50)
+        public HttpResponseMessage QueryObjects(string type, int id, string query, int maxResults = 25)
         {
             if (string.IsNullOrWhiteSpace(query))
                 return Request.CreateResponse(HttpStatusCode.OK, "");
@@ -2064,15 +2064,21 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	                TextPath,
 	                ObjectTypeName,
 	                IconBackColor,
-	                IconForeColor
+	                IconForeColor,
+                    case when Textpath like @query + '%' then
+                        1
+                    else
+                        10
+                    end as rnk
                  from cache.ObjectDetails
-                where [ObjectType] = @type and ObjectTypeId=@id and TextPath like @query", new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id, query });
+                where [ObjectType] = @type and ObjectTypeId=@id and TextPath like '%' + @query + '%'
+                order by rnk", new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id, query });
 
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }
 
         [Route("lineage/query/fusionattributes"), HttpGet]
-        public HttpResponseMessage QueryFusionAttributes(string query, int maxResults = 50)
+        public HttpResponseMessage QueryFusionAttributes(string query, int maxResults = 25)
         {
             if (string.IsNullOrWhiteSpace(query))
                 return Request.CreateResponse(HttpStatusCode.OK, "");
@@ -2080,9 +2086,15 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
             var objects = Company.Query<dynamic>($@"select top {maxResults}
 			    ID,
-	            TextPath as Name
+	            TextPath as Name,
+                case when TextPath like @query + '%' then
+                    1
+                else
+                    10
+                end as rnk
                 from FusionAttribute
-                where Deleted = 0 AND TextPath like @query order by TextPath", new { query = query });
+                where Deleted = 0 AND TextPath like  '%' + @query + '%' order by TextPath
+                order by rnk", new { query = query });
 
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }
@@ -2090,7 +2102,6 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         {
             query = query ?? "";
             query = query.Replace("%", "[%]").Replace("_", "[_]").TrimStart(' ');
-            query = '%' + query + '%';
             return query;
         }
 
