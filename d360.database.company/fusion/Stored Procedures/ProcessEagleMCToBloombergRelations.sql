@@ -39,8 +39,7 @@ BEGIN
 			where	Subject = 'FusionAttributeType' and 
 					Object = 'FusionAttributeType' and 
 					(
-						( SubjectID = 205 and ObjectID = 301 ) OR
-						( SubjectID = 301 and ObjectID = 205 )
+						( SubjectID = 205 and ObjectID = 301 ) 
 					)
 
 		if @fieldToBBIntersectTypeID is null
@@ -62,7 +61,7 @@ BEGIN
 												I.Subject = 'FusionAttribute' and 
 												I.Object ='FusionAttribute' and
 												(
-													( I.SubjectID = faBB.ID and I.ObjectID = fa.ID ) OR
+													--( I.SubjectID = faBB.ID and I.ObjectID = fa.ID ) OR
 													( I.SubjectID = fa.ID and I.ObjectID = faBB.ID )
 												)
 			where	fa.fusionattributetypeid = 205 and 
@@ -74,25 +73,21 @@ BEGIN
 				INTO    [Intersect] d
 				USING   (
 							SELECT	IntersectTypeID, 
-									ID,
-									StreamFusionAttributeID as SubjectID,
-									FieldFusionAttributeID as ObjectID
+									--ID,
+									'FusionAttribute' as Subject,									
+									FieldFusionAttributeID as SubjectID,
+									'FusionAttribute' as Object,
+									StreamFusionAttributeID as ObjectID									
 							FROM	@BBToFieldList
 						) s
-				ON      (1 = 0)
+				ON      (
+						s.IntersectTypeID = d.IntersectTypeID 
+						and s.Subject = d.Subject and s.SubjectID = d.SubjectID 
+						and s.Object = d.Object and s.ObjectID = d.ObjectID
+						)
 				WHEN NOT MATCHED THEN
-				INSERT  (IntersectTypeID, Classification, Subject, SubjectID, Object, ObjectID)
-				VALUES  (s.IntersectTypeID, 2, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID)
-				OUTPUT  INSERTED.ID, s.ID into @IDList;										
-
-			insert into @Intersects 
-				select idl.intersectid from @IDList idl;
-						
-			select @IntersectCount = count(1) from @Intersects
-			if @IntersectCount > 0 
-			begin
-				EXEC cache.SynchronizeRelationships @Intersects
-			end
+				INSERT  (IntersectTypeID, Classification, Subject, SubjectID, Object, ObjectID, [Owner])
+				VALUES  (s.IntersectTypeID, 2, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID, 'BB TO EAGLE');
+			
 	end;
 END
-GO
