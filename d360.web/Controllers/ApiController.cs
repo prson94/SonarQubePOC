@@ -2885,7 +2885,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         #region Relationships
 
         [HttpGet, Route("RelationshipObjectsByType")]
-        public IEnumerable<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id)//, SystemObjects targetObject)
+        public IEnumerable<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id, int intersectTypeId)//, SystemObjects targetObject)
         {
             var sql = "";
 
@@ -2939,6 +2939,16 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                             inner join [Intersect] I on A.TaxonomyTypeID = @id and ( (I.Subject = 'Taxonomy' and A.ID = I.SubjectID) OR (I.Object = 'Taxonomy' and A.ID = I.ObjectID) ) 
                             order by A.TextPath";
                     break;
+                case SystemObjects.MapType:
+                    sql = @"select 
+	                            distinct C.TextPath as Name, C.ObjectID as ID, C.[Object] as [Type] 
+                            from
+							                            [Intersect] I
+                                                        inner join [cache].objectdetails C on ( (C.[Object] = I.Object and C.ObjectID = I.ObjectID and I.Subject = 'Map') or (C.[Object] = I.Subject and C.ObjectID = I.SubjectID and I.Object = 'Map'))
+                            where
+	                            I.intersecttypeid = @intersectTypeId
+                            order by C.TextPath";
+                    break;
                 default:
                     sql = "";
                     break;
@@ -2946,7 +2956,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
             if (string.IsNullOrEmpty(sql)) return null;
 
-            return Company.Query<FilterObjectItem>(sql, new { id = id });
+            return Company.Query<FilterObjectItem>(sql, new { id = id, intersectTypeId = intersectTypeId });
         }
 
         /// <summary>

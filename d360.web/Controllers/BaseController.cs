@@ -960,21 +960,9 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
             if (!string.IsNullOrEmpty(RelationshipObjectIDs))
             {
-                var IDs = RelationshipObjectIDs.Split(',').ToList();
-                if (RelationshipIncludeType == "All")
-                {                    
-                    IDs.ForEach(ID =>
-                    {
-                        dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
-
-                        int idInt = 0;
-
-                        if(int.TryParse(ID,out idInt)) //convert to integer to avoid sql injection
-                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID = " + idInt + " and IntersectTypeID = "+ int.Parse(RelationshipIntersectTypeID) + ")";
-                    });
-                }
-                else
+                if (RelationshipObjectType.ToUpper() == "MAP")
                 {
+                    var IDs = RelationshipObjectIDs.Split(',').ToList();
                     var idList = "";
                     IDs.ForEach(ID =>
                     {
@@ -986,7 +974,75 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
                     dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
 
-                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID in (" + idList + ") and IntersectTypeID = " + int.Parse(RelationshipIntersectTypeID) + ")";
+                    var subSql = string.Format(@"select	 
+		                                    case 
+			                                    when i.subject = 'Artifact' then i.subjectid
+			                                    else i.objectid
+		                                    end AS ArtifactID
+                                    from 
+	                                    [intersecttype]  id
+	                                    inner join [intersect] i on (id.id = i.intersecttypeid)
+                                    where 
+	                                    (id.Subject = 'ArtifactType' and id.SubjectID = @id and id.Object = 'MapType' and id.ObjectID in ( 				
+					                                    select 
+						                                    case 
+							                                    when i.subjectid in({1}) then it.objectid
+							                                    else it.subjectid
+						                                    end AS MapTypeID
+					                                    from 
+						                                    [intersect] i	
+						                                    inner join intersecttype it on (i.intersecttypeid = it.id)
+					                                    where
+						                                    i.intersecttypeid = {0} and (i.subjectid in({1}) or i.objectid in({1}))
+		                                    )) or
+	
+		                                    (id.Object = 'ArtifactType' and id.ObjectID = @id and id.Subject = 'MapType' and id.SubjectID in ( 				
+		                                    select 
+			                                    case 
+				                                    when i.subjectid in({1}) then it.objectid
+				                                    else it.subjectid
+			                                    end AS MapTypeID
+		                                    from 
+			                                    [intersect] i	
+			                                    inner join intersecttype it on (i.intersecttypeid = it.id)
+		                                    where
+			                                    i.intersecttypeid = {0} and (i.subjectid in({1}) or i.objectid in({1}))
+	                                    ))
+                                    ", int.Parse(RelationshipIntersectTypeID),idList);
+
+                    //  filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID in (" + idList + ") and IntersectTypeID = " + int.Parse(RelationshipIntersectTypeID) + ")";
+                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (" + subSql + ")";
+                }
+                else
+                {
+                    var IDs = RelationshipObjectIDs.Split(',').ToList();
+                    if (RelationshipIncludeType == "All")
+                    {
+                        IDs.ForEach(ID =>
+                        {
+                            dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
+
+                        int idInt = 0;
+
+                            if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
+                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID = " + idInt + " and IntersectTypeID = " + int.Parse(RelationshipIntersectTypeID) + ")";
+                        });
+                    }
+                    else
+                    {
+                        var idList = "";
+                        IDs.ForEach(ID =>
+                        {
+                            int idInt = 0;
+
+                            if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
+                            idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + idInt;
+                        });
+
+                        dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
+
+                        filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID in (" + idList + ") and IntersectTypeID = " + int.Parse(RelationshipIntersectTypeID) + ")";
+                    }
                 }
             }
 

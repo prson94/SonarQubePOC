@@ -281,7 +281,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
     private loadRelationshipValues(relationshipType: ObjectRelationship) {
         this.relationshipValues.splice(0, this.relationshipValues.length);
 
-        this.relationshipsService.getRelatedObjects(relationshipType.TargetType, relationshipType.TargetTypeID).then(
+        this.relationshipsService.getRelatedObjects(relationshipType.TargetType, relationshipType.TargetTypeID, relationshipType.IntersectTypeID).then(
             result => {
                 for (let item of result) {
                     this.relationshipValues.push({ label: item.Name, value: item.ID });

@@ -58,8 +58,8 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getRelatedObjects(objectType: string, objectId: number): Promise<RelatedItem[]> {
-        return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}`)
+    getRelatedObjects(objectType: string, objectId: number, intersectTypeId: number): Promise<RelatedItem[]> {
+        return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}&intersectTypeId=${intersectTypeId}`)
             .toPromise()
             .then(response => <RelatedItem[]>response.json())
             .catch(err => this.handleError(err));
