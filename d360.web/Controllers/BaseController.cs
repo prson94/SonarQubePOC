@@ -973,44 +973,17 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                     });
 
                     dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
-
-                    var subSql = string.Format(@"select	 
-		                                    case 
-			                                    when i.subject = 'Artifact' then i.subjectid
-			                                    else i.objectid
-		                                    end AS ArtifactID
-                                    from 
-	                                    [intersecttype]  id
-	                                    inner join [intersect] i on (id.id = i.intersecttypeid)
-                                    where 
-	                                    (id.Subject = 'ArtifactType' and id.SubjectID = @id and id.Object = 'MapType' and id.ObjectID in ( 				
-					                                    select 
-						                                    case 
-							                                    when i.subjectid in({1}) then it.objectid
-							                                    else it.subjectid
-						                                    end AS MapTypeID
-					                                    from 
-						                                    [intersect] i	
-						                                    inner join intersecttype it on (i.intersecttypeid = it.id)
-					                                    where
-						                                    i.intersecttypeid = {0} and (i.subjectid in({1}) or i.objectid in({1}))
-		                                    )) or
-	
-		                                    (id.Object = 'ArtifactType' and id.ObjectID = @id and id.Subject = 'MapType' and id.SubjectID in ( 				
-		                                    select 
-			                                    case 
-				                                    when i.subjectid in({1}) then it.objectid
-				                                    else it.subjectid
-			                                    end AS MapTypeID
-		                                    from 
-			                                    [intersect] i	
-			                                    inner join intersecttype it on (i.intersecttypeid = it.id)
-		                                    where
-			                                    i.intersecttypeid = {0} and (i.subjectid in({1}) or i.objectid in({1}))
-	                                    ))
-                                    ", int.Parse(RelationshipIntersectTypeID),idList);
-
-                    //  filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID in (" + idList + ") and IntersectTypeID = " + int.Parse(RelationshipIntersectTypeID) + ")";
+                    
+                    var subSql = string.Format(@"select
+                                    a.id
+                                from
+                                    [intersect] i
+                                    inner join intersecttype it on (i.intersecttypeid = it.id)
+                                    inner join[intersect] i_2 on(i_2.subject = 'Map' and i_2.subjectid = i.subjectid and i.subject = 'Map')
+                                    inner join artifact a on(a.id = i_2.objectid and a.artifacttypeid = @id)
+                                where
+                                    i.intersecttypeid = {1} and i.objectid in({0})", idList, int.Parse(RelationshipIntersectTypeID));
+                                        
                     filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (" + subSql + ")";
                 }
                 else
