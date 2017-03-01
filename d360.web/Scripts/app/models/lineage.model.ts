@@ -64,6 +64,11 @@ export class MapItem {
     TargetFusion;
     TargetFusionAttribute;
     TargetFusionAttributeType;
+
+    searchableSource: string;
+    searchableTarget: string;
+    searchablSourceFusion: string;
+    searchableTargetFusion: string;
 }
 
 export class Responsibility {

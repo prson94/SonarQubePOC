@@ -150,6 +150,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             }
                             this.queryResults.push(a);
                         });
+                        if (this.queryResults.length == 1)
+                            this.setObjectValue(i, this.queryResults[0]);
                     });
                 break;
             case 'selectedSourceSubject':
@@ -169,6 +171,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             }
                             this.queryResults.push(a);
                         });
+                        if (this.queryResults.length == 1)
+                            this.setObjectValue(i, this.queryResults[0]);
                     });
                 break;
             case 'selectedSourceObject':
@@ -188,6 +192,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             }
                             this.queryResults.push(a);
                         });
+                        if (this.queryResults.length == 1)
+                            this.setObjectValue(i, this.queryResults[0]);
                     });
                 break;
 
@@ -212,6 +218,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             }
                             this.queryResults.push(a);
                         });
+                        if (this.queryResults.length == 1)
+                            this.setObjectValue(i, this.queryResults[0]);
                     });
                 break;
             case 'selectedTargetSubject':
@@ -231,6 +239,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             }
                             this.queryResults.push(a);
                         });
+                        if (this.queryResults.length == 1)
+                            this.setObjectValue(i, this.queryResults[0]);
                     });
                 break;
             case 'selectedTargetObject':
@@ -252,6 +262,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             }
                             this.queryResults.push(a);
                         });
+                        if (this.queryResults.length == 1)
+                            this.setObjectValue(i, this.queryResults[0]);
                     });
                 break;
             default:

@@ -2000,44 +2000,11 @@ from    [Intersect] I
         [HttpGet, Route("maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems")]
         public HttpResponseMessage MapItems(string source, int sourceID, string target, int targetID)
         {
-            var list = Company.Query<dynamic>(@"
-select	MI.ID as MapItemID,
-				
-		SI.ObjectTypeName as SourceType,
-		SI.ObjectName as SourceName,
-		SI.Object as Source,
-		SI.ObjectID as SourceID,
-
-		SF.Name as SourceFusion,
-		SFA.TextPath as SourceFusionAttribute,
-		SFT.TextPath as SourceFusionAttributeType,
-
-		TI.ObjectTypeName as TargetType,
-		TI.ObjectName as TargetName,
-		TI.Object as Target,
-		TI.ObjectID as TargetID,
-
-		TF.Name as TargetFusion,
-		TFA.TextPath as TargetFusionAttribute,
-		TFT.TextPath as TargetFusionAttributeType
-
-from	MapItem MI
-		inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
-		inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
-		left join MapRuleItemMapItem J on J.MapItemID = MI.ID
-		left join MapRuleItem MRI on MRI.ID = J.MapRuleItemID
-		left join FusionAttribute SFA on SFA.ID = MRI.SourceFusionAttributeID
-		left join FusionAttributeType SFT on SFT.ID = SFA.FusionAttributeTypeID
-		left join Fusion SF on SF.ID = SFA.FusionID
-		left join FusionAttribute TFA on TFA.ID = MRI.TargetFusionAttributeID
-		left join FusionAttributeType TFT on TFT.ID = TFA.FusionAttributeTypeID
-		left join Fusion TF on TF.ID = TFA.FusionID
-where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
-		AND (TI.Subject = @target and TI.SubjectID = @targetID)", new { source, sourceID, target, targetID });
-
+            var list = Company.Query<dynamic>(QueryConstants.MapItems, new { source, sourceID, target, targetID });
 
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }
+
 
         [Route("lineage/query/relationshiptypes"), HttpGet]
         public HttpResponseMessage QueryRelationshipTypes(string query)
@@ -5758,6 +5725,80 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
                 FileName = $"{detail.Name} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
+
+        [Route("export/maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems/excel.xls"), HttpGet]
+        public HttpResponseMessage MapItemsExcelExport(SystemObjects source, int sourceID, SystemObjects target, int targetID)
+        {
+            var list = Company.Query<dynamic>(QueryConstants.MapItems, new { source = source.ToString(), sourceID, target = target.ToString(), targetID });
+
+            var document = new SLDocument();
+            document.AddWorksheet("MapItems");
+
+            
+
+            #region Create the list sheet
+
+            #region Header
+
+            var colIndex = 0;
+
+            document.SetCellValue(1, ++colIndex, "Source Type");
+            document.SetCellValue(1, ++colIndex, "Source Name");
+            document.SetCellValue(1, ++colIndex, "Source Fusion");
+            document.SetCellValue(1, ++colIndex, "Source Fusion Attribute Type");
+            document.SetCellValue(1, ++colIndex, "Source Fusion Attribute");
+
+
+            document.SetCellValue(1, ++colIndex, "Target Type");
+            document.SetCellValue(1, ++colIndex, "Target Name");
+            document.SetCellValue(1, ++colIndex, "Target Fusion");
+            document.SetCellValue(1, ++colIndex, "Target Fusion Attribute Type");
+            document.SetCellValue(1, ++colIndex, "Target Fusion Attribute");
+
+            #endregion
+
+            int rowIndex = 1;
+            foreach (var row in list)
+            {
+                var dataColIndex = 0;
+                rowIndex++;
+
+                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceType ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceName ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceFusion ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceFusionAttributeType ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceFusionAttribute ?? "");
+
+                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetType ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetName ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetFusion ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetFusionAttributeType ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetFusionAttribute ?? "");
+
+            }
+
+            #endregion
+
+            var sourceObj = GetObjectDetail(source, sourceID);
+            var targetObj = GetObjectDetail(target, targetID);
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage result = null;
+            // serve the file to the client      
+            result = Request.CreateResponse(HttpStatusCode.OK);
+            //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"{sourceObj.Name} to {targetObj.Name} mappings {DateTime.Now.ToShortDateString()}.xlsx"
             };
             return result;
         }

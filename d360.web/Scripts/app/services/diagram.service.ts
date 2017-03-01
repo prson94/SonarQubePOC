@@ -71,6 +71,10 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    public getLineageMapItemsExport(source: string, sourceId: number, target: string, targetId: number) {
+        window.location.assign(`api/export/maps/${source}/${sourceId}/${target}/${targetId}/mapitems/excel.xls`);
+    }
+
     public getLineageMapSequence(object: string, objectId: number): Promise<any> {
         return this.http.get(`form/mapsequence/${object}/${objectId}/mapitems`)
             .toPromise()

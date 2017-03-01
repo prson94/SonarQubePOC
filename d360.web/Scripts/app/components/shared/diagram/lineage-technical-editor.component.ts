@@ -138,6 +138,8 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
 
                             this.queryResults.push(a);
                         });
+                        if (this.queryResults.length == 1)
+                            this.setObjectValue(i, this.queryResults[0]);
                     });
                 break;
             case 'selectedTargetFusionAttribute':
@@ -154,6 +156,8 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
 
                             this.queryResults.push(a);
                         });
+                        if (this.queryResults.length == 1)
+                            this.setObjectValue(i, this.queryResults[0]);
                     });
                 break;
         }

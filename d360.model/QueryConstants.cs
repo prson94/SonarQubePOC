@@ -1496,5 +1496,41 @@ from fusion.RulePromotion P
 join cache.ObjectDetails D on D.Object = P.ObjectType and D.ObjectID = P.ObjectID
 join FieldType FT ON P.AttributeID = FT.ID and P.AttributeType = 'FusionQueryAttribute'
 where P.RuleStepID = @id;";
+
+        public static string MapItems = @"
+select	MI.ID as MapItemID,
+				
+		SI.ObjectTypeName as SourceType,
+		SI.ObjectName as SourceName,
+		SI.Object as Source,
+		SI.ObjectID as SourceID,
+
+		SF.Name as SourceFusion,
+		SFA.TextPath as SourceFusionAttribute,
+		SFT.TextPath as SourceFusionAttributeType,
+
+		TI.ObjectTypeName as TargetType,
+		TI.ObjectName as TargetName,
+		TI.Object as Target,
+		TI.ObjectID as TargetID,
+
+		TF.Name as TargetFusion,
+		TFA.TextPath as TargetFusionAttribute,
+		TFT.TextPath as TargetFusionAttributeType
+
+from	MapItem MI
+		inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
+		inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
+		left join MapRuleItemMapItem J on J.MapItemID = MI.ID
+		left join MapRuleItem MRI on MRI.ID = J.MapRuleItemID
+		left join FusionAttribute SFA on SFA.ID = MRI.SourceFusionAttributeID
+		left join FusionAttributeType SFT on SFT.ID = SFA.FusionAttributeTypeID
+		left join Fusion SF on SF.ID = SFA.FusionID
+		left join FusionAttribute TFA on TFA.ID = MRI.TargetFusionAttributeID
+		left join FusionAttributeType TFT on TFT.ID = TFA.FusionAttributeTypeID
+		left join Fusion TF on TF.ID = TFA.FusionID
+where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
+		AND (TI.Subject = @target and TI.SubjectID = @targetID)";
+
     }
 }
