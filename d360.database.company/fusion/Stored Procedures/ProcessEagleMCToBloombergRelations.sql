@@ -30,7 +30,7 @@ BEGIN
 	-- add relations for Eagle Field (205) to Bloomberg mnemonic (301)
 	if @eagleStreamID is not null
 	begin
-		Declare @BBToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int, IntersectTypeID int, ID int);
+		Declare @BBToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int, IntersectTypeID int);
 		
 		-- load the intersect id's for message stream to bb mnemonic	
 
@@ -50,7 +50,7 @@ BEGIN
 
 		-- load into memory the id's that we need to add intersects for
 		insert into @BBToFieldList
-			select	fa.id as 'fieldID', faBB.id as 'bbID', @fieldToBBIntersectTypeID, ROW_NUMBER() OVER (Order by sfi.id) AS 'RowNumber'
+			select distinct	fa.id as 'fieldID', faBB.id as 'bbID', @fieldToBBIntersectTypeID
 			from	field f 
 					inner join fusionAttribute fa on (f.ObjectID = fa.ID)
 					inner join fieldtype ft on (f.fieldtypeid = ft.id)
@@ -60,8 +60,7 @@ BEGIN
 					left join [Intersect] I on	I.IntersectTypeID = @fieldToBBIntersectTypeID and 
 												I.Subject = 'FusionAttribute' and 
 												I.Object ='FusionAttribute' and
-												(
-													--( I.SubjectID = faBB.ID and I.ObjectID = fa.ID ) OR
+												(												
 													( I.SubjectID = fa.ID and I.ObjectID = faBB.ID )
 												)
 			where	fa.fusionattributetypeid = 205 and 
