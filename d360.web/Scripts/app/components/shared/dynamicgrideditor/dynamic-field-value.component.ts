@@ -10,8 +10,8 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                 <span *ngSwitchCase="'datetime'">{{fieldValue | date:'medium'}}</span>
                 <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>                
                 <span *ngSwitchCase="'bool'">
-                    <i *ngIf="fieldValue == 'True'" class="fa fa-check enabled" title="True"></i>
-                    <i *ngIf="fieldValue == 'False'" class="fa fa-times disabled" title="False"></i>
+                    <i *ngIf="fieldValue == 'TRUE'" class="fa fa-check enabled" title="True"></i>
+                    <i *ngIf="fieldValue == 'FALSE'" class="fa fa-times disabled" title="False"></i>
                 </span>
                 <template ngSwitchDefault>
                     <span *ngIf="fieldValue" [innerHtml]="fieldValue"></span>                                        
@@ -44,12 +44,12 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             this.fieldValue = this.item[this.column.datafield];
 
         if ((this.fieldType == 'bool') && (typeof this.fieldValue === 'boolean')) {
-            this.fieldValue = this.fieldValue ? "True" : "False"; // fix for bools as bools.
+            this.fieldValue = this.fieldValue ? "True" : "False"; // fix for bools as bools.        
         }
 
-       /* if ( this.fieldType == 'string' && this.fieldValue === null) {
-            this.fieldValue = ''; //Internet Explorer likes to actually display the word null vs blank...
-        }*/
+        if (this.fieldType == 'bool' && this.fieldValue) {
+            this.fieldValue = this.fieldValue.toUpperCase(); //fix for miXeD CaSe booleans!
+        }        
     }
 
     private formatAsNumber(): string {
