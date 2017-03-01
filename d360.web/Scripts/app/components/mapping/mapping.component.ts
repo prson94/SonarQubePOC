@@ -6,6 +6,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { DiagramService } from '../../services/diagram.service';
 import { RightSidebarService } from '../../services/right-sidebar.service';
 import { MessagesService } from '../../services/messages.service';
+import { PermissionsService } from '../../services/permissions.service';
 
 @Component({
     selector: 'd3s-mapping-component',
@@ -17,7 +18,7 @@ import { MessagesService } from '../../services/messages.service';
                 <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Map'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
+                            <d3s-object-relationships [objectType]="'Map'" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
                         </div>
                     </div>
                 </div>    
@@ -62,7 +63,7 @@ import { MessagesService } from '../../services/messages.service';
             </div>
         </div>
          `,
-    providers: [DiagramService]
+    providers: [DiagramService, PermissionsService]
     //changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
@@ -77,7 +78,8 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected diagramService: DiagramService,
         protected messagesService: MessagesService,
-        rightSidebarService: RightSidebarService
+        rightSidebarService: RightSidebarService,
+        protected permissionsService: PermissionsService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -93,6 +95,8 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Mappings'));
+
+        this.loadPermissions(this.permissionsService, 'Map', 0);
 
         this.load();
     }

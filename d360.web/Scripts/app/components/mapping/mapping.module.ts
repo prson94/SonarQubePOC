@@ -33,7 +33,7 @@ import {
         MappingRoutingModule,
 
         //d3s        
-        CoreModule,
+        CoreModule,        
         SharedAuditModule,
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
