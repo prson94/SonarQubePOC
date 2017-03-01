@@ -177,22 +177,19 @@ namespace d360.web.Controllers
         public JsonNetResult _IntersectTypes()
         {
             var models = Company.Query<dynamic>(
-@"select    I.ID,
-			I.Subject,
-			I.SubjectID,
-			SD.TextPath as SubjectName,
-            I.PredicateID,
-            P.Name as PredicateName,
-			I.Object,
-			I.ObjectID,
-			TD.TextPath as ObjectName
-from		IntersectType I
-            left join [Predicate] P on P.ID = I.PredicateID
-			left join cache.ObjectDetails SD on SD.[Object] = I.Subject and SD.ObjectID = I.SubjectID
-			left join cache.ObjectDetails TD on TD.[Object] = I.Object and TD.ObjectID = I.ObjectID
-where       I.IsSystem = 0
-order by	SD.Name,
-			TD.Name");
+@"select    ID,
+			Subject,
+			SubjectID,
+			SubjectName,
+            PredicateID,
+            PredicateName,
+			Object,
+			ObjectID,
+			ObjectName
+from		IntersectTypeDetail
+where       IsSystem = 0
+order by	SubjectName,
+			ObjectName");
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
@@ -201,22 +198,19 @@ order by	SD.Name,
         public FileResult _IntersectTypesExcel()
         {
             var models = Company.Query<dynamic>(
-@"select    I.ID,
-			I.Subject,
-			I.SubjectID,
-			SD.TextPath as SubjectName,
-            I.PredicateID,
-            P.Name as PredicateName,
-			I.Object,
-			I.ObjectID,
-			TD.TextPath as ObjectName
-from		IntersectType I
-            left join [Predicate] P on P.ID = I.PredicateID
-			left join cache.ObjectDetails SD on SD.[Object] = I.Subject and SD.ObjectID = I.SubjectID
-			left join cache.ObjectDetails TD on TD.[Object] = I.Object and TD.ObjectID = I.ObjectID
-where       I.IsSystem = 0
-order by	SD.Name,
-			TD.Name");
+@"select    ID,
+			Subject,
+			SubjectID,
+			SubjectName,
+            PredicateID,
+            PredicateName,
+			Object,
+			ObjectID,
+			ObjectName
+from		IntersectTypeDetail
+where       IsSystem = 0
+order by	SubjectName,
+			ObjectName");
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
@@ -253,124 +247,124 @@ order by	SD.Name,
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString()));
         }
 
-        [Route("OptionsToRelate"), NonNullableParameters]
-        public JsonNetResult OptionsToRelate(SystemObjects type, int id)
-        {
-            #region SQL
-            var sql = @"
-select  distinct
-        RT.ID as IntersectTypeID,
-        O.SortOrder,
-        O.Menu,
-		O.SubMenu,
-		O.Type,
-        O.ID,
-		O.Name
-from	(
-		select	1 as SortOrder,
-				'ArtifactType' as [Type],
-				ID,
-				Name,
-				'Glossary' as Menu,
-				NULL as SubMenu
-		from	ArtifactType 
-		union
-		SELECT	1 as SortOrder,
-				'TaxonomyType' as [Type],
-				T.ID,
-				T.Name as Name,
-				'Models' as Menu,
-				NULL as SubMenu
-		FROM	TaxonomyType T
-		union
-		SELECT	5 as SortOrder,
-				'FusionAttributeType' as [Type],
-				T.ID,
-				REPLACE(T.TextPath, FT.Name+'.','') as Name,
-				'Fusion' as Menu,
-				FT.Name as SubMenu
-		FROM	FusionAttributeType T
-                inner join FusionType FT on FT.ID = T.FusionTypeID
-		union	
-        SELECT	3 as SortOrder,
-				'PolicyType' as [Type],
-				ID,
-				Name as Name,
-				'Events' as Menu,
-				'Policies' as SubMenu
-		FROM	PolicyType
-		union
-		SELECT	3 as SortOrder,
-				'RuleType' as [Type],
-				ID,
-				Name as Name,
-				'Events' as Menu,
-				'Rules' as SubMenu
-		FROM	(
-				select 1 as ID, 'Informational' as Name
-				union select 2 as ID, 'Quality Check' as Name
-				union select 3 as ID, 'Metric' as Name
-				union select 4 as ID, 'Profile' as Name
-				) O
-		union
-		SELECT	5 as SortOrder,
-				'ResourceType' as [Type],
-				1,
-				'Resource' as Name,
-				'People' as Menu,
-				NULL as SubMenu
-		union
-		SELECT	5 as SortOrder,
-				'GroupType' as [Type],
-				1,
-				'Group' as Name,
-				'People' as Menu,
-				NULL as SubMenu
-		) O
-		inner join [IntersectType] RT on (RT.Subject = O.[Type] and RT.SubjectID = O.[ID] and RT.Object = @type and RT.ObjectID = @id) 
-										or (RT.Object = O.[Type] and RT.ObjectID = O.[ID] and RT.Subject = @type and RT.SubjectID = @id)  
-order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
-            #endregion
+//        [Route("OptionsToRelate"), NonNullableParameters]
+//        public JsonNetResult OptionsToRelate(SystemObjects type, int id)
+//        {
+//            #region SQL
+//            var sql = @"
+//select  distinct
+//        RT.ID as IntersectTypeID,
+//        O.SortOrder,
+//        O.Menu,
+//		O.SubMenu,
+//		O.Type,
+//        O.ID,
+//		O.Name
+//from	(
+//		select	1 as SortOrder,
+//				'ArtifactType' as [Type],
+//				ID,
+//				Name,
+//				'Glossary' as Menu,
+//				NULL as SubMenu
+//		from	ArtifactType 
+//		union
+//		SELECT	1 as SortOrder,
+//				'TaxonomyType' as [Type],
+//				T.ID,
+//				T.Name as Name,
+//				'Models' as Menu,
+//				NULL as SubMenu
+//		FROM	TaxonomyType T
+//		union
+//		SELECT	5 as SortOrder,
+//				'FusionAttributeType' as [Type],
+//				T.ID,
+//				REPLACE(T.TextPath, FT.Name+'.','') as Name,
+//				'Fusion' as Menu,
+//				FT.Name as SubMenu
+//		FROM	FusionAttributeType T
+//                inner join FusionType FT on FT.ID = T.FusionTypeID
+//		union	
+//        SELECT	3 as SortOrder,
+//				'PolicyType' as [Type],
+//				ID,
+//				Name as Name,
+//				'Events' as Menu,
+//				'Policies' as SubMenu
+//		FROM	PolicyType
+//		union
+//		SELECT	3 as SortOrder,
+//				'RuleType' as [Type],
+//				ID,
+//				Name as Name,
+//				'Events' as Menu,
+//				'Rules' as SubMenu
+//		FROM	(
+//				select 1 as ID, 'Informational' as Name
+//				union select 2 as ID, 'Quality Check' as Name
+//				union select 3 as ID, 'Metric' as Name
+//				union select 4 as ID, 'Profile' as Name
+//				) O
+//		union
+//		SELECT	5 as SortOrder,
+//				'ResourceType' as [Type],
+//				1,
+//				'Resource' as Name,
+//				'People' as Menu,
+//				NULL as SubMenu
+//		union
+//		SELECT	5 as SortOrder,
+//				'GroupType' as [Type],
+//				1,
+//				'Group' as Name,
+//				'People' as Menu,
+//				NULL as SubMenu
+//		) O
+//		inner join [IntersectType] RT on (RT.Subject = O.[Type] and RT.SubjectID = O.[ID] and RT.Object = @type and RT.ObjectID = @id) 
+//										or (RT.Object = O.[Type] and RT.ObjectID = O.[ID] and RT.Subject = @type and RT.SubjectID = @id)  
+//order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
+//            #endregion
 
-            var list = Company.Query<OptionsToRelateDbModel>(sql, new { type = type.ToString(), id }).ToList();
-            var jsonItems = new List<OptionsToRelateJsonModel>();
-            var jsonMenus = list.Select(i => new { i.Menu }).Distinct().ToList();
-            var jsonSubMenus = list.Select(i => new { i.Menu, i.SubMenu }).Distinct().ToList();
-            jsonMenus.ForEach(m =>
-            {
-                var menu = new OptionsToRelateJsonModel { html = string.Format("<span>{0}</span>", m.Menu) };
-                if (jsonSubMenus.Any(i => i.Menu == m.Menu))
-                {
-                    menu.items = new List<OptionsToRelateJsonModel>();
-                    foreach (var s in jsonSubMenus.Where(i => i.Menu == m.Menu))
-                    {
-                        var submenu = new OptionsToRelateJsonModel { html = string.Format("<span>{0}</span>", s.SubMenu) };
-                        var addToSubMenu = !string.IsNullOrEmpty(s.SubMenu);
+//            var list = Company.Query<OptionsToRelateDbModel>(sql, new { type = type.ToString(), id }).ToList();
+//            var jsonItems = new List<OptionsToRelateJsonModel>();
+//            var jsonMenus = list.Select(i => new { i.Menu }).Distinct().ToList();
+//            var jsonSubMenus = list.Select(i => new { i.Menu, i.SubMenu }).Distinct().ToList();
+//            jsonMenus.ForEach(m =>
+//            {
+//                var menu = new OptionsToRelateJsonModel { html = string.Format("<span>{0}</span>", m.Menu) };
+//                if (jsonSubMenus.Any(i => i.Menu == m.Menu))
+//                {
+//                    menu.items = new List<OptionsToRelateJsonModel>();
+//                    foreach (var s in jsonSubMenus.Where(i => i.Menu == m.Menu))
+//                    {
+//                        var submenu = new OptionsToRelateJsonModel { html = string.Format("<span>{0}</span>", s.SubMenu) };
+//                        var addToSubMenu = !string.IsNullOrEmpty(s.SubMenu);
 
-                        if (addToSubMenu)
-                            submenu.items = new List<OptionsToRelateJsonModel>();
+//                        if (addToSubMenu)
+//                            submenu.items = new List<OptionsToRelateJsonModel>();
 
-                        foreach (var listItem in list.Where(i => i.Menu == m.Menu && i.SubMenu == s.SubMenu))
-                        {
-                            var listItemMenu = new OptionsToRelateJsonModel { html = $"<span data-a='Intersect' data-t='{listItem.Type}' data-i='{listItem.ID}' data-it='{listItem.IntersectTypeID}'>{listItem.Name}</span>" };
-                            if (addToSubMenu)
-                                submenu.items.Add(listItemMenu);
-                            else
-                                menu.items.Add(listItemMenu);
-                        }
+//                        foreach (var listItem in list.Where(i => i.Menu == m.Menu && i.SubMenu == s.SubMenu))
+//                        {
+//                            var listItemMenu = new OptionsToRelateJsonModel { html = $"<span data-a='Intersect' data-t='{listItem.Type}' data-i='{listItem.ID}' data-it='{listItem.IntersectTypeID}'>{listItem.Name}</span>" };
+//                            if (addToSubMenu)
+//                                submenu.items.Add(listItemMenu);
+//                            else
+//                                menu.items.Add(listItemMenu);
+//                        }
 
-                        if (addToSubMenu)
-                            menu.items.Add(submenu);
-                    }
-                }
+//                        if (addToSubMenu)
+//                            menu.items.Add(submenu);
+//                    }
+//                }
 
-                jsonItems.Add(menu);
-            });
+//                jsonItems.Add(menu);
+//            });
 
-            list = null;
+//            list = null;
 
-            return new JsonNetResult { Data = jsonItems, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = jsonItems, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
         [Route("RelationshipTypes"), NonNullableParameters]
         public JsonResult RelationshipTypes(string type, int typeID)
