@@ -2861,14 +2861,23 @@ from    [Intersect] I
                 case SystemObjects.ArtifactType:
                     sql = @"select distinct A.TextPath as Name, A.ID, 'Artifact' as [Type] 
                             from Artifact A 
-                            inner join [Intersect] I on A.ArtifactTypeID = @id and ( (I.Subject = 'Artifact' and A.ID = I.SubjectID) OR (I.Object = 'Artifact' and A.ID = I.ObjectID) ) 
+                            inner join [Intersect] I on A.ArtifactTypeID = @id and ( (I.Subject = 'Artifact' and A.ID = I.SubjectID)) 
+							union
+							select distinct A.TextPath as Name, A.ID, 'Artifact' as [Type] 
+                            from Artifact A 
+                            inner join [Intersect] I on A.ArtifactTypeID = @id and ( (I.Object = 'Artifact' and A.ID = I.ObjectID) ) 
                             order by A.TextPath";
                     break;
-                case SystemObjects.FusionAttributeType:
+                case SystemObjects.FusionAttributeType:                    
                     sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] 
                             from FusionAttribute A 
-                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Subject = 'FusionAttribute' and A.ID = I.SubjectID) OR (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) 
-                            order by A.TextPath";
+                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Subject = 'FusionAttribute' and A.ID = I.SubjectID) ) 
+                            union 
+                            select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] 
+                            from FusionAttribute A 
+                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) 
+                            order by A.TextPath
+                            ";
                     break;
                 case SystemObjects.IntersectType:
                     sql = @"select distinct A.Name as Name, A.ID, 'Intersect' as [Type] 
@@ -2876,10 +2885,15 @@ from    [Intersect] I
                             inner join [Intersect] I on A.IntersectTypeID = @id and ( (I.Subject = 'Intersect' and A.ID = I.SubjectID) OR (I.Object = 'Intersect' and A.ID = I.ObjectID) ) 
                             order by A.Name";
                     break;
+                case SystemObjects.PolicyType:
                 case SystemObjects.Policy:
                     sql = @"select distinct A.TextPath as Name, A.ID, 'Policy' as [Type] 
                             from [Policy] A 
-                            inner join [Intersect] I on A.PolicyTypeID = @id and ( (I.Subject = 'Policy' and A.ID = I.SubjectID) OR (I.Object = 'Policy' and A.ID = I.ObjectID) ) 
+                            inner join [Intersect] I on A.PolicyTypeID = @id and (I.Subject = 'Policy' and A.ID = I.SubjectID)
+                            union
+                            select distinct A.TextPath as Name, A.ID, 'Policy' as [Type] 
+                            from [Policy] A 
+                            inner join [Intersect] I on A.PolicyTypeID = @id and (I.Object = 'Policy' and A.ID = I.ObjectID)
                             order by A.TextPath";
                     break;
                 case SystemObjects.ReferenceItemType:
@@ -2894,16 +2908,25 @@ from    [Intersect] I
                             inner join [Intersect] I on ( (I.Subject = 'Resource' and A.ResourceID = I.SubjectID) OR (I.Object = 'Resource' and A.ResourceID = I.ObjectID) ) 
                             order by 1";
                     break;
+                case SystemObjects.RuleType:
                 case SystemObjects.Rule:
                     sql = @"select distinct A.Name, A.ID, 'Rule' as [Type] 
                             from [Rule] A 
-                            inner join [Intersect] I on A.RuleType = @id and ( (I.Subject = 'Rule' and A.ID = I.SubjectID) OR (I.Object = 'Rule' and A.ID = I.ObjectID) ) 
+                            inner join [Intersect] I on A.RuleType = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID)
+                            union
+                            select distinct A.Name, A.ID, 'Rule' as [Type] 
+                            from [Rule] A 
+                            inner join [Intersect] I on A.RuleType = @id and (I.Object = 'Rule' and A.ID = I.ObjectID)
                             order by A.Name";
                     break;
                 case SystemObjects.TaxonomyType:
                     sql = @"select distinct A.TextPath as Name, A.ID, 'Taxonomy' as [Type] 
                             from Taxonomy A 
-                            inner join [Intersect] I on A.TaxonomyTypeID = @id and ( (I.Subject = 'Taxonomy' and A.ID = I.SubjectID) OR (I.Object = 'Taxonomy' and A.ID = I.ObjectID) ) 
+                            inner join [Intersect] I on A.TaxonomyTypeID = @id and (I.Subject = 'Taxonomy' and A.ID = I.SubjectID)
+							union
+							select distinct A.TextPath as Name, A.ID, 'Taxonomy' as [Type] 
+                            from Taxonomy A 
+                            inner join [Intersect] I on A.TaxonomyTypeID = @id and (I.Object = 'Taxonomy' and A.ID = I.ObjectID)
                             order by A.TextPath";
                     break;
                 case SystemObjects.MapType:
