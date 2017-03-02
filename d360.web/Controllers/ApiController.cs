@@ -2852,7 +2852,7 @@ from    [Intersect] I
         #region Relationships
 
         [HttpGet, Route("RelationshipObjectsByType")]
-        public IEnumerable<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id, int intersectTypeId)//, SystemObjects targetObject)
+        public async Task<IEnumerable<FilterObjectItem>> RelationshipObjectsByType(SystemObjects type, int id, int intersectTypeId)//, SystemObjects targetObject)
         {
             var sql = "";
 
@@ -2923,7 +2923,7 @@ from    [Intersect] I
 
             if (string.IsNullOrEmpty(sql)) return null;
 
-            return Company.Query<FilterObjectItem>(sql, new { id = id, intersectTypeId = intersectTypeId });
+            return await Company.QueryAsync<FilterObjectItem>(sql, new { id = id, intersectTypeId = intersectTypeId });
         }
 
         /// <summary>
@@ -2931,9 +2931,9 @@ from    [Intersect] I
         /// Used in the Filter By Relationship tile on artifact list pages.
         /// </summary>
         [Route("{type}/{id:int}/relationshiptypes")]
-        public List<AllowedIntersectionType> GetRelationshipTypes(SystemObjects type, int id)//List<GetRelationshipModel>
+        public async Task<IEnumerable<AllowedIntersectionType>> GetRelationshipTypes(SystemObjects type, int id)
         {
-            return Company.GetAllowedIntersectionTypes(type.ToString(), id);
+            return await Company.GetAllowedIntersectionTypes(type.ToString(), id);
         }
 
         [Route("{focal}/{focalID:int}/sources/{obj}/{objID:int}/rules")]

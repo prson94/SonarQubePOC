@@ -450,16 +450,15 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             return list;
         }
 
-        public List<AllowedIntersectionType> GetAllowedIntersectionTypes(string type, int id, int intersectID = 0)
-        {
-            return Database.Connection
-                .Query<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID, @IntersectID", 
+        public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id)
+        {         
+            return await Database.Connection
+                .QueryAsync<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID", 
                 new 
                 { 
                     SourceType = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, 
-                    SourceTypeID = id, 
-                    IntersectID = intersectID 
-                }).ToList();
+                    SourceTypeID = id                    
+                });
         }
 
         public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByObject(SystemObjects type, int id)
