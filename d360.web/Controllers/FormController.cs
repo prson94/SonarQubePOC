@@ -6535,13 +6535,7 @@ namespace d360.web.Controllers
                 {
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
-
-                // dont allow * fields
-                if (sql.Contains("*"))
-                {
-                    throw new InvalidFieldException("Command Text", "Wildcards are not supported in Fusion Attribute Query types, the columns must be explicitly specified.");
-                }
-
+                
                 model.Name = parseTextField(form, "Name");
                 model.Query = sql;
                 Company.Update<FusionQueryAttributeType>(model);
@@ -6584,12 +6578,7 @@ namespace d360.web.Controllers
                 {
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
-                //check if it has any stars in it we dont allow them need the field names
-                if (sql.Contains("*"))
-                {
-                    throw new InvalidFieldException("Command Text", "Wildcards are not supported in Fusion Attribute Query types, the columns must be explicitly specified.");
-                }
-
+                
                 var columns = Company.SelectQueryColumns(sql);
                                                 
                 var model = new FusionQueryAttributeType
