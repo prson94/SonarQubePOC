@@ -1,4 +1,4 @@
-﻿CREATE FUNCTION utility.GetIntersectTypesByType
+﻿create FUNCTION [utility].[GetIntersectTypesByType]
 (	
 	@type varchar(50),
 	@id int
@@ -14,8 +14,8 @@ RETURN
 				else I.Subject + '|' + cast(I.SubjectID as varchar)
 			end as value,
 			case 
-				when (Subject = @type and SubjectID = @id) then I.ObjectName + ' [' + coalesce(P.Name, 'relates') + ']'
-				else I.SubjectName + ' [' + coalesce(P.Inverse, 'related') + ']'
+				when (Subject = @type and SubjectID = @id) then I.ObjectName + ' [' + coalesce(P.Name, 'relates') + '] ' + I.SubjectName
+				else I.SubjectName + ' [' + coalesce(P.Inverse, 'related') + '] ' + I.ObjectName
 			end as title
 	from	IntersectTypeDetail I
 			left join [Predicate] P on P.ID = I.PredicateID
