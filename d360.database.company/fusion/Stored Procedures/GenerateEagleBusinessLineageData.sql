@@ -4,9 +4,9 @@ as
 begin
 	SET NOCOUNT, ANSI_PADDING ON;
 	SET ANSI_WARNINGS ON;
-
+		
 	declare @bloombergFusionTypeId int = 8;
---	declare @eagleOwnerArtifact int = 974209;
+	--declare @eagleOwnerArtifact int = 974209;
 
 	IF OBJECT_ID('tempdb..#maps') IS NOT NULL
 		DROP TABLE #maps;
@@ -94,7 +94,9 @@ begin
 		inner join [dbo].[fusionowner] f on f.fusionid = T.objectfusionid
 
 
-	update #maps set IsRelatedToBloomberg = 1 where fusionattributetypeid = 301;
+	--delete the items that start with bloomberg
+	delete from #maps where fusionattributetypeid = 301;
+	--update #maps set IsRelatedToBloomberg = 1 where fusionattributetypeid = 301;
 	-- for owners objects that are not fusionattributetypeid 301 we need to see if they connect to bloomberg
 	-- use source to target until we find end or 301
 
@@ -152,9 +154,9 @@ begin
 	-- load sourceintersectids
 
 	update T
-	set T.[sourceintersectid] = OI.ID
+	set T.[targetintersectid] = OI.ID
 	from #maps T		
-		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = T.ObjectOwnerArtifactID and T.SourceIntersectID is null);
+		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = T.ObjectOwnerArtifactID and T.TargetIntersectID is null);
 
 	-- add any missing relations to source / object
 	insert into [intersect] (IntersectTypeID, Classification, [Subject], SubjectID, [Object], ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
@@ -170,19 +172,19 @@ begin
 		from #maps T		
 		inner join [cache].[objectdetails] c_s on (c_s.[object] = T.[object] and c_s.[objectid] = T.[objectid])
 		inner join [cache].[objectdetails] c_t on (c_t.[object] = 'Artifact' and c_t.[objectid] = T.ObjectOwnerArtifactID)
-		where T.sourceIntersectID is null;
+		where T.targetIntersectID is null;
 
 	update T
-	set T.[sourceintersectid] = OI.ID
+	set T.[targetintersectid] = OI.ID
 	from #maps T		
-		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = T.ObjectOwnerArtifactID and T.SourceIntersectID is null);
+		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = T.ObjectOwnerArtifactID and T.TargetIntersectID is null);
 
 
 	-- target intersects for eagle use bloomberg default
 	update T
-	set T.[targetintersectid] = OI.ID
+	set T.[sourceintersectid] = OI.ID
 	from #maps T		
-		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = @bloombergOwnerArtifactId and T.TargetIntersectID is null and T.fusionAttributeTypeId != 301);
+		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = @bloombergOwnerArtifactId and T.sourceIntersectID is null);
 
 	-- add any missing relations to source / object
 	insert into [intersect] (IntersectTypeID, Classification, [Subject], SubjectID, [Object], ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
@@ -190,47 +192,20 @@ begin
 			(select top 1 i_t.ID from [intersecttype] i_t where (i_t.[object] = c_s.objecttype and i_t.[subject] = c_t.objecttype and i_t.objectid = c_s.objecttypeid and i_t.subjectid = c_t.objecttypeid))
 			,2			
 			,'Artifact'
-			,@eagleOwnerArtifact
+			,@bloombergOwnerArtifactId
 			,T.[object]
 			,T.[objectID]			
 			,0,getutcdate(),0,getutcdate(),'EAGLE BUSINESS LINEAGE'
 		from #maps T		
 		inner join [cache].[objectdetails] c_s on (c_s.[object] = T.[object] and c_s.[objectid] = T.[objectid])
 		inner join [cache].[objectdetails] c_t on (c_t.[object] = 'Artifact' and c_t.[objectid] = @bloombergOwnerArtifactId)
-		where T.targetIntersectID is null and T.fusionAttributeTypeId != 301 and T.IsRelatedToBloomberg = 1;
+		where T.sourceIntersectID is null and T.IsRelatedToBloomberg = 1;
 
 	update T
-	set T.[targetintersectid] = OI.ID
+	set T.[sourceintersectid] = OI.ID
 	from #maps T		
-		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = @bloombergOwnerArtifactId and T.TargetIntersectID is null and T.fusionAttributeTypeId != 301);
-
-
-	-- target intersects for eagle items where bloomberg flag is 1 user default bb artifact
-	update T
-	set T.[targetintersectid] = OI.ID
-	from #maps T		
-		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = @eagleOwnerArtifact and T.TargetIntersectID is null and T.fusionAttributeTypeId = 301);
-
-	-- add any missing relations to source / object
-	insert into [intersect] (IntersectTypeID, Classification, [Subject], SubjectID, [Object], ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
-		select distinct
-			(select top 1 i_t.ID from [intersecttype] i_t where (i_t.[object] = c_s.objecttype and i_t.[subject] = c_t.objecttype and i_t.objectid = c_s.objecttypeid and i_t.subjectid = c_t.objecttypeid))
-			,2			
-			,'Artifact'
-			,@eagleOwnerArtifact
-			,T.[object]
-			,T.[objectID]			
-			,0,getutcdate(),0,getutcdate(),'EAGLE BUSINESS LINEAGE'
-		from #maps T		
-		inner join [cache].[objectdetails] c_s on (c_s.[object] = T.[object] and c_s.[objectid] = T.[objectid])
-		inner join [cache].[objectdetails] c_t on (c_t.[object] = 'Artifact' and c_t.[objectid] = @eagleOwnerArtifact)
-		where T.targetIntersectID is null and T.fusionAttributeTypeId = 301; 
-
-	update T
-	set T.[targetintersectid] = OI.ID
-	from #maps T		
-		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = @eagleOwnerArtifact and T.TargetIntersectID is null and T.fusionAttributeTypeId = 301);
-
+		inner join [IntersectDetail] OI on (OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = 'Artifact' and OI.[SubjectID] = @bloombergOwnerArtifactId and T.sourceIntersectID is null);
+		
 
 	Declare @MapItemIDList Table(MapItemID int, sourceintersectid int, targetintersectid int);
 	Declare @MapRuleItemIDList Table(MapRuleItemID int, MapID Int);
