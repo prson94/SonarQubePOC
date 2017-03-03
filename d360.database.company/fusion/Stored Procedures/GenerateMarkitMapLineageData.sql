@@ -399,7 +399,7 @@ begin
 			select C.ID, C.[level], C.[UltimateParentID]
 			into #levelMap
 			from C
-			OPTION (MAXRECURSION 10) 
+			OPTION (MAXRECURSION 25) 
 
 	update T
 	set T.[level] = S.[level], T.[UltimateParentID] = S.[UltimateParentID]
@@ -625,4 +625,3 @@ begin
 	print 'Inserted [' + cast(@mapitemCount as varchar) + '] mapitem records';
 			
 end
-go
