@@ -682,7 +682,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                 columns += $"{name}_T.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
-                joins += $@" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
+                joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
 left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
             }
 
@@ -713,7 +713,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
             {
                 if (sb.Length != 0) sb.Append(" or ");
 
-                sb.Append($"({column} like @simpleFilter)");
+                sb.Append($"({column} like @simpleFilter + '%')");
             }
             
             foreach (var field in fields)
@@ -722,12 +722,12 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
                 var name = $"Field{field.ID}_T.FormattedValue";
                 
-                sb.Append($"({name} like @simpleFilter)");
+                sb.Append($"({name} like @simpleFilter + '%')");
             }
-            
 
-            // add value to db args
-            dbArgs.Add("simpleFilter", $"{filterExp}%", System.Data.DbType.AnsiString, System.Data.ParameterDirection.Input, 200);
+            var val = new Dapper.DbString { Value = filterExp, Length = 200};
+                        
+            dbArgs.Add("simpleFilter", val);
 
             return $"({sb.ToString()})";
         }
