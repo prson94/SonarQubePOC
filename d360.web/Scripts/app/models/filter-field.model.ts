@@ -17,3 +17,11 @@ export class FilterExpression {
     Field: any;
     Data: any;
 }
+
+export class FieldFilterModel {
+    Group: string;
+    Object: string;
+    ObjectID: number;
+    Label: string;
+    Type: string;
+}

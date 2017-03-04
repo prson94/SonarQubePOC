@@ -26,7 +26,7 @@ import { StringConstants } from '../../static/string-constants';
                     <div class="col s12" *ngIf="showGridSimpleFilter">                                                
                         <input type="text" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                     </div>       
-                    <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
+                    <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
                     <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
                     <div class="col s12">
                        <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
@@ -161,8 +161,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.stateService.artifactTypeFilters.showSimpleFilter = val;        
         this.stateService.artifactTypeFilters.simpleTextFilter = '';
         this.stateService.artifactTypeFilters.filters = [];
-        this.stateService.artifactTypeFilters.attributes = null;
-        this.stateService.artifactTypeFilters.relationships = null;
+        this.stateService.artifactTypeFilters.attributes = [];
+        this.stateService.artifactTypeFilters.relationships = [];
         this.stateService.artifactTypeFilters.owners = null;
 
         this.filterGridData();
@@ -187,7 +187,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             });
     }
     
-    getData() {        
+    getData() {   
+
         this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners)
             .then(result => {
                 this.items = result.results;

@@ -172,6 +172,7 @@
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />
+    <Compile Include="entities\Transitive\FieldFilterModel.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
     <Compile Include="entities\Views\MapRuleItemDetail.cs" />
     <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />

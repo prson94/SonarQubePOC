@@ -11,8 +11,8 @@ export class ArtifactTypeFilters {
     sortField: string = "";
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
-    relationships: GridRelationshipFilterExpression;
-    attributes: GridAttributeFilterExpression;
+    relationships: GridRelationshipFilterExpression[] = [];
+    attributes: GridAttributeFilterExpression[] = [];
     owners: GridOwnerFilter;
     showSimpleFilter: boolean = true;
 }

@@ -14,12 +14,14 @@ export class ArtifactService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getArtifacts(artifactTypeId: number, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string, owner?: GridOwnerFilter): Promise<Artifacts> {
+    getArtifacts(artifactTypeId: number, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression[], attributes?: GridAttributeFilterExpression[], simpleFilter?: string, owner?: GridOwnerFilter): Promise<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/ArtifactsByType?id=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
         if (filters != undefined) {            
-            //regular fields
+
+            //#region regular fields
+
             let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
             let count = 0;
             uri += '&filterscount=' + normalFilters.length;
@@ -29,7 +31,9 @@ export class ArtifactService extends BaseService {
                 count++;
             }
 
-            //related filter fields
+            //#endregion
+
+            //#region related filter fields
             let rellFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Relation);
             
             count = 0;
@@ -40,8 +44,9 @@ export class ArtifactService extends BaseService {
                 uri += `&relfilterdatafield${count}=${filter.field.replace("Field","")}&relfiltercondition${count}=${filter.condition}&relfiltervalue${count}=${filter.value}`;
                 count++;
             }
+            //#endregion
 
-            //hiden filter fields
+            //#region hidden filter fields
             let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
             count = 0;
 
@@ -51,14 +56,33 @@ export class ArtifactService extends BaseService {
                 uri += `&hidfilterdatafield${count}=${filter.field.replace("Field","")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${encodeURIComponent(filter.value)}`;
                 count++;
             }
+            //#endregion
         }
 
         if (attributes != undefined) {
-            uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
+
+            uri += '&attcount=' + attributes.length;
+
+            let count = 0;
+            for (let att of attributes) {
+                uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
+                count++;
+            }
+            //uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
         }
 
         if (relationships != undefined) {
-            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}&RelationshipIntersectTypeID=${relationships.relationshipType.IntersectTypeID}`;
+
+            uri += '&relcount=' + relationships.length;
+
+            let count = 0;
+
+            for (let rel of relationships) {
+                uri += `&rel_typeid_${count}=${rel.relationshipType.IntersectTypeID}&rel_includetype_${count}=${rel.includeType}&rel_object_${count}=${rel.relationshipType.TargetType.replace("Type", "")}&rel_objectids_${count}=${rel.objectIds.join(",")}`;
+                count++;
+            }
+
+            //uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}&RelationshipIntersectTypeID=${relationships.relationshipType.IntersectTypeID}`;
         }        
 
         if (simpleFilter != undefined) {
@@ -85,7 +109,7 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getArtifactsXls(listableOnly: boolean, artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string, owner?: GridOwnerFilter) {
+    getArtifactsXls(listableOnly: boolean, artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression[], attributes?: GridAttributeFilterExpression[], simpleFilter?: string, owner?: GridOwnerFilter) {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/download/excel/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}&listableOnly=${listableOnly}`;
         if (filters != undefined) {
@@ -123,12 +147,25 @@ export class ArtifactService extends BaseService {
         }
 
         if (attributes != undefined) {
-            uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
+            uri += '&attcount=' + attributes.length;
+            let count = 0;
+            for (let att of attributes) {
+                uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
+                count++;
+            }
+            //uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
         }
 
         if (relationships != undefined) {
-            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}&RelationshipIntersectTypeID=${relationships.relationshipType.IntersectTypeID}`;
-        }
+            uri += '&relcount=' + relationships.length;
+            let count = 0;
+            for (let rel of relationships) {
+                uri += `&rel_typeid_${count}=${rel.relationshipType.IntersectTypeID}&rel_includetype_${count}=${rel.includeType}&rel_object_${count}=${rel.relationshipType.TargetType.replace("Type", "")}&rel_objectids_${count}=${rel.objectIds.join(",")}`;
+                count++;
+            }
+
+            //uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}&RelationshipIntersectTypeID=${relationships.relationshipType.IntersectTypeID}`;
+        } 
 
         if (simpleFilter != undefined) {
             uri += `&filter=${encodeURIComponent(simpleFilter)}`;
@@ -137,7 +174,6 @@ export class ArtifactService extends BaseService {
         if (owner != undefined) {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
-
 
         this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, artifactType.Name));              
     }

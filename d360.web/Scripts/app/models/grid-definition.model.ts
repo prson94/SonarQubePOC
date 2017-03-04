@@ -1,4 +1,5 @@
 ﻿import { ObjectRelationship} from './relationship.model';
+import { SelectItem  } from 'primeng/primeng';
 
 export class GridField {
     name: string;
@@ -15,6 +16,7 @@ export class GridColumn {
 export class GridRelationshipFilterExpression {
     includeType: string = "Any";    
     objectIds: string[];
+    options: SelectItem[];
     relationshipType: ObjectRelationship;
 }
 

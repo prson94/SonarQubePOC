@@ -494,6 +494,95 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
                 .ToList();
         }
 
+        public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)
+        {
+            #region SQL
+
+            var sql = $@"
+	declare @tbl table (SortOrder int, [Group] varchar(50), [Object] varchar(50), ObjectID int, Label nvarchar(500), [Type] varchar(50));
+
+	insert into @tbl
+		select	1 as SortOrder,
+				'Field' as [Group],
+				Name as Object,
+				ID as ObjectID,
+				FriendlyName as Label,
+				Type
+		from	FieldType
+		where	Object = @SourceType
+				and ObjectID = @SourceTypeID
+				and Type not in ('DataTableSelect', 'FilteredLookup', 'FusionLookup', 'ComplexRelationLookup', 'RelationLookup') --these are calculated fields, and should not be selectable.
+		union
+		select	1 as SortOrder,
+				'Field' as [Group], 'Name' as Object, 0 as ObjectID, 'Name' as Label, 'Text' as Type
+		union
+		select	1 as SortOrder,
+				'Field' as [Group], 'Description' as Object, 0 as ObjectID, 'Description' as Label, 'Text' as Type
+		union
+		select	1 as SortOrder,
+				'Field' as [Group], 'Status' as Object, 0 as ObjectID, 'Status' as Label, 'Lookup' as Type
+
+	insert into @tbl
+		SELECT	distinct
+				2 as SortOrder,
+				'Relationship' as [Group],--ID,
+				Object,
+				ObjectID,
+				ObjectName as Label,
+				'Lookup' as Type
+		FROM	IntersectTypeDetail
+		WHERE	Subject = @SourceType and SubjectID = @SourceTypeID
+
+	merge	into
+			@tbl T
+	using	(
+				SELECT	distinct
+						2 as SortOrder,
+						'Relationship' as [Group],--ID,
+						COALESCE(I2.Object, I1.Subject) as Object,
+						COALESCE(I2.ObjectID, I1.SubjectID) as ObjectID,
+						COALESCE(I2.ObjectName, I1.SubjectName) as Label,
+						'Lookup' as Type
+				FROM	IntersectTypeDetail I1
+						left join IntersectTypeDetail I2 on I1.Subject = 'MapType' and I1.Subject = I2.Subject and I1.SubjectID = I2.SubjectID and I1.ID <> I2.ID 
+				WHERE	I1.Object = @SourceType and I1.ObjectID = @SourceTypeID
+			) S
+	on		(S.SortOrder = T.SortOrder and S.[Group] = T.[Group] and S.Object = T.Object and S.ObjectID = T.ObjectID)
+	when	not matched then
+	insert	(SortOrder, [Group], [Object], ObjectID, Label, [Type])
+	values	(S.SortOrder, S.[Group], S.[Object], S.ObjectID, S.Label, S.[Type]);
+
+	insert into @tbl
+		select	4 as SortOrder,
+				'Attribute' as [Group],
+				'AttributeType' as Object,
+				ID as ObjectID,
+				Name as Label,
+				'Lookup' as Type
+		from	AttributeType T
+				inner join AttributeTypeRelation R on R.AttributeTypeid = T.ID and R.ObjectType = @SourceType and R.ObjectID = @SourceTypeID
+
+	insert into @tbl
+		select	distinct
+				3 as SortOrder,
+				'Responsibility' as [Group],
+				'ResponsibilityType' as Object,
+				0 as ObjectID,
+				'Owner' as Label,
+				'Lookup' as Type
+		from	ResponsibilityType T
+				inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeid = T.ID and R.ObjectType = @SourceType and R.ObjectID = @SourceTypeID
+
+	select [Group], [Object], [ObjectID], [Label], [Type] from @tbl order by SortOrder, Label
+";
+            #endregion
+
+            return await Database.Connection.QueryAsync<FieldFilterModel>(sql, new {
+                SourceType = new Dapper.DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = type.ToString() },
+                SourceTypeID = id
+            });
+        }
+
         public IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id)
         {
             var sType = type.ToString();

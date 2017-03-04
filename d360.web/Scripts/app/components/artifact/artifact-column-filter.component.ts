@@ -26,16 +26,18 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                 <form (ngSubmit)="onSubmit()" #filterForm="ngForm">
                     <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index" class="row filter">
                         <div class="col s1 FieldName">Filter:</div>
-                        <div class="col s4"><select [name]="'FilterField_' + index" required [ngModel]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
-                                                        <option *ngFor="let p of availableFilters" [ngValue]="p">{{p.Name}}</option></select>
+                        <div class="col s4">
+                            <select [name]="'FilterField_' + index" required [ngModel]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
+                                <option *ngFor="let p of availableFilters" [ngValue]="p">{{p.Name}}</option>
+                            </select>
                         </div>
                         <div [ngSwitch]="filter.Type" class="col s4">
                             <span *ngSwitchCase="filterFieldType.Relationship">
-                                <p-multiSelect required name="predicates" [options]="relationshipValues" [style]="{width:'100%'}" [ngModel]="filter?.Data?.objectIds" (ngModelChange)="filter.Data.objectIds = $event"></p-multiSelect>
-                                <p-selectButton name="relationIncludeType" [options]="connectors" [ngModel]="filter?.Data?.includeType" (ngModelChange)="filter.Data.includeType = $event;"></p-selectButton>
+                                <p-multiSelect required [name]="'predicates_' + index" [options]="filter?.Data?.options" [style]="{width:'100%'}" [ngModel]="filter?.Data?.objectIds" (ngModelChange)="filter.Data.objectIds = $event"></p-multiSelect>
+                                <p-selectButton [name]="'relationIncludeType_' + index" [options]="connectors" [ngModel]="filter?.Data?.includeType" (ngModelChange)="filter.Data.includeType = $event;"></p-selectButton>
                             </span>
                             <span *ngSwitchCase="filterFieldType.Attribute">
-                                <select name="attributeValue" style="width:100%;" placeholder="Choose a value" [ngModel]="filter?.Data?.attributeSearchValue" (ngModelChange)="filter.Data.attributeSearchValue = $event">
+                                <select [name]="'attributeValue_' + index" style="width:100%;" placeholder="Choose a value" [ngModel]="filter?.Data?.attributeSearchValue" (ngModelChange)="filter.Data.attributeSearchValue = $event">
                                       <option></option>
                                       <option *ngFor="let p of attributeValues" [value]="p">{{p}}</option>
                                 </select>
@@ -66,12 +68,10 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                         </div>                                                
                     </div>
                     <div class="row">
-                        <div *ngIf="hasMultipleAttributes()" class="red-text center" style="font-weight:bold">**Warning: Only a single attribute filter is supported at a time!</div>
-                        <div *ngIf="hasMultipleRelationships()" class="red-text center"  style="font-weight:bold">**Warning: Only a single relationship filter is supported at a time!</div>
                         <div *ngIf="hasMultipleOwners()" class="red-text center"  style="font-weight:bold">**Warning: Only a single owner filter is supported at a time!</div>
                         <div class="col s12 buttons">
-                            <button pButton *ngIf="internalFilters.length > 0 || relationshipFilter || attributeFilter" type="submit" [disabled]="!filterForm.form.valid || hasMultipleAttributes() || hasMultipleRelationships() || hasMultipleOwners()" style="width: '150px';" label="Filter Results"></button>
-                            <button pButton *ngIf="internalFilters.length || relationshipFilter || attributeFilter" type="button" style="width: '150px';" label="Clear all Filters" (click)="resetFilters()"></button>                        
+                            <button pButton *ngIf="internalFilters.length > 0" type="submit" [disabled]="!filterForm.form.valid || hasMultipleOwners()" style="width: '150px';" label="Filter Results"></button>
+                            <button pButton *ngIf="internalFilters.length" type="button" style="width: '150px';" label="Clear all Filters" (click)="resetFilters()"></button>                        
                         </div>
                     </div>
                 </form>
@@ -87,20 +87,17 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     @Input() filters: GridFilterExpression[] = [];
     @Output() filtersChange = new EventEmitter();
 
-    @Input() relationshipFilter: GridRelationshipFilterExpression = null;    
-    @Output() relationshipFilterChange = new EventEmitter();
+    @Input() relationshipFilters: GridRelationshipFilterExpression[] = [];    
+    @Output() relationshipFiltersChange = new EventEmitter();
 
-    @Input() attributeFilter: GridAttributeFilterExpression = null;
-    @Output() attributeFilterChange = new EventEmitter();
+    @Input() attributeFilters: GridAttributeFilterExpression[] = [];
+    @Output() attributeFiltersChange = new EventEmitter();
 
     @Input() ownerFilter: GridOwnerFilter = null;
     @Output() ownerFilterChange = new EventEmitter();
 
     relationshipTypes: ObjectRelationship[];    
-    relationshipValues: SelectItem[] = [];
-    
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
-        
     attributeTypes: AttributeType[];
     attributeValues: string[];
 
@@ -126,8 +123,8 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
     ngOnInit() {        
 
-        if (this.attributeFilter && this.attributeFilter.attributeType)
-            this.attributeSelected(this.attributeFilter.attributeType);       
+        if (this.attributeFilters.length > 0)
+            this.attributeSelected(this.attributeFilters[0].attributeType);
 
         if (this.ownerFilter && (this.ownerFilter.ownerGroups || this.ownerFilter.ownerUsers)) {            
             this.ownerSelected();
@@ -136,6 +133,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+
         var bHasInternalFilters = this.internalFilters.length > 0;
         if (changes["fields"] && this.fields != null && this.fields.length > 0) {            
             this.availableFilters = [];
@@ -159,39 +157,30 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             else if (!bHasInternalFilters) {
                 this.resetFilters();
             }
-            
 
             this.getAttributes();
-            //fetch relationships for this artifacttypeid
-            if (!this.relationshipTypes) this.getRelationshipTypes();
-            else this.addRelationshipTypesToAvailable(this.relationshipTypes)
-
-            if (this.relationshipFilter && this.relationshipFilter.relationshipType && this.relationshipValues.length == 0)
-                this.loadRelationshipValues(this.relationshipFilter.relationshipType);   
-
+            this.getRelationships();
             this.availableFilters.push(this.ownerShipFilter);
         }
-         
     }
 
     private onSubmit() {
-        let hasAttributeFilter = false;
-        let hasRelationFilter = false;
         let hasOwnerFilter = false;
 
         this.filters = [];
+        this.relationshipFilters = [];
+        this.attributeFilters = [];
         this.ownerFilter = null;
         for (let internalFilter of this.internalFilters) {
+
             if (internalFilter.Type == FilterFieldType.Field) {
                 this.filters.push(internalFilter.Data);
             }
             else if (internalFilter.Type == FilterFieldType.Attribute) {
-                this.attributeFilter = internalFilter.Data;
-                hasAttributeFilter = true;
+                this.attributeFilters.push(internalFilter.Data);
             }
             else if (internalFilter.Type == FilterFieldType.Relationship) {                                
-                this.relationshipFilter = internalFilter.Data;
-                hasRelationFilter = true;                
+                this.relationshipFilters.push(internalFilter.Data);
             }
             else if (internalFilter.Type == FilterFieldType.Owner) {
                 this.ownerFilter = new GridOwnerFilter();
@@ -205,21 +194,19 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                         this.ownerFilter.ownerGroups.push(owner.ID);
                     }
                 }    
-                hasOwnerFilter = true;                            
+                hasOwnerFilter = true;
             }
         }
 
         if (!hasOwnerFilter && this.ownerFilter) this.ownerFilter = null;
-        if (!hasRelationFilter && this.relationshipFilter) this.relationshipFilter = null;
-        if (!hasAttributeFilter && this.attributeFilter) this.attributeFilter = null;
-
-        this.attributeFilterChange.emit(this.attributeFilter);
-        this.relationshipFilterChange.emit(this.relationshipFilter);
+        
+        this.attributeFiltersChange.emit(this.attributeFilters);
+        this.relationshipFiltersChange.emit(this.relationshipFilters);
         this.ownerFilterChange.emit(this.ownerFilter);
 
         this.filtersChange.emit(this.filters);
                         
-        this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilter, attributes: this.attributeFilter });
+        this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilters, attributes: this.attributeFilters });
     }
 
     public resetFilters() {
@@ -228,25 +215,23 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         this.filters.splice(0, this.filters.length);
         this.filtersChange.emit(this.filters);
 
-        this.relationshipFilter = null;
-        this.relationshipFilterChange.emit(this.relationshipFilter);
+        this.relationshipFilters.splice(0, this.relationshipFilters.length);
+        this.relationshipFiltersChange.emit(this.relationshipFilters);
 
-        this.attributeFilter = null;
-        this.attributeFilterChange.emit(this.attributeFilter);
+        this.attributeFilters.splice(0, this.attributeFilters.length);
+        this.attributeFiltersChange.emit(this.attributeFilters);
 
         this.ownerFilter = null;
         this.ownerFilterChange.emit(this.ownerFilter);
 
-        this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilter });
+        this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilters });
     }
-    
 
     private changeFilterField(target, filter) {             
         
         if (target.Type == FilterFieldType.Field) {
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
-
             filter.Type = FilterFieldType.Field;
 
             if (target.Data.columntype == "dropdownlist")
@@ -265,10 +250,9 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         else if (target.Type == FilterFieldType.Relationship) {
             filter.Data = new GridRelationshipFilterExpression();
             filter.Data.relationshipType = target.Data;
-
             filter.Type = FilterFieldType.Relationship;
 
-            this.loadRelationshipValues(filter.Data.relationshipType);
+            this.loadRelationshipValues(filter.Data);
         }
         else if (target.Type == FilterFieldType.Attribute) {
             filter.Data = new GridAttributeFilterExpression();
@@ -289,48 +273,8 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         return this.internalFilters.filter(x => x.Type == FilterFieldType.Owner).length > 1;
     }
 
-    private hasMultipleRelationships() {
-        return this.internalFilters.filter(x => x.Type == FilterFieldType.Relationship).length > 1;
-    }
-
-    private hasMultipleAttributes() {
-        return this.internalFilters.filter(x => x.Type == FilterFieldType.Attribute).length > 1;
-    }
-
     private addFilter() {
         this.internalFilters.push(new FilterExpression());
-    }
-
-    private getRelationshipTypes() {
-        if (!this.artifactType || this.artifactType.ID <= 0) return;
-
-        this.relationshipsService.getObjectRelations('ArtifactType', this.artifactType.ID)
-            .then(result => {
-                this.relationshipTypes = result;
-
-                this.addRelationshipTypesToAvailable(this.relationshipTypes);                
-            });
-    }
-
-    private addRelationshipTypesToAvailable(relTypes) { 
-        for (let relationship of relTypes) {
-            this.availableFilters.push({
-                Data: relationship, Name: `Relationship - ${relationship.TargetName}${relationship.PredicateName ? '(' + relationship.PredicateName + ')': ''}`, Type: FilterFieldType.Relationship
-            });
-        }
-
-        if (this.relationshipFilter) {            
-            let indx = this.internalFilters.findIndex(x => x.Type == FilterFieldType.Relationship);
-
-            if (indx >= 0 && indx < this.internalFilters.length)
-                this.internalFilters.splice(indx, 1);
-
-            this.internalFilters.push({
-                Type: FilterFieldType.Relationship,
-                Data: this.relationshipFilter,
-                Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Relationship &&  x.Data.IntersectTypeID == this.relationshipFilter.relationshipType.IntersectTypeID)[0],
-            });            
-        }        
     }
 
     private ownerSelected() {
@@ -370,6 +314,8 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             });
     }
 
+    //#region Attribute Logic
+
     private attributeSelected(target) {        
         this.attributeValues = [];
         this.attributeTypeService.getAttributeFilterValues('ArtifactType', this.artifactType.ID, target)
@@ -377,50 +323,103 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 this.attributeValues = result;
             });
     }
-        
-    private loadRelationshipValues(relationshipType: ObjectRelationship) {
-        this.relationshipValues.splice(0, this.relationshipValues.length);
-
-        this.relationshipsService.getRelatedObjects(relationshipType.TargetType, relationshipType.TargetTypeID, relationshipType.IntersectTypeID).then(
-            result => {
-                for (let item of result) {
-                    this.relationshipValues.push({ label: item.Name, value: item.ID });
-                }
-            });        
-    }
-
-    private addRelationshipFilter() {        
-        this.relationshipFilter = new GridRelationshipFilterExpression();          
-    }
-    
+   
     private getAttributes() {
-        if (!this.artifactType || this.artifactType.ID <= 0) return;
+        try {
+            if (!this.artifactType || this.artifactType.ID <= 0) return;
 
-        this.attributeTypeService.getAttributeTypesForObject('ArtifactType', this.artifactType.ID)
+            this.attributeTypeService.getAttributeTypesForObject('ArtifactType', this.artifactType.ID)
+                .then(result => {
+                    this.attributeTypes = result;
+
+                    for (let attributeType of this.attributeTypes) {
+                        this.availableFilters.push({
+                            Data: attributeType, Name: `Attribute - ${attributeType.Name}`, Type: FilterFieldType.Attribute
+                        });
+                    }
+
+                    if (this.attributeFilters) {
+                        this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Attribute);
+
+                        for (let att of this.attributeFilters) {
+                            this.internalFilters.push({
+                                Type: FilterFieldType.Attribute,
+                                Data: att,
+                                Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Attribute && x.Data.ID == att.attributeType)[0],
+                            });
+                        }                    
+                    }
+                });
+        }
+        catch (e) {
+            console.log("Error: " + e);
+        }
+    }
+
+    //#endregion
+
+    //#region Relationship Logic
+
+    private loadRelationshipValues(expr: GridRelationshipFilterExpression) {
+        return this.relationshipsService
+            .getRelatedObjects(expr.relationshipType.TargetType, expr.relationshipType.TargetTypeID, expr.relationshipType.IntersectTypeID)
             .then(result => {
-                this.attributeTypes = result;
-
-                for (let attributeType of this.attributeTypes) {
-                    this.availableFilters.push({
-                        Data: attributeType, Name: `Attribute - ${attributeType.Name}`, Type: FilterFieldType.Attribute
-                    });
-                }
-
-                if (this.attributeFilter) {
-                    this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Attribute);                    
-                    
-                    this.internalFilters.push({
-                        Type: FilterFieldType.Attribute,
-                        Data: this.attributeFilter,
-                        Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Attribute && x.Data.ID == this.attributeFilter.attributeType)[0],
-                    });                    
+                expr.options = [];
+                for (let item of result) {
+                    expr.options.push({ label: item.Name, value: item.ID });
                 }
             });
     }
 
+    private addRelationshipTypesToAvailable(relTypes) {
+        for (let relationship of relTypes) {
+            this.availableFilters.push({
+                Data: relationship, Name: `Relationship - ${relationship.TargetName}${relationship.PredicateName ? '(' + relationship.PredicateName + ')' : ''}`, Type: FilterFieldType.Relationship
+            });
+        }
+
+        if (this.relationshipFilters) {
+            this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Relationship);
+
+            for (let rel of this.relationshipFilters) {
+                this.loadRelationshipValues(rel).then(r => {
+                    this.internalFilters.push({
+                        Type: FilterFieldType.Relationship,
+                        Data: rel,
+                        Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Relationship && x.Data.IntersectTypeID == rel.relationshipType.IntersectTypeID)[0],
+                    });
+                });
+            }
+        }
+    }
+
+    private getRelationships() {
+        try {
+            //fetch relationships for this artifacttypeid
+            if (!this.relationshipTypes) {
+                if (!this.artifactType || this.artifactType.ID <= 0) return;
+
+                this.relationshipsService
+                    .getObjectRelations('ArtifactType', this.artifactType.ID)
+                    .then(result => {
+                        this.relationshipTypes = result;
+                        this.addRelationshipTypesToAvailable(this.relationshipTypes);
+                    });
+            }
+            else {
+                this.addRelationshipTypesToAvailable(this.relationshipTypes);
+            }
+        }
+        catch (e) {
+            console.log("Error: " + e);
+        }
+    }
+
+    //#endregion
+
     private removeFilter(filter: FilterExpression) {        
         let index = this.internalFilters.indexOf(filter);
-        this.internalFilters.splice(index, 1);                
+        this.internalFilters.splice(index, 1);
     }
 };
 

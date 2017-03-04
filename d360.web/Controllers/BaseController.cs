@@ -863,8 +863,8 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                                                 SourceObjectID
                                         from Relationship
                                         where SourceObjectType = 'Artifact'
-                                                and SourceObjectID = A.id
-                                        ) B left join FieldWithRelation relField on (relField.ObjectType = 'Intersect' and relField.ObjectID = B.ID and relField.FieldTypeID = {0})
+                                                and SourceObjectID = A.ID
+                                        ) B left join Field relField on (relField.ObjectType = 'Intersect' and relField.ObjectID = B.ID and relField.FieldTypeID = {0})
                                         where " + filtersql + ")";
 
                     existsql = string.Format(existsql, fFieldId);
@@ -920,6 +920,8 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
         {
             var query = Request.Params;
 
+            #region Field Filters
+
             int filterscount = 0;
             var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams) : string.Empty;
 
@@ -944,100 +946,120 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                 }
             }
 
-            var RelationshipIncludeType = Request.Form.AllKeys.Any(i => i == "RelationshipIncludeType") ? Request["RelationshipIncludeType"] : "";
-            var RelationshipObjectType = Request.Form.AllKeys.Any(i => i == "RelationshipObjectType") ? Request["RelationshipObjectType"] : "";
-            var RelationshipObjectIDs = Request.Form.AllKeys.Any(i => i == "RelationshipObjectIDs") ? Server.UrlDecode(Request["RelationshipObjectIDs"]) : "";
-            var RelationshipIntersectTypeID = Request.Form.AllKeys.Any(i => i == "RelationshipIntersectTypeID") ? Server.UrlDecode(Request["RelationshipIntersectTypeID"]) : "";
+            #endregion
 
-            //check querystring
-            if (string.IsNullOrEmpty(RelationshipObjectIDs))
+            #region Relationship Filters
+
+            int relcount = 0;
+
+            if (int.TryParse(query["relcount"], out relcount))
             {
-                RelationshipIncludeType = query.AllKeys.Any(i => i == "RelationshipIncludeType") ? query["RelationshipIncludeType"] : "";
-                RelationshipObjectType = query.AllKeys.Any(i => i == "RelationshipObjectType") ? query["RelationshipObjectType"] : "";
-                RelationshipObjectIDs = query.AllKeys.Any(i => i == "RelationshipObjectIDs") ? Server.UrlDecode(query["RelationshipObjectIDs"]) : "";
-                RelationshipIntersectTypeID = query.AllKeys.Any(i => i == "RelationshipIntersectTypeID") ? Server.UrlDecode(query["RelationshipIntersectTypeID"]) : "";
-            }
-
-            if (!string.IsNullOrEmpty(RelationshipObjectIDs))
-            {
-                if (RelationshipObjectType.ToUpper() == "MAP")
+                for (int i = 0; i < relcount; i++)
                 {
-                    var IDs = RelationshipObjectIDs.Split(',').ToList();
-                    var idList = "";
-                    IDs.ForEach(ID =>
+                    var qs_includetype = $"rel_includetype_{i}";
+                    var qs_object = $"rel_object_{i}";
+                    var qs_objectids = $"rel_objectids_{i}";
+                    var qs_typeid = $"rel_typeid_{i}";
+
+                    //check form
+                    var RelationshipIncludeType = Request.Form.AllKeys.Any(k => k == qs_includetype) ? Request[qs_includetype] : "";
+                    var RelationshipObjectType = Request.Form.AllKeys.Any(k => k == qs_object) ? Request[qs_object] : "";
+                    var RelationshipObjectIDs = Request.Form.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(Request[qs_objectids]) : "";
+                    var RelationshipIntersectTypeID = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(Request[qs_typeid]) : "";
+
+                    //check querystring
+                    if (string.IsNullOrEmpty(RelationshipObjectIDs))
                     {
-                        int idInt = 0;
-
-                        if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
-                            idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + idInt;
-                    });
-
-                    dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
-                    
-                    var subSql = string.Format(@"select
-                                    a.id
-                                from
-                                    [intersect] i
-                                    inner join intersecttype it on (i.intersecttypeid = it.id)
-                                    inner join[intersect] i_2 on(i_2.subject = 'Map' and i_2.subjectid = i.subjectid and i.subject = 'Map')
-                                    inner join artifact a on(a.id = i_2.objectid and a.artifacttypeid = @id)
-                                where
-                                    i.intersecttypeid = {1} and i.objectid in({0})", idList, int.Parse(RelationshipIntersectTypeID));
-                                        
-                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (" + subSql + ")";
-                }
-                else
-                {
-                    var IDs = RelationshipObjectIDs.Split(',').ToList();
-                    if (RelationshipIncludeType == "All")
-                    {
-                        IDs.ForEach(ID =>
-                        {
-                            dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
-
-                        int idInt = 0;
-
-                            if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
-                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID = " + idInt + " and IntersectTypeID = " + int.Parse(RelationshipIntersectTypeID) + ")";
-                        });
+                        RelationshipIncludeType = query.AllKeys.Any(k => k == qs_includetype) ? query[qs_includetype] : "";
+                        RelationshipObjectType = query.AllKeys.Any(k => k == qs_object) ? query[qs_object] : "";
+                        RelationshipObjectIDs = query.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(query[qs_objectids]) : "";
+                        RelationshipIntersectTypeID = query.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(query[qs_typeid]) : "";
                     }
-                    else
+
+                    if (!string.IsNullOrEmpty(RelationshipObjectIDs))
                     {
+                        var IDs = RelationshipObjectIDs.Split(',').ToList();
                         var idList = "";
                         IDs.ForEach(ID =>
                         {
                             int idInt = 0;
 
                             if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
-                            idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + idInt;
+                                idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + idInt;
                         });
 
                         dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
 
-                        filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID in (" + idList + ") and IntersectTypeID = " + int.Parse(RelationshipIntersectTypeID) + ")";
+                        if (RelationshipObjectType.ToUpper() == "MAP")
+                        {
+                            var subSql = $@"select a.ID from [Intersect] i
+                                    inner join intersecttype it on (i.intersecttypeid = it.id)
+                                    inner join[intersect] i_2 on(i_2.subject = 'Map' and i_2.subjectid = i.subjectid and i.subject = 'Map')
+                                    inner join artifact a on(a.id = i_2.objectid and a.artifacttypeid = @id)
+                                where i.intersecttypeid = {int.Parse(RelationshipIntersectTypeID)} and i.objectid in ({idList})";
+
+                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $"A.ID in ({subSql})";
+                        }
+                        else
+                        {
+                            if (RelationshipIncludeType == "Any")
+                            {
+                                filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $@"A.ID in (
+    select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+    union 
+    select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+    )";
+                            }
+                            else
+                            {
+                                IDs.ForEach(ID =>
+                                {
+                                    int idInt = 0;
+                                    if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
+                                    {
+                                        filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ");
+                                        filters += $@"A.ID in (
+    select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+    union 
+    select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+    )";
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
             }
 
+            #endregion
 
-            var AttributeType = Request.Form.AllKeys.Any(i => i == "AttributeType") ? Request["AttributeType"] : "";
-            var AttributeSearchValue = Request.Form.AllKeys.Any(i => i == "AttributeSearchValue") ? Server.UrlDecode(Request["AttributeSearchValue"]) : "";
+            int attcount = 0;
 
-            //check querystring
-            if (string.IsNullOrEmpty(AttributeType) && string.IsNullOrEmpty(AttributeSearchValue))
+            if (int.TryParse(query["attcount"], out attcount))
             {
-                AttributeType = query.AllKeys.Any(i => i == "AttributeType") ? query["AttributeType"] : "";
-                AttributeSearchValue = query.AllKeys.Any(i => i == "AttributeSearchValue") ? Server.UrlDecode(query["AttributeSearchValue"]) : "";
-            }
-
-            if (!string.IsNullOrEmpty(AttributeType) && !string.IsNullOrEmpty(AttributeSearchValue))
-            {
-                int attributeTypeID;
-                if (int.TryParse(AttributeType, out attributeTypeID))
+                for (int i = 0; i < attcount; i++)
                 {
-                    dbParams.Add("attrTypeAdvFlt", "%" + AttributeSearchValue + "%"); // use bind variable to avoid sql injection
+                    var qs_value = $"att_value_{i}";
+                    var qs_typeid = $"att_typeid_{i}";
 
-                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"A.ID in (
+                    var AttributeType = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Request[qs_typeid] : "";
+                    var AttributeSearchValue = Request.Form.AllKeys.Any(k => k == qs_value) ? Server.UrlDecode(Request[qs_value]) : "";
+
+                    //check querystring
+                    if (string.IsNullOrEmpty(AttributeType) || string.IsNullOrEmpty(AttributeSearchValue))
+                    {
+                        AttributeType = query.AllKeys.Any(k => k == qs_typeid) ? query[qs_typeid] : "";
+                        AttributeSearchValue = query.AllKeys.Any(k => k == qs_value) ? Server.UrlDecode(query[qs_value]) : "";
+                    }
+
+                    if (!string.IsNullOrEmpty(AttributeType) && !string.IsNullOrEmpty(AttributeSearchValue))
+                    {
+                        int attributeTypeID;
+                        if (int.TryParse(AttributeType, out attributeTypeID))
+                        {
+                            dbParams.Add("attrTypeAdvFlt", "%" + AttributeSearchValue + "%"); // use bind variable to avoid sql injection
+
+                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"A.ID in (
                     select ObjectID
                     from AttributeDetail
                     where ObjectType = 'Artifact' and AttributeTypeID = " + attributeTypeID + @" and FormattedValue like @attrTypeAdvFlt
@@ -1046,6 +1068,8 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                     from    cache.Relationships R
                             inner join AttributeDetail A on A.ObjectType = 'Intersect' and A.ObjectID = R.IntersectID and R.SourceType = 'ArtifactType' and R.SourceTypeID = @id and A.FormattedValue like @attrTypeAdvFlt
 					)";
+                        }
+                    }
                 }
             }
 

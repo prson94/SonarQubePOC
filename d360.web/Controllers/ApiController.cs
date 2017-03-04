@@ -2847,6 +2847,15 @@ from    [Intersect] I
             });
         }
 
+        /// <summary>
+        /// Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.
+        /// </summary>
+        [Route("{type}/{id:int}/fieldfilters")]
+        public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)
+        {
+            return await Company.GetFieldFiltersByType(type, id);
+        }
+
         #endregion
 
         #region Relationships
