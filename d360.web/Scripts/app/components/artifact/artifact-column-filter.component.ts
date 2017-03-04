@@ -122,14 +122,12 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     }
 
     ngOnInit() {        
-
         if (this.attributeFilters.length > 0)
             this.attributeSelected(this.attributeFilters[0].attributeType);
 
         if (this.ownerFilter && (this.ownerFilter.ownerGroups || this.ownerFilter.ownerUsers)) {            
             this.ownerSelected();
-        }
-        
+        }    
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -154,7 +152,10 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                     });
                 }
             }
-            else if (!bHasInternalFilters) {
+            else if (this.relationshipFilters.length > 0 && !bHasInternalFilters) {
+                // dont clear the relationship filters
+            }
+            else if (!bHasInternalFilters) {                
                 this.resetFilters();
             }
 
@@ -403,7 +404,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                     .getObjectRelations('ArtifactType', this.artifactType.ID)
                     .then(result => {
                         this.relationshipTypes = result;
-                        this.addRelationshipTypesToAvailable(this.relationshipTypes);
+                        this.addRelationshipTypesToAvailable(this.relationshipTypes);                       
                     });
             }
             else {
