@@ -261,7 +261,7 @@ from	Artifact A
         A.TaxonomyTypeID,
         dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
-        inner join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
+        left join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
         left join Artifact P on P.ID = A.ParentID 
 where    A.ArtifactTypeID = @id", columns, joins);
 
