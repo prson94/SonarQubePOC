@@ -414,6 +414,9 @@ namespace d360.web.Models
 
         [DataMember]
         public string contextfield { get; set; }
+
+        [DataMember]
+        public string description { get; set; }
     }
 
     [DataContract]

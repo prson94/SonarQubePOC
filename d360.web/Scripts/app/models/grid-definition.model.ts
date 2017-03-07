@@ -11,6 +11,7 @@ export class GridColumn {
     datafield: string;   
     cellsformat: string;
     type: string;
+    description: string;
 }
 
 export class GridRelationshipFilterExpression {
@@ -52,6 +53,7 @@ export class GridFilterColumn {
     hiddenfield: boolean;
     id: string;
     type: string;
+    description: string;
 }
 
 export class GridDefinition {

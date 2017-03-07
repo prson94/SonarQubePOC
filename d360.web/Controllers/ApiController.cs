@@ -2148,6 +2148,7 @@ from    [Intersect] I
             public string texttype { get; set; }
             public string datafield { get; set; }
             public string format { get; set; }
+            public string description { get; set; }
 
             public string datafieldtype { get; set; }
 
@@ -2168,6 +2169,23 @@ from    [Intersect] I
             public string urlfield { get; set; }
 
             public string contextfield { get; set; }
+        }
+
+        private string getFieldTypeColumnString(string type, string columnName)
+        {
+            switch (type.ToLower())
+            {
+                case "decimal":
+                case "number":
+                    return $"cast({columnName} as int)";
+                case "date":
+                case "datetime":
+                    return $"cast({columnName} as date)";
+                case "boolean":
+                    return $"case when lower({columnName}) = 'true' then 1 else 0 end";
+                default:
+                    return $"{columnName}";
+            }
         }
 
         private void loadComplexLookupColumns(List<FieldType> fieldTypes,
@@ -2220,6 +2238,8 @@ from    [Intersect] I
                             c.datafieldtype = "number";
                             break;
                     }
+
+                    c.description = ft.DisplayDescription;
                 }
 
                 return "";
@@ -2231,7 +2251,6 @@ from    [Intersect] I
             {
 
                 FieldType ft = (i.FieldTypeID > 0) ? fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID) : null;
-
                 if (i.FieldTypeName.Contains("."))
                     i.FieldTypeName = i.FieldTypeName.Replace('.', '~');
 
@@ -2260,7 +2279,7 @@ from    [Intersect] I
                             DisplayColumn = (ft.Type == "Boolean") ? $"lower({tbPrefix}.FormattedValue)" : $"{tbPrefix}.FormattedValue",
                             text = i.OverrideDisplayName ?? ft.FriendlyName,
                             datafield = $"{dataField}",
-                            SortColumn = ft.SortOrder > 0 ? $"{dataField}" : string.Empty,
+                            SortColumn = ft.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"{tbPrefix}.FormattedValue") : string.Empty,
                             OutputColumn = true
                         };
                         setColumnTypeInfo(ft, i, fc);
@@ -2306,7 +2325,7 @@ from    [Intersect] I
                         var oc = new ComplexColumnModel
                         {
                             DisplayColumn = $"A{pos}.{i.FieldTypeName}",
-                            SortColumn = i.SortOrder > 0 ? $"{dataField}" : string.Empty,
+                            SortColumn = i.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"A{pos}.{i.FieldTypeName}") : string.Empty,
                             datafield = $"{dataField}",
                             text = i.OverrideDisplayName ?? i.FieldTypeName,
                             OutputColumn = true
@@ -2328,7 +2347,7 @@ from    [Intersect] I
                         }
 
                         var objectFriendlyName = i.OverrideDisplayName ?? i.FieldTypeName;
-                        var objectSortColumn = (i.SortOrder > 0) ? $"{dataField}" : string.Empty;
+                        var objectSortColumn = (i.SortOrder > 0) ? getFieldTypeColumnString(ft?.Type ?? "", objectDisplayColumn) : string.Empty;
 
                         switch (i.Object)
                         {
@@ -2353,6 +2372,7 @@ from    [Intersect] I
                                 if (i.FieldTypeName == "SubjectArea")
                                 {
                                     ac.DisplayColumn = $"T{pos}.Name";
+                                    ac.SortColumn = (i.SortOrder > 0) ? getFieldTypeColumnString(ft?.Type ?? "", $"T{pos}.Name") : string.Empty;
                                     setColumnTypeInfo(ft, i, ac);
                                     ac.datafieldtype = "lookup"; //must be done after function call above.
                                     columnModels.Add(ac);
@@ -2793,9 +2813,6 @@ from    [Intersect] I
                 if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
                 sqlQuery += whereQuery + " ";
 
-                //wrap in distinct to avoid appearance of duplicate records when unique columns are not displayed
-                sqlQuery = $"select distinct * from ({sqlQuery}) z ";
-
                 var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && i.SortOrder > 0 && !string.IsNullOrEmpty(i.SortColumn)).OrderBy(i => i.SortOrder).Select(i => i.SortColumn));
                 if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;
                 sqlQuery += orderQuery;
@@ -2820,7 +2837,8 @@ from    [Intersect] I
                                 contextfield = c.contextfield,
                                 objectfield = c.objectfield,
                                 objectidfield = c.objectidfield,
-                                urlfield = c.urlfield
+                                urlfield = c.urlfield,
+                                description = c.description
                             };
                             if (!string.IsNullOrEmpty(c.format)) gc.cellsformat = c.format;
                             columns.Add(gc);
@@ -2829,7 +2847,7 @@ from    [Intersect] I
                 });
 
 
-                results = Company.Query<dynamic>(sqlQuery);
+                results = Company.Query<dynamic>(sqlQuery).Distinct();
             }
             catch (Exception ex)
             {

@@ -13,6 +13,10 @@ import { BaseComponent } from '../base.component';
                <p-dataTable #dt *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3">  
                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                     <p-column *ngFor="let column of visibleColumns" [sortable]="column.sortable" [field]="column.datafield">
+                        <template pTemplate type="header">
+                            <span *ngIf="column.description != null && column.description != ''" [pTooltip]="column.description" tooltipPosition="top">{{column.text}}</span>
+                            <span *ngIf="column.description == null || column.description == ''">{{column.text}}</span>
+                        </template>
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'shortDate'}}</span>
@@ -40,6 +44,10 @@ import { BaseComponent } from '../base.component';
                <p-dataTable #dt2 *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3" [globalFilter]="gb">  
                     <footer *ngIf="dt2.totalRecords"><d3s-grid-paging-info [totalRecords]="dt2.totalRecords" [first]="dt2.first" [rows]="dt2.rows"></d3s-grid-paging-info></footer>
                     <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable" [field]="column.datafield" filterMatchMode="contains">
+                        <template pTemplate type="header">
+                            <span *ngIf="column.description != null && column.description != ''" [pTooltip]="column.description" tooltipPosition="top">{{column.text}}</span>
+                            <span *ngIf="column.description == null || column.description == ''">{{column.text}}</span>
+                        </template>
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'shortDate'}}</span>
@@ -104,7 +112,9 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
             }
         });
 
-        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');   
+        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden'); 
+
+        console.log(this.data.Columns);
     }
 
     private formatAsNumber(val): string {

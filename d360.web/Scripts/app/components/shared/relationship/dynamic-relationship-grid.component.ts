@@ -128,7 +128,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                         text: this.taxonomyName,
                         cellsformat: '',
                         datafield: 'TaxonomyType',
-                        type: 'string',                        
+                        type: 'string',
+                        description: null
                     });
                 }
             });
