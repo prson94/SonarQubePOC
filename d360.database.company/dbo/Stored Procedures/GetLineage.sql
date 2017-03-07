@@ -613,7 +613,7 @@ begin
 							T.[Level] + 1 as [Level]
 					from	MapRuleItem S
 							inner join cte T on T.TargetFusionAttributeID = S.SourceFusionAttributeID and S.ID <> T.ID
-					where	T.[Level] <= 25 and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID)
+					where	T.[Level] <= 13 and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID)
 				)
 				insert into @tFusionPoints
 					select distinct	ID, 
@@ -641,7 +641,7 @@ begin
 							T.[Level] + 1 as [Level]
 					from	MapRuleItem S
 							inner join cte T on T.SourceFusionAttributeID = S.TargetFusionAttributeID and S.ID <> T.ID
-					where	T.[Level] <= 25 and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID)
+					where	T.[Level] <= 13 and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID)
 				)
 				insert into @tFusionPoints
 					select distinct	ID, 
@@ -897,7 +897,7 @@ begin
 							TargetFusionAttributeID
 					from	cteFusionForward
 					where	ID not in (select ID from @tFusionPoints)
-					OPTION (MAXRECURSION 25) ;
+					OPTION (MAXRECURSION 20) ;
 
 				with cteFusionBackward as (
 					select	ID, 
@@ -927,7 +927,7 @@ begin
 							TargetFusionAttributeID
 					from	cteFusionBackward
 					where	ID not in (select ID from @tFusionPoints)
-					OPTION (MAXRECURSION 25) ;
+					OPTION (MAXRECURSION 20) ;
 
 				--remove deleting items if editor data is present
 				if EXISTS (SELECT 1 FROM @technicalRows)
