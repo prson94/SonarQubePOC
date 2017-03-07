@@ -897,7 +897,7 @@ begin
 							TargetFusionAttributeID
 					from	cteFusionForward
 					where	ID not in (select ID from @tFusionPoints)
-					OPTION (MAXRECURSION 20) ;
+					OPTION (MAXRECURSION 25) ;
 
 				with cteFusionBackward as (
 					select	ID, 
@@ -927,7 +927,7 @@ begin
 							TargetFusionAttributeID
 					from	cteFusionBackward
 					where	ID not in (select ID from @tFusionPoints)
-					OPTION (MAXRECURSION 20) ;
+					OPTION (MAXRECURSION 25) ;
 
 				--remove deleting items if editor data is present
 				if EXISTS (SELECT 1 FROM @technicalRows)
