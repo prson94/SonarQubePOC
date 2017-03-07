@@ -2177,10 +2177,10 @@ from    [Intersect] I
             {
                 case "decimal":
                 case "number":
-                    return $"cast({columnName} as int)";
+                    return $"cast({columnName} as float)";
                 case "date":
                 case "datetime":
-                    return $"cast({columnName} as date)";
+                    return $"cast({columnName} as datetime)";
                 case "boolean":
                     return $"case when lower({columnName}) = 'true' then 1 else 0 end";
                 default:

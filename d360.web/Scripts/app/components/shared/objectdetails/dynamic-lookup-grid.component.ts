@@ -12,7 +12,7 @@ import { BaseComponent } from '../base.component';
     template: `    
                <p-dataTable #dt *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3">  
                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                    <p-column *ngFor="let column of visibleColumns" [sortable]="column.sortable" [field]="column.datafield">
+                    <p-column *ngFor="let column of visibleColumns" [sortable]="column.sortable ? 'custom' : false" [field]="column.datafield" (sortFunction)="customSort($event, column)">
                         <template pTemplate type="header">
                             <span *ngIf="column.description != null && column.description != ''" [pTooltip]="column.description" tooltipPosition="top">{{column.text}}</span>
                             <span *ngIf="column.description == null || column.description == ''">{{column.text}}</span>
@@ -43,7 +43,7 @@ import { BaseComponent } from '../base.component';
                 <input #gb type="text" [hidden]="!showSimpleFilter || hideFilter || hideHeader" pInputText size="100" placeholder="Search..." class="grid-simple-filter" />
                <p-dataTable #dt2 *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3" [globalFilter]="gb">  
                     <footer *ngIf="dt2.totalRecords"><d3s-grid-paging-info [totalRecords]="dt2.totalRecords" [first]="dt2.first" [rows]="dt2.rows"></d3s-grid-paging-info></footer>
-                    <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable" [field]="column.datafield" filterMatchMode="contains">
+                    <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable ? 'custom' : false" [field]="column.datafield" filterMatchMode="contains" (sortFunction)="customSort($event, column)">
                         <template pTemplate type="header">
                             <span *ngIf="column.description != null && column.description != ''" [pTooltip]="column.description" tooltipPosition="top">{{column.text}}</span>
                             <span *ngIf="column.description == null || column.description == ''">{{column.text}}</span>
@@ -136,6 +136,43 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
     navigate(url: string) {
         //TODO: should attempt to generate dynamically by object/objectid eventually
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url)); 
+    }
+
+    customSort(e: any, col: any) {
+        let field = e.field;
+        let direction = e.order;
+        let type = col.type;
+
+        this.data.Values = this.data.Values.sort((a, b) => {
+            let fa = a[field];
+            let fb = b[field];
+
+            switch (type) {
+                case 'number':
+                    let na: number = +fa;
+                    let nb: number = +fb;
+
+                    if (na == null || isNaN(na))
+                        na = -Infinity;
+                    if (nb == null || isNaN(nb))
+                        nb = -Infinity;
+
+                    return ((na > nb) ? 1 : (na < nb) ? -1 : 0) * direction;
+                case 'date':
+                case 'datetime':
+                    let da: number = Date.parse(fa);
+                    let db: number = Date.parse(fb);
+
+                    if (da == null || isNaN(da))
+                        da = new Date(null).getTime();
+                    if (db == null || isNaN(db))
+                        db = new Date(null).getTime();
+
+                    return ((da > db) ? 1 : (da < db) ? -1 : 0) * direction;
+                default:
+                    return ((fa > fb) ? 1 : (fa < fb) ? -1 : 0) * direction;
+            }
+        });
     }
 }
 
