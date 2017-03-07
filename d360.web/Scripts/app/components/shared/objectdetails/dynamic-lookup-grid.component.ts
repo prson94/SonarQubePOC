@@ -20,6 +20,7 @@ import { BaseComponent } from '../base.component';
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'shortDate'}}</span>
+                                        <span *ngSwitchCase="'datetime'">{{item[column.datafield] | date:'short'}}</span>
                                         <span *ngSwitchCase="'bool'">
                                             <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
@@ -51,6 +52,7 @@ import { BaseComponent } from '../base.component';
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'shortDate'}}</span>
+                                        <span *ngSwitchCase="'datetime'">{{item[column.datafield] | date:'short'}}</span>
                                         <span *ngSwitchCase="'bool'">
                                             <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>

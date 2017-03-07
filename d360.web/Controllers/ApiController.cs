@@ -2225,7 +2225,7 @@ from    [Intersect] I
                         case "DateTime":
                             c.format = "MM/dd/yyyy hh:mm tt";
                             c.texttype = GridColumn.COLUMN_TYPE_DATE;
-                            c.datafieldtype = "date";
+                            c.datafieldtype = "datetime";
                             break;
                         case "Decimal":
                             c.format = "d";
