@@ -129,7 +129,7 @@ begin
 	
 	insert into #maps
 		(SourceObject, TargetObject)
-		select 
+		select distinct
 			replace(cast(F_source.formattedValue as nvarchar(500)), @databaseName, '') as SourceObject						
 			, replace(cast(F_target.formattedValue as nvarchar(500)), @databaseName, '') as TargetObject			
 		from 
@@ -186,7 +186,8 @@ begin
 		inner join fusionattribute FA on (FA.ID = T.TargetFusionAttributeID)
 		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
 
-
+	-- remove any maps that reference same fusionattribute both sides
+	delete from #maps where SourceFusionAttributeID = TargetFusionAttributeID;
 	
 	--this query adds in the view to table mapings
 	-- add in any view column to table column records
