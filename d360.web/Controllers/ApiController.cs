@@ -568,6 +568,24 @@ namespace d360.web.Controllers
                     fields.Add(new GridField { name = "Status", type = "string" });
                     break;
                 #endregion
+                case SystemObjects.RuleType:
+                    #region
+
+                    var ruleType = Company.GetById<RuleType>(id);
+
+                    staticFieldCount = 1;
+                    remainingWidth = 45;
+                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
+
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
+
+                    fields.Add(new GridField { name = "ID", type = "number" });
+                    fields.Add(new GridField { name = "Name", type = "string" });
+                    fields.Add(new GridField { name = "RuleTypeID", type = "number" });
+                    break;
+                #endregion  
                 case SystemObjects.FusionAttributeType:
                     #region
                     staticFieldCount = 1;
@@ -2473,7 +2491,7 @@ from    [Intersect] I
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Rule'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleType, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
                                 #endregion
                                 break;
                             default:
@@ -2939,11 +2957,11 @@ from    [Intersect] I
                 case SystemObjects.Rule:
                     sql = @"select distinct A.Name, A.ID, 'Rule' as [Type] 
                             from [Rule] A 
-                            inner join [Intersect] I on A.RuleType = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID)
+                            inner join [Intersect] I on A.RuleTypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID)
                             union
                             select distinct A.Name, A.ID, 'Rule' as [Type] 
                             from [Rule] A 
-                            inner join [Intersect] I on A.RuleType = @id and (I.Object = 'Rule' and A.ID = I.ObjectID)
+                            inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID)
                             order by A.Name";
                     break;
                 case SystemObjects.TaxonomyType:
@@ -3296,6 +3314,10 @@ from        (
                         'Policy Type : ' + Name as title
             from        PolicyType
             union
+            select      'RuleType|' + cast(ID as varchar(15)) as value,
+                        'Rule Type : ' + Name as title
+            from        RuleType
+            union
             select      'FusionType|' + cast(ID as varchar(15)) as value,
                         'Fusion Type : ' + Name as title
             from        FusionType
@@ -3303,8 +3325,6 @@ from        (
 order by    title
 
 ").ToList();
-
-            items.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new { title = string.Format("Rule Instance : {0}", i.Name), value = string.Format("Rule|{0}", (int)i.ID) }));
 
             return items;
         }
@@ -3404,29 +3424,67 @@ from    (
         #region Rules
 
         [Route("ruletypes")]
-        public HttpResponseMessage GetRuleTypes()
+        public IQueryable<RuleType> GetRuleTypes()
         {
-            List<dynamic> ruleTypes = new List<dynamic>();
-
-            var ruleTypesList = Enum.GetValues(typeof(RuleType)).Cast<RuleType>().ToList();
-
-            foreach (var ruleType in ruleTypesList)
-            {
-                ruleTypes.Add(new { Name = ruleType.GetRuleTypeDisplayName(), ID = (int)ruleType, Description = ruleType.GetRuleTypeDescription() });
-            }
-
-            ruleTypes = ruleTypes.OrderBy(x => x.Name).ToList();
-
-            return Request.CreateResponse(HttpStatusCode.OK, new
-            {
-                ruleTypes
-            });
+            return Company.Table<RuleType>();
         }
 
-        [Route("rules")]
-        public IQueryable<Rule> GetRules()
+        [Route("ruletypes/{id:int}")]
+        public HttpResponseMessage GetRuleType(int id)
         {
-            return Company.Rules.Include("Dimension");
+            var row = Company.GetById<RuleType>(id);
+            return Request.CreateResponse<dynamic>(
+                new Dictionary<string, object>() {
+                    { "ID", row.ID },
+                    { "Name", row.Name },
+                    { "Description", row.Description },
+                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+                }
+            );
+        }
+
+        [Route("rules/{id:int}")]
+        public HttpResponseMessage GetRules(int id)
+        {
+            //return Company.Filter<Rule>(i => i.RuleTypeID == id, i => i.Dimension);
+
+            try
+            {
+                var dbArgs = new Dapper.DynamicParameters();
+
+                dbArgs.Add("id", id);
+
+                var joins = "";
+                var columns = "";
+                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
+
+                var querySql = string.Format(@"select	A.ID,
+		A.Name,
+		A.Description,
+        A.Purpose,
+		A.Measurement,
+        A.Resolution,
+        A.Threshold,
+        A.RuleDimensionID,
+        D.Name as Dimension,
+        dbo.GenerateObjectUrl('Rule', A.RuleTypeID, A.ID) as Url,
+		A.Status,
+        {0}
+        A.RuleTypeID
+from	[Rule] A {1} 
+        left join RuleDimension D on D.ID = A.RuleDimensionID 
+where    A.RuleTypeID = @id", columns, joins);
+
+                //querySql += " OPTION (RECOMPILE)";
+
+                var query = Company.Query<dynamic>(querySql, dbArgs);
+
+                return Request.CreateResponse(HttpStatusCode.OK, query);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
+            }
         }
 
         [Route("ruledimensions")]
@@ -3538,13 +3596,13 @@ from    (
                 #endregion
                 case SystemObjects.Rule:
                     #region Fields
-                    var rule = Company.GetById<Rule>(id);
+                    var rule = Company.GetById<Rule>(id, i => i.RuleType);
                     if (rule != null)
                     {
                         list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = rule.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = rule.GetName(i => i.Name), Name = "Name", Value = rule.Name });
-                        list.Add(new DisplayField { FriendlyName = rule.GetName(i => i.Description), Name = "Description", Value = rule.Description });
-                        list.Add(new DisplayField { FriendlyName = rule.GetName(i => i.RuleType), Name = "RuleType", Value = rule.RuleType.ToString() });
+                        list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Name_Name, Name = "Name", Value = rule.Name });
+                        list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Description_Name, Name = "Description", Value = rule.Description });
+                        list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.RuleType_Name, Name = "RuleTypeID", Value = rule.RuleType.Name });
                     }
                     rule = null;
                     break;
@@ -3711,10 +3769,10 @@ from    (
                             {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.CreatedOn), FieldName = "ArtifactCreatedOn", FieldDescription = artifact.GetDescription(i => i.CreatedOn), Value = artifact.CreatedOn.ToShortDateString() }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = artifact.CreatedOn.ToShortDateString() }
                                 },
                                 SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.UpdatedOn), FieldName = "ArtifactUpdatedOn", FieldDescription = artifact.GetDescription(i => i.UpdatedOn), Value = artifact.UpdatedOn.GetValueOrDefault().ToShortDateString() }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = artifact.UpdatedOn.GetValueOrDefault().ToShortDateString() }
                                 }
                             });
                         }
@@ -3724,7 +3782,7 @@ from    (
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.CreatedOn), FieldName = "ArtifactCreatedOn", FieldDescription = artifact.GetDescription(i => i.CreatedOn), Value = artifact.CreatedOn.ToShortDateString() }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = artifact.CreatedOn.ToShortDateString() }
                                 }
                             });
                         }
@@ -4387,7 +4445,7 @@ from    (
                 case SystemObjects.Rule:
                     #region Fields
 
-                    var rule = Company.Rules.Include("dimension").Where(x => x.ID == id).FirstOrDefault();
+                    var rule = Company.GetById<Rule>(id, i => i.Dimension, i => i.RuleType);
                     if (rule != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -4399,7 +4457,7 @@ from    (
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.GetRuleTypeDisplayName() }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.Name }
                             }    
                         });
 
@@ -4463,8 +4521,64 @@ from    (
                                 }
                             });
                         }
+
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
+
+                        if (rule.UpdatedOn.HasValue)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = rule.CreatedOn.Value.ToShortDateString() }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "RuleUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = rule.UpdatedOn.GetValueOrDefault().ToShortDateString() }
+                                }
+                            });
+                        }
+                        else
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = rule.CreatedOn.Value.ToShortDateString() }
+                                }
+                            });
+                        }
                     }
                     rule = null;
+                    break;
+                #endregion
+                case SystemObjects.RuleType:
+                    #region Fields
+                    var ruleType = Company.GetById<RuleType>(id);
+                    if (ruleType != null)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.Name_Name, FieldName = "RuleTypeName", Value = ruleType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.ID_Name, FieldName = "RuleTypeID", Value = ruleType.ID.ToString() }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.Description_Name, FieldName = "RuleTypeDescription", Value = string.IsNullOrEmpty(ruleType.Description) ? "None provided" : ruleType.Description }
+                            }
+                        });
+                    }
+                    ruleType = null;
                     break;
                 #endregion
                 case SystemObjects.ResponsibilityType:
@@ -4674,8 +4788,10 @@ from    (
                                 sql = "select 'Policy Type : ' + Name from PolicyType where ID = @id";
                                 break;
                             case "Rule":
-                                var ruleEnum = (RuleType)report.ObjectID;
-                                sql = string.Format("select 'Rule Instance : {0}'", ruleEnum.GetRuleTypeDisplayName());
+                                sql = "select 'Rule Instance : ' + Name from RuleType where ID = @id";
+                                break;
+                            case "RuleType":
+                                sql = "select 'Rule Type : ' + Name from RuleType where ID = @id";
                                 break;
                             case "Taxonomy":
                                 sql = "select 'Model Instance : ' + Name from TaxonomyType where ID = @id";
@@ -5388,9 +5504,9 @@ from    (
             }
             else
             {
-                if (type == SystemObjects.RuleType)
-                    permissions = Company.GetPermissions(type, new int[] { (int)RuleType.Informational, (int)RuleType.Metric, (int)RuleType.Profile, (int)RuleType.Quality }).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
-                else
+                //if (type == SystemObjects.RuleType)
+                //    permissions = Company.GetPermissions(type, new int[] { (int)RuleType.Informational, (int)RuleType.Metric, (int)RuleType.Profile, (int)RuleType.Quality }).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
+                //else
                     permissions = Company.GetPermissions(type, id).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
             }
 

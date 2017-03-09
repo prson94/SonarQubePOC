@@ -123,6 +123,15 @@
   <data name="ApiName_Name" xml:space="preserve">
     <value>API Name</value>
   </data>
+  <data name="CreatedOn_Description" xml:space="preserve">
+    <value>The date that this item was created in Data3Sixty.</value>
+  </data>
+  <data name="CreatedOn_Name" xml:space="preserve">
+    <value>Date created</value>
+  </data>
+  <data name="Description_Name" xml:space="preserve">
+    <value>Description</value>
+  </data>
   <data name="DisplayDescription_Description" xml:space="preserve">
     <value>Provide any description that will be displayed by default any time someone sees information in this field.</value>
   </data>
@@ -161,6 +170,9 @@
   </data>
   <data name="FusionPromotionUnder_ToolTip" xml:space="preserve">
     <value>Please select a parent for the item since the selected Promote To value has multiple levels.</value>
+  </data>
+  <data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
   </data>
   <data name="InputType_Description" xml:space="preserve">
     <value>You can choose from a variety of field types, including Lookup.</value>
@@ -302,6 +314,12 @@
   </data>
   <data name="TestPattern_Name" xml:space="preserve">
     <value>Test Pattern</value>
+  </data>
+  <data name="UpdatedOn_Description" xml:space="preserve">
+    <value>The date that this item was last modified in Data3Sixty.</value>
+  </data>
+  <data name="UpdatedOn_Name" xml:space="preserve">
+    <value>Date Last Modified</value>
   </data>
   <data name="ValidationDescription_Description" xml:space="preserve">
     <value>This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear.</value>

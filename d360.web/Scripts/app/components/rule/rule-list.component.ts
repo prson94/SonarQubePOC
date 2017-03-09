@@ -2,20 +2,22 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RulesService } from '../../services/rules.service';
+import { GridDefinitionService } from '../../services/grid-definition.service';
 import { MessagesService } from '../../services/messages.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RuleDimension, Rule, RuleClassification, RuleStatus } from '../../models/rule.model';
+import { RuleDimension, Rule, RuleType, RuleClassification, RuleStatus } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-rule-list',
-    providers: [RulesService, PermissionsService],
+    providers: [GridDefinitionService, RulesService, PermissionsService],
     template: ` 
                 <div class="row">
                     <div class="col s12">
@@ -29,15 +31,19 @@ import * as _ from 'lodash';
                                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                                     
                                     <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule(selected);" >                                        
                                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                        <p-column field="ID" header="ID" sortable="true" [style]="{width:'5%'}" [filter]="!showSimpleFilter"></p-column>
                                         <p-column field="Name" header="Name" sortable="true" [style]="{width:'45%'}" [filter]="!showSimpleFilter">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <a (click)="showRule(item)">{{item?.Name}}</a>
                                             </template>
                                         </p-column>
-                                        <p-column field="ID" header="ID" sortable="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                                                                                                
                                         <p-column field="StatusName" header="Status" sortable="true" [filter]="!showSimpleFilter" [style]="{width:'15%'}"></p-column>
-                                        <p-column field="Dimension.Name" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'15%'}" [filter]="!showSimpleFilter"></p-column>                                        
-                                        <p-column field="RuleTypeName" header="Type" sortable="true" [style]="{width:'15%'}" [filter]="!showSimpleFilter"></p-column>                                        
+                                        <p-column field="Dimension" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>                                        
+                                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">                                                                
+                                            <template let-item="rowData" pTemplate type="body">
+                                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
+                                            </template>
+                                        </p-column>
                                         <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
@@ -55,7 +61,7 @@ import * as _ from 'lodash';
                                     </p-dataTable>      
                                 </div>
                             </div>
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Rule'" [title]="'Rule'" [selection]="selected" (saveClick)="saveRule($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
+                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="ruleType?.ID" [objectType]="'Rule'" [title]="'Rule'" [selection]="selected" (saveClick)="saveRule($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
                             <d3s-delete-form *ngIf="showDelete"
                                                     [callback]="theDeleteCallback"
                                                     [itemId]="selected?.ID"
@@ -69,11 +75,18 @@ import * as _ from 'lodash';
                 `
 })
 
-export class RuleListComponent extends BaseComponent implements OnInit {
-    private rules: Rule[] = [];
+export class RuleListComponent extends BaseComponent implements OnInit, OnDestroy {
+    sub: any;
+    ruleTypeId: number;
+    private rules: any[] = [];
     private selected: Rule;
+    private ruleType: RuleType;
     private showEditor: boolean = false;
     private showDelete: boolean = false;
+
+    columns: GridColumn[] = [];
+    fields: GridField[] = [];
+    filtercolumns: GridFilterColumn[] = [];
 
     theDeleteCallback: Function;
     
@@ -82,6 +95,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         protected rulesService: RulesService,
         protected titleService: Title,
         protected messagesService: MessagesService,
+        private gridDefinitionService: GridDefinitionService, 
         private headerActionsService: HeaderActionsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService
@@ -92,25 +106,54 @@ export class RuleListComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Rules');
+        this.sub = this.route.params.subscribe(params => {
 
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules'));
+            this.ruleTypeId = +params['ruleTypeId'];
+            this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId);
 
-        this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, 0);
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
 
-        this.loadRules();
+            this.getFieldsDefinition();
+
+            this.isLoading = true;
+            this.rulesService.getRuleType(this.ruleTypeId)
+                .then(result => {
+                    this.isLoading = false;
+                    this.ruleType = result;
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules', undefined)); //`${SiteUrlHelpers.SITE_URL_RULE_ROOT}`
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleTypeId}`));
+
+                    this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
+
+                    this.loadRules();
+
+                    this.setBrowserTitle(this.titleService, this.ruleType.Name);
+                });
+        });
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
+        this.sub.unsubscribe();
+    }
+
+    getFieldsDefinition() {
+        this.gridDefinitionService.getGridDefinition(this.ruleTypeId, StringConstants.ObjectRuleType)
+            .then(result => {
+                this.columns = result.Columns.filter(x => x.datafield != 'Name');
+                this.filtercolumns = result.FilterColumns;
+                this.fields = result.Fields;
+            });
     }
 
     private loadRules() {
         this.isLoading = true;
-        this.rulesService.getRules()
+        this.rulesService.getRules(this.ruleTypeId)
             .then(result => {
                 this.isLoading = false;
                 for (let rule of result) {
                     if (!rule.Dimension) rule.Dimension = new RuleDimension(); //prime grid has issues with null objects make sure we dont have any.
-                    rule.RuleTypeName = RuleClassification[rule.RuleType];
                     rule.StatusName = RuleStatus[rule.Status];
                 }
                 this.rules = result;     
@@ -137,7 +180,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
     }
 
     private showRule(rule) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', rule.ID));
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', rule.ID, this.ruleTypeId));
     }
         
     private deleteRule(id: number) {

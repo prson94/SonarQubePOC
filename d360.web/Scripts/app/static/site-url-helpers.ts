@@ -87,7 +87,7 @@
             case 'POLICY':
                 return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${parentId};hierarchyId=${objectId}`;
             case 'RULE':
-                return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${objectId}`;
+                return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${parentId}/${objectId}`;
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }

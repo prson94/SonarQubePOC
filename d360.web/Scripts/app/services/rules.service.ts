@@ -15,21 +15,28 @@ export class RulesService extends BaseService {
     getRuleTypes(): Promise<RuleType[]> {
         return this.http.get('api/ruletypes')
             .toPromise()
-            .then(response => <RuleType[]>response.json().ruleTypes)
+            .then(response => <RuleType[]>response.json())//.ruleTypes)
             .catch(err => this.handleError(err));
     }
 
-    getRules(): Promise<Rule[]> {
-        return this.http.get('api/rules')
+    getRules(id: number): Promise<any[]> {
+        return this.http.get(`api/rules/${id}`)
             .toPromise()
-            .then(response => <Rule[]>response.json())
+            .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getRule(id: number): Promise<RuleDetail> {
+    getRule(id: number): Promise<RuleDetail> { 
         return this.http.get(`api/rule/${id}`)
             .toPromise()
             .then(response => <RuleDetail>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRuleType(id: number): Promise<RuleType> {
+        return this.http.get(`api/ruletypes/${id}`)
+            .toPromise()
+            .then(response => <RuleType>response.json())
             .catch(err => this.handleError(err));
     }
 
@@ -42,6 +49,17 @@ export class RulesService extends BaseService {
             return this.postDynamic(this.http, 'rule', rule);
         }
         return this.putDynamic(this.http, 'rule', rule);
+    }
+
+    deleteRuleType(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'ruletype', id);
+    }
+
+    saveRuleType(ruleType: RuleType): Promise<JsonResult> {
+        if (ruleType.ID == undefined || !ruleType.ID) {
+            return this.postDynamic(this.http, 'ruletype', ruleType);
+        }
+        return this.putDynamic(this.http, 'ruletype', ruleType);
     }
 
     getRuleDimensions(): Promise<RuleDimension[]> {

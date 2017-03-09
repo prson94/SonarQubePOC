@@ -1,6 +1,7 @@
 ﻿export class RuleType {
     ID: number;
     Name: string;
+    Description: string;
 }
 
 export class RuleDimension {
@@ -62,6 +63,7 @@ export class RuleDetail {
     ParentType: string;
     PluralizedName: string;
     TextPath: string;
+    TypeName: string;
     Type: string;
     TypeID: number;
     Url: string;

@@ -1,14 +1,12 @@
 ﻿using d360.core.entities.Contracts;
-using System;
-using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
-using d360.core.enums;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    public class RuleModel : BaseIntObject
+    public class RuleModel : BaseIntObject, IIntObject
     {
         [DataMember, StringLength(250)]
         public string Name { get; set; }
@@ -26,7 +24,7 @@ namespace d360.core.entities
         public string Resolution { get; set; }
 
         [DataMember]
-        public RuleStatus Status { get; set; }
+        public enums.RuleStatus Status { get; set; }
 
         [DataMember]
         public RuleType RuleType { get; set; }
@@ -43,7 +41,7 @@ namespace d360.core.entities
 
 
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Rule, "Rule")]
-    public class Rule : BaseCreatedAndUpdatedIntObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
+    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember, StringLength(250)]
         public string Name { get; set; }
@@ -61,16 +59,19 @@ namespace d360.core.entities
         public string Resolution { get; set; }
 
         [DataMember]
-        public RuleStatus Status { get; set; }
-
-        [DataMember]
-        public RuleType RuleType { get; set; }
+        public enums.RuleStatus Status { get; set; }
 
         [DataMember]
         public decimal Threshold { get; set; }
 
         [DataMember]
         public int? RuleDimensionID { get; set; }
+
+        [DataMember]
+        public int RuleTypeID { get; set; }
+
+        [DataMember, ForeignKey("RuleTypeID")]
+        public RuleType RuleType { get; set; }
 
         [DataMember, ForeignKey("RuleDimensionID")]
         public RuleDimension Dimension { get; set; }

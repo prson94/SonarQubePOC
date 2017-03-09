@@ -108,7 +108,6 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-
     isClassificationsVisible: boolean = false;
 
     constructor(private stateService: StateService, rightSidebarService: RightSidebarService, private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {

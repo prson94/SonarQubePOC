@@ -13,10 +13,10 @@ namespace d360.test.jobs
     {
         private ADatabase getDatabase()
         {
-            if (!ASettings.HasConnection("us"))
-                ASettings.AddConnection("us", "arango.data3sixty.com", 80, false, "D3S_4", "root", "fg%4j#W!28uYItt", true);
+            if (!ASettings.HasConnection("D3S_4"))
+                ASettings.AddConnection("D3S_4", "arangous1.eastus.cloudapp.azure.com", 8529, false, "D3S_4", "root", "fhgyt!htGHT!YR65234!");
 
-            var db = new ADatabase("us");
+            var db = new ADatabase("D3S_4");
 
             return db;
         }
@@ -26,7 +26,7 @@ namespace d360.test.jobs
         {
             var db = getDatabase();
 
-            var glossary = db.Document.Get("Glossary/152829");
+            var glossary = db.Document.Get("Items/152829");
         }
 
         [TestMethod]
@@ -57,8 +57,7 @@ RETURN {
             var db = getDatabase();
             var company = getCompanyConnection(4);
 
-            //var items = company.Query<dynamic>(@"select	'Artifact' as Object, ID as ObjectID, Name, Description, Status from [reporting].[Glossary_Applications]").ToList();
-            var items = company.Query<dynamic>(@"select 'Artifact' as Object, ID as ObjectID, Name, Description, Status from Artifact").ToList(); // where ArtifactTypeID <> 2
+            var items = company.Query<dynamic>(@"select 'Artifact' as Object, ID as ObjectID, Name from Artifact").ToList(); // where ArtifactTypeID <> 2
 
             //var json = JsonConvert.SerializeObject(items);
 
@@ -69,16 +68,15 @@ RETURN {
             foreach (var item in items)
             {
                 var document = new Dictionary<string, object>();
+                //document.Add("_id", $"{item.Object}-{item.ObjectID}");
                 document.Add("_key", $"{item.Object}-{item.ObjectID}");
                 document.Add("Object", item.Object);
                 document.Add("ObjectID", item.ObjectID);
                 document.Add("Name", item.Name);
-                document.Add("Description", item.Description);
-                document.Add("Status", item.Status);
 
                 var createDocumentResult = db.Document
                     .WaitForSync(true)
-                    .Create("Glossary", document);
+                    .Create("Items", document);
 
                 if (createDocumentResult.Success)
                 {

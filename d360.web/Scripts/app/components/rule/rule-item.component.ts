@@ -113,6 +113,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         
                 
         this.sub = this.route.params.subscribe(params => {
+            let ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number            
             this.isLoading = true;
 
@@ -144,9 +145,10 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 this.rule = result;
 
                 this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rule', SiteUrlHelpers.SITE_URL_RULE_ROOT));
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rule', undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.TypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.rule.TypeID}`));
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.Name, undefined, true, 'Rule', this.rule.ID));
-
+                 
                 this.setBrowserTitle(this.titleService, this.rule.Name);
 
                 this.messages = []; //clear any messages for this rule

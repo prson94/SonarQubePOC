@@ -1164,7 +1164,9 @@ from	IntersectDetail O
                         selectSql = @"
 select	R.ID,
 		R.Name,
-		R.RuleDimensionID,
+		R.RuleTypeID,
+        RT.Name as RuleType,
+        R.RuleDimensionID,
 		D.Name as RuleDimensionName,
 		R.Description,
 		R.Purpose,
@@ -1177,7 +1179,8 @@ select	R.ID,
 		R.UpdatedOn,
 		R.UpdatedBy
 from	[Rule] R
-		left join RuleDimension D on D.ID = R.RuleDimensionID";
+		inner join RuleType RT on RT.ID = R.RuleTypeID 
+        left join RuleDimension D on D.ID = R.RuleDimensionID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

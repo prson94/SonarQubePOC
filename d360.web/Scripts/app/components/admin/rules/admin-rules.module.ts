@@ -11,6 +11,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
+import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
+import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module'; 
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { AdminModule } from '../admin.module';
@@ -47,6 +49,8 @@ import {
         PipesModule,
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,    
+        SharedObjectDetailsModule,
+        SharedFieldDefinitionModule,
         SharedDynamicGridEditorModule,
         SharedResponsibilitiesModule,    
         TilesModule,

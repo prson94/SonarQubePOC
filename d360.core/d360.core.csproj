@@ -114,6 +114,7 @@
     <Compile Include="entities\Fusion\FusionSchedule.cs" />
     <Compile Include="entities\Issue.cs" />
     <Compile Include="entities\IssueType.cs" />
+    <Compile Include="entities\Quality\RuleType.cs" />
     <Compile Include="entities\Reference\ReferenceItemType.cs" />
     <Compile Include="entities\Reference\ReferenceItem.cs" />
     <Compile Include="entities\Relation\MapType.cs" />
@@ -325,7 +326,6 @@
     <Compile Include="enums\ResponsibilityTransformationType.cs" />
     <Compile Include="enums\PolicyStatus.cs" />
     <Compile Include="enums\RuleStatus.cs" />
-    <Compile Include="enums\RuleType.cs" />
     <Compile Include="enums\QueueType.cs" />
     <Compile Include="enums\ReportTileType.cs" />
     <Compile Include="enums\ResponsibilityTypeGroup.cs" />

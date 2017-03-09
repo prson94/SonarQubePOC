@@ -530,6 +530,7 @@
     <Content Include="Scripts\app\12.chunk.js" />
     <Content Include="Scripts\app\13.chunk.js" />
     <Content Include="Scripts\app\14.chunk.js" />
+    <Content Include="Scripts\app\15.chunk.js" />
     <Content Include="Scripts\app\17.chunk.js" />
     <Content Include="Scripts\app\18.chunk.js" />
     <Content Include="Scripts\app\19.chunk.js" />
@@ -553,6 +554,7 @@
     <Content Include="Scripts\app\35.chunk.js" />
     <Content Include="Scripts\app\36.chunk.js" />
     <Content Include="Scripts\app\37.chunk.js" />
+    <Content Include="Scripts\app\38.chunk.js" />
     <Content Include="Scripts\app\4.chunk.js" />
     <Content Include="Scripts\app\5.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />

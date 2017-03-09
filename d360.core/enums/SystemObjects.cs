@@ -44,8 +44,6 @@ namespace d360.core
         Resource,
         [Description("Resource Type"), AllowOwnership(false), AllowSurvey(true), EnableAudit(false)]
         ResourceType,
-        [Description("Role"), AllowOwnership(false), AllowSurvey(true), EnableAudit(false)]
-        Role,
         [Description("Survey Type"), AllowSurvey(false), EnableAudit(true)]
         SurveyType,
         [Description("Taxonomy"), EnableAudit(true)]

@@ -137,7 +137,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             this.availableFilters = [];
             for (let field of this.fields) {                
                 this.availableFilters.push({
-                    Data: field, Name : `Field - ${field.text}`, Type : FilterFieldType.Field
+                    Data: field, Name : `${field.text}`, Type : FilterFieldType.Field
                 });
             }
 
@@ -335,7 +335,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
                     for (let attributeType of this.attributeTypes) {
                         this.availableFilters.push({
-                            Data: attributeType, Name: `Attribute - ${attributeType.Name}`, Type: FilterFieldType.Attribute
+                            Data: attributeType, Name: `${attributeType.Name}`, Type: FilterFieldType.Attribute
                         });
                     }
 
@@ -375,7 +375,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     private addRelationshipTypesToAvailable(relTypes) {
         for (let relationship of relTypes) {
             this.availableFilters.push({
-                Data: relationship, Name: `Relationship - ${relationship.TargetName}${relationship.PredicateName ? '(' + relationship.PredicateName + ')' : ''}`, Type: FilterFieldType.Relationship
+                Data: relationship, Name: `${relationship.TargetName}${relationship.PredicateName ? '(' + relationship.PredicateName + ')' : ''}`, Type: FilterFieldType.Relationship
             });
         }
 

@@ -322,6 +322,8 @@ namespace d360.web.Controllers
                     return Lookup_EditFields(ID);
                 case "RULEDIMENSION":
                     return RuleDimension_EditFields(ID);
+                case "RULETYPE":
+                    return RuleType_EditFields(ID);
                 case "POLICYTYPE":
                     return PolicyType_EditFields(ID);
                 case "PREDICATE":
@@ -378,7 +380,7 @@ namespace d360.web.Controllers
                 case "RULEDIMENSION":
                     return RuleDimension_AddFields();
                 case "RULETYPE":
-                    return Rule_AddFields();
+                    return RuleType_AddFields();
                 case "POLICYTYPE":
                     return PolicyType_AddFields();
                 case "PREDICATE":
@@ -390,7 +392,7 @@ namespace d360.web.Controllers
                 case "ARTIFACT":
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "RULE":
-                    return Rule_AddFields();
+                    return Rule_AddFields(objectID.GetValueOrDefault());
                 case "SURVEYTYPE":
                     return SurveyType_AddFields();
                 case "TAXONOMYTYPECLASS":
@@ -447,7 +449,9 @@ namespace d360.web.Controllers
             switch ((objectType ?? "" ).ToUpper())
             {
                 case "LOOKUP":
-                    return EditLookup(form);                
+                    return EditLookup(form);
+                case "RULETYPE":
+                    return EditRuleType(form);
                 case "RULEDIMENSION":
                     return EditRuleDimension(form);
                 case "POLICYTYPE":
@@ -545,6 +549,8 @@ namespace d360.web.Controllers
                     return DeleteArtifact(form);
                 case "RULE":
                     return DeleteRule(form);
+                case "RULETYPE":
+                    return DeleteRuleType(form);
                 case "SURVEYTYPE":
                     return DeleteSurveyType(form);
                 case "SURVEYQUESTIONTYPE":
@@ -607,6 +613,8 @@ namespace d360.web.Controllers
                     return AddLookup(form);
                 case "RULEDIMENSION":
                     return AddRuleDimension(form);
+                case "RULETYPE":
+                    return AddRuleType(form);
                 case "POLICYTYPE":
                     return AddPolicyType(form);
                 case "PREDICATE":
@@ -13539,15 +13547,15 @@ order by	T.Name, I.DisplayValue";
         #region Field Generation
 
         [Route("Rule_AddFields")]
-        public JsonResult Rule_AddFields()
+        public JsonResult Rule_AddFields(int typeID)
         {
             var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             
             var list = new List<EditableField>();
 
+            list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "RuleTypeID", Value = typeID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleName_Description, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = "form/Rule_SimilarItems?query=" });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "RuleType", Name = FieldInfo.RuleType_Name, FieldDescription = FieldInfo.RuleType_Description, Items = RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList(), FieldType = DataType.Lookup.ToString() });
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "RuleDimensionID", Name = FieldInfo.RuleDimension_Name, FieldDescription = FieldInfo.RuleDimension_Description, Items = dimensions, FieldType = DataType.Lookup.ToString() });
@@ -13558,7 +13566,8 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 5, Column = 1, Required = false, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString() });
             list.Add(new EditableField { Row = 5, Column = 2, Required = false, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString() });
 
-            
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.RuleType, typeID).ToList(), 6);
+
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13569,7 +13578,7 @@ order by	T.Name, I.DisplayValue";
         {
             var model = Company.GetById<Rule>(id);
 
-            if (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Delete))
+            if (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Delete))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -13587,14 +13596,13 @@ order by	T.Name, I.DisplayValue";
             
             var model = Company.GetById<Rule>(id);
 
-            if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Update)))
+            if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Update)))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleName_Description, FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = "form/Rule_SimilarItems?query=" });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "RuleType", Name = FieldInfo.RuleType_Name, FieldDescription = FieldInfo.RuleType_Description, Items = RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString(), Selected = i.ID == model.RuleType }).ToList(), FieldType = DataType.Lookup.ToString() });
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString(), Value = ((int)model.Status).ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "RuleDimensionID", Name = FieldInfo.RuleDimension_Name, FieldDescription = FieldInfo.RuleDimension_Description, Items = dimensions, FieldType = DataType.Lookup.ToString(), Value = model.RuleDimensionID.GetValueOrDefault(-1).ToString() });
@@ -13605,7 +13613,9 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 4, Column = 2, Required = false, FieldName = "Measurement", Name = FieldInfo.RuleMeasurement_Name, FieldDescription = FieldInfo.RuleMeasurement_Description, FieldType = DataType.Html.ToString(), Value = model.Measurement });
             list.Add(new EditableField { Row = 5, Column = 1, Required = false, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString(), Value = model.Purpose });
             list.Add(new EditableField { Row = 5, Column = 2, Required = false, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString(), Value = model.Resolution });
-            
+
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Rule, id).ToList(), 6);
+
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -13639,12 +13649,13 @@ order by	T.Name, I.DisplayValue";
                     Purpose = parseTextField(form, "Purpose"),
                     Resolution = parseTextField(form, "Resolution"),
                     RuleDimensionID = parseNullableIntField(form, "RuleDimensionID"),
-                    RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]),
+                    RuleTypeID = parseIntField(form, "RuleTypeID"),
                     Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]),
                     Threshold = decimal.Parse(form["Threshold"])
-            };
+                };
 
-                Company.Add<Rule>(model);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
+                Company.SaveOrUpdate<Rule>(model, fields);
 
                 dynamic custom = new
                 {
@@ -13677,7 +13688,7 @@ order by	T.Name, I.DisplayValue";
                 var model = Company.GetById<Rule>(id);
                 if (model == null) throw new NotFoundException("Rule");
 
-                if (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Delete))
+                if (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(model);
@@ -13713,12 +13724,11 @@ order by	T.Name, I.DisplayValue";
                 var model = Company.GetById<Rule>(id);
                 if (model == null) throw new NotFoundException("Rule");
 
-                if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Update)))
+                if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, model.RuleTypeID, Claim.Update)))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
-                model.RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]);
                 var dimension = parseNullableIntField(form, "RuleDimensionID");
 
                 if (dimension.HasValue && dimension.GetValueOrDefault() > 0)
@@ -13732,7 +13742,8 @@ order by	T.Name, I.DisplayValue";
                 model.Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]);
                 model.Threshold = decimal.Parse(form["Threshold"]);
 
-                Company.Update<Rule>(model);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
+                Company.SaveOrUpdate<Rule>(model, fields);
 
                 dynamic custom = new
                 {
@@ -14021,6 +14032,173 @@ order by	T.Name, I.DisplayValue";
                 return jsonException(ex, HttpStatusCode.OK);
             }
             return jsonSuccess("Qualifier Type deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region RuleType
+
+        #region Field Generation
+
+        [Route("RuleType_AddFields")]
+        public JsonResult RuleType_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = new RuleType();
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
+            loadIconFields(list, 3);
+
+            a = null;
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PolicyTypeID</param>
+        [Route("RuleType_DeleteFields"), NonNullableParameters]
+        public JsonResult RuleType_DeleteFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<RuleType>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PolicyTypeID</param>
+        [Route("RuleType_EditFields"), NonNullableParameters]
+        public JsonResult RuleType_EditFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<RuleType>(id);
+            var style = Company.GetObjectStyle(SystemObjects.RuleType, id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
+            loadIconFields(list, 3, style);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRuleType")]
+        public JsonResult AddRuleType(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("rule type");
+
+                var a = new RuleType
+                {
+                    Name = parseTextField(form, "Name"),
+                    Description = parseTextField(form, "Description")
+                };
+
+                Company.Add<RuleType>(a);
+
+                upsertObjectStyle(SystemObjects.RuleType, a.ID, form, a.Name);
+
+                MenuRepository.ClearCachedMenu();
+
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, Route("DeleteRuleType")]
+        public JsonResult DeleteRuleType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("rule type");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<RuleType>(id);
+                if (model == null) throw new NotFoundException("rule type");
+
+                if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<RuleType>(i => i.ID == id);
+                deleteObjectStyle(SystemObjects.RuleType, id);
+
+                MenuRepository.ClearCachedMenu();
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, ValidateInput(false), Route("EditRuleType")]
+        public JsonResult EditRuleType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("rule type");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<RuleType>(id);
+                if (model == null) throw new NotFoundException("rule type");
+
+                var style = Company.GetObjectStyle(SystemObjects.RuleType, id);
+
+                if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name");
+                model.Description = parseTextField(form, "Description");
+
+                Company.Update<RuleType>(model);
+
+                upsertObjectStyle(SystemObjects.RuleType, model.ID, form, model.Name);
+
+                MenuRepository.ClearCachedMenu();
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
         }
 
         #endregion

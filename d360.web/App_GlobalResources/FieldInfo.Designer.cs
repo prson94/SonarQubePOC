@@ -79,6 +79,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The date that this item was created in Data3Sixty..
+        /// </summary>
+        public static string CreatedOn_Description {
+            get {
+                return ResourceManager.GetString("CreatedOn_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date created.
+        /// </summary>
+        public static string CreatedOn_Name {
+            get {
+                return ResourceManager.GetString("CreatedOn_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Description.
+        /// </summary>
+        public static string Description_Name {
+            get {
+                return ResourceManager.GetString("Description_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provide any description that will be displayed by default any time someone sees information in this field..
         /// </summary>
         public static string DisplayDescription_Description {
@@ -192,6 +219,15 @@ namespace Resources {
         public static string FusionPromotionUnder_ToolTip {
             get {
                 return ResourceManager.GetString("FusionPromotionUnder_ToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID.
+        /// </summary>
+        public static string ID_Name {
+            get {
+                return ResourceManager.GetString("ID_Name", resourceCulture);
             }
         }
         
@@ -615,6 +651,24 @@ namespace Resources {
         public static string TestPattern_Name {
             get {
                 return ResourceManager.GetString("TestPattern_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The date that this item was last modified in Data3Sixty..
+        /// </summary>
+        public static string UpdatedOn_Description {
+            get {
+                return ResourceManager.GetString("UpdatedOn_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date Last Modified.
+        /// </summary>
+        public static string UpdatedOn_Name {
+            get {
+                return ResourceManager.GetString("UpdatedOn_Name", resourceCulture);
             }
         }
         

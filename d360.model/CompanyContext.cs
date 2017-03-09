@@ -379,14 +379,11 @@ namespace d360.model
 			union
 			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
 			union
-			select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name 
+            select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name 
+			union
+			select	'RuleType' as ObjectType, ID as ObjectTypeID, 'Rules :: ' + Name as Name from RuleType
 			union
 			select	'GroupType' as ObjectType, 1 as ObjectTypeID, 'Group' as Name").ToList();
-            RuleType ruleType = RuleType.Informational;
-            foreach (var rt in ruleType.GetRuleTypeEnumList())
-            {
-                list.Add(new AllocationPossibility { ObjectType = "RuleType", Name = string.Format("Rules :: {0}", rt.Name), ObjectTypeID = (int)rt.ID });
-            }
 
             list = list.OrderBy(i => i.Name).ToList();
 
@@ -402,6 +399,8 @@ namespace d360.model
 			union
 			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
 			union
+			select	'RuleType' as ObjectType, ID as ObjectTypeID, 'Rules :: ' + Name as Name from RuleType
+			union
             select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
 			union
 			select	'FusionType' as ObjectType, ID as ObjectTypeID, 'Fusion Types :: ' + Name as Name from FusionType
@@ -410,11 +409,6 @@ namespace d360.model
             union
 			select	'ReferenceItemType' as ObjectType, ID as ObjectTypeID, 'Reference Item Type :: ' + Name as Name from ReferenceItemType
 ").ToList();
-            RuleType ruleType = RuleType.Informational;
-            foreach (var rt in ruleType.GetRuleTypeEnumList())
-            {
-                list.Add(new AllocationPossibility { ObjectType = "RuleType", Name = string.Format("Rules :: {0}", rt.Name), ObjectTypeID = (int)rt.ID });
-            }
 
             list = list.OrderBy(i => i.Name).ToList();
 
@@ -435,15 +429,11 @@ select A.* from (
 			union
 			select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
 			union
+			select	'RuleType' as ObjectType, ID as ObjectTypeID, 'Rules :: ' + Name as Name from RuleType
+			union
 			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
 ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
 where R.ObjectID is null", new { id = attributeTypeID }).ToList();
-
-            RuleType ruleType = RuleType.Informational;
-            foreach (var rt in ruleType.GetRuleTypeEnumList())
-            {
-                list.Add(new AllocationPossibility { ObjectType = "RuleType", Name = string.Format("Rules :: {0}", rt.Name), ObjectTypeID = (int)rt.ID });
-            }
 
             list = list.OrderBy(i => i.Name).ToList();
 

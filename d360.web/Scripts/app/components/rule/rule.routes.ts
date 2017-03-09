@@ -10,8 +10,9 @@ const routes: Routes = [
         path: '',
         component: RuleComponent,
         children: [
-            { path: '', component: RuleListComponent },
-            { path: ':ruleId', component: RuleItemComponent }
+            //{ path: '', component: RuleListComponent },
+            { path: ':ruleTypeId', component: RuleListComponent },
+            { path: ':ruleTypeId/:ruleId', component: RuleItemComponent }
         ]
     },
 ];
