@@ -17,6 +17,7 @@ using d360.web.Models;
 using System.Web.Http.OData;
 using System.IO;
 using SpreadsheetLight;
+using d360.core.entities.Workflow;
 
 namespace d360.web.Controllers.Services
 {
@@ -413,11 +414,11 @@ namespace d360.web.Controllers.Services
         {
             var userId = resourceID > 0 ? resourceID : Company.CurrentResourceID;
 
-            var workflowType = (WorkflowType)Enum.Parse(typeof(WorkflowType), id.ToString());
+            var workflowType = (d360.workflow.WorkflowType)Enum.Parse(typeof(d360.workflow.WorkflowType), id.ToString());
 
             switch (workflowType)
             {
-                case WorkflowType.SuggestNewArtifact:
+                case d360.workflow.WorkflowType.SuggestNewArtifact:
                     var list1 = Company.Query<WorkflowTask1Model>(string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, ""), new { r = userId }).ToList();
                     list1.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
@@ -426,7 +427,7 @@ namespace d360.web.Controllers.Services
                         i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list1);
-                case WorkflowType.CertifyArtifact:
+                case d360.workflow.WorkflowType.CertifyArtifact:
                     var list2 = Company.Query<WorkflowTask2Model>(string.Format(QueryConstants.CurrentUserWorkflow2TaskItem, ""), new { r = userId }).ToList();
                     list2.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
@@ -435,7 +436,7 @@ namespace d360.web.Controllers.Services
                         i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list2);
-                case WorkflowType.WorkIssue:
+                case d360.workflow.WorkflowType.WorkIssue:
                     var list3 = Company.Query<WorkflowTask3Model>(string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, ""), new { r = userId }).ToList();
                     list3.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
@@ -445,7 +446,7 @@ namespace d360.web.Controllers.Services
                         i.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), i.Criticality);                    
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list3);
-                case WorkflowType.ChallengeArtifact:
+                case d360.workflow.WorkflowType.ChallengeArtifact:
                     var list4 = Company.Query<WorkflowTask4Model>(string.Format(QueryConstants.CurrentUserWorkflow4TaskItem, ""), new { r = userId }).ToList();
                     list4.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
@@ -460,11 +461,11 @@ namespace d360.web.Controllers.Services
         }
 
         [Route("tasks/types/{workflowType:int}/{objectid:int}/{objecttype}"), HttpGet]
-        public HttpResponseMessage GetTaskByIDForObjectAndType(WorkflowType workflowType, int objectid, string objecttype) 
+        public HttpResponseMessage GetTaskByIDForObjectAndType(d360.workflow.WorkflowType workflowType, int objectid, string objecttype) 
         {
             switch (workflowType)
             {
-                case WorkflowType.WorkIssue:                    
+                case d360.workflow.WorkflowType.WorkIssue:                    
                     var list = Company.Query<WorkflowTask3Model>(QueryConstants.CurrentUserWorkflow3SpecificObjectTaskItem, new { r = Company.CurrentResourceID, type = objecttype, id = objectid });
 
                     foreach (var item in list)
@@ -500,7 +501,7 @@ namespace d360.web.Controllers.Services
             var sql = "";
             switch (workflow.WorkflowType)
             {
-                case WorkflowType.SuggestNewArtifact:
+                case d360.workflow.WorkflowType.SuggestNewArtifact:
                     sql = string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, whereSuffix);
                     var model1 = Company.Query<WorkflowTask1Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model1 != null)
@@ -513,7 +514,7 @@ namespace d360.web.Controllers.Services
                         return Request.CreateResponse(HttpStatusCode.OK, model1);
                     }
                     break;
-                case WorkflowType.CertifyArtifact:
+                case d360.workflow.WorkflowType.CertifyArtifact:
                     sql = string.Format(QueryConstants.CurrentUserWorkflow2TaskItem, whereSuffix);
                     var model2 = Company.Query<WorkflowTask2Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model2 != null)
@@ -526,7 +527,7 @@ namespace d360.web.Controllers.Services
                         return Request.CreateResponse(HttpStatusCode.OK, model2);
                     }
                     break;
-                case WorkflowType.WorkIssue:
+                case d360.workflow.WorkflowType.WorkIssue:
                     sql = string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, whereSuffix);
                     var model3 = Company.Query<WorkflowTask3Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model3 != null)
@@ -540,7 +541,7 @@ namespace d360.web.Controllers.Services
                         return Request.CreateResponse(HttpStatusCode.OK, model3);
                     }
                     break;
-                case WorkflowType.ChallengeArtifact:
+                case d360.workflow.WorkflowType.ChallengeArtifact:
                     sql = string.Format(QueryConstants.CurrentUserWorkflow4TaskItem, whereSuffix);
                     var model4 = Company.Query<WorkflowTask4Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model4 != null)
@@ -553,7 +554,7 @@ namespace d360.web.Controllers.Services
                         return Request.CreateResponse(HttpStatusCode.OK, model4);
                     }
                     break;
-                case WorkflowType.SuggestNewArtifactMulti:
+                case d360.workflow.WorkflowType.SuggestNewArtifactMulti:
                     sql = string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, whereSuffix);
                     var model5 = Company.Query<WorkflowTask5Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model5 != null)
@@ -920,6 +921,21 @@ namespace d360.web.Controllers.Services
             }
 
             return response;
+        }
+
+        [Route("diagram/{id:int}")]
+        public WorkflowDiagramModel GetWorkflowDiagram(int id)
+        {
+            var nodes = Company.Query<WorkflowDiagramNode>(QueryConstants.WorkflowDiagramNodes, new { id }).ToList();
+            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id }).ToList();
+            var name = Company.Query<string>(@"select name from workflow.[type] where id = @id", new { id }).ToList().First().ToString();
+
+            return new WorkflowDiagramModel
+            {
+                Name = name,
+                Nodes = nodes,
+                Links = links
+            };
         }
     }
 }

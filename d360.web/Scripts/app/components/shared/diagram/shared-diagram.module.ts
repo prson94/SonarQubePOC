@@ -29,7 +29,7 @@ import { LineageSourceRuleEditorComponent } from './lineage-source-rule-editor.c
 import { LineageSourceRulesComponent } from './lineage-source-rules.component';
 import { LineageTechnicalRelationshipsComponent } from './lineage-technical-relationships.component';
 import { ModelDiagramComponent } from './model-diagram.component';
-import { OverlayWindowComponent } from './overlay-window.component';
+import { D3SOverlayWindowModule } from '../overlay-window.component';
 
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
@@ -49,6 +49,7 @@ import { SharedFormMessageModule } from '../form-message.part'
         SharedFormMessageModule,
         SharedGridPagingInfoModule,
         TilesModule,
+        D3SOverlayWindowModule,
 
         //prime        
         DataTableModule,  
@@ -74,7 +75,6 @@ import { SharedFormMessageModule } from '../form-message.part'
         LineageSourceRulesComponent,
         LineageTechnicalRelationshipsComponent,
         ModelDiagramComponent,
-        OverlayWindowComponent,
     ],
     exports: [
         LineageComponent,   

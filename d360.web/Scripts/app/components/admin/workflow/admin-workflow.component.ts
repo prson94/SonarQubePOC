@@ -1,4 +1,5 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
@@ -8,9 +9,11 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { AdminBaseComponent} from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'admin-workflow',
-    providers: [WorkflowService],
+    providers: [ WorkflowService ],
     templateUrl: './admin-workflow.component.html'
 }) 
 
@@ -27,11 +30,12 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
 
     private addMenu: MenuItem[] = [];
 
-    constructor(rightSidebarService : RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title) {
+    constructor(rightSidebarService : RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title, private router: Router) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
     }
 
     ngOnInit() {
+
         this.areaName = "Workflow";
         this.setCommonItems();
 

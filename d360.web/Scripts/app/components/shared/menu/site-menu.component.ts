@@ -193,11 +193,21 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         metricsMenu.Items.push({ Name: 'Analytics', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false});
         metricsMenu.Items.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false});
         this.adminMenu.NavigationItems.push(metricsMenu);
+
+
+
         
+
         let workflowMenu = new SiteMenuItem();
         workflowMenu.Name = "Workflow";
         workflowMenu.Items = [];
-        workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false });
+
+        //TODO: remove after conversion to new workflow
+        if (CompanySettings.UseNewWorkflow != null && CompanySettings.UseNewWorkflow.toLowerCase() == 'true')
+            workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}/new`, IsLink: false });
+        ///////////////////////////////////////////////
+        else
+            workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false });
         workflowMenu.Items.push({ Name: 'Action Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false });
 
         this.adminMenu.NavigationItems.push(workflowMenu);

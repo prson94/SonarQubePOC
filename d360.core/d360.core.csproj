@@ -287,6 +287,7 @@
     <Compile Include="entities\Views\TaxonomyDetail.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="entities\Workflow\DiagramModels.cs" />
     <Compile Include="entities\Workflow\Models.cs" />
     <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\Workflow\LinkType.cs" />

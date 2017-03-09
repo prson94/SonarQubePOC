@@ -163,3 +163,87 @@ export class IssueInfo {
     Fields: any[];
     Issue: any;
 }
+
+
+//#region diagram
+
+
+export class WorkflowDiagramModel {
+    Name: string;
+    Nodes: WorkflowDiagramNode[] = [];
+    Links: WorkflowDiagramLink[] = [];
+}
+
+export class WorkflowDiagramNode {
+    Key: string;
+    XPosition: string;
+    YPosition: string;
+    StepType: StepType;
+    ActivityType: number;
+    Settings: string;
+    Name: string;
+}
+
+export class WorkflowDiagramLink {
+    Key: string;
+    FromKey: string;
+    ToKey: string;
+    TransitionType: TransitionType;
+    LinkType: LinkType;
+    Condition: string;
+    Name: string;
+}
+
+
+export enum StepType {
+    Start = 1,
+    Task = 2,
+    Terminate = 3,
+    Finish = 4
+}
+
+export enum TransitionType {
+    None = 1,
+    Timer = 2,
+    Value = 3
+}
+
+export enum LinkType {
+    Always = 1,
+    Condition = 2
+}
+
+export class LinkModel {
+    key: string;
+    from: string;
+    to: string;
+    name: string;
+    category: string = 'category';
+    template: string = '';
+    diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
+
+    transitionType: TransitionType;
+    linkType: LinkType;
+    condition: string;
+
+}
+
+export class NodeModel {
+    key: string;
+    name: string;
+    pos: string;
+    template: string = 'normal';
+    diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
+
+    x: string;
+    y: string;
+    stepType: StepType;
+    activityType: number;
+}
+
+export enum DiagramObjectType {
+    Link,
+    Node
+}
+
+//#endregion

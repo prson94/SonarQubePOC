@@ -1,4 +1,7 @@
-﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, NgModule} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { XHRBackend } from '@angular/http';
+import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 
 @Component({
@@ -50,3 +53,19 @@ export class OverlayWindowComponent {
     constructor() { }
 
 }
+
+@NgModule({
+    declarations: [
+        OverlayWindowComponent
+    ],
+    exports: [
+        OverlayWindowComponent
+    ]
+    , imports: [
+        CommonModule,
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+    ]
+})
+export class D3SOverlayWindowModule { }

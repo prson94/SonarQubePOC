@@ -17,6 +17,7 @@ import {
 
 import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';
+import { D3SOverlayWindowModule } from '../overlay-window.component';
 
 import { WorkflowDiagramComponent } from './workflow-diagram.component';
 
@@ -28,6 +29,7 @@ import { WorkflowDiagramComponent } from './workflow-diagram.component';
         //d3s
         CoreModule,
         TilesModule,
+        D3SOverlayWindowModule,
 
         //prime        
         DataTableModule,
@@ -35,7 +37,6 @@ import { WorkflowDiagramComponent } from './workflow-diagram.component';
         SharedModule,
         ButtonModule,
 
-        WorkflowDiagramComponent,
     ],
     declarations: [
         WorkflowDiagramComponent,

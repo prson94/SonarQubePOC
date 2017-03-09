@@ -559,6 +559,7 @@
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
     <Content Include="Scripts\app\9.chunk.js" />
+    <Content Include="Scripts\app\components\admin\workflow\admin-workflow-new.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-findviarelation.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-lineage.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rules.component.html" />
@@ -973,6 +974,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-new.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
@@ -1078,7 +1080,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\model-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\multiselect-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\overlay-window.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\overlay-window.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\shared-object-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\shared-relationship.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />

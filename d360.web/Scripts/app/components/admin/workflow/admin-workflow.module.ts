@@ -11,11 +11,16 @@ import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
+import { WorkflowDiagramModule } from '../../shared/workflowdiagram/workflow-diagram.module';
+
 
 import { AdminWorkflowComponent } from './admin-workflow.component';
+import { AdminWorkflowNewComponent } from './admin-workflow-new.component';
 import { WorkflowItemForm } from './workflow-item.form';
 
 import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
+
+
 
 import {
     ButtonModule,
@@ -48,9 +53,11 @@ import {
         SharedObjectDetailsModule,
         SharedGridPagingInfoModule,
         TilesModule,
+        WorkflowDiagramModule,
     ],
     declarations: [
-        AdminWorkflowComponent,        
+        AdminWorkflowComponent,    
+        AdminWorkflowNewComponent,
         WorkflowItemForm,
     ],
     providers: [

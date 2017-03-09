@@ -1,6 +1,20 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { IssueInfo, WorkflowStatusDetails, WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, IssueDetail, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown, WorkflowIssueType } from '../models/workflow.model';
+import {
+    IssueInfo,
+    WorkflowStatusDetails,
+    WorkflowItem,
+    WorkflowType,
+    IWorkflowService,
+    WorkflowTypeRelationEditorModel,
+    Issue,
+    IssueDetail,
+    SuggestedItem,
+    CertifyItem,
+    ArtifactTypeWorkflowBreakdown,
+    WorkflowIssueType,
+    WorkflowDiagramModel
+} from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -239,4 +253,14 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .then(response => <IssueInfo>response.json())
             .catch(err => this.handleError(err));
     }
+
+    //#region diagram
+
+    public getWorkflowDiagram(id: number): Promise<WorkflowDiagramModel> {
+        return this.http.get(`services/workflow/diagram/${id}`)
+            .toPromise()
+            .then(response => <WorkflowDiagramModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+    //#endregion
 }

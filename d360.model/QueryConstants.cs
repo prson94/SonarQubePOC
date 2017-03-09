@@ -1532,5 +1532,36 @@ from	MapItem MI
 where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 		AND (TI.Subject = @target and TI.SubjectID = @targetID)";
 
+        public static string WorkflowDiagramNodes = @"
+            select 
+	            cast(vs.ID as varchar) as [Key],
+	            vs.XPosition,
+	            vs.YPosition,
+	            vs.StepType,
+	            vs.ActivityType,
+	            vs.Settings,
+	            vs.Name
+            from workflow.[type] t
+            inner join workflow.[version] v on v.typeid = t.id
+            inner join workflow.[versionstep] vs on vs.versionid = v.id
+            where t.id = @id
+";
+
+        public static string WorkflowDiagramLinks = @"
+            select 
+	            cast(vst.FromVersionStepID as varchar) + '-' + cast(vst.ToVersionStepID as varchar) as [Key],
+	            vst.FromVersionStepID as FromKey,
+	            vst.ToVersionStepID as ToKey,
+	            vst.TransitionType,
+	            vst.LinkType,
+	            vst.Condition,
+	            vst.Name
+            from workflow.[type] t
+            inner join workflow.[version] v on v.typeid = t.id
+            inner join workflow.[versionstep] vs on vs.versionid = v.id
+            inner join workflow.[versionsteptransition] vst on vst.fromversionstepid = vs.id
+            where t.id = @id
+";
+
     }
 }
