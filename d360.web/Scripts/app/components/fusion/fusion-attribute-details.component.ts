@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { RightSidebarService } from '../../services/right-sidebar.service';
@@ -28,7 +29,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
                  <div class="row" *ngIf="!isLoading && !isOwnershipVisible && !isAuditVisible && !isLineageVisible && !isRelationshipsVisible">    
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-fusion-attribute-item-details [fusionAttributeId]="id" [name]="name" [objectType]="type"></d3s-fusion-attribute-item-details>
+                            <d3s-fusion-attribute-item-details [fusionAttributeId]="id" [name]="name" [objectType]="type" (close)="close()" [hasClose]="true"></d3s-fusion-attribute-item-details>                            
                         </div>           
                     </div>
                  </div>
@@ -47,7 +48,8 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         private router: Router,
         rightSidebarService: RightSidebarService,
         private titleService: Title,
-        private headerBreadcrumbService: HeaderBreadcrumbService
+        private headerBreadcrumbService: HeaderBreadcrumbService,
+        private location: Location
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -68,5 +70,9 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+    }
+
+    private close() {
+        this.location.back();
     }
 };

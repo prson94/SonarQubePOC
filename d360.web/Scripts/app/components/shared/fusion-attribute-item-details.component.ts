@@ -6,6 +6,7 @@ import { FusionAttributeService } from '../../services/fusion-attribute.service'
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CoreModule } from './core.module';
+import { ButtonModule } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-fusion-attribute-item-details',
@@ -24,8 +25,14 @@ import { CoreModule } from './core.module';
                     <div *ngFor="let field of fusionAttributeValueDetails?.Fields" class="col l6 m6">
                         <div class="FieldName">{{field.Name}}</div>
                         <div class="FieldContent scrollLargeText" [title]="field?.Value">{{field?.Value}}</div>
+                    </div>                    
+                </div>    
+                <div *ngIf="hasClose" class="row">
+                    <div class="s12">&nbsp;</div>
+                    <div class="col s1">
+                        <button pButton type="button" (click)="close.emit()" label="Close"></button>
                     </div>
-                </div>                
+                </div>            
                 `,
     styles: [`
             .scrollLargeText{
@@ -43,6 +50,9 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
     @Input() fusionAttributeId: number;
     @Input() name: string;
     @Input() objectType: string = "FusionAttribute";
+    @Input() hasClose: boolean = false;
+
+    @Output() close = new EventEmitter();
 
     private fusionAttributeValueDetails: FusionAttributeValueDetails;
 
@@ -85,6 +95,9 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
         RouterModule,
 
         CoreModule,
+
+        //prime
+        ButtonModule,
     ]
 
 })
