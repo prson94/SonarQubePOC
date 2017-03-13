@@ -1,6 +1,10 @@
 ﻿using d360.core.enums.Workflow;
+using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Dynamic;
 using System.Runtime.Serialization;
+using System.Xml.Linq;
 
 namespace d360.core.entities.Workflow
 {
@@ -28,10 +32,23 @@ namespace d360.core.entities.Workflow
         public StepType StepType { get; set; }
         [DataMember]
         public int ActivityType { get; set; }
+
         [DataMember]
         public string Settings { get; set; }
         [DataMember]
         public string Name { get; set; }
+
+        [DataMember, NotMapped]
+        public dynamic SettingsObject { get; set; }
+
+        public void ParseSettings()
+        {
+            if (Settings == null) return;
+
+            XDocument xml = XDocument.Parse(Settings);
+            string json = JsonConvert.SerializeXNode(xml);
+            SettingsObject = JsonConvert.DeserializeObject<ExpandoObject>(json);
+        }
     }
 
     public class WorkflowDiagramLink
@@ -50,5 +67,17 @@ namespace d360.core.entities.Workflow
         public string Condition { get; set; }
         [DataMember]
         public string Name { get; set; }
+
+        [DataMember, NotMapped]
+        public dynamic ConditionObject { get; set; }
+
+        public void ParseCondition()
+        {
+            if (Condition == null) return;
+
+            XDocument xml = XDocument.Parse(Condition);
+            string json = JsonConvert.SerializeXNode(xml);
+            ConditionObject = JsonConvert.DeserializeObject<ExpandoObject>(json);
+        }
     }
 }

@@ -181,6 +181,7 @@ export class WorkflowDiagramNode {
     StepType: StepType;
     ActivityType: number;
     Settings: string;
+    SettingsObject: any;
     Name: string;
 }
 
@@ -191,6 +192,7 @@ export class WorkflowDiagramLink {
     TransitionType: TransitionType;
     LinkType: LinkType;
     Condition: string;
+    ConditionObject: any;
     Name: string;
 }
 
@@ -224,7 +226,7 @@ export class LinkModel {
 
     transitionType: TransitionType;
     linkType: LinkType;
-    condition: string;
+    condition: any;
 
 }
 
@@ -232,13 +234,14 @@ export class NodeModel {
     key: string;
     name: string;
     pos: string;
-    template: string = 'normal';
+    template: string = 'task';
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
 
     x: string;
     y: string;
     stepType: StepType;
     activityType: number;
+    settings: any;
 }
 
 export enum DiagramObjectType {

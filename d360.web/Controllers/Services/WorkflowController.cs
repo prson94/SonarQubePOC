@@ -930,6 +930,9 @@ namespace d360.web.Controllers.Services
             var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id }).ToList();
             var name = Company.Query<string>(@"select name from workflow.[type] where id = @id", new { id }).ToList().First().ToString();
 
+            nodes.ForEach(n => n.ParseSettings());
+            links.ForEach(l => l.ParseCondition());
+
             return new WorkflowDiagramModel
             {
                 Name = name,

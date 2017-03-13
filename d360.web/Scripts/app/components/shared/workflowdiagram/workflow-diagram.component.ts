@@ -79,8 +79,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private initializeDiagram() {
         this.myDiagram = this.createDiagram();
 
-        this.myDiagram.nodeTemplateMap.add("normal", this.createNormalNode());
-        this.myDiagram.linkTemplateMap.add("", this.createDefaultLink());
+        this.myDiagram.nodeTemplateMap.add('task', this.createTaskNode());
+        this.myDiagram.nodeTemplateMap.add('start', this.createTerminalNode(true));
+        this.myDiagram.nodeTemplateMap.add('finish', this.createTerminalNode(false));
+        this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
@@ -128,6 +130,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 node.y = d.YPosition;
                 node.activityType = d.ActivityType;
                 node.stepType = d.StepType;
+                if (d.SettingsObject != null && d.SettingsObject.settings != null)
+                    node.settings = d.SettingsObject.settings;
+
+                if (d.StepType == StepType.Start)
+                    node.template = 'start';
+                else if (d.StepType == StepType.Finish)
+                    node.template = 'finish';
 
                 modelList.push(node);
             }
@@ -259,10 +268,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             //allowHorizontalScroll: false,  // disallow scrolling or panning
             //allowVerticalScroll: false,
             //allowZoom: false,   
-            initialAutoScale: go.Diagram.UniformToFill,
-            scrollMode: go.Diagram.DocumentScroll,
-            initialPosition: new go.Point(125, 125),
-            layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
+            //initialAutoScale: go.Diagram.UniformToFill,
+            //scrollMode: go.Diagram.DocumentScroll,
+            //initialPosition: new go.Point(125, 125),
+            //layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
             "undoManager.isEnabled": !this.readonly
         });
 
@@ -279,14 +288,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         return dg;
     }
 
-    private createNormalNode(): go.Node {
-        let nodeWidth = 200;
-        let nodeHeight = 105;
+    private createTaskNode(): go.Node {
+        let nodeWidth = 150;
+        let nodeHeight = 75;
         let nodeBorderColor = 'transparent';
         let nodeFontSize = 10;
 
         return this.g(go.Node, "Spot",
-           // new go.Binding("position", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
+            new go.Binding("location", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
             this.g(go.Panel, "Auto", {
                 width: nodeWidth,
                 height: nodeHeight
@@ -297,26 +306,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     spot1: go.Spot.TopLeft,
                     spot2: go.Spot.BottomRight,
                     name: "NodeShape",
-                    fill: "#eee"
-                }
-                    //,
-                    //new go.Binding("fill", "#eee").makeTwoWay()
-                ),
-                this.g(go.Panel,
-                    go.Panel.Horizontal,
-                    {
+                    fill: "#7c7d8a"
+                }),
+                this.g(go.Panel, go.Panel.Horizontal, {
                         alignment: go.Spot.BottomLeft,
                         margin: 5
-                    }
-                    //,
-                    //this.makeIconPanel("\uf128", "Has open actions", "hasActions", nodeFontSize),
-                    //this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
-                    //this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
-                    //this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
-                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
-                ),
+                    }),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
                         row: 0,
@@ -325,33 +320,46 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                         editable: false,
                         maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
                         font: "bold " + nodeFontSize + "pt sans-serif",
-                        stroke: "#000"
+                        stroke: "#fff"
                     },
-                        new go.Binding("text", "name").makeTwoWay(),
-                        //new go.Binding("stroke", "fore").makeTwoWay()
+                    new go.Binding("text", "name").makeTwoWay()
                     )
-                    //,
-                    //this.g(go.TextBlock, {
-                    //    row: 1,
-                    //    margin: 3,
-                    //    maxSize: new go.Size(180, NaN),
-                    //    font: (nodeFontSize - 2) + "pt sans-serif"
-                    //},
-                    //    new go.Binding("stroke", "fore").makeTwoWay(),
-                    //    new go.Binding("text", "typeName").makeTwoWay()
-                    //)
-                )),
-            this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Left,
-                alignmentFocus: new go.Spot(0, 0.5, -8, 0)
-            },
-                [this.makePort("IN", false)]),
-            this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Right,
-                alignmentFocus: new go.Spot(1, 0.5, 8, 0)
-            },
-                [this.makePort("OUT", false)]));
+                )
+            )
+        );
     }
+
+    private createTerminalNode(isStart: boolean): go.Node {
+        let nodeWidth = 200;
+        let nodeHeight = 105;
+        let nodeBorderColor = 'transparent';
+        let nodeFontSize = 10;
+        let backColor = isStart ? '#216b23' : '#6b2121';
+
+        return this.g(go.Node, "Spot",
+            new go.Binding("location", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
+            this.g(go.Shape, "Circle", {
+                stroke: nodeBorderColor,
+                strokeWidth: 2,
+                width: 64,
+                height: 64,
+                name: "NodeShape",
+                fill: backColor
+            }),
+            this.g(go.Panel, "Table",
+                this.g(go.TextBlock, {
+                    row: 0,
+                    margin: 0,
+                    alignment: go.Spot.Center,
+                    editable: false,
+                    font: "bold " + nodeFontSize + "pt sans-serif",
+                    stroke: "#fff"
+                },
+                new go.Binding("text", "name").makeTwoWay()
+            ))
+        );
+    }
+
 
     private createDefaultLink(): go.Link {
         return this.g(
