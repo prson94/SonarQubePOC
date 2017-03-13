@@ -6,6 +6,7 @@ import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { WorkflowService } from '../../services/workflow.service';
 
 
 @Component({
@@ -17,6 +18,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
                     </div>
                 </div>                
                 `,
+    providers: [WorkflowService]
 })
 
 export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDestroy {    
@@ -28,7 +30,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             private location: Location,
             private router: Router,
             protected titleService: Title,
-            protected headerBreadcrumbService: HeaderBreadcrumbService)
+            protected headerBreadcrumbService: HeaderBreadcrumbService,
+            protected workflowService: WorkflowService
+        )
     {
         super();
     }
@@ -36,14 +40,24 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     ngOnInit() {
         this.headerBreadcrumbService.clearCurrentObjectInfo();
 
-        this.sub = this.route.params.subscribe(params => {
-            this.isLoading = true;
+        this.sub = this.route.params.subscribe(params => {            
             this.workflowId = +params['workflowId'];
             this.workflowItemStepId = +params['workflowItemStepId'];
+            this.load();
         });
     }
+
     
     ngOnDestroy() {
         this.sub.unsubscribe();
+    }
+
+    private load() {
+        this.isLoading = true;
+        this.workflowService.getWorkflowForm(this.workflowId, this.workflowItemStepId)
+            .then(res => {
+                this.isLoading = false;
+                console.log(res);
+            });
     }
 };

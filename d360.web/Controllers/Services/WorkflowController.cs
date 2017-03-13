@@ -17,7 +17,7 @@ using d360.web.Models;
 using System.Web.Http.OData;
 using System.IO;
 using SpreadsheetLight;
-using d360.core.entities.Workflow;
+using System.Threading.Tasks;
 
 namespace d360.web.Controllers.Services
 {
@@ -939,6 +939,35 @@ namespace d360.web.Controllers.Services
                 Nodes = nodes,
                 Links = links
             };
+        }
+
+
+        [Route("form/{versionStepID:int}/{itemStepID:int}"), HttpGet]
+        public async Task<HttpResponseMessage> GetWorkflowForm(int versionStepID, int itemStepID)
+        {
+            string sql = @"
+                    SELECT [Fields]      
+                      FROM 
+	                    [workflow].[VersionStep]
+                     where id = @id
+                ";
+
+            var xml = (await Company.QueryAsync<string>(sql, new { id = versionStepID })).FirstOrDefault();
+
+            if(string.IsNullOrEmpty(xml))
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow with specified version step id not found");
+                
+            List<WorkflowFormModelField> properties = (
+                                 from s in XElement.Parse(xml).Element("form").Elements()
+                                 select new WorkflowFormModelField{ Label = (string)s.Attribute("label"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                 ).ToList();
+
+            //parse the xml to get the form info
+
+            return Request.CreateResponse<dynamic>(HttpStatusCode.OK, new
+            {
+                FormFields = properties
+            });
         }
     }
 }

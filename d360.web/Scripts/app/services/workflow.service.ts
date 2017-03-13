@@ -263,4 +263,11 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
     //#endregion
+
+    getWorkflowForm(id: number, itemStepId: number): Promise<any[]> {
+        return this.http.get(`/services/workflow/form/${id}/${itemStepId}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

@@ -277,4 +277,22 @@ namespace d360.web.Models
     {        
     }
 
+    public enum WorkflowFormModelFieldType
+    {
+        text = 0,
+        boolean,
+        integer,
+        date
+    }
+
+    public class WorkflowFormModelField
+    {
+        public string Label { get; set; }
+        public WorkflowFormModelFieldType FieldType { get; set; }
+    }
+
+    public class WorkflowFormModel
+    {
+        public List<WorkflowFormModelField> Fields;
+    }
 }
