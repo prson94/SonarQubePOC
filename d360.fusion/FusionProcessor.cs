@@ -48,7 +48,7 @@ namespace d360.fusion
         private static string ActionAttribute = "Action";
         private static string FusionAttributeTypeIDAttribute = "FusionAttributeTypeID";
 
-        private static int MAX_FIELD_VALUE_LENGTH = 4000;
+        //private static int MAX_FIELD_VALUE_LENGTH = 4000;
         private static int MAX_SOURCEID_LENGTH = 250;
         private static string FUSION_ATTRIBUTE_MISSING_NAME_NAME = "Name not resolved";
         private static string FUSION_PROCESSOR_AI_NAME_TOTAL = "FusionProcessor - Total";
@@ -58,7 +58,7 @@ namespace d360.fusion
         private static string FUSION_PROCESSOR_AI_NAME_LOADCURRENTFUSIONFIELD = "FusionProcessor - Load Current Fusion Field Info";
         private static string FUSION_PROCESSOR_AI_NAME_GENERATE_FUSION_ATTR_VALUES = "FusionProcessor - Generate Fusion Attr Values";
         private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_MERGE = "FusionProcessor - Fusion Attribute Merge";
-        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_CACHE = "FusionProcessor - Fusion Attribute Cache";
+        //private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_CACHE = "FusionProcessor - Fusion Attribute Cache";
         private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_RELOAD = "FusionProcessor - Fusion Attribute Reload";
         private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_FIELDTYPE_MAP = "FusionProcessor - Fusion Attribute Field Map";
         private static string FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_VALS = "FusionProcessor - Fusion Field Vals";
@@ -67,7 +67,7 @@ namespace d360.fusion
         private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PARENT_UPDATE_MERGE = "FusionProcessor - Fusion Attr Parent ID Merge";
         private static string FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_CHANGES = "FusionProcessor - Fusion Determine Field Changes";
         private static string FUSION_PROCESSOR_AI_NAME_FUSION_FIELD_ATTR_CHANGES = "FusionProcessor - Fusion Determine Attr Changes";
-        private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PATHS_UPD = "FusionProcessor - Update Paths / TextPath";
+        //private static string FUSION_PROCESSOR_AI_NAME_FUSION_ATTR_PATHS_UPD = "FusionProcessor - Update Paths / TextPath";
         private static string FUSION_PROCESSOR_AI_NAME_PROCESS_RELATIONSHIPS = "FusionProcessor - Process Relationships";
         private static string FUSION_PROCESSOR_AI_NAME_PROCESS_QUERY_ITEMS = "FusionProcessor - Process Query Items";
 
@@ -1190,7 +1190,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
         private async Task DoFusionFieldMerge(SqlConnection companyConnection, TelemetryClient ai)
         {
             await companyConnection.ExecuteAsync(@"
-                    create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000));
+                    create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(max));
                     CREATE UNIQUE CLUSTERED INDEX PK_tempFusionFields ON #tempFusionFields ([FusionAttributeID] ASC,[FieldTypeID] ASC);
             ", commandTimeout: ExecuteQueryTimeout);
 
@@ -1354,7 +1354,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                     };
 
                     if (!string.IsNullOrEmpty(item.Value))
-                        fieldVal.Value = (item.Value.Length > MAX_FIELD_VALUE_LENGTH ? item.Value.Substring(0, MAX_FIELD_VALUE_LENGTH) : item.Value);
+                        fieldVal.Value = item.Value; //(item.Value.Length > MAX_FIELD_VALUE_LENGTH ? item.Value.Substring(0, MAX_FIELD_VALUE_LENGTH) : item.Value);
 
                     _workArea.FieldTempValues.Add(fieldVal);
                 }                
