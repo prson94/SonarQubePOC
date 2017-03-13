@@ -550,6 +550,7 @@
     <None Include="dbo\User Defined Types\LineageTable.sql" />
     <None Include="dbo\User Defined Types\LineageTechnicalTable.sql" />
     <None Include="fusion\Stored Procedures\GenerateEagleBusinessLineageData.sql" />
+    <None Include="fusion\Stored Procedures\ClearMarkitMapLineageData.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />
