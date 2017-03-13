@@ -1,6 +1,7 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { WorkflowComponent } from './workflow.component';
+import { WorkflowFormComponent } from './workflow-form.component';
 import { WorkflowRaiseIssueComponent} from './workflow-raise-issue.component';
 import { WorkflowWorkItemComponent } from './workflow-work-item.component';
 import { WorkflowViewStatusComponent } from './workflow-view-status.component';
@@ -23,7 +24,10 @@ const routes: Routes = [
             },
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST + '/:workflowType', component: WorkflowDetailComponent
-            }   
+            },
+            {
+                path: SiteUrlHelpers.SITE_URL_WORKFLOW_FORM + '/:workflowId/:workflowItemStepId', component: WorkflowFormComponent
+            }                   
         ]
     }
 ];

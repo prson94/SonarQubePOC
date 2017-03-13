@@ -31,6 +31,7 @@
     static SITE_URL_WORKFLOW_VIEW_ITEM = 'work';    
     static SITE_URL_WORKFLOW_VIEW_STATUS = 'status';
     static SITE_URL_WORKFLOW_LIST = 'workflowlist';
+    static SITE_URL_WORKFLOW_FORM = 'form';
     
     //fusion child routes
     static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute';
