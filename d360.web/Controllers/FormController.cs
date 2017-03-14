@@ -2937,6 +2937,19 @@ namespace d360.web.Controllers
                 list.Add($"Relation.{r.Name}", r.ID);
             });
 
+            var sType = type.ToString();
+            var relatedTypeList = Company.Filter<IntersectTypeDetail>(i => 
+                (i.Subject == sType && i.SubjectID == id) || 
+                (i.Object == sType && i.ObjectID == id)
+                ).ToList().Select(i => new {
+                    ID = i.ID,//(i.Subject == sType && i.SubjectID == id) ? i.ObjectID : i.SubjectID,
+                    Name = (i.Subject == sType && i.SubjectID == id) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
+                }).Distinct().ToList();
+            relatedTypeList.ForEach(r =>
+            {
+                list.Add($"Related Item.{r.Name}", r.ID);
+            });
+
 
             return new JsonNetResult
             {

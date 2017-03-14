@@ -2272,7 +2272,7 @@ from    [Intersect] I
                 if (i.FieldTypeName.Contains("."))
                     i.FieldTypeName = i.FieldTypeName.Replace('.', '~');
 
-                var dataField = $"H{pos}_{i.FieldTypeName}";
+                var dataField = $"H{pos}_{System.Text.RegularExpressions.Regex.Replace(i.FieldTypeName, "[^a-zA-z0-9]", "")}";
 
                 // As long as field type is NOT null, you can go ahead and add the field.
                 if (i.FieldTypeID > 0 && ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || (join.Object == i.Object && join.ObjectID == i.ObjectID)))
@@ -2283,6 +2283,8 @@ from    [Intersect] I
 
                     if (ft != null)
                     {
+                        #region
+
                         var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
 
                         // Determine the join syntax for the eventual query.
@@ -2326,9 +2328,59 @@ from    [Intersect] I
                         //Add here, only after you determine if this should be a link ABOVE.
                         columnModels.Add(fc);
 
-
                         multiFieldReferencePosition++;  //Increment in case you reference multiple fields from the same objects, in a SINGLE hop.
+
+                        #endregion
                     } //check if field type is NOT null
+                    else
+                    {
+                        #region
+
+                        if (i.FieldTypeName.StartsWith("Related Item~"))
+                        {
+                            var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
+
+                            // Determine the join syntax for the eventual query.
+                            join.JoinStatement += $@" {joinType} join IntersectDetail {tbPrefix} on {tbPrefix}.IntersectTypeID = {i.FieldTypeID} and 
+( 
+({tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} and {tbPrefix}.Object = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}) OR
+({tbPrefix}.SubjectType = '{i.Object}' and {tbPrefix}.SubjectTypeID = {i.ObjectID} and {tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn})
+)";
+
+                            //Create the column/field to display the visible column cell.
+                            var fc = new ComplexColumnModel
+                            {
+                                DisplayColumn = $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.SubjectName else {tbPrefix}.ObjectName end",
+                                text = i.OverrideDisplayName ?? i.FieldTypeName.Replace("Related Item~", ""),
+                                datafield = $"{dataField}",
+                                SortColumn = i.SortOrder > 0 ? $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.SubjectName else {tbPrefix}.ObjectName end" : string.Empty,
+                                OutputColumn = true
+                            };
+                            setColumnTypeInfo(ft, i, fc);
+
+                            var context = "Preview";
+
+                            // Add the fields that you need to create link in Angular component.
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{context}'", datafield = $"{dataField}_Context" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.Subject else {tbPrefix}.Object end", datafield = $"{dataField}_Object" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.SubjectID else {tbPrefix}.ObjectID end", datafield = $"{dataField}_ObjectID" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.SubjectUrl else {tbPrefix}.ObjectUrl end", datafield = $"{dataField}_Url" });
+
+                            // Now set the fields to reference to create the preview link in Angular component.
+                            fc.datafieldtype = "lookup";
+                            fc.contextfield = $"{dataField}_Context";
+                            fc.objectfield = $"{dataField}_Object";
+                            fc.objectidfield = $"{dataField}_ObjectID";
+                            fc.urlfield = $"{dataField}_Url";
+
+                            //Add here, only after you determine if this should be a link ABOVE.
+                            columnModels.Add(fc);
+
+                            multiFieldReferencePosition++;  //Increment in case you reference multiple fields from the same objects, in a SINGLE hop.
+                        }
+
+                        #endregion
+                    }
 
                     #endregion
                 }
