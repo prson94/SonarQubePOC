@@ -4,6 +4,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace d360.core
 {
+    public class BackColorAttribute : Attribute
+    {
+        private string _color = "#000";
+        public string Color { get { return _color; } }
+        public BackColorAttribute(string color)
+        {
+            _color = color;
+        }
+    }
+
+    public class ForeColorAttribute : Attribute
+    {
+        private string _color = "#000";
+        public string Color { get { return _color; } }
+        public ForeColorAttribute(string color)
+        {
+            _color = color;
+        }
+    }
+
     public class GraphAttribute : Attribute
     {
         private string _graph = "Glossary";

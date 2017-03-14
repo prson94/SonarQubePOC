@@ -15,7 +15,9 @@ namespace d360.core.enums.Workflow
         [Description("Item Changed")]
         Update = 2,
         [Description("Item Removed")]
-        Delete = 3
+        Delete = 3,
+        [Description("Timer")]
+        Timer = 4
     }
 
     public class ChangeTypeInfo
