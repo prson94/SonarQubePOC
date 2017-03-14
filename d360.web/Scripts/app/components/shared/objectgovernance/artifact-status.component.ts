@@ -6,8 +6,9 @@ import { MessagesService } from '../../../services/messages.service';
 @Component({
     selector: 'd3s-artifact-status',
     template: `
-            <div>                
-                <span *ngIf="!showRequestCertification">
+            <div>   
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>             
+                <span *ngIf="!showRequestCertification && !isLoading">
                     <div class="status-value" [ngClass]="{'status-value-certified':isCertified(), 'status-value-review': isUnderReview()}">{{status}}</div>            
                     <div *ngIf="isDraft() && isWorkflowEnabled">
                         <a (click)="showRequestCertification=true" style="cursor:pointer">Request Certification</a>
@@ -16,7 +17,7 @@ import { MessagesService } from '../../../services/messages.service';
                         Status
                     </div>
                 </span>
-                <span *ngIf="showRequestCertification">
+                <span *ngIf="showRequestCertification  && !isLoading">
                     <div class="form-instructions">Click request certification to send a certification request to the term owner.</div>
                     <div class="row">
                         <div class="col s12">
@@ -59,9 +60,11 @@ export class ArtifactStatusComponent extends BaseComponent  {
         
     
     private requestCertification() {
+        this.isLoading = true;
         this.artifactService.requestCertification(this.objectID)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);                
+                this.isLoading = false;
                 this.showRequestCertification = false;
             });        
     }
