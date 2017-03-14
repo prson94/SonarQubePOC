@@ -955,6 +955,8 @@ namespace d360.web.Controllers.Services
                 ";
 
             var xml = (await Company.QueryAsync<string>(sql, new { id = versionStepID })).FirstOrDefault();
+            var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
+            var title = (string)XElement.Parse(xml).Element("form").Attribute("title");
 
             if(string.IsNullOrEmpty(xml))
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow with specified version step id not found");
@@ -968,7 +970,9 @@ namespace d360.web.Controllers.Services
 
             return Request.CreateResponse<dynamic>(HttpStatusCode.OK, new
             {
-                FormFields = properties
+                Fields = properties,
+                Title = title ?? "",
+                Description = desc ?? ""
             });
         }
 

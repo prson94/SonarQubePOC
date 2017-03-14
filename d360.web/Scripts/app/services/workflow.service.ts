@@ -14,7 +14,8 @@ import {
     ArtifactTypeWorkflowBreakdown,
     WorkflowIssueType,
     WorkflowDiagramModel,
-    ActivityTypeInfo,
+    ActivityTypeInfo,     
+    WorkflowForm,
 } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './messages.service';
@@ -266,10 +267,10 @@ export class WorkflowService extends BaseService implements IWorkflowService {
 
     //#endregion
 
-    getWorkflowForm(id: number, itemStepId: number): Promise<any[]> {
+    getWorkflowForm(id: number, itemStepId: number): Promise<WorkflowForm> {
         return this.http.get(`/services/workflow/form/${id}/${itemStepId}`)
             .toPromise()
-            .then(response => <any[]>response.json())
+            .then(response => <WorkflowForm>response.json())
             .catch(err => this.handleError(err));
     }
 

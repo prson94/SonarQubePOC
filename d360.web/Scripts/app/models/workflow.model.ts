@@ -9,7 +9,6 @@ export interface IWorkflowService {
     getParentTypeSelectList(id: number, type: string, workflowType: WorkflowType): Promise<SelectItem[]>;
 }
 
-
 export class WorkflowTypeRelationEditorModel {
     Enabled: boolean;
     ObjectTypes: SelectItem[];
@@ -266,3 +265,22 @@ export class ActivityTypeInfo {
 }
 
 //#endregion
+
+export enum WorkflowFormFieldType {
+    Text = 0,
+    Boolean = 1,
+    Integer = 2,
+    Date
+}
+
+export class WorkflowFormField {
+    Label: string;
+    FieldType: WorkflowFormFieldType;   
+    Value: any;
+}
+
+export class WorkflowForm {
+    Fields: WorkflowFormField[]=[];
+    Title: string;
+    Description: string;
+}

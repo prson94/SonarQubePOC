@@ -30,6 +30,7 @@ import { WorkflowRoutingModule } from './workflow.routes';
 
 import {
     GrowlModule,
+    CalendarModule,
     InputTextModule,
     DataTableModule,
     ButtonModule,
@@ -50,6 +51,7 @@ import {
 
         WorkflowRoutingModule,
         //primeng  
+        CalendarModule,
         GrowlModule,
         InputTextModule,        
         DataTableModule,
