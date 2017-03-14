@@ -180,6 +180,7 @@ export class WorkflowDiagramNode {
     YPosition: string;
     StepType: StepType;
     ActivityType: number;
+    ActivityTypeInfo: ActivityTypeInfo;
     Settings: string;
     SettingsObject: any;
     Name: string;
@@ -242,11 +243,26 @@ export class NodeModel {
     stepType: StepType;
     activityType: number;
     settings: any;
+    fore: string;
+    back: string;
+    icon: string;
+    activityDescription: string;
+    activityName: string;
 }
 
 export enum DiagramObjectType {
     Link,
     Node
+}
+
+export class ActivityTypeInfo {
+    ID: number;
+    Name: string;
+    Description: string;
+    BackColor: string;
+    ForeColor: string;
+    Icon: string;
+
 }
 
 //#endregion

@@ -10,9 +10,9 @@ namespace d360.core.enums.Workflow
     /// </summary>
     public enum ActivityType
     {
-        [Description("Email Notification"), BackColor(""), ForeColor(""), Icon("")]
+        [Name("Email Notification"), Description("Email Notification"), BackColor("#1d9d74"), ForeColor("#fff"), Icon("\uf0e0")]
         EmailNotification = 1,
-        [Description("Status Change"), BackColor(""), ForeColor(""), Icon("")]
+        [Name("Status Change"), Description("Status Change"), BackColor("#1d339d"), ForeColor("#fff"), Icon("\uf024")]
         StatusChange = 2
     }
 
@@ -28,7 +28,7 @@ namespace d360.core.enums.Workflow
 
     public static class ActivityTypeExtensions
     {
-        public static List<ActivityTypeInfo> GetList(this ChangeType type)
+        public static List<ActivityTypeInfo> GetList(this ActivityType type)
         {
             var list = new List<ActivityTypeInfo>();
 

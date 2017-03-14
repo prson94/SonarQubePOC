@@ -212,7 +212,7 @@ namespace d360.model
         {
             var itemStep = getWorkflowItemStep(itemStepID);
 
-            var activityType = ActivityTypes.SingleOrDefault(i => i.Value.ID == itemStep.Step.ActivityType);
+            var activityType = ActivityTypes.SingleOrDefault(i => i.Value.ID == (int)itemStep.Step.ActivityType);
             if (activityType == null)
                 throw new ApplicationException($"Item Step does not correspond to any known activity type of {itemStep.Step.ActivityType}.");
 

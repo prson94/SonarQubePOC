@@ -12,6 +12,7 @@ import {
     StepType,
     TransitionType,
     LinkType,
+    ActivityTypeInfo,
 } from '../../../models/workflow.model';
 
 import { MenuItem } from 'primeng/primeng';
@@ -33,6 +34,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     @ViewChild('workflowDiagram') diagramRef;
 
     private model: WorkflowDiagramModel;
+    private activityTypes: ActivityTypeInfo[] = [];
     DiagramObjectType = DiagramObjectType;
     StepType = StepType;
     TransitionType = TransitionType;
@@ -48,6 +50,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private menuItems: MenuItem[] = [];
     private isWindowVisible = false;
+
+
+
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private renderer: Renderer, private workflowService: WorkflowService) {
         super();
@@ -91,8 +96,17 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
+        
+        this.getActivityTypes().then(() => this.populateDiagram());
+    }
 
-        this.populateDiagram();
+    private getActivityTypes(): Promise<any> {
+        return this.workflowService.getActivityTypes()
+            .then(r => {
+                this.activityTypes = r;
+                console.log(r);
+            });
+
     }
 
     private populateDiagram(): Promise<any> {
@@ -101,6 +115,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.workflowService.getWorkflowDiagram(this.id)
             .then(r => {
                 this.model = r;
+                if (this.model.Nodes != null)
+                    this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
                 console.log(this.model);
                 this.parseData(this.model);
                 this.isLoading = false;
@@ -130,6 +146,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 node.y = d.YPosition;
                 node.activityType = d.ActivityType;
                 node.stepType = d.StepType;
+
+                if (d.ActivityTypeInfo != null) {
+                    node.fore = d.ActivityTypeInfo.ForeColor;
+                    node.back = d.ActivityTypeInfo.BackColor;
+                    node.icon = d.ActivityTypeInfo.Icon;
+                    node.activityName = d.ActivityTypeInfo.Name;
+                    node.activityDescription = d.ActivityTypeInfo.Description;
+                }
+
                 if (d.SettingsObject != null && d.SettingsObject.settings != null)
                     node.settings = d.SettingsObject.settings;
 
@@ -306,12 +331,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     spot1: go.Spot.TopLeft,
                     spot2: go.Spot.BottomRight,
                     name: "NodeShape",
-                    fill: "#7c7d8a"
-                }),
+                },
+                    new go.Binding("fill", "back").makeTwoWay()),
                 this.g(go.Panel, go.Panel.Horizontal, {
-                        alignment: go.Spot.BottomLeft,
-                        margin: 5
-                    }),
+                    alignment: go.Spot.BottomLeft,
+                    margin: 5
+                },
+                    this.makeIconPanel(nodeFontSize)
+                ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
                         row: 0,
@@ -320,9 +347,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                         editable: false,
                         maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
                         font: "bold " + nodeFontSize + "pt sans-serif",
-                        stroke: "#fff"
                     },
-                    new go.Binding("text", "name").makeTwoWay()
+                        new go.Binding("text", "activityName").makeTwoWay(),
+                        new go.Binding("stroke", "fore").makeTwoWay()
                     )
                 )
             )
@@ -397,7 +424,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
 
-    private makeIconPanel(icon, tooltip, binding, fontSize) {
+    private makeIconPanel(fontSize) {
         fontSize -= 2;
         let iconPanel = this.g(go.Panel,
             "Auto",
@@ -405,12 +432,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 alignment: go.Spot.Center,
                 margin: 2
             },
-            this.g(go.Shape, "Circle",
-                {
-                    stroke: null,
-                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
-                })
-                ,
+            //this.g(go.Shape, "Circle",
+            //    {
+            //        stroke: null,
+            //        toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
+            //    })
+            //    ,
                 //new go.Binding("fill", "fore")),
             this.g(go.TextBlock,
                 {
@@ -419,9 +446,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     alignment: go.Spot.Center,
                     editable: false,
                     font: (fontSize) + "pt FontAwesome",
-                    text: icon,
-                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
-                }
+                },
+                new go.Binding("text", "icon").makeTwoWay(),
+                new go.Binding("stroke", "fore").makeTwoWay()
                 //,
                 //new go.Binding("stroke", "back")
             )

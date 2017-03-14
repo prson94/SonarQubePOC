@@ -19,6 +19,7 @@ using System.IO;
 using SpreadsheetLight;
 using d360.core.entities.Workflow;
 using System.Threading.Tasks;
+using d360.core.enums.Workflow;
 
 namespace d360.web.Controllers.Services
 {
@@ -591,7 +592,7 @@ namespace d360.web.Controllers.Services
 
                 switch (task.Activity)
                 {
-                    case ActivityType.OwnerApproval:
+                    case d360.workflow.ActivityType.OwnerApproval:
                         bookmarkName = "ApprovalFromOwner";
                         //var appModel = model as WorkflowApprovalRequestModel;
                         obj = new RequestApproval
@@ -620,7 +621,7 @@ namespace d360.web.Controllers.Services
                             });
                         }
                         break;
-                    case ActivityType.OwnerCertification:
+                    case d360.workflow.ActivityType.OwnerCertification:
                         bookmarkName = "CertificationFromOwner";
                         obj = new CertificationApproval
                         {
@@ -652,8 +653,8 @@ namespace d360.web.Controllers.Services
                             });
                         }
                         break;
-                    case ActivityType.AssignIssueToPool:
-                    case ActivityType.AssignIssueToSelf:
+                    case d360.workflow.ActivityType.AssignIssueToPool:
+                    case d360.workflow.ActivityType.AssignIssueToSelf:
                         var action = model["WorkflowAction"];
 
                         obj = new IssueBookmarkModel
@@ -728,7 +729,7 @@ namespace d360.web.Controllers.Services
 
                         break;
 
-                    case ActivityType.FinalApproval:
+                    case d360.workflow.ActivityType.FinalApproval:
                         bookmarkName = "ApprovalFromOwner";
                         //var appModel = model as WorkflowApprovalRequestModel;
                         obj = new RequestApproval
@@ -969,6 +970,12 @@ namespace d360.web.Controllers.Services
             {
                 FormFields = properties
             });
+        }
+
+        [Route("activitytypes"), HttpGet]
+        public List<core.enums.Workflow.ActivityTypeInfo> GetActivityTypes()
+        {
+            return d360.core.enums.Workflow.ActivityType.EmailNotification.GetList().ToList();
         }
     }
 }
