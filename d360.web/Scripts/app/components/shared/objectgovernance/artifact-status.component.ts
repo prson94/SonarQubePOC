@@ -36,7 +36,7 @@ export class ArtifactStatusComponent extends BaseComponent  {
     @Input() status: string;
     
     @Input() showDetails: boolean = false;
-    @Output() showDetailsChange = new EventEmitter();
+    @Output() statusChanged = new EventEmitter();
     
     @Input() isWorkflowEnabled: boolean = false;
 
@@ -65,6 +65,7 @@ export class ArtifactStatusComponent extends BaseComponent  {
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);                
                 this.isLoading = false;
+                this.statusChanged.emit();
                 this.showRequestCertification = false;
             });        
     }

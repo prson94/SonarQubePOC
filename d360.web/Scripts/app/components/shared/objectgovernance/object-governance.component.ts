@@ -2,6 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
+import { ArtifactService } from '../../../services/artifacts.service';
 
 @Component({
     selector: 'd3s-object-governance',    
@@ -18,7 +19,7 @@ import { ObjectStatistics } from '../../../models/object-statistics.model';
                             <d3s-object-board [commentCount]="statistics?.CommentCount" [lastCommentDate]="statistics?.CommentLast" [showDetails]="showBoardDetails" (showDetailsChange)="showBoardDetails=$event;showIssueDetails=false;showHealthDetails=false;"></d3s-object-board>                            
                         </div>
                         <div class="col s12" *ngIf="showStatus"  [ngClass]="{'inactive': (hasActiveTab() && !showStatusDetails), 'active-right':showStatusDetails, 'l3':showStatus}">
-                            <d3s-artifact-status [objectID]="objectID" [status]="status" [isWorkflowEnabled]="isWorkflowEnabled"></d3s-artifact-status>
+                            <d3s-artifact-status (statusChanged)="updateStatus()" [objectID]="objectID" [status]="status" [isWorkflowEnabled]="isWorkflowEnabled"></d3s-artifact-status>
                         </div>
                     </div>
                     <div style="padding:20px;" *ngIf="showHealthDetails || showIssueDetails || showBoardDetails">
@@ -71,7 +72,9 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
     showStatusDetails: boolean = false;
     showStatus: boolean = false;
         
-    constructor(protected objectStatisticsService: ObjectStatisticsService) {
+    constructor(protected objectStatisticsService: ObjectStatisticsService,
+        protected artifactService: ArtifactService
+    ) {
         super();
     }    
     
@@ -102,7 +105,16 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
         return this.showBoardDetails || this.showHealthDetails || this.showIssueDetails;
     }
 
-    updateCounts() {
+    private updateStatus() {
+        if (this.objectType.toUpperCase() == "ARTIFACT") {
+            this.artifactService.getArtifact(this.objectID)
+                .then(res => {
+                    if (res) this.status = res.Status;
+                });            
+        }
+    }
+
+    private updateCounts() {
         this.load();
     }
 }
