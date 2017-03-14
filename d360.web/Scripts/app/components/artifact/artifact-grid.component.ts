@@ -254,6 +254,14 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     private doSimpleSearch(dt: DataTable) {
+        if (this.isGridFilterLoading) {
+            if (this.simpleSearchID > 0) {
+                window.clearTimeout(this.simpleSearchID);
+                this.simpleSearchID = 0;
+            }      
+            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds); //check back in a few search is ongoing
+            return;
+        }
         this.isGridFilterLoading = true;
         if (dt) dt.reset();      
     }
