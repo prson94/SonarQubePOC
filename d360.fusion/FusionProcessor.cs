@@ -1539,6 +1539,7 @@ when not matched then
                 await companyConnection.ExecuteAsync(@"
                                                         set nocount on 
                                                         create table #tempSourceID(SourceID varchar(250) not null)
+                                                        CREATE NONCLUSTERED INDEX [CIX_Temp_TempSourceID] ON #tempSourceID ( SourceID ASC );
                                                         set nocount off", commandTimeout: ExecuteQueryTimeout);
 
                 Trace.TraceInformation("INSERTING {0} FUSIONATTRIBUTE SOURCE IDS INTO #tempSourceID TEMP TABLE", _workArea.InSourceIDList.Count);
@@ -1572,7 +1573,7 @@ when not matched then
 	                    inner join fieldtype ft on (f.fusionattributetypeid = ft.objectid and ft.[object] = 'FusionAttributeType')
 					    left join field fi on (ft.id = fi.fieldtypeid and fi.objecttype = 'FusionAttribute' and f.id = fi.objectId)
                     where 
-	                    f.sourceid in (select * from #tempSourceID)
+	                    f.sourceid in (select SourceID from #tempSourceID)
 		                    AND
 	                    f.fusionid = @inFusionID
                 ", new { inFusionID = FusionID },commandTimeout:ReadQueryTimeout);
@@ -1629,7 +1630,7 @@ when not matched then
                 from 
 	                fusionattribute f	                	
                 where 
-	                f.sourceid in (select * from #tempSourceID)
+	                f.sourceid in (select SourceID from #tempSourceID)
 		                AND
 	                f.fusionid = @inFusionID
             ", new { inFusionID = FusionID },commandTimeout:ReadQueryTimeout);
