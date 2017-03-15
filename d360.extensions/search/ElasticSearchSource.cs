@@ -415,7 +415,14 @@ namespace d360.extensions.search
             {
                 phrase = EscapeSpecialCharacters(phrase);
 
-                sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                if (phrase.StartsWith("'") && phrase.EndsWith("'"))
+                {
+                    phrase = phrase.Trim('\'');
+                    sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"match_phrase\": { \"Name\":\"" + phrase + "\"} }");                    
+                }
+                else
+                    sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+
             }
             else if(!string.IsNullOrEmpty(advancedFilterJSON))
             {
