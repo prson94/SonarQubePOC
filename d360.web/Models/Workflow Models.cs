@@ -289,10 +289,16 @@ namespace d360.web.Models
     {
         public string Label { get; set; }
         public WorkflowFormModelFieldType FieldType { get; set; }
+
+        public object Value { get; set; }
+
+        public string ID { get; set; }
     }
 
     public class WorkflowFormModel
     {
-        public List<WorkflowFormModelField> Fields;
+        public int StepID { get; set; }
+        public int ItemID { get; set; }
+        public List<WorkflowFormModelField> Fields { get; set; }
     }
 }

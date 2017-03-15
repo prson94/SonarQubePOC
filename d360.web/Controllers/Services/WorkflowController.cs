@@ -20,17 +20,21 @@ using SpreadsheetLight;
 using d360.core.entities.Workflow;
 using System.Threading.Tasks;
 using d360.core.enums.Workflow;
+using System.Text;
 
 namespace d360.web.Controllers.Services
 {
     [RoutePrefix("services/workflow"), Authorize]
     public class WorkflowController : BaseApiController
     {
+        internal WorkflowContext WorkflowCtx;
+
         #region DI
 
         public WorkflowController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
+            WorkflowCtx = new WorkflowContext( company.CompanyConnectionString, company.CurrentCompanyID, company.CurrentResourceID);
         }
 
         #endregion
@@ -943,6 +947,62 @@ namespace d360.web.Controllers.Services
             };
         }
 
+        [HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{stepId:int}")]
+        public async Task<HttpResponseMessage> SubmitWorkflowForm(int itemId, int stepId, List<WorkflowFormModelField> model)
+        {
+            try
+            {
+                var itemStepsModel = WorkflowCtx.WorkflowItemSteps.Where(x => x.StepID == stepId && x.ItemID == itemId).FirstOrDefault();
+
+                StringBuilder sb = new StringBuilder();
+
+                sb.Append("<settings>");
+
+                foreach (var field in model)
+                {
+                    sb.Append("<form>");
+                    var val = field.Value != null ? field.Value.ToString() : "";
+                    sb.Append($"<field id=\"{field.ID}\" label=\"{field.Label}\" value=\"{val}\" fieldtype=\"{field.FieldType.ToString().ToLower()}\"></field>");
+                    sb.Append("</form>");
+                }
+
+
+                sb.Append("</settings>");
+
+                if (itemStepsModel != null)
+                {
+                    itemStepsModel.Fields = sb.ToString();
+                    itemStepsModel.CompletedOn = DateTime.UtcNow;
+                    itemStepsModel.CompletedBy = Company.CurrentResourceID;
+                    
+                    WorkflowCtx.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
+                    WorkflowCtx.SaveChanges();
+
+                    return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
+                }
+                
+                var item = new WorkflowItemStep
+                {
+                        CompletedBy = Company.CurrentResourceID,
+                        CompletedOn = DateTime.UtcNow,
+                        StartedOn = DateTime.UtcNow,
+                        StartedBy = Company.CurrentResourceID,
+                        Settings = "<settings></settings>",
+                        Fields = sb.ToString(),
+                        ItemID = itemId,
+                        StepID = stepId
+                };
+
+                WorkflowCtx.WorkflowItemSteps.Add(item);
+                await WorkflowCtx.SaveChangesAsync();
+
+                return Request.CreateResponse(HttpStatusCode.Created, item);
+            }            
+            catch (Exception ex)
+            {                
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);                
+            }
+        }
 
         [Route("form/{versionStepID:int}/{itemStepID:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowForm(int versionStepID, int itemStepID)
@@ -955,6 +1015,7 @@ namespace d360.web.Controllers.Services
                 ";
 
             var xml = (await Company.QueryAsync<string>(sql, new { id = versionStepID })).FirstOrDefault();
+            
             var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
             var title = (string)XElement.Parse(xml).Element("form").Attribute("title");
 
@@ -963,7 +1024,7 @@ namespace d360.web.Controllers.Services
                 
             List<WorkflowFormModelField> properties = (
                                  from s in XElement.Parse(xml).Element("form").Elements()
-                                 select new WorkflowFormModelField{ Label = (string)s.Attribute("label"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
                                  ).ToList();
 
             //parse the xml to get the form info

@@ -277,6 +277,7 @@ export class WorkflowFormField {
     Label: string;
     FieldType: WorkflowFormFieldType;   
     Value: any;
+    ID: string;
 }
 
 export class WorkflowForm {
