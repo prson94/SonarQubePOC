@@ -3809,7 +3809,7 @@ where    A.RuleTypeID = @id", columns, joins);
                                     new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name, TooltipContext = "Preview", TooltipType="TaxonomyType", TooltipUrl = taxonomyDetails.Url, TooltipID = artifact.TaxonomyType.ID }
                                 },
                             SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = ((values.Count > 0) ? "": nodes), Values = values }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = ((values.Count > 0) ? "values": nodes), Values = values  }
                                 }
                         });
 
