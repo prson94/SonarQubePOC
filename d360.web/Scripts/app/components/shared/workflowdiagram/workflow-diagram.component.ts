@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener, Output, EventEmitter } from '@angular/core';
 import { PermissionsService } from '../../../services/permissions.service';
 import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -31,7 +31,9 @@ declare var window: any;
 export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit {
     @Input() id: number = 0;
     @Input() readonly: boolean = true;
+    @Output() onCloseClick = new EventEmitter();
     @ViewChild('workflowDiagram') diagramRef;
+    @ViewChild('workflowPalette') paletteRef;
 
     private model: WorkflowDiagramModel;
     private activityTypes: ActivityTypeInfo[] = [];
@@ -43,6 +45,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     //diagram properties
     private g = go.GraphObject.make;
     private myDiagram: go.Diagram;
+    private myPalette: go.Palette;
     private initialLinks: go.Link[] = [];
     private initialNodes: go.Node[] = [];
     private selectedData = null;
@@ -97,7 +100,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
         
-        this.getActivityTypes().then(() => this.populateDiagram());
+        this.getActivityTypes().then(() => this.populateDiagram()).then(() => this.initializePalette());
+    }
+
+    private initializePalette() {
+        this.myPalette = this.createPalette();
     }
 
     private getActivityTypes(): Promise<any> {
@@ -207,6 +214,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.menuItems.push({
             icon: 'fa-info-circle'
         });
+
+        if (this.readonly)
+            this.menuItems.push({
+                icon: 'fa-remove'
+            });
        
     }
 
@@ -218,6 +230,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         console.log(e);
         if (e.icon == 'fa-info-circle')
             this.isWindowVisible = !this.isWindowVisible;
+        if (e.icon == 'fa-remove')
+            this.onCloseClick.emit();
     }
 
     @HostListener('window:resize', ['$event'])
@@ -270,6 +284,34 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     //#endregion
 
     //#region templates
+
+    private createPalette(): go.Palette {
+
+        let paletteModel = [];
+
+        this.activityTypes.forEach(a => {
+            paletteModel.push({
+                template: 'task',
+                category: 'task',
+                fore: a.ForeColor,
+                back: a.BackColor,
+                activityName: a.Name,
+                icon: a.Icon,
+                activityDescription: a.Description,
+                pos: "0 0"
+            });
+        });
+
+        let pt = this.g(go.Palette, "WorkflowPalette",
+            {
+                "animationManager.duration": 800,
+                nodeTemplateMap: this.myDiagram.nodeTemplateMap,
+                model: new go.GraphLinksModel(paletteModel),
+                layout: this.g(go.GridLayout, { alignment: go.GridLayout.Location })
+            });
+
+        return pt;
+    }
 
     private createDiagram(): go.Diagram {
 

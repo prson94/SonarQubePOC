@@ -12,6 +12,9 @@ import { Title } from '@angular/platform-browser';
 })
 
 export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnInit {
+    private mode: PageMode = PageMode.Default;
+    PageMode = PageMode;
+    private currentID: number = 1;
 
     constructor(rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
@@ -28,4 +31,21 @@ export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnI
         this.isLoading = true;
 
     }
+
+    viewReadOnlyDiagram(e: any) {
+        this.currentID = e;
+        this.mode = PageMode.ReadOnlyDiagram;
+    }
+
+    closeEditor() {
+        this.mode = PageMode.Default;
+    }
+}
+
+
+export enum PageMode {
+    Default,
+    ReadOnlyDiagram,
+    Editor,
+    DiagramEditor
 }

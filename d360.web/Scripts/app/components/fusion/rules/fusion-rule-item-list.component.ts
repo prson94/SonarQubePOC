@@ -9,13 +9,13 @@ import { FusionRule, FusionRuleItem } from '../../../models/fusion.model';
     template: `
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
-        <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="add();"></d3s-tile-actions></header>
+        <header>Items for selected rule<d3s-tile-actions [hasAdd]="hasAdd" (addClick)="add();"></d3s-tile-actions></header>
         <p-dataTable #dt [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">
             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
             <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
             <p-column header="">
                 <template pTemplate type="body" let-row="rowData">
-                    <div class="RowTools">
+                    <div class="RowTools" *ngIf="hasAdd">
                         <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
                     </div>
                 </template>
@@ -33,6 +33,7 @@ export class FusionRuleItemListComponent extends BaseComponent implements OnChan
     @Output() selectionChange = new EventEmitter<FusionRuleItem>();
     @Output() onAddClick = new EventEmitter();
     @Output() onDeleteClick = new EventEmitter();
+    @Input() hasAdd: boolean = true;
 
     values: FusionRuleItem[];
 

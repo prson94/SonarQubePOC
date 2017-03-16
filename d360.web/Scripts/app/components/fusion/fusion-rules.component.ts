@@ -22,6 +22,9 @@ export class FusionRulesComponent extends BaseComponent {
     selectedFusionRuleItem: FusionRuleItem = null;
     selectedFusionRuleStepMapping: FusionRuleMapping = null;
 
+    showRulePromotionHistory: boolean;
+    showItemAdd: boolean = true;
+
     constructor(private fusionService: FusionService, private messagesService: MessagesService) {
         super();
     }
@@ -71,6 +74,16 @@ export class FusionRulesComponent extends BaseComponent {
     deleteItem() {
         if (this.selectedFusionRule.ObjectType != 'FusionQueryAttributeType')
             this.formMode = FormMode.DeleteItem;
+    }
+
+    selectRule(e: any) {
+        this.selectedFusionRule = e;
+        this.showRulePromotionHistory = false;
+        if (this.selectedFusionRule.ObjectType == 'FusionQueryAttributeType')
+            this.showItemAdd = false;
+        else
+            this.showItemAdd = true;
+
     }
 };
 

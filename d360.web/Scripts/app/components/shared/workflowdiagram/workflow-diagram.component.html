@@ -2,24 +2,35 @@
 <div class="tile tile-detail" [hidden]="isLoading">
     <header *ngIf="model != null">
         Workflow - {{model.Name}}
-        <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
+        <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)" ></d3s-tile-actions>
     </header>
 
     <div *ngIf="selectedData != null" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
         <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="selectedData.name">
             <div>foo</div>
-                <div *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node">
-                    X: {{selectedData.x}}<br />
-                    Y: {{selectedData.y}}<br />
-                    Step Type: {{StepType[selectedData.stepType]}}<br />
-                    Activity Type: {{selectedData.activityType}}<br />
-                </div>
-                <div *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link">
-                    Link Type: {{LinkType[selectedData.linkType]}}<br />
-                    Transition Type: {{TransitionType[selectedData.transitionType]}}<br />
-                </div>
+            <div *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node">
+                X: {{selectedData.x}}<br />
+                Y: {{selectedData.y}}<br />
+                Step Type: {{StepType[selectedData.stepType]}}<br />
+                Activity Type: {{selectedData.activityType}}<br />
+            </div>
+            <div *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link">
+                Link Type: {{LinkType[selectedData.linkType]}}<br />
+                Transition Type: {{TransitionType[selectedData.transitionType]}}<br />
+            </div>
         </d3s-overlay-window>
     </div>
 
-    <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
+    <table class="responsive-table">
+        <tbody>
+            <tr>
+                <td>
+                    <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
+                </td>
+                <td style="width:200px; background-color:#eee">
+                    <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>

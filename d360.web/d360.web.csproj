@@ -976,6 +976,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-new-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-new.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />

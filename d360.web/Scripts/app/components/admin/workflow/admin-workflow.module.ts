@@ -16,6 +16,7 @@ import { WorkflowDiagramModule } from '../../shared/workflowdiagram/workflow-dia
 
 import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminWorkflowNewComponent } from './admin-workflow-new.component';
+import { AdminWorkflowNewListComponent } from './admin-workflow-new-list.component';
 import { WorkflowItemForm } from './workflow-item.form';
 
 import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
@@ -29,7 +30,7 @@ import {
     GrowlModule,
     InputTextModule,
     SharedModule,
-    DataTableModule
+    DataTableModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -58,6 +59,7 @@ import {
     declarations: [
         AdminWorkflowComponent,    
         AdminWorkflowNewComponent,
+        AdminWorkflowNewListComponent,
         WorkflowItemForm,
     ],
     providers: [

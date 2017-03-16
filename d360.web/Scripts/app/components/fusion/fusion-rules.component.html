@@ -12,7 +12,7 @@
                         -->
                         <d3s-fusion-rule-list [fusionID]="fusionID"
                                               [selection]="selectedFusionRule"
-                                              (selectionChange)="selectedFusionRule = $event; showRulePromotionHistory = false;"
+                                              (selectionChange)="selectRule($event);"
                                               (onEditClick)="formMode = FormMode.EditRule"
                                               (onAddClick)="formMode = FormMode.AddRule"
                                               (onDeleteClick)="formMode = FormMode.DeleteRule"></d3s-fusion-rule-list>
@@ -23,7 +23,8 @@
                         <d3s-fusion-rule-item-list [fusionRule]="selectedFusionRule"
                                                    [(selection)]="selectedFusionRuleItem"
                                                    (onAddClick)="addItem()"
-                                                   (onDeleteClick)="deleteItem()"></d3s-fusion-rule-item-list>
+                                                   (onDeleteClick)="deleteItem()"
+                                                   [hasAdd]="showItemAdd"></d3s-fusion-rule-item-list>
                     </div>
                 </div>
             </div>

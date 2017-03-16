@@ -1,5 +1,13 @@
 ﻿<div class="row">
     <div class="col s12">
-        <d3s-workflow-diagram [id]="1" readonly="true"></d3s-workflow-diagram>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div *ngIf="!isLoading" [ngSwitch]="mode">
+            <div *ngSwitchCase="PageMode.Default">
+                <d3s-admin-workflow-new-list (onViewClick)="viewReadOnlyDiagram($event)"></d3s-admin-workflow-new-list>
+            </div>
+            <div *ngSwitchCase="PageMode.ReadOnlyDiagram">
+                <d3s-workflow-diagram [id]="currentID" readonly="true" (onCloseClick)="closeEditor()"></d3s-workflow-diagram>
+            </div>
+        </div>
     </div>
 </div>

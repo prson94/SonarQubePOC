@@ -285,3 +285,12 @@ export class WorkflowForm {
     Title: string;
     Description: string;
 }
+
+export class WorkflowTypeItem {
+    ID: number;
+    CreatedOn: string;
+    UpdatedOn: string;
+    Name: string;
+    TypeName: string;
+    ChangeType: number;
+}
