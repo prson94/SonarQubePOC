@@ -33,7 +33,11 @@ import { WorkflowTypeItem, WorkflowChangeType } from '../../../models/workflow.m
                                 <div class="tile tile-detail">
                                     <header>Workflow Item Details</header>
                                     <p-dataTable [value]="details" selectionMode="single">
-                                        <p-column field="Name" header="Item" [sortable]="true"></p-column>
+                                        <p-column field="Name" header="Item" [sortable]="true">
+                                            <template let-item="rowData" pTemplate type="body">
+                                                <a (click)="openItem(item.Url)">{{item.Name}}</a>
+                                            </template>
+                                        </p-column>
                                         <p-column field="Step" header="Step" [sortable]="true"></p-column>
                                         <p-column field="UpdatedOn" header="Updated" [sortable]="true">
                                             <template let-col let-data="rowData" pTemplate type="body">
@@ -67,7 +71,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
 
     private details: any[] = [];
         
-    constructor(protected workflowService: WorkflowService) {
+    constructor(protected workflowService: WorkflowService, private router: Router) {
         super();
     }
 
@@ -99,4 +103,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
         return WorkflowChangeType[changeType];
     }
 
+    private openItem(url: string) {
+        this.router.navigateByUrl(url);
+    }
 };

@@ -1,6 +1,7 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { HttpModule, XHRBackend } from '@angular/http';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
@@ -22,6 +23,7 @@ import { WorkflowMonitorComponent } from './workflow-monitor.component';
     imports: [CommonModule,
         FormsModule,
         HttpModule,
+        RouterModule,
         //d3s
         CoreModule,
         WorkflowDiagramModule,
