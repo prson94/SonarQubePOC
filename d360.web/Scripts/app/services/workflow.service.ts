@@ -16,6 +16,7 @@ import {
     WorkflowDiagramModel,
     ActivityTypeInfo,     
     WorkflowForm,
+    WorkflowTypeItem,
 } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './messages.service';
@@ -296,10 +297,10 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    getObjectTypes(objectID: number, objectType: string): Promise<any[]> {
+    getObjectTypes(objectID: number, objectType: string): Promise<WorkflowTypeItem[]> {
         return this.http.get(`services/workflow/types/${objectID}/${objectType}`)
             .toPromise()
-            .then(response => <any[]>response.json())
+            .then(response => <WorkflowTypeItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 }

@@ -6,7 +6,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { WorkflowService } from '../../../services/workflow.service';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-
+import { WorkflowTypeItem, WorkflowChangeType } from '../../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -19,6 +19,11 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
                                     <header>Workflows</header>
                                     <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [(selection)]="selected">                                            
                                         <p-column field="Name" header="Name" [sortable]="true"></p-column>
+                                        <p-column field="ChangeType" header="Change Type" [sortable]="true">
+                                            <template let-col let-workflow="rowData" pTemplate type="body">
+                                                <span>{{changeTypeText(workflow.ChangeType)}}</span>
+                                            </template>
+                                        </p-column>
                                     </p-dataTable>                                       
                                 </div>
                             </div>
@@ -42,13 +47,13 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
     providers: [WorkflowService]
 })
 
-export class WorkflowMonitorComponent extends BaseComponent implements OnInit, OnDestroy {
+export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
     @Input() objectID: number;
     @Input() objectType: string;
 
-    private workflows: any[] = [];
-    private selected: any = null;
-    
+    private workflows: WorkflowTypeItem[] = [];
+    private selected: WorkflowTypeItem = null;
+        
     constructor(protected workflowService: WorkflowService) {
         super();
     }
@@ -57,11 +62,6 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
         this.load();
     }
     
-
-    ngOnDestroy() {
-        
-    }
-
     private load() {
         this.isLoading = true;
         this.workflowService.getObjectTypes(this.objectID, this.objectType)
@@ -70,6 +70,10 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
                 if (!this.selected && this.workflows && this.workflows.length > 0) this.selected = this.workflows[0]; 
                 this.isLoading = false;
             });
+    }
+
+    private changeTypeText(changeType: WorkflowChangeType) {
+        return WorkflowChangeType[changeType];
     }
 
 };

@@ -266,6 +266,13 @@ export class ActivityTypeInfo {
 
 //#endregion
 
+export enum WorkflowChangeType {
+    Add = 1,    
+    Update = 2,
+    Delete = 3,
+    Timer = 4
+}
+
 export enum WorkflowFormFieldType {
     Text = 0,
     Boolean = 1,
@@ -292,5 +299,5 @@ export class WorkflowTypeItem {
     UpdatedOn: string;
     Name: string;
     TypeName: string;
-    ChangeType: number;
+    ChangeType: WorkflowChangeType;
 }
