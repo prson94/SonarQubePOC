@@ -63,12 +63,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     public ngOnInit() {
-        this.initializeDiagram();
-        this.loadMenuItems();
         if (this.readonly.toString().toLowerCase() == 'true')
             this.isReadOnly = true;
         else
             this.isReadOnly = false;
+
+        this.initializeDiagram();
+        this.loadMenuItems();
         //console.log(this.readonly, this.readonly == true, this.readonly === true, this.readonly.toString() == 'true');
         //console.log({ val: this.readonly });
     }
@@ -110,6 +111,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         this.myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
+        this.myDiagram.toolManager.linkingTool.isEnabled = !this.isReadOnly;
 
 
         this.getActivityTypes().then(() => this.populateDiagram()).then(() => this.initializePalette());
@@ -393,7 +395,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             //scrollMode: go.Diagram.DocumentScroll,
             //initialPosition: new go.Point(125, 125),
             //layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
-            "undoManager.isEnabled": !this.readonly
+            "undoManager.isEnabled": !this.isReadOnly
         });
 
         dg.model.class = go.GraphLinksModel;
@@ -403,7 +405,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         dg.model.nodeDataArray = [];
         dg.model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
-        dg.toolManager.linkingTool.isEnabled = !this.readonly;
+        //dg.toolManager.linkingTool.isEnabled = !this.isReadOnly;
         //dg.model.isReadOnly = this.readonly;
 
         return dg;
@@ -453,9 +455,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                         new go.Binding("stroke", "fore").makeTwoWay()
                     )
                 ),
-                this.makePort('B', go.Spot.Bottom, false, true),
-                this.makePort('T', go.Spot.Top, true, true),
-                this.makePort('L', go.Spot.Left, true, true),
+                this.makePort('B', go.Spot.Bottom, true, false),
+                this.makePort('T', go.Spot.Top, false, true),
+                this.makePort('L', go.Spot.Left, true, false),
                 this.makePort('R', go.Spot.Right, true, false)
             )
         );
@@ -494,7 +496,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 },
                     new go.Binding("text", "name").makeTwoWay()
                 ),
-                this.makePort('B', go.Spot.Bottom, isStart, !isStart))
+                this.makePort((isStart) ? 'B' : 'T', (isStart) ? go.Spot.BottomCenter : go.Spot.TopCenter, isStart, !isStart))
         );
     }
 

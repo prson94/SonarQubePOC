@@ -13,7 +13,9 @@ namespace d360.core.enums.Workflow
         [Name("Email Notification"), Description("Email Notification"), BackColor("#1d9d74"), ForeColor("#fff"), Icon("\uf0e0")]
         EmailNotification = 1,
         [Name("Status Change"), Description("Status Change"), BackColor("#1d339d"), ForeColor("#fff"), Icon("\uf024")]
-        StatusChange = 2
+        StatusChange = 2,
+        [Name("Form"), Description("Form"), BackColor("#aa2a83"), ForeColor("#fff"), Icon("\uf1de")]
+        Form = 3
     }
 
     public class ActivityTypeInfo
