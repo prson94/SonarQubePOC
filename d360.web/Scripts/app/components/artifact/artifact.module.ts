@@ -22,6 +22,7 @@ import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/share
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
+import { WorkflowMonitorModule } from '../shared/workflowmonitor/workflow-monitor.module';
 
 import { ArtifactRoutingModule } from './artifact.routes';
 
@@ -86,7 +87,7 @@ import {
         SharedRelationshipModule,
         TilesModule,
         WorkflowModule,
-        
+        WorkflowMonitorModule,
     ],
     declarations: [        
         ArtifactColumnFilterComponent,

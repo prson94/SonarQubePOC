@@ -19,7 +19,6 @@ import { WorkflowDetailedViewComponent } from './workflow-detailed-view.componen
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 import { WorkflowFormComponent } from './workflow-form.component';
-import { WorkflowMonitorComponent } from './workflow-monitor.component';
 import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
 import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.component';
@@ -80,8 +79,7 @@ import {
         WorkflowDetailedViewComponent,        
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
-        WorkflowFormComponent,
-        WorkflowMonitorComponent,
+        WorkflowFormComponent,        
         WorkflowRaiseIssueComponent,
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
@@ -90,8 +88,7 @@ import {
     ],
     exports: [        
         WorkflowCertifyDetailsComponent,
-        WorkflowCertifyEditorComponent,
-        WorkflowMonitorComponent,        
+        WorkflowCertifyEditorComponent,         
         WorkflowRaiseIssueComponent,
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
