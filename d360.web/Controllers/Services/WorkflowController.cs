@@ -1072,5 +1072,30 @@ namespace d360.web.Controllers.Services
             return Request.CreateResponse(HttpStatusCode.OK, types);
 
         }
+
+        [Route("items/{typeId:int}"), HttpGet]
+        public HttpResponseMessage GetItemsForWorkflow(int typeId)
+        {
+            string sql = @"select
+	                        i.[object] as 'Object'
+	                        ,i.objectid as 'ObjectId'
+	                        ,i.updatedon as 'UpdatedOn'
+	                        ,i.completedon as 'CompletedOn'
+	                        ,od.name as 'Name'
+                            ,od.NgUrl as 'Url'
+                          from
+	                        [workflow].[version] v
+	                        inner join [workflow].item i on v.id = i.versionid
+	                        inner join [cache].objectdetails od on i.objectid = od.objectid and i.[object] = od.[object]
+                          where 
+	                        v.typeid = @id
+            ";
+
+            var types = Company.Query<dynamic>(sql, new { id = typeId }).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, types);
+
+        }
+
     }
 }

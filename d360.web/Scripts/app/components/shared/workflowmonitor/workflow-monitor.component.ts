@@ -17,7 +17,7 @@ import { WorkflowTypeItem, WorkflowChangeType } from '../../../models/workflow.m
                             <div class="col s12">
                                 <div class="tile tile-detail">
                                     <header>Workflows</header>
-                                    <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [(selection)]="selected">                                            
+                                    <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChanged)="selected=$event;loadWorkflowItems(selected)">
                                         <p-column field="Name" header="Name" [sortable]="true"></p-column>
                                         <p-column field="ChangeType" header="Change Type" [sortable]="true">
                                             <template let-col let-workflow="rowData" pTemplate type="body">
@@ -31,9 +31,20 @@ import { WorkflowTypeItem, WorkflowChangeType } from '../../../models/workflow.m
                         <div class="row">                                        
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <header>Selection Details</header>
+                                    <header>Workflow Item Details</header>
                                     <p-dataTable [value]="details" selectionMode="single">
                                         <p-column field="Name" header="Item" [sortable]="true"></p-column>
+                                        <p-column field="Step" header="Step" [sortable]="true"></p-column>
+                                        <p-column field="UpdatedOn" header="Updated" [sortable]="true">
+                                            <template let-col let-data="rowData" pTemplate type="body">
+                                                <span>{{data.UpdatedOn | date: 'shortDate'}}</span>
+                                            </template>
+                                        </p-column>
+                                        <p-column field="CompletedOn" header="Completed" [sortable]="true">
+                                            <template let-col let-data="rowData" pTemplate type="body">
+                                                <span>{{data.CompletedOn | date: 'shortDate'}}</span>
+                                            </template>
+                                        </p-column>
                                     </p-dataTable>
                                 </div>
                             </div>
@@ -53,6 +64,8 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
 
     private workflows: WorkflowTypeItem[] = [];
     private selected: WorkflowTypeItem = null;
+
+    private details: any[] = [];
         
     constructor(protected workflowService: WorkflowService) {
         super();
@@ -67,8 +80,18 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
         this.workflowService.getObjectTypes(this.objectID, this.objectType)
             .then(res => {
                 this.workflows = res;
-                if (!this.selected && this.workflows && this.workflows.length > 0) this.selected = this.workflows[0]; 
+                if (!this.selected && this.workflows && this.workflows.length > 0) {
+                    this.selected = this.workflows[0];
+                    this.loadWorkflowItems(this.selected);
+                }
                 this.isLoading = false;
+            });
+    }
+
+    private loadWorkflowItems(selected: WorkflowTypeItem) {
+        this.workflowService.getWorkflowItems(selected.ID)
+            .then(res => {
+                this.details = res;
             });
     }
 
