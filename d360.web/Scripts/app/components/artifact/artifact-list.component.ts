@@ -16,10 +16,11 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-dashboard-tab>
                 <d3s-artifact-type-metrics *ngIf="!isLoading && isMetricsVisible" [artifactType]="artifactType"></d3s-artifact-type-metrics>
                 <d3s-artifact-type-workflow-status [artifactType]="artifactType" *ngIf="!isLoading && isWorkflowStatusVisible"></d3s-artifact-type-workflow-status>
+                <d3s-workflow-monitor *ngIf="!isLoading && isWorkflowMonitorVisible" [objectType]="ArtifactType" [objectID]="artifactType?.ID"></d3s-workflow-monitor>
                 <div class="row">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible && !isWorkflowStatusVisible">
+                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible && !isWorkflowStatusVisible && !isWorkflowMonitorVisible">
                             <d3s-artifact-grid [artifactType]="artifactType" [hasSuggest]="hasSuggest"></d3s-artifact-grid>                                                                       
                         </div>
                     </div>
@@ -33,6 +34,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private sub: any;
     private isMetricsVisible: boolean = false;
     private isWorkflowStatusVisible: boolean = false;
+    private isWorkflowMonitorVisible: boolean = false;
     private hasSuggest: boolean = false;
 
     constructor(private route: ActivatedRoute,
@@ -68,6 +70,8 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o']));
                     this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus', ['fa-hourglass-start']));
 
+                    if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow Monitor', 'workflowmonitor', ['fa-heartbeat']));
+
                     this.isLoading = false;
                 });            
         });
@@ -81,5 +85,6 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         if (activatedItem.tag == 'metrics') this.isMetricsVisible = !this.isMetricsVisible;
         else if (activatedItem.tag == 'workflowstatus') this.isWorkflowStatusVisible = !this.isWorkflowStatusVisible;
+        else if (activatedItem.tag == 'workflowmonitor') this.isWorkflowMonitorVisible = !this.isWorkflowMonitorVisible;
     }
 };

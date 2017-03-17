@@ -15,7 +15,8 @@ export class ArtifactType {
     AllowRelatedArtifacts: boolean;
     CanOwnFusion: boolean;
     HasDashboards: boolean;
-    HasSuggestWorkflow: boolean;    
+    HasSuggestWorkflow: boolean;
+    HasV2Workflows: boolean;
 }
 
 export class ArtifactTypeSummary {

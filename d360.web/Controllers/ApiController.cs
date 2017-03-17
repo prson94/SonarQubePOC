@@ -906,6 +906,11 @@ where   h.ID <> @t order by h.[Level] desc;
             var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == typeID && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
             model.Add("HasSuggestWorkflow", workflowEnabled);
 
+            var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
+
+            var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
+            model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
+
             return model;
         }
 

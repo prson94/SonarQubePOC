@@ -1092,6 +1092,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-form.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
