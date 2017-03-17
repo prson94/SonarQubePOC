@@ -16,8 +16,8 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="row" *ngIf="!isLoading">
                         <div class="col s12">
-                            <div class="tile tile-detail">                        
-                                <header>{{title}}</header> 
+                            <div class="tile tile-detail" *ngIf="!isCompleted">                        
+                                <header>{{title}}</header>
                                 <div class="form-instructions">{{description}}</div>            
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
                                     <div class="row">
@@ -29,16 +29,22 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                                                 <input *ngSwitchCase="fieldType.Integer" [name]="'input_'+indx" style="width: 100%;" type="number" [(ngModel)]="field.Value" >  
                                                 <p-calendar *ngSwitchCase="fieldType.Date" [(ngModel)]="field.Value" [name]="'input_'+indx"></p-calendar>
                                             </div>
-                                        </div>
-                                        <div class="col s12">&nbsp;</div>
+                                            <div class="col s12">&nbsp;</div>
+                                        </div>                                        
                                         <div class="col s12">
-                                                <button pButton type="submit" [disabled]="!workflowForm.valid" style="width: '150px';" label="Save"></button>                                    
+                                                <button pButton type="submit" [disabled]="!workflowForm.valid" style="width: '150px';" label="Submit"></button>                                    
                                         </div>
-                                    </div>    
-                                </form>                        
+                                    </div>                                        
+                                </form>                                                                                     
                             </div>
+                            <div *ngIf="isCompleted" class="tile tile-detail">
+                                <header>{{title}}</header>
+                                <div class="row">
+                                    <div class="col s12">Thank you, your responses have been submitted.</div>
+                                </div>
+                            </div>  
                         </div>
-                    </div>                                
+                    </div>                                               
                 `,
     providers: [WorkflowService]
 })
@@ -47,10 +53,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private sub: any;
     private workflowId: number;
     private workflowItemStepId: number;
+    private workflowItemId: number;
     private fields: WorkflowFormField[] = [];
     private description: string;
     private title: string;
     fieldType = WorkflowFormFieldType;
+    private isCompleted: boolean = false;
 
     constructor(private route: ActivatedRoute,
             private location: Location,
@@ -68,7 +76,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
 
         this.sub = this.route.params.subscribe(params => {            
             this.workflowId = +params['workflowId'];
-            this.workflowItemStepId = +params['workflowItemStepId'];
+            this.workflowItemStepId = +params['stepId'];
+            this.workflowItemId = +params['itemId'];
             this.load();
         });
     }
@@ -76,6 +85,13 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     
     ngOnDestroy() {
         this.sub.unsubscribe();
+    }
+
+    private onSubmit() {
+        //save form values with stepid and itemid
+        this.workflowService.submitWorkflowForm(this.workflowItemId, this.workflowItemStepId, this.fields);
+
+        this.isCompleted = true;
     }
 
     private load() {

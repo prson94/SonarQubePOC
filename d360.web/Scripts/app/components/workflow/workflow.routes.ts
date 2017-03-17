@@ -26,7 +26,7 @@ const routes: Routes = [
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST + '/:workflowType', component: WorkflowDetailComponent
             },
             {
-                path: SiteUrlHelpers.SITE_URL_WORKFLOW_FORM + '/:workflowId/:workflowItemStepId', component: WorkflowFormComponent
+                path: SiteUrlHelpers.SITE_URL_WORKFLOW_FORM + '/:workflowId/:stepId/:itemId', component: WorkflowFormComponent
             }                   
         ]
     }

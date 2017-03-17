@@ -274,6 +274,14 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
+    submitWorkflowForm(itemId: number, stepId: number, fields: any[]): Promise<any> {
+        return this.http
+            .post(`services/workflow/SubmitWorkflowForm/${itemId}/${stepId}`, fields)
+            .toPromise()
+            .then(res => <any>res.json())
+            .catch(err => this.handleError(err));
+    }
+
     getActivityTypes(): Promise<ActivityTypeInfo[]> {
         return this.http.get('services/workflow/activitytypes')
             .toPromise()
