@@ -1056,5 +1056,21 @@ namespace d360.web.Controllers.Services
             return Request.CreateResponse(HttpStatusCode.OK, types);
 
         }
+
+        [Route("types/{objectID:int}/{objectType}"), HttpGet]
+        public HttpResponseMessage GetWorkflowTypesForObject(int objectID, string objectType)
+        {
+            string sql = @"select t.ID, t.Name, t.CreatedOn, t.UpdatedOn, e.ChangeType
+                from workflow.type t
+                join workflow.eventregistration e on e.typeid = t.id                
+                where 
+                    e.objectid = @id and e.[object] = @type
+            ";
+
+            var types = Company.Query<dynamic>(sql, new { id = objectID, type = new Dapper.DbString { Value = objectType, IsFixedLength = true, Length = 50, IsAnsi = true } }).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, types);
+
+        }
     }
 }

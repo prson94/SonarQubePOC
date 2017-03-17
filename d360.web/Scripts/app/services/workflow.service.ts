@@ -295,4 +295,11 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
+
+    getObjectTypes(objectID: number, objectType: string): Promise<any[]> {
+        return this.http.get(`services/workflow/types/${objectID}/${objectType}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }
