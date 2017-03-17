@@ -1,36 +1,57 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="tile tile-detail" [hidden]="isLoading">
-    <header *ngIf="model != null">
-        Workflow - {{model.Name}}
-        <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)" ></d3s-tile-actions>
+    <header>
+        <span *ngIf="model != null && model.Name != ''">
+            Workflow - {{model.Name}}
+        </span>
+        <span *ngIf="model == null || model.Name != ''">
+            New Workflow
+        </span>
+        <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
     </header>
 
-    <div *ngIf="selectedData != null" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
-        <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="selectedData.name">
-            <div>foo</div>
-            <div *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node">
-                X: {{selectedData.x}}<br />
-                Y: {{selectedData.y}}<br />
-                Step Type: {{StepType[selectedData.stepType]}}<br />
-                Activity Type: {{selectedData.activityType}}<br />
+    <div style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
+        <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="selectedData == null ? '' : selectedData.name">
+            <div *ngIf="selectedData == null" style="padding:10px;">Nothing selected</div>
+            <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
+                <strong>Position:</strong> {{selectedData.x}}, {{selectedData.y}}<br />
+                <strong>Step Type:</strong> {{StepType[selectedData.stepType]}}<br />
+                <strong>Activity Type:</strong> {{selectedData.activityDescription}}<br />
+                <div *ngIf="selectedData.settings != null && selectedData.activityType == 1">
+                    <strong>Message Subject:</strong> {{selectedData.settings['MessageSubjectTemplate']}}<br />
+                    <strong>Message Body:</strong> {{selectedData.settings['MessageBodyTemplate']}}
+                </div>
             </div>
-            <div *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link">
-                Link Type: {{LinkType[selectedData.linkType]}}<br />
-                Transition Type: {{TransitionType[selectedData.transitionType]}}<br />
+            <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
+                <strong>Link Type:</strong> {{LinkType[selectedData.linkType]}}<br />
+                <strong>Transition Type:</strong> {{TransitionType[selectedData.transitionType]}}<br />
             </div>
         </d3s-overlay-window>
     </div>
 
-    <table class="responsive-table">
+    <div class="row">
+        <div class="col" [ngClass]="(isReadOnly) ? 's12' : 's10'">
+            <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
+        </div>
+        <div class="col s2" style="background-color:#eee;" [style.display]="(isReadOnly) ? 'none' : 'block'">
+            <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
+        </div>
+    </div>
+
+
+
+
+
+    <!--<table class="responsive-table">
         <tbody>
             <tr>
                 <td>
                     <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
                 </td>
-                <td style="width:200px; background-color:#eee">
+                <td style="background-color:#eee" [hidden]="readonly" [style.width]="readonly ? '0px' : '200px'">
                     <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
                 </td>
             </tr>
         </tbody>
-    </table>
+    </table>-->
 </div>

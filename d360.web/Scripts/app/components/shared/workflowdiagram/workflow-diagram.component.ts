@@ -25,7 +25,7 @@ declare var window: any;
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [ PermissionsService, WorkflowService ]
+    providers: [PermissionsService, WorkflowService]
 })
 
 export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit {
@@ -53,6 +53,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private menuItems: MenuItem[] = [];
     private isWindowVisible = false;
+    private isReadOnly: boolean = true;
 
 
 
@@ -63,12 +64,19 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     public ngOnInit() {
         this.initializeDiagram();
-
+        this.loadMenuItems();
+        if (this.readonly.toString().toLowerCase() == 'true')
+            this.isReadOnly = true;
+        else
+            this.isReadOnly = false;
+        //console.log(this.readonly, this.readonly == true, this.readonly === true, this.readonly.toString() == 'true');
+        //console.log({ val: this.readonly });
     }
 
     public ngAfterViewInit() {
         this.resizeDiagram();
-        this.loadMenuItems();
+        this.resizePalette();
+
     }
 
     public ngOnDestroy() {
@@ -90,16 +98,20 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.nodeTemplateMap.add('task', this.createTaskNode());
         this.myDiagram.nodeTemplateMap.add('start', this.createTerminalNode(true));
         this.myDiagram.nodeTemplateMap.add('finish', this.createTerminalNode(false));
-        this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
+        this.myDiagram.linkTemplateMap.add('', (this.isReadOnly) ? this.createDefaultLink() : this.createEditorLink());
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
-        
+
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
-        
+
+        this.myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
+        this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
+
+
         this.getActivityTypes().then(() => this.populateDiagram()).then(() => this.initializePalette());
     }
 
@@ -117,9 +129,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private populateDiagram(): Promise<any> {
+        if (this.id < 1) {
+            this.model = new WorkflowDiagramModel();
+            this.parseData(this.model);
+            return Promise.resolve();
+        }
+
         this.isLoading = true;
 
-        this.workflowService.getWorkflowDiagram(this.id)
+        return this.workflowService.getWorkflowDiagram(this.id)
             .then(r => {
                 this.model = r;
                 if (this.model.Nodes != null)
@@ -128,8 +146,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 this.parseData(this.model);
                 this.isLoading = false;
             });
-
-        return null;
     }
 
     private parseData(data: WorkflowDiagramModel) {
@@ -215,11 +231,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             icon: 'fa-info-circle'
         });
 
-        if (this.readonly)
-            this.menuItems.push({
-                icon: 'fa-remove'
-            });
-       
+        //if (this.readonly)
+        this.menuItems.push({
+            icon: 'fa-remove'
+        });
+
     }
 
     //#endregion
@@ -237,6 +253,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         this.resizeDiagram();
+        this.resizePalette();
     }
 
     private resizeDiagram() {
@@ -252,6 +269,18 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
 
         this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
+    }
+
+    private resizePalette() {
+        let offset = this.paletteRef.nativeElement.offsetTop;
+        let height = window.innerHeight;
+
+        if (this.paletteRef.nativeElement.offsetParent) {
+            offset += this.paletteRef.nativeElement.offsetParent.offsetTop;
+        }
+
+
+        this.paletteRef.nativeElement.style.height = (height - offset - 50) + 'px';
     }
 
     private reOrderLayout() {
@@ -287,7 +316,28 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private createPalette(): go.Palette {
 
+        console.log('reached created palette');
+
+
         let paletteModel = [];
+
+        paletteModel.push({
+            template: 'start',
+            category: 'start',
+            name: 'Start',
+            diagramObjectType: DiagramObjectType.Node,
+            stepType: StepType.Start,
+            pos: "0 0"
+        });
+
+        paletteModel.push({
+            template: 'finish',
+            category: 'finish',
+            name: 'Finish',
+            diagramObjectType: DiagramObjectType.Node,
+            stepType: StepType.Finish,
+            pos: "0 0"
+        });
 
         this.activityTypes.forEach(a => {
             paletteModel.push({
@@ -298,9 +348,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 activityName: a.Name,
                 icon: a.Icon,
                 activityDescription: a.Description,
+                diagramObjectType: DiagramObjectType.Node,
+                stepType: StepType.Task,
                 pos: "0 0"
             });
         });
+
+        console.log(paletteModel);
 
         let pt = this.g(go.Palette, "WorkflowPalette",
             {
@@ -330,7 +384,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         let dg = this.g(go.Diagram, 'WorkflowDiagram', {
             //fixedBounds: new go.Rect(offset, offsetLeft, (height - offset - 50), (width - offsetLeft - 50)),
-            initialContentAlignment: go.Spot.Left,
+            initialContentAlignment: go.Spot.TopLeft,
             allowDrop: true,
             //allowHorizontalScroll: false,  // disallow scrolling or panning
             //allowVerticalScroll: false,
@@ -363,6 +417,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         return this.g(go.Node, "Spot",
             new go.Binding("location", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
+            {
+                locationSpot: go.Spot.Center,
+                mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
+                mouseLeave: (e, obj) => { this.showPorts(obj.part, false); }
+            },
             this.g(go.Panel, "Auto", {
                 width: nodeWidth,
                 height: nodeHeight
@@ -393,7 +452,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                         new go.Binding("text", "activityName").makeTwoWay(),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     )
-                )
+                ),
+                this.makePort('B', go.Spot.Bottom, false, true),
+                this.makePort('T', go.Spot.Top, true, true),
+                this.makePort('L', go.Spot.Left, true, true),
+                this.makePort('R', go.Spot.Right, true, false)
             )
         );
     }
@@ -407,6 +470,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         return this.g(go.Node, "Spot",
             new go.Binding("location", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
+            {
+                locationSpot: go.Spot.Center,
+                mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
+                mouseLeave: (e, obj) => { this.showPorts(obj.part, false); }
+            },
             this.g(go.Shape, "Circle", {
                 stroke: nodeBorderColor,
                 strokeWidth: 2,
@@ -424,11 +492,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     font: "bold " + nodeFontSize + "pt sans-serif",
                     stroke: "#fff"
                 },
-                new go.Binding("text", "name").makeTwoWay()
-            ))
+                    new go.Binding("text", "name").makeTwoWay()
+                ),
+                this.makePort('B', go.Spot.Bottom, isStart, !isStart))
         );
     }
-
 
     private createDefaultLink(): go.Link {
         return this.g(
@@ -465,6 +533,43 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         );
     }
 
+    private createEditorLink(): go.Link {
+        return this.g(go.Link,  // the whole link panel
+            {
+                routing: go.Link.AvoidsNodes,
+                curve: go.Link.JumpOver,
+                corner: 5, toShortLength: 4,
+                relinkableFrom: true,
+                relinkableTo: true,
+                reshapable: true,
+                resegmentable: true,
+                // mouse-overs subtly highlight links:
+                mouseEnter: function (e, link) { link.findObject("HIGHLIGHT").stroke = "rgba(30,144,255,0.2)"; },
+                mouseLeave: function (e, link) { link.findObject("HIGHLIGHT").stroke = "transparent"; }
+            },
+            new go.Binding("points").makeTwoWay(),
+            this.g(go.Shape,  
+                { isPanelMain: true, strokeWidth: 8, stroke: "transparent", name: "HIGHLIGHT" }),
+            this.g(go.Shape,  // the link path shape
+                { isPanelMain: true, stroke: "gray", strokeWidth: 2 }),
+            this.g(go.Shape,  // the arrowhead
+                { toArrow: "standard", stroke: null, fill: "gray" }),
+            this.g(go.Panel, "Auto",  // the link label, normally not visible
+                { visible: false, name: "LABEL", segmentIndex: 2, segmentFraction: 0.5 },
+                new go.Binding("visible", "visible").makeTwoWay(),
+                this.g(go.Shape, "RoundedRectangle",  // the label shape
+                    { fill: "#F8F8F8", stroke: null }),
+                this.g(go.TextBlock, "Yes",  // the label
+                    {
+                        textAlign: "center",
+                        font: "10pt helvetica, arial, sans-serif",
+                        stroke: "#333333",
+                        editable: true
+                    },
+                    new go.Binding("text").makeTwoWay())
+            )
+        );
+    }
 
     private makeIconPanel(fontSize) {
         fontSize -= 2;
@@ -480,7 +585,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             //        toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
             //    })
             //    ,
-                //new go.Binding("fill", "fore")),
+            //new go.Binding("fill", "fore")),
             this.g(go.TextBlock,
                 {
                     row: 0,
@@ -501,7 +606,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         return iconPanel;
     }
 
-    private makePort(name: string, leftside: boolean) {
+    private makePort2(name: string, leftside: boolean) {
         var port = this.g(go.Shape, "Circle", {
             fill: "white",
             stroke: "gray",
@@ -529,6 +634,27 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         return panel;
     }
 
+    private makePort(name, spot, output, input) {
+        return this.g(go.Shape, "Circle",
+            {
+                fill: "transparent",
+                stroke: null,
+                desiredSize: new go.Size(8, 8),
+                alignment: spot, alignmentFocus: spot,
+                portId: name,
+                fromSpot: spot, toSpot: spot,
+                fromLinkable: output, toLinkable: input,
+                cursor: "pointer"
+            });
+    }
+
+    private showPorts(node, show) {
+        let diagram = node.diagram;
+        if (!diagram || diagram.isReadOnly || !diagram.allowLink) return;
+        node.ports.each((port) => {
+            port.stroke = (show ? "white" : null);
+        });
+    }
 
 
     //#endregion

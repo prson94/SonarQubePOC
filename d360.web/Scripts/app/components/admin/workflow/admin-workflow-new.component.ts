@@ -18,11 +18,17 @@ export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnI
 
     constructor(rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
+        this.clearSidebar();
+        this.headerBreadcrumbService.clearBreadcrumbs();
+        let b = new Breadcrumb();
+        b.text = 'Workflow';
+        this.headerBreadcrumbService.showBreadcrumb(b);
+        this.titleService.setTitle("Workflow");
+
     }
 
     ngOnInit() {
-        this.areaName = "New Workflow";
-        //this.setCommonItems();
+        this.areaName = "Workflow";
 
         //this.load();
     }
@@ -39,6 +45,10 @@ export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnI
 
     closeEditor() {
         this.mode = PageMode.Default;
+    }
+
+    add() {
+        this.mode = PageMode.DiagramEditor;
     }
 }
 
