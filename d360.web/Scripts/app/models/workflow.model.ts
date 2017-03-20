@@ -301,4 +301,5 @@ export class WorkflowTypeItem {
     TypeName: string;
     ChangeType: WorkflowChangeType;
     ConditionText: string;
+    Version: number;
 }

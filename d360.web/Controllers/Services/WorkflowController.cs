@@ -1046,10 +1046,16 @@ namespace d360.web.Controllers.Services
         [Route("types"), HttpGet]
         public HttpResponseMessage GetWorkflowTypes()
         {
-            string sql = @"select t.ID, t.Name, t.CreatedOn, t.UpdatedOn, e.ChangeType, d.Name as TypeName 
+            string sql = @"select t.ID
+                    ,t.Name
+                    ,t.CreatedOn
+                    ,t.UpdatedOn
+                    ,e.ChangeType
+                    ,d.Name as TypeName                     
                 from workflow.type t
                 join workflow.eventregistration e on e.typeid = t.id
-                join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid";
+                join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid                
+        ";
 
             var types = Company.Query<dynamic>(sql).ToList();
 
@@ -1066,8 +1072,10 @@ namespace d360.web.Controllers.Services
                     ,t.UpdatedOn
                     ,e.ChangeType
                     ,[workflow].[ConditionToPlainText]([Condition]) as 'ConditionText'
+                    ,v.Version as Version
                 from workflow.type t
-                join workflow.eventregistration e on e.typeid = t.id                
+                join workflow.eventregistration e on e.typeid = t.id    
+                join workflow.[version] v on t.id = v.typeid            
                 where 
                     e.objectid = @id and e.[object] = @type
             ";
@@ -1088,10 +1096,11 @@ namespace d360.web.Controllers.Services
 	                        ,i.completedon as 'CompletedOn'
 	                        ,od.name as 'Name'
                             ,od.NgUrl as 'Url'
+                            
                           from
 	                        [workflow].[version] v
 	                        inner join [workflow].item i on v.id = i.versionid
-	                        inner join [cache].objectdetails od on i.objectid = od.objectid and i.[object] = od.[object]
+	                        inner join [cache].objectdetails od on i.objectid = od.objectid and i.[object] = od.[object]                            
                           where 
 	                        v.typeid = @id
             ";

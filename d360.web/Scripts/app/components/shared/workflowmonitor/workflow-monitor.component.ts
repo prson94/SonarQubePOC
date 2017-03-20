@@ -25,6 +25,7 @@ import { WorkflowTypeItem, WorkflowChangeType } from '../../../models/workflow.m
                                             </template>
                                         </p-column>
                                         <p-column field="ConditionText" header="Condition" [sortable]="true"></p-column>
+                                        <p-column field="Version" header="Version" [sortable]="true"></p-column>
                                     </p-dataTable>                                       
                                 </div>
                             </div>
