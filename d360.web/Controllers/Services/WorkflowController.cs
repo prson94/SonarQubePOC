@@ -1108,8 +1108,30 @@ namespace d360.web.Controllers.Services
             var types = Company.Query<dynamic>(sql, new { id = typeId }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, types);
-
         }
 
+        [Route("item/details/{workflowId:int}/{objectType}/{objectId:int}"), HttpGet]
+        public HttpResponseMessage GetItemDetailsForWorkflow(int workflowId, string objectType, int objectId)
+        {
+            string sql = @"		select
+			                        vs.name as 'Name',
+			                        istep.startedOn as 'StartedOn',
+                                    R.FirstName + ' ' + R.LastName as StartedBy, 
+			                        istep.completedon as 'CompletedOn',
+                                    Rc.FirstName + ' ' + Rc.LastName as CompletedBy
+                                from
+			                        [workflow].item i
+	                                inner join [workflow].itemstep istep on (i.id = istep.itemid)
+			                        inner join [workflow].versionstep vs on (vs.id = istep.stepid)
+                                    inner join [reporting].[Global_Resource] R on R.ResourceID = istep.startedby
+                                    left join [reporting].[Global_Resource] Rc on Rc.ResourceID = istep.completedby
+		                        where
+			                        i.[object] = @typename and i.[objectid] = @id and i.versionid = @workflowId;
+            ";
+
+            var types = Company.Query<dynamic>(sql, new { workflowId = workflowId, id = objectId, typename = objectType }).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, types);
+        }
     }
 }
