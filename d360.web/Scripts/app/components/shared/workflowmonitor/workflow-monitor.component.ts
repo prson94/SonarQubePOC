@@ -24,6 +24,7 @@ import { WorkflowTypeItem, WorkflowChangeType } from '../../../models/workflow.m
                                                 <span>{{changeTypeText(workflow.ChangeType)}}</span>
                                             </template>
                                         </p-column>
+                                        <p-column field="ConditionText" header="Condition" [sortable]="true"></p-column>
                                     </p-dataTable>                                       
                                 </div>
                             </div>

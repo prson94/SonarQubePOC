@@ -1060,7 +1060,12 @@ namespace d360.web.Controllers.Services
         [Route("types/{objectID:int}/{objectType}"), HttpGet]
         public HttpResponseMessage GetWorkflowTypesForObject(int objectID, string objectType)
         {
-            string sql = @"select t.ID, t.Name, t.CreatedOn, t.UpdatedOn, e.ChangeType
+            string sql = @"select t.ID
+                    ,t.Name
+                    ,t.CreatedOn
+                    ,t.UpdatedOn
+                    ,e.ChangeType
+                    ,[workflow].[ConditionToPlainText]([Condition]) as 'ConditionText'
                 from workflow.type t
                 join workflow.eventregistration e on e.typeid = t.id                
                 where 

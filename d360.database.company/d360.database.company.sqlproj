@@ -133,6 +133,7 @@
     <Folder Include="cache\Functions\" />
     <Folder Include="workflow" />
     <Folder Include="workflow\Tables" />
+    <Folder Include="workflow\Functions" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="fusion\Tables\StagingRelation.sql">
@@ -551,6 +552,7 @@
     <None Include="dbo\User Defined Types\LineageTechnicalTable.sql" />
     <None Include="fusion\Stored Procedures\GenerateEagleBusinessLineageData.sql" />
     <None Include="fusion\Stored Procedures\ClearMarkitMapLineageData.sql" />
+    <None Include="workflow\Functions\ConditionToPlainText.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />
