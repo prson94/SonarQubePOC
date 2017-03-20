@@ -306,6 +306,112 @@ BEGIN
 			------------------------------------------------------------------
 		end;
 
+		if @Type = 'ReferenceItemType' OR @Type = 'ReferenceItem'
+		begin
+			-- BUILD LOOKUP LIST HTML -----------------------------------------
+			declare @refs table (RowID int identity, ID int)
+
+			declare @MyRefTypeID int
+			if @Type = 'ReferenceItem'
+				begin
+					select @MyRefTypeID = ReferenceItemTypeID from ReferenceItem where ID = @ID 
+				end
+			else
+				begin
+					set @MyRefTypeID = @ID
+				end
+
+			insert into @refs 
+				select top 50 ID from [ReferenceItem] where ReferenceItemTypeID = @MyRefTypeID order by ID desc
+		
+			declare @refFieldTypes table (ID int identity, Name nvarchar(250))
+			insert into @refFieldTypes
+				select FriendlyName from FieldType where [Object] = 'ReferenceItemType' and ObjectID = @MyRefTypeID order by SortOrder asc
+
+			declare @refHtml nvarchar(max)
+
+			set @refHtml = '<table class="hoverable bordered striped" style="width:100%">'
+
+			-- Loop through field name list ---------
+			set @refHtml = @refHtml + '<thead>'
+			set		@current = 1
+			select	@max = max(ID) from @refFieldTypes
+			while @current <= @max
+			begin
+				select	@name = Name
+				from	@refFieldTypes
+				where	ID = @current
+
+				set @refHtml = @refHtml + '<th style="margin-right: 15px">' + @name  + '</th>'
+
+				set @current = @current + 1
+			end
+			set @refHtml = @refHtml + '</thead>'
+			-----------------------------------------
+
+			set @refHtml = @refHtml + '<tbody>'
+
+			-- Loop through event list --------------
+			select	@current = min(RowID) from @refs
+			select	@max = max(RowID) from @refs
+
+			while @current <= @max
+			begin
+				set @refHtml = @refHtml + '<tr>'	-- Open row for selected event.
+
+				declare @refFields table (Name nvarchar(250), Value nvarchar(4000))
+			
+				declare @refID int
+
+				select	@refID = ID from @refs where RowID = @current
+
+				insert into @refFields
+					select		FriendlyName,
+								FormattedValue
+					from		FieldWithRelation
+					where		ObjectType = 'ReferenceItem' 
+								and ObjectID = @refID
+
+					-- Loop through each field for this selected event --
+					declare @rfCurrent int,
+							@rfMax int,
+							@rfCurrentVal nvarchar(max);
+
+					set		@rfCurrent = 1
+					select	@rfMax = max(ID) from @refFieldTypes
+					while @rfCurrent <= @rfMax
+					begin
+						select	@name = Name from @refFieldTypes where ID = @rfCurrent
+
+						if exists (select 1 from @refFields where Name = @name)
+						begin
+							select @refHtml = @refHtml + '<td>' + coalesce(Value, '1') + '</td>' from @refFields where Name = @name;
+						end
+						else
+						begin
+							set @refHtml = @refHtml + '<td>&nbsp;</td>';
+						end
+
+						set @rfCurrent = @rfCurrent + 1
+					end
+					-----------------------------------------------------
+
+				delete @refFields
+
+				set @refHtml = @refHtml + '</tr>'	-- Close off row for selected lookup.
+
+				set @current = @current + 1
+			end
+			-----------------------------------------
+
+			set @refHtml = @refHtml + '</tbody>'
+
+			set @refHtml = @refHtml + '</table>'
+
+			insert into @tbl values ('Items', @refHtml)
+			------------------------------------------------------------------
+		end;
+
 		if @Type = 'Resource' OR @Type = 'ResourceType'
 		begin
 			-- BUILD Resource LIST HTML -----------------------------------------
@@ -640,12 +746,6 @@ BEGIN
 				select	'Description', Description
 				from	[Rule] O
 				where	ID = @ID
-			--insert into @tbl
-			--	select	'Status', Status
-			--	from	[Rule] O
-			--	where	ID = @ID
-
-			--set @html = @html + '<div><b>Status:</b> {Status}</div>'
 
 			set @hasDynamicFields = 1
 		end;
@@ -667,12 +767,43 @@ BEGIN
 
 		if @Type = 'Taxonomy'
 		begin
-			insert into @tbl
-				select	'TextPath', TextPath
-				from	Taxonomy O
-				where	ID = @ID
+			declare @taxonomyPathHtml nvarchar(2500) = '<table>';
 
-			set @html = @html + '<div><b>Path:</b> {TextPath}</div>'
+			with tp as (
+				select	O.ID,
+						O.ParentID,
+						O.Name,
+						coalesce(L.Name, 'Level ' + cast(O.[Level] as varchar)) as LevelName,
+						O.[Level]
+				from	[Taxonomy] O
+						left join TaxonomyTypeLevel L on L.TaxonomyTypeID = O.TaxonomyTypeID and L.[Level] = O.[Level]
+				where	O.ID = @ID
+				union all
+				select	O.ID,
+						O.ParentID,
+						O.Name,
+						coalesce(L.Name, 'Level ' + cast(O.[Level] as varchar)) as LevelName,
+						O.[Level]
+				from	[Taxonomy] O
+						outer apply (
+									select Name from TaxonomyTypeLevel where TaxonomyTypeID = O.TaxonomyTypeID and [Level] = O.[Level]
+									) L
+						--left join TaxonomyTypeLevel L on L.TaxonomyTypeID = O.TaxonomyTypeID and L.[Level] = O.[Level]
+						inner join tp as C on C.ParentID = O.ID
+			)
+
+			select		@taxonomyPathHtml = coalesce(@taxonomyPathHtml + '', '') + '<tr><td>' +  cast([Level] as varchar) + '</td><td>' +  LevelName + '</td><td><b>' + Name + '</b>' + '</td></tr>'
+			from		tp
+			order by	[Level]
+			
+			set @taxonomyPathHtml =  @taxonomyPathHtml + '</table>'
+			--insert into @tbl
+			--	select	'TextPath', TextPath
+			--	from	Taxonomy O
+			--	where	ID = @ID
+
+			--set @html = @html + '<div><b>Path:</b> {TextPath}</div>'
+			set @html = @html + '<div><b>Path:</b></div><div>' + coalesce(@taxonomyPathHtml,'') + '</div>'
 
 			set @hasDynamicFields = 1
 		end;
@@ -799,4 +930,4 @@ BEGIN
 	select	'' as Title,
 			@html as Body;
 END
-GO
+go
