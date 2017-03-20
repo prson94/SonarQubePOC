@@ -53,6 +53,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
             this.isLoading = true;
             this.isMetricsVisible = false;
             this.isWorkflowStatusVisible = false;
+            this.isWorkflowMonitorVisible = false;
             this.hideSidebarItems();
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
             this.logAction('open', 'ArtifactType', artifactTypeId);
