@@ -35,19 +35,6 @@ export class WorkflowItem {
     Fields: any[];
 }
 
-export enum WorkflowType {
-    SuggestNewArtifact = 1,
-    CertifyArtifact = 2,
-    WorkIssue = 3,
-    ChallengeArtifact = 4,
-    SuggestNewArtifactMulti = 5,
-}
-
-export enum IssueType {
-    Issue = 0,
-    Challenge = 1
-}
-
 export class Issue {
     Issue: string;
     IssueType: IssueType;
@@ -163,9 +150,7 @@ export class IssueInfo {
     Issue: any;
 }
 
-
 //#region diagram
-
 
 export class WorkflowDiagramModel {
     Name: string;
@@ -194,25 +179,6 @@ export class WorkflowDiagramLink {
     Condition: string;
     ConditionObject: any;
     Name: string;
-}
-
-
-export enum StepType {
-    Start = 1,
-    Task = 2,
-    Terminate = 3,
-    Finish = 4
-}
-
-export enum TransitionType {
-    None = 1,
-    Timer = 2,
-    Value = 3
-}
-
-export enum LinkType {
-    Always = 1,
-    Condition = 2
 }
 
 export class LinkModel {
@@ -249,11 +215,6 @@ export class NodeModel {
     activityName: string;
 }
 
-export enum DiagramObjectType {
-    Link,
-    Node
-}
-
 export class ActivityTypeInfo {
     ID: number;
     Name: string;
@@ -265,20 +226,6 @@ export class ActivityTypeInfo {
 }
 
 //#endregion
-
-export enum WorkflowChangeType {
-    Add = 1,    
-    Update = 2,
-    Delete = 3,
-    Timer = 4
-}
-
-export enum WorkflowFormFieldType {
-    Text = 0,
-    Boolean = 1,
-    Integer = 2,
-    Date
-}
 
 export class WorkflowFormField {
     Label: string;
@@ -300,6 +247,97 @@ export class WorkflowTypeItem {
     Name: string;
     TypeName: string;
     ChangeType: WorkflowChangeType;
-    ConditionText: string;
-    Version: number;
 }
+
+export class WorkflowEventRegistration {
+    ID: number = 0;
+    TypeID: number;
+    Object: string;
+    ObjectID: number;
+    ChangeType: WorkflowChangeType;
+    Condition: string;
+    ConditionObject: any;
+
+    conditions: EventCondition[] = [];
+}
+
+export class WorkflowObjectType {
+    value: string;
+    id: number;
+    type: string;
+    name: string;
+}
+
+export class ChangeTypeInfo {
+    ID: number;
+    Name: string;
+    Description: string;
+}
+
+export class EventCondition {
+    FieldTypeID: number = 0;
+    Value: any;
+    ValueType: string;
+    Operator: string;
+
+    fieldName: string;
+}
+
+export class WorkflowTypeModel {
+    Type: WorkflowTypeItem = new WorkflowTypeItem();
+    Event: WorkflowEventRegistration = new WorkflowEventRegistration();
+}
+
+//#region enums
+
+export enum WorkflowChangeType {
+    Add = 1,
+    Update = 2,
+    Delete = 3,
+    Timer = 4
+}
+
+export enum WorkflowFormFieldType {
+    Text = 0,
+    Boolean = 1,
+    Integer = 2,
+    Date
+}
+
+export enum DiagramObjectType {
+    Link,
+    Node
+}
+
+export enum StepType {
+    Start = 1,
+    Task = 2,
+    Terminate = 3,
+    Finish = 4
+}
+
+export enum TransitionType {
+    None = 1,
+    Timer = 2,
+    Value = 3
+}
+
+export enum LinkType {
+    Always = 1,
+    Condition = 2
+}
+
+export enum IssueType {
+    Issue = 0,
+    Challenge = 1
+}
+
+export enum WorkflowType {
+    SuggestNewArtifact = 1,
+    CertifyArtifact = 2,
+    WorkIssue = 3,
+    ChallengeArtifact = 4,
+    SuggestNewArtifactMulti = 5,
+}
+
+//#endregion

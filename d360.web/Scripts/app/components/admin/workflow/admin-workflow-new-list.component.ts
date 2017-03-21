@@ -15,9 +15,17 @@ import { WorkflowService } from '../../../services/workflow.service';
     <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" >                                                        
     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>        
-    <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>   
-    <p-column field="CreatedOn" header="Created On" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
-    <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
+    <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
+    <p-column field="CreatedOn" header="Created On" [sortable]="true" [filter]="!showSimpleFilter" >
+        <template let-item="rowData" pTemplate type="body">
+            <span>{{item.CreatedOn | date:'shortDate'}}</span>
+        </template>
+    </p-column> 
+    <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter">
+        <template let-item="rowData" pTemplate type="body">
+            <span>{{item.UpdatedOn | date:'shortDate'}}</span>
+        </template>
+    </p-column> 
     <p-column [style]="{width:'40px'}">
         <template let-item="rowData" pTemplate type="body">
             <div class="RowTools">

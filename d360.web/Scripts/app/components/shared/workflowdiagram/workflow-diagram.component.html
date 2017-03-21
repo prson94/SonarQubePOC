@@ -11,36 +11,43 @@
     </header>
 
     <div style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
-        <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="selectedData == null ? '' : selectedData.name">
-            <div *ngIf="selectedData == null" style="padding:10px;">Nothing selected</div>
-            <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
-                <strong>Position:</strong> {{selectedData.x}}, {{selectedData.y}}<br />
-                <strong>Step Type:</strong> {{StepType[selectedData.stepType]}}<br />
-                <strong>Activity Type:</strong> {{selectedData.activityDescription}}<br />
-                <div *ngIf="selectedData.settings != null && selectedData.activityType == 1">
-                    <strong>Message Subject:</strong> {{selectedData.settings['MessageSubjectTemplate']}}<br />
-                    <strong>Message Body:</strong> {{selectedData.settings['MessageBodyTemplate']}}
+        <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="(workflow != null) ? workflow.Type.Name : ''">
+            <ul class="tab-menu">
+                <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'">
+                    <i class="fa fa-info-circle fa-2x"></i>
+                </li>
+            </ul>
+            <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
+                <div *ngSwitchCase="'info'">
+                    <div *ngIf="selectedData == null">
+                        {{WorkflowChangeType[workflow.Event.ChangeType]}}
+                    </div>
+                    <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
+                        <strong>Position:</strong> {{selectedData.x}}, {{selectedData.y}}<br />
+                        <strong>Step Type:</strong> {{StepType[selectedData.stepType]}}<br />
+                        <strong>Activity Type:</strong> {{selectedData.activityDescription}}<br />
+                        <div *ngIf="selectedData.settings != null && selectedData.activityType == 1">
+                            <strong>Message Subject:</strong> {{selectedData.settings['MessageSubjectTemplate']}}<br />
+                            <strong>Message Body:</strong> {{selectedData.settings['MessageBodyTemplate']}}
+                        </div>
+                    </div>
+                    <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
+                        <strong>Link Type:</strong> {{LinkType[selectedData.linkType]}}<br />
+                        <strong>Transition Type:</strong> {{TransitionType[selectedData.transitionType]}}<br />
+                    </div>
                 </div>
-            </div>
-            <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
-                <strong>Link Type:</strong> {{LinkType[selectedData.linkType]}}<br />
-                <strong>Transition Type:</strong> {{TransitionType[selectedData.transitionType]}}<br />
             </div>
         </d3s-overlay-window>
     </div>
 
     <div class="row">
-        <div class="col" [ngClass]="(isReadOnly) ? 's12' : 's10'">
+        <div class="col" [ngClass]="(isReadOnly) ? 's12' : 's9 m10'">
             <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
         </div>
-        <div class="col s2" style="background-color:#eee;" [style.display]="(isReadOnly) ? 'none' : 'block'">
+        <div class="col s3 m2" style="background-color:#eee;" [style.display]="(isReadOnly) ? 'none' : 'block'">
             <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
         </div>
     </div>
-
-
-
-
 
     <!--<table class="responsive-table">
         <tbody>

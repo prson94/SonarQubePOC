@@ -13,6 +13,10 @@ import {
     TransitionType,
     LinkType,
     ActivityTypeInfo,
+    WorkflowEventRegistration,
+    WorkflowTypeItem,
+    WorkflowTypeModel,
+    WorkflowChangeType,
 } from '../../../models/workflow.model';
 
 import { MenuItem } from 'primeng/primeng';
@@ -31,7 +35,10 @@ declare var window: any;
 export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit {
     @Input() id: number = 0;
     @Input() readonly: boolean = true;
+    @Input() hasClose: boolean = false;
+    @Input() workflow: WorkflowTypeModel;
     @Output() onCloseClick = new EventEmitter();
+    @Output() selectionChange = new EventEmitter();
     @ViewChild('workflowDiagram') diagramRef;
     @ViewChild('workflowPalette') paletteRef;
 
@@ -41,6 +48,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     StepType = StepType;
     TransitionType = TransitionType;
     LinkType = LinkType;
+    WorkflowChangeType = WorkflowChangeType;
 
     //diagram properties
     private g = go.GraphObject.make;
@@ -54,6 +62,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private menuItems: MenuItem[] = [];
     private isWindowVisible = false;
     private isReadOnly: boolean = true;
+    private tab = 'info';
+    private showNodeTabs = false;
+    private showLinkTabs = false;
 
 
 
@@ -91,7 +102,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private unsubscribe() {
 
     }
-
 
     private initializeDiagram() {
         this.myDiagram = this.createDiagram();
@@ -146,8 +156,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
                 console.log(this.model);
                 this.parseData(this.model);
-                this.isLoading = false;
-            });
+            })
+            .then(() => {
+                if (this.workflow == null) {
+                    return this.workflowService.getWorkflowTypeModel(this.id)
+                        .then(r => this.workflow = r);
+                }
+            })
+            .then(() => { this.isLoading = false; console.log(this.workflow); });
+
     }
 
     private parseData(data: WorkflowDiagramModel) {
@@ -233,11 +250,33 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             icon: 'fa-info-circle'
         });
 
-        //if (this.readonly)
-        this.menuItems.push({
-            icon: 'fa-remove'
-        });
+        if (this.hasClose)
+            this.menuItems.push({
+                icon: 'fa-remove'
+            });
 
+        if (!this.isReadOnly)
+            this.menuItems.push({
+                icon: 'fa-floppy-o'
+            });
+    }
+
+    private selectTab(s: string) {
+        this.tab = s;
+        switch (s) {
+            case 'info':
+                break;
+        }
+    }
+
+    save() {
+        if (this.id < 1) {
+            //new
+            let links = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
+            let nodes = this.myDiagram.model.nodeDataArray;
+        } else {
+            //edit
+        }
     }
 
     //#endregion
@@ -250,6 +289,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.isWindowVisible = !this.isWindowVisible;
         if (e.icon == 'fa-remove')
             this.onCloseClick.emit();
+        if (e.icon == 'fa-floppy-o')
+            this.save();
     }
 
     @HostListener('window:resize', ['$event'])
@@ -295,15 +336,22 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         if (this.selection.count == 0) {
             this.selectedData = null;
+            this.showNodeTabs = false;
+            this.showLinkTabs = false;
         } else {
             var sel = _.cloneDeep(this.selection.toArray());
 
             if (sel != null && sel.length != 0) {
                 this.selectedData = sel[0].data;
+                if (this.selectedData.diagramObjectType == DiagramObjectType.Node) {
+                    this.showNodeTabs = true; this.showLinkTabs = false;
+                } else if (this.selectedData.diagramObjectType == DiagramObjectType.Link) {
+                    this.showNodeTabs = false; this.showLinkTabs = true;
+                }
             }
         }
         console.log(e);
-        console.log(this.selectedData);
+        //console.log(this.selection);
     }
 
     private ObjectDoubleClicked(e: any) {
@@ -550,7 +598,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 mouseLeave: function (e, link) { link.findObject("HIGHLIGHT").stroke = "transparent"; }
             },
             new go.Binding("points").makeTwoWay(),
-            this.g(go.Shape,  
+            this.g(go.Shape,
                 { isPanelMain: true, strokeWidth: 8, stroke: "transparent", name: "HIGHLIGHT" }),
             this.g(go.Shape,  // the link path shape
                 { isPanelMain: true, stroke: "gray", strokeWidth: 2 }),

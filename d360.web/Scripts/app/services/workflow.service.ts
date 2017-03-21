@@ -17,7 +17,12 @@ import {
     ActivityTypeInfo,     
     WorkflowForm,
     WorkflowTypeItem,
+    WorkflowObjectType,
+    ChangeTypeInfo,
+    WorkflowEventRegistration,
+    WorkflowTypeModel,
 } from '../models/workflow.model';
+import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -289,6 +294,13 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .then(response => <ActivityTypeInfo[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getChangeTypes(): Promise<ChangeTypeInfo[]> {
+        return this.http.get('services/workflow/changetypes')
+            .toPromise()
+            .then(response => <ChangeTypeInfo[]>response.json())
+            .catch(err => this.handleError(err));
+    }
     
     getTypes(): Promise<any> {
         return this.http.get('services/workflow/types')
@@ -308,6 +320,41 @@ export class WorkflowService extends BaseService implements IWorkflowService {
         return this.http.get(`services/workflow/items/${typeId}`)
             .toPromise()
             .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowObjectTypes(): Promise<WorkflowObjectType[]> {
+        return this.http.get('services/workflow/objecttypes')
+            .toPromise()
+            .then(response => <WorkflowObjectType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowFieldTypes(id: number, type: string): Promise<FieldType[]> {
+        return this.http.get(`services/workflow/fieldtypes/${type}/${id}`)
+            .toPromise()
+            .then(response => <FieldType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowType(id: number): Promise<WorkflowTypeItem> {
+        return this.http.get(`services/workflow/type/${id}`)
+            .toPromise()
+            .then(response => <WorkflowTypeItem>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowEventRegistration(id: number): Promise<WorkflowEventRegistration> {
+        return this.http.get(`services/workflow/event/${id}`)
+            .toPromise()
+            .then(response => <WorkflowEventRegistration>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowTypeModel(id: number): Promise<WorkflowTypeModel> {
+        return this.http.get(`services/workflow/typemodel/${id}`)
+            .toPromise()
+            .then(response => <WorkflowTypeModel>response.json())
             .catch(err => this.handleError(err));
     }
 

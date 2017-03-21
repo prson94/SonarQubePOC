@@ -17,6 +17,8 @@ import { WorkflowDiagramModule } from '../../shared/workflowdiagram/workflow-dia
 import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminWorkflowNewComponent } from './admin-workflow-new.component';
 import { AdminWorkflowNewListComponent } from './admin-workflow-new-list.component';
+import { AdminWorkflowNewEditorComponent } from './admin-workflow-new-editor.component';
+import { AdminWorkflowNewConditionEditorComponent } from './admin-workflow-new-condition-editor.component';
 import { WorkflowItemForm } from './workflow-item.form';
 
 import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
@@ -60,6 +62,8 @@ import {
         AdminWorkflowComponent,    
         AdminWorkflowNewComponent,
         AdminWorkflowNewListComponent,
+        AdminWorkflowNewEditorComponent,
+        AdminWorkflowNewConditionEditorComponent,
         WorkflowItemForm,
     ],
     providers: [

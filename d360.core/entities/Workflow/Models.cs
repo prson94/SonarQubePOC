@@ -48,4 +48,10 @@ namespace d360.core.entities.Workflow
         [JsonProperty(PropertyName = "setting", Order = 3)]
         public List<SettingModel> Settings { get; set; }
     }
+
+    public class WorkflowTypeModel
+    {
+        public WorkflowType Type { get; set; } = new WorkflowType();
+        public WorkflowEventRegistration Event { get; set; } = new WorkflowEventRegistration();
+    }
 }

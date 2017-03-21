@@ -1043,6 +1043,12 @@ namespace d360.web.Controllers.Services
             return d360.core.enums.Workflow.ActivityType.EmailNotification.GetList().ToList();
         }
 
+        [Route("changetypes"), HttpGet]
+        public List<ChangeTypeInfo> GetChangeTypes()
+        {
+            return ChangeType.Add.GetList();
+        }
+
         [Route("types"), HttpGet]
         public HttpResponseMessage GetWorkflowTypes()
         {
@@ -1130,8 +1136,56 @@ namespace d360.web.Controllers.Services
             ";
 
             var types = Company.Query<dynamic>(sql, new { workflowId = workflowId, id = objectId, typename = objectType }).ToList();
-
             return Request.CreateResponse(HttpStatusCode.OK, types);
+        }
+
+        [Route("objecttypes"), HttpGet]
+        public HttpResponseMessage GetObjectTypes()
+        {
+            string sql = @"select 'ArtifactType|' + cast(id as varchar) as value, id, 'ArtifactType' as [type], 'Artifact Type :: ' +  Name as [name] from artifacttype
+                            union all
+                            select 'RuleType|' + cast(id as varchar) as value, id, 'RuleType' as [type], 'Rule Type :: ' + Name as [name] from ruletype
+                            union all
+                            select 'PolicyType|' + cast(id as varchar) as value, id, 'PolicyType' as [type], 'Policy Type :: ' + Name as [name] from policytype
+                            union all
+                            select 'TaxonomyType|' + cast(id as varchar) as value, id, 'TaxonomyType' as [type], 'Model Type :: ' + Name as [name] from taxonomytype";
+
+            var types = Company.Query<dynamic>(sql);
+            return Request.CreateResponse(HttpStatusCode.OK, types);
+        }
+
+        [Route("fieldtypes/{type}/{id:int}"), HttpGet]
+        public HttpResponseMessage GetFieldTypes(int id, string type)
+        {
+            var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
+            string[] excludedTypes = { "ComplexRelationLookup", "Password", "Html", "Link", "FilteredLookup", "Text" };
+
+            fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, fields);
+        }
+
+        [Route("type/{id:int}"), HttpGet]
+        public HttpResponseMessage GetWorkflowType(int id)
+        {
+            return Request.CreateResponse(HttpStatusCode.OK, WorkflowCtx.WorkflowTypes.Single(w => w.ID == id));
+        }
+
+        [Route("event/{id:int}"), HttpGet]
+        public HttpResponseMessage GetWorkflowEvent(int id)
+        {
+            return Request.CreateResponse(HttpStatusCode.OK, WorkflowCtx.WorkflowEventRegistrations.Single(w => w.TypeID == id));
+        }
+
+        [Route("typemodel/{id:int}"), HttpGet]
+        public HttpResponseMessage GetWorkflowTypeModel(int id)
+        {
+            var model = new WorkflowTypeModel();
+
+            model.Type = WorkflowCtx.WorkflowTypes.Single(w => w.ID == id);
+            model.Event = WorkflowCtx.WorkflowEventRegistrations.Single(w => w.TypeID == id);
+
+            return Request.CreateResponse(HttpStatusCode.OK, model);
         }
     }
 }
