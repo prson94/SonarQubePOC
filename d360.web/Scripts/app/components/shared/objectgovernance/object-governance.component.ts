@@ -54,7 +54,7 @@ import { ArtifactService } from '../../../services/artifacts.service';
                     background: #f0f3f8;
                 }
             `],
-    providers: [ObjectStatisticsService]
+    providers: [ArtifactService, ObjectStatisticsService]
 })
 
 export class ObjectGovernanceComponent extends BaseComponent implements OnChanges {

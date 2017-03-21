@@ -128,7 +128,6 @@
     <Compile Include="entities\Fusion\FusionRuleStepMapping.cs" />
     <Compile Include="entities\Fusion\FusionRuleStepSetting.cs" />
     <Compile Include="entities\Relation\IntersectGroup.cs" />
-    <Compile Include="entities\Relation\IntersectRole.cs" />
     <Compile Include="entities\Relation\MapRuleItemMapItem.cs" />
     <Compile Include="entities\Relation\MapRule.cs" />
     <Compile Include="entities\Relation\MapRuleItem.cs" />
@@ -321,7 +320,6 @@
     <Compile Include="enums\DataType.cs" />
     <Compile Include="entities\Views\AttributeTypeRelationDetail.cs" />
     <Compile Include="entities\Views\FollowDetail.cs" />
-    <Compile Include="enums\IntersectClassification.cs" />
     <Compile Include="enums\JobIntervalType.cs" />
     <Compile Include="enums\ObjectType.cs" />
     <Compile Include="enums\ResponsibilityTransformationType.cs" />

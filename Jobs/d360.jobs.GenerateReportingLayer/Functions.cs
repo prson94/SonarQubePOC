@@ -292,8 +292,6 @@ case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.Object else R.Su
 case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectID else R.SubjectID end as TargetID,
 case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectName else R.SubjectName end as TargetName,
 case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectUrl else R.SubjectUrl end as TargetUrl,
-case R.Classification when 1 then 'Critical' else 'Normal' end as Classification,
-R.Description,
 TR.[Count] as ChildRelationshipCount ");
             sql.Append("from IntersectDetail R ");
             sql.Append($"inner join {tableName} A on A.{objectTypeKeyName} = {typeID} and ((R.Subject = '{objectType}' and A.ID = R.SubjectID) OR (R.Object = '{objectType}' and A.ID = R.ObjectID)) ");
@@ -1071,8 +1069,6 @@ SELECT [ResponsibilityID]
 SELECT 
 	I.[ID] as [IntersectID]
       ,I.[IntersectTypeID]
-      ,I.[Classification]
-      ,I.[Description]
 	  ,I.[Subject] as [SourceObject]
 	  ,I.[SubjectID] as [SourceObjectID]
 	  ,I.[Object] as [TargetObject]
@@ -1313,11 +1309,6 @@ from	Workflow W
 
                         selectSql = @"
     select	R.ID as IntersectID,
-		    case R.Classification 
-			    when 1 then 'Critical' 
-			    else 'Normal' 
-		    end as Classification, 
-		    R.Description,
 		    S.ID as SourceID,
 		    S.Name as SourceName,
             S.TextPath as SourceTextPath,
@@ -1371,9 +1362,6 @@ from	Workflow W
     select	R.ResponsibilityID,
 		    R.AssigningItemType,
 		    R.AssigningItemID,
-		    --R.AssigningItemUrl,
-		    --R.AssigningItemName,
-		    --R.AssigningTypeName,
 		    R.ObjectID as InformationModelID,
 		    R.ObjectName,
 		    R.ObjectTypeID,
@@ -1385,7 +1373,6 @@ from	Workflow W
 		    GU.FirstName + ' ' + GU.LastName as PrimaryOwnerResourceName,
 		    R.[Role],
 		    R.[CurrentScore],
-		    --R.RedFlagged,
 		    O.TextPath,
 		    O.[Level],
 		    TL.Name as LevelName,

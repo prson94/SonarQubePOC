@@ -180,15 +180,6 @@
   <data name="InputType_Name" xml:space="preserve">
     <value>Input Type</value>
   </data>
-  <data name="IntersectTypeRole_ExistingRole_ChangeWarning" xml:space="preserve">
-    <value>Changing the name of the role will also change other relationship types that use this role.</value>
-  </data>
-  <data name="IntersectTypeRole_ExistingRole_Description" xml:space="preserve">
-    <value>Re-use an existing role.</value>
-  </data>
-  <data name="IntersectTypeRole_NewRole_Description" xml:space="preserve">
-    <value>If you do not want to re-use an existing role, please provide a name of the role you would like to create.</value>
-  </data>
   <data name="ListDisplayFormat_Description" xml:space="preserve">
     <value>Since list themselves can also contain dynamic fields, you must choose at least one field from the list to use as the display value.  You can also choose more than one field.  For example: {Name} : {Description}.</value>
   </data>

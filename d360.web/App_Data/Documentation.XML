@@ -497,21 +497,6 @@
               Looks up a localized string similar to Input Type.
             </summary>
         </member>
-        <member name="P:Resources.FieldInfo.IntersectTypeRole_ExistingRole_ChangeWarning">
-            <summary>
-              Looks up a localized string similar to Changing the name of the role will also change other relationship types that use this role..
-            </summary>
-        </member>
-        <member name="P:Resources.FieldInfo.IntersectTypeRole_ExistingRole_Description">
-            <summary>
-              Looks up a localized string similar to Re-use an existing role..
-            </summary>
-        </member>
-        <member name="P:Resources.FieldInfo.IntersectTypeRole_NewRole_Description">
-            <summary>
-              Looks up a localized string similar to If you do not want to re-use an existing role, please provide a name of the role you would like to create..
-            </summary>
-        </member>
         <member name="P:Resources.FieldInfo.ListDisplayFormat_Description">
             <summary>
               Looks up a localized string similar to Since list themselves can also contain dynamic fields, you must choose at least one field from the list to use as the display value.  You can also choose more than one field.  For example: {Name} : {Description}..
@@ -2340,12 +2325,6 @@
         <member name="M:d360.web.Controllers.FormController.FusionAttributeType_EditFields(System.Int32)">
             <param name="id">FusionAttributeTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.IntersectRole_DeleteFields(System.Int32)">
-            <param name="id">IntersectRoleID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.IntersectRole_EditFields(System.Int32)">
-            <param name="id">IntersectRoleID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.IntersectType_DeleteFields(System.Int32)">
             <param name="id">IntersectTypeID</param>
         </member>
@@ -2354,12 +2333,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.Group_EditFields(System.Int32)">
             <param name="id">GroupID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_IntersectRoles">
-            <summary>
-            Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
-            </summary>
-            <returns>A list of relevant fusion attribute types.</returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Lineage_IntersectTypes">
             <summary>

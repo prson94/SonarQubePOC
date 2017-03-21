@@ -43,12 +43,13 @@ namespace d360.workers.FusionWorkerRole
             IFusionQueueManager queueManager = new FusionQueueManager(GlobalStaticProperties.QueueName);
 
             FusionProcessingData fusionData = new FusionProcessingData
-            {
-                CompanyID = 4,
-                FusionID = 68,
-                LogFileName = "50028.68.2017-01-25_09.48.52.json"
-            };
-            
+            { CompanyID = 8, FusionID = 10, LogFileName = "18.10.2017-03-13_02.04.05.json" };
+            //{
+            //    CompanyID = 4,
+            //    FusionID = 68,
+            //    LogFileName = "50028.68.2017-01-25_09.48.52.json"
+            //};
+
             //the biggest fusion job i can find 30.9 MB for Demo dev - gmo has a 35.3MB file in fusion-15 22 has 38.6mb
 
             //save test data to queue

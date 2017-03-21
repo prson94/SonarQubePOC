@@ -15,15 +15,6 @@ namespace d360.core.entities
         public int IntersectTypeID { get; set; }
 
 
-
-        [DataMember]
-        public IntersectClassification? Classification { get; set; }
-
-        [DataMember]
-        public string Description { get; set; }
-
-
-
         [DataMember, Key, Column(Order = 2, TypeName = "varchar"), StringLength(50)]
         public string Subject { get; set; }
 

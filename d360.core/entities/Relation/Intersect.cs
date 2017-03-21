@@ -17,12 +17,6 @@ namespace d360.core.entities
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string Name { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "IntersectClassification_Name", Description = "IntersectClassification_Description")]
-        public IntersectClassification? Classification { get; set; }
-
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "IntersectDescription_Name", Description = "IntersectDescription_Description")]
-        public string Description { get; set; }
-
         [DataMember]
         public int? CreatedBy { get; set; }
 

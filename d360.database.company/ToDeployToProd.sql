@@ -949,6 +949,52 @@ GO
 alter table FusionQueryAttributeType alter column Query nvarchar(max) not null
 go
 
---add visible column to artifact table
-alter table artifact add [Visible] bit not null default(1)
+
+ALTER TABLE [dbo].[Map] DROP CONSTRAINT [FK_Map_IntersectRole]
+GO
+alter table Map drop column IntersectRoleID
 go
+drop table IntersectRole
+go
+
+alter table [Intersect] drop column [Classification]
+go
+alter table [Intersect] drop column [Description]
+go
+
+
+CREATE TRIGGER [dbo].[ReferenceItem_AfterUpsert]
+   ON  [dbo].[ReferenceItem] 
+   AFTER INSERT, UPDATE
+AS 
+	SET NOCOUNT ON;
+	merge	[cache].[Object] as T
+	using	(
+			select	'ReferenceItem' as [Object],
+					ID as ObjectID,
+					'ReferenceItemType' as ObjectType,
+					ReferenceItemTypeID as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
+			values	( S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID] );
+GO
+
+CREATE TRIGGER [dbo].[ReferenceItem_AfterDelete]
+	ON [dbo].[ReferenceItem]
+	AFTER DELETE
+AS
+	SET NOCOUNT ON;
+	delete	T
+	from	[cache].[Object] T
+			inner join deleted S on T.Object = 'ReferenceItem' and S.ID = T.ObjectID;
+GO
+
+--select * from cache.Object where Object = 'ReferenceItem'
+
+update ReferenceItem set UpdatedOn = getutcdate()

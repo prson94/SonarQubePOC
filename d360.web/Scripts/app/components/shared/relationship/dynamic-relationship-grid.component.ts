@@ -44,8 +44,7 @@ declare var CompanySettings;
                             <template let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview"><a (click)="selectObject(item)">{{item.Name}}</a></d3s-tooltip>
                             </template> 
-                        </p-column>                                                                                                                                                                              
-                        <p-column header="Classification" field="ClassificationText" sortable="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>                            
+                        </p-column>
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  [filter]="!simpleFilter">
                             <template let-item="rowData" pTemplate type="body">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
@@ -139,9 +138,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.isLoading = true;
         this.relationshipsService.getObjectRelationships(this.objectType, this.objectID, this.targetType, this.targetTypeID, this.intersectTypeID)
             .then(result => {
-                for (let rel of result) {
-                    rel.ClassificationText = rel.Classification == 1 ? "Critical" : "Normal";
-                }
                 this.relations = result;
                 this.isLoading = false;
                 if (this.relations.length > 0) this.selected = this.relations[0]; 

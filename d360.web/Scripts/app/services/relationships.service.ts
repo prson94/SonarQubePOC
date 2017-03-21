@@ -120,10 +120,8 @@ export class RelationshipsService extends BaseService {
         
     }
 
-    getObjectRelationships(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, criticalOnly?: boolean): Promise<any> {
-        criticalOnly = (criticalOnly == undefined ? false : criticalOnly);
-
-        return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/${criticalOnly}`)
+    getObjectRelationships(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number): Promise<any> {
+        return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));

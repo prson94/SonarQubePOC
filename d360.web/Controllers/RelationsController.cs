@@ -108,37 +108,6 @@ namespace d360.web.Controllers
 
         #region Json
 
-        [HttpGet, Route("Classifications")]
-        public JsonResult Classifications()
-        {
-            return Json(Company.GetClassifications().Select(i => new { ID = i.Key, Name = i.Value }), JsonRequestBehavior.AllowGet);
-        }
-
-        [HttpGet, Route("IntersectRoles")]
-        public JsonNetResult IntersectRoles()
-        {
-            var roles = Company.Table<IntersectRole>().OrderBy(i => i.Name);
-            var usage = Company.Filter<Map>(i => i.IntersectRoleID.HasValue).Select(i => i.IntersectRoleID.Value).Distinct().ToList();
-            var data = new List<dynamic>();
-
-            roles.ToList().ForEach(p =>
-            {
-                data.Add(new
-                {
-                    ID = p.ID,
-                    Name = p.Name,
-                    Description = p.Description,
-                    IsUsed = usage.Any(i => i == p.ID)
-                });
-            });
-
-            return new JsonNetResult
-            {
-                Data = data,
-                Formatting = Formatting.None
-            };
-        }
-
         [HttpGet, Route("Predicates")]
         public JsonNetResult Predicates()
         {

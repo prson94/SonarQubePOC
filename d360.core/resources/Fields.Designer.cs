@@ -1573,42 +1573,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The classification for this relationship (Critical, Normal).
-        /// </summary>
-        public static string IntersectClassification_Description {
-            get {
-                return ResourceManager.GetString("IntersectClassification_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Classification.
-        /// </summary>
-        public static string IntersectClassification_Name {
-            get {
-                return ResourceManager.GetString("IntersectClassification_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Information regarding why this relationship exists..
-        /// </summary>
-        public static string IntersectDescription_Description {
-            get {
-                return ResourceManager.GetString("IntersectDescription_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Relationship Description.
-        /// </summary>
-        public static string IntersectDescription_Name {
-            get {
-                return ResourceManager.GetString("IntersectDescription_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The amount of time between agent executions for a given fusion configuration..
         /// </summary>
         public static string Interval_Description {

@@ -360,8 +360,6 @@ namespace d360.web.Controllers
                     return MapRule_EditFields(ID);
                 case "MAPRULEITEM":
                     return MapRuleItem_EditFields(ID);
-                case "RELATIONSHIPROLE":
-                    return IntersectRole_EditFields(ID);
                 case "ISSUETYPE":
                     return IssueType_EditFields(ID);
                 case "MAP":
@@ -409,8 +407,6 @@ namespace d360.web.Controllers
                     return MapRule_AddFields();
                 case "MAPRULEITEM":
                     return MapRuleItem_AddFields(objectID.GetValueOrDefault());
-                case "RELATIONSHIPROLE":
-                    return IntersectRole_AddFields();
                 case "ATTRIBUTEALLOCATION":
                     return AttributeTypeRelation_AddFields(parentID.GetValueOrDefault());
                 case "ISSUETYPE":
@@ -502,8 +498,6 @@ namespace d360.web.Controllers
                     return EditPolicyTypeClass(form);
                 case "TAXONOMYTYPELEVEL":
                     return EditTaxonomyTypeLevel(form);
-                case "RELATIONSHIPROLE":
-                    return EditIntersectRole(form);
                 case "POLICYTYPELEVEL":
                     return EditPolicyTypeLevel(form);
                 case "ATTRIBUTE":
@@ -571,8 +565,6 @@ namespace d360.web.Controllers
                     return DeleteTaxonomyTypeClass(form);
                 case "POLICYTYPECLASS":
                     return DeletePolicyTypeClass(form);
-                case "RELATIONSHIPROLE":
-                    return DeleteIntersectRole(form);
                 case "TAXONOMYTYPELEVEL":
                     return DeleteTaxonomyTypeLevel(form);
                 case "TAXONOMYTYPE":
@@ -661,8 +653,6 @@ namespace d360.web.Controllers
                     return AddTaxonomyTypeClass(form);
                 case "POLICYTYPECLASS":
                     return AddPolicyTypeClass(form);
-                case "RELATIONSHIPROLE":
-                    return AddIntersectRole(form);
                 case "TAXONOMYTYPELEVEL":
                     return AddTaxonomyTypeLevel(form);
                 case "POLICYTYPELEVEL":
@@ -6703,154 +6693,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region IntersectRole
-
-        #region Field Generation
-
-        [Route("IntersectRole_AddFields")]
-        public JsonResult IntersectRole_AddFields()
-        {
-            if (!Company.HasPermission(SystemObjects.IntersectRole, 0, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">IntersectRoleID</param>
-        [Route("IntersectRole_DeleteFields"), NonNullableParameters]
-        public JsonResult IntersectRole_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<IntersectRole>(id);
-            if (!Company.HasPermission(SystemObjects.IntersectRole, id, Claim.Delete))
-                return jsonException("You do not have permissions to delete this.", HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">IntersectRoleID</param>
-        [Route("IntersectRole_EditFields"), NonNullableParameters]
-        public JsonResult IntersectRole_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<IntersectRole>(id);
-
-            if (!Company.HasPermission(SystemObjects.IntersectRole, id, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIntersectRole")]
-        public JsonResult AddIntersectRole(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("role");
-
-                if (!Company.HasPermission(SystemObjects.IntersectRole, 0, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var a = new IntersectRole
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description", null, false)
-                };
-
-                Company.Add<IntersectRole>(a);
-
-                return jsonSuccess(a.Name + " successfully created.", string.Format("IntersectRole|{0}", a.ID), "add", HttpStatusCode.Created, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteIntersectRole")]
-        public JsonResult DeleteIntersectRole(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("role");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<IntersectRole>(id);
-                if (model == null) throw new NotFoundException("role");
-
-                if (!Company.HasPermission(SystemObjects.IntersectRole, model.ID, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<IntersectRole>(model);
-                return jsonSuccess("Item successfully removed.", null, "delete", HttpStatusCode.OK, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditIntersectRole")]
-        public JsonResult EditIntersectRole(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("role");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<IntersectRole>(id);
-                if (model == null) throw new NotFoundException("role");
-
-                if (!Company.HasPermission(SystemObjects.IntersectRole, model.ID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description", null, false);
-
-                Company.Update<IntersectRole>(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), "edit", HttpStatusCode.OK, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region IntersectType
 
         #region Field Generation
@@ -7652,24 +7494,6 @@ namespace d360.web.Controllers
         #region Supporting Json Feeds
 
         /// <summary>
-        /// Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
-        /// </summary>
-        /// <returns>A list of relevant fusion attribute types.</returns>
-        [Route("Lineage_IntersectRoles")]
-        public JsonNetResult Lineage_IntersectRoles()
-        {
-            return new JsonNetResult
-            {
-                Data = Company
-                    .Table<IntersectRole>()
-                    .ToList()
-                    .Select(i => new { title = $"{i.Name}", value = $"{i.ID}" })
-                    .OrderBy(i => i.title),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        /// <summary>
         /// Gets a list of intersect types that support lineage.
         /// </summary>
         /// <returns>A list of relevant fusion attribute types.</returns>
@@ -8106,18 +7930,10 @@ for json path");
                     }
                     else
                     {
-                        var role = Company.GetById<IntersectRole>(model.IntersectRoleID);
-                        if (role == null)
-                        {
-                            message += $"The role you provided is invalid.";
-                        }
-                        else
-                        {
-                            var newMap = new Map { IntersectRoleID = model.IntersectRoleID, Transformation = model.Transformation };
-                            newMap.MapItems = new List<MapItem>();
-                            newMap.MapItems.Add(new MapItem { SourceIntersectID = model.SourceIntersectID, TargetIntersectID = model.TargetIntersectID });
-                            Company.Add<Map>(newMap);
-                        }
+                        var newMap = new Map { Transformation = model.Transformation };
+                        newMap.MapItems = new List<MapItem>();
+                        newMap.MapItems.Add(new MapItem { SourceIntersectID = model.SourceIntersectID, TargetIntersectID = model.TargetIntersectID });
+                        Company.Add<Map>(newMap);
                     }
                 }
                 
@@ -8169,7 +7985,6 @@ for json path");
                     }
                     else
                     {
-                        o.IntersectRoleID = model.IntersectRoleID;
                         o.Transformation = model.Transformation;
                         Company.Update(o);
                     }
@@ -8451,7 +8266,6 @@ for json path");
                     fieldTypeNames.Add("Target Fusion Path");
 
                     fieldTypeNames.Add("Transformation");
-                    fieldTypeNames.Add("Role");
 
                     break;
                 #endregion
@@ -8845,19 +8659,6 @@ from ArtifactType A
                 else if (type == "Lineage" && lowerColName.In("source relation", "target relation"))
                 {
                     var items = Company.Table<IntersectType>().Where(o => !o.IsSystem.Value || !o.IsSystem.HasValue).OrderBy(x => x.Name).Select(x => x.Name);
-
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                        document.AddDataValidation(dv);
-                    }
-                }
-                else if (type == "Lineage" && lowerColName == "role")
-                {
-                    var items = Company.Table<IntersectRole>().OrderBy(x => x.Name).Select(x => x.Name);
 
                     if (items.Any())
                     {
@@ -11004,10 +10805,7 @@ order by D.TextPath";
                 });
             }
 
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Classification", Name = "Critical?", FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Is There Anything Else We Should Know?", FieldType = DataType.Html.ToString() });
-
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, it).ToList(), 4);
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, it).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11037,13 +10835,9 @@ order by D.TextPath";
 
             if (relationship == null) return jsonException("Relationship not found.", HttpStatusCode.NotFound);
 
-            var critical = (relationship.Classification.HasValue) ? (relationship.Classification.Value == IntersectClassification.Critical) : false;
-
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Classification", Name = "Critical?", FieldType = DataType.Boolean.ToString(), Value = critical.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Is There Anything Else We Should Know?", FieldType = DataType.Html.ToString(), Value = relationship.Description });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 3);
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11081,14 +10875,9 @@ order by D.TextPath";
                     var itemInfo = item.Split('|');
                     if (itemInfo.Length == 2)
                     {
-                        var classification = parseBooleanField(form, "Classification");
-                        var description = parseTextField(form, "Description");
-
                         var intersect = Company.AddIntersect(typeID,
                             source, sourceID,
-                            itemInfo[0], int.Parse(itemInfo[1]),
-                            (classification) ? IntersectClassification.Critical : IntersectClassification.Normal,
-                            description
+                            itemInfo[0], int.Parse(itemInfo[1])
                         );
 
                         var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, typeID).ToList(), form, Server);
@@ -11126,12 +10915,6 @@ order by D.TextPath";
                 if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.IntersectType.Object), intersect.IntersectType.ObjectID, Claim.Update, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                var classification = parseBooleanField(form, "Classification");
-                var description = parseTextField(form, "Description");
-
-                intersect.Classification = classification ? IntersectClassification.Critical : IntersectClassification.Normal;
-                intersect.Description = description;
-
                 Company.Update<Intersect>(intersect);
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
@@ -11160,6 +10943,8 @@ order by D.TextPath";
             
             int objectTypeID = -1;
             string parentType = string.Empty;
+
+            #region
 
             if(type == SystemObjects.FusionAttribute)
             {
@@ -11190,7 +10975,9 @@ order by D.TextPath";
                 targetType = relationshipType.Subject;
                 targetTypeID = relationshipType.SubjectID;
             }
-            
+
+            #endregion
+
             #region sql
 
             var sql = "";
@@ -11198,6 +10985,7 @@ order by D.TextPath";
             switch (targetType)
             {
                 case "FusionAttributeType":
+                    #region
                     if ((relationshipType.Predicate != null) && (relationshipType.Predicate.Type == PredicateType.FusionMapping))
                     {
                         sql = $@"
@@ -11277,8 +11065,10 @@ where	FA.ID not in (
 order by F.Name, FA.TextPath";
                     }
                     break;
+                #endregion
                 case "Group":
                 case "GroupType":
+                    #region
                     sql = $@"
 select	'Group' as [Object], 
         D.ID as ObjectID, 
@@ -11291,14 +11081,16 @@ where	D.ID not in (
                             end
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group' and ObjectTypeID = 1) ) OR
-							 ( (SubjectType = 'Group' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group') ) OR
+							 ( (SubjectType = 'Group') AND (Object = @source and ObjectID = @id) )
 							)
 					)
 order by D.Name";
                     break;
+                #endregion
                 case "Resource":
                 case "ResourceType":
+                    #region
                     sql = $@"
 select	'Resource' as [Object], 
         D.ResourceID as ObjectID, 
@@ -11311,14 +11103,18 @@ where   D.ResourceID not in (
                             end
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ResourceType' and ObjectTypeID = 1) ) OR
-							 ( (SubjectType = 'ResourceType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Resource') ) OR
+							 ( (SubjectType = 'Resource') AND (Object = @source and ObjectID = @id) )
 							)
 					)
 order by D.LastName, D.FirstName";
-                    break;                
+                    break;
+                #endregion
                 case "ReferenceItemType":
-                    sql = $@"
+                    #region
+                    if (targetTypeID == 0)
+                    {
+                        sql = $@"
 select	'ReferenceItemType' as [Object], 
         r.ID as ObjectID, 
         r.Name as Name
@@ -11330,13 +11126,37 @@ where   r.ID not in (
                             end
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItemType' and ObjectTypeID = 1) ) OR
-							 ( (SubjectType = 'ReferenceItemType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItemType') ) OR
+							 ( (SubjectType = 'ReferenceItemType') AND (Object = @source and ObjectID = @id) )
 							)
 					)
 order by r.Name";
+                    }
+                    else
+                    {
+                        sql = $@"
+select	'ReferenceItem' as [Object], 
+        r.ID as ObjectID, 
+        r.DisplayValue as Name
+from	ReferenceItem r with(nolock)
+where   r.ID not in (
+					select	case 
+                                when SubjectType = 'ReferenceItemType' then SubjectID
+                                else ObjectID
+                            end
+					from	[IntersectDetail]
+					where	IntersectTypeID = @it and (
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItem' and ObjectTypeID = r.ReferenceItemTypeID) ) OR
+							 ( (SubjectType = 'ReferenceItem' and SubjectTypeID = r.ReferenceItemTypeID) AND (Object = @source and ObjectID = @id) )
+							)
+					)
+        and r.ReferenceItemTypeID = @targetTypeID 
+order by r.DisplayValue";
+                    }
                     break;
+                #endregion
                 default:
+                    #region
                     sql = $@"(
 select		D.[Object], 
 			D.ObjectID
@@ -11380,22 +11200,8 @@ where		D.ObjectType = @targetType and D.ObjectTypeID = @targetTypeID
                             sql = $@"select C.Object, C.ObjectID, O.TextPath as Name from Taxonomy O inner join {sql} order by O.TextPath";
                             break;
                     }
-//                    sql = $@"
-//select	D.[Object], 
-//        D.ObjectID, 
-//        D.TextPath as Name
-//from	cache.ObjectDetails D with(nolock)
-//		left join [IntersectDetail] I on	I.IntersectTypeID = @it and (
-//											 ( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
-//											 ( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-//											)
-//where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
-//        and D.ObjectTypeID <> D.ObjectID 
-//        and D.ObjectTypeID <> 0
-//        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-//        and I.ID is null
-//order by D.TextPath";
                     break;
+                    #endregion
             }
 
             #endregion

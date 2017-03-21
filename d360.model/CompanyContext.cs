@@ -173,8 +173,6 @@ namespace d360.model
 
         public DbSet<IntersectGroup> IntersectGroups { get; set; }
 
-        public DbSet<IntersectRole> IntersectRoles { get; set; }
-
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
         public DbSet<Issue> Issues { get; set; }
@@ -474,14 +472,6 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
         public IQueryable<AttributeHierarchyItem> GetAttributeAndIntersectHierarchyByObject(SystemObjects type, int id)
         {
             return Query<AttributeHierarchyItem>("EXEC GetAttributeAndIntersectHierarchyByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
-        }
-
-        public List<KeyValuePair<int, string>> GetClassifications()
-        {
-            var array = (IntersectClassification[])(Enum.GetValues(typeof(IntersectClassification)).Cast<IntersectClassification>());
-            return array
-                .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
-                .ToList();
         }
 
         public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)
@@ -1096,7 +1086,7 @@ order by	ColumnIndex", new { id });
 
         #region Relationships
 
-        public IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID, IntersectClassification? classification, string description)
+        public IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID)
         {
             Intersect intersect = null;
             IntersectDetail dtl = null;
@@ -1128,7 +1118,7 @@ order by	ColumnIndex", new { id });
 
                 if (dtl == null)
                 {
-                    intersect = new Intersect { IntersectTypeID = intersectType.ID, Classification = classification.HasValue ? classification : IntersectClassification.Normal, Description = description };
+                    intersect = new Intersect { IntersectTypeID = intersectType.ID };
 
                     if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
                     {
@@ -1162,12 +1152,12 @@ order by	ColumnIndex", new { id });
             }
         }
 
-        public Intersect AddIntersect(SystemObjects subject, int subjectID, SystemObjects @object, int objectID, IntersectClassification classification, int? predicateID, string description)
+        public Intersect AddIntersect(SystemObjects subject, int subjectID, SystemObjects @object, int objectID, int? predicateID)
         {
-            return AddIntersect(subject.ToString(), subjectID, @object.ToString(), objectID, classification, predicateID, description);
+            return AddIntersect(subject.ToString(), subjectID, @object.ToString(), objectID, predicateID);
         }
 
-        public Intersect AddIntersect(string subject, int subjectID, string @object, int objectID, IntersectClassification classification, int? predicateID, string description)
+        public Intersect AddIntersect(string subject, int subjectID, string @object, int objectID, int? predicateID)
         {
             Intersect intersect = null;
 
@@ -1197,7 +1187,7 @@ order by	ColumnIndex", new { id });
 
             if (intersect == null)
             {
-                intersect = new Intersect { IntersectTypeID = intersectType.ID, Classification = classification, Description = description };
+                intersect = new Intersect { IntersectTypeID = intersectType.ID, Deleted = false };
 
                 if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
                 {
@@ -1222,8 +1212,7 @@ order by	ColumnIndex", new { id });
             }
             else
             {
-                intersect.Classification = classification;
-                intersect.Description = description;
+                intersect.Deleted = false;
                 SaveChanges();
             }
 
@@ -1305,28 +1294,6 @@ order by	ColumnIndex", new { id });
             var item = GetById<Intersect>(id);
             if (item == null) throw new NotFoundException("Relationship");
             return Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
-        }
-
-        public IQueryable<CriticalRelationshipsByObject> GetCriticalRelationshipsByObject(SystemObjects type, int id)
-        {
-            return Database.Connection.Query<CriticalRelationshipsByObject>(
-@"select		ID as IntersectID,
-				case when (Subject = @type and SubjectID = @id) then ObjectIconBackColor else SubjectIconBackColor end as IconBackColor,
-				case when (Subject = @type and SubjectID = @id) then ObjectIconForeColor else SubjectIconForeColor end as IconForeColor,
-				case when (Subject = @type and SubjectID = @id) then ObjectIconText else SubjectIconText end as IconText,
-				case when (Subject = @type and SubjectID = @id) then ObjectUrl else SubjectUrl end as Url,
-				case when (Subject = @type and SubjectID = @id) then ObjectID else SubjectID end as ID,
-				case when (Subject = @type and SubjectID = @id) then Object else Subject end as ObjectType,
-				case when (Subject = @type and SubjectID = @id) then ObjectTypeName else SubjectTypeName end as TypeName,
-				case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end as Name,
-				Description
-	from		IntersectDetail
-	where		(
-                (Subject = @type and SubjectID = @id) OR (Object = @type and ObjectID = @id)
-                )
-				and Classification = 1
-	order by	case when (Subject = @type and SubjectID = @id) then ObjectTypeName else SubjectTypeName end,
-				case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
         }
 
         public class DetailDisplayableRelationship
@@ -1416,21 +1383,15 @@ where	R.SourceObject = 'FusionAttribute'
 						'Resource' as Name,
 						'ResourceType' as Type
 				UNION
-				SELECT	1 as ID,
-						'Rules :: Informational' as Name,
-						'RuleType' as Type
+				SELECT	ID,
+						'Rules :: ' + Name AS Name,
+						'RuleType' AS Type
+				FROM	RuleType
 				UNION
-				SELECT	2 as ID,
-						'Rules :: Quality Check' as Name,
-						'RuleType' as Type
-				UNION
-				SELECT	3 as ID,
-						'Rules :: Metric' as Name,
-						'RuleType' as Type
-				UNION
-				SELECT	4 as ID,
-						'Rules :: Profile' as Name,
-						'RuleType' as Type
+				SELECT	ID,
+						'Reference :: Item :: ' + Name AS Name,
+						'ReferenceItemType' AS Type
+				FROM	ReferenceItemType
                 UNION
 				SELECT	0 as ID,
 						'Reference :: List' as Name,
@@ -1483,7 +1444,6 @@ where	R.SourceObject = 'FusionAttribute'
             public string IconBackColor { get; set; }
             public string IconForeColor { get; set; }
             public string IconText { get; set; }
-            public IntersectClassification Classification { get; set; }
         }
 
         /// <summary>
@@ -1513,7 +1473,7 @@ where	R.SourceObject = 'FusionAttribute'
                     }).OrderBy(i => i.TypeName)
                 );
             list.AddRange(
-                models.Where(i => i.Object != "Taxonomy" && i.Classification == IntersectClassification.Critical)
+                models.Where(i => i.Object != "Taxonomy")
                     .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText })
                     .Select(i => new RelationshipAggregate
                     {

@@ -992,8 +992,7 @@ select	ID,
 		case when (Subject = @type and SubjectID = @id) then ObjectTypeName else SubjectTypeName end as TypeName,
         case when (Subject = @type and SubjectID = @id) then ObjectIconBackColor else SubjectIconBackColor end as IconBackColor,
 		case when (Subject = @type and SubjectID = @id) then ObjectIconForeColor else SubjectIconForeColor end as IconForeColor,
-		case when (Subject = @type and SubjectID = @id) then ObjectIconText else SubjectIconText end as IconText,
-        Classification
+		case when (Subject = @type and SubjectID = @id) then ObjectIconText else SubjectIconText end as IconText
 from	IntersectDetail
 where	(Subject = @type and SubjectID = @id) or (Object = @type and ObjectID = @id)
 order by case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end

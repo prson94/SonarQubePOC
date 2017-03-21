@@ -83,23 +83,6 @@ namespace d360.web.Models
         public IntersectDetail Intersect { get; set; }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class AddRelationshipsModel
-    {
-        [DataMember]
-        public IntersectClassification Classification { get; set; }
-
-        [DataMember]
-        public int? Role { get; set; }
-
-        [DataMember]
-        public string Description { get; set; }
-
-        [DataMember]
-        public List<ObjectModel> Targets { get; set; }
-    }
-
-
     public class MapRulesModel
     {
         public List<MapRuleModel> Rules { get; set; }
@@ -406,21 +389,6 @@ namespace d360.web.Models
         public string FormUri { get; set; }
         public string FormMethod { get; set; }
         public string FormSize { get; set; }
-    }
-
-    public class EditRelationshipModel
-    {
-        [DataMember]
-        public IntersectClassification Classification { get; set; }
-
-        [DataMember]
-        public int IntersectTypeID { get; set; }
-
-        [DataMember]
-        public int? Role { get; set; }
-
-        [DataMember]
-        public string Description { get; set; }
     }
 
     public class FieldTypeItemDisplayFieldEditorModel

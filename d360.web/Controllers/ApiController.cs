@@ -481,7 +481,6 @@ namespace d360.web.Controllers
                     }
 
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Description", type = "string" });
 
                     if (intersectType.Subject == "ArtifactType")
                     {
@@ -494,7 +493,6 @@ namespace d360.web.Controllers
                     fields.Add(new GridField { name = "TypeID", type = "number" });
                     fields.Add(new GridField { name = "Type", type = "string" });
                     fields.Add(new GridField { name = "TypeName", type = "string" });
-                    fields.Add(new GridField { name = "Classification", type = "string" });
                     fields.Add(new GridField { name = "Url", type = "string" });
                     fields.Add(new GridField { name = "HasTechnicalRelationships", type = "bool" });
                     fields.Add(new GridField { name = "HasAttributes", type = "bool" });
@@ -1240,12 +1238,6 @@ from	cte a
         public IQueryable GetIntersectTypes()
         {
             return Company.Filter<IntersectType>(x => x.SubjectID > 0 && x.ObjectID > 0 && !string.IsNullOrEmpty(x.Subject) && !string.IsNullOrEmpty(x.Object) && (!x.IsSystem ?? true)).OrderBy(x => x.Name).Select(x => new { Name = x.Name, ID = x.ID, Subject = x.Subject, SubjectID = x.SubjectID, Object = x.Object, ObjectID = x.ObjectID }).OrderBy(x => x.Name);
-        }
-
-        [Route("fusion/rule/lineage/roles")]
-        public IQueryable<IntersectRole> GetIntersectRoles()
-        {
-            return Company.IntersectRoles;
         }
 
         [Route("fusion/rule/relate/objectTypes")]
@@ -4299,25 +4291,6 @@ where    A.RuleTypeID = @id", columns, joins);
                     if (intersect != null)
                     {
                         model.columns = 1;
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = intersect.GetName(i => i.Classification), FieldName = "IntersectClassification", FieldDescription = intersect.GetDescription(i => i.Classification), Value = (Enum.IsDefined(typeof(IntersectClassification), intersect.Classification.GetValueOrDefault(IntersectClassification.Normal)) ? intersect.Classification.GetValueOrDefault(IntersectClassification.Normal).ToString() : IntersectClassification.Normal.ToString()) }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = intersect.GetName(i => i.Description), FieldName = "IntersectDescription", FieldDescription = intersect.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(intersect.Description) ? "None provided" : intersect.Description }
-                            }
-                        });
-
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     intersect = null;
@@ -5675,14 +5648,14 @@ where    A.RuleTypeID = @id", columns, joins);
             return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id });
         }
 
-        [Route("{type}/{id:int}/relations/critical")]
-        public IQueryable<CriticalRelationshipsByObject> GetCriticalRelations(SystemObjects type, int id)
-        {
-            return Company.GetCriticalRelationshipsByObject(type, id);
-        }
+        //[Route("{type}/{id:int}/relations/critical")]
+        //public IQueryable<CriticalRelationshipsByObject> GetCriticalRelations(SystemObjects type, int id)
+        //{
+        //    return Company.GetCriticalRelationshipsByObject(type, id);
+        //}
 
-        [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/{criticalOnly:bool=false?}"), HttpGet]
-        public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly)
+        [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}"), HttpGet]
+        public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID)
         {
             var sType = type.ToString();
 
@@ -5724,7 +5697,6 @@ select	ID,
 		ObjectType as Type,
 		ObjectTypeID as TypeID,
 		ObjectTypeName as TypeName,
-        Classification,
 		T.HasTechnicalRelationships,
         A.HasAttributes
 from	IntersectDetail I
@@ -5755,7 +5727,6 @@ select	ID,
 		SubjectType as Type,
 		SubjectTypeID as TypeID,
 		SubjectTypeName as TypeName,
-        Classification,
 		T.HasTechnicalRelationships,
         A.HasAttributes
 from	IntersectDetail I
@@ -5777,9 +5748,6 @@ from	IntersectDetail I
 					) A
 where	Object = '{type.ToString()}' and ObjectID = {id} and IntersectTypeID = {intersectTypeID} 
         ) A {joins}";
-
-            if (criticalOnly)
-                querySql += $" where A.Classification = {(int)IntersectClassification.Critical}";
 
             querySql += " order by A.Name";
 
@@ -5819,7 +5787,6 @@ select	ID,
 		ObjectType as Type,
 		ObjectTypeID as TypeID,
 		ObjectTypeName as TypeName,
-        Classification,
 		T.HasTechnicalRelationships,
         A.HasAttributes
 from	IntersectDetail I
@@ -5852,7 +5819,6 @@ select
 		SubjectType as Type,
 		SubjectTypeID as TypeID,
 		SubjectTypeName as TypeName,
-        Classification,
 		T.HasTechnicalRelationships,
         A.HasAttributes	        
 from	IntersectDetail I

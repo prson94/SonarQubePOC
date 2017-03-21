@@ -1020,18 +1020,6 @@
   <data name="RuleType_Name" xml:space="preserve">
     <value>Rule Type</value>
   </data>
-  <data name="IntersectClassification_Description" xml:space="preserve">
-    <value>The classification for this relationship (Critical, Normal)</value>
-  </data>
-  <data name="IntersectClassification_Name" xml:space="preserve">
-    <value>Classification</value>
-  </data>
-  <data name="IntersectDescription_Description" xml:space="preserve">
-    <value>Information regarding why this relationship exists.</value>
-  </data>
-  <data name="IntersectDescription_Name" xml:space="preserve">
-    <value>Relationship Description</value>
-  </data>
   <data name="DateLastCertified_Description" xml:space="preserve">
     <value>The date this item was last certified by its owners.</value>
   </data>
