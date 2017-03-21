@@ -17,23 +17,26 @@ import { StringConstants } from '../../static/string-constants';
 @Component({
     selector: 'd3s-artifact-grid',
     providers: [GridDefinitionService, ArtifactService, PermissionsService],
-    template: ` 
-                <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
+    template: ` <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions() && !hasSuggest" [hasSuggest]="hasSuggest" (suggestClick)="add()" [hasExport]="true" (addClick)="add()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>                
-                <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
+                <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                    
+                    <div #rightMenu [ngClass]="{'artifact-context-menu':isMenuOpen,'artifact-context-menu-closed':!isMenuOpen}">
+                        <a [href]="itemUrl" target="_blank">Open in new window</a>
+                    </div>
                     <div class="col s12" *ngIf="showGridSimpleFilter">                                                
                         <input type="text" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
-                    </div>       
+                    </div>
                     <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
                     <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
-                    <div class="col s12">
+                    <div class="col s12">                
                        <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" sortable="true">
                                 <template let-item="rowData" pTemplate type="body">
-                                    <a (click)="selectArtifact(item)">{{item.Name}}</a>
+                                    <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)">{{item.Name}}</a>
+                                    <!--<d3s-artifact-grid-link [name]="item.Name" [objectId]="item.ID" [objectTypeId]="artifactType.ID"></d3s-artifact-grid-link>-->
                                 </template>
                             </p-column>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
@@ -80,10 +83,11 @@ import { StringConstants } from '../../static/string-constants';
                             [prompt]="'Are you sure you want to delete ['+ selected?.Name + ']?'"                                         
                             (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
-                `
+                `,    
+    host: {
+        '(document:click)': 'clickedOutside()',
+    },    
 })
-
-
 
 export class ArtifactGridComponent extends BaseComponent implements OnChanges {    
     @Input() rowID: string = 'ID';
@@ -96,6 +100,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
     isGridFilterLoading: boolean = false;
+    isMenuOpen: boolean = false;
     
     totalRecords: number;
         
@@ -116,6 +121,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     simpleSearchID: number = 0;
 
     selected: any = null;
+    itemUrl: string;
 
     theDeleteCallback: Function;
         
@@ -274,6 +280,25 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 return 'artifact-certification-underreview';
         }
         return 'artifact-certification';
+    }
+
+    protected onRightClick(event,rightMenu,artifact, grid) {
+        this.isMenuOpen = true;        
+        var gridRect = grid.el.nativeElement.getBoundingClientRect();
+        var itemRect = event.srcElement.getBoundingClientRect();
+  //      console.log(itemRect);
+//        console.log(gridRect);
+      //  console.log(event);
+        rightMenu.style.top = (event.screenY - gridRect.top) + 'px';    
+        rightMenu.style.left = (event.offsetX) + 'px'; //correct
+        this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', artifact.ID, this.artifactType.ID);        
+        return false;
+    }
+
+    clickedOutside() {
+        if (this.isMenuOpen) {        
+            this.isMenuOpen = false;
+        }
     }
 }
 
