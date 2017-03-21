@@ -948,3 +948,7 @@ GO
 
 alter table FusionQueryAttributeType alter column Query nvarchar(max) not null
 go
+
+--add visible column to artifact table
+alter table artifact add [Visible] bit not null default(1)
+go

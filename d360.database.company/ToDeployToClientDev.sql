@@ -137,3 +137,7 @@ GO
 -- add constraint
 ALTER TABLE dbo.fusionschedule ADD CONSTRAINT Con_FusionScheduleUniqueFusionIDDayTime UNIQUE (FusionID,Day,Time)
 go
+
+--add visible column to artifact table
+alter table artifact add [Visible] bit not null default(1)
+go
