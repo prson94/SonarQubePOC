@@ -447,8 +447,8 @@ MERGE
                                                         ( d.SubjectID = S.endfusionattributeid and d.ObjectID = S.startfusionattributeid  )
                                                     ))
 	WHEN NOT MATCHED THEN
-	INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
-	VALUES  (S.IntersectTypeID, 2, NULL, @objectType, S.StartFusionAttributeID, @objectType, S.EndFusionAttributeID);
+	INSERT  (IntersectTypeID, Subject, SubjectID, Object, ObjectID)
+	VALUES  (S.IntersectTypeID, @objectType, S.StartFusionAttributeID, @objectType, S.EndFusionAttributeID);
 	
 ", new { executionID = ExecutionID }, commandTimeout: ExecuteQueryTimeout);
         }
