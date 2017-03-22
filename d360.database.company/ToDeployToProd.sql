@@ -1056,3 +1056,12 @@ go
 -- add index on visible column to intersect table
 CREATE NONCLUSTERED INDEX [IX_Intersect_Visible] ON [dbo].[Intersect] ( Visible ASC );
 go
+
+
+-- add visible column to nym table
+alter table [dbo].[Nym] add [Visible] bit not null default(1)
+go
+
+-- add index on visible column to nym table
+CREATE NONCLUSTERED INDEX [IX_Nym_Visible] ON [dbo].[Nym] ( Visible ASC );
+go

@@ -8,10 +8,15 @@
 	[UpdatedBy]		 INT			NULL,
 	[CreatedOn]		 DATETIME		NOT NULL default GETUTCDATE(),
 	[CreatedBy]		 INT			NOT NULL,
+	[Visible]		 BIT			NOT NULL default (1),
 	CONSTRAINT [PK_Nym] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Nym_Predicate] FOREIGN KEY ([PredicateID]) REFERENCES [dbo].[Predicate] ([ID]) ON DELETE CASCADE
 );
 
+go
+
+CREATE NONCLUSTERED INDEX [IX_Nym_Visible] 
+	ON [dbo].[Nym] ( Visible ASC );
 go
 
 CREATE TRIGGER [dbo].[Nym_AfterDelete]

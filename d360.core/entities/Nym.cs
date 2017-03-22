@@ -12,6 +12,11 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Synonym, "Synonym")]
     public partial class Nym : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
     {
+        public Nym()
+        {
+            Visible = true;
+        }
+
         [DataMember, StringLength(25), Column(TypeName = "varchar")]
         public string Object { get; set; }
 
@@ -42,6 +47,8 @@ namespace d360.core.entities
         public int CreatedBy { get; set; }
 
         public int PredicateID { get; set; }
+
+        public bool Visible { get; set; }
 
         [IgnoreDataMember]
         public virtual Predicate Predicate { get; set; }

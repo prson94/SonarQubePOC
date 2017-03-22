@@ -1221,7 +1221,7 @@ from	[Intersect] I
         left join Artifact A on A.ID = D.ObjectID
         left join Artifact AP on AP.ID = A.ParentID
 		left join TaxonomyType TT on TT.ID = A.TaxonomyTypeID
-where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id) and I.visible = 1
 union
 select 
 	null as IntersectID
@@ -1239,7 +1239,7 @@ select
     ,S.ID as 'CustomID'
 from 
 	[dbo].[nym] s	
-where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId
+where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId and s.Visible = 1
 ";
 
         public static string TaxonomySettingsItem = @"
