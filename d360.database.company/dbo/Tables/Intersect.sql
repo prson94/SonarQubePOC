@@ -14,6 +14,7 @@
     [UpdatedBy]       INT             CONSTRAINT [DF_Intersect_UpdatedBy] DEFAULT ((0)) NULL,
     [UpdatedOn]       DATETIME        CONSTRAINT [DF_Intersect_UpdatedOn] DEFAULT (getutcdate()) NULL,
 	[Owner]			  VARCHAR (50)	  NULL,
+	[Visible]		  BIT			  NOT NULL DEFAULT (1),
     CONSTRAINT [PK_Intersect] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Intersect_IntersectType] FOREIGN KEY ([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [UQ_Intersect] UNIQUE NONCLUSTERED ([IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC)
@@ -64,6 +65,10 @@ CREATE NONCLUSTERED INDEX [IX_Intersect_Object]
 
 
 GO
+
+CREATE NONCLUSTERED INDEX [IX_Intersect_Visible] 
+	ON [dbo].[Intersect] ( Visible ASC );
+go
 
 
 CREATE TRIGGER [dbo].[Intersect_AfterUpdate]

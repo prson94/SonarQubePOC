@@ -1040,3 +1040,19 @@ go
 -- add index on visible column to reference item table
 CREATE NONCLUSTERED INDEX [IX_ReferenceItem_Visible] ON [dbo].[ReferenceItem] ( Visible ASC );
 go
+
+-- add visible column to intersect table
+alter table [dbo].[Intersect] add [Visible] bit not null default(1)
+go
+
+-- add index on visible column to intersect table
+CREATE NONCLUSTERED INDEX [IX_Intersect_Visible] ON [dbo].[Intersect] ( Visible ASC );
+go
+
+-- add visible column to intersect table
+alter table [dbo].[Intersect] add [Visible] bit not null default(1)
+go
+
+-- add index on visible column to intersect table
+CREATE NONCLUSTERED INDEX [IX_Intersect_Visible] ON [dbo].[Intersect] ( Visible ASC );
+go

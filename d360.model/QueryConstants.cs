@@ -936,7 +936,7 @@ from	cache.[Object] CO
 		cross apply (
 					select	count(1) as [Count]
 					from	[Intersect] 
-					where	IntersectTypeID = IT.ID 
+					where	IntersectTypeID = IT.ID AND [Visible] = 1
 							and (
 								(Subject = @obj and SubjectID = @objId) or 
 								(Object = @obj and ObjectID = @objId)
