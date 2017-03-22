@@ -1032,3 +1032,11 @@ go
 -- add index on visible column to rule table
 CREATE NONCLUSTERED INDEX [IX_Rule_Visible] ON [dbo].[Rule] ( Visible ASC );
 go
+
+-- add visible column to reference item table
+alter table [dbo].[ReferenceItem] add [Visible] bit not null default(1)
+go
+
+-- add index on visible column to reference item table
+CREATE NONCLUSTERED INDEX [IX_ReferenceItem_Visible] ON [dbo].[ReferenceItem] ( Visible ASC );
+go

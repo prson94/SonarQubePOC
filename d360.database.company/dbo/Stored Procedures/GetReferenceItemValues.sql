@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE GetReferenceItemValues	
+﻿CREATE PROCEDURE [dbo].[GetReferenceItemValues]	
 	@listid int	
 AS
 BEGIN
@@ -16,7 +16,7 @@ BEGIN
 
 	set @tsqlSelect = 'select ri.id as [ID] ,ri.code as [Code]';
 	set @tsqlFrom = ' from [dbo].[referenceitem] ri';
-	set @tsqlWhere = ' where ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));
+	set @tsqlWhere = ' where ri.visible = 1 and ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));
 	
 
 	DECLARE @id int;
@@ -46,4 +46,4 @@ BEGIN
 	EXEC sp_executesql @tsql;
 
 END
-GO
+go
