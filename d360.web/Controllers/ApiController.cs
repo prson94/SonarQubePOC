@@ -3302,7 +3302,7 @@ order by C.TextPath";
         A.Status,
 		A.Description
 from	[Policy] A  {1} 
-where    A.PolicyTypeID = @id", columns, joins);
+where    A.PolicyTypeID = @id and A.[Visible] = 1", columns, joins);
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -3542,7 +3542,7 @@ from    (
         A.RuleTypeID
 from	[Rule] A {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
-where    A.RuleTypeID = @id", columns, joins);
+where    A.RuleTypeID = @id and A.[Visible] = 1", columns, joins);
 
                 //querySql += " OPTION (RECOMPILE)";
 

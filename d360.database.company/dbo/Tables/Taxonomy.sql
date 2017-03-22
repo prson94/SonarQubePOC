@@ -8,6 +8,7 @@
     [Level]          INT             NULL,
     [UpdatedOn]      DATETIME        NULL,
     [UpdatedBy]      INT             NULL,
+	[Visible]		 BIT			 NOT NULL DEFAULT(1),
     CONSTRAINT [PK_Taxonomy] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [CK_Taxonomy_IDNotEqualParentID] CHECK ([ID]<>[ParentID]),
     CONSTRAINT [FK_Taxonomy_TaxonomyType] FOREIGN KEY ([TaxonomyTypeID]) REFERENCES [dbo].[TaxonomyType] ([ID]) ON DELETE CASCADE
@@ -17,6 +18,10 @@ GO
 CREATE NONCLUSTERED INDEX [IX_Taxonomy_TaxonomyTypeID-ParentID]
     ON [dbo].[Taxonomy]([TaxonomyTypeID] ASC, [ParentID] ASC);
 GO
+
+CREATE NONCLUSTERED INDEX [IX_Taxonomy_Visible] 
+	ON [dbo].Taxonomy ( Visible ASC );
+go
 
 CREATE TRIGGER [dbo].[Taxonomy_AfterDelete]
    ON  [dbo].[Taxonomy] 

@@ -13,12 +13,17 @@
     [Resolution]      NVARCHAR (MAX) NULL,
     [CreatedOn]       DATETIME       NULL,
     [CreatedBy]       INT            NULL,
+	[Visible]		  BIT			 NOT NULL DEFAULT ((1)),
     CONSTRAINT [PK_Rule] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY ([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
 );
 
 
+GO
 
+
+CREATE NONCLUSTERED INDEX [IX_Rule_Visible] ON [dbo].[Rule] ( Visible ASC );
+go
 
 
 

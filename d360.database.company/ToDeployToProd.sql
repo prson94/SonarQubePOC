@@ -1007,3 +1007,28 @@ go
 -- add index on visible to artifact
 CREATE NONCLUSTERED INDEX [IX_Artifact_Visible] ON [dbo].Artifact ( Visible ASC );
 go
+
+-- add visible column to taxonomy table
+alter table Taxonomy add [Visible] bit not null default(1);
+go
+
+-- add index on visible to taxonomy table
+CREATE NONCLUSTERED INDEX [IX_Taxonomy_Visible] ON [dbo].Taxonomy ( Visible ASC );
+go
+
+-- add visible column to policy table
+alter table [dbo].[Policy] add [Visible] bit not null default(1);
+go
+
+-- add index on visible to policy table
+CREATE NONCLUSTERED INDEX [IX_Policy_Visible] ON [dbo].[Policy] ( Visible ASC );
+go
+
+
+-- add visible column to rule table
+alter table [dbo].[Rule] add [Visible] bit not null default(1);
+go
+
+-- add index on visible column to rule table
+CREATE NONCLUSTERED INDEX [IX_Rule_Visible] ON [dbo].[Rule] ( Visible ASC );
+go
