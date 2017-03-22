@@ -54,7 +54,7 @@ select	A.ID,
 from	Artifact A inner join TaxonomyType V on (V.ID = A.TaxonomyTypeID)
         left join Artifact P on P.ID = A.ParentID 
         {1}
-where A.ArtifactTypeID = @id ", columns, joins);
+where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             //if simple filter specified add that citeria to the sql
             if (!string.IsNullOrEmpty(filter))
@@ -194,7 +194,7 @@ where A.ArtifactTypeID = @id ", columns, joins);
 from	Artifact A 
         inner join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
         left join Artifact P on P.ID = A.ParentID 
-        where A.ArtifactTypeID = @id and A.ParentID = @p", columns, joins);
+        where A.ArtifactTypeID = @id and A.ParentID = @p and A.[Visible] = 1", columns, joins);
 
             var dbArgs = new Dapper.DynamicParameters();
 
@@ -263,7 +263,7 @@ from	Artifact A
 from	Artifact A 
         left join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
         left join Artifact P on P.ID = A.ParentID 
-where    A.ArtifactTypeID = @id", columns, joins);
+where    A.ArtifactTypeID = @id and A.[Visible] = 1", columns, joins);
 
             //if simple filter specified add that citeria to the sql
             if(!string.IsNullOrEmpty(filter))

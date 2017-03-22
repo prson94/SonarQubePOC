@@ -141,3 +141,7 @@ go
 --add visible column to artifact table
 alter table artifact add [Visible] bit not null default(1)
 go
+
+-- add index on visible to artifact
+CREATE NONCLUSTERED INDEX [IX_Artifact_Visible] ON [dbo].Artifact ( Visible ASC );
+go

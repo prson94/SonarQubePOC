@@ -998,3 +998,12 @@ GO
 --select * from cache.Object where Object = 'ReferenceItem'
 
 update ReferenceItem set UpdatedOn = getutcdate()
+
+
+--add visible column to artifact table
+alter table artifact add [Visible] bit not null default(1)
+go
+
+-- add index on visible to artifact
+CREATE NONCLUSTERED INDEX [IX_Artifact_Visible] ON [dbo].Artifact ( Visible ASC );
+go

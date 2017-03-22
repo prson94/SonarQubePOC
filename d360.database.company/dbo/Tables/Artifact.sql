@@ -36,6 +36,10 @@ CREATE NONCLUSTERED INDEX [IX_Artifact_TaxonomyTypeID]
     ON [dbo].[Artifact]([TaxonomyTypeID] ASC);
 GO
 
+CREATE NONCLUSTERED INDEX [IX_Artifact_Visible] 
+	ON [dbo].Artifact ( [Visible] ASC );
+go
+
 CREATE TRIGGER [dbo].[Artifact_AfterDelete]
 	ON [dbo].[Artifact]
 	AFTER DELETE
