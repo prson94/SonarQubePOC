@@ -2336,21 +2336,30 @@ from    [Intersect] I
                         if (i.FieldTypeName.StartsWith("Related Item~"))
                         {
                             var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
+                            var tbTypePrefix = $"FT{pos}_{multiFieldReferencePosition}";
+                            var tbDetailPrefix = $"FD{pos}_{multiFieldReferencePosition}";
+                            var tbFAPrefix = $"FA{pos}_{multiFieldReferencePosition}";
 
                             // Determine the join syntax for the eventual query.
-                            join.JoinStatement += $@" {joinType} join IntersectDetail {tbPrefix} on {tbPrefix}.IntersectTypeID = {i.FieldTypeID} and 
+                            join.JoinStatement += $@" {joinType} join [IntersectType] {tbTypePrefix} on {tbTypePrefix}.ID = {i.FieldTypeID} 
+{joinType} join [Intersect] {tbPrefix} on {tbPrefix}.IntersectTypeID = {tbTypePrefix}.ID and 
 ( 
-({tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} and {tbPrefix}.Object = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}) OR
-({tbPrefix}.SubjectType = '{i.Object}' and {tbPrefix}.SubjectTypeID = {i.ObjectID} and {tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn})
-)";
+({tbTypePrefix}.Object = '{i.Object}' and {tbTypePrefix}.ObjectID = {i.ObjectID} and {tbPrefix}.Object = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}) OR
+({tbTypePrefix}.Subject = '{i.Object}' and {tbTypePrefix}.SubjectID = {i.ObjectID} and {tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn})
+)
+		left join cache.ObjectDetails {tbDetailPrefix} on {tbDetailPrefix}.Object = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end
+												and {tbDetailPrefix}.ObjectID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
+		left join FusionAttribute {tbFAPrefix} on case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.Object else {tbPrefix}.Subject end = 'FusionAttribute'
+												and {tbFAPrefix}.ID = case when ({tbPrefix}.Subject = {objColumn} and {tbPrefix}.SubjectID = {objIDColumn}) then {tbPrefix}.ObjectID else {tbPrefix}.SubjectID end
+";
 
                             //Create the column/field to display the visible column cell.
                             var fc = new ComplexColumnModel
                             {
-                                DisplayColumn = $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.SubjectName else {tbPrefix}.ObjectName end",
+                                DisplayColumn = $"coalesce({tbDetailPrefix}.Name, {tbFAPrefix}.TextPath)",
                                 text = i.OverrideDisplayName ?? i.FieldTypeName.Replace("Related Item~", ""),
                                 datafield = $"{dataField}",
-                                SortColumn = i.SortOrder > 0 ? $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.SubjectName else {tbPrefix}.ObjectName end" : string.Empty,
+                                SortColumn = i.SortOrder > 0 ? $"coalesce({tbDetailPrefix}.Name, {tbFAPrefix}.TextPath)" : string.Empty,
                                 OutputColumn = true
                             };
                             setColumnTypeInfo(ft, i, fc);
@@ -2359,9 +2368,9 @@ from    [Intersect] I
 
                             // Add the fields that you need to create link in Angular component.
                             columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{context}'", datafield = $"{dataField}_Context" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.Subject else {tbPrefix}.Object end", datafield = $"{dataField}_Object" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.SubjectID else {tbPrefix}.ObjectID end", datafield = $"{dataField}_ObjectID" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"case when {tbPrefix}.ObjectType = '{i.Object}' and {tbPrefix}.ObjectTypeID = {i.ObjectID} then {tbPrefix}.SubjectUrl else {tbPrefix}.ObjectUrl end", datafield = $"{dataField}_Url" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"case when {tbTypePrefix}.Object = '{i.Object}' and {tbTypePrefix}.ObjectID = {i.ObjectID} then {tbPrefix}.Subject else {tbPrefix}.Object end", datafield = $"{dataField}_Object" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"case when {tbTypePrefix}.Object = '{i.Object}' and {tbTypePrefix}.ObjectID = {i.ObjectID} then {tbPrefix}.SubjectID else {tbPrefix}.ObjectID end", datafield = $"{dataField}_ObjectID" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"{tbDetailPrefix}.Url", datafield = $"{dataField}_Url" });
 
                             // Now set the fields to reference to create the preview link in Angular component.
                             fc.datafieldtype = "lookup";
@@ -3024,14 +3033,25 @@ from    [Intersect] I
                             order by A.TextPath";
                     break;
                 case SystemObjects.MapType:
-                    sql = @"select 
-	                            distinct C.TextPath as Name, C.ObjectID as ID, C.[Object] as [Type] 
-                            from
-							                            [Intersect] I
-                                                        inner join [cache].objectdetails C on ( (C.[Object] = I.Object and C.ObjectID = I.ObjectID and I.Subject = 'Map') or (C.[Object] = I.Subject and C.ObjectID = I.SubjectID and I.Object = 'Map'))
-                            where
-	                            I.intersecttypeid = @intersectTypeId
-                            order by C.TextPath";
+                    sql = @"
+select	TextPath as Name, 
+		ObjectID as ID, 
+		[Object] as [Type] 
+from	[cache].ObjectDetails C 
+		inner join (
+			select	distinct 
+					case 
+						when Subject = 'Map' then Object
+						else Subject
+					end as O,
+					case 
+						when Subject = 'Map' then ObjectID
+						else SubjectID
+					end as OID
+			from	[Intersect]
+			where	IntersectTypeID = @intersectTypeId
+		) I on I.O = C.Object and I.OID = C.ObjectID
+order by C.TextPath";
                     break;
                 default:
                     sql = "";
