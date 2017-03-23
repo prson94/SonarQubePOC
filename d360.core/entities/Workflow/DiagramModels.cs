@@ -12,13 +12,14 @@ namespace d360.core.entities.Workflow
     public class WorkflowDiagramModel
     {
         [DataMember]
-        public string Name { get; set; }
+        public Type Type { get; set; }
+        [DataMember]
+        public WorkflowEventRegistration Event { get; set; }
         [DataMember]
         public List<WorkflowDiagramNode> Nodes { get; set; } = new List<WorkflowDiagramNode>();
         [DataMember]
         public List<WorkflowDiagramLink> Links { get; set; } = new List<WorkflowDiagramLink>();
     }
-
 
     public class WorkflowDiagramNode
     {

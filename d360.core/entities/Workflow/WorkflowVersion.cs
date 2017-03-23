@@ -21,7 +21,7 @@ namespace d360.core.entities.Workflow
         public DateTime? UpdatedOn { get; set; }
 
         [IgnoreDataMember, ForeignKey("TypeID")]
-        public virtual WorkflowType Type { get; set; }
+        public virtual Type Type { get; set; }
 
         [IgnoreDataMember, ForeignKey("VersionID")]
         public virtual ICollection<WorkflowVersionStep> Steps { get; set; }

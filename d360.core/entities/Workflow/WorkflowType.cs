@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Workflow
 {
     [DataContract(Namespace = NAMESPACE), Table("Type", Schema = "workflow")]
-    public class WorkflowType : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
+    public class Type : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
         public string Name { get; set; }

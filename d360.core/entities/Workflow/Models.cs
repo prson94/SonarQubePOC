@@ -51,7 +51,7 @@ namespace d360.core.entities.Workflow
 
     public class WorkflowTypeModel
     {
-        public WorkflowType Type { get; set; } = new WorkflowType();
+        public Type Type { get; set; } = new Type();
         public WorkflowEventRegistration Event { get; set; } = new WorkflowEventRegistration();
     }
 }

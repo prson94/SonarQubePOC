@@ -8,7 +8,7 @@ namespace d360.core.enums.Workflow
     /// <summary>
     /// Corresponds to the type of change sent to the event monitoring system.  Workflows can listen to these types of events.
     /// </summary>
-    public enum ActivityType
+    public enum WorkflowActivityType
     {
         [Name("Email Notification"), Description("Email Notification"), BackColor("#1d9d74"), ForeColor("#fff"), Icon("\uf0e0")]
         EmailNotification = 1,
@@ -20,7 +20,7 @@ namespace d360.core.enums.Workflow
 
     public class ActivityTypeInfo
     {
-        public ActivityType ID { get; set; }
+        public WorkflowActivityType ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string BackColor { get; set; }
@@ -30,7 +30,7 @@ namespace d360.core.enums.Workflow
 
     public static class ActivityTypeExtensions
     {
-        public static List<ActivityTypeInfo> GetList(this ActivityType type)
+        public static List<ActivityTypeInfo> GetList(this WorkflowActivityType type)
         {
             var list = new List<ActivityTypeInfo>();
 
@@ -39,7 +39,7 @@ namespace d360.core.enums.Workflow
                 var info = new ActivityTypeInfo
                 {
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                    ID = (ActivityType)Enum.Parse(typeof(ActivityType), tm.Name),
+                    ID = (WorkflowActivityType)Enum.Parse(typeof(WorkflowActivityType), tm.Name),
                     Name = tm.Name,
                     BackColor = ((BackColorAttribute)tm.GetCustomAttribute(typeof(BackColorAttribute))).Color,
                     ForeColor = ((ForeColorAttribute)tm.GetCustomAttribute(typeof(ForeColorAttribute))).Color,

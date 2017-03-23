@@ -16,7 +16,7 @@ namespace d360.model
 
         public DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
 
-        public DbSet<WorkflowType> WorkflowTypes { get; set; }
+        public DbSet<core.entities.Workflow.Type> WorkflowTypes { get; set; }
 
         public DbSet<WorkflowVersion> WorkflowVersions { get; set; }
 
@@ -98,10 +98,10 @@ namespace d360.model
         public void ExecuteStep(long itemStepID)
         {
             var itemStep = getWorkflowItemStep(itemStepID);
-            ActivityType at = ActivityType.Form;
+            WorkflowActivityType at = WorkflowActivityType.Form;
             switch (at)
             {
-                case ActivityType.EmailNotification:
+                case WorkflowActivityType.EmailNotification:
                     break;
                 default:
                     break;

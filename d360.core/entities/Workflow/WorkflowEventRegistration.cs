@@ -24,6 +24,6 @@ namespace d360.core.entities.Workflow
         public string Condition { get; set; }
 
         [IgnoreDataMember, ForeignKey("TypeID")]
-        public virtual WorkflowType Type { get; set; }
+        public virtual Type Type { get; set; }
     }
 }

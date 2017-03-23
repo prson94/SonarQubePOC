@@ -27,14 +27,12 @@ namespace d360.web.Controllers.Services
     [RoutePrefix("services/workflow"), Authorize]
     public class WorkflowController : BaseApiController
     {
-        internal WorkflowContext WorkflowCtx;
 
         #region DI
 
         public WorkflowController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
-            WorkflowCtx = new WorkflowContext( company.CompanyConnectionString, company.CurrentCompanyID, company.CurrentResourceID);
         }
 
         #endregion
@@ -941,7 +939,6 @@ namespace d360.web.Controllers.Services
 
             return new WorkflowDiagramModel
             {
-                Name = name,
                 Nodes = nodes,
                 Links = links
             };
@@ -952,7 +949,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                var itemStepsModel = WorkflowCtx.WorkflowItemSteps.Where(x => x.StepID == stepId && x.ItemID == itemId).FirstOrDefault();
+                var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.StepID == stepId && x.ItemID == itemId).FirstOrDefault();
 
                 StringBuilder sb = new StringBuilder();
 
@@ -974,9 +971,9 @@ namespace d360.web.Controllers.Services
                     itemStepsModel.Fields = sb.ToString();
                     itemStepsModel.CompletedOn = DateTime.UtcNow;
                     itemStepsModel.CompletedBy = Company.CurrentResourceID;
-                    
-                    WorkflowCtx.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
-                    WorkflowCtx.SaveChanges();
+
+                    Company.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
+                    Company.SaveChanges();
 
                     return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
                 }
@@ -993,8 +990,8 @@ namespace d360.web.Controllers.Services
                         StepID = stepId
                 };
 
-                WorkflowCtx.WorkflowItemSteps.Add(item);
-                await WorkflowCtx.SaveChangesAsync();
+                Company.WorkflowItemSteps.Add(item);
+                await Company.SaveChangesAsync();
 
                 return Request.CreateResponse(HttpStatusCode.Created, item);
             }            
@@ -1040,7 +1037,7 @@ namespace d360.web.Controllers.Services
         [Route("activitytypes"), HttpGet]
         public List<core.enums.Workflow.ActivityTypeInfo> GetActivityTypes()
         {
-            return d360.core.enums.Workflow.ActivityType.EmailNotification.GetList().ToList();
+            return d360.core.enums.Workflow.WorkflowActivityType.EmailNotification.GetList().ToList();
         }
 
         [Route("changetypes"), HttpGet]
@@ -1168,13 +1165,13 @@ namespace d360.web.Controllers.Services
         [Route("type/{id:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowType(int id)
         {
-            return Request.CreateResponse(HttpStatusCode.OK, WorkflowCtx.WorkflowTypes.Single(w => w.ID == id));
+            return Request.CreateResponse(HttpStatusCode.OK, Company.WorkflowTypes.Single(w => w.ID == id));
         }
 
         [Route("event/{id:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowEvent(int id)
         {
-            return Request.CreateResponse(HttpStatusCode.OK, WorkflowCtx.WorkflowEventRegistrations.Single(w => w.TypeID == id));
+            return Request.CreateResponse(HttpStatusCode.OK, Company.WorkflowEventRegistrations.Single(w => w.TypeID == id));
         }
 
         [Route("typemodel/{id:int}"), HttpGet]
@@ -1182,10 +1179,12 @@ namespace d360.web.Controllers.Services
         {
             var model = new WorkflowTypeModel();
 
-            model.Type = WorkflowCtx.WorkflowTypes.Single(w => w.ID == id);
-            model.Event = WorkflowCtx.WorkflowEventRegistrations.Single(w => w.TypeID == id);
+            model.Type = Company.WorkflowTypes.Single(w => w.ID == id);
+            model.Event = Company.WorkflowEventRegistrations.Single(w => w.TypeID == id);
 
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
+
+        
     }
 }

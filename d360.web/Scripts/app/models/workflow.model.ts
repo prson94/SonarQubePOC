@@ -153,9 +153,11 @@ export class IssueInfo {
 //#region diagram
 
 export class WorkflowDiagramModel {
-    Name: string;
+    Type: WorkflowTypeItem;
+    Event: WorkflowEventRegistration;
     Nodes: WorkflowDiagramNode[] = [];
     Links: WorkflowDiagramLink[] = [];
+
 }
 
 export class WorkflowDiagramNode {
@@ -186,8 +188,8 @@ export class LinkModel {
     from: string;
     to: string;
     name: string;
-    category: string = 'category';
-    template: string = '';
+    category: string = '';
+    //template: string = '';
     diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
 
     transitionType: TransitionType;
@@ -200,7 +202,9 @@ export class NodeModel {
     key: string;
     name: string;
     pos: string;
-    template: string = 'task';
+    //template: string = 'task';
+    category: string = 'task';
+
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
 
     x: string;

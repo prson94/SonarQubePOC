@@ -79,7 +79,7 @@ namespace d360.model
 
         public DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
 
-        public DbSet<WorkflowType> WorkflowTypes { get; set; }
+        public DbSet<core.entities.Workflow.Type> WorkflowTypes { get; set; }
 
         public DbSet<WorkflowVersion> WorkflowVersions { get; set; }
 

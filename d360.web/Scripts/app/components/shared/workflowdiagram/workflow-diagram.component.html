@@ -19,7 +19,7 @@
             </ul>
             <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
                 <div *ngSwitchCase="'info'">
-                    <div *ngIf="selectedData == null">
+                    <div *ngIf="selectedData == null && workflow != null">
                         {{WorkflowChangeType[workflow.Event.ChangeType]}}
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">

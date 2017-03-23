@@ -157,13 +157,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 console.log(this.model);
                 this.parseData(this.model);
             })
-            .then(() => {
-                if (this.workflow == null) {
-                    return this.workflowService.getWorkflowTypeModel(this.id)
-                        .then(r => this.workflow = r);
-                }
+            .then(() => this.workflowService.getWorkflowTypeModel(this.id))
+            .then(r => {
+                if (this.workflow == null)
+                    this.workflow = r;
             })
-            .then(() => { this.isLoading = false; console.log(this.workflow); });
+            .then(() => { this.isLoading = false; console.log('workflow: ', this.workflow); });
+
 
     }
 
@@ -174,70 +174,26 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         dm.linkDataArray = [];
         this.initialNodes = [];
         this.initialLinks = [];
-        var modelList = [];
+        var nodeList = [];
         var linkList = [];
 
-        if (data.Nodes) {
-            for (var i = 0; i < data.Nodes.length; i++) {
-                let d = data.Nodes[i];
-                let node = new NodeModel();
-                node.key = d.Key;
-                node.name = d.Name;
-                node.pos = `${d.XPosition} ${d.YPosition}`;
-                node.x = d.XPosition;
-                node.y = d.YPosition;
-                node.activityType = d.ActivityType;
-                node.stepType = d.StepType;
+        if (data.Nodes)
+            data.Nodes.forEach(n => {
+                nodeList.push(this.convertToDiagramModel(n, DiagramObjectType.Node))
+            });
 
-                if (d.ActivityTypeInfo != null) {
-                    node.fore = d.ActivityTypeInfo.ForeColor;
-                    node.back = d.ActivityTypeInfo.BackColor;
-                    node.icon = d.ActivityTypeInfo.Icon;
-                    node.activityName = d.ActivityTypeInfo.Name;
-                    node.activityDescription = d.ActivityTypeInfo.Description;
-                }
+        if (data.Links)
+            data.Links.forEach(l => {
+                linkList.push(this.convertToDiagramModel(l, DiagramObjectType.Link))
+            });
 
-                if (d.SettingsObject != null && d.SettingsObject.settings != null)
-                    node.settings = d.SettingsObject.settings;
+        nodeList.forEach(n => this.myDiagram.model.addNodeData(n));
+        linkList.forEach(l => dm.addLinkData(l));
 
-                if (d.StepType == StepType.Start)
-                    node.template = 'start';
-                else if (d.StepType == StepType.Finish)
-                    node.template = 'finish';
-
-                modelList.push(node);
-            }
-        }
-
-        if (data.Links) {
-            for (var i = 0; i < data.Links.length; i++) {
-                let d = data.Links[i];
-                let link = new LinkModel();
-                link.key = d.Key;
-                link.from = d.FromKey;
-                link.to = d.ToKey;
-                link.name = d.Name;
-                link.condition = d.Condition;
-                link.linkType = d.LinkType;
-                link.transitionType = d.TransitionType;
-
-                linkList.push(link);
-            }
-        }
-
-        for (var i = 0; i < modelList.length; i++) {
-            this.myDiagram.model.addNodeData(modelList[i]);
-        }
-
-
-        for (var i = 0; i < linkList.length; i++) {
-            dm.addLinkData(linkList[i]);
-            dm.setCategoryForLinkData(linkList[i], linkList[i].category);
-        }
 
         //get deep copy of lists
         this.initialLinks = _.cloneDeep(linkList);
-        this.initialNodes = _.cloneDeep(modelList);
+        this.initialNodes = _.cloneDeep(nodeList);
 
         this.myDiagram.commitTransaction("load_all_data");
         this.reOrderLayout();
@@ -271,14 +227,103 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     save() {
         if (this.id < 1) {
-            //new
+
+
             let links = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
             let nodes = this.myDiagram.model.nodeDataArray;
+
+            
+
         } else {
             //edit
         }
     }
 
+    convertToDiagramModel(model: WorkflowDiagramNode | WorkflowDiagramLink, type: DiagramObjectType): NodeModel | LinkModel {
+
+        if (type == DiagramObjectType.Link) {
+            let m: WorkflowDiagramLink = <WorkflowDiagramLink>model;
+            let n = new LinkModel();
+
+            n.diagramObjectType = DiagramObjectType.Link;
+            n.category = '';
+            n.from = m.FromKey;
+            n.to = m.ToKey;
+            n.key = m.Key;
+            n.condition = m.Condition;
+            n.linkType = m.LinkType;
+            n.transitionType = m.TransitionType;
+
+            return n;
+        } else if (type == DiagramObjectType.Node) {
+            let m: WorkflowDiagramNode = <WorkflowDiagramNode>model;
+            let n = new NodeModel();
+
+            n.key = m.Key;
+            n.name = m.Name;
+            n.pos = `${m.XPosition} ${m.YPosition}`;
+            n.x = m.XPosition;
+            n.y = m.YPosition;
+            n.activityType = m.ActivityType;
+            n.stepType = m.StepType;
+            n.category = 'task';
+
+            if (m.ActivityTypeInfo != null) {
+                n.fore = m.ActivityTypeInfo.ForeColor;
+                n.back = m.ActivityTypeInfo.BackColor;
+                n.icon = m.ActivityTypeInfo.Icon;
+                n.activityName = m.ActivityTypeInfo.Name;
+                n.activityDescription = m.ActivityTypeInfo.Description;
+            }
+
+            if (m.SettingsObject != null && m.SettingsObject.settings != null)
+                n.settings = m.SettingsObject.settings;
+
+            if (m.StepType == StepType.Start)
+                n.category = 'start';
+            else if (m.StepType == StepType.Finish)
+                n.category = 'finish';
+
+            return n;
+
+        } else {
+            console.error(`type value ${type} is not valid`);
+            return null;
+        }
+    }
+
+    convertToWorkflowModel(model: NodeModel | LinkModel): WorkflowDiagramNode | WorkflowDiagramLink {
+        if (model.diagramObjectType == DiagramObjectType.Link) {
+            let m: LinkModel = <LinkModel>model;
+
+            let n = new WorkflowDiagramLink();
+            n.Key = m.key;
+            n.FromKey = m.from;
+            n.ToKey = m.to;
+            n.LinkType = m.linkType;
+            n.TransitionType = m.transitionType;
+            n.Name = m.name;
+            n.ConditionObject = m.condition;
+
+            return n;
+        } else if (model.diagramObjectType == DiagramObjectType.Node) {
+            let m: NodeModel = <NodeModel>model;
+            let n = new WorkflowDiagramNode();
+
+            n.Key = m.key;
+            n.ActivityType = m.activityType;
+            n.Name = m.name;
+            n.SettingsObject = m.settings;
+            n.StepType = m.stepType;
+            n.XPosition = m.x;
+            n.YPosition = m.y;
+
+            return n;
+        } else {
+            console.error(`model value ${model} is not valid`);
+            return null;
+        }
+    }
     //#endregion
 
     //#region events
@@ -350,7 +395,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 }
             }
         }
-        console.log(e);
+        console.log('selection changed: ', e);
         //console.log(this.selection);
     }
 
@@ -366,45 +411,48 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private createPalette(): go.Palette {
 
-        console.log('reached created palette');
+        //console.log('reached created palette');
 
 
         let paletteModel = [];
 
-        paletteModel.push({
-            template: 'start',
-            category: 'start',
-            name: 'Start',
-            diagramObjectType: DiagramObjectType.Node,
-            stepType: StepType.Start,
-            pos: "0 0"
-        });
+        //load the palette with the appropriate nodes
 
-        paletteModel.push({
-            template: 'finish',
-            category: 'finish',
-            name: 'Finish',
-            diagramObjectType: DiagramObjectType.Node,
-            stepType: StepType.Finish,
-            pos: "0 0"
-        });
+        let start = new NodeModel();
+        start.category = 'start';
+        start.name = 'Start';
+        start.diagramObjectType = DiagramObjectType.Node;
+        start.stepType = StepType.Start;
+        start.pos = "0 0";
+
+        paletteModel.push(start);
+
+        let finish = new NodeModel();
+        finish.category = 'finish';
+        finish.name = 'Finish';
+        finish.diagramObjectType = DiagramObjectType.Node;
+        finish.stepType = StepType.Finish;
+        finish.pos = "0 0";
+
+        paletteModel.push(finish);
 
         this.activityTypes.forEach(a => {
-            paletteModel.push({
-                template: 'task',
-                category: 'task',
-                fore: a.ForeColor,
-                back: a.BackColor,
-                activityName: a.Name,
-                icon: a.Icon,
-                activityDescription: a.Description,
-                diagramObjectType: DiagramObjectType.Node,
-                stepType: StepType.Task,
-                pos: "0 0"
-            });
-        });
 
-        console.log(paletteModel);
+            let m = new NodeModel();
+
+            m.category = 'task';
+            m.fore = a.ForeColor;
+            m.back = a.BackColor;
+            m.activityName = a.Name;
+            m.icon = a.Icon;
+            m.activityDescription = a.Description;
+            m.stepType = StepType.Task;
+            m.pos = "0 0";
+            m.diagramObjectType = DiagramObjectType.Node;
+
+            paletteModel.push(m);
+
+        });
 
         let pt = this.g(go.Palette, "WorkflowPalette",
             {
@@ -447,7 +495,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         });
 
         dg.model.class = go.GraphLinksModel;
-        dg.model.nodeCategoryProperty = "template";
+        dg.model.nodeCategoryProperty = "category";
         dg.model.linkFromPortIdProperty = "frompid";
         dg.model.linkToPortIdProperty = "topid";
         dg.model.nodeDataArray = [];

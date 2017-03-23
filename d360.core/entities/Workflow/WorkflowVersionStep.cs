@@ -22,7 +22,7 @@ namespace d360.core.entities.Workflow
         public StepType StepType { get; set; }
 
         [DataMember]
-        public ActivityType ActivityType { get; set; }
+        public d360.core.enums.Workflow.WorkflowActivityType ActivityType { get; set; }
 
         [IgnoreDataMember]
         public string Settings { get; set; }
