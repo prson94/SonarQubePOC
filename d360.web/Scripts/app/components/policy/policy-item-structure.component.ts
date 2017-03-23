@@ -14,6 +14,7 @@ import { TreeNode } from 'primeng/primeng';
 import { FormMode } from '../../models/form.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { LevelsService } from '../../services/levels.service';
 
 @Component({
     selector: 'd3s-policy-item-structure',
@@ -73,10 +74,10 @@ import { StringConstants } from '../../static/string-constants';
                         [prompt]="'Are you sure you want to delete the policy item [' + [selected?.data?.Name] + ']?'"                                         
                         (onCancel)="showDelete=false;"
                     ></d3s-delete-form>        
-                    <d3s-dynamic-editor *ngIf="showEditor" [objectID]="policyType.ID" objectType="Policy" [parentID]="selectedParentID" [title]="'Policy'" [selection]="selected?.data" (saveClick)="savePolicy($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                    <d3s-dynamic-editor *ngIf="showEditor" [objectID]="policyType.ID" objectType="Policy" [parentID]="selectedParentID" [title]="policyEditorTitle()" [selection]="selected?.data" (saveClick)="savePolicy($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                 </div>                    
                 `,
-    providers: [PoliciesService, PermissionsService]
+    providers: [PoliciesService, PermissionsService, LevelsService]
 })
 
 export class PolicyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -84,11 +85,13 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     policyType: PolicyType;
     policies: Policy[] = [];
+    levels: any[] = [];
 
     policyTypeId: number;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
     selectedParentID: number;
+    selectedLevel: number;
     
     searchValue: string;
 
@@ -107,7 +110,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private router: Router,
         private messagesService: MessagesService,
         rightSidebarService: RightSidebarService,
-        private permissionsService: PermissionsService
+        private permissionsService: PermissionsService,
+        private levelsService: LevelsService
     ) {
 
         super();
@@ -139,6 +143,10 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
                     this.setBrowserTitle(this.titleService, this.policyType.Name);
                 });
+            this.levelsService.getObjectLevels(this.policyTypeId, StringConstants.ObjectPolicyType)
+                .then(result => {
+                    this.levels = result;                    
+                });               
         });
     }
 
@@ -210,8 +218,25 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     private add() {            
         this.selectedParentID = this.selected ? this.selected.data.ID : null;
-        this.selected = null;
+        this.selectedLevel = this.selected ? this.selected.data.Level : 0;
+        this.selected = null;        
         this.showEditor = true;
+    }
+
+    private policyEditorTitle(): string {
+        if (!this.selected) {
+            let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
+
+            if (thisLevel && thisLevel.length > 0)
+                return thisLevel[0].Name;
+            else
+                return `(Level ${this.selectedLevel + 1}) Item`;
+        }
+
+        let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
+
+        if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
+        return `(Level ${this.selected.data.Level + 1}) Item`;
     }
 
     private deleteSelectedTreeNode(id: number): TreeNode {

@@ -13,10 +13,11 @@ import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { LevelsService } from '../../services/levels.service';
 
 @Component({
     selector: 'd3s-model-item-structure',
-    providers: [ModelsService, PermissionsService],
+    providers: [ModelsService, PermissionsService, LevelsService],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="model?.ID" [objectName]="model?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
                 <d3s-model-diagram *ngIf="!isLoading && isModelDiagramVisible" [id]="modelId"></d3s-model-diagram>                
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
@@ -85,6 +86,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     
     model: Model;
     modelHierarchy: ModelHierarchy[] = [];
+    levels: any[] = [];
     
     modelId: number;
     selectedParentID: number;
@@ -108,7 +110,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         protected titleService: Title,
         protected messagesService: MessagesService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService
+        protected permissionsService: PermissionsService,
+        protected levelsService: LevelsService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -150,6 +153,11 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
                 });
 
+            this.levelsService.getObjectLevels(this.modelId, StringConstants.ObjectTaxonomyType)
+                .then(result => {
+                    this.levels = result;
+                });
+
             this.rightSub = this.rightSidebarService.rightSidebarClicked$.subscribe(r => {
                 if (r.tag == 'modeldiagram') {
                     this.isModelDiagramVisible = !this.isModelDiagramVisible;
@@ -176,9 +184,19 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private modelTaxonomyTitle(): string {
-        if (!this.selected) return `Model Taxonomy (level ${this.selectedLevel+1})`;
-                
-        return 'Model Taxonomy';
+        if (!this.selected) {
+            let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
+                        
+            if (thisLevel && thisLevel.length > 0)
+                return thisLevel[0].Name;
+            else
+                return `(Level ${this.selectedLevel + 1}) Item`;
+        }
+
+        let thisLevel = this.levels.filter(x => x.Level == this.selected.data.level);
+
+        if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
+        return `(Level ${this.selected.data.level + 1}) Item`;       
     }
     
     private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number): TreeNode[] {
