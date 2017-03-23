@@ -21,31 +21,29 @@ namespace d360.jobs.subscriber.Workflow
             try
             {
                 var info = message.GetBody<EventInfo>();
-                
+
                 #region Create EF connection
 
-                //var sec = new UriSecurityContextProvider()
-                //{
-                //    CompanyID = info.CompanyID,
-                //    ResourceID = info.ResourceID,
-                //    CompanyPrefix = info.DomainPrefix,
-                //    IsAdministrator = true
-                //};
-                //var cache = new DummyCachingProvider();
-                //var queue = new AzureQueueSource();
-                //var community = new CommunityContext(cache, queue, sec);
-                //var company = new CompanyContext(community, cache, queue, sec, true);
-
-                var workflow = new WorkflowContext(GetCompanyConnectionString(info.CompanyID), info.CompanyID, info.ResourceID);
+                var sec = new UriSecurityContextProvider()
+                {
+                    CompanyID = info.CompanyID,
+                    ResourceID = info.ResourceID,
+                    CompanyPrefix = info.DomainPrefix,
+                    IsAdministrator = true
+                };
+                var cache = new DummyCachingProvider();
+                var queue = new AzureQueueSource();
+                var community = new CommunityContext(cache, queue, sec);
+                var company = new CompanyContext(community, cache, queue, sec, true);
 
                 #endregion
 
                 var sObject = info.ObjectType.ToString();
-                var registration = workflow.WorkflowEventRegistrations.FirstOrDefault(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.ObjectTypeID);
+                var registration = company.WorkflowEventRegistrations.FirstOrDefault(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.ObjectTypeID);
 
                 if (registration != null)
                 {
-                    var workflowItem = workflow.CreateWorkflowItem(registration.TypeID, info.Object.ToString(), info.ObjectID);
+                    var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object.ToString(), info.ObjectID);
                 }
             }
             catch (Exception ex)
@@ -60,56 +58,6 @@ namespace d360.jobs.subscriber.Workflow
             config.UseServiceBus();
             var host = new JobHost(config);
             host.RunAndBlock();
-
-
-//            var mex = new List<Exception>();
-
-//            try
-//            {
-//                var companies = GetActiveCompanyIDs();
-
-//#if DEBUG                       
-//                companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
-//#endif
-           
-//              companies.ForEach(companyID =>
-//              {
-//                  try
-//                  {
-//                      using (var context = GetCompanyConnection(companyID))
-//                      {
-//                          Console.WriteLine($"Getting objects with invalid text paths [company id: {companyID}]");
-
-//                          context.OpenWithRetry(RetryPolicy.DefaultFixed);
-//                          var items = context.Query<dynamic>("").ToList();
-
-//                          Console.WriteLine($"Found {items.Count} item(s) with invalid text paths [company id: {companyID}]");
-
-//                          items.ForEach(i => {
-//                              try
-//                              {
-//                                  context.Execute($"update {i.Object} set TextPath = @tp where ID = @id", new { tp = i.CorrectTextPath, id = i.ObjectID });
-//                              }
-//                              catch (Exception ex)
-//                              {
-//                                  Console.WriteLine(ex.GetFullExceptionData());
-//                              }
-//                          });
-//                      }
-//                  }
-//                  catch (Exception ex)
-//                  {
-//                      Console.WriteLine(ex.GetFullExceptionData());
-//                  }
-
-//              });
-//            }
-//            catch (Exception ex)
-//            {
-//                mex.Add(ex);
-//            }
-
-//            if (mex.Count > 0) throw new AggregateException("One or more exceptions occurred", mex);
         }
     }
 }

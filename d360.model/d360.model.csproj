@@ -152,6 +152,7 @@
   <ItemGroup>
     <Compile Include="BaseContext.cs" />
     <Compile Include="CommunityContext.cs" />
+    <Compile Include="CompanyContext_Workflow.cs" />
     <Compile Include="WorkflowContext.cs" />
     <Compile Include="CompanyContext.cs">
       <SubType>Code</SubType>

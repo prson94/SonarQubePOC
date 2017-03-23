@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 namespace d360.model
 {
     [DbConfigurationType(typeof(AzureConfiguration))]
-    public class CompanyContext : BaseContext
+    public partial class CompanyContext : BaseContext
     {
         #region Caching Methods
 
