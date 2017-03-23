@@ -9965,6 +9965,8 @@ from ArtifactType A
                     PolicyTypeClassID = parseIntField(form, "Class")
                 };
 
+                if (a.MaximumDepth <= 0 || a.MaximumDepth > 10) return jsonException("Invalid Maximum Policy level specified must be a value between 1 and 10", HttpStatusCode.InternalServerError);
+
                 Company.Add<PolicyType>(a);
 
                 for (int i = 1; i <= a.MaximumDepth; i++)
@@ -10042,6 +10044,8 @@ from ArtifactType A
                 model.Description = parseTextField(form, "Description");
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.PolicyTypeClassID = parseIntField(form, "Class");
+
+                if (model.MaximumDepth <= 0 || model.MaximumDepth > 10) return jsonException("Invalid Maximum Policy level specified must be a value between 1 and 10", HttpStatusCode.InternalServerError);
 
                 var currentMaxLevel = Company.Query<int>("select coalesce(max([Level]), 0) from Policy where PolicyTypeID = @t", new { t = id }).SingleOrDefault();
 
@@ -15403,6 +15407,8 @@ order by TextPath
                     MaximumDepth = parseIntField(form, "MaximumDepth")
                 };
 
+                if (a.MaximumDepth <= 0 || a.MaximumDepth > 10) return jsonException("Invalid Maximum Model level specified must be a value between 1 and 10", HttpStatusCode.InternalServerError);
+
                 Company.SaveOrUpdate<TaxonomyType>(a);
 
                 for (int i = 1; i <= a.MaximumDepth; i++)
@@ -15495,6 +15501,8 @@ order by TextPath
                 model.Description = parseTextField(form, "Description");
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.TaxonomyTypeClassID = parseIntField(form, "Class");
+
+                if (model.MaximumDepth <= 0 || model.MaximumDepth > 10) return jsonException("Invalid Maximum Model level specified must be a value between 1 and 10", HttpStatusCode.InternalServerError);
 
                 var currentMaxLevel = Company.Query<int>("select coalesce(max([Level]), 0) from Taxonomy where TaxonomyTypeID = @t", new { t = id }).SingleOrDefault();
 
