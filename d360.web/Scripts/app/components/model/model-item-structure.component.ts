@@ -48,7 +48,7 @@ import { StringConstants } from '../../static/string-constants';
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()" >
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=item;showAdd()"><i class="fa fa-plus"></i></a>                                        
+                                            <a style="cursor:pointer;" (click)="selected=item;showAdd()" *ngIf="model.MaximumDepth > item.data.level"><i class="fa fa-plus"></i></a>                                        
                                         </div>
                                     </template>
                         </p-column>     
@@ -74,7 +74,7 @@ import { StringConstants } from '../../static/string-constants';
                         [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.name] + ']?'"                                         
                         (onCancel)="showDelete=false;"
                     ></d3s-delete-form>        
-                    <d3s-dynamic-editor rowID="id" *ngIf="showEditor" [objectID]="model.ID" [objectType]="'Taxonomy'" [parentID]="selectedParentID" [title]="'Model Taxonomy'" [selection]="selected?.data" (saveClick)="saveTaxonomy($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>              
+                    <d3s-dynamic-editor rowID="id" *ngIf="showEditor" [objectID]="model.ID" [objectType]="'Taxonomy'" [parentID]="selectedParentID" [title]="modelTaxonomyTitle()" [selection]="selected?.data" (saveClick)="saveTaxonomy($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>              
                 </div>                
                 `
 })
@@ -95,6 +95,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     showEditor: boolean;
     showDelete: boolean;
     isModelDiagramVisible = false;
+    selectedLevel: number = 0;
 
     theDeleteCallback: Function;
 
@@ -173,10 +174,16 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy)                
             });
     }
+
+    private modelTaxonomyTitle(): string {
+        if (!this.selected) return `Model Taxonomy (level ${this.selectedLevel+1})`;
+                
+        return 'Model Taxonomy';
+    }
     
     private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number): TreeNode[] {
         //find the root items then 
-
+        
         let rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
         if (rootNodes.length == 0) return null;
@@ -188,7 +195,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 label: root.Name,
                 expanded: true,
                 data: {
-                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : '')
+                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : ''), level: root.Level
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
@@ -285,7 +292,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private showAdd() {
         this.showEditor = true;        
-        this.selectedParentID = this.selected ? this.selected.data.id : undefined;        
+        this.selectedParentID = this.selected ? this.selected.data.id : undefined;
+        this.selectedLevel = this.selected ? this.selected.data.level : 0;
         this.selected = null;
     }
     

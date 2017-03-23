@@ -19,6 +19,7 @@ export class ModelHierarchy {
     Name: string;
     ParentID: number;
     Description: string;
+    Level: number;
 }
 
 export class HierarchyDiagramModel {

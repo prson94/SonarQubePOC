@@ -49,7 +49,7 @@ where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => ne
 				from	[Intersect]
 				where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
 				) DC
-where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.Name, i.ParentID, i.Description });
+where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.Name, i.ParentID, i.Description, i.Level });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
