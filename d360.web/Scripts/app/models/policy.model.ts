@@ -8,6 +8,7 @@ export class PolicyType {
     PolicyTypeClassID: number;
     AllowAttributes: boolean;
     NymTypes: NymType[];
+    MaximumDepth: number;
 }
 
 export enum PolicyStatus {
@@ -23,4 +24,5 @@ export class Policy {
     Status: PolicyStatus;
     StatusName: string;
     Description: string;
+    Level: number;
 }

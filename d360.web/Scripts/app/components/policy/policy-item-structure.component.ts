@@ -47,7 +47,7 @@ import { StringConstants } from '../../static/string-constants';
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;add()"><i class="fa fa-plus"></i></a>                                        
+                                    <a style="cursor:pointer;" *ngIf="policyType.MaximumDepth > item.data.Level" (click)="selected=item;add()"><i class="fa fa-plus"></i></a>                                        
                                 </div>
                             </template>
                         </p-column>   
@@ -124,13 +124,12 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             this.policyTypeId = +params['policyTypeId'];
             this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
 
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);
-
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);            
             this.isLoading = true;
             this.policiesService.getPolicyType(this.policyTypeId)
                 .then(result => {
                     this.isLoading = false;
-                    this.policyType = result;
+                    this.policyType = result;                    
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.PolicyTypeClass, SiteUrlHelpers.getObjectUrl('POLICYTYPECLASS', this.policyType.PolicyTypeClassID)));
@@ -173,7 +172,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 label: root.Name,
                 expanded: true,
                 data: {
-                    ID: root.ID, Name: root.Name, Description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : ''), ParentID: root.ParentID, StatusName: root.StatusName
+                    ID: root.ID, Name: root.Name, Description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : ''), ParentID: root.ParentID, StatusName: root.StatusName, Level: root.Level
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
@@ -235,7 +234,6 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
         while (node) {
             if (node.data.ID && node.data.ID == id) {
-
                 return node;
             }
 

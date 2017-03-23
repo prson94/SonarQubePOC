@@ -3284,6 +3284,7 @@ order by C.TextPath";
                     { "PolicyTypeClass", row.PolicyTypeClass },
                     { "PolicyTypeClassID", row.PolicyTypeClassID },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+                    { "MaximumDepth", row.MaximumDepth }
                 }
             );
         }
@@ -3300,7 +3301,8 @@ order by C.TextPath";
         {0}
 		A.Name,
         A.Status,
-		A.Description
+		A.Description,
+        A.Level
 from	[Policy] A  {1} 
 where    A.PolicyTypeID = @id and A.[Visible] = 1", columns, joins);
 
