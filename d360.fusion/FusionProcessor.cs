@@ -762,7 +762,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                                 var dr = table.NewRow();
                                 dr["FusionQueryAttributeTypeID"] = queryItem["FusionQueryAttributeTypeID"];
                                 dr["SourceID"] = queryItem["SourceID"];
-                                dr["Action"] = "A";// queryItem["Action"];
+                                dr["Action"] = queryItem["Action"];
                                 table.Rows.Add(dr);
                             }
 
