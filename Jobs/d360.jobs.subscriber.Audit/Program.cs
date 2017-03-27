@@ -17,12 +17,12 @@ namespace d360.jobs.subscriber.Audit
             {
                 var info = message.GetBody<EventInfo>();
 
-                if (info.Object.IsAuditEnabled())
+                if (info.Object.Object.IsAuditEnabled())
                 {
                     var cnn = GetCompanyConnection(info.CompanyID);
-                    cnn.Query<Field>("select * from Field where ObjectType = @type and ObjectID = @id", new { type = new Dapper.DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = info.Object.ToString() }, id = info.ObjectID }).ToList();
+                    cnn.Query<Field>("select * from Field where ObjectType = @type and ObjectID = @id", new { type = new Dapper.DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = info.Object.Object.ToString() }, id = info.Object.ObjectID }).ToList();
 
-                    switch (info.Object)
+                    switch (info.Object.Object)
                     {
                         case SystemObjects.Artifact:
                             break;

@@ -4,11 +4,12 @@ using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Name = NAMESPACE), ObjectType(ObjectTypeInfo.FusionType, "FusionType")]
-    public class FusionType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
+    public class FusionType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         [
         DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description"), 
@@ -27,5 +28,16 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("FusionTypeID")]
         public virtual ICollection<FusionAttributeType> FusionAttributeTypes { get; set; }
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.FusionType,
+                ObjectID = ID,
+                ObjectType = SystemObjects.FusionType,
+                ObjectTypeID = 0
+            };
+        }
     }
 }

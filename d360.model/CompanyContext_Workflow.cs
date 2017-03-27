@@ -1,11 +1,13 @@
 ﻿using d360.core.entities.Workflow;
 using d360.core.enums.Workflow;
+using d360.core.workflow;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace d360.model
 {
@@ -35,7 +37,7 @@ namespace d360.model
 
         #region Engine Methods
 
-        public WorkflowItem CreateWorkflowItem(int workflowTypeID, string @object, int objectID, bool isTest = false)
+        public async Task<WorkflowItem> CreateWorkflowItem(int workflowTypeID, string @object, int objectID, bool isTest = false)
         {
             var version = WorkflowVersions
                 .Include(i => i.Steps)
@@ -72,7 +74,7 @@ namespace d360.model
             WorkflowItemSteps.Add(firstItemStep);
             SaveChanges();
 
-            ExecuteStep(firstItemStep.ID);
+            await ExecuteStep(firstItemStep.ID, workflowTypeID);
 
             //var activity = ActivityTypes.SingleOrDefault(i => i.ID == firstItemStep.Step.ActivityType);
 
@@ -95,13 +97,18 @@ namespace d360.model
             return item;
         }
 
-        public void ExecuteStep(long itemStepID)
+        public async Task ExecuteStep(long itemStepID, int workflowId)
         {
             var itemStep = getWorkflowItemStep(itemStepID);
-            WorkflowActivityType at = WorkflowActivityType.Form;
-            switch (at)
+            
+            switch (itemStep.Step.ActivityType)
             {
                 case WorkflowActivityType.EmailNotification:
+                    await SendWorkflowEmail(itemStep.Step, workflowId);
+                    break;
+                case WorkflowActivityType.Form:
+                    break;
+                case WorkflowActivityType.StatusChange:
                     break;
                 default:
                     break;
@@ -115,6 +122,23 @@ namespace d360.model
             itemStep.CompletedOn = DateTime.UtcNow;
             itemStep.CompletedBy = CurrentResourceID;
             SaveChanges();
+        }
+
+        private async Task SendWorkflowEmail(WorkflowVersionStep step, int workflowId)
+        {
+            // call proc for details who to email
+            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = workflowId });
+
+            if (string.IsNullOrEmpty(step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
+
+            // build email from step settings.
+            var emailSettings = WorkflowEmailModel.ParseFromXml(XElement.Parse(step.Settings));
+
+            //email the users
+            /*foreach (var user in users)
+            {
+                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate);
+            }*/
         }
 
         public void DetermineTransitionBasedOnPreviousStepConditions(long itemStepID)

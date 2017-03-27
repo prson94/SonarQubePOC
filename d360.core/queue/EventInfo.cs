@@ -7,14 +7,8 @@ using System.Threading.Tasks;
 
 namespace d360.core.queue
 {
-    public class EventInfo
+    public class EventObjectInfo
     {
-        public string DomainPrefix { get; set; }
-
-        public int CompanyID { get; set; }
-
-        public int ResourceID { get; set; }
-
         public SystemObjects Object { get; set; }
 
         public int ObjectID { get; set; }
@@ -23,6 +17,18 @@ namespace d360.core.queue
 
         public int ObjectTypeID { get; set; }
 
+    }
+
+    public class EventInfo
+    {
+        public string DomainPrefix { get; set; }
+
+        public int CompanyID { get; set; }
+
+        public int ResourceID { get; set; }
+                
         public ChangeType Action { get; set; }
+
+        public EventObjectInfo Object { get; set; }
     }
 }

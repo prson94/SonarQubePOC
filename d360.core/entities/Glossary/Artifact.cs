@@ -5,11 +5,12 @@ using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Artifact, "Artifact")]
-    public class Artifact : BaseIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata
+    public class Artifact : BaseIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         #region Properties
 
@@ -80,14 +81,27 @@ namespace d360.core.entities
         {
             get
             {
-                return this.createdon.HasValue
-                   ? this.createdon.Value
-                   : DateTime.UtcNow;
+                if (!this.createdon.HasValue)
+                {
+                    this.createdon = DateTime.UtcNow;
+                }
+                return this.createdon.GetValueOrDefault();
             }
 
             set { this.createdon = value; }
         }
 
         private DateTime? createdon = null;
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.Artifact,
+                ObjectID = ID,
+                ObjectType = SystemObjects.ArtifactType,
+                ObjectTypeID = ArtifactTypeID
+            };
+        }
     }
 }

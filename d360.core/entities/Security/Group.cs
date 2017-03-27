@@ -3,11 +3,12 @@ using d360.core.entities.Contracts;
 using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Group, "Group")]
-    public class Group : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
+    public class Group : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
@@ -32,5 +33,16 @@ namespace d360.core.entities
 
         //[ForeignKey("ResourceID")]
         public virtual ICollection<ResourceGroup> ResourceGroups { get; set; }
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.Group,
+                ObjectID = ID,
+                ObjectType = SystemObjects.GroupType,
+                ObjectTypeID = 0
+            };
+        }
     }
 }

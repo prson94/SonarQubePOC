@@ -11,12 +11,13 @@ using d360.extensions.info;
 using d360.extensions.caching;
 using d360.extensions.queue;
 using d360.model;
+using System.Threading.Tasks;
 
 namespace d360.jobs.subscriber.Workflow
 {
     public class Program: FunctionsBase
     {
-        public static void ProcessTopicMessage([ServiceBusTrigger("Events", "Workflow", AccessRights.Listen)] BrokeredMessage message)
+        public static async Task ProcessTopicMessage([ServiceBusTrigger("%topicname%", "Workflow", AccessRights.Listen)] BrokeredMessage message)
         {
             try
             {
@@ -38,12 +39,12 @@ namespace d360.jobs.subscriber.Workflow
 
                 #endregion
 
-                var sObject = info.ObjectType.ToString();
-                var registration = company.WorkflowEventRegistrations.FirstOrDefault(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.ObjectTypeID);
+                var sObject = info.Object.ObjectType.ToString();
+                var registration = company.WorkflowEventRegistrations.FirstOrDefault(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID);
 
                 if (registration != null)
                 {
-                    var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object.ToString(), info.ObjectID);
+                    var workflowItem = await company.CreateWorkflowItem(registration.TypeID, info.Object.Object.ToString(), info.Object.ObjectID);
                 }
             }
             catch (Exception ex)
@@ -56,6 +57,7 @@ namespace d360.jobs.subscriber.Workflow
         {
             var config = new JobHostConfiguration(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
             config.UseServiceBus();
+            config.NameResolver = new TopicNameResolver();
             var host = new JobHost(config);
             host.RunAndBlock();
         }

@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class SurveyType : BaseIntObject, ICreatedObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
+    public class SurveyType : BaseIntObject, ICreatedObject, IIntObject, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]
         public string Name { get; set; }
@@ -39,5 +40,15 @@ namespace d360.core.entities
         [ForeignKey("SurveyTypeID")]
         public virtual ICollection<Survey> Surveys { get; set; }
 
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.SurveyType,
+                ObjectID = ID,
+                ObjectType = SystemObjects.SurveyType,
+                ObjectTypeID = 0
+            };
+        }
     }
 }

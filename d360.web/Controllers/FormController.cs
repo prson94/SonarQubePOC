@@ -45,6 +45,9 @@ namespace d360.web.Controllers
         {
             SecProvider = secProvider;
             Storage = storage;
+#if DEBUG
+            company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
+#endif
 
             MenuRepository = new SiteMenuRepository(community, company);
         }

@@ -72,7 +72,7 @@ namespace d360.model
             
             //output queries in debug mode to console
             if (System.Diagnostics.Debugger.IsAttached)
-                this.Database.Log = Console.Write;
+                this.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
         }
 
         #endregion
@@ -2214,24 +2214,21 @@ order by Name", new { workflowType, type, id });
             return returnValue;
         }
 
-        private void addQE(List<EventInfo> events, ChangeType action, SystemObjects o, int oid, SystemObjects t, int tid)
+        private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             events.Add(new EventInfo {
                 CompanyID = CurrentCompanyID,
                 DomainPrefix = CurrentCompanyDomain,
                 ResourceID = CurrentResourceID,
                 Action = action,
-                Object = o, ObjectID = oid,
-                ObjectType = t, ObjectTypeID = tid
+                Object = item        
             });
         }
 
         public override int SaveChanges()
         {
             int returnValue = 0;
-
-            var events = new List<EventInfo>();
-
+            
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
             {
                 #region Business logic : ICreatedMetadata
@@ -2244,10 +2241,25 @@ order by Name", new { workflowType, type, id });
                 #endregion
             }
 
-            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Unchanged | EntityState.Modified | EntityState.Deleted))
-            {
+            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added /*| EntityState.Unchanged*/ | EntityState.Modified | EntityState.Deleted))
+            {             
                 #region Business logic : IUpdatedMetadata
-                if (entry.Entity is IUpdatedMetadata)
+                // this is a workaround to the issue that
+                // the field table needs the id from the artifact / model / etc table so we insert into main table
+                // then insert the fields with the id from 1.  This causes 1 to update.  The below interface
+                // can be used and if its within 5 seconds we dont also reupdate the update datetime.
+                /*if (entry.State == EntityState.Unchanged && entry.Entity is IUpdatedMetadata && entry.Entity is IRequiredCreatedOnMetadata)
+                {
+                    var oWhen = entry.Entity as IRequiredCreatedOnMetadata;
+
+                    if (oWhen.CreatedOn.AddSeconds(5) < DateTime.UtcNow)
+                    {
+                        var o = entry.Entity as IUpdatedMetadata;
+                        o.UpdatedBy = CurrentResourceID;
+                        o.UpdatedOn = DateTime.UtcNow;
+                    }
+                }
+                else*/ if (entry.Entity is IUpdatedMetadata)
                 {
                     var o = entry.Entity as IUpdatedMetadata;
                     o.UpdatedBy = CurrentResourceID;
@@ -2264,9 +2276,7 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     { 
                         case EntityState.Added:
-                            if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.Artifact, o.ID, SystemObjects.ArtifactType, o.ArtifactTypeID);
+                            if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);                            
                             break;
                         case EntityState.Deleted:
                             var any = false;
@@ -2274,14 +2284,10 @@ order by Name", new { workflowType, type, id });
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
 
                             any = Any<Artifact>(i => i.ParentID == o.ID);
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);
-
-                            addQE(events, ChangeType.Delete, SystemObjects.Artifact, o.ID, SystemObjects.ArtifactType, o.ArtifactTypeID);
+                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);                            
                             break;
                         case EntityState.Modified:
-                            if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.Artifact, o.ID, SystemObjects.ArtifactType, o.ArtifactTypeID);
+                            if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);                            
                             break;
                     }
 
@@ -2299,9 +2305,7 @@ order by Name", new { workflowType, type, id });
                     {
                         case EntityState.Added:
                             if (Any<ArtifactType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.ArtifactType, o.ID, SystemObjects.ArtifactType, 0);
+                                throw new ArgumentException(Messages.Error_NameTaken);                            
                             break;
                         case EntityState.Deleted:
                             if (Any<Artifact>(i => i.ArtifactTypeID == o.ID))
@@ -2309,14 +2313,12 @@ order by Name", new { workflowType, type, id });
                             var childIDs = Filter<ArtifactType>(i => i.ParentID == o.ID).Select(i => i.ID).ToList();
                             if (childIDs.Count > 0)
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ChildTypesAssignedToType);
-
-                            addQE(events, ChangeType.Delete, SystemObjects.ArtifactType, o.ID, SystemObjects.ArtifactType, 0);
+                            
                             break;
                         case EntityState.Modified:
                             if (Any<ArtifactType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.ArtifactType, o.ID, SystemObjects.ArtifactType, 0);
+                            
                             break;
                     }
                 }
@@ -2333,20 +2335,17 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.AttributeType, o.ID, SystemObjects.AttributeType, 0);
+                            
                             break;
                         case EntityState.Deleted:
                             if (Any<AttributeTypeRelation>(i => i.AttributeTypeID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_AttributeType_Allocations);
-
-                            addQE(events, ChangeType.Delete, SystemObjects.AttributeType, o.ID, SystemObjects.AttributeType, 0);
+                            
                             break;
                         case EntityState.Modified:
                             if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.AttributeType, o.ID, SystemObjects.AttributeType, 0);
+                            
                             break;
                     }
                 }
@@ -2423,14 +2422,12 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<Fusion>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.Fusion, o.ID, SystemObjects.FusionType, o.FusionTypeID);
+                            
                             break;
                         case EntityState.Modified:
                             if (Any<Fusion>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.Fusion, o.ID, SystemObjects.FusionType, o.FusionTypeID);
+                            
                             break;
                     }
                 }
@@ -2447,14 +2444,12 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<FusionType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.FusionType, o.ID, SystemObjects.FusionType, 0);
+                            
                             break;
                         case EntityState.Modified:
                             if (Any<FusionType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.FusionType, o.ID, SystemObjects.FusionType, 0);
+                            
                             break;
                     }
                 }
@@ -2471,20 +2466,17 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<Group>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.Group, o.ID, SystemObjects.GroupType, 0);
+                            
                             break;
                         case EntityState.Modified:
                             if (Any<Group>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.Group, o.ID, SystemObjects.GroupType, 0);
+                            
                             break;
                         case EntityState.Deleted:
                             if (Any<Responsibility>(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
-
-                            addQE(events, ChangeType.Delete, SystemObjects.Group, o.ID, SystemObjects.GroupType, 0);
+                            
                             break;
                     }
                 }
@@ -2527,8 +2519,7 @@ order by Name", new { workflowType, type, id });
                                 i.Subject == o.Subject &&
                                 i.SubjectID == o.SubjectID);
                             if (anyAdd) throw new ConflictException("Relationship Type Cannot Be Created", "Another relationship already exists with this configuration.");
-
-                            addQE(events, ChangeType.Add, SystemObjects.IntersectType, o.ID, SystemObjects.IntersectType, 0);
+                            
                             break;
                         case EntityState.Modified:
                             var anyEdit = Any<IntersectType>(i =>
@@ -2539,8 +2530,7 @@ order by Name", new { workflowType, type, id });
                                 i.SubjectID == o.SubjectID &&
                                 i.ID != o.ID);
                             if (anyEdit) throw new ConflictException("Relationship Type Cannot Be Updated", "Another relationship already exists with this configuration.");
-
-                            addQE(events, ChangeType.Update, SystemObjects.IntersectType, o.ID, SystemObjects.IntersectType, 0);
+                            
                             break;
                     }
                 }
@@ -2760,14 +2750,12 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<SurveyType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.SurveyType, o.ID, SystemObjects.SurveyType, 0);
+                            
                             break;
                         case EntityState.Modified:
                             if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.SurveyType, o.ID, SystemObjects.SurveyType, 0);
+                            
                             break;
                     }
                 }
@@ -2785,8 +2773,7 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) 
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.Taxonomy, o.ID, SystemObjects.TaxonomyType, o.TaxonomyTypeID);
+                            
                             break;
                         case EntityState.Deleted:
                             var any = Any<Field>(f => f.FieldType.LookupObjectType == "Taxonomy" && f.FieldType.LookupObjectID == taxonomyTypeID && f.Value == id);
@@ -2800,14 +2787,12 @@ order by Name", new { workflowType, type, id });
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_ChildModelsExist);
                             if (Any<Responsibility>(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_PeopleResponsibilitiesExist);
-
-                            addQE(events, ChangeType.Delete, SystemObjects.Taxonomy, o.ID, SystemObjects.TaxonomyType, o.TaxonomyTypeID);
+                            
                             break;
                         case EntityState.Modified:
                             if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID && i.ID != o.ID)) 
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.Taxonomy, o.ID, SystemObjects.TaxonomyType, o.TaxonomyTypeID);
+                            
                             break;
                     }
 
@@ -2827,20 +2812,17 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Added:
                             if (Any<TaxonomyType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Add, SystemObjects.TaxonomyType, o.ID, SystemObjects.TaxonomyType, 0);
+                            
                             break;
                         case EntityState.Modified:
                             if (Any<TaxonomyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            addQE(events, ChangeType.Update, SystemObjects.TaxonomyType, o.ID, SystemObjects.TaxonomyType, 0);
+                            
                             break;
                         case EntityState.Deleted:
                             if (Any<Artifact>(i => i.TaxonomyTypeID == o.ID))
                                 throw new ArgumentException(Messages.TaxonomyType_Assigned);
-
-                            addQE(events, ChangeType.Delete, SystemObjects.TaxonomyType, o.ID, SystemObjects.TaxonomyType, 0);
+                            
                             break;
                     }
 
@@ -2868,26 +2850,58 @@ order by Name", new { workflowType, type, id });
                 }
                 #endregion
             }
-           
+
+            // get objects that need event tracking.
+            var modifiedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
+               .Where(p => p.State == EntityState.Modified)
+               .Select(p => p.Entity).ToList();
+            
+            var addedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
+                .Where(p => p.State == EntityState.Added)
+                .Select(p => p.Entity).ToList();
+
+            var deletedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
+                .Where(p => p.State == EntityState.Deleted)
+                .Select(p => p.Entity).ToList();
+            
             try
-            {
+            {                
                 returnValue = base.SaveChanges();
             }
             catch (OptimisticConcurrencyException)
             {
             }
 
-
-            if (events.Count > 0)
-            {
-#if DEBUG
-                //Enqueue(QueueType.EventsDev, queueObjects);
-#else
-                //Enqueue(QueueType.Events, queueObjects);
-#endif
-            }
+            // create events for the objects this needs to be done after save changes so we have new objects id's
+      //      CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities);
 
             return returnValue;
+        }
+
+        private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities)
+        {
+            //get any objects that implement EventTrackedEntity so we can add messages for them
+            var events = new List<EventInfo>();
+            
+            foreach (var modified in modifiedEntities)
+            {
+                addQE(events, ChangeType.Update, modified.GetEventObjectInfo());
+            }
+                        
+            foreach (var added in addedEntities)
+            {
+                addQE(events, ChangeType.Add, added.GetEventObjectInfo());
+            }
+            
+            foreach (var deleted in deletedEntities)
+            {
+                addQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
+            }
+
+            if (events.Any())
+            {
+                QueueSource.CreateTopicMessages(events);
+            }
         }
 
         public void PerformObjectActionAfterSaveChanges(BaseObject obj)

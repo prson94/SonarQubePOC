@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.ArtifactType, "ArtifactType")]
-    public class ArtifactType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
+    public class ArtifactType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         #region Properties
 
@@ -50,7 +51,19 @@ namespace d360.core.entities
         [IgnoreDataMember, ForeignKey("ArtifactTypeID")]
         public virtual ICollection<Artifact> Artifacts { get; set; }
 
+
         #endregion
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.ArtifactType,
+                ObjectID = ID,
+                ObjectType = SystemObjects.ArtifactType,
+                ObjectTypeID = 0
+            };
+        }
 
     }
 }

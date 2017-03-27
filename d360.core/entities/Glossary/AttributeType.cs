@@ -4,11 +4,12 @@ using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.AttributeType, "AttributeType")]
-    public class AttributeType : BaseIntObject, IIntObject, IUpdatedMetadata
+    public class AttributeType : BaseIntObject, IIntObject, IUpdatedMetadata, IEventTrackedEntity
     {
         #region Properties
 
@@ -61,5 +62,16 @@ namespace d360.core.entities
         public virtual ICollection<AttributeTypeRelation> Relations { get; set; }
 
         #endregion
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.AttributeType,
+                ObjectID = ID,
+                ObjectType = SystemObjects.AttributeType,
+                ObjectTypeID = 0
+            };
+        }
     }
 }

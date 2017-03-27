@@ -182,6 +182,7 @@
     <Compile Include="IQueueSource.cs" />
     <Compile Include="IStorageProvider.cs" />
     <Compile Include="IWorkflowActivity.cs" />
+    <Compile Include="mail\SimpleMessage.cs" />
     <Compile Include="mail\TemplateMessage.cs" />
     <Compile Include="powerbi\PowerBI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

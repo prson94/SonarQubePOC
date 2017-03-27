@@ -4,11 +4,12 @@ using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Taxonomy, "Taxonomy")]
-    public class Taxonomy : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata
+    public class Taxonomy : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]
         public int? ParentID { get; set; }
@@ -40,5 +41,16 @@ namespace d360.core.entities
         public virtual TaxonomyType TaxonomyType { get; set; }
 
         #endregion
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.Taxonomy,
+                ObjectID = ID,
+                ObjectType = SystemObjects.TaxonomyType,
+                ObjectTypeID = TaxonomyTypeID
+            };
+        }
     }
 }

@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using d360.core.enums.Workflow;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace d360.extensions.queue
 {
@@ -94,7 +95,10 @@ namespace d360.extensions.queue
         public void CreateTopicMessage(EventInfo e)
         {
             var bm = new BrokeredMessage(e);
-            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, "Events"); //Microsoft.ServiceBus.ConnectionString in app.config
+
+            var topicName = getTopicName();
+
+            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             client.Send(bm);
             client = null;
         }
@@ -102,26 +106,34 @@ namespace d360.extensions.queue
         public Task CreateTopicMessageAsync(EventInfo e)
         {
             var bm = new BrokeredMessage(e);
-            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, "Events"); //Microsoft.ServiceBus.ConnectionString in app.config
+            var topicName = getTopicName();
+            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             return client.SendAsync(bm);
         }
 
         public void CreateTopicMessages(List<EventInfo> events)
         {
             var list = new List<BrokeredMessage>();
+            var topicName = getTopicName();
             foreach (var e in events)
             {
                 var bm = new BrokeredMessage(e);
                 list.Add(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, "Events"); //Microsoft.ServiceBus.ConnectionString in app.config
+            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             client.SendBatch(list);
             client = null;
         }
 
+        private string getTopicName()
+        {
+            return (ConfigurationManager.AppSettings["EventBusTopicName"] ?? "events-debug").ToString();
+        }
+
         public Task CreateTopicMessagesAsync(List<EventInfo> events)
         {
+            var topicName = getTopicName();
             var list = new List<BrokeredMessage>();
             foreach (var e in events)
             {
@@ -129,7 +141,7 @@ namespace d360.extensions.queue
                 list.Add(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, "Events"); //Microsoft.ServiceBus.ConnectionString in app.config
+            var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             return client.SendBatchAsync(list);
         }
     }

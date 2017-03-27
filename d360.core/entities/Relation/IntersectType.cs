@@ -6,11 +6,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.IntersectType, "IntersectType")]
-    public class IntersectType : BaseIntObject, IIntObject, IUpdatedMetadata
+    public class IntersectType : BaseIntObject, IIntObject, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
@@ -51,5 +52,16 @@ namespace d360.core.entities
 
         [ForeignKey("IntersectTypeID")]
         public virtual ICollection<Intersect> Intersects { get; set; }
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.IntersectType,
+                ObjectID = ID,
+                ObjectType = SystemObjects.IntersectType,
+                ObjectTypeID = 0
+            };
+        }
     }
 }
