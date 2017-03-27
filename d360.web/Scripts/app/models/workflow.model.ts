@@ -153,8 +153,8 @@ export class IssueInfo {
 //#region diagram
 
 export class WorkflowDiagramModel {
-    Type: WorkflowTypeItem;
-    Event: WorkflowEventRegistration;
+    Type: WorkflowTypeItem = new WorkflowTypeItem();
+    Event: WorkflowEventRegistration = new WorkflowEventRegistration();
     Nodes: WorkflowDiagramNode[] = [];
     Links: WorkflowDiagramLink[] = [];
 
@@ -285,11 +285,6 @@ export class EventCondition {
     Operator: string;
 
     fieldName: string;
-}
-
-export class WorkflowTypeModel {
-    Type: WorkflowTypeItem = new WorkflowTypeItem();
-    Event: WorkflowEventRegistration = new WorkflowEventRegistration();
 }
 
 //#region enums

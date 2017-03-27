@@ -5,7 +5,7 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 
-import { WorkflowTypeModel } from '../../../models/workflow.model';
+import { WorkflowDiagramModel } from '../../../models/workflow.model';
 
 
 @Component({
@@ -18,7 +18,8 @@ export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnI
     private mode: PageMode = PageMode.Default;
     PageMode = PageMode;
     private currentID: number = 1;
-    private workflow: WorkflowTypeModel;
+    private newWorkflowID: number = 0;
+    private workflow: WorkflowDiagramModel;
 
     constructor(rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
@@ -38,7 +39,7 @@ export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnI
     }
 
     load() {
-        this.isLoading = true;
+        //this.isLoading = true;
 
     }
 
@@ -55,7 +56,7 @@ export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnI
         this.mode = PageMode.Editor;
     }
 
-    save(e: WorkflowTypeModel) {
+    save(e: WorkflowDiagramModel) {
         this.workflow = e;
         this.mode = PageMode.DiagramEditor;
     }

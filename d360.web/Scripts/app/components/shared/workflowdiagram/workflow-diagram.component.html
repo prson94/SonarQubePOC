@@ -2,7 +2,7 @@
 <div class="tile tile-detail" [hidden]="isLoading">
     <header>
         <span *ngIf="model != null && model.Name != ''">
-            Workflow - {{model.Name}}
+            Workflow - {{model.Type.Name}}
         </span>
         <span *ngIf="model == null || model.Name != ''">
             New Workflow
@@ -48,17 +48,4 @@
             <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
         </div>
     </div>
-
-    <!--<table class="responsive-table">
-        <tbody>
-            <tr>
-                <td>
-                    <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
-                </td>
-                <td style="background-color:#eee" [hidden]="readonly" [style.width]="readonly ? '0px' : '200px'">
-                    <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
-                </td>
-            </tr>
-        </tbody>
-    </table>-->
 </div>

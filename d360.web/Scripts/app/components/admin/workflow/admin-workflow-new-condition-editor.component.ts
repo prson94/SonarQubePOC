@@ -32,7 +32,7 @@ import * as _ from 'lodash';
                                 <div>
                                     <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Operator" [disabled]="!(condition.FieldTypeID > 0)">
                                         <option></option>
-                                        <option *ngFor="let i of operators" [value]="i.value">{{i.label}}</option>
+                                        <option *ngFor="let i of operators" [value]="i.value">{{i.value}}</option>
                                     </select>
                                 </div>
                                 <div *ngIf="condition.FieldTypeID > 0" [ngSwitch]="selectedField.Type">
@@ -68,7 +68,10 @@ import * as _ from 'lodash';
                                             Value
                                         </div>
                                         <div>
-                                            lookup
+                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Value">
+                                                <option></option>
+                                                <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div *ngSwitchCase="'FusionLookup'">
@@ -76,7 +79,9 @@ import * as _ from 'lodash';
                                             Value
                                         </div>
                                         <div>
-                                            fusion lookup
+                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Value">
+                                                <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div *ngSwitchCase="'Decimal'">
@@ -122,6 +127,7 @@ export class AdminWorkflowNewConditionEditorComponent extends BaseComponent impl
     private condition = new EventCondition();
     private fields: FieldType[] = [];
     private selectedField: FieldType = new FieldType();
+    private lookups: any[]= [];
 
     private operators = [
         { value: '=', label: 'equal to' },
@@ -147,9 +153,11 @@ export class AdminWorkflowNewConditionEditorComponent extends BaseComponent impl
     }
 
     load() {
+        this.isLoading = true;
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
             .then(r => {
                 this.fields = r;
+                this.isLoading = false;
             });
     }
 
@@ -163,10 +171,26 @@ export class AdminWorkflowNewConditionEditorComponent extends BaseComponent impl
 
 
     selectFieldType(e: any) {
-        this.condition.FieldTypeID = e;
         this.selectedField = this.fields.find(f => f.ID == e);
-        this.condition.fieldName = this.selectedField.FriendlyName;
+
         this.setOperators(this.selectedField.Type);
+
+        this.condition.FieldTypeID = e;
+        this.condition.fieldName = this.selectedField.FriendlyName;
+        this.condition.ValueType = this.getValueType(this.selectedField.Type);
+
+        this.lookups = [];
+
+        if (this.condition.ValueType == 'L') {
+            this.workflowService.getLookupList(this.condition.FieldTypeID)
+                .then(r => {
+                    console.log(r);
+                    this.lookups = r;
+                });
+        } else if (this.condition.ValueType == 'FL') {
+            this.workflowService.getFusionLookupList(this.condition.FieldTypeID)
+                .then(r => this.lookups = r);
+        }
     }
 
     setOperators(type: string = '') {
@@ -193,6 +217,25 @@ export class AdminWorkflowNewConditionEditorComponent extends BaseComponent impl
                     { value: '<=', label: 'less than or equal to' },
                 ];
                 break;
+        }
+    }
+
+    getValueType(type: string): string {
+        switch (type) {
+            case 'Boolean':
+                return 'B';
+            case 'Lookup':
+                return 'L';
+            case 'FusionLookup':
+                return 'FL';
+            case 'Decimal':
+            case 'Number':
+                return 'D';
+            case 'Date':
+            case 'DateTime':
+                return 'DT';
+            default:
+                return 'U';
         }
     }
 

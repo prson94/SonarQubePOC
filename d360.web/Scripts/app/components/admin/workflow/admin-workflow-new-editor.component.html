@@ -71,7 +71,7 @@
     <div class="row">
         <div class="col s12 right">
             <button type="button" pButton label="Cancel" (click)="onClose.emit()"></button>
-            <button type="button" pButton label="Next" (click)="save()"></button>
+            <button type="button" pButton label="Next" (click)="save()" [disabled]="model.Type.Name == null || model.Type.Name == '' || model.Event.ChangeType == null || selectedObjectType == null"></button>
         </div>
     </div>
 </div>

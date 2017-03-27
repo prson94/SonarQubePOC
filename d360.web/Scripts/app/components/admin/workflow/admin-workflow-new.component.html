@@ -16,7 +16,7 @@
                 <d3s-admin-workflow-new-editor (onClose)="mode = PageMode.Default" (onSave)="save($event);"></d3s-admin-workflow-new-editor>
             </div>
             <div *ngSwitchCase="PageMode.DiagramEditor">
-                <d3s-workflow-diagram id="0" readonly="false" [workflow]="workflow"></d3s-workflow-diagram>
+                <d3s-workflow-diagram [id]="workflow.Type.ID" readonly="false" (onCloseClick)="mode = PageMode.Default;"></d3s-workflow-diagram>
             </div>
         </div>
     </div>

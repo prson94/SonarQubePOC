@@ -21,6 +21,8 @@ using d360.core.entities.Workflow;
 using System.Threading.Tasks;
 using d360.core.enums.Workflow;
 using System.Text;
+using Newtonsoft.Json;
+using System.Web;
 
 namespace d360.web.Controllers.Services
 {
@@ -933,6 +935,8 @@ namespace d360.web.Controllers.Services
             var nodes = Company.Query<WorkflowDiagramNode>(QueryConstants.WorkflowDiagramNodes, new { id }).ToList();
             var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id }).ToList();
             var name = Company.Query<string>(@"select name from workflow.[type] where id = @id", new { id }).ToList().First().ToString();
+            var type = Company.WorkflowTypes.Find(id);
+            var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
             nodes.ForEach(n => n.ParseSettings());
             links.ForEach(l => l.ParseCondition());
@@ -940,7 +944,9 @@ namespace d360.web.Controllers.Services
             return new WorkflowDiagramModel
             {
                 Nodes = nodes,
-                Links = links
+                Links = links,
+                Type = type,
+                Event = @event
             };
         }
 
@@ -1161,30 +1167,220 @@ namespace d360.web.Controllers.Services
 
             return Request.CreateResponse(HttpStatusCode.OK, fields);
         }
-
-        [Route("type/{id:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowType(int id)
-        {
-            return Request.CreateResponse(HttpStatusCode.OK, Company.WorkflowTypes.Single(w => w.ID == id));
-        }
-
-        [Route("event/{id:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowEvent(int id)
-        {
-            return Request.CreateResponse(HttpStatusCode.OK, Company.WorkflowEventRegistrations.Single(w => w.TypeID == id));
-        }
-
-        [Route("typemodel/{id:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowTypeModel(int id)
-        {
-            var model = new WorkflowTypeModel();
-
-            model.Type = Company.WorkflowTypes.Single(w => w.ID == id);
-            model.Event = Company.WorkflowEventRegistrations.Single(w => w.TypeID == id);
-
-            return Request.CreateResponse(HttpStatusCode.OK, model);
-        }
-
         
+        [Route("diagram/save"), HttpPost]
+        public HttpResponseMessage PostWorkflowDiagramModel(WorkflowDiagramModel model)
+        {
+
+            bool newVersion = false; //TODO: logic to determine if new version is needed
+            int versionID = 0;
+
+            try
+            {
+                if (model.Type != null)
+                {
+                    if (model.Type.ID < 1)
+                    {
+                        var type = new d360.core.entities.Workflow.Type();
+                        var version = new WorkflowVersion();
+
+                        type.ID = 0;
+                        type.CreatedBy = Company.CurrentResourceID;
+                        type.CreatedOn = DateTime.UtcNow;
+                        type.UpdatedBy = Company.CurrentResourceID;
+                        type.UpdatedOn = DateTime.UtcNow;
+                        type.Name = model.Type.Name;
+
+                        Company.Add(type);
+                        Company.SaveChanges();
+
+                        model.Type.ID = type.ID;
+
+                        version.ID = 0;
+                        version.TypeID = type.ID;
+                        version.CreatedBy = Company.CurrentResourceID;
+                        version.CreatedOn = DateTime.UtcNow;
+                        version.UpdatedBy = Company.CurrentResourceID;
+                        version.UpdatedOn = DateTime.UtcNow;
+                        version.Version = 1;
+
+                        Company.Add(version);
+                        Company.SaveChanges();
+                        versionID = version.ID;
+                    }
+                    else
+                    {
+                        var type = Company.WorkflowTypes.Find(model.Type.ID);
+                        type.Name = model.Type.Name;
+                        type.UpdatedOn = DateTime.UtcNow;
+                        type.UpdatedBy = Company.CurrentResourceID;
+
+                        
+                        versionID = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First().ID;
+
+                        Company.SaveChanges();
+                    }
+
+                    if (model.Event != null)
+                    {
+                        if (model.Event.ID < 1)
+                        {
+                            var @event = new WorkflowEventRegistration();
+
+                            @event.ID = 0;
+                            @event.Object = model.Event.Object;
+                            @event.ObjectID = model.Event.ObjectID;
+                            @event.TypeID = model.Type.ID;
+                            @event.ChangeType = model.Event.ChangeType;
+                            @event.Condition = ParseEventConditionJson(JsonConvert.DeserializeObject(model.Event.Condition));
+                           
+
+                            Company.Add(@event);
+                            Company.SaveChanges();
+                        }
+                        else
+                        {
+                            var @event = Company.WorkflowEventRegistrations.Find(model.Event.ID);
+
+                            @event.Object = model.Event.Object;
+                            @event.ObjectID = model.Event.ObjectID;
+                            @event.TypeID = model.Type.ID;
+                            @event.ChangeType = model.Event.ChangeType;
+                            //@event.Condition = ParseEventConditionJson(JsonConvert.DeserializeObject(model.Event.Condition));
+
+                            Company.SaveChanges();
+
+                        }
+                    }
+
+
+                    Dictionary<int, int> keyMapping = new Dictionary<int, int>();
+
+                    if (model?.Nodes?.Count > 0)
+                    {
+                        //TODO: parse nodes and add
+                        model.Nodes.ForEach(n =>
+                        {
+
+                            int id = 0;
+                            int.TryParse(n.Key, out id);
+
+                            if (id < 0)
+                            {
+                                var step = new WorkflowVersionStep();
+                                step.ID = 0;
+                                step.Name = n.Name ?? "";
+                                step.StepType = n.StepType;
+                                step.ActivityType = n.ActivityType;
+                                step.XPosition = n.XPosition;
+                                step.YPosition = n.YPosition;
+                                step.VersionID = versionID;
+
+                                Company.Add(step);
+                                Company.SaveChanges();
+                                keyMapping.Add(id, step.ID);
+                            }
+                            else if (id > 0)
+                            {
+                                //modify
+
+                                var node = Company.WorkflowVersionSteps.Find(id);
+
+                                if (node != null)
+                                {
+                                    node.ActivityType = n.ActivityType;
+                                    node.Name = n.Name ?? "";
+                                    node.StepType = n.StepType;
+                                    node.XPosition = n.XPosition;
+                                    node.YPosition = n.YPosition;
+                                    node.VersionID = versionID;
+                                    //node.ParentID
+                                    //node.Settings
+                                    //node.Fields
+                                    keyMapping.Add(id, id);
+                                }
+                            }
+                        });
+                        Company.SaveChanges();
+                    }
+
+                    if (model?.Links?.Count > 0)
+                    {
+                        //TODO: parse links and add
+                        model.Links.ForEach(l =>
+                        {
+                            int from = 0;
+                            int to = 0;
+
+                            int.TryParse(l.FromKey, out from);
+                            int.TryParse(l.ToKey, out to);
+
+                            bool fromNew = (from < 0);
+                            bool toNew = (to < 0);
+
+
+                            if (fromNew || toNew)
+                            {
+                                var link = new WorkflowVersionStepTransition();
+
+                                link.FromVersionStepID = keyMapping[from];
+                                link.ToVersionStepID = keyMapping[to];
+                                link.Name = l.Name ?? "";
+                                link.TransitionType = l.TransitionType;
+                                link.LinkType = l.LinkType;
+                                link.Condition = null; //TODO: parse condition
+
+                                Company.Add(link);
+                            }
+                            else
+                            {
+                                var link = Company.WorkflowVersionStepTransitions.Single(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
+
+                                if (link != null)
+                                {
+                                    link.Name = l.Name ?? "";
+                                    link.TransitionType = l.TransitionType;
+                                    link.LinkType = l.LinkType;
+                                    link.Condition = null;
+                                }
+                            }
+                        });
+
+                        Company.SaveChanges();
+                    }
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, model.Type.ID);
+
+            } catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex);
+            }
+        }
+
+
+        #region Helper Methods
+
+        private string ParseEventConditionJson(dynamic json)
+        {
+
+            if (json == null)
+                return "<Conditions/>";
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<Conditions>");
+
+            foreach(var condition in json)
+                sb.Append($"<Condition FieldTypeID=\"{condition.FieldTypeID}\" Operator=\"{HttpUtility.HtmlEncode(condition.Operator)}\" Value=\"{HttpUtility.HtmlEncode(condition.Value)}\" ValueType=\"{condition.ValueType}\" />");
+
+            sb.Append("</Conditions>");
+
+            return sb.ToString();
+        }
+
+       
+
+        #endregion
     }
 }

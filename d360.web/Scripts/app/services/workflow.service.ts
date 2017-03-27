@@ -20,7 +20,6 @@ import {
     WorkflowObjectType,
     ChangeTypeInfo,
     WorkflowEventRegistration,
-    WorkflowTypeModel,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -337,31 +336,35 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    getWorkflowType(id: number): Promise<WorkflowTypeItem> {
-        return this.http.get(`services/workflow/type/${id}`)
-            .toPromise()
-            .then(response => <WorkflowTypeItem>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    getWorkflowEventRegistration(id: number): Promise<WorkflowEventRegistration> {
-        return this.http.get(`services/workflow/event/${id}`)
-            .toPromise()
-            .then(response => <WorkflowEventRegistration>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    getWorkflowTypeModel(id: number): Promise<WorkflowTypeModel> {
-        return this.http.get(`services/workflow/typemodel/${id}`)
-            .toPromise()
-            .then(response => <WorkflowTypeModel>response.json())
-            .catch(err => this.handleError(err));
-    }
-
     getWorkflowItemDetails(typeId: number, object: string, objectId: number): Promise<any[]> {
         return this.http.get(`services/workflow/item/details/${typeId}/${object}/${objectId}`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    
+    saveWorkflowDiagramModel(model: WorkflowDiagramModel): Promise<number> {
+        //returns workflowtype id
+        return this.http.post('services/workflow/diagram/save', model)
+            .toPromise()
+            .then(response => <number>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getLookupList(id: number): Promise<any[]> {
+        return this.http.get(`api/lookup/list/${id}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionLookupList(id: number): Promise<any[]> {
+        return this.http.get(`api/fusionlookup/list/${id}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+
 }

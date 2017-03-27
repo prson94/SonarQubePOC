@@ -1426,6 +1426,43 @@ from	cte a
             return Company.Table<TaxonomyTypeClass>();
         }
 
+        [Route("fusionlookup/list/{id:int}"), HttpGet]
+        public HttpResponseMessage GetFusionLookupList(int id)
+        {
+            var field = Company.FieldTypes.Find(id);
+            var ids = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == id).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
+
+            var list = Company.Filter<FusionAttribute>(x => ids.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
+                   .Select(i => new { value = i.ID.ToString(), label = i.TextPath })
+                   .ToList();
+
+            if (!field.IsRequired)
+            {
+                list.Insert(0, new { value = "", label = "" });
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, list);
+
+        }
+
+        [Route("lookup/list/{id:int}"), HttpGet]
+        public HttpResponseMessage GetLookupList(int id)
+        {
+            var field = Company.FieldTypes.Find(id);
+
+            var list = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == id && o.LookupObjectType == field.LookupObjectType && o.LookupObjectID == field.LookupObjectID.Value)
+                             .OrderBy(o => o.Text)
+                             .Select(i => new { value = i.Value.ToString(), label = i.Text })
+                             .ToList();
+
+            if (!field.IsRequired)
+            {
+                list.Insert(0, new { value = "" , label = "" });
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, list);
+        }
+
         #endregion
 
         #region Attribute Lookup Fields

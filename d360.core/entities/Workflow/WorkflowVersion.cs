@@ -20,6 +20,8 @@ namespace d360.core.entities.Workflow
 
         public DateTime? UpdatedOn { get; set; }
 
+        public int Version { get; set; }
+
         [IgnoreDataMember, ForeignKey("TypeID")]
         public virtual Type Type { get; set; }
 

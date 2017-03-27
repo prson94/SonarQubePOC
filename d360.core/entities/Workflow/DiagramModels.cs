@@ -32,7 +32,7 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public StepType StepType { get; set; }
         [DataMember]
-        public int ActivityType { get; set; }
+        public WorkflowActivityType ActivityType { get; set; }
 
         [DataMember]
         public string Settings { get; set; }
@@ -44,7 +44,7 @@ namespace d360.core.entities.Workflow
 
         public void ParseSettings()
         {
-            if (Settings == null) return;
+            if (string.IsNullOrEmpty(Settings)) return;
 
             XDocument xml = XDocument.Parse(Settings);
             string json = JsonConvert.SerializeXNode(xml);
@@ -74,7 +74,7 @@ namespace d360.core.entities.Workflow
 
         public void ParseCondition()
         {
-            if (Condition == null) return;
+            if (string.IsNullOrEmpty(Condition)) return;
 
             XDocument xml = XDocument.Parse(Condition);
             string json = JsonConvert.SerializeXNode(xml);

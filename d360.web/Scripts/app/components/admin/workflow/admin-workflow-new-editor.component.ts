@@ -8,7 +8,7 @@ import {
     ChangeTypeInfo,
     EventCondition,
     WorkflowTypeItem,
-    WorkflowTypeModel,
+    WorkflowDiagramModel,
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
@@ -23,7 +23,7 @@ import * as _ from 'lodash';
 })
 
 export class AdminWorkflowNewEditorComponent extends BaseComponent implements OnInit {
-    @Input() model: WorkflowTypeModel;
+    @Input() model: WorkflowDiagramModel;
     @Output() modelChange = new EventEmitter();
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
@@ -45,7 +45,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     ngOnInit() {
         this.load();
         if (this.model == null)
-            this.model = new WorkflowTypeModel();
+            this.model = new WorkflowDiagramModel();
 
     }
 
@@ -99,6 +99,17 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
 
     save() {
         this.model.Event.conditions = this.conditions;
-        this.onSave.emit(this.model);
+        this.model.Event.Object = this.objectType;
+        this.model.Event.ObjectID = this.objectId;
+        this.model.Event.Condition = JSON.stringify(this.conditions);
+
+        this.isLoading = true;
+        this.workflowService.saveWorkflowDiagramModel(this.model)
+            .then(r => {
+                this.isLoading = false;
+                this.model.Type.ID = r;
+                this.onSave.emit(this.model);
+
+            });
     }
 }

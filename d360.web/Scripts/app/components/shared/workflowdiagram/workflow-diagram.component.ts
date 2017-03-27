@@ -15,7 +15,6 @@ import {
     ActivityTypeInfo,
     WorkflowEventRegistration,
     WorkflowTypeItem,
-    WorkflowTypeModel,
     WorkflowChangeType,
 } from '../../../models/workflow.model';
 
@@ -36,19 +35,18 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     @Input() id: number = 0;
     @Input() readonly: boolean = true;
     @Input() hasClose: boolean = false;
-    @Input() workflow: WorkflowTypeModel;
     @Output() onCloseClick = new EventEmitter();
     @Output() selectionChange = new EventEmitter();
     @ViewChild('workflowDiagram') diagramRef;
     @ViewChild('workflowPalette') paletteRef;
 
-    private model: WorkflowDiagramModel;
     private activityTypes: ActivityTypeInfo[] = [];
     DiagramObjectType = DiagramObjectType;
     StepType = StepType;
     TransitionType = TransitionType;
     LinkType = LinkType;
     WorkflowChangeType = WorkflowChangeType;
+    model: WorkflowDiagramModel;
 
     //diagram properties
     private g = go.GraphObject.make;
@@ -65,8 +63,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private tab = 'info';
     private showNodeTabs = false;
     private showLinkTabs = false;
-
-
 
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private renderer: Renderer, private workflowService: WorkflowService) {
@@ -96,8 +92,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.div = null;
     }
 
-    //#region helper methods
 
+    //#region helper methods
 
     private unsubscribe() {
 
@@ -113,7 +109,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.myDiagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
 
+        //''LinkDrawn
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
@@ -122,7 +120,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.isReadOnly;
-
 
         this.getActivityTypes().then(() => this.populateDiagram()).then(() => this.initializePalette());
     }
@@ -157,12 +154,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 console.log(this.model);
                 this.parseData(this.model);
             })
-            .then(() => this.workflowService.getWorkflowTypeModel(this.id))
-            .then(r => {
-                if (this.workflow == null)
-                    this.workflow = r;
-            })
-            .then(() => { this.isLoading = false; console.log('workflow: ', this.workflow); });
+            //.then(() => this.workflowService.getWorkflowTypeModel(this.id))
+            //.then(r => {
+            //    if (this.model == null)
+            //        this.workflow = r;
+            //})
+            .then(() => { this.isLoading = false; console.log('model: ', this.model); });
 
 
     }
@@ -226,12 +223,46 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     save() {
-        if (this.id < 1) {
+        if (this.id < 1 || true) {
 
 
-            let links = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
-            let nodes = this.myDiagram.model.nodeDataArray;
+            let links = []; //(<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
+            let nodes = []; //this.myDiagram.model.nodeDataArray;
 
+
+            this.myDiagram.model.nodeDataArray.forEach(n => {
+                nodes.push(this.convertToWorkflowModel(<NodeModel>n));
+            });
+
+            (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
+                let k = new WorkflowDiagramLink();
+                k.ToKey = (<any>l).to;
+                k.FromKey = (<any>l).from;
+
+                links.push(k);
+                //links.push(this.convertToWorkflowModel(<LinkModel>l));
+            });
+
+
+
+            let m = new WorkflowDiagramModel();
+
+            m.Type = this.model.Type;
+            m.Event = this.model.Event;
+            m.Nodes = nodes;
+            m.Links = links;
+
+
+            console.log('save', this.myDiagram.model.nodeDataArray, (<go.GraphLinksModel>this.myDiagram.model).linkDataArray, nodes, links);
+
+            this.isLoading = true;
+
+            this.workflowService.saveWorkflowDiagramModel(m)
+                .then(r => {
+                    //TODO: mesasage and automatically switch to readonly or edit??
+                    this.onCloseClick.emit();
+                });
+           
             
 
         } else {
@@ -303,7 +334,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.LinkType = m.linkType;
             n.TransitionType = m.transitionType;
             n.Name = m.name;
-            n.ConditionObject = m.condition;
+            n.Condition = "";
+            
 
             return n;
         } else if (model.diagramObjectType == DiagramObjectType.Node) {
@@ -315,8 +347,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.Name = m.name;
             n.SettingsObject = m.settings;
             n.StepType = m.stepType;
-            n.XPosition = m.x;
-            n.YPosition = m.y;
+            n.XPosition = m.pos.split(' ')[0];
+            n.YPosition = m.pos.split(' ')[1];
 
             return n;
         } else {
@@ -324,7 +356,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             return null;
         }
     }
+
     //#endregion
+
+
 
     //#region events
 
@@ -404,8 +439,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         //var obj = e.diagram.selection.first().data;
     }
 
-
+    private LinkDrawn(e: any) {
+        let link = e.subject;
+        console.log(link);
+    }
     //#endregion
+
+
 
     //#region templates
 
@@ -423,6 +463,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         start.name = 'Start';
         start.diagramObjectType = DiagramObjectType.Node;
         start.stepType = StepType.Start;
+        start.activityType = 1;
         start.pos = "0 0";
 
         paletteModel.push(start);
@@ -432,6 +473,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         finish.name = 'Finish';
         finish.diagramObjectType = DiagramObjectType.Node;
         finish.stepType = StepType.Finish;
+        finish.activityType = 1;
         finish.pos = "0 0";
 
         paletteModel.push(finish);
@@ -449,6 +491,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             m.stepType = StepType.Task;
             m.pos = "0 0";
             m.diagramObjectType = DiagramObjectType.Node;
+            m.activityType = a.ID;
 
             paletteModel.push(m);
 
@@ -753,7 +796,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             port.stroke = (show ? "white" : null);
         });
     }
-
 
     //#endregion
 }
