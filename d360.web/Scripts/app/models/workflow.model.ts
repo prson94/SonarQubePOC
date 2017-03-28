@@ -251,6 +251,7 @@ export class WorkflowTypeItem {
     Name: string;
     TypeName: string;
     ChangeType: WorkflowChangeType;
+    Published: string;
 }
 
 export class WorkflowEventRegistration {
@@ -293,7 +294,7 @@ export enum WorkflowChangeType {
     Add = 1,
     Update = 2,
     Delete = 3,
-    Timer = 4
+    Schedule = 4
 }
 
 export enum WorkflowFormFieldType {
@@ -323,7 +324,8 @@ export enum TransitionType {
 
 export enum LinkType {
     Always = 1,
-    Condition = 2
+    Condition = 2,
+    Link = 3
 }
 
 export enum IssueType {

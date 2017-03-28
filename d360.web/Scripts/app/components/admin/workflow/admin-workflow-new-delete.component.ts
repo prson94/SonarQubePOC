@@ -1,0 +1,55 @@
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
+import { BaseComponent } from '../../shared/base.component';
+import { WorkflowService } from '../../../services/workflow.service';
+
+import * as _ from 'lodash';
+
+@Component({
+    selector: 'd3s-admin-workflow-new-delete',
+    providers: [WorkflowService],
+    template: `
+<div class="row">
+    <div class="col s12">
+        Are you sure you want to delete this workflow?
+    </div>
+</div>
+<div class="row" style="padding-top:10px;">
+    <div class="col s12">
+        <button pButton label="Delete" (click)="delete()" [disabled]="isLoading"></button>
+        <button pButton label="Cancel" (click)="onCancel.emit()"></button>
+    </div>
+</div>
+`
+})
+
+export class AdminWorkflowNewDeleteComponent extends BaseComponent implements OnInit {
+    @Input() id: number;
+    @Output() onCancel = new EventEmitter();
+    @Output() onSuccess = new EventEmitter();
+    @Output() onComplete = new EventEmitter();
+
+
+    constructor(private workflowService: WorkflowService) {
+        super();
+    }
+
+    ngOnInit() {
+
+    }
+
+    delete() {
+        this.isLoading = true;
+        this.workflowService.deleteWorkflowType(this.id)
+            .then(r => {
+                this.onSuccess.emit();
+                this.onComplete.emit();
+                this.isLoading = false;
+            })
+            .catch(err => {
+                this.onComplete.emit();
+                this.isLoading = false;
+                return err;
+            });
+    }
+
+}

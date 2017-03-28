@@ -10,7 +10,9 @@ namespace d360.core.enums.Workflow
         [Description("Always")]
         Always = 1,
         [Description("Conditional")]
-        Condition = 2
+        Condition = 2,
+        [Description("Timer")]
+        Timer = 3
     }
 
     public class LinkTypeInfo

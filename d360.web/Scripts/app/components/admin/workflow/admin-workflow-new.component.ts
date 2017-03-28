@@ -68,4 +68,5 @@ export enum PageMode {
     ReadOnlyDiagram,
     Editor,
     DiagramEditor,
+    Delete,
 }

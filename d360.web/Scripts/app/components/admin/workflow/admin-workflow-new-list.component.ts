@@ -26,9 +26,12 @@ import { WorkflowService } from '../../../services/workflow.service';
             <span>{{item.UpdatedOn | date:'shortDate'}}</span>
         </template>
     </p-column> 
-    <p-column [style]="{width:'40px'}">
+  <p-column field="Published" header="Status" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
+    <p-column [style]="{width:'150px'}">
         <template let-item="rowData" pTemplate type="body">
             <div class="RowTools">
+                <a style="cursor:pointer;" (click)="onEditClick.emit(item.ID)"><i class="fa fa-pencil"></i></a>    
+                <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.ID)"><i class="fa fa-trash-o"></i></a>    
                 <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>                                        
             </div>
         </template>
@@ -40,6 +43,8 @@ import { WorkflowService } from '../../../services/workflow.service';
 
 export class AdminWorkflowNewListComponent extends BaseComponent implements OnInit {
     @Output() onViewClick = new EventEmitter();
+    @Output() onDeleteClick = new EventEmitter();
+    @Output() onEditClick = new EventEmitter();
 
     private items: WorkflowTypeItem[] = [];
     private selection: WorkflowTypeItem;

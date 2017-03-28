@@ -7,7 +7,7 @@
                     Workflow Types
                     <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
                 </header>
-                <d3s-admin-workflow-new-list (onViewClick)="viewReadOnlyDiagram($event)"></d3s-admin-workflow-new-list>
+                <d3s-admin-workflow-new-list (onViewClick)="viewReadOnlyDiagram($event)" (onDeleteClick)="currentID = $event; mode = PageMode.Delete;" (onEditClick)="null"></d3s-admin-workflow-new-list>
             </div>
             <div *ngSwitchCase="PageMode.ReadOnlyDiagram">
                 <d3s-workflow-diagram [id]="currentID" readonly="true" hasClose="true" (onCloseClick)="closeEditor()"></d3s-workflow-diagram>
@@ -17,6 +17,9 @@
             </div>
             <div *ngSwitchCase="PageMode.DiagramEditor">
                 <d3s-workflow-diagram [id]="workflow.Type.ID" readonly="false" (onCloseClick)="mode = PageMode.Default;"></d3s-workflow-diagram>
+            </div>
+            <div *ngSwitchCase="PageMode.Delete" class="tile tile-detail">
+                <d3s-admin-workflow-new-delete [id]="currentID" (onSuccess)="mode = PageMode.Default" (onCancel)="mode = PageMode.Default"></d3s-admin-workflow-new-delete>
             </div>
         </div>
     </div>

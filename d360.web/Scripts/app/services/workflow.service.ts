@@ -366,5 +366,11 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
+    deleteWorkflowType(id: number) {
+        return this.http.delete(`services/workflow/type/${id}/delete`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 
 }

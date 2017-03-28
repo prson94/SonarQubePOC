@@ -18,5 +18,10 @@ namespace d360.core.entities.Workflow
         public int? UpdatedBy { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
+
+        public int? PublishedVersionID { get; set; }
+
+        public bool Deleted { get; set; } = false;
+
     }
 }

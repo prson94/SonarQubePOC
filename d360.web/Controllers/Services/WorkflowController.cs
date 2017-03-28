@@ -1060,10 +1060,17 @@ namespace d360.web.Controllers.Services
                     ,t.CreatedOn
                     ,t.UpdatedOn
                     ,e.ChangeType
-                    ,d.Name as TypeName                     
+                    ,d.Name as TypeName,
+					case when t.PublishedVersionID is not null then
+						'Version ' + cast(v.Version as varchar) + ' Published'
+					else
+						'Unpublished'
+					end as Published
                 from workflow.type t
                 join workflow.eventregistration e on e.typeid = t.id
-                join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid                
+                join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid 
+				left join workflow.version v on v.id = t.publishedversionid
+				where t.Deleted = 0               
         ";
 
             var types = Company.Query<dynamic>(sql).ToList();
@@ -1358,6 +1365,41 @@ namespace d360.web.Controllers.Services
             }
         }
 
+        [Route("type/{id:int}/delete")]
+        public HttpResponseMessage DeleteWorkflow(int id)
+        {
+            var type = Company.WorkflowTypes.Find(id);
+
+            if (type == null)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type ID {id} could not be found");
+
+            if (type.Deleted)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type ID {id} is already deleted");
+
+            type.Deleted = true;
+            type.UpdatedOn = DateTime.UtcNow;
+            type.UpdatedBy = Company.CurrentResourceID;
+            Company.SaveChanges();
+
+            //var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
+
+            //var versions = Company.WorkflowVersions.Where(v => v.TypeID == id).ToList();
+            //var versionSteps = Company.WorkflowVersionSteps.Where(s => versions.Select(v => v.ID).Contains(s.ID)).ToList();
+            //var versionStepTransitions = Company.WorkflowVersionStepTransitions.Where(t => versions.Select(v => v.ID).Contains(t.FromVersionStepID) || versions.Select(v => v.ID).Contains(t.ToVersionStepID)).ToList();
+
+            //Company.WorkflowVersionStepTransitions.RemoveRange(versionStepTransitions);
+            //Company.WorkflowVersionSteps.RemoveRange(versionSteps);
+            //Company.WorkflowVersionStepTransitions.RemoveRange(versionStepTransitions);
+
+            //Company.WorkflowVersions.RemoveRange(versions);
+
+            //Company.Delete(@event);
+            //Company.Delete(type);
+
+            //Company.SaveChanges();
+
+            return Request.CreateResponse(HttpStatusCode.OK, id);
+        }
 
         #region Helper Methods
 
