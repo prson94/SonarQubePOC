@@ -9,23 +9,29 @@ namespace d360.core.entities.Workflow
     [DataContract(Namespace = NAMESPACE), Table("VersionStepTransition", Schema = "workflow")]
     public class WorkflowVersionStepTransition : BaseObject
     {
+        [DataMember, Key]
+        public long ID { get; set; }
+
         [DataMember]
         public string Name { get; set; }
 
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember]
         public int FromVersionStepID { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember]
         public int ToVersionStepID { get; set; }
         
         [DataMember]
         public TransitionType TransitionType { get; set; }
+
+        [DataMember]
+        public string FromPortID { get; set; }
+
+        [DataMember]
+        public string ToPortID { get; set; }
         
         [IgnoreDataMember]
         public string Condition { get; set; }
-
-        [IgnoreDataMember]
-        public LinkType LinkType { get; set; }
 
         [IgnoreDataMember, ForeignKey("FromVersionStepID")]
         public virtual WorkflowVersionStep FromVersionStep { get; set; }

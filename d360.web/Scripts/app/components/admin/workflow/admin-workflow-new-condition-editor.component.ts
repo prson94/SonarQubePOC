@@ -9,8 +9,6 @@ import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 
-import * as _ from 'lodash';
-
 @Component({
     selector: 'd3s-admin-workflow-new-condition-editor',
     providers: [WorkflowService],
@@ -35,8 +33,8 @@ import * as _ from 'lodash';
                                         <option *ngFor="let i of operators" [value]="i.value">{{i.value}}</option>
                                     </select>
                                 </div>
-                                <div *ngIf="condition.FieldTypeID > 0" [ngSwitch]="selectedField.Type">
-                                    <div *ngSwitchCase="'Boolean'">
+                                <div *ngIf="condition.FieldTypeID > 0">
+                                    <div *ngIf="selectedField.Type == 'Boolean'">
                                         <div class="FieldName">
                                             Value
                                         </div>
@@ -47,7 +45,8 @@ import * as _ from 'lodash';
                                             </select>
                                         </div>
                                     </div>
-                                    <div *ngSwitchCase="'Date'">
+
+                                    <div *ngIf="selectedField.Type == 'Date' || selectedField.Type == 'DateTime'">
                                         <div class="FieldName">
                                             Days Since
                                         </div>
@@ -55,15 +54,8 @@ import * as _ from 'lodash';
                                             <input type="number" [(ngModel)]="condition.Value" style="width: 95%" />
                                         </div>
                                     </div>
-                                    <div *ngSwitchCase="'DateTime'">
-                                        <div class="FieldName">
-                                            Days Since
-                                        </div>
-                                        <div>
-                                            <input type="number" [(ngModel)]="condition.Value" style="width: 95%" />
-                                        </div>
-                                    </div>
-                                    <div *ngSwitchCase="'Lookup'">
+
+                                    <div *ngIf="selectedField.Type == 'Lookup'">
                                         <div class="FieldName">
                                             Value
                                         </div>
@@ -74,32 +66,25 @@ import * as _ from 'lodash';
                                             </select>
                                         </div>
                                     </div>
-                                    <div *ngSwitchCase="'FusionLookup'">
-                                        <div class="FieldName">
-                                            Value
-                                        </div>
-                                        <div>
-                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Value">
-                                                <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div *ngSwitchCase="'Decimal'">
+
+                                   <div *ngIf="selectedField.Type == 'Decimal' || selectedField.Type == 'Number'">
                                         <div class="FieldName">
                                             Value
                                         </div>
                                         <div>
                                             <input type="number" [(ngModel)]="condition.Value" style="width: 95%" />
                                         </div>
-                                    </div>
-                                    <div *ngSwitchCase="'Number'">
+                                   </div>
+
+                                    <div *ngIf="selectedField.Type == 'Text'">
                                         <div class="FieldName">
                                             Value
                                         </div>
                                         <div>
-                                            <input type="number" [(ngModel)]="condition.Value" style="width: 95%" />
+                                            <input type="text" [(ngModel)]="condition.Value" style="width: 95%" />
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -187,10 +172,11 @@ export class AdminWorkflowNewConditionEditorComponent extends BaseComponent impl
                     console.log(r);
                     this.lookups = r;
                 });
-        } else if (this.condition.ValueType == 'FL') {
-            this.workflowService.getFusionLookupList(this.condition.FieldTypeID)
-                .then(r => this.lookups = r);
         }
+        //else if (this.condition.ValueType == 'FL') {
+        //    this.workflowService.getFusionLookupList(this.condition.FieldTypeID)
+        //        .then(r => this.lookups = r);
+        //}
     }
 
     setOperators(type: string = '') {
@@ -198,6 +184,7 @@ export class AdminWorkflowNewConditionEditorComponent extends BaseComponent impl
             case 'Boolean':
             case 'Lookup':
             case 'FusionLookup':
+            case 'Text':
                 this.operators = [
                     { value: '=', label: 'equal to' },
                     { value: '!=', label: 'not equal to' },
@@ -226,14 +213,16 @@ export class AdminWorkflowNewConditionEditorComponent extends BaseComponent impl
                 return 'B';
             case 'Lookup':
                 return 'L';
-            case 'FusionLookup':
-                return 'FL';
+            //case 'FusionLookup':
+            //    return 'FL';
             case 'Decimal':
             case 'Number':
                 return 'D';
             case 'Date':
             case 'DateTime':
                 return 'DT';
+            case 'Text':
+                return 'T';
             default:
                 return 'U';
         }

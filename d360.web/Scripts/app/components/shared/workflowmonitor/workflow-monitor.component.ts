@@ -6,7 +6,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { WorkflowService } from '../../../services/workflow.service';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { WorkflowTypeItem, WorkflowChangeType } from '../../../models/workflow.model';
+import { WorkflowListItem, WorkflowChangeType } from '../../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -89,8 +89,8 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
     @Input() objectID: number;
     @Input() objectType: string;
 
-    private workflows: WorkflowTypeItem[] = [];
-    private selected: WorkflowTypeItem = null;
+    private workflows: WorkflowListItem[] = [];
+    private selected: WorkflowListItem = null;
 
     private details: any[] = [];
     private selectedItem: any = null;
@@ -118,7 +118,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private loadWorkflowItems(selected: WorkflowTypeItem) {
+    private loadWorkflowItems(selected: WorkflowListItem) {
         this.workflowService.getWorkflowItems(selected.ID)
             .then(res => {
                 this.details = res;

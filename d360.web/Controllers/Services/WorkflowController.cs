@@ -1058,7 +1058,9 @@ namespace d360.web.Controllers.Services
             string sql = @"select t.ID
                     ,t.Name
                     ,t.CreatedOn
+					,coalesce(rc.FirstName + ' ' + rc.LastName, '') as CreatedBy
                     ,t.UpdatedOn
+					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
                     ,e.ChangeType
                     ,d.Name as TypeName,
 					case when t.PublishedVersionID is not null then
@@ -1067,10 +1069,12 @@ namespace d360.web.Controllers.Services
 						'Unpublished'
 					end as Published
                 from workflow.type t
-                join workflow.eventregistration e on e.typeid = t.id
-                join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid 
+                inner join workflow.eventregistration e on e.typeid = t.id
+                inner join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid 
 				left join workflow.version v on v.id = t.publishedversionid
-				where t.Deleted = 0               
+				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
+				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
+				where t.Deleted = 0              
         ";
 
             var types = Company.Query<dynamic>(sql).ToList();
@@ -1164,11 +1168,25 @@ namespace d360.web.Controllers.Services
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
 
+        [Route("type/{id:int}"), HttpGet]
+        public HttpResponseMessage GetWorkflowType(int id)
+        {
+            var type = Company.WorkflowTypes.Find(id);
+            if (type == null || type.Deleted)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
+
+            var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
+
+            @event.ConditionObject = DeserializeEventCondition(@event.Condition);
+
+            return Request.CreateResponse(HttpStatusCode.OK, new { Type = type, Event = @event });
+        }
+
         [Route("fieldtypes/{type}/{id:int}"), HttpGet]
         public HttpResponseMessage GetFieldTypes(int id, string type)
         {
             var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
-            string[] excludedTypes = { "ComplexRelationLookup", "Password", "Html", "Link", "FilteredLookup", "Text" };
+            string[] excludedTypes = { "ComplexRelationLookup", "Password", "Html", "Link", "FilteredLookup", "FusionLookup" };
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
 
@@ -1239,7 +1257,7 @@ namespace d360.web.Controllers.Services
                             @event.ObjectID = model.Event.ObjectID;
                             @event.TypeID = model.Type.ID;
                             @event.ChangeType = model.Event.ChangeType;
-                            @event.Condition = ParseEventConditionJson(JsonConvert.DeserializeObject(model.Event.Condition));
+                            @event.Condition = SerializeEventCondition(JsonConvert.DeserializeObject(model.Event.Condition));
                            
 
                             Company.Add(@event);
@@ -1253,7 +1271,8 @@ namespace d360.web.Controllers.Services
                             @event.ObjectID = model.Event.ObjectID;
                             @event.TypeID = model.Type.ID;
                             @event.ChangeType = model.Event.ChangeType;
-                            //@event.Condition = ParseEventConditionJson(JsonConvert.DeserializeObject(model.Event.Condition));
+                            
+                            @event.Condition = SerializeEventCondition(JsonConvert.DeserializeObject(model.Event.Condition));
 
                             Company.SaveChanges();
 
@@ -1334,7 +1353,6 @@ namespace d360.web.Controllers.Services
                                 link.ToVersionStepID = keyMapping[to];
                                 link.Name = l.Name ?? "";
                                 link.TransitionType = l.TransitionType;
-                                link.LinkType = l.LinkType;
                                 link.Condition = null; //TODO: parse condition
 
                                 Company.Add(link);
@@ -1347,7 +1365,6 @@ namespace d360.web.Controllers.Services
                                 {
                                     link.Name = l.Name ?? "";
                                     link.TransitionType = l.TransitionType;
-                                    link.LinkType = l.LinkType;
                                     link.Condition = null;
                                 }
                             }
@@ -1403,7 +1420,7 @@ namespace d360.web.Controllers.Services
 
         #region Helper Methods
 
-        private string ParseEventConditionJson(dynamic json)
+        private string SerializeEventCondition(dynamic json)
         {
 
             if (json == null)
@@ -1419,6 +1436,14 @@ namespace d360.web.Controllers.Services
             sb.Append("</Conditions>");
 
             return sb.ToString();
+        }
+
+        private dynamic DeserializeEventCondition(string condition)
+        {
+            if (string.IsNullOrEmpty(condition))
+                return null;
+            
+            return JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XElement.Parse(condition)));
         }
 
        

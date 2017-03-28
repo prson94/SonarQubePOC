@@ -63,8 +63,6 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public TransitionType TransitionType { get; set; }
         [DataMember]
-        public LinkType LinkType { get; set; }
-        [DataMember]
         public string Condition { get; set; }
         [DataMember]
         public string Name { get; set; }

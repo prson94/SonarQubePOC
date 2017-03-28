@@ -1,20 +1,17 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { Title } from '@angular/platform-browser';
 import {
     WorkflowEventRegistration,
     WorkflowObjectType,
     WorkflowChangeType,
     ChangeTypeInfo,
     EventCondition,
-    WorkflowTypeItem,
+    WorkflowListItem,
     WorkflowDiagramModel,
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
-
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-workflow-new-editor',
@@ -23,11 +20,11 @@ import * as _ from 'lodash';
 })
 
 export class AdminWorkflowNewEditorComponent extends BaseComponent implements OnInit {
-    @Input() model: WorkflowDiagramModel;
-    @Output() modelChange = new EventEmitter();
+    @Input() id: number = 0;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
+    private model: WorkflowDiagramModel;
     private workflowObjectTypes: WorkflowObjectType[] = [];
     private changesTypes: ChangeTypeInfo[] = [];
     private selectedObjectType: any = null;
@@ -57,13 +54,45 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
             .then(() => this.workflowService.getChangeTypes())
             .then(r => { this.changesTypes = r; })
             .then(() => {
-                if (this.model.Type.ID < 1) {
+                if (this.id < 1) {
                     this.saveButtonText = 'Next';
+                    return;
                 } else {
                     this.saveButtonText = 'Save';
-                    //edit
+                    return this.workflowService.getWorkflowTypeModel(this.id)
+                        .then(r => {
+                            this.model = r
+
+                            this.selectedObjectType = this.model.Event.Object + '|' + this.model.Event.ObjectID.toString();
+                            this.objectId = this.model.Event.ObjectID;
+                            this.objectType = this.model.Event.Object;
+
+                            if (this.model.Event.ConditionObject != null) {
+                                this.model.Event.ConditionObject.Conditions.Condition.forEach(c => {
+                                    this.conditions.push({
+                                        fieldName: '',
+                                        FieldTypeID: c['@FieldTypeID'],
+                                        Operator: c['@Operator'],
+                                        Value: c['@Value'],
+                                        ValueType: c['@ValueType']
+                                    });
+                                });
+                            }
+
+                            console.log(r, this.selectedObjectType);
+                        })
+                        .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType))
+                        .then(r => {
+                            //need to apply names to loaded conditions
+                            r.forEach(t => {
+                                let c = this.conditions.find(c => c.FieldTypeID == t.ID);
+                                if (c != null)
+                                    c.fieldName = t.FriendlyName;
+                            })
+                        });
                 }
             })
+            .then(() => this.isLoading = false);
 
     }
 

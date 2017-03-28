@@ -1548,13 +1548,14 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
         public static string WorkflowDiagramLinks = @"
             select 
-	            cast(vst.FromVersionStepID as varchar) + '-' + cast(vst.ToVersionStepID as varchar) as [Key],
+	            cast(vst.ID as varchar) as [Key],
 	            vst.FromVersionStepID as FromKey,
 	            vst.ToVersionStepID as ToKey,
 	            vst.TransitionType,
-	            vst.LinkType,
 	            vst.Condition,
-	            vst.Name
+	            vst.Name,
+                vst.FromPortID,
+                vst.ToPortID
             from workflow.[type] t
             inner join workflow.[version] v on v.typeid = t.id
             inner join workflow.[versionstep] vs on vs.versionid = v.id

@@ -11,10 +11,9 @@ import {
     DiagramObjectType,
     StepType,
     TransitionType,
-    LinkType,
     ActivityTypeInfo,
     WorkflowEventRegistration,
-    WorkflowTypeItem,
+    WorkflowListItem,
     WorkflowChangeType,
 } from '../../../models/workflow.model';
 
@@ -44,7 +43,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     DiagramObjectType = DiagramObjectType;
     StepType = StepType;
     TransitionType = TransitionType;
-    LinkType = LinkType;
     WorkflowChangeType = WorkflowChangeType;
     model: WorkflowDiagramModel;
 
@@ -248,7 +246,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             let m = new WorkflowDiagramModel();
 
             m.Type = this.model.Type;
-            m.Event = this.model.Event;
+            m.Event = null; //this.model.Event;
             m.Nodes = nodes;
             m.Links = links;
 
@@ -282,7 +280,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.to = m.ToKey;
             n.key = m.Key;
             n.condition = m.Condition;
-            n.linkType = m.LinkType;
             n.transitionType = m.TransitionType;
 
             return n;
@@ -331,7 +328,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.Key = m.key;
             n.FromKey = m.from;
             n.ToKey = m.to;
-            n.LinkType = m.linkType;
             n.TransitionType = m.transitionType;
             n.Name = m.name;
             n.Condition = "";
@@ -596,7 +592,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 ),
                 this.makePort('B', go.Spot.Bottom, true, false),
                 this.makePort('T', go.Spot.Top, false, true),
-                this.makePort('L', go.Spot.Left, true, false),
+                this.makePort('L', go.Spot.Left, false, true),
                 this.makePort('R', go.Spot.Right, true, false)
             )
         );

@@ -53,6 +53,7 @@ export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnI
     }
 
     add() {
+        this.currentID = 0;
         this.mode = PageMode.Editor;
     }
 

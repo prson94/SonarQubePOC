@@ -150,10 +150,24 @@ export class IssueInfo {
     Issue: any;
 }
 
+
+export class WorkflowTypeNew
+{
+    ID: number;
+    Name: string;
+    CreatedBy: number;
+    CreatedOn: string;
+    UpdatedBy: number;
+    UpdatedOn: string;
+    PublishedVersionID: number;
+    Deleted: boolean = false;
+}
+
+
 //#region diagram
 
 export class WorkflowDiagramModel {
-    Type: WorkflowTypeItem = new WorkflowTypeItem();
+    Type: WorkflowTypeNew = new WorkflowTypeNew();
     Event: WorkflowEventRegistration = new WorkflowEventRegistration();
     Nodes: WorkflowDiagramNode[] = [];
     Links: WorkflowDiagramLink[] = [];
@@ -177,7 +191,6 @@ export class WorkflowDiagramLink {
     FromKey: string;
     ToKey: string;
     TransitionType: TransitionType;
-    LinkType: LinkType;
     Condition: string;
     ConditionObject: any;
     Name: string;
@@ -191,9 +204,10 @@ export class LinkModel {
     category: string = '';
     //template: string = '';
     diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
+    fromportid: string;
+    toportid: string;
 
     transitionType: TransitionType;
-    linkType: LinkType;
     condition: any;
 
 }
@@ -244,10 +258,12 @@ export class WorkflowForm {
     Description: string;
 }
 
-export class WorkflowTypeItem {
+export class WorkflowListItem {
     ID: number;
     CreatedOn: string;
+    CreatedBy: string;
     UpdatedOn: string;
+    UpdatedBy: string;
     Name: string;
     TypeName: string;
     ChangeType: WorkflowChangeType;
@@ -317,12 +333,6 @@ export enum StepType {
 }
 
 export enum TransitionType {
-    None = 1,
-    Timer = 2,
-    Value = 3
-}
-
-export enum LinkType {
     Always = 1,
     Condition = 2,
     Link = 3

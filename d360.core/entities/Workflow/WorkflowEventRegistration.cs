@@ -23,7 +23,7 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public string Condition { get; set; }
 
-        [NotMapped]
+        [DataMember, NotMapped]
         public dynamic ConditionObject { get; set; }
 
         [IgnoreDataMember, ForeignKey("TypeID")]

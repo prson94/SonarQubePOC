@@ -16,7 +16,7 @@ import {
     WorkflowDiagramModel,
     ActivityTypeInfo,     
     WorkflowForm,
-    WorkflowTypeItem,
+    WorkflowListItem,
     WorkflowObjectType,
     ChangeTypeInfo,
     WorkflowEventRegistration,
@@ -308,10 +308,10 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    getObjectTypes(objectID: number, objectType: string): Promise<WorkflowTypeItem[]> {
+    getObjectTypes(objectID: number, objectType: string): Promise<WorkflowListItem[]> {
         return this.http.get(`services/workflow/types/${objectID}/${objectType}`)
             .toPromise()
-            .then(response => <WorkflowTypeItem[]>response.json())
+            .then(response => <WorkflowListItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 
@@ -366,10 +366,17 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    deleteWorkflowType(id: number) {
+    deleteWorkflowType(id: number): Promise<number> {
         return this.http.delete(`services/workflow/type/${id}/delete`)
             .toPromise()
-            .then(response => response.json())
+            .then(response => <number>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowTypeModel(id: number): Promise<WorkflowDiagramModel> {
+        return this.http.get(`services/workflow/type/${id}`)
+            .toPromise()
+            .then(response => <WorkflowDiagramModel>response.json())
             .catch(err => this.handleError(err));
     }
 

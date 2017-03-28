@@ -1,7 +1,7 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { WorkflowTypeItem } from '../../../models/workflow.model';
+import { WorkflowListItem } from '../../../models/workflow.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 
@@ -21,11 +21,13 @@ import { WorkflowService } from '../../../services/workflow.service';
             <span>{{item.CreatedOn | date:'shortDate'}}</span>
         </template>
     </p-column> 
+    <p-column field="CreatedBy" header="Created By" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
     <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter">
         <template let-item="rowData" pTemplate type="body">
             <span>{{item.UpdatedOn | date:'shortDate'}}</span>
         </template>
     </p-column> 
+    <p-column field="UpdatedBy" header="Updated By" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
   <p-column field="Published" header="Status" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
     <p-column [style]="{width:'150px'}">
         <template let-item="rowData" pTemplate type="body">
@@ -46,8 +48,8 @@ export class AdminWorkflowNewListComponent extends BaseComponent implements OnIn
     @Output() onDeleteClick = new EventEmitter();
     @Output() onEditClick = new EventEmitter();
 
-    private items: WorkflowTypeItem[] = [];
-    private selection: WorkflowTypeItem;
+    private items: WorkflowListItem[] = [];
+    private selection: WorkflowListItem;
 
     constructor(private workflowService: WorkflowService) {
         super();

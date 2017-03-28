@@ -292,7 +292,6 @@
     <Compile Include="entities\Workflow\Models.cs" />
     <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\Workflow\ActivityType.cs" />
-    <Compile Include="enums\Workflow\LinkType.cs" />
     <Compile Include="enums\Workflow\ChangeType.cs" />
     <Compile Include="enums\Workflow\TransitionType.cs" />
     <Compile Include="enums\Workflow\StepType.cs" />
