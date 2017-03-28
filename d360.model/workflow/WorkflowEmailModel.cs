@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace d360.core.workflow
+namespace d360.model.workflow
 {
     public class WorkflowEmailModel
     {        

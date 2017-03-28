@@ -1,6 +1,7 @@
 ﻿using d360.core.entities.Workflow;
 using d360.core.enums.Workflow;
-using d360.core.workflow;
+using d360.core.queue;
+using d360.model.workflow;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -37,19 +38,24 @@ namespace d360.model
 
         #region Engine Methods
 
-        public async Task<WorkflowItem> CreateWorkflowItem(int workflowTypeID, string @object, int objectID, bool isTest = false)
+        public WorkflowItem CreateWorkflowItem(int workflowTypeID, string @object, int objectID, string criteria, bool isTest = false)
         {
+            if(!WorkflowRegistrationCriteriaProcessor.Evaluate(this, @object, objectID, criteria))
+            {
+                System.Diagnostics.Debug.WriteLine("CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
+
+                return null;
+            }
+
+            //check if the current item meets the criteria if any for this workflow.
+
             var version = WorkflowVersions
                 .Include(i => i.Steps)
                 .Where(i => i.TypeID == workflowTypeID)
-                .OrderByDescending(i => i.CreatedOn)
+                .OrderByDescending(i => i.Version)
                 .FirstOrDefault();
 
             var stepIDs = version.Steps.Select(i => i.ID).ToList();
-
-            var transitions = WorkflowVersionStepTransitions
-                .Where(i => stepIDs.Contains(i.FromVersionStepID) || stepIDs.Contains(i.ToVersionStepID))
-                .ToList();
 
             var item = new WorkflowItem
             {
@@ -67,44 +73,137 @@ namespace d360.model
             WorkflowItems.Add(item);
             SaveChanges();
 
-            //initiate first step.
+            //initiate start step and mark as completed
             var firstVersionStep = version.Steps.Single(s => s.StepType == StepType.Start);
 
-            var firstItemStep = new WorkflowItemStep { StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
+            var firstItemStep = new WorkflowItemStep { CompletedBy = CurrentResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
+            
             WorkflowItemSteps.Add(firstItemStep);
             SaveChanges();
 
-            await ExecuteStep(firstItemStep.ID, workflowTypeID);
+            var transitions = WorkflowVersionStepTransitions
+                .Where(i => i.FromVersionStepID == firstVersionStep.ID)
+                .ToList();
 
-            //var activity = ActivityTypes.SingleOrDefault(i => i.ID == firstItemStep.Step.ActivityType);
-
-            ////execute this activity.
-
-            ////Find the next activities from the start.
-            //var nextTransitions = transitions.Where(t => t.FromVersionStepID == firstVersionStep.ID).ToList();
-
-            ////Execute ALWAYS transitions.
-            //nextTransitions.Where(i => i.LinkType == core.enums.Workflow.LinkType.Always);
-
-            /*
-             NOTES: 
-             May need to include a TEST flag on the workflow.Item table so we can mark something as a test and not actually 
-             process the changes. The flag would be set when a user wants to test the development of workflow.
-
-             May need to extract a few statements from above code and make it more generic.
-             */
+            StartTransitions(transitions, item.ID);
+            
 
             return item;
         }
 
-        public async Task ExecuteStep(long itemStepID, int workflowId)
+        private void StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID)
         {
+            var events = new List<EventInfo>();
+
+            foreach (var transition in transitions)
+            {
+                events.Add(new EventInfo
+                {
+                    CompanyID = CurrentCompanyID,
+                    DomainPrefix = CurrentCompanyDomain,
+                    ResourceID = CurrentResourceID,                                        
+                    WorkflowItemID = itemID,                    
+                    VersionStepTransitionID = transition.ID,
+                    Action = ChangeType.Add // irrelevant
+                });
+            }
+            
+            //add topic messages for the transitions
+            QueueSource.CreateTopicMessages(events);
+        }
+
+        /// <summary>
+        /// Evaulate a given workflow transition,  if we succeed we need to add new events for the 
+        /// step we are transitioning to with the step id
+        /// </summary>
+        /// <param name="versionStepTransitionID"></param>
+        /// <param name="itemID"></param>
+        /// <returns></returns>
+        public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID)
+        {
+            var transition = WorkflowVersionStepTransitions
+                .Where(i => i.ID == versionStepTransitionID).FirstOrDefault();
+
+            if (transition == null) throw new Exception("ERROR - UNABLE TO LOCATE THE SPECIFIED WORKFLOW TRANSITION STEP");
+
+            bool transitionPassed = false;
+            // check the transition type.  Always always goes to next step, condition we need
+            // to evaulate the condition to determine if we go to next step
+            // timer we dont worry about here some job will keep track of that
+            switch (transition.TransitionType)
+            {
+                case TransitionType.Always:
+                    transitionPassed = true;
+                    break;
+                case TransitionType.Condition:
+                    //evaluate the condition then determine if we move to next step
+                    break;                                
+            }
+
+            if (transitionPassed)
+            {
+                var fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
+
+                if (fromItemStep == null) throw new Exception("ERROR - CANNOT FIND ITEM FROM STEP");
+
+                // insert item step record for the to item step
+
+                var toItemStep = new WorkflowItemStep { StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID,
+                    Step = transition.ToVersionStep,
+                    Fields = "<fields/>", Settings = "<settings/>",
+                    ItemID = itemID };
+
+                WorkflowItemSteps.Add(toItemStep);
+                SaveChanges();
+
+                // insert record into itemsteptransition
+                WorkflowItemStepTransition trans = new WorkflowItemStepTransition
+                {
+                    Condition = "<condition></condition>",
+                    Date = DateTime.UtcNow,
+                    FromItemStepID = fromItemStep.ID,
+                    ToItemStepID = toItemStep.ID
+                };
+
+                WorkflowItemStepTransitions.Add(trans);
+                SaveChanges();
+
+                // add event queue item for the step
+                var events = new List<EventInfo>();
+
+                events.Add(new EventInfo
+                {
+                    CompanyID = CurrentCompanyID,
+                    DomainPrefix = CurrentCompanyDomain,
+                    ResourceID = CurrentResourceID,
+                    WorkflowItemID = itemID,
+                    ItemStepID = toItemStep.ID,
+                    Action = ChangeType.Add // irrelevant
+                });
+                
+                //add topic messages for the transitions
+                QueueSource.CreateTopicMessages(events);
+            }
+
+        }
+
+        /// <summary>
+        /// Evaluate a given workflow step, if we succeed we need to add a new event for the transitions that follow
+        /// if a complete step we just mark it as done.
+        /// </summary>
+        /// <param name="itemStepID"></param>
+        /// <param name="itemID"></param>
+        /// <returns></returns>
+        public async Task ExecuteStep(long itemStepID, long itemID)
+        {
+            bool isStepCompleted = false;
             var itemStep = getWorkflowItemStep(itemStepID);
             
             switch (itemStep.Step.ActivityType)
             {
                 case WorkflowActivityType.EmailNotification:
-                    await SendWorkflowEmail(itemStep.Step, workflowId);
+                    await SendWorkflowEmail(itemStep.Step);
+                    isStepCompleted = true;
                     break;
                 case WorkflowActivityType.Form:
                     break;
@@ -122,12 +221,24 @@ namespace d360.model
             itemStep.CompletedOn = DateTime.UtcNow;
             itemStep.CompletedBy = CurrentResourceID;
             SaveChanges();
+
+            if (isStepCompleted)
+            {
+                // get the transitions for this step and add events
+                var transitions = WorkflowVersionStepTransitions
+                .Where(i => i.FromVersionStepID == itemStep.StepID)
+                .ToList();
+
+                StartTransitions(transitions, itemID);
+            }
+
         }
 
-        private async Task SendWorkflowEmail(WorkflowVersionStep step, int workflowId)
+        private async Task SendWorkflowEmail(WorkflowVersionStep step)
         {
+            
             // call proc for details who to email
-            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = workflowId });
+            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = step.Version.TypeID });
 
             if (string.IsNullOrEmpty(step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
 

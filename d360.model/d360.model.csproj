@@ -160,6 +160,9 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryConstants.cs" />
+    <Compile Include="workflow\WorkflowCriteriaExpressionModel.cs" />
+    <Compile Include="workflow\WorkflowEmailModel.cs" />
+    <Compile Include="workflow\WorkflowRegistrationCriteriaProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">

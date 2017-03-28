@@ -292,6 +292,7 @@
     <Compile Include="entities\Workflow\Models.cs" />
     <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\Workflow\ActivityType.cs" />
+    <Compile Include="enums\Workflow\CriteriaValueDataType.cs" />
     <Compile Include="enums\Workflow\ChangeType.cs" />
     <Compile Include="enums\Workflow\TransitionType.cs" />
     <Compile Include="enums\Workflow\StepType.cs" />
@@ -331,6 +332,7 @@
     <Compile Include="enums\StatisticCheckType.cs" />
     <Compile Include="enums\SystemObjects.cs" />
     <Compile Include="enums\TemplateAction.cs" />
+    <Compile Include="enums\Workflow\CriteriaOperator.cs" />
     <Compile Include="exceptions\BaseException.cs" />
     <Compile Include="exceptions\ConflictException.cs" />
     <Compile Include="exceptions\GenericException.cs" />
@@ -370,7 +372,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Values.resx</DependentUpon>
     </Compile>
-    <Compile Include="workflow\WorkflowEmailModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="resources\Fields.resx">

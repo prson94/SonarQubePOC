@@ -30,5 +30,11 @@ namespace d360.core.queue
         public ChangeType Action { get; set; }
 
         public EventObjectInfo Object { get; set; }
+
+        public long WorkflowItemID { get; set; }
+
+        public long ItemStepID { get; set; }
+
+        public long VersionStepTransitionID { get; set; }        
     }
 }

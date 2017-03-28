@@ -12,6 +12,7 @@ using d360.extensions.caching;
 using d360.extensions.queue;
 using d360.model;
 using System.Threading.Tasks;
+using d360.extensions;
 
 namespace d360.jobs.subscriber.Workflow
 {
@@ -39,13 +40,25 @@ namespace d360.jobs.subscriber.Workflow
 
                 #endregion
 
-                var sObject = info.Object.ObjectType.ToString();
-                var registration = company.WorkflowEventRegistrations.FirstOrDefault(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID);
-
-                if (registration != null)
+                //check if this event already has a open workflow instance
+                if (info.WorkflowItemID <= 0)
                 {
-                    var workflowItem = await company.CreateWorkflowItem(registration.TypeID, info.Object.Object.ToString(), info.Object.ObjectID);
+                    var sObject = info.Object.ObjectType.ToString();
+                    var registration = company.WorkflowEventRegistrations.FirstOrDefault(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID);
+
+                    if (registration != null)
+                    {
+                        var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object.Object.ToString(), info.Object.ObjectID, registration.Condition);
+                    }
                 }
+                else if(info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
+                {
+                    await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID);
+                }
+                else if(info.ItemStepID > 0) // this event is to evauluate a workflow step
+                {
+                    await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID);
+                }                
             }
             catch (Exception ex)
             {
