@@ -120,7 +120,7 @@ namespace d360.model
         /// <param name="versionStepTransitionID"></param>
         /// <param name="itemID"></param>
         /// <returns></returns>
-        public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID)
+        public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, string @object, int objectID)
         {
             var transition = WorkflowVersionStepTransitions
                 .Where(i => i.ID == versionStepTransitionID).FirstOrDefault();
@@ -138,6 +138,7 @@ namespace d360.model
                     break;
                 case TransitionType.Condition:
                     //evaluate the condition then determine if we move to next step
+                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, @object, objectID, transition.Condition);                    
                     break;                                
             }
 
@@ -199,25 +200,44 @@ namespace d360.model
         {
             bool isStepCompleted = false;
             var itemStep = getWorkflowItemStep(itemStepID);
+
+            var stepType = itemStep.Step.StepType;
             
-            switch (itemStep.Step.ActivityType)
+            if (stepType == StepType.Task)
             {
-                case WorkflowActivityType.EmailNotification:
-                    await SendWorkflowEmail(itemStep.Step);
-                    isStepCompleted = true;
-                    break;
-                case WorkflowActivityType.Form:
-                    // send form notification to owners
-                    await SendFormWorkflowEmail(itemStep.Step, itemStepID, itemID);
-                    break;
-                case WorkflowActivityType.StatusChange:
-                    // change the status of this item
-                    isStepCompleted = true;
-                    break;
-                default:
-                    break;
+                switch (itemStep.Step.ActivityType)
+                {
+                    case WorkflowActivityType.EmailNotification:
+                        await SendWorkflowEmail(itemStep.Step);
+                        isStepCompleted = true;
+                        break;
+                    case WorkflowActivityType.Form:
+                        // send form notification to owners
+                        await SendFormWorkflowEmail(itemStep.Step, itemStepID, itemID);
+                        break;
+                    case WorkflowActivityType.StatusChange:                        
+                        // change the status of this item
+                        isStepCompleted = true;
+                        break;
+                    default:
+                        isStepCompleted = true;
+                        break;
+                }
             }
-            
+            else if(stepType == StepType.Finish || stepType == StepType.Terminate)
+            {
+                // if the task is a finish or terminate task we need to mark the workflow instance as completed and the task as completed
+                isStepCompleted = true;
+
+                var item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
+
+                if (item == null) throw new Exception("ERROR - CANNOT FIND THE WORKFLOW INSTANCE THAT WE NEED TO MARK AS COMPLETED");
+
+                item.CompletedBy = CurrentResourceID;
+                item.CompletedOn = DateTime.UtcNow;
+                SaveChanges();
+            }
+
             if (isStepCompleted)
             {
                 MarkStepAsCompleteAndContinue(itemStep, itemID);

@@ -16,6 +16,7 @@ using Dapper;
 using gudusoft.gsqlparser;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Core;
@@ -56,6 +57,8 @@ namespace d360.model
 
         CommunityContext Community;
 
+        bool IsEventingEnabled = false;
+
         #region Ctors
 
         public CompanyContext(CommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, bool skipCacheCheck = false)
@@ -73,6 +76,11 @@ namespace d360.model
             //output queries in debug mode to console
             if (System.Diagnostics.Debugger.IsAttached)
                 this.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
+
+            var eventBusValue = (ConfigurationManager.AppSettings["EventBusTopicEnabled"] ?? "").ToUpper();
+
+            if (eventBusValue == "TRUE") IsEventingEnabled = true;
+            else IsEventingEnabled = false;
         }
 
         #endregion
@@ -2872,8 +2880,10 @@ order by Name", new { workflowType, type, id });
             {
             }
 
+            
+            
             // create events for the objects this needs to be done after save changes so we have new objects id's
-           // CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities);
+            if(IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities);
 
             return returnValue;
         }

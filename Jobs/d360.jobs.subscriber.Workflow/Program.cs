@@ -75,7 +75,7 @@ namespace d360.jobs.subscriber.Workflow
 
                     if (info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
                     {
-                        await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID);
+                        await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID, info.Object.Object.ToString(), info.Object.ObjectID);
                     }
                     else if (info.ItemStepID > 0) // this event is to evauluate a workflow step
                     {
