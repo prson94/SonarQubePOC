@@ -17,7 +17,7 @@ import { WorkflowListItem, WorkflowChangeType } from '../../../models/workflow.m
                             <div class="col s12">
                                 <div class="tile tile-detail">
                                     <header>Workflows</header>
-                                    <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChanged)="selected=$event;loadWorkflowItems(selected)">
+                                    <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;loadWorkflowItems(selected)">
                                         <p-column field="Name" header="Name" [sortable]="true"></p-column>
                                         <p-column field="ChangeType" header="Change Type" [sortable]="true">
                                             <template let-col let-workflow="rowData" pTemplate type="body">
@@ -34,7 +34,7 @@ import { WorkflowListItem, WorkflowChangeType } from '../../../models/workflow.m
                             <div class="col s12">
                                 <div class="tile tile-detail">
                                     <header>Workflow Items</header>
-                                    <p-dataTable [value]="details" [rows]="10" paginator="true" selectionMode="single" (selectionChanged)="selectedItem=$event;loadItemsDetails(selecteditem)">
+                                    <p-dataTable [value]="details" [rows]="10" paginator="true" selectionMode="single" (selectionChange)="selectedItem=$event;loadItemsDetails(selectedItem)">
                                         <p-column field="Name" header="Item" [sortable]="true">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <a (click)="openItem(item.Url)">{{item.Name}}</a>
@@ -118,7 +118,8 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private loadWorkflowItems(selected: WorkflowListItem) {
+    private loadWorkflowItems(selected: WorkflowListItem) {    
+        this.itemdetails = [];    
         this.workflowService.getWorkflowItems(selected.ID)
             .then(res => {
                 this.details = res;
@@ -130,6 +131,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
     }
 
     private loadItemsDetails(selectedItem: any) {
+        
         this.workflowService.getWorkflowItemDetails(this.selected.ID, selectedItem.Object, selectedItem.ObjectId)
             .then(res => {
                 this.itemdetails = res;                

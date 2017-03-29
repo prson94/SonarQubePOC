@@ -1142,11 +1142,12 @@ namespace d360.web.Controllers.Services
                                 from
 			                        [workflow].item i
 	                                inner join [workflow].itemstep istep on (i.id = istep.itemid)
+                                    inner join [workflow].version v on (i.versionid = v.id)
 			                        inner join [workflow].versionstep vs on (vs.id = istep.stepid)
                                     inner join [reporting].[Global_Resource] R on R.ResourceID = istep.startedby
                                     left join [reporting].[Global_Resource] Rc on Rc.ResourceID = istep.completedby
 		                        where
-			                        i.[object] = @typename and i.[objectid] = @id and i.versionid = @workflowId;
+			                        i.[object] = @typename and i.[objectid] = @id and v.typeid = @workflowId;
             ";
 
             var types = Company.Query<dynamic>(sql, new { workflowId = workflowId, id = objectId, typename = objectType }).ToList();
