@@ -45,6 +45,9 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public bool IsTest { get; set; }
 
+        [DataMember]
+        public int NumberOfEvents { get; set; }
+
         [IgnoreDataMember, ForeignKey("VersionID")]
         public virtual WorkflowVersion Version { get; set; }
 

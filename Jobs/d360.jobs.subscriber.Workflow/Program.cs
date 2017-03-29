@@ -18,8 +18,10 @@ namespace d360.jobs.subscriber.Workflow
 {
     public class Program: FunctionsBase
     {
+        public static int MAX_NUMBER_OF_WORKFLOW_EVENTS = 100;
+
         public static async Task ProcessTopicMessage([ServiceBusTrigger("%topicname%", "Workflow", AccessRights.Listen)] BrokeredMessage message)
-        {
+        {            
             try
             {
                 var info = message.GetBody<EventInfo>();
@@ -51,14 +53,35 @@ namespace d360.jobs.subscriber.Workflow
                         var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object.Object.ToString(), info.Object.ObjectID, registration.Condition);
                     }
                 }
-                else if(info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
-                {
-                    await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID);
-                }
-                else if(info.ItemStepID > 0) // this event is to evauluate a workflow step
-                {
-                    await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID);
-                }                
+                else {
+                    //load the workflow instance and check how many events have been generated.  if greater than threashold then stop.  Do not raise more events
+                    // throw an error this section prevents workflows that go on forever and flood the bus with data...
+
+                    var workflowInstance = company.WorkflowItems.Where(x => x.ID == info.WorkflowItemID).FirstOrDefault();
+
+                    if(workflowInstance == null)
+                    {
+                        throw new Exception("ERROR - CANNOT LOAD SPECIFIED WORKFLOW INSTANCE FROM [WORKFLOW].ITEM TABLE");
+                    }
+
+                    if(workflowInstance.NumberOfEvents > MAX_NUMBER_OF_WORKFLOW_EVENTS)
+                    {
+                        throw new Exception("ERROR - MAX NUMBER OF EVENT BUS EVENTS PER WORKFLOW EXCEEDED!!!");
+                    }
+
+                    //increment workflow events and update
+                    workflowInstance.NumberOfEvents++;
+                    company.SaveChanges();
+
+                    if (info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
+                    {
+                        await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID);
+                    }
+                    else if (info.ItemStepID > 0) // this event is to evauluate a workflow step
+                    {
+                        await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID);
+                    }
+                }          
             }
             catch (Exception ex)
             {
