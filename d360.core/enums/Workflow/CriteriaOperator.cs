@@ -13,6 +13,7 @@ namespace d360.core.enums.Workflow
         GreaterThanOrEqual,
         LessThan,
         LessThanOrEqual,
-        Equal,        
+        Equal,     
+        NotEqual   
     }
 }

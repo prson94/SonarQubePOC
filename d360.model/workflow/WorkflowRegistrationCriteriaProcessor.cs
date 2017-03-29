@@ -24,6 +24,25 @@ namespace d360.model.workflow
             return EvaluateObject(context, @object, objectId);            
         }
 
+        public static string ToPlainText(CompanyContext context, string criteria)
+        {
+            if (string.IsNullOrEmpty(criteria)) return "";
+
+            //take the string criteria and generate the class
+            PopulateExpressionFromXml(criteria);
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var item in expression)
+            {
+                if (sb.Length != 0) sb.Append(" AND ");
+
+                sb.Append(item.ToPlainText(context));
+            }
+
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Given an object determin if it matches this criteria
         /// </summary>

@@ -29,6 +29,43 @@ namespace d360.model.workflow
             };
         }
 
+        public string ToPlainText(CompanyContext context)
+        {
+            var fieldName = getFieldName(context);
+            var operatorText = getOperatorText();
+
+            return $"{fieldName} {operatorText} {Value.ToString()}";
+        }
+
+        private string getOperatorText()
+        {
+            switch (this.Operator)
+            {                
+                case CriteriaOperator.GreaterThan:
+                    return ">";
+                case CriteriaOperator.GreaterThanOrEqual:
+                    return ">=";
+                case CriteriaOperator.LessThan:
+                    return "<";
+                case CriteriaOperator.LessThanOrEqual:
+                    return "<=";
+                case CriteriaOperator.Equal:
+                    return "=";
+                case CriteriaOperator.NotEqual:
+                    return "!=";
+            }
+            return "?";
+        }
+
+        protected string getFieldName(CompanyContext context)
+        {
+            var field = context.FieldTypes.Where(x => x.ID == this.FieldTypeId).FirstOrDefault();
+
+            if (field == null) return "(unknown)";
+
+            return field.FriendlyName;
+        }
+
         private static CriteriaValueDataType dataTypeFromString(string val)
         {
             switch ((val ?? "").ToUpper())
@@ -61,7 +98,9 @@ namespace d360.model.workflow
                 case "<=":
                     return CriteriaOperator.LessThanOrEqual;
                 case "<":
-                    return CriteriaOperator.LessThan;                
+                    return CriteriaOperator.LessThan;
+                case "!=":
+                    return CriteriaOperator.NotEqual;         
             }
 
             return CriteriaOperator.Invalid;
@@ -100,6 +139,8 @@ namespace d360.model.workflow
 
                 if (Operator == CriteriaOperator.Equal)
                     return ((currentDate - dt).Days == (int)Value);
+                else if (Operator == CriteriaOperator.NotEqual)
+                    return ((currentDate - dt).Days != (int)Value);
                 else if(Operator == CriteriaOperator.GreaterThan)
                     return ((currentDate - dt).Days > (int)Value);
                 else if (Operator == CriteriaOperator.GreaterThanOrEqual)
@@ -124,7 +165,9 @@ namespace d360.model.workflow
                 case CriteriaOperator.LessThanOrEqual:
                     return isLessThanOrEqual(val);
                 case CriteriaOperator.Equal:
-                    return isEqual(val);                              
+                    return isEqual(val);
+                case CriteriaOperator.NotEqual:
+                    return isNotEqual(val);
             }
             
             throw new Exception("INVALID COMPARISON OPERATION");
@@ -196,6 +239,25 @@ namespace d360.model.workflow
                     return (double)val == (double)Value;
                 case CriteriaValueDataType.Lookup:
                     return (int)val == (int)Value;                    
+            }
+
+            throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
+        }
+
+        private bool isNotEqual(object val)
+        {
+            switch (ValueDataType)
+            {
+                case CriteriaValueDataType.Boolean:
+                    return (bool)val != (bool)Value;
+                case CriteriaValueDataType.String:
+                    return String.Compare((string)val, (string)Value, true) != 0;
+                case CriteriaValueDataType.Integer:
+                    return (int)val != (int)Value;
+                case CriteriaValueDataType.Double:
+                    return (double)val != (double)Value;
+                case CriteriaValueDataType.Lookup:
+                    return (int)val != (int)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");

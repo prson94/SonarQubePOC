@@ -2,6 +2,7 @@
 using d360.core.enums.Workflow;
 using d360.core.queue;
 using d360.model.workflow;
+using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -207,8 +208,11 @@ namespace d360.model
                     break;
                 case WorkflowActivityType.Form:
                     // send form notification to owners
+                    await SendFormWorkflowEmail(itemStep.Step, itemStepID, itemID);
                     break;
                 case WorkflowActivityType.StatusChange:
+                    // change the status of this item
+                    isStepCompleted = true;
                     break;
                 default:
                     break;
@@ -216,17 +220,51 @@ namespace d360.model
             
             if (isStepCompleted)
             {
-                // mark step as completed
-                itemStep.CompletedOn = DateTime.UtcNow;
-                itemStep.CompletedBy = CurrentResourceID;
-                SaveChanges();
+                MarkStepAsCompleteAndContinue(itemStep, itemID);
+            }
 
-                // get the transitions for this step and add events
-                var transitions = WorkflowVersionStepTransitions
-                .Where(i => i.FromVersionStepID == itemStep.StepID)
-                .ToList();
+        }
 
-                StartTransitions(transitions, itemID);
+        public void MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID)
+        {
+            // mark step as completed
+            itemStep.CompletedOn = DateTime.UtcNow;
+            itemStep.CompletedBy = CurrentResourceID;
+            SaveChanges();
+
+            // get the transitions for this step and add events
+            var transitions = WorkflowVersionStepTransitions
+            .Where(i => i.FromVersionStepID == itemStep.StepID)
+            .ToList();
+
+            StartTransitions(transitions, itemID);
+        }
+
+        private async Task SendFormWorkflowEmail(WorkflowVersionStep step, long itemStepID, long itemId)
+        {
+            //send an email to the owners with a form link
+            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = step.Version.TypeID });
+
+            var url = "";
+            var prefix = "";
+            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.Open();
+
+                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
+
+                cnn.Close();                
+            }
+
+            url += $"https://{prefix}.data3sixty.com/workflow/form/{step.Version.TypeID}/{itemStepID}/{itemId}";
+            
+
+            var emailSubject = $"Data3Sixty - Workflow [{step.Version.Type.Name}] - Form";
+            var emailBody = $"The Data3Sixty workflow [{step.Version.Type.Name}] has generated a form that you need to complete.  Please complete the form at {url}";
+
+            foreach (var user in users)
+            {
+                await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBody);
             }
 
         }
@@ -243,10 +281,10 @@ namespace d360.model
             var emailSettings = WorkflowEmailModel.ParseFromXml(XElement.Parse(step.Settings));
 
             //email the users
-            /*foreach (var user in users)
+            foreach (var user in users)
             {
                 await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate);
-            }*/
+            }
         }
 
         public void DetermineTransitionBasedOnPreviousStepConditions(long itemStepID)

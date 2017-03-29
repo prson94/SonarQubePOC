@@ -23,6 +23,7 @@ using d360.core.enums.Workflow;
 using System.Text;
 using Newtonsoft.Json;
 using System.Web;
+using d360.model.workflow;
 
 namespace d360.web.Controllers.Services
 {
@@ -950,12 +951,17 @@ namespace d360.web.Controllers.Services
             };
         }
 
-        [HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{stepId:int}")]
-        public async Task<HttpResponseMessage> SubmitWorkflowForm(int itemId, int stepId, List<WorkflowFormModelField> model)
+        [HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{itemStepId:int}")]
+        public HttpResponseMessage SubmitWorkflowForm(int itemId, int itemStepId, List<WorkflowFormModelField> model)
         {
             try
             {
-                var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.StepID == stepId && x.ItemID == itemId).FirstOrDefault();
+                var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.ID == itemStepId).FirstOrDefault();
+
+                if(itemStepsModel == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "CANNOT FIND THE ITEM STEP FOR THE SPEICIFIED PARAMETERS");
+                }
 
                 StringBuilder sb = new StringBuilder();
 
@@ -972,34 +978,22 @@ namespace d360.web.Controllers.Services
 
                 sb.Append("</settings>");
 
-                if (itemStepsModel != null)
+                if (itemStepsModel == null)
                 {
-                    itemStepsModel.Fields = sb.ToString();
-                    itemStepsModel.CompletedOn = DateTime.UtcNow;
-                    itemStepsModel.CompletedBy = Company.CurrentResourceID;
-
-                    Company.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
-                    Company.SaveChanges();
-
-                    return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Unable to find item step");
                 }
-                
-                var item = new WorkflowItemStep
-                {
-                        CompletedBy = Company.CurrentResourceID,
-                        CompletedOn = DateTime.UtcNow,
-                        StartedOn = DateTime.UtcNow,
-                        StartedBy = Company.CurrentResourceID,
-                        Settings = "<settings></settings>",
-                        Fields = sb.ToString(),
-                        ItemID = itemId,
-                        StepID = stepId
-                };
 
-                Company.WorkflowItemSteps.Add(item);
-                await Company.SaveChangesAsync();
+                itemStepsModel.Fields = sb.ToString();
+                itemStepsModel.CompletedOn = DateTime.UtcNow;
+                itemStepsModel.CompletedBy = Company.CurrentResourceID;
 
-                return Request.CreateResponse(HttpStatusCode.Created, item);
+                Company.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
+                Company.SaveChanges();
+
+                //complete step and go to transitions
+                Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId);
+
+                return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
             }            
             catch (Exception ex)
             {                
@@ -1018,6 +1012,11 @@ namespace d360.web.Controllers.Services
                 ";
 
             var xml = (await Company.QueryAsync<string>(sql, new { id = versionStepID })).FirstOrDefault();
+
+            if (string.IsNullOrEmpty(xml))
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW FORM DEFINITION,  FORM XML IS NULL.");
+            }
             
             var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
             var title = (string)XElement.Parse(xml).Element("form").Attribute("title");
@@ -1091,7 +1090,8 @@ namespace d360.web.Controllers.Services
                     ,t.CreatedOn
                     ,t.UpdatedOn
                     ,e.ChangeType
-                    ,[workflow].[ConditionToPlainText]([Condition]) as 'ConditionText'
+                    ,'' as 'ConditionText'
+                    ,e.[Condition] as 'Condition'
                     ,v.Version as Version
                 from workflow.type t
                 join workflow.eventregistration e on e.typeid = t.id    
@@ -1101,6 +1101,11 @@ namespace d360.web.Controllers.Services
             ";
 
             var types = Company.Query<dynamic>(sql, new { id = objectID, type = new Dapper.DbString { Value = objectType, IsFixedLength = true, Length = 50, IsAnsi = true } }).ToList();
+
+            foreach (var type in types)
+            {                
+                type.ConditionText = WorkflowRegistrationCriteriaProcessor.ToPlainText(Company, type.Condition);
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, types);
 
