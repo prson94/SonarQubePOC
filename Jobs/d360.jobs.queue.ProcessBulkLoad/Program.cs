@@ -267,9 +267,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 var resources = new List<SimpleTypeModel>();
                 resources.AddRange(
-                    company.Table<Group>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = "group:" + x.Name.ToLower(), ID = x.ID }).ToList());
+                    company.Table<Group>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = "group:" + x.Name.Trim().ToLower(), ID = x.ID }).ToList());
                 resources.AddRange(
-                    company.Table<GlobalReportingResource>().ToList().Select(x => new SimpleTypeModel { Name = "user:" + x.FullName.ToLower(), ID = x.ResourceID })
+                    company.Table<GlobalReportingResource>().ToList().Select(x => new SimpleTypeModel { Name = "user:" + x.FullName.Trim().ToLower(), ID = x.ResourceID })
                  );
 
                 var responsibilities = company.Table<ResponsibilityType>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = x.Name.ToLower(), ID = x.ID });
