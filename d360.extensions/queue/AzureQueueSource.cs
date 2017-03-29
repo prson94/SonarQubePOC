@@ -118,6 +118,11 @@ namespace d360.extensions.queue
             foreach (var e in events)
             {
                 var bm = new BrokeredMessage(e);
+                var messageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
+
+                if (e.Object != null) messageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
+
+                bm.MessageId = messageId;
                 list.Add(bm);
             }
 

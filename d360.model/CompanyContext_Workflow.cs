@@ -120,7 +120,7 @@ namespace d360.model
         /// <param name="versionStepTransitionID"></param>
         /// <param name="itemID"></param>
         /// <returns></returns>
-        public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, string @object, int objectID)
+        public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID)
         {
             var transition = WorkflowVersionStepTransitions
                 .Where(i => i.ID == versionStepTransitionID).FirstOrDefault();
@@ -137,8 +137,12 @@ namespace d360.model
                     transitionPassed = true;
                     break;
                 case TransitionType.Condition:
+                    //get the object for this conditoin
+                    var item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
+
+                    if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");
                     //evaluate the condition then determine if we move to next step
-                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, @object, objectID, transition.Condition);                    
+                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition);                    
                     break;                                
             }
 
@@ -179,7 +183,7 @@ namespace d360.model
                     DomainPrefix = CurrentCompanyDomain,
                     ResourceID = CurrentResourceID,
                     WorkflowItemID = itemID,
-                    ItemStepID = toItemStep.ID,
+                    ItemStepID = toItemStep.ID,                    
                     Action = ChangeType.Add // irrelevant
                 });
                 

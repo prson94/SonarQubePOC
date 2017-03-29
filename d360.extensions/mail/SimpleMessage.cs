@@ -15,8 +15,7 @@ namespace d360.extensions.mail
         {
             var message = new MandrillMessage();
 
-            message.AddTo(toEmail, toName);
-            message.AddTo(toEmail, toName);
+            message.AddTo(toEmail, toName);            
             message.FromEmail = "no-reply@data3sixty.com";
             message.FromName = "Data3Sixty";
 
