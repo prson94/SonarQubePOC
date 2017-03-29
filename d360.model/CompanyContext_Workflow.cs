@@ -206,24 +206,21 @@ namespace d360.model
                     isStepCompleted = true;
                     break;
                 case WorkflowActivityType.Form:
+                    // send form notification to owners
                     break;
                 case WorkflowActivityType.StatusChange:
                     break;
                 default:
                     break;
             }
-            //var activityType = ActivityTypes.SingleOrDefault(i => i.Value.ID == (int)itemStep.Step.ActivityType);
-            //if (activityType == null)
-            //    throw new ApplicationException($"Item Step does not correspond to any known activity type of {itemStep.Step.ActivityType}.");
-
-            //activityType.Value.Execute(itemStep.Settings);
-
-            itemStep.CompletedOn = DateTime.UtcNow;
-            itemStep.CompletedBy = CurrentResourceID;
-            SaveChanges();
-
+            
             if (isStepCompleted)
             {
+                // mark step as completed
+                itemStep.CompletedOn = DateTime.UtcNow;
+                itemStep.CompletedBy = CurrentResourceID;
+                SaveChanges();
+
                 // get the transitions for this step and add events
                 var transitions = WorkflowVersionStepTransitions
                 .Where(i => i.FromVersionStepID == itemStep.StepID)

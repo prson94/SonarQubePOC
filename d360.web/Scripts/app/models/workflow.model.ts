@@ -320,6 +320,13 @@ export enum WorkflowFormFieldType {
     Date
 }
 
+export enum WorkflowActivityType {
+    None = 1,
+    EmailNotification = 1,
+    StatusChange = 2,
+    Form = 3
+}
+
 export enum DiagramObjectType {
     Link,
     Node

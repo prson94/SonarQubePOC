@@ -6,7 +6,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { WorkflowService } from '../../../services/workflow.service';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { WorkflowListItem, WorkflowChangeType } from '../../../models/workflow.model';
+import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } from '../../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -60,6 +60,8 @@ import { WorkflowListItem, WorkflowChangeType } from '../../../models/workflow.m
                                     <header>Items Details</header>
                                     <p-dataTable [value]="itemdetails" selectionMode="single">                                        
                                         <p-column field="Name" header="Step Name" [sortable]="true"></p-column>
+                                        <p-column field="ActivityTypeString" header="Activity" [sortable]="true"></p-column>
+                                        <p-column field="StepTypeString" header="Step" [sortable]="true"></p-column>
                                         <p-column field="UpdatedOn" header="Started" [sortable]="true">
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.StartedOn | date: 'shortDate'}}</span>
@@ -134,6 +136,10 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
         
         this.workflowService.getWorkflowItemDetails(this.selected.ID, selectedItem.Object, selectedItem.ObjectId)
             .then(res => {
+                for (let i of res) {
+                    i.ActivityTypeString = WorkflowActivityType[i.ActivityType];
+                    i.StepTypeString = StepType[i.StepType];
+                }
                 this.itemdetails = res;                
             });
     }

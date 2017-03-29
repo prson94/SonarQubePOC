@@ -1138,7 +1138,9 @@ namespace d360.web.Controllers.Services
 			                        istep.startedOn as 'StartedOn',
                                     R.FirstName + ' ' + R.LastName as StartedBy, 
 			                        istep.completedon as 'CompletedOn',
-                                    Rc.FirstName + ' ' + Rc.LastName as CompletedBy
+                                    Rc.FirstName + ' ' + Rc.LastName as CompletedBy,
+                                    vs.ActivityType as ActivityType,
+                                    vs.StepType as StepType
                                 from
 			                        [workflow].item i
 	                                inner join [workflow].itemstep istep on (i.id = istep.itemid)
