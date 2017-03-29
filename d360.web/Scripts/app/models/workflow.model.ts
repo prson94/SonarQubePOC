@@ -268,6 +268,7 @@ export class WorkflowListItem {
     TypeName: string;
     ChangeType: WorkflowChangeType;
     Published: string;
+    NumberOfEvents: number;
 }
 
 export class WorkflowEventRegistration {

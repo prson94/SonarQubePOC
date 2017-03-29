@@ -1119,6 +1119,7 @@ namespace d360.web.Controllers.Services
 	                        ,i.objectid as 'ObjectId'
 	                        ,i.updatedon as 'UpdatedOn'
 	                        ,i.completedon as 'CompletedOn'
+                            ,i.numberofevents as 'NumberOfEvents'
 	                        ,od.name as 'Name'
                             ,od.NgUrl as 'Url'
                             

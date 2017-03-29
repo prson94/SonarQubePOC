@@ -39,7 +39,8 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                                             <template let-item="rowData" pTemplate type="body">
                                                 <a (click)="openItem(item.Url)">{{item.Name}}</a>
                                             </template>
-                                        </p-column>                                        
+                                        </p-column>  
+                                        <p-column field="NumberOfEvents" header="Total Events" [sortable]="true"></p-column>                                      
                                         <p-column field="UpdatedOn" header="Updated" [sortable]="true">
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.UpdatedOn | date: 'shortDate'}}</span>
