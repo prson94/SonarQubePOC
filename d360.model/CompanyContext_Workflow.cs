@@ -39,14 +39,18 @@ namespace d360.model
 
         #region Engine Methods
 
-        public WorkflowItem CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, string criteria, bool isTest = false)
+        public WorkflowItem CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, bool isTest = false)
         {
-            if(!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, criteria))
+            Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR ${objectInfo.Object} - ${objectInfo.ObjectID}");
+
+            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition))
             {
-                System.Diagnostics.Debug.WriteLine("CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
+                Console.WriteLine("DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 
                 return null;
             }
+
+            Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
             //check if the current item meets the criteria if any for this workflow.
 
@@ -82,16 +86,42 @@ namespace d360.model
             WorkflowItemSteps.Add(firstItemStep);
             SaveChanges();
 
+            Console.WriteLine("DEBUG - PROCESSING START ITEM STEP.");
+
             var transitions = WorkflowVersionStepTransitions
                 .Where(i => i.FromVersionStepID == firstVersionStep.ID)
                 .ToList();
 
             //take any settings from the event registration and apply them in this start step
+            if(!string.IsNullOrEmpty(registration.Settings))
+            {
+                Console.WriteLine("DEBUG - WORKFLOW HAS SETTINGS, STARTING TO SET THOSE.");
+
+                //take the workflow settings right now this is only the visible column and apply these values if present.
+                ProcessStartStepSettings(registration.Settings, objectInfo);
+            }
+
+            Console.WriteLine("DEBUG - STARTING WORKFLOW TRANSITIONS.");
 
             StartTransitions(transitions, item.ID, objectInfo);
-            
+
+            Console.WriteLine("DEBUG - WORKFLOW INSTANCE SUCESSFULLY CREATED.");
 
             return item;
+        }
+
+        private void ProcessStartStepSettings(string settings, EventObjectInfo objectInfo)
+        {
+            //take the settings and see if we need to do anything
+            WorkflowRegistrationSettingsModel settingsModel = WorkflowRegistrationSettingsModel.parseXml(XElement.Parse(settings));
+
+            //if there is a Visibility value update the appropriate item
+            if (settingsModel.Visible.HasValue)
+            {
+                Console.WriteLine($"DEBUG - OBJECT TYPE[{objectInfo.ObjectType}] ID[{objectInfo.ObjectID}] VISIBILITY SET TO {settingsModel.Visible}");
+
+                SetObjectVisibility(objectInfo, settingsModel.Visible.GetValueOrDefault());
+            }
         }
 
         private void StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID, EventObjectInfo objectInfo)
@@ -246,7 +276,7 @@ namespace d360.model
                 isStepCompleted = true;
 
                 //mark the visible flag for the specified object as 1
-                if(stepType == StepType.Finish) SetObjectAsVisible(objectInfo); // only finish steps should set objects as visible
+                if(stepType == StepType.Finish) SetObjectVisibility(objectInfo); // only finish steps should set objects as visible
 
                 var item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
 
@@ -289,33 +319,33 @@ namespace d360.model
 
         }
 
-        private void SetObjectAsVisible(EventObjectInfo objectInfo)
+        private void SetObjectVisibility(EventObjectInfo objectInfo, bool visiblity = true)
         {
             switch (objectInfo.Object)
             {
                 case core.SystemObjects.Artifact:
                     var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    artifact.Visible = true;
+                    artifact.Visible = visiblity;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Intersect:
                     var intersect = Intersects.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    intersect.Visible = true;
+                    intersect.Visible = visiblity;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Taxonomy:
                     var taxonomy = Taxonomies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    taxonomy.Visible = true;
+                    taxonomy.Visible = visiblity;
                     SaveChanges();
                     break;                                
                 case core.SystemObjects.Policy:
                     var policy = Policies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    policy.Visible = true;
+                    policy.Visible = visiblity;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Rule:
                     var rule = Rules.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    rule.Visible = true;
+                    rule.Visible = visiblity;
                     SaveChanges();
                     break;                                             
                 default:
