@@ -20,7 +20,7 @@ namespace d360.model.workflow
             if (xml.HasElements) {
                 var visString = xml.Element("Visible").Value;
 
-                if (visString == "1") vis = true;
+                if (visString == "1" || (visString ??"").ToUpper() == "TRUE") vis = true;
                 else vis = false;
             }
 
