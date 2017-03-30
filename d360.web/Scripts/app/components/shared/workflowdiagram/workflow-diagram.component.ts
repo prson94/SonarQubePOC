@@ -378,9 +378,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         }
 
         switch (n.activityType) {
-            case 1:
+            case 1: //email
                 n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
                 n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
+                break;
+            case 2: //status change
+                n.settings.Status = e.settings.Status;
                 break;
         }
 
