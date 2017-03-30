@@ -16,6 +16,9 @@
                 <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'">
                     <i class="fa fa-info-circle fa-2x"></i>
                 </li>
+                <li (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'">
+                    <i class="fa fa-pencil fa-2x"></i>
+                </li>
             </ul>
             <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
                 <div *ngSwitchCase="'info'">
@@ -33,6 +36,14 @@
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
                         <strong>Transition Type:</strong> {{TransitionType[selectedData.transitionType]}}<br />
+                    </div>
+                </div>
+                <div *ngSwitchCase="'edit'">
+                    <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
+                        <d3s-workflow-step-editor [step]="selectedData" (stepChange)="changeStep($event)"></d3s-workflow-step-editor>
+                    </div>
+                    <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
+                        <d3s-workflow-transition-editor [transition]="selectedData" (transitionChange)="changeTransition($event)"></d3s-workflow-transition-editor>
                     </div>
                 </div>
             </div>

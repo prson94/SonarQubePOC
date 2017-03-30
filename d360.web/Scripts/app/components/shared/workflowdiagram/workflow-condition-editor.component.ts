@@ -10,7 +10,7 @@ import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 
 @Component({
-    selector: 'd3s-admin-workflow-new-condition-editor',
+    selector: 'd3s-workflow-condition-editor',
     providers: [WorkflowService],
     template: `
                         <div class="row">
@@ -102,7 +102,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 `
 })
 
-export class AdminWorkflowNewConditionEditorComponent extends BaseComponent implements OnInit {
+export class WorkflowConditionEditorComponent extends BaseComponent implements OnInit {
     @Input() objectType: string;
     @Input() objectId: number;
     @Output() onSave = new EventEmitter();
@@ -112,7 +112,7 @@ export class AdminWorkflowNewConditionEditorComponent extends BaseComponent impl
     private condition = new EventCondition();
     private fields: FieldType[] = [];
     private selectedField: FieldType = new FieldType();
-    private lookups: any[]= [];
+    private lookups: any[] = [];
 
     private operators = [
         { value: '=', label: 'equal to' },

@@ -1058,6 +1058,12 @@ namespace d360.web.Controllers.Services
             return ChangeType.Add.GetList();
         }
 
+        [Route("transitiontypes"), HttpGet]
+        public List<TransitionTypeInfo> GetTransitionTypes()
+        {
+            return TransitionType.Always.GetList();
+        }
+
         [Route("types"), HttpGet]
         public HttpResponseMessage GetWorkflowTypes()
         {
@@ -1317,6 +1323,8 @@ namespace d360.web.Controllers.Services
                                 step.XPosition = n.XPosition;
                                 step.YPosition = n.YPosition;
                                 step.VersionID = versionID;
+                                step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                step.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
 
                                 Company.Add(step);
                                 Company.SaveChanges();
@@ -1336,6 +1344,8 @@ namespace d360.web.Controllers.Services
                                     node.XPosition = n.XPosition;
                                     node.YPosition = n.YPosition;
                                     node.VersionID = versionID;
+                                    node.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                    node.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
                                     //node.ParentID
                                     //node.Settings
                                     //node.Fields
@@ -1370,6 +1380,8 @@ namespace d360.web.Controllers.Services
                                 link.Name = l.Name ?? "";
                                 link.TransitionType = l.TransitionType;
                                 link.Condition = null; //TODO: parse condition
+                                link.FromPortID = l.FromPortID;
+                                link.ToPortID = l.ToPortID;
 
                                 Company.Add(link);
                             }
@@ -1382,6 +1394,8 @@ namespace d360.web.Controllers.Services
                                     link.Name = l.Name ?? "";
                                     link.TransitionType = l.TransitionType;
                                     link.Condition = null;
+                                    link.FromPortID = l.FromPortID;
+                                    link.ToPortID = l.ToPortID;
                                 }
                             }
                         });

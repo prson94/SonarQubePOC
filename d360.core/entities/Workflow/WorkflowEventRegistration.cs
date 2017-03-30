@@ -26,6 +26,9 @@ namespace d360.core.entities.Workflow
         [DataMember, NotMapped]
         public dynamic ConditionObject { get; set; }
 
+        [DataMember]
+        public string Settings { get; set; }
+
         [IgnoreDataMember, ForeignKey("TypeID")]
         public virtual Type Type { get; set; }
     }

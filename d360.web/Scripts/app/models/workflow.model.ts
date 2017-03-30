@@ -183,6 +183,8 @@ export class WorkflowDiagramNode {
     ActivityTypeInfo: ActivityTypeInfo;
     Settings: string;
     SettingsObject: any;
+    Fields: string;
+    FieldsObject: any;
     Name: string;
 }
 
@@ -190,6 +192,8 @@ export class WorkflowDiagramLink {
     Key: string;
     FromKey: string;
     ToKey: string;
+    FromPortID: string;
+    ToPortID: string;
     TransitionType: TransitionType;
     Condition: string;
     ConditionObject: any;
@@ -202,13 +206,12 @@ export class LinkModel {
     to: string;
     name: string;
     category: string = '';
-    //template: string = '';
     diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
-    fromportid: string;
-    toportid: string;
+    frompid: string;
+    topid: string;
 
-    transitionType: TransitionType;
-    condition: any;
+    transitionType: TransitionType = TransitionType.Always;
+    condition: any = {};
 
 }
 
@@ -225,12 +228,14 @@ export class NodeModel {
     y: string;
     stepType: StepType;
     activityType: number;
-    settings: any;
     fore: string;
     back: string;
     icon: string;
     activityDescription: string;
     activityName: string;
+
+    settings: any = {};
+    fields: any = {};
 }
 
 export class ActivityTypeInfo {
@@ -241,6 +246,12 @@ export class ActivityTypeInfo {
     ForeColor: string;
     Icon: string;
 
+}
+
+export class TransitionTypeInfo {
+    ID: Number;
+    Name: string;
+    Description: string;
 }
 
 //#endregion
@@ -279,6 +290,7 @@ export class WorkflowEventRegistration {
     ChangeType: WorkflowChangeType;
     Condition: string;
     ConditionObject: any;
+    Settings: string;
 
     conditions: EventCondition[] = [];
 }

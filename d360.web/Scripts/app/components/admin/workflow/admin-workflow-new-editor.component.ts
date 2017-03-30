@@ -67,8 +67,16 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                             this.objectId = this.model.Event.ObjectID;
                             this.objectType = this.model.Event.Object;
 
-                            if (this.model.Event.ConditionObject != null) {
-                                this.model.Event.ConditionObject.Conditions.Condition.forEach(c => {
+                            console.log(r);
+
+                            if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Conditions != null) {
+                                let cond = [];
+                                if (this.model.Event.ConditionObject.Conditions.length == null)
+                                    cond.push(this.model.Event.ConditionObject.Conditions.Condition);
+                                else
+                                    cond = this.model.Event.ConditionObject.Conditions.Condition;
+
+                                cond.forEach(c => {
                                     this.conditions.push({
                                         fieldName: '',
                                         FieldTypeID: c['@FieldTypeID'],
@@ -78,8 +86,6 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                                     });
                                 });
                             }
-
-                            console.log(r, this.selectedObjectType);
                         })
                         .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType))
                         .then(r => {

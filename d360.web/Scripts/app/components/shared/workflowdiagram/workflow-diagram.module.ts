@@ -20,6 +20,9 @@ import { TilesModule } from '../tiles/tiles.module';
 import { D3SOverlayWindowModule } from '../overlay-window.component';
 
 import { WorkflowDiagramComponent } from './workflow-diagram.component';
+import { WorkflowStepEditorComponent } from './workflow-step-editor.component';
+import { WorkflowTransitionEditorComponent } from './workflow-transition-editor.component';
+import { WorkflowConditionEditorComponent } from './workflow-condition-editor.component';
 
 
 @NgModule({
@@ -40,9 +43,13 @@ import { WorkflowDiagramComponent } from './workflow-diagram.component';
     ],
     declarations: [
         WorkflowDiagramComponent,
+        WorkflowStepEditorComponent,
+        WorkflowTransitionEditorComponent,
+        WorkflowConditionEditorComponent,
     ],
     exports: [
         WorkflowDiagramComponent,
+        WorkflowConditionEditorComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

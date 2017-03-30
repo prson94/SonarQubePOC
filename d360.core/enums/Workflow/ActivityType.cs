@@ -10,6 +10,8 @@ namespace d360.core.enums.Workflow
     /// </summary>
     public enum WorkflowActivityType
     {
+        [Name("None"), Description("None"), BackColor("#000"), ForeColor("#fff"), Icon("\uf128")]
+        None = 0,
         [Name("Email Notification"), Description("Email Notification"), BackColor("#1d9d74"), ForeColor("#fff"), Icon("\uf0e0")]
         EmailNotification = 1,
         [Name("Status Change"), Description("Status Change"), BackColor("#1d339d"), ForeColor("#fff"), Icon("\uf024")]

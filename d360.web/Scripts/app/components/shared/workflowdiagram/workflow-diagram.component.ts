@@ -90,7 +90,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.div = null;
     }
 
-
     //#region helper methods
 
     private unsubscribe() {
@@ -111,13 +110,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         //''LinkDrawn
         this.myDiagram.grid.visible = false;
-        this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
+        this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
         this.myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.isReadOnly;
+        this.myDiagram.toolManager.linkingTool.archetypeLinkData = new LinkModel();
 
         this.getActivityTypes().then(() => this.populateDiagram()).then(() => this.initializePalette());
     }
@@ -129,6 +129,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private getActivityTypes(): Promise<any> {
         return this.workflowService.getActivityTypes()
             .then(r => {
+                let none = r.findIndex(a => a.ID == 0);
+
+                if (none >= 0)
+                    r.splice(none, 1);
+
                 this.activityTypes = r;
                 console.log(r);
             });
@@ -233,12 +238,17 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             });
 
             (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
-                let k = new WorkflowDiagramLink();
-                k.ToKey = (<any>l).to;
-                k.FromKey = (<any>l).from;
+                //let k = new WorkflowDiagramLink();
+                //k.ToKey = (<any>l).to;
+                //k.FromKey = (<any>l).from;
+                //k.FromPortID = (<any>l).frompid;
+                //k.ToPortID = (<any>l).topid;
 
-                links.push(k);
-                //links.push(this.convertToWorkflowModel(<LinkModel>l));
+                //let t = (<any>l).transitionType;
+                
+                //k.TransitionType = (t == null) ? 1 : t;
+                //links.push(k);
+                links.push(this.convertToWorkflowModel(<LinkModel>l));
             });
 
 
@@ -281,6 +291,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.key = m.Key;
             n.condition = m.Condition;
             n.transitionType = m.TransitionType;
+            n.frompid = m.FromPortID;
+            n.topid = m.ToPortID;
+            n.name = m.Name;
 
             return n;
         } else if (type == DiagramObjectType.Node) {
@@ -330,10 +343,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.ToKey = m.to;
             n.TransitionType = m.transitionType;
             n.Name = m.name;
-            n.Condition = "";
-            
+            n.Condition = JSON.stringify({ Conditions: m.condition });
+            n.FromPortID = m.frompid;
+            n.ToPortID = m.topid;
 
             return n;
+
         } else if (model.diagramObjectType == DiagramObjectType.Node) {
             let m: NodeModel = <NodeModel>model;
             let n = new WorkflowDiagramNode();
@@ -342,6 +357,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.ActivityType = m.activityType;
             n.Name = m.name;
             n.SettingsObject = m.settings;
+            n.Settings = JSON.stringify({ settings: m.settings });
+            n.Fields = JSON.stringify({ fields: m.fields });
             n.StepType = m.stepType;
             n.XPosition = m.pos.split(' ')[0];
             n.YPosition = m.pos.split(' ')[1];
@@ -353,9 +370,34 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         }
     }
 
+
+    changeStep(e: NodeModel) {
+        let n = this.myDiagram.model.findNodeDataForKey(e.key);
+        if (n != null) {
+            n.name = e.name;
+        }
+
+        switch (n.activityType) {
+            case 1:
+                n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
+                n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
+                break;
+        }
+
+    }
+
+    changeTransition(e: LinkModel) {
+        let i = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.findIndex(l => (<any>l).from == e.from && (<any>l).to == e.to);
+        let l = null;
+        if (i >= 0)
+            l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray[i];
+        if (l != null) {
+            l.name = e.name;
+            l.transitionType = e.transitionType;
+            l.condition = e.condition;
+        }
+    }
     //#endregion
-
-
 
     //#region events
 
@@ -437,11 +479,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private LinkDrawn(e: any) {
         let link = e.subject;
-        console.log(link);
+        let l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray
+        console.log(link, l);
     }
     //#endregion
-
-
 
     //#region templates
 
@@ -459,7 +500,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         start.name = 'Start';
         start.diagramObjectType = DiagramObjectType.Node;
         start.stepType = StepType.Start;
-        start.activityType = 1;
+        start.activityType = 0;
         start.pos = "0 0";
 
         paletteModel.push(start);
@@ -469,10 +510,20 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         finish.name = 'Finish';
         finish.diagramObjectType = DiagramObjectType.Node;
         finish.stepType = StepType.Finish;
-        finish.activityType = 1;
+        finish.activityType = 0;
         finish.pos = "0 0";
 
         paletteModel.push(finish);
+
+        let terminate = new NodeModel();
+        terminate.category = 'finish';
+        terminate.name = 'Terminate';
+        terminate.diagramObjectType = DiagramObjectType.Node;
+        terminate.stepType = StepType.Terminate;
+        terminate.activityType = 0;
+        terminate.pos = "0 0";
+
+        paletteModel.push(terminate);
 
         this.activityTypes.forEach(a => {
 
@@ -553,7 +604,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         let nodeFontSize = 10;
 
         return this.g(go.Node, "Spot",
-            new go.Binding("location", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
+            new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(go.Point.stringify),
             {
                 locationSpot: go.Spot.Center,
                 mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
@@ -599,39 +650,46 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private createTerminalNode(isStart: boolean): go.Node {
-        let nodeWidth = 200;
-        let nodeHeight = 105;
+        let nodeWidth = 75;
+        let nodeHeight = 75;
         let nodeBorderColor = 'transparent';
         let nodeFontSize = 10;
         let backColor = isStart ? '#216b23' : '#6b2121';
 
-        return this.g(go.Node, "Spot",
-            new go.Binding("location", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
+        return this.g(go.Node, "Auto",
+            new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(v => go.Point.stringify(v)),
             {
                 locationSpot: go.Spot.Center,
                 mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
                 mouseLeave: (e, obj) => { this.showPorts(obj.part, false); }
             },
-            this.g(go.Shape, "Circle", {
-                stroke: nodeBorderColor,
-                strokeWidth: 2,
-                width: 64,
-                height: 64,
-                name: "NodeShape",
-                fill: backColor
-            }),
-            this.g(go.Panel, "Table",
-                this.g(go.TextBlock, {
-                    row: 0,
-                    margin: 0,
-                    alignment: go.Spot.Center,
-                    editable: false,
-                    font: "bold " + nodeFontSize + "pt sans-serif",
-                    stroke: "#fff"
-                },
-                    new go.Binding("text", "name").makeTwoWay()
+            this.g(go.Panel, "Auto", {
+                width: nodeWidth,
+                height: nodeHeight
+            },
+                this.g(go.Shape, "Circle", {
+                    stroke: nodeBorderColor,
+                    strokeWidth: 2,
+                    width: 74,
+                    height: 74,
+                    name: "NodeShape",
+                    fill: backColor
+                }),
+                this.g(go.Panel, "Table",
+                    this.g(go.TextBlock, {
+                        row: 0,
+                        margin: 0,
+                        alignment: go.Spot.Center,
+                        editable: false,
+                        font: "bold " + nodeFontSize + "pt sans-serif",
+                        stroke: "#fff"
+                    },
+                        new go.Binding("text", "name").makeTwoWay()
+                    )
                 ),
-                this.makePort((isStart) ? 'B' : 'T', (isStart) ? go.Spot.BottomCenter : go.Spot.TopCenter, isStart, !isStart))
+                this.makePort((isStart) ? 'B' : 'T', (isStart) ? go.Spot.Bottom : go.Spot.Top, isStart, !isStart),
+                this.makePort((isStart) ? 'R' : 'L', (isStart) ? go.Spot.Right : go.Spot.Left, isStart, !isStart)
+            )
         );
     }
 

@@ -54,12 +54,12 @@
                     </p-dataTable>
 
                     <div *ngIf="showAddCondition">
-                        <d3s-admin-workflow-new-condition-editor 
+                        <d3s-workflow-condition-editor 
                                                                  [objectId]="objectId" 
                                                                  [objectType]="objectType" 
                                                                  (onSave)="addCondition($event)" 
                                                                  (onClose)="showAddCondition = false;">
-                        </d3s-admin-workflow-new-condition-editor>
+                        </d3s-workflow-condition-editor>
                     </div>
 
                 </div>

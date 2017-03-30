@@ -20,6 +20,7 @@ import {
     WorkflowObjectType,
     ChangeTypeInfo,
     WorkflowEventRegistration,
+    TransitionTypeInfo,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -300,7 +301,14 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .then(response => <ChangeTypeInfo[]>response.json())
             .catch(err => this.handleError(err));
     }
-    
+
+    getTransitionTypes(): Promise<TransitionTypeInfo[]> {
+        return this.http.get('services/workflow/transitiontypes')
+            .toPromise()
+            .then(response => <TransitionTypeInfo[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getTypes(): Promise<any> {
         return this.http.get('services/workflow/types')
             .toPromise()

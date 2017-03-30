@@ -19,7 +19,6 @@ import { AdminWorkflowNewComponent } from './admin-workflow-new.component';
 import { AdminWorkflowNewListComponent } from './admin-workflow-new-list.component';
 import { AdminWorkflowNewEditorComponent } from './admin-workflow-new-editor.component';
 import { AdminWorkflowNewDeleteComponent } from './admin-workflow-new-delete.component';
-import { AdminWorkflowNewConditionEditorComponent } from './admin-workflow-new-condition-editor.component';
 import { WorkflowItemForm } from './workflow-item.form';
 
 import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
@@ -64,8 +63,7 @@ import {
         AdminWorkflowNewComponent,
         AdminWorkflowNewListComponent,
         AdminWorkflowNewEditorComponent,
-        AdminWorkflowNewDeleteComponent ,
-        AdminWorkflowNewConditionEditorComponent,
+        AdminWorkflowNewDeleteComponent,
         WorkflowItemForm,
     ],
     providers: [

@@ -36,6 +36,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public string Settings { get; set; }
+
+        [DataMember]
+        public string Fields { get; set; }
         [DataMember]
         public string Name { get; set; }
 
@@ -60,6 +63,11 @@ namespace d360.core.entities.Workflow
         public string FromKey { get; set; }
         [DataMember]
         public string ToKey { get; set; }
+
+        [DataMember]
+        public string FromPortID { get; set; }
+        [DataMember]
+        public string ToPortID { get; set; }
         [DataMember]
         public TransitionType TransitionType { get; set; }
         [DataMember]

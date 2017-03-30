@@ -561,7 +561,6 @@
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
     <Content Include="Scripts\app\9.chunk.js" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-new-condition-editor.component.ts" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow-new-editor.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow-new.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-findviarelation.component.html" />
@@ -1093,8 +1092,11 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tiles.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-condition-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-step-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-transition-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowmonitor\workflow-monitor.component.ts" />
