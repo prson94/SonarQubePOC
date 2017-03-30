@@ -39,9 +39,9 @@ namespace d360.model
 
         #region Engine Methods
 
-        public WorkflowItem CreateWorkflowItem(int workflowTypeID, string @object, int objectID, string criteria, bool isTest = false)
+        public WorkflowItem CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, string criteria, bool isTest = false)
         {
-            if(!WorkflowRegistrationCriteriaProcessor.Evaluate(this, @object, objectID, criteria))
+            if(!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, criteria))
             {
                 System.Diagnostics.Debug.WriteLine("CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 
@@ -60,8 +60,8 @@ namespace d360.model
 
             var item = new WorkflowItem
             {
-                Object = @object,
-                ObjectID = objectID,
+                Object = objectInfo.Object.ToString(),
+                ObjectID = objectInfo.ObjectID,
                 Active = true,
                 StartedBy = 0,
                 StartedOn = DateTime.UtcNow,
@@ -86,13 +86,15 @@ namespace d360.model
                 .Where(i => i.FromVersionStepID == firstVersionStep.ID)
                 .ToList();
 
-            StartTransitions(transitions, item.ID);
+            //take any settings from the event registration and apply them in this start step
+
+            StartTransitions(transitions, item.ID, objectInfo);
             
 
             return item;
         }
 
-        private void StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID)
+        private void StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID, EventObjectInfo objectInfo)
         {
             var events = new List<EventInfo>();
 
@@ -105,7 +107,8 @@ namespace d360.model
                     ResourceID = CurrentResourceID,                                        
                     WorkflowItemID = itemID,                    
                     VersionStepTransitionID = transition.ID,
-                    Action = ChangeType.Add // irrelevant
+                    Action = ChangeType.Add, // irrelevant
+                    Object = objectInfo
                 });
             }
             
@@ -120,7 +123,7 @@ namespace d360.model
         /// <param name="versionStepTransitionID"></param>
         /// <param name="itemID"></param>
         /// <returns></returns>
-        public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID)
+        public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo)
         {
             var transition = WorkflowVersionStepTransitions
                 .Where(i => i.ID == versionStepTransitionID).FirstOrDefault();
@@ -184,13 +187,13 @@ namespace d360.model
                     ResourceID = CurrentResourceID,
                     WorkflowItemID = itemID,
                     ItemStepID = toItemStep.ID,                    
-                    Action = ChangeType.Add // irrelevant
+                    Action = ChangeType.Add, // irrelevant
+                    Object = objectInfo
                 });
                 
                 //add topic messages for the transitions
                 QueueSource.CreateTopicMessages(events);
             }
-
         }
 
         /// <summary>
@@ -200,10 +203,18 @@ namespace d360.model
         /// <param name="itemStepID"></param>
         /// <param name="itemID"></param>
         /// <returns></returns>
-        public async Task ExecuteStep(long itemStepID, long itemID)
+        public async Task ExecuteStep(long itemStepID, long itemID, EventObjectInfo objectInfo)
         {
             bool isStepCompleted = false;
             var itemStep = getWorkflowItemStep(itemStepID);
+
+            //if the step is already done exit
+            if (itemStep.CompletedOn.HasValue)
+            {
+                Console.WriteLine($"STEP WITH ID {itemStepID} HAS ALLREADY COMPLETED NOT RERUNNING");
+
+                return;
+            }
 
             var stepType = itemStep.Step.StepType;
             
@@ -219,8 +230,9 @@ namespace d360.model
                         // send form notification to owners
                         await SendFormWorkflowEmail(itemStep.Step, itemStepID, itemID);
                         break;
-                    case WorkflowActivityType.StatusChange:                        
+                    case WorkflowActivityType.StatusChange:
                         // change the status of this item
+                        ChangeItemStatus(objectInfo);
                         isStepCompleted = true;
                         break;
                     default:
@@ -233,6 +245,9 @@ namespace d360.model
                 // if the task is a finish or terminate task we need to mark the workflow instance as completed and the task as completed
                 isStepCompleted = true;
 
+                //mark the visible flag for the specified object as 1
+                if(stepType == StepType.Finish) SetObjectAsVisible(objectInfo); // only finish steps should set objects as visible
+
                 var item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
 
                 if (item == null) throw new Exception("ERROR - CANNOT FIND THE WORKFLOW INSTANCE THAT WE NEED TO MARK AS COMPLETED");
@@ -241,15 +256,54 @@ namespace d360.model
                 item.CompletedOn = DateTime.UtcNow;
                 SaveChanges();
             }
-
+            
             if (isStepCompleted)
             {
-                MarkStepAsCompleteAndContinue(itemStep, itemID);
+                MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
             }
 
         }
 
-        public void MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID)
+        private void ChangeItemStatus(EventObjectInfo objectInfo)
+        {
+            // change the item status to the value specified
+        }
+
+        private void SetObjectAsVisible(EventObjectInfo objectInfo)
+        {
+            switch (objectInfo.Object)
+            {
+                case core.SystemObjects.Artifact:
+                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    artifact.Visible = true;
+                    SaveChanges();
+                    break;                
+                case core.SystemObjects.Intersect:
+                    var intersect = Intersects.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    intersect.Visible = true;
+                    SaveChanges();
+                    break;                
+                case core.SystemObjects.Taxonomy:
+                    var taxonomy = Taxonomies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    taxonomy.Visible = true;
+                    SaveChanges();
+                    break;                                
+                case core.SystemObjects.Policy:
+                    var policy = Policies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    policy.Visible = true;
+                    SaveChanges();
+                    break;                
+                case core.SystemObjects.Rule:
+                    var rule = Rules.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    rule.Visible = true;
+                    SaveChanges();
+                    break;                                             
+                default:
+                    break;
+            }
+        }
+
+        public void MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo)
         {
             // mark step as completed
             itemStep.CompletedOn = DateTime.UtcNow;
@@ -261,7 +315,7 @@ namespace d360.model
             .Where(i => i.FromVersionStepID == itemStep.StepID)
             .ToList();
 
-            StartTransitions(transitions, itemID);
+            StartTransitions(transitions, itemID, objectInfo);
         }
 
         private async Task SendFormWorkflowEmail(WorkflowVersionStep step, long itemStepID, long itemId)

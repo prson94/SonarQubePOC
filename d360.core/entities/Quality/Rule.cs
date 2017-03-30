@@ -37,12 +37,18 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
+        
     }
 
 
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Rule, "Rule")]
     public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
     {
+        public Rule()
+        {
+            Visible = true;
+        }
+
         [DataMember, StringLength(250)]
         public string Name { get; set; }
 
@@ -75,6 +81,8 @@ namespace d360.core.entities
 
         [DataMember, ForeignKey("RuleDimensionID")]
         public RuleDimension Dimension { get; set; }
+
+        public bool Visible { get; set; }
 
         [ForeignKey("RuleID")]
         public virtual ICollection<RuleResult> Results { get; set; }

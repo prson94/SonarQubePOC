@@ -34,6 +34,11 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Policy, "Policy")]
     public class Policy : PolicyModel, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata
     {
+        public Policy()
+        {
+            Visible = true;
+        }
+
         #region Properties
 
         [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed)]
@@ -46,6 +51,8 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; }
 
         public int? UpdatedBy { get; set; }
+
+        public bool Visible { get; set; }
 
         #endregion
 

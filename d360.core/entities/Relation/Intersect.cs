@@ -27,6 +27,8 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
+        public bool Visible { get; set; }
+
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Subject { get; set; }
 

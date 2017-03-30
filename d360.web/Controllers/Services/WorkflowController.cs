@@ -956,6 +956,7 @@ namespace d360.web.Controllers.Services
         {
             try
             {
+                var item = Company.WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
                 var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.ID == itemStepId).FirstOrDefault();
 
                 if(itemStepsModel == null)
@@ -990,8 +991,14 @@ namespace d360.web.Controllers.Services
                 Company.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
                 Company.SaveChanges();
 
+                var @object = (SystemObjects)Enum.Parse(typeof(SystemObjects), item.Object);
+                
+                var obj = Company.GetObjectDetail(@object, item.ObjectID);
+
+                var type  = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj.Type);
+
                 //complete step and go to transitions
-                Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId);
+                Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = obj.TypeID, ObjectType = type } );
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
             }            

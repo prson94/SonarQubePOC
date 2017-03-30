@@ -18,7 +18,7 @@ namespace d360.jobs.subscriber.Workflow
 {
     public class Program: FunctionsBase
     {
-        public static int MAX_NUMBER_OF_WORKFLOW_EVENTS = 100;
+        public static int MAX_NUMBER_OF_WORKFLOW_EVENTS = 25;
 
         public static async Task ProcessTopicMessage([ServiceBusTrigger("%topicname%", "Workflow", AccessRights.Listen)] BrokeredMessage message)
         {            
@@ -50,7 +50,7 @@ namespace d360.jobs.subscriber.Workflow
 
                     if (registration != null)
                     {
-                        var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object.Object.ToString(), info.Object.ObjectID, registration.Condition);
+                        var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object, registration.Condition);
                     }
                 }
                 else {
@@ -75,11 +75,11 @@ namespace d360.jobs.subscriber.Workflow
 
                     if (info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
                     {
-                        await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID);
+                        await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID, info.Object);
                     }
                     else if (info.ItemStepID > 0) // this event is to evauluate a workflow step
                     {
-                        await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID);
+                        await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info.Object);
                     }
                 }          
             }

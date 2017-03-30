@@ -11,6 +11,11 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Taxonomy, "Taxonomy")]
     public class Taxonomy : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
+        public Taxonomy()
+        {
+            Visible = true;
+        }
+
         [DataMember]
         public int? ParentID { get; set; }
 
@@ -34,6 +39,8 @@ namespace d360.core.entities
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
+
+        public bool Visible { get; set; }
 
         #region Navigation Properties
 

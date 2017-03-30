@@ -8,7 +8,10 @@ using System.Xml.Linq;
 namespace d360.model.workflow
 {
     public class WorkflowEmailModel
-    {        
+    {
+        private static string MISSING_SUBJECT_VALUE = "Data3Sixty - Workflow Email notification (missing subject)";
+        private static string MISSING_BODY_VALUE = "Data3Sixty - Workflow Email (missing body).  You are receiving this email due to a Data3Sixty workflow with an email task.  The task has been improperly configured so it doesnt have any email content";
+
         public string SubjectTemplate { get; set; }
         public string BodyTemplate { get; set; }
 
@@ -21,8 +24,8 @@ namespace d360.model.workflow
 
             return new WorkflowEmailModel
             {
-                SubjectTemplate = subject,
-                BodyTemplate = body
+                SubjectTemplate = subject ?? MISSING_SUBJECT_VALUE,
+                BodyTemplate = body ?? MISSING_BODY_VALUE
             };
         }
 

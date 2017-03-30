@@ -12,6 +12,11 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Artifact, "Artifact")]
     public class Artifact : BaseIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
+        public Artifact()
+        {
+            Visible = true;
+        }
+
         #region Properties
 
         [DataMember]
@@ -90,6 +95,8 @@ namespace d360.core.entities
 
             set { this.createdon = value; }
         }
+
+        public bool Visible { get; set; }
 
         private DateTime? createdon = null;
 
