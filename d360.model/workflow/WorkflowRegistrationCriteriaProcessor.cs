@@ -86,7 +86,7 @@ namespace d360.model.workflow
 
             foreach (var expr in exprXml.Elements("Condition"))
             {
-                expression.Add(WorkflowCriteriaExpressionModel.Parse(expr));
+                expression.Add(WorkflowCriteriaExpressionModel.Parse(expr));                
             }
         }
     }

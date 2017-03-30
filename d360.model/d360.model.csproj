@@ -163,6 +163,7 @@
     <Compile Include="workflow\WorkflowCriteriaExpressionModel.cs" />
     <Compile Include="workflow\WorkflowEmailModel.cs" />
     <Compile Include="workflow\WorkflowRegistrationCriteriaProcessor.cs" />
+    <Compile Include="workflow\WorkflowStatusModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">

@@ -1116,8 +1116,12 @@ namespace d360.web.Controllers.Services
             var types = Company.Query<dynamic>(sql, new { id = objectID, type = new Dapper.DbString { Value = objectType, IsFixedLength = true, Length = 50, IsAnsi = true } }).ToList();
 
             foreach (var type in types)
-            {                
-                type.ConditionText = WorkflowRegistrationCriteriaProcessor.ToPlainText(Company, type.Condition);
+            {
+                try
+                {
+                    type.ConditionText = WorkflowRegistrationCriteriaProcessor.ToPlainText(Company, type.Condition);
+                }
+                catch { }
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, types);
