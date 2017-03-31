@@ -14,6 +14,8 @@ namespace d360.model.workflow
         public int FieldTypeId { get; set; }
         public CriteriaOperator Operator { get; set; }
         public CriteriaValueDataType ValueDataType { get; set; }
+        public int FormInputId { get; set; }
+        public int VersionStepId { get; set; }
 
 
         public static WorkflowCriteriaExpressionModel Parse(XElement element)
@@ -22,10 +24,12 @@ namespace d360.model.workflow
 
             return new WorkflowCriteriaExpressionModel
             {
-                FieldTypeId = int.Parse((string)element.Attribute("FieldTypeID")),
+                FieldTypeId = int.Parse(((string)element.Attribute("FieldTypeID") ?? "0")),
                 Operator = operatorFromString((string)element.Attribute("Operator")),
                 ValueDataType = dataType,
-                Value = valueFromString(dataType, (string)element.Attribute("Value"))
+                Value = valueFromString(dataType, (string)element.Attribute("Value")),
+                VersionStepId = int.Parse(((string)element.Attribute("VersionStepID") ?? "0")),
+                FormInputId = int.Parse(((string)element.Attribute("FormInputID") ?? "0")),
             };
         }
 
@@ -111,7 +115,7 @@ namespace d360.model.workflow
             switch (type)
             {
                 case CriteriaValueDataType.Invalid:
-                    throw new Exception("ERROR - INVALID DATA TYPE SPECIFIED FOR VALUE.");                    
+                    return val;
                 case CriteriaValueDataType.Boolean:
                     return (val ?? "").ToUpper() == bool.TrueString.ToUpper() ? true : false;                    
                 case CriteriaValueDataType.String:

@@ -11,7 +11,7 @@ namespace d360.model.workflow
     {
         internal static List<WorkflowCriteriaExpressionModel> expression;
 
-        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria)
+        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -21,7 +21,7 @@ namespace d360.model.workflow
             PopulateExpressionFromXml(criteria);
 
             //load the values for each of the fields for the given object
-            return EvaluateObject(context, @object, objectId);            
+            return EvaluateObject(context, @object, objectId, itemId);            
         }
 
         public static string ToPlainText(CompanyContext context, string criteria)
@@ -49,7 +49,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(CompanyContext context, string @object, int objectId)
+        private static bool EvaluateObject(CompanyContext context, string @object, int objectId, long itemId)
         {
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
 
@@ -58,11 +58,43 @@ namespace d360.model.workflow
 
             foreach (var item in expression)
             {
-                var value = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
+                if (item.FieldTypeId > 0)
+                {
+                    var value = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
 
-                if (value == null) return false;
+                    if (value == null) return false;
 
-                if (!item.IsValueMatch(value.FormattedValue)) return false;
+                    if (!item.IsValueMatch(value.FormattedValue)) return false;
+                }
+                else if(item.VersionStepId > 0)
+                {
+                    //load the results of the form version step
+                    var formStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).FirstOrDefault();
+                    
+                    if(formStep == null)
+                    {
+                        Console.WriteLine("DEBUG - CANNOT FIND THE RESULTS OF THE FORM STEP SELECTED.");
+
+                        return false;
+                    }
+
+                    //get the results of the form input with the specified id
+                    var xml = formStep.Fields;
+
+                    if(string.IsNullOrEmpty(xml))
+                    {
+                        Console.WriteLine("DEBUG - FORM RESULT HAS NO XML");
+
+                        return false;
+                    }
+
+                    var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
+
+                    //check if the value matches
+                    var formValue = formModel.GetFormValueById(item.FormInputId);
+
+                    return string.Compare(formValue, (item.Value.ToString()??"").Trim(), true) == 0;
+                }
             }
 
             return true;

@@ -966,18 +966,15 @@ namespace d360.web.Controllers.Services
 
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append("<settings>");
+                sb.Append("<fields><form>");
 
                 foreach (var field in model)
-                {
-                    sb.Append("<form>");
+                {                    
                     var val = field.Value != null ? field.Value.ToString() : "";
-                    sb.Append($"<field id=\"{field.ID}\" label=\"{field.Label}\" value=\"{val}\" fieldtype=\"{field.FieldType.ToString().ToLower()}\"></field>");
-                    sb.Append("</form>");
+                    sb.Append($"<field id=\"{field.ID}\" label=\"{field.Label}\" value=\"{val}\" fieldtype=\"{field.FieldType.ToString().ToLower()}\"></field>");                    
                 }
-
-
-                sb.Append("</settings>");
+                
+                sb.Append("</form></fields>");
 
                 if (itemStepsModel == null)
                 {

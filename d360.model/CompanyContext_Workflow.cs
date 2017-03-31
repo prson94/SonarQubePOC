@@ -41,7 +41,7 @@ namespace d360.model
 
         public WorkflowItem CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, bool isTest = false)
         {
-            Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR ${objectInfo.Object} - ${objectInfo.ObjectID}");
+            Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR ${objectInfo.Object} - {objectInfo.ObjectID}");
 
             if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition))
             {
@@ -175,7 +175,7 @@ namespace d360.model
 
                     if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");
                     //evaluate the condition then determine if we move to next step
-                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition);                    
+                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID);                    
                     break;                                
             }
 
@@ -241,15 +241,18 @@ namespace d360.model
             //if the step is already done exit
             if (itemStep.CompletedOn.HasValue)
             {
-                Console.WriteLine($"STEP WITH ID {itemStepID} HAS ALLREADY COMPLETED NOT RERUNNING");
+                Console.WriteLine($"STEP WITH ID {itemStepID} HAS ALREADY COMPLETED NOT RERUNNING");
 
                 return;
             }
-
+                        
             var stepType = itemStep.Step.StepType;
-            
+
+            Console.WriteLine($"Debug - Processing step of type {stepType}");
+
             if (stepType == StepType.Task)
             {
+                Console.WriteLine($"Debug - Processing workflow task of type {itemStep.Step.ActivityType}");
                 switch (itemStep.Step.ActivityType)
                 {
                     case WorkflowActivityType.EmailNotification:
@@ -272,6 +275,7 @@ namespace d360.model
             }
             else if(stepType == StepType.Finish || stepType == StepType.Terminate)
             {
+                
                 // if the task is a finish or terminate task we need to mark the workflow instance as completed and the task as completed
                 isStepCompleted = true;
 
@@ -291,7 +295,6 @@ namespace d360.model
             {
                 MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
             }
-
         }
 
         private void ChangeItemStatus(WorkflowVersionStep step, EventObjectInfo objectInfo)
@@ -321,6 +324,8 @@ namespace d360.model
 
         private void SetObjectVisibility(EventObjectInfo objectInfo, bool visiblity = true)
         {
+            Console.WriteLine($"Debug - Setting Object {objectInfo.Object} {objectInfo.ObjectID} as visible {visiblity}");
+
             switch (objectInfo.Object)
             {
                 case core.SystemObjects.Artifact:
