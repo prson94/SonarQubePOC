@@ -17,7 +17,7 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                             <div class="col s12">
                                 <div class="tile tile-detail">
                                     <header>Workflows</header>
-                                    <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;loadWorkflowItems(selected)">
+                                    <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChange)="selected=null;loadWorkflowItems($event)">
                                         <p-column field="Name" header="Name" [sortable]="true"></p-column>
                                         <p-column field="ChangeType" header="Change Type" [sortable]="true">
                                             <template let-col let-workflow="rowData" pTemplate type="body">
@@ -125,6 +125,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
         this.itemdetails = [];    
         this.workflowService.getWorkflowItems(selected.ID)
             .then(res => {
+                this.selected = selected;
                 this.details = res;
                 if (!this.selectedItem && this.details && this.details.length > 0) {
                     this.selectedItem = this.details[0];
