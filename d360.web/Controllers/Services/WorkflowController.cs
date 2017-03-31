@@ -1014,6 +1014,13 @@ namespace d360.web.Controllers.Services
         [Route("form/{typeID:int}/{itemStepID:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, int itemStepID)
         {
+            var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).FirstOrDefault();
+
+            if(itemStep == null)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW ITEM ID,  CANNOT FIND WORKFLOWITEMSTEP WITH SPECIFIED ID.");
+            }
+            
             string sql = @"
                     SELECT vs.[Fields]      
                       FROM 
@@ -1046,7 +1053,8 @@ namespace d360.web.Controllers.Services
             {
                 Fields = properties,
                 Title = title ?? "",
-                Description = desc ?? ""
+                Description = desc ?? "",
+                IsCompleted = itemStep.CompletedOn.HasValue
             });
         }
 

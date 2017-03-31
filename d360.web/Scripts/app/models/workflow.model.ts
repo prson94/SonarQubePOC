@@ -267,6 +267,7 @@ export class WorkflowForm {
     Fields: WorkflowFormField[]=[];
     Title: string;
     Description: string;
+    IsCompleted: boolean;
 }
 
 export class WorkflowListItem {

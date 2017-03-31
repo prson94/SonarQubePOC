@@ -101,7 +101,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.title = res.Title;
                 this.description = res.Description;
                 this.fields = res.Fields;
-                this.isLoading = false;                
+                this.isLoading = false;
+                this.isCompleted = res.IsCompleted;           
             });
     }
 };
