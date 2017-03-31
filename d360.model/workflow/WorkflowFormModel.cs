@@ -18,7 +18,13 @@ namespace d360.model.workflow
             var model = new WorkflowFormModel();
             model.Fields = new List<WorkflowFormFieldModel>();
 
-            foreach (var field in xml.Elements("form"))
+            var form = xml.Elements("form");
+
+            if (form == null) return model;
+
+            var fields = form.Elements("field");
+
+            foreach (var field in fields)
             {
                 model.Fields.Add(
                         new WorkflowFormFieldModel

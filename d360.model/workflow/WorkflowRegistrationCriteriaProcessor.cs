@@ -53,9 +53,6 @@ namespace d360.model.workflow
         {
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
 
-            // no fields with an expression means no match
-            if (!fields.Any() && expression.Count > 0) return false;
-
             foreach (var item in expression)
             {
                 if (item.FieldTypeId > 0)

@@ -971,7 +971,13 @@ namespace d360.web.Controllers.Services
                 foreach (var field in model)
                 {                    
                     var val = field.Value != null ? field.Value.ToString() : "";
-                    sb.Append($"<field id=\"{field.ID}\" label=\"{field.Label}\" value=\"{val}\" fieldtype=\"{field.FieldType.ToString().ToLower()}\"></field>");                    
+
+                    if (field.FieldType == WorkflowFormModelFieldType.boolean) {
+                        var boolVal = (val ?? "").ToUpper() == "TRUE" ? "TRUE" : "FALSE";
+                        sb.Append($"<field id=\"{field.ID}\" label=\"{field.Label}\" value=\"{boolVal}\" fieldtype=\"{field.FieldType.ToString().ToLower()}\"></field>");
+                    }
+                    else
+                        sb.Append($"<field id=\"{field.ID}\" label=\"{field.Label}\" value=\"{val}\" fieldtype=\"{field.FieldType.ToString().ToLower()}\"></field>");                    
                 }
                 
                 sb.Append("</form></fields>");
@@ -1005,17 +1011,18 @@ namespace d360.web.Controllers.Services
             }
         }
 
-        [Route("form/{versionStepID:int}/{itemStepID:int}"), HttpGet]
-        public async Task<HttpResponseMessage> GetWorkflowForm(int versionStepID, int itemStepID)
+        [Route("form/{typeID:int}/{itemStepID:int}"), HttpGet]
+        public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, int itemStepID)
         {
             string sql = @"
-                    SELECT [Fields]      
+                    SELECT vs.[Fields]      
                       FROM 
-	                    [workflow].[VersionStep]
-                     where id = @id
+	                    [workflow].[VersionStep] vs
+                        inner join [workflow].[itemstep] wis on(vs.id = wis.stepid)
+                     where wis.id = @id
                 ";
 
-            var xml = (await Company.QueryAsync<string>(sql, new { id = versionStepID })).FirstOrDefault();
+            var xml = (await Company.QueryAsync<string>(sql, new { id = itemStepID })).FirstOrDefault();
 
             if (string.IsNullOrEmpty(xml))
             {
