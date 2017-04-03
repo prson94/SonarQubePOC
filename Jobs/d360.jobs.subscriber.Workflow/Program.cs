@@ -52,7 +52,7 @@ namespace d360.jobs.subscriber.Workflow
 
                     if (registration != null)
                     {
-                        var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object, registration);
+                        var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID);
                     }
                 }
                 else {

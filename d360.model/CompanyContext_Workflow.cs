@@ -39,7 +39,7 @@ namespace d360.model
 
         #region Engine Methods
 
-        public WorkflowItem CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, bool isTest = false)
+        public WorkflowItem CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false)
         {
             Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR ${objectInfo.Object} - {objectInfo.ObjectID}");
 
@@ -67,7 +67,7 @@ namespace d360.model
                 Object = objectInfo.Object.ToString(),
                 ObjectID = objectInfo.ObjectID,
                 Active = true,
-                StartedBy = 0,
+                StartedBy = requestorId,
                 StartedOn = DateTime.UtcNow,
                 UpdatedBy = 0,
                 UpdatedOn = DateTime.UtcNow,
