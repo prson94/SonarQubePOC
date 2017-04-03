@@ -39,18 +39,48 @@ import * as _ from 'lodash';
         </div>
     </div>
 </div>
-<div class="row">
+<div [ngSwitch]="transition.transitionType">
+    <div *ngSwitchCase="TransitionType.Condition" class="row">
+        <div class="col s12">
+            <header>&nbsp;<d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions></header>
+            <p-dataTable [value]="transition.condition" selectionMode="single">
+                <p-column field="fieldName" header="Field Name"></p-column>
+                <p-column field="Operator" header="Operator"></p-column>
+                <p-column field="Value" header="Value"></p-column>
+                <p-column>
+                    <template let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">
+                            <a style="cursor:pointer;" (click)="remove(item)"><i class="fa fa-trash"></i></a>
+                        </div>
+                    </template>
+                </p-column>
+            </p-dataTable>
+            
+            <d3s-workflow-condition-editor
+                *ngIf="showAddCondition"
+                [objectId]="objectId" 
+                [objectType]="objectType" 
+                (onSave)="addCondition($event)" 
+                (onClose)="showAddCondition = false;">
+            </d3s-workflow-condition-editor>
 
+        </div>
+    </div>
 </div>
 `
 })
 
 export class WorkflowTransitionEditorComponent extends BaseComponent implements OnInit {
+    @Input() objectId: number;
+    @Input() objectType: string;
     @Input() transition: LinkModel;
     @Output() transitionChange = new EventEmitter();
 
     private originalTransition: LinkModel;
     private transitionTypes: TransitionTypeInfo[] = [];
+    private showAddCondition = false;
+
+    TransitionType = TransitionType;
 
     constructor(private workflowService: WorkflowService) {
         super();
@@ -63,5 +93,20 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
             .then(r => {
                 this.transitionTypes = r;
             });
+    }
+
+    add() {
+        this.showAddCondition = true;
+    }
+
+    remove(e: EventCondition) {
+        let i = this.transition.condition.findIndex(c => c == e);
+        this.transition.condition.splice(i, 1);
+    }
+
+    addCondition(e: EventCondition) {
+        this.transition.condition.push(e);
+        this.showAddCondition = false;
+        this.transitionChange.emit(this.transition);
     }
 }

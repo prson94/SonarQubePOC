@@ -940,7 +940,10 @@ namespace d360.web.Controllers.Services
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
             nodes.ForEach(n => n.ParseSettings());
-            links.ForEach(l => l.ParseCondition());
+            links.ForEach(l => l.ConditionObject = DeserializeCondition(l.Condition));
+
+            @event.ConditionObject = DeserializeCondition(@event.Condition);
+            @event.SettingsObject = (@event.Settings == null) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XDocument.Parse(@event.Settings)));
 
             return new WorkflowDiagramModel
             {
@@ -1215,7 +1218,8 @@ namespace d360.web.Controllers.Services
 
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
-            @event.ConditionObject = DeserializeEventCondition(@event.Condition);
+            @event.ConditionObject = DeserializeCondition(@event.Condition);
+            @event.SettingsObject = (@event.Settings == null) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XDocument.Parse(@event.Settings)));
 
             return Request.CreateResponse(HttpStatusCode.OK, new { Type = type, Event = @event });
         }
@@ -1295,8 +1299,9 @@ namespace d360.web.Controllers.Services
                             @event.ObjectID = model.Event.ObjectID;
                             @event.TypeID = model.Type.ID;
                             @event.ChangeType = model.Event.ChangeType;
-                            @event.Condition = SerializeEventCondition(JsonConvert.DeserializeObject(model.Event.Condition));
-                           
+                            @event.Condition = SerializeCondition(JsonConvert.DeserializeObject(model.Event.Condition));
+                            @event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
+
 
                             Company.Add(@event);
                             Company.SaveChanges();
@@ -1310,7 +1315,8 @@ namespace d360.web.Controllers.Services
                             @event.TypeID = model.Type.ID;
                             @event.ChangeType = model.Event.ChangeType;
                             
-                            @event.Condition = SerializeEventCondition(JsonConvert.DeserializeObject(model.Event.Condition));
+                            @event.Condition = SerializeCondition(JsonConvert.DeserializeObject(model.Event.Condition));
+                            @event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
 
                             Company.SaveChanges();
 
@@ -1395,7 +1401,7 @@ namespace d360.web.Controllers.Services
                                 link.ToVersionStepID = keyMapping[to];
                                 link.Name = l.Name ?? "";
                                 link.TransitionType = l.TransitionType;
-                                link.Condition = null; //TODO: parse condition
+                                link.Condition = SerializeCondition(l.ConditionObject);
                                 link.FromPortID = l.FromPortID;
                                 link.ToPortID = l.ToPortID;
 
@@ -1412,6 +1418,7 @@ namespace d360.web.Controllers.Services
                                     link.Condition = null;
                                     link.FromPortID = l.FromPortID;
                                     link.ToPortID = l.ToPortID;
+                                    link.Condition = SerializeCondition(l.ConditionObject);
                                 }
                             }
                         });
@@ -1466,7 +1473,7 @@ namespace d360.web.Controllers.Services
 
         #region Helper Methods
 
-        private string SerializeEventCondition(dynamic json)
+        private string SerializeCondition(dynamic json)
         {
 
             if (json == null)
@@ -1484,12 +1491,12 @@ namespace d360.web.Controllers.Services
             return sb.ToString();
         }
 
-        private dynamic DeserializeEventCondition(string condition)
+        private dynamic DeserializeCondition(string condition)
         {
             if (string.IsNullOrEmpty(condition))
                 return null;
-            
-            return JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XElement.Parse(condition)));
+
+            return JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XElement.Parse(condition), Formatting.None, true));
         }
 
        

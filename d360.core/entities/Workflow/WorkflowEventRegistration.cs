@@ -29,6 +29,9 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public string Settings { get; set; }
 
+        [DataMember, NotMapped]
+        public dynamic SettingsObject { get; set; }
+
         [IgnoreDataMember, ForeignKey("TypeID")]
         public virtual Type Type { get; set; }
     }

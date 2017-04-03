@@ -34,6 +34,9 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     private objectType: string;
     private objectId: number;
     private saveButtonText: string = 'Next';
+    private hideObject: boolean = false;
+
+    WorkflowChangeType = WorkflowChangeType;
 
     constructor(private workflowService: WorkflowService) {
         super();
@@ -63,18 +66,22 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                         .then(r => {
                             this.model = r
 
+                            if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null) {
+                                this.hideObject = (this.model.Event.SettingsObject.Settings.Visible == "false") ? true : false;
+                            }
+
                             this.selectedObjectType = this.model.Event.Object + '|' + this.model.Event.ObjectID.toString();
                             this.objectId = this.model.Event.ObjectID;
                             this.objectType = this.model.Event.Object;
 
                             console.log(r);
 
-                            if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Conditions != null) {
+                            if (this.model.Event.ConditionObject != null) {
                                 let cond = [];
-                                if (this.model.Event.ConditionObject.Conditions.length == null)
-                                    cond.push(this.model.Event.ConditionObject.Conditions.Condition);
+                                if (this.model.Event.ConditionObject.length == null)
+                                    cond.push(this.model.Event.ConditionObject.Condition);
                                 else
-                                    cond = this.model.Event.ConditionObject.Conditions.Condition;
+                                    cond = this.model.Event.ConditionObject.Condition;
 
                                 cond.forEach(c => {
                                     this.conditions.push({
@@ -98,7 +105,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                         });
                 }
             })
-            .then(() => this.isLoading = false);
+            .then(() => { this.isLoading = false; console.log(this.model) });
 
     }
 
@@ -133,10 +140,15 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     }
 
     save() {
+        this.model.Event.SettingsObject = {};
+        this.model.Event.SettingsObject.Settings = {};
+        this.model.Event.SettingsObject.Settings.Visible = !this.hideObject;
+
         this.model.Event.conditions = this.conditions;
         this.model.Event.Object = this.objectType;
         this.model.Event.ObjectID = this.objectId;
         this.model.Event.Condition = JSON.stringify(this.conditions);
+        this.model.Event.Settings = JSON.stringify( this.model.Event.SettingsObject );
 
         this.isLoading = true;
         this.workflowService.saveWorkflowDiagramModel(this.model)

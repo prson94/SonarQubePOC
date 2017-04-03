@@ -40,10 +40,20 @@
                 </div>
                 <div *ngSwitchCase="'edit'">
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
-                        <d3s-workflow-step-editor [step]="selectedData" (stepChange)="changeStep($event)"></d3s-workflow-step-editor>
+                        <d3s-workflow-step-editor 
+                                                  [objectId]="model.Event.ObjectID" 
+                                                  [objectType]="model.Event.Object" 
+                                                  [step]="selectedData" 
+                                                  (stepChange)="changeStep($event)">
+                        </d3s-workflow-step-editor>
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
-                        <d3s-workflow-transition-editor [transition]="selectedData" (transitionChange)="changeTransition($event)"></d3s-workflow-transition-editor>
+                        <d3s-workflow-transition-editor 
+                                                        [objectId]="model.Event.ObjectID" 
+                                                        [objectType]="model.Event.Object" 
+                                                        [transition]="selectedData" 
+                                                        (transitionChange)="changeTransition($event)">
+                        </d3s-workflow-transition-editor>
                     </div>
                 </div>
             </div>

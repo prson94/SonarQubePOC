@@ -52,7 +52,7 @@ import * as _ from 'lodash';
             <div class="col s12">
                 <div class="FieldName">Status</div>
                 <div>
-                    <select [ngModel]="step.settings.Status" (ngModelChange)="step.settings.Status = $event; stepChange.emit(step)">
+                    <select [ngModel]="step.settings.Status" (ngModelChange)="step.settings.Status = $event; stepChange.emit(step)" style="width: 95%">
                         <option value=""></option>
                         <option *ngFor="let s of status" [value]="s">{{s}}</option>
                     </select>
@@ -68,6 +68,8 @@ import * as _ from 'lodash';
 })
 
 export class WorkflowStepEditorComponent extends BaseComponent implements OnInit {
+    @Input() objectId: number;
+    @Input() objectType: string;
     @Input() step: NodeModel;
     @Output() stepChange = new EventEmitter();
 

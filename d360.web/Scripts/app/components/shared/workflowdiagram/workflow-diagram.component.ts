@@ -16,6 +16,7 @@ import {
     WorkflowListItem,
     WorkflowChangeType,
 } from '../../../models/workflow.model';
+import { FieldType } from '../../../models/fields.model';
 
 import { MenuItem } from 'primeng/primeng';
 
@@ -45,6 +46,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     TransitionType = TransitionType;
     WorkflowChangeType = WorkflowChangeType;
     model: WorkflowDiagramModel;
+    fieldTypes: FieldType[] = [];
 
     //diagram properties
     private g = go.GraphObject.make;
@@ -97,6 +99,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private initializeDiagram() {
+        
         this.myDiagram = this.createDiagram();
 
         this.myDiagram.nodeTemplateMap.add('task', this.createTaskNode());
@@ -157,11 +160,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 console.log(this.model);
                 this.parseData(this.model);
             })
-            //.then(() => this.workflowService.getWorkflowTypeModel(this.id))
-            //.then(r => {
-            //    if (this.model == null)
-            //        this.workflow = r;
-            //})
+            .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
+            .then(r => this.fieldTypes = r)
             .then(() => { this.isLoading = false; console.log('model: ', this.model); });
 
 
@@ -238,16 +238,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             });
 
             (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
-                //let k = new WorkflowDiagramLink();
-                //k.ToKey = (<any>l).to;
-                //k.FromKey = (<any>l).from;
-                //k.FromPortID = (<any>l).frompid;
-                //k.ToPortID = (<any>l).topid;
-
-                //let t = (<any>l).transitionType;
-                
-                //k.TransitionType = (t == null) ? 1 : t;
-                //links.push(k);
                 links.push(this.convertToWorkflowModel(<LinkModel>l));
             });
 
@@ -284,12 +274,43 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             let m: WorkflowDiagramLink = <WorkflowDiagramLink>model;
             let n = new LinkModel();
 
+            if (m.ConditionObject != null) {
+                let cond = [];
+                n.condition = [];
+
+                if (m.ConditionObject.Condition.length != undefined) {
+                    cond = m.ConditionObject.Condition;
+                } else {
+                    cond.push(m.ConditionObject.Condition);
+                }
+
+                cond.forEach(c => {
+                    n.condition.push({
+                        fieldName: '',
+                        FieldTypeID: c['@FieldTypeID'],
+                        Operator: c['@Operator'],
+                        Value: c['@Value'],
+                        ValueType: c['@ValueType']
+                    });
+                });
+
+                n.condition.forEach(c => {
+                    let i = this.fieldTypes.findIndex(f => f.ID == c.FieldTypeID);
+                    if (i >= 0)
+                       c.fieldName = this.fieldTypes[i].FriendlyName;
+                });
+
+            } else {
+                n.condition = [];
+            }
+
+            
+
             n.diagramObjectType = DiagramObjectType.Link;
             n.category = '';
             n.from = m.FromKey;
             n.to = m.ToKey;
             n.key = m.Key;
-            n.condition = m.Condition;
             n.transitionType = m.TransitionType;
             n.frompid = m.FromPortID;
             n.topid = m.ToPortID;
@@ -324,6 +345,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 n.category = 'start';
             else if (m.StepType == StepType.Finish)
                 n.category = 'finish';
+            else if (m.StepType == StepType.Terminate)
+                n.category = 'finish';
 
             return n;
 
@@ -343,7 +366,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.ToKey = m.to;
             n.TransitionType = m.transitionType;
             n.Name = m.name;
-            n.Condition = JSON.stringify({ Conditions: m.condition });
+            n.ConditionObject = m.condition;
             n.FromPortID = m.frompid;
             n.ToPortID = m.topid;
 

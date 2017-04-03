@@ -211,7 +211,7 @@ export class LinkModel {
     topid: string;
 
     transitionType: TransitionType = TransitionType.Always;
-    condition: any = {};
+    condition: any = [];
 
 }
 
@@ -290,8 +290,9 @@ export class WorkflowEventRegistration {
     ObjectID: number;
     ChangeType: WorkflowChangeType;
     Condition: string;
-    ConditionObject: any;
+    ConditionObject: any = {};
     Settings: string;
+    SettingsObject: any = {};
 
     conditions: EventCondition[] = [];
 }
