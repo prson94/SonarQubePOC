@@ -187,8 +187,10 @@ namespace d360.model
 
                 // insert item step record for the to item step
 
+                Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
+
                 var toItemStep = new WorkflowItemStep { StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID,
-                    Step = transition.ToVersionStep,
+                    StepID = transition.ToVersionStepID,
                     Fields = "<fields/>", Settings = "<settings/>",
                     ItemID = itemID };
 
