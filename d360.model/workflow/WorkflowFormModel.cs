@@ -32,7 +32,7 @@ namespace d360.model.workflow
                             FieldType = (string)field.Attribute("fieldtype"),
                             Label = (string)field.Attribute("label"),
                             Value = (string)field.Attribute("value"),
-                            ID = int.Parse(((string)field.Attribute("id"))??"0")
+                            ID = ((string)field.Attribute("id"))
                         }
                     );
             }
@@ -40,7 +40,7 @@ namespace d360.model.workflow
             return model;
         }
 
-        public string GetFormValueById(int id)
+        public string GetFormValueById(string id)
         {
             var res = Fields.Where(x => x.ID == id).FirstOrDefault();
 

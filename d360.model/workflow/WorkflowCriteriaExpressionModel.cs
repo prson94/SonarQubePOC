@@ -14,7 +14,7 @@ namespace d360.model.workflow
         public int FieldTypeId { get; set; }
         public CriteriaOperator Operator { get; set; }
         public CriteriaValueDataType ValueDataType { get; set; }
-        public int FormInputId { get; set; }
+        public string FormInputId { get; set; }
         public int VersionStepId { get; set; }
 
 
@@ -29,7 +29,7 @@ namespace d360.model.workflow
                 ValueDataType = dataType,
                 Value = valueFromString(dataType, (string)element.Attribute("Value")),
                 VersionStepId = int.Parse(((string)element.Attribute("VersionStepID") ?? "0")),
-                FormInputId = int.Parse(((string)element.Attribute("FormInputID") ?? "0")),
+                FormInputId = ((string)element.Attribute("FormInputID"))
             };
         }
 
