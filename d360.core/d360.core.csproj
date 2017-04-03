@@ -294,6 +294,7 @@
     <Compile Include="enums\Workflow\ActivityType.cs" />
     <Compile Include="enums\Workflow\CriteriaValueDataType.cs" />
     <Compile Include="enums\Workflow\ChangeType.cs" />
+    <Compile Include="enums\Workflow\EmailTaskRecipientType.cs" />
     <Compile Include="enums\Workflow\TransitionType.cs" />
     <Compile Include="enums\Workflow\StepType.cs" />
     <Compile Include="entities\Workflow\WorkflowItem.cs" />

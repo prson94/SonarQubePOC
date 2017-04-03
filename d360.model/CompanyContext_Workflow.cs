@@ -431,11 +431,7 @@ namespace d360.model
         }
 
         private async Task SendWorkflowEmail(WorkflowItemStep item)
-        {
-            
-            //the recipient of the email needs to be configurable owner, workflow initiator or some other 
-            // call proc for details who to email
-            //var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = step.Version.TypeID });
+        {            
 
             if (string.IsNullOrEmpty(item.Step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
 
@@ -451,16 +447,40 @@ namespace d360.model
 
                 return;
             }
-            var res = GlobalReportingResources.Where(x => x.ResourceID == item.Item.StartedBy).FirstOrDefault();
 
-            if(res == null)
+            if (emailSettings.RecipientType == EmailTaskRecipientType.Initiator)
             {
-                Console.WriteLine("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO EMAIL.");
+                var res = GlobalReportingResources.Where(x => x.ResourceID == item.Item.StartedBy).FirstOrDefault();
 
-                return;
+                if (res == null)
+                {
+                    Console.WriteLine("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO EMAIL.");
+
+                    return;
+                }
+
+                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate);
             }
-            await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate);
-            
+            else if(emailSettings.RecipientType == EmailTaskRecipientType.Owner)
+            {
+                var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = item.Step.Version.TypeID });
+
+                foreach (var user in users)
+                {
+                    await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate);
+                }
+            }
+            else if(emailSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
+            {
+                if(string.IsNullOrEmpty(emailSettings.SpecificUser))
+                {
+                    Console.Write("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER EMAIL TASK.");
+
+                    return;
+                }
+
+                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, emailSettings.SpecificUser, "", emailSettings.BodyTemplate);
+            }
         }
 
         public void DetermineTransitionBasedOnPreviousStepConditions(long itemStepID)

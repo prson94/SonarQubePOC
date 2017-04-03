@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.enums.Workflow;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,10 @@ namespace d360.model.workflow
         public string SubjectTemplate { get; set; }
         public string BodyTemplate { get; set; }
 
+        public EmailTaskRecipientType RecipientType { get; set; }
+
+        public string SpecificUser { get; set; }
+
         public static WorkflowEmailModel ParseFromXml(XElement xml)
         {
             if (xml == null) throw new Exception("INVALID XML SPECIFIED");
@@ -22,10 +27,24 @@ namespace d360.model.workflow
             var subject = xml.Element("MessageSubjectTemplate").Value;
             var body = xml.Element("MessageBodyTemplate").Value;
 
+            var specificUser = "";
+
+            if (xml.Element("MessageToUser") != null)
+                specificUser = xml.Element("MessageToUser").Value;            
+
+            var messageRecipientType = EmailTaskRecipientType.Initiator;
+
+            if (xml.Element("MessageRecipientType") != null)
+            {
+                messageRecipientType = (EmailTaskRecipientType)Enum.Parse(typeof(EmailTaskRecipientType), xml.Element("MessageRecipientType").Value);
+            }
+
             return new WorkflowEmailModel
             {
                 SubjectTemplate = subject ?? MISSING_SUBJECT_VALUE,
-                BodyTemplate = body ?? MISSING_BODY_VALUE
+                BodyTemplate = body ?? MISSING_BODY_VALUE,
+                RecipientType = messageRecipientType,
+                SpecificUser = specificUser
             };
         }
 
