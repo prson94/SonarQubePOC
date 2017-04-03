@@ -272,7 +272,7 @@ namespace d360.model
                 switch (itemStep.Step.ActivityType)
                 {
                     case WorkflowActivityType.EmailNotification:
-                        await SendWorkflowEmail(itemStep.Step);
+                        await SendWorkflowEmail(itemStep);
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.Form:
@@ -418,22 +418,37 @@ namespace d360.model
 
         }
 
-        private async Task SendWorkflowEmail(WorkflowVersionStep step)
+        private async Task SendWorkflowEmail(WorkflowItemStep item)
         {
             
+            //the recipient of the email needs to be configurable owner, workflow initiator or some other 
             // call proc for details who to email
-            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = step.Version.TypeID });
+            //var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = step.Version.TypeID });
 
-            if (string.IsNullOrEmpty(step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
+            if (string.IsNullOrEmpty(item.Step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
 
             // build email from step settings.
-            var emailSettings = WorkflowEmailModel.ParseFromXml(XElement.Parse(step.Settings));
+            var emailSettings = WorkflowEmailModel.ParseFromXml(XElement.Parse(item.Step.Settings));
 
-            //email the users
-            foreach (var user in users)
+            //get the email address of the user that initiated the workflow
+            //
+
+            if (item.Item.StartedBy <= 0)
             {
-                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate);
+                Console.WriteLine("ERROR CANNOT DETERMINE WHO TO EMAIL WORKLFOW EMAIL TASK MESSAGE TO.");
+
+                return;
             }
+            var res = GlobalReportingResources.Where(x => x.ResourceID == item.Item.StartedBy).FirstOrDefault();
+
+            if(res == null)
+            {
+                Console.WriteLine("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO EMAIL.");
+
+                return;
+            }
+            await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate);
+            
         }
 
         public void DetermineTransitionBasedOnPreviousStepConditions(long itemStepID)
