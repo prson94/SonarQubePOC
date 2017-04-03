@@ -282,7 +282,8 @@ namespace d360.web.Models
         text = 0,
         boolean,
         integer,
-        date
+        date,
+        textarea
     }
 
     public class WorkflowFormModelField
