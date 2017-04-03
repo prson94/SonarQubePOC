@@ -268,6 +268,8 @@ export class WorkflowForm {
     Title: string;
     Description: string;
     IsCompleted: boolean;
+    ObjectName: string;
+    ObjectType: string;
 }
 
 export class WorkflowListItem {

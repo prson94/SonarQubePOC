@@ -24,6 +24,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Web;
 using d360.model.workflow;
+using System.Data.Entity;
 
 namespace d360.web.Controllers.Services
 {
@@ -1017,7 +1018,7 @@ namespace d360.web.Controllers.Services
         [Route("form/{typeID:int}/{itemStepID:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, int itemStepID)
         {
-            var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).FirstOrDefault();
+            var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x=>x.Item).FirstOrDefault();
 
             if(itemStep == null)
             {
@@ -1050,6 +1051,9 @@ namespace d360.web.Controllers.Services
                                  select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
                                  ).ToList();
 
+
+            var details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
+            
             //parse the xml to get the form info
 
             return Request.CreateResponse<dynamic>(HttpStatusCode.OK, new
@@ -1057,7 +1061,10 @@ namespace d360.web.Controllers.Services
                 Fields = properties,
                 Title = title ?? "",
                 Description = desc ?? "",
-                IsCompleted = itemStep.CompletedOn.HasValue
+                IsCompleted = itemStep.CompletedOn.HasValue,
+                ObjectName = details.Name,
+                ObjectType = itemStep.Item.Object,
+                ObjectID = itemStep.Item.ObjectID
             });
         }
 
