@@ -277,7 +277,7 @@ namespace d360.model
                         break;
                     case WorkflowActivityType.Form:
                         // send form notification to owners
-                        await SendFormWorkflowEmail(itemStep.Step, itemStepID, itemID);
+                        await SendFormWorkflowEmail(itemStep, itemStepID, itemID);
                         break;
                     case WorkflowActivityType.StatusChange:
                         // change the status of this item
@@ -389,11 +389,11 @@ namespace d360.model
             StartTransitions(transitions, itemID, objectInfo);
         }
 
-        private async Task SendFormWorkflowEmail(WorkflowVersionStep step, long itemStepID, long itemId)
+        private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId)
         {
             //send an email to the owners with a form link
-            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = step.Version.TypeID });
-
+            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = item.Step.Version.TypeID });
+                        
             var url = "";
             var prefix = "";
             using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
@@ -405,11 +405,23 @@ namespace d360.model
                 cnn.Close();                
             }
 
-            url += $"https://{prefix}.data3sixty.com/workflow/form/{step.Version.TypeID}/{itemStepID}/{itemId}";
+            url += $"https://{prefix}.data3sixty.com/workflow/form/{item.Step.Version.TypeID}/{itemStepID}/{itemId}";
+
+            var initiatedBy = "(unknown)";
+
+            if(item.StartedBy > 0)
+            {
+                var res = GlobalReportingResources.Where(x => x.ResourceID == item.StartedBy).FirstOrDefault();
+
+                if(res != null)
+                {
+                    initiatedBy = res.FullName;
+                }
+            }
             
 
-            var emailSubject = $"Data3Sixty - Workflow [{step.Version.Type.Name}] - Form";
-            var emailBody = $"The Data3Sixty workflow [{step.Version.Type.Name}] has generated a form that you need to complete.  Please complete the form at {url}";
+            var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
+            var emailBody = $"The Data3Sixty workflow [{item.Step.Version.Type.Name}] has generated a form that you need to complete.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}";
 
             foreach (var user in users)
             {
