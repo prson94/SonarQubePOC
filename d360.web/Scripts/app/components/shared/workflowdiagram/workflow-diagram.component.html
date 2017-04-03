@@ -36,6 +36,13 @@
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
                         <strong>Transition Type:</strong> {{TransitionType[selectedData.transitionType]}}<br />
+                        <div *ngIf="selectedData.transitionType == TransitionType.Condition">
+                            <p-dataTable [value]="selectedData.condition" selectionMode="single">
+                                <p-column field="fieldName" header="Field Name"></p-column>
+                                <p-column field="Operator" header="Operator"></p-column>
+                                <p-column field="Value" header="Value"></p-column>
+                            </p-dataTable>
+                        </div>
                     </div>
                 </div>
                 <div *ngSwitchCase="'edit'">

@@ -158,10 +158,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 if (this.model.Nodes != null)
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
                 console.log(this.model);
-                this.parseData(this.model);
+                //this.parseData(this.model);
             })
             .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
             .then(r => this.fieldTypes = r)
+            .then(() => this.parseData(this.model))
             .then(() => { this.isLoading = false; console.log('model: ', this.model); });
 
 
@@ -287,12 +288,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 cond.forEach(c => {
                     n.condition.push({
                         fieldName: '',
-                        FieldTypeID: c['@FieldTypeID'],
+                        FieldTypeID: +c['@FieldTypeID'],
                         Operator: c['@Operator'],
                         Value: c['@Value'],
                         ValueType: c['@ValueType']
                     });
                 });
+                console.log(n.condition);
 
                 n.condition.forEach(c => {
                     let i = this.fieldTypes.findIndex(f => f.ID == c.FieldTypeID);
