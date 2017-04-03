@@ -270,6 +270,7 @@ export class WorkflowForm {
     IsCompleted: boolean;
     ObjectName: string;
     ObjectType: string;
+    ObjectID: number;
 }
 
 export class WorkflowListItem {

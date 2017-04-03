@@ -18,7 +18,7 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                         <div class="col s12">
                             <div class="tile tile-detail" *ngIf="!isCompleted">                        
                                 <header>{{title}}</header>
-                                <div class="form-instructions">The following form is for the [{{objectType}}] named [{{objectName}}].  {{description}}</div>                                            
+                                <div class="form-instructions">The following form is for the [{{objectType}}] named [<d3s-tooltip objectType="Artifact" [objectId]="objectID" tooltipType="preview">{{objectName}}</d3s-tooltip>].  {{description}}</div>                                            
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
                                     <div class="row">
                                         <div *ngFor="let field of fields;let indx=index" class="row">
@@ -60,6 +60,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private title: string;
     private objectName: string;
     private objectType: string;
+    private objectID: number;
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
 
@@ -107,7 +108,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.isLoading = false;
                 this.isCompleted = res.IsCompleted;
                 this.objectName = res.ObjectName;
-                this.objectType = res.ObjectType;        
+                this.objectType = res.ObjectType;    
+                this.objectID = res.ObjectID;    
             });
     }
 };
