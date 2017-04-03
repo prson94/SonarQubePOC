@@ -185,17 +185,31 @@ namespace d360.model
 
                 if (fromItemStep == null) throw new Exception("ERROR - CANNOT FIND ITEM FROM STEP");
 
-                // insert item step record for the to item step
+                // insert item step record for the to item step if none exist
+
+                if (WorkflowItemSteps.Where(x => x.ItemID == itemID && x.StepID == transition.ToVersionStepID).Any())
+                {
+                    Console.WriteLine("ERROR ENCOUNTERED CASE WHERE ITEMSTEP DATA ALREADY EXISTS");
+
+                    return;
+                }
+               
 
                 Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
 
-                var toItemStep = new WorkflowItemStep { StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID,
+                var toItemStep = new WorkflowItemStep
+                {
+                    StartedOn = DateTime.UtcNow,
+                    StartedBy = CurrentResourceID,
                     StepID = transition.ToVersionStepID,
-                    Fields = "<fields/>", Settings = "<settings/>",
-                    ItemID = itemID };
+                    Fields = "<fields/>",
+                    Settings = "<settings/>",
+                    ItemID = itemID
+                };
 
                 WorkflowItemSteps.Add(toItemStep);
                 SaveChanges();
+                
 
                 // insert record into itemsteptransition
                 WorkflowItemStepTransition trans = new WorkflowItemStepTransition
