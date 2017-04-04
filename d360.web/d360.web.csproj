@@ -1096,6 +1096,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-step-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-step-form-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-transition-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-form.component.ts" />

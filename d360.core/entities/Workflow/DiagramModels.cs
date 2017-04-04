@@ -39,6 +39,10 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public string Fields { get; set; }
+
+        [DataMember, NotMapped]
+        public dynamic FieldsObject { get; set; }
+
         [DataMember]
         public string Name { get; set; }
 

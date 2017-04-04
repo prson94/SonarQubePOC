@@ -940,7 +940,11 @@ namespace d360.web.Controllers.Services
             var type = Company.WorkflowTypes.Find(id);
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
-            nodes.ForEach(n => n.ParseSettings());
+            nodes.ForEach(n =>
+            {
+                n.ParseSettings();
+                n.FieldsObject = (string.IsNullOrEmpty(n.Fields)) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XDocument.Parse(n.Fields), Formatting.None, true));
+            });
             links.ForEach(l => l.ConditionObject = DeserializeCondition(l.Condition));
 
             @event.ConditionObject = DeserializeCondition(@event.Condition);
@@ -1353,7 +1357,10 @@ namespace d360.web.Controllers.Services
                                 step.YPosition = n.YPosition;
                                 step.VersionID = versionID;
                                 step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
-                                step.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+                                if (string.IsNullOrEmpty(n.Fields))
+                                    step.Fields = null;
+                                else
+                                    step.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
 
                                 Company.Add(step);
                                 Company.SaveChanges();
@@ -1374,7 +1381,10 @@ namespace d360.web.Controllers.Services
                                     node.YPosition = n.YPosition;
                                     node.VersionID = versionID;
                                     node.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
-                                    node.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+                                    if (string.IsNullOrEmpty(n.Fields))
+                                        node.Fields = null;
+                                    else
+                                        node.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
                                     //node.ParentID
                                     //node.Settings
                                     //node.Fields

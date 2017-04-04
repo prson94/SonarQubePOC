@@ -23,6 +23,7 @@ import { WorkflowDiagramComponent } from './workflow-diagram.component';
 import { WorkflowStepEditorComponent } from './workflow-step-editor.component';
 import { WorkflowTransitionEditorComponent } from './workflow-transition-editor.component';
 import { WorkflowConditionEditorComponent } from './workflow-condition-editor.component';
+import { WorkflowStepFormEditorComponent } from './workflow-step-form-editor.component';
 
 
 @NgModule({
@@ -46,6 +47,7 @@ import { WorkflowConditionEditorComponent } from './workflow-condition-editor.co
         WorkflowStepEditorComponent,
         WorkflowTransitionEditorComponent,
         WorkflowConditionEditorComponent,
+        WorkflowStepFormEditorComponent,
     ],
     exports: [
         WorkflowDiagramComponent,

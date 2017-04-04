@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener, Output, EventEmitter } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { PermissionsService } from '../../../services/permissions.service';
 import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -31,7 +31,7 @@ declare var window: any;
     providers: [PermissionsService, WorkflowService]
 })
 
-export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() id: number = 0;
     @Input() readonly: boolean = true;
     @Input() hasClose: boolean = false;
@@ -79,6 +79,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.loadMenuItems();
         //console.log(this.readonly, this.readonly == true, this.readonly === true, this.readonly.toString() == 'true');
         //console.log({ val: this.readonly });
+    }
+    
+    public ngOnChanges(changes: SimpleChanges) {
+        //TODO: handle on id change
     }
 
     public ngAfterViewInit() {
@@ -192,6 +196,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         linkList.forEach(l => dm.addLinkData(l));
 
 
+        //console.log('parsed: ',linkList, nodeList);
         //get deep copy of lists
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(nodeList);
@@ -317,6 +322,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.frompid = m.FromPortID;
             n.topid = m.ToPortID;
             n.name = m.Name;
+            
 
             return n;
         } else if (type == DiagramObjectType.Node) {
@@ -331,6 +337,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.activityType = m.ActivityType;
             n.stepType = m.StepType;
             n.category = 'task';
+            n.fields = m.FieldsObject;
 
             if (m.ActivityTypeInfo != null) {
                 n.fore = m.ActivityTypeInfo.ForeColor;
@@ -383,7 +390,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.Name = m.name;
             n.SettingsObject = m.settings;
             n.Settings = JSON.stringify({ settings: m.settings });
-            n.Fields = JSON.stringify({ fields: m.fields });
+            n.Fields = (m.fields != null && m.fields.form != null) ? JSON.stringify({ settings: m.fields }) : '';
+            
             n.StepType = m.stepType;
             n.XPosition = m.pos.split(' ')[0];
             n.YPosition = m.pos.split(' ')[1];
@@ -409,6 +417,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 break;
             case 2: //status change
                 n.settings.Status = e.settings.Status;
+                break;
+            case 3:
+                n.fields = e.fields;
                 break;
         }
 

@@ -1539,6 +1539,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            vs.StepType,
 	            vs.ActivityType,
 	            vs.Settings,
+                vs.Fields,
 	            vs.Name
             from workflow.[type] t
             inner join workflow.[version] v on v.typeid = t.id

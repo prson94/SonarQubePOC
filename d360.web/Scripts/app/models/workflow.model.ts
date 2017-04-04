@@ -238,6 +238,7 @@ export class NodeModel {
     fields: any = {};
 }
 
+
 export class ActivityTypeInfo {
     ID: number;
     Name: string;
@@ -320,6 +321,15 @@ export class EventCondition {
     Operator: string;
 
     fieldName: string;
+
+    //TODO: explore as alternative to mapping manually
+    //get FieldTypeID(): number {
+    //    return +this['@FieldTypeID'];
+    //}
+
+    //set FieldTypeID(val: number) {
+    //    this['@FieldTypeID'] = val;
+    //}
 }
 
 //#region enums

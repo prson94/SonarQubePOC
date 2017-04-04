@@ -60,7 +60,7 @@ import * as _ from 'lodash';
             </div>
         </div>
         <div class="row" *ngSwitchCase="3">
-            [form editor goes here]
+            <d3s-workflow-step-form-editor [step]="step" (stepChange)="step = $event; stepChange.emit(step)"></d3s-workflow-step-form-editor>
         </div>
     </div>
 </div>
@@ -79,7 +79,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         'Under Review',
         'Certified'
     ];
-
 
     constructor() {
         super();
