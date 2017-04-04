@@ -39,20 +39,32 @@ namespace d360.model
 
         #region Engine Methods
 
-        public WorkflowItem CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false)
+        private bool DoesWorkflowApply(EventObjectInfo objectInfo, WorkflowEventRegistration registration)
         {
-            Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR ${objectInfo.Object} - {objectInfo.ObjectID}");
+            Console.WriteLine($"DEBUG - TESTING TO SEE IF ${objectInfo.Object} - {objectInfo.ObjectID} IS VALID FOR WORKFLOW {registration.Type.Name} ID[{registration.Type.ID}");
 
             if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition))
             {
                 Console.WriteLine("DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 
-                return null;
+                return false;
             }
 
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
+            return true;
+
+        }
+
+        public bool CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false)
+        {
             //check if the current item meets the criteria if any for this workflow.
+            if (!DoesWorkflowApply(objectInfo, registration))
+            {
+                return false;
+            }
+
+            Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR ${objectInfo.Object} - {objectInfo.ObjectID}");
 
             var version = WorkflowVersions
                 .Include(i => i.Steps)
@@ -107,7 +119,7 @@ namespace d360.model
 
             Console.WriteLine("DEBUG - WORKFLOW INSTANCE SUCESSFULLY CREATED.");
 
-            return item;
+            return true;
         }
 
         private void ProcessStartStepSettings(string settings, EventObjectInfo objectInfo)

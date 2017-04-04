@@ -48,12 +48,17 @@ namespace d360.jobs.subscriber.Workflow
                     Console.WriteLine($"Debug - New {info.Action} event received.");
 
                     var sObject = info.Object.ObjectType.ToString();
-                    var registration = company.WorkflowEventRegistrations.FirstOrDefault(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID);
+                    var registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID).OrderBy(x=>x.ID);
 
-                    if (registration != null)
+                    foreach (var registration in registrations)
                     {
-                        var workflowItem = company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID);
+                        // if the registration applies fire of the workflow and break if not go to the next one.
+                        if (company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID))
+                        {                            
+                            return;
+                        }
                     }
+                    
                 }
                 else {
                     //load the workflow instance and check how many events have been generated.  if greater than threashold then stop.  Do not raise more events
