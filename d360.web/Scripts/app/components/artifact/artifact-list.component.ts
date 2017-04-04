@@ -10,6 +10,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-artifact-list',
     template: ` 
@@ -36,6 +38,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private isWorkflowStatusVisible: boolean = false;
     private isWorkflowMonitorVisible: boolean = false;
     private hasSuggest: boolean = false;
+    private hasNewWorkflow: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -57,6 +60,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
             this.hideSidebarItems();
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
             this.logAction('open', 'ArtifactType', artifactTypeId);
+            this.hasNewWorkflow = CompanySettings.UseNewWorkflow;
             this.artifactTypeService.getArtifactTypeDetails(artifactTypeId)
                 .then(artifactType => {
                     this.artifactType = artifactType;
@@ -69,7 +73,8 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
                     this.hasSuggest = this.artifactType.HasSuggestWorkflow;
                     this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o']));
-                    this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus', ['fa-hourglass-start']));
+
+                    if (!this.hasNewWorkflow) this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus', ['fa-hourglass-start']));
 
                     if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow Monitor', 'workflowmonitor', ['fa-heartbeat']));
 
