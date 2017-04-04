@@ -4,11 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using d360.core.entities.Contracts;
 using d360.core.enums;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Issue : BaseIntObject, IIntObject, IUpdatedMetadata
+    public class Issue : BaseIntObject, IIntObject, IUpdatedMetadata, IEventTrackedEntity
     {
         public int IssueTypeID { get; set; }
 
@@ -38,5 +39,16 @@ namespace d360.core.entities
 
         [DataMember]
         public IssueCriticality Criticality { get; set; }
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.Issue,
+                ObjectID = ID,
+                ObjectType = SystemObjects.IssueType,
+                ObjectTypeID = IssueTypeID
+            };
+        }
     }
 }
