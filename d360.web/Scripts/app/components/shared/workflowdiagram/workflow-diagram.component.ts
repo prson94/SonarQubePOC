@@ -35,7 +35,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     @Input() id: number = 0;
     @Input() readonly: boolean = true;
     @Input() hasClose: boolean = false;
+    @Input() hasBack: boolean = false;
+    @Input() selection: NodeModel | LinkModel;
     @Output() onCloseClick = new EventEmitter();
+    @Output() onBackClick = new EventEmitter();
     @Output() selectionChange = new EventEmitter();
     @ViewChild('workflowDiagram') diagramRef;
     @ViewChild('workflowPalette') paletteRef;
@@ -55,7 +58,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private initialLinks: go.Link[] = [];
     private initialNodes: go.Node[] = [];
     private selectedData = null;
-    private selection: any;
+    private sel: any;
 
     private menuItems: MenuItem[] = [];
     private isWindowVisible = false;
@@ -83,6 +86,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     
     public ngOnChanges(changes: SimpleChanges) {
         //TODO: handle on id change
+        if (changes['id'].currentValue != changes['id'].previousValue && !changes['id'].isFirstChange) {
+            this.myDiagram.div = null;
+            this.initializeDiagram();
+            this.loadMenuItems();
+        }
     }
 
     public ngAfterViewInit() {
@@ -211,15 +219,18 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.menuItems.push({
             icon: 'fa-info-circle'
         });
-
-        if (this.hasClose)
+        if (this.hasBack)
             this.menuItems.push({
-                icon: 'fa-remove'
+                icon: 'fa-arrow-left'
             });
 
         if (!this.isReadOnly)
             this.menuItems.push({
                 icon: 'fa-floppy-o'
+            });
+        if (this.hasClose)
+            this.menuItems.push({
+                icon: 'fa-remove'
             });
     }
 
@@ -414,6 +425,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             case 1: //email
                 n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
                 n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
+                n.settings.MessageRecipientType = e.settings.MessageRecipientType;
+                n.settings.MessageToUser = e.settings.MessageToUser;
                 break;
             case 2: //status change
                 n.settings.Status = e.settings.Status;
@@ -448,6 +461,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.onCloseClick.emit();
         if (e.icon == 'fa-floppy-o')
             this.save();
+        if (e.icon == 'fa-arrow-left')
+            this.onBackClick.emit();
     }
 
     @HostListener('window:resize', ['$event'])
@@ -489,14 +504,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private ChangedSelection(e: any) {
-        this.selection = e.diagram.selection;
+        this.sel = e.diagram.selection;
 
-        if (this.selection.count == 0) {
+        if (this.sel.count == 0) {
             this.selectedData = null;
             this.showNodeTabs = false;
             this.showLinkTabs = false;
         } else {
-            var sel = _.cloneDeep(this.selection.toArray());
+            var sel = _.cloneDeep(this.sel.toArray());
 
             if (sel != null && sel.length != 0) {
                 this.selectedData = sel[0].data;
@@ -507,6 +522,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 }
             }
         }
+        this.selection = this.selectedData;
+        this.selectionChange.emit(this.selection);
         console.log('selection changed: ', e);
         //console.log(this.selection);
     }

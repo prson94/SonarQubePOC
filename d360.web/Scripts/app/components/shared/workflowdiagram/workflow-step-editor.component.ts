@@ -33,6 +33,24 @@ import * as _ from 'lodash';
         <div class="row" *ngSwitchCase="1">
             <div class="col s12">
                 <div class="FieldName">
+                    Recipient Type
+                </div>
+                <div>
+                    <select [ngModel]="step.settings.MessageRecipientType" (ngModelChange)="step.settings.MessageRecipientType = $event; stepChange.emit(step)" style="width: 95%">
+                        <option *ngFor="let d of destination" [value]="d">{{d}}</option>
+                    </select>
+                </div>
+            </div>
+            <div *ngIf="step.settings.MessageRecipientType == 'Specific User'" class="col s12">
+                <div class="FieldName">
+                    Recipient
+                </div>
+                <div>
+                    <input type="text" [ngModel]="step.settings.MessageToUser" (ngModelChange)="step.settings.MessageToUser = $event; stepChange.emit(step)" style="width: 95%" />
+                </div>
+            </div>
+            <div class="col s12">
+                <div class="FieldName">
                     Subject
                 </div>
                 <div>
@@ -78,6 +96,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         'Draft',
         'Under Review',
         'Certified'
+    ];
+
+    private destination = [
+        'Initiator',
+        'Owner',
+        'Specific User'
     ];
 
     constructor() {

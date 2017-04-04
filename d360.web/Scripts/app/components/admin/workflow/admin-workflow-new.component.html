@@ -19,7 +19,14 @@
                 <d3s-admin-workflow-new-editor [id]="currentID" (onClose)="mode = PageMode.Default" (onSave)="save($event);"></d3s-admin-workflow-new-editor>
             </div>
             <div *ngSwitchCase="PageMode.DiagramEditor">
-                <d3s-workflow-diagram [id]="workflow.Type.ID" readonly="false" (onCloseClick)="mode = PageMode.Default;"></d3s-workflow-diagram>
+                <d3s-workflow-diagram 
+                                      [id]="workflow.Type.ID" 
+                                      readonly="false" 
+                                      hasClose="true" 
+                                      hasBack="true"
+                                      (onBackClick)="mode = PageMode.Editor"
+                                      (onCloseClick)="mode = PageMode.Default;">
+                </d3s-workflow-diagram>
             </div>
             <div *ngSwitchCase="PageMode.Delete" class="tile tile-detail">
                 <d3s-admin-workflow-new-delete [id]="currentID" (onSuccess)="mode = PageMode.Default" (onCancel)="mode = PageMode.Default"></d3s-admin-workflow-new-delete>
