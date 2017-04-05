@@ -1237,7 +1237,9 @@ namespace d360.web.Controllers.Services
                             union all
                             select 'PolicyType|' + cast(id as varchar) as value, id, 'PolicyType' as [type], 'Policy Type :: ' + Name as [name] from policytype
                             union all
-                            select 'TaxonomyType|' + cast(id as varchar) as value, id, 'TaxonomyType' as [type], 'Model Type :: ' + Name as [name] from taxonomytype";
+                            select 'TaxonomyType|' + cast(id as varchar) as value, id, 'TaxonomyType' as [type], 'Model Type :: ' + Name as [name] from taxonomytype
+                            union all
+                            select 'IssueType|' + cast(id as varchar) as value, id, 'IssueType' as [type], 'Action Type :: ' + Name as [name] from issuetype";
 
             var types = Company.Query<dynamic>(sql);
             return Request.CreateResponse(HttpStatusCode.OK, types);

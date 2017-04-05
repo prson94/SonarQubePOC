@@ -17,7 +17,7 @@
             <div>
                 <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="model.Event.ChangeType">
                     <option></option>
-                    <option *ngFor="let i of changesTypes" [value]="i.ID">{{i.Name}}</option>
+                    <option *ngFor="let i of changesTypes" [value]="i.ID">{{i.Description}}</option>
                 </select>
             </div>
             <div class="FieldName">
@@ -28,6 +28,17 @@
                     <option></option>
                     <option *ngFor="let i of workflowObjectTypes" [value]="i.value">{{i.name}}</option>
                 </select>
+            </div>
+            <div *ngIf="objectType == 'ArtifactType'">
+                <div class="FieldName">
+                    {{subjectAreaName}}
+                </div>
+                <div>
+                    <select style="width:95%" [(ngModel)]="model.Event.SettingsObject.Settings.TaxonomyTypeID">
+                        <option></option>
+                        <option *ngFor="let t of taxonomies" [value]="t.ID">{{t.Name}}</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="col s12 m8">
@@ -54,21 +65,22 @@
                     </p-dataTable>
 
                     <div *ngIf="showAddCondition">
-                        <d3s-workflow-condition-editor 
-                                                                 [objectId]="objectId" 
-                                                                 [objectType]="objectType" 
-                                                                 (onSave)="addCondition($event)" 
-                                                                 (onClose)="showAddCondition = false;">
+                        <d3s-workflow-condition-editor [objectId]="objectId"
+                                                       [objectType]="objectType"
+                                                       (onSave)="addCondition($event)"
+                                                       (onClose)="showAddCondition = false;">
                         </d3s-workflow-condition-editor>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col s12">&nbsp;</div>
+    </div>
     <div class="row" *ngIf="objectType == 'ArtifactType' && model.Event.ChangeType == WorkflowChangeType.Add">
         <div class="col s12">
-            <input type="checkbox" [(ngModel)]="hideObject"/> Hide new objects until workflow runs?
+            <input type="checkbox" [(ngModel)]="hideObject" /> Hide new objects until workflow runs?
         </div>
     </div>
     <div class="row">

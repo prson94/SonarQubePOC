@@ -9,13 +9,17 @@ import {
     WorkflowListItem,
     WorkflowDiagramModel,
 } from '../../../models/workflow.model';
+import { Taxonomy } from '../../../models/taxonomy.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
+import { TaxonomiesService } from '../../../services/taxonomies.service';
+
+declare var CompanySettings;
 
 @Component({
     selector: 'd3s-admin-workflow-new-editor',
-    providers: [WorkflowService],
+    providers: [WorkflowService, TaxonomiesService],
     templateUrl: './admin-workflow-new-editor.component.html'
 })
 
@@ -36,16 +40,32 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     private saveButtonText: string = 'Next';
     private hideObject: boolean = false;
 
+    private subjectAreaName: string;
+    private taxonomies: Taxonomy[] = [];
+
     WorkflowChangeType = WorkflowChangeType;
 
-    constructor(private workflowService: WorkflowService) {
+    constructor(private workflowService: WorkflowService, private taxonomyService: TaxonomiesService) {
         super();
     }
 
     ngOnInit() {
+
+        if (CompanySettings.ArtifactType_TaxonomyTypeID != null && CompanySettings.ArtifactType_TaxonomyTypeID != '') {
+            this.subjectAreaName = CompanySettings.ArtifactType_TaxonomyTypeID;
+        } else {
+            this.subjectAreaName = 'Subject Area';
+        }
+
         this.load();
+
+        //create initial model and settings if needed
         if (this.model == null)
             this.model = new WorkflowDiagramModel();
+        if (this.model.Event.SettingsObject == null)
+            this.model.Event.SettingsObject = {};
+        if (this.model.Event.SettingsObject.Settings == null)
+            this.model.Event.SettingsObject.Settings = {};
 
     }
 
@@ -73,6 +93,9 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                             this.selectedObjectType = this.model.Event.Object + '|' + this.model.Event.ObjectID.toString();
                             this.objectId = this.model.Event.ObjectID;
                             this.objectType = this.model.Event.Object;
+
+                            if (this.objectType == 'ArtifactType')
+                                this.loadTaxonomies();
 
                             console.log(r);
 
@@ -120,6 +143,19 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         this.objectType = e.split('|')[0];
         this.objectId = +e.split('|')[1];
 
+        if (this.objectType == 'ArtifactType')
+            this.loadTaxonomies();
+        else if (this.model.Event.SettingsObject.Settings.TaxonomyTypeID != null) {
+            //don't store unless needed
+            delete this.model.Event.SettingsObject.Settings.TaxonomyTypeID;
+        }
+
+
+    }
+
+    loadTaxonomies(): Promise<any> {
+        return this.taxonomyService.getTaxonomies()
+            .then(r => this.taxonomies = r);
     }
 
     showCondition() {
@@ -140,8 +176,8 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     }
 
     save() {
-        this.model.Event.SettingsObject = {};
-        this.model.Event.SettingsObject.Settings = {};
+        //this.model.Event.SettingsObject = {};
+        //this.model.Event.SettingsObject.Settings = {};
         this.model.Event.SettingsObject.Settings.Visible = !this.hideObject;
 
         this.model.Event.conditions = this.conditions;
@@ -149,6 +185,8 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         this.model.Event.ObjectID = this.objectId;
         this.model.Event.Condition = JSON.stringify(this.conditions);
         this.model.Event.Settings = JSON.stringify( this.model.Event.SettingsObject );
+
+        console.log('save: ', this.model.Event);
 
         this.isLoading = true;
         this.workflowService.saveWorkflowDiagramModel(this.model)
