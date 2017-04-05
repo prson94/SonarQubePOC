@@ -388,4 +388,10 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
+    getWorkflowDetailsV2(id: number): Promise<any> {
+        return this.http.get(`services/workflow/item/detail/${id}`)
+            .toPromise()
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

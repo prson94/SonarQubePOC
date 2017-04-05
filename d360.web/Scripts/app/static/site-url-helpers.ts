@@ -30,6 +30,7 @@
     static SITE_URL_WORKFLOW_RAISE_ISSUE = 'raiseissue';
     static SITE_URL_WORKFLOW_VIEW_ITEM = 'work';    
     static SITE_URL_WORKFLOW_VIEW_STATUS = 'status';
+    static SITE_URL_WORKFLOW_V2_VIEW_STATUS = 'details';
     static SITE_URL_WORKFLOW_LIST = 'workflowlist';
     static SITE_URL_WORKFLOW_FORM = 'form';
     

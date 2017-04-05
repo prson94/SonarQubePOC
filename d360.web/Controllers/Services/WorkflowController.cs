@@ -1179,6 +1179,29 @@ namespace d360.web.Controllers.Services
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
 
+        [Route("item/detail/{itemId:int}"), HttpGet]
+        public HttpResponseMessage GetItemDetail(int itemId)
+        {
+            var item = Company.WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
+
+            if (item == null)
+                Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance.");
+
+            // get the itemsteps for this workflow instance
+
+            var itemSteps = Company.WorkflowItemSteps.Where(x => x.ItemID == itemId);
+
+            var objectDetails = Company.GetObjectDetail(item.Object, item.ObjectID);
+
+            return Request.CreateResponse(HttpStatusCode.OK, 
+                new
+                {
+                    Item = item,
+                    ItemSteps = itemSteps,
+                    ObjectDetails = objectDetails                    
+                });
+        }
+
         [Route("item/details/{workflowId:int}/{objectType}/{objectId:int}"), HttpGet]
         public HttpResponseMessage GetItemDetailsForWorkflow(int workflowId, string objectType, int objectId)
         {

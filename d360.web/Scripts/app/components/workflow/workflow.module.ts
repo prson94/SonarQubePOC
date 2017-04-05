@@ -24,7 +24,7 @@ import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.comp
 import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.component';
 import { WorkflowViewStatusComponent } from './workflow-view-status.component';
 import { WorkflowWorkItemComponent } from './workflow-work-item.component';
-
+import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 
 import { WorkflowRoutingModule } from './workflow.routes';
 
@@ -83,6 +83,7 @@ import {
         WorkflowRaiseIssueComponent,
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
+        WorkflowViewDetailsComponent,
         WorkflowViewStatusComponent,
         WorkflowWorkItemComponent,        
     ],
