@@ -54,6 +54,26 @@ namespace d360.model
                 return false;
             }
 
+            //if the type is artifacttype check if a specific taxonomy type id was specified in the registration settings.
+            if(!string.IsNullOrEmpty(registration.Settings))
+            {
+                var settingsModel = WorkflowRegistrationSettingsModel.parseXml(XElement.Parse(registration.Settings));
+
+                if(settingsModel.TaxonomyTypeID > 0)
+                {
+                    Console.WriteLine("DEBUG - CURRENT WORKFLOW IS SPECIFIC TO A PARTICULAR TAXONOMY TYPE. CHECKING INPUT OBJECT AGAINST TAXONOMY TYPE ID");
+
+                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+
+                    if(artifact != null && artifact.TaxonomyTypeID != settingsModel.TaxonomyTypeID)
+                    {
+                        Console.WriteLine($"DEBUG - OBJECT TAXONOMY TYPE ID {artifact.TaxonomyTypeID} DOES NOT MATCH {settingsModel.TaxonomyTypeID}");
+
+                        return false;
+                    }
+                }
+            }
+            
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
             return true;
