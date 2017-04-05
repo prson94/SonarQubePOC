@@ -52,9 +52,9 @@
                         <d3s-tile-actions hasAdd="true" (addClick)="showCondition()"></d3s-tile-actions>
                     </header>
                     <p-dataTable [value]="conditions" selectionMode="single">
-                        <p-column field="fieldName" header="Field Name"></p-column>
-                        <p-column field="Operator" header="Operator"></p-column>
-                        <p-column field="Value" header="Value"></p-column>
+                        <p-column field="@FieldName" header="Field Name"></p-column>
+                        <p-column field="@Operator" header="Operator"></p-column>
+                        <p-column field="@Value" header="Value"></p-column>
                         <p-column>
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">

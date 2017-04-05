@@ -203,8 +203,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         nodeList.forEach(n => this.myDiagram.model.addNodeData(n));
         linkList.forEach(l => dm.addLinkData(l));
 
-
-        //console.log('parsed: ',linkList, nodeList);
         //get deep copy of lists
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(nodeList);
@@ -268,7 +266,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             m.Links = links;
 
 
-            console.log('save', this.myDiagram.model.nodeDataArray, (<go.GraphLinksModel>this.myDiagram.model).linkDataArray, nodes, links);
+            //console.log('save', this.myDiagram.model.nodeDataArray, (<go.GraphLinksModel>this.myDiagram.model).linkDataArray, nodes, links);
 
             this.isLoading = true;
 
@@ -292,37 +290,23 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             let n = new LinkModel();
 
             if (m.ConditionObject != null) {
-                let cond = [];
                 n.condition = [];
 
-                if (m.ConditionObject.Condition.length != undefined) {
-                    cond = m.ConditionObject.Condition;
+                if (m.ConditionObject.Condition.length != null) {
+                    n.condition = m.ConditionObject.Condition;
                 } else {
-                    cond.push(m.ConditionObject.Condition);
+                    n.condition.push(m.ConditionObject.Condition);
                 }
 
-                cond.forEach(c => {
-                    n.condition.push({
-                        fieldName: '',
-                        FieldTypeID: +c['@FieldTypeID'],
-                        Operator: c['@Operator'],
-                        Value: c['@Value'],
-                        ValueType: c['@ValueType']
-                    });
-                });
-                console.log(n.condition);
-
                 n.condition.forEach(c => {
-                    let i = this.fieldTypes.findIndex(f => f.ID == c.FieldTypeID);
+                    let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
                     if (i >= 0)
-                       c.fieldName = this.fieldTypes[i].FriendlyName;
+                       c['@FieldName'] = this.fieldTypes[i].FriendlyName;
                 });
 
             } else {
                 n.condition = [];
-            }
-
-            
+            }     
 
             n.diagramObjectType = DiagramObjectType.Link;
             n.category = '';
@@ -334,8 +318,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.topid = m.ToPortID;
             n.name = m.Name;
             
-
             return n;
+
         } else if (type == DiagramObjectType.Node) {
             let m: WorkflowDiagramNode = <WorkflowDiagramNode>model;
             let n = new NodeModel();
@@ -386,7 +370,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.ToKey = m.to;
             n.TransitionType = m.transitionType;
             n.Name = m.name;
-            n.ConditionObject = m.condition;
+            
+            //clone conditions so we can remove field name
+            let cond = _.cloneDeep(m.condition);
+            cond.forEach(c => delete c['@FieldName']);
+            n.Condition = JSON.stringify({ Conditions: { Condition: cond } });
+
             n.FromPortID = m.frompid;
             n.ToPortID = m.topid;
 
@@ -421,6 +410,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.name = e.name;
         }
 
+        //TODO: just set n = e??
+
         switch (n.activityType) {
             case 1: //email
                 n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
@@ -454,7 +445,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     //#region events
 
     private menuClick(e: any) {
-        console.log(e);
+        //console.log(e);
         if (e.icon == 'fa-info-circle')
             this.isWindowVisible = !this.isWindowVisible;
         if (e.icon == 'fa-remove')
@@ -524,19 +515,19 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         }
         this.selection = this.selectedData;
         this.selectionChange.emit(this.selection);
-        console.log('selection changed: ', e);
+        //console.log('selection changed: ', e);
         //console.log(this.selection);
     }
 
     private ObjectDoubleClicked(e: any) {
-        console.log('double clicked', e);
+        //console.log('double clicked', e);
         //var obj = e.diagram.selection.first().data;
     }
 
     private LinkDrawn(e: any) {
         let link = e.subject;
         let l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray
-        console.log(link, l);
+        //console.log(link, l);
     }
     //#endregion
 

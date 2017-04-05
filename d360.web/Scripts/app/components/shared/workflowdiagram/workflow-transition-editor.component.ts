@@ -44,9 +44,9 @@ import * as _ from 'lodash';
         <div class="col s12">
             <header>&nbsp;<d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions></header>
             <p-dataTable [value]="transition.condition" selectionMode="single">
-                <p-column field="fieldName" header="Field Name"></p-column>
-                <p-column field="Operator" header="Operator"></p-column>
-                <p-column field="Value" header="Value"></p-column>
+                <p-column field="@FieldName" header="Field Name"></p-column>
+                <p-column field="@Operator" header="Operator"></p-column>
+                <p-column field="@Value" header="Value"></p-column>
                 <p-column>
                     <template let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
@@ -99,12 +99,13 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         this.showAddCondition = true;
     }
 
-    remove(e: EventCondition) {
+    remove(e: any) {
         let i = this.transition.condition.findIndex(c => c == e);
         this.transition.condition.splice(i, 1);
+        this.transitionChange.emit(this.transition);
     }
 
-    addCondition(e: EventCondition) {
+    addCondition(e: any) {
         this.transition.condition.push(e);
         this.showAddCondition = false;
         this.transitionChange.emit(this.transition);

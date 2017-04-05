@@ -942,13 +942,17 @@ namespace d360.web.Controllers.Services
 
             nodes.ForEach(n =>
             {
-                n.ParseSettings();
-                n.FieldsObject = (string.IsNullOrEmpty(n.Fields)) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XDocument.Parse(n.Fields), Formatting.None, true));
+                n.SettingsObject = XmlToDynamic(n.Settings, false);
+                n.FieldsObject = XmlToDynamic(n.Fields);
             });
-            links.ForEach(l => l.ConditionObject = DeserializeCondition(l.Condition));
 
-            @event.ConditionObject = DeserializeCondition(@event.Condition);
-            @event.SettingsObject = (@event.Settings == null) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XDocument.Parse(@event.Settings)));
+            links.ForEach(l =>
+            {
+                l.ConditionObject = XmlToDynamic(l.Condition);
+            });
+
+            @event.ConditionObject = XmlToDynamic(@event.Condition);
+            @event.SettingsObject = XmlToDynamic(@event.Settings, false);
 
             return new WorkflowDiagramModel
             {
@@ -1254,7 +1258,7 @@ namespace d360.web.Controllers.Services
 
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
-            @event.ConditionObject = DeserializeCondition(@event.Condition);
+            @event.ConditionObject = XmlToDynamic(@event.Condition);
             @event.SettingsObject = (@event.Settings == null) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XDocument.Parse(@event.Settings)));
 
             return Request.CreateResponse(HttpStatusCode.OK, new { Type = type, Event = @event });
@@ -1335,7 +1339,7 @@ namespace d360.web.Controllers.Services
                             @event.ObjectID = model.Event.ObjectID;
                             @event.TypeID = model.Type.ID;
                             @event.ChangeType = model.Event.ChangeType;
-                            @event.Condition = SerializeCondition(JsonConvert.DeserializeObject(model.Event.Condition));
+                            @event.Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
                             @event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
 
 
@@ -1350,8 +1354,8 @@ namespace d360.web.Controllers.Services
                             @event.ObjectID = model.Event.ObjectID;
                             @event.TypeID = model.Type.ID;
                             @event.ChangeType = model.Event.ChangeType;
-                            
-                            @event.Condition = SerializeCondition(JsonConvert.DeserializeObject(model.Event.Condition));
+
+                            @event.Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
                             @event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
 
                             Company.SaveChanges();
@@ -1382,6 +1386,7 @@ namespace d360.web.Controllers.Services
                                 step.YPosition = n.YPosition;
                                 step.VersionID = versionID;
                                 step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+
                                 if (string.IsNullOrEmpty(n.Fields))
                                     step.Fields = null;
                                 else
@@ -1406,13 +1411,12 @@ namespace d360.web.Controllers.Services
                                     node.YPosition = n.YPosition;
                                     node.VersionID = versionID;
                                     node.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+
                                     if (string.IsNullOrEmpty(n.Fields))
                                         node.Fields = null;
                                     else
                                         node.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
-                                    //node.ParentID
-                                    //node.Settings
-                                    //node.Fields
+
                                     keyMapping.Add(id, id);
                                 }
                             }
@@ -1443,7 +1447,7 @@ namespace d360.web.Controllers.Services
                                 link.ToVersionStepID = keyMapping[to];
                                 link.Name = l.Name ?? "";
                                 link.TransitionType = l.TransitionType;
-                                link.Condition = SerializeCondition(l.ConditionObject);
+                                link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString(); 
                                 link.FromPortID = l.FromPortID;
                                 link.ToPortID = l.ToPortID;
 
@@ -1457,10 +1461,9 @@ namespace d360.web.Controllers.Services
                                 {
                                     link.Name = l.Name ?? "";
                                     link.TransitionType = l.TransitionType;
-                                    link.Condition = null;
                                     link.FromPortID = l.FromPortID;
                                     link.ToPortID = l.ToPortID;
-                                    link.Condition = SerializeCondition(l.ConditionObject);
+                                    link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
                                 }
                             }
                         });
@@ -1515,33 +1518,10 @@ namespace d360.web.Controllers.Services
 
         #region Helper Methods
 
-        private string SerializeCondition(dynamic json)
+        private dynamic XmlToDynamic(string xml, bool omitRootElement = true)
         {
-
-            if (json == null)
-                return "<Conditions/>";
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("<Conditions>");
-
-            foreach(var condition in json)
-                sb.Append($"<Condition FieldTypeID=\"{condition.FieldTypeID}\" Operator=\"{HttpUtility.HtmlEncode(condition.Operator)}\" Value=\"{HttpUtility.HtmlEncode(condition.Value)}\" ValueType=\"{condition.ValueType}\" />");
-
-            sb.Append("</Conditions>");
-
-            return sb.ToString();
+            return string.IsNullOrEmpty(xml) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XElement.Parse(xml), Formatting.None, omitRootElement));
         }
-
-        private dynamic DeserializeCondition(string condition)
-        {
-            if (string.IsNullOrEmpty(condition))
-                return null;
-
-            return JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XElement.Parse(condition), Formatting.None, true));
-        }
-
-       
 
         #endregion
     }

@@ -48,15 +48,6 @@ namespace d360.core.entities.Workflow
 
         [DataMember, NotMapped]
         public dynamic SettingsObject { get; set; }
-
-        public void ParseSettings()
-        {
-            if (string.IsNullOrEmpty(Settings)) return;
-
-            XDocument xml = XDocument.Parse(Settings);
-            string json = JsonConvert.SerializeXNode(xml);
-            SettingsObject = JsonConvert.DeserializeObject<ExpandoObject>(json);
-        }
     }
 
     public class WorkflowDiagramLink
@@ -82,13 +73,5 @@ namespace d360.core.entities.Workflow
         [DataMember, NotMapped]
         public dynamic ConditionObject { get; set; }
 
-        public void ParseCondition()
-        {
-            if (string.IsNullOrEmpty(Condition)) return;
-
-            XDocument xml = XDocument.Parse(Condition);
-            string json = JsonConvert.SerializeXNode(xml);
-            ConditionObject = JsonConvert.DeserializeObject<ExpandoObject>(json);
-        }
     }
 }

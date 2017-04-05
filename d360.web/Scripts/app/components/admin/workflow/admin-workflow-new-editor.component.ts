@@ -32,7 +32,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     private workflowObjectTypes: WorkflowObjectType[] = [];
     private changesTypes: ChangeTypeInfo[] = [];
     private selectedObjectType: any = null;
-    private conditions: EventCondition[] = [];
+    private conditions: any[] = [];
 
     private showAddCondition: boolean = false;
     private objectType: string;
@@ -100,30 +100,21 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                             console.log(r);
 
                             if (this.model.Event.ConditionObject != null) {
-                                let cond = [];
-                                if (this.model.Event.ConditionObject.length == null)
-                                    cond.push(this.model.Event.ConditionObject.Condition);
-                                else
-                                    cond = this.model.Event.ConditionObject.Condition;
+                                this.conditions = [];
 
-                                cond.forEach(c => {
-                                    this.conditions.push({
-                                        fieldName: '',
-                                        FieldTypeID: c['@FieldTypeID'],
-                                        Operator: c['@Operator'],
-                                        Value: c['@Value'],
-                                        ValueType: c['@ValueType']
-                                    });
-                                });
+                                if (this.model.Event.ConditionObject.Condition.length == null)
+                                    this.conditions.push(this.model.Event.ConditionObject.Condition);
+                                else
+                                    this.conditions = this.model.Event.ConditionObject.Condition;
                             }
                         })
                         .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType))
                         .then(r => {
                             //need to apply names to loaded conditions
                             r.forEach(t => {
-                                let c = this.conditions.find(c => c.FieldTypeID == t.ID);
+                                let c = this.conditions.find(c => c['@FieldTypeID'] == t.ID);
                                 if (c != null)
-                                    c.fieldName = t.FriendlyName;
+                                    c['@FieldName'] = t.FriendlyName;
                             })
                         });
                 }
@@ -164,26 +155,29 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         this.showAddCondition = true;
     }
 
-    addCondition(e: EventCondition) {
+    addCondition(e: any) {
         this.conditions.push(e);
         this.showAddCondition = false;
         console.log(this.conditions);
     }
 
-    remove(item: EventCondition) {
+    remove(item: any) {
         let i = this.conditions.findIndex(c => c == item);
         this.conditions.splice(i, 1);
     }
 
     save() {
-        //this.model.Event.SettingsObject = {};
-        //this.model.Event.SettingsObject.Settings = {};
         this.model.Event.SettingsObject.Settings.Visible = !this.hideObject;
 
         this.model.Event.conditions = this.conditions;
         this.model.Event.Object = this.objectType;
         this.model.Event.ObjectID = this.objectId;
-        this.model.Event.Condition = JSON.stringify(this.conditions);
+
+        this.conditions.forEach(c => {
+            delete c['@FieldName'];
+        });
+
+        this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
         this.model.Event.Settings = JSON.stringify( this.model.Event.SettingsObject );
 
         console.log('save: ', this.model.Event);

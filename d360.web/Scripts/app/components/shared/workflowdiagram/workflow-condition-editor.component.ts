@@ -19,7 +19,7 @@ import { WorkflowService } from '../../../services/workflow.service';
                                     Field
                                 </div>
                                 <div>
-                                    <select style="width:95%;" placeholder="Choose a value" [ngModel]="condition.FieldTypeID" (ngModelChange)="selectFieldType($event);">
+                                    <select style="width:95%;" placeholder="Choose a value" [ngModel]="condition['@FieldTypeID']" (ngModelChange)="selectFieldType($event);">
                                         <option></option>
                                         <option *ngFor="let i of fields" [value]="i.ID">{{i.FriendlyName}}</option>
                                     </select>
@@ -28,18 +28,18 @@ import { WorkflowService } from '../../../services/workflow.service';
                                     Operator
                                 </div>
                                 <div>
-                                    <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Operator" [disabled]="!(condition.FieldTypeID > 0)">
+                                    <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] > 0)">
                                         <option></option>
                                         <option *ngFor="let i of operators" [value]="i.value">{{i.value}}</option>
                                     </select>
                                 </div>
-                                <div *ngIf="condition.FieldTypeID > 0">
+                                <div *ngIf="condition['@FieldTypeID'] > 0">
                                     <div *ngIf="selectedField.Type == 'Boolean'">
                                         <div class="FieldName">
                                             Value
                                         </div>
                                         <div>
-                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Value">
+                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Value']">
                                                 <option></option>
                                                 <option *ngFor="let b of bool" [value]="b.value">{{b.label}}</option>
                                             </select>
@@ -51,7 +51,7 @@ import { WorkflowService } from '../../../services/workflow.service';
                                             Days Since
                                         </div>
                                         <div>
-                                            <input type="number" [(ngModel)]="condition.Value" style="width: 95%" />
+                                            <input type="number" [(ngModel)]="condition['@Value']" style="width: 95%" />
                                         </div>
                                     </div>
 
@@ -60,7 +60,7 @@ import { WorkflowService } from '../../../services/workflow.service';
                                             Value
                                         </div>
                                         <div>
-                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Value">
+                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Value']">
                                                 <option></option>
                                                 <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
                                             </select>
@@ -72,7 +72,7 @@ import { WorkflowService } from '../../../services/workflow.service';
                                             Value
                                         </div>
                                         <div>
-                                            <input type="number" [(ngModel)]="condition.Value" style="width: 95%" />
+                                            <input type="number" [(ngModel)]="condition['@Value']" style="width: 95%" />
                                         </div>
                                    </div>
 
@@ -81,7 +81,7 @@ import { WorkflowService } from '../../../services/workflow.service';
                                             Value
                                         </div>
                                         <div>
-                                            <input type="text" [(ngModel)]="condition.Value" style="width: 95%" />
+                                            <input type="text" [(ngModel)]="condition['@Value']" style="width: 95%" />
                                         </div>
                                     </div>
 
@@ -96,7 +96,7 @@ import { WorkflowService } from '../../../services/workflow.service';
                         <div class="row">
                             <div class="col s12" style="float: right">
                                 <button type="button" pButton label="Cancel" (click)="close()"></button>
-                                <button type="button" pButton label="Add" (click)="save()" [disabled]="condition.Value == null || condition.Operator == null || condition.FieldTypeID == 0"></button>
+                                <button type="button" pButton label="Add" (click)="save()" [disabled]="condition['@Value'] == null || condition['@Operator'] == null || condition['@FieldTypeID'] == 0"></button>
                             </div>
                         </div>
 `
@@ -109,7 +109,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Output() onClose = new EventEmitter();
 
 
-    private condition = new EventCondition();
+    private condition: any = {};
     private fields: FieldType[] = [];
     private selectedField: FieldType = new FieldType();
     private lookups: any[] = [];
@@ -160,14 +160,14 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         this.setOperators(this.selectedField.Type);
 
-        this.condition.FieldTypeID = e;
-        this.condition.fieldName = this.selectedField.FriendlyName;
-        this.condition.ValueType = this.getValueType(this.selectedField.Type);
+        this.condition['@FieldTypeID'] = e;
+        this.condition['@FieldName'] = this.selectedField.FriendlyName;
+        this.condition['@ValueType'] = this.getValueType(this.selectedField.Type);
 
         this.lookups = [];
 
-        if (this.condition.ValueType == 'L') {
-            this.workflowService.getLookupList(this.condition.FieldTypeID)
+        if (this.condition['@ValueType'] == 'L') {
+            this.workflowService.getLookupList(this.condition['@FieldTypeID'])
                 .then(r => {
                     console.log(r);
                     this.lookups = r;
