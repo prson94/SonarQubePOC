@@ -59,22 +59,23 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                             <div class="col s12">
                                 <div class="tile tile-detail">
                                     <header>Items Details</header>
-                                    <p-dataTable [value]="itemdetails" selectionMode="single">                                        
-                                        <p-column field="Name" header="Step Name" [sortable]="true"></p-column>
-                                        <p-column field="ActivityTypeString" header="Activity" [sortable]="true"></p-column>
-                                        <p-column field="StepTypeString" header="Step" [sortable]="true"></p-column>
-                                        <p-column field="UpdatedOn" header="Started" [sortable]="true">
+                                    <p-dataTable [value]="itemdetails" selectionMode="single" scrollable="true" scrollWidth="100%">                                        
+                                        <p-column field="Name" header="Step Name" [sortable]="true" [style]="{'width':'150px'}"></p-column>
+                                        <p-column field="ActivityTypeString" header="Activity" [sortable]="true" [style]="{'width':'100px'}"></p-column>
+                                        <p-column field="StepTypeString" header="Step" [sortable]="true" [style]="{'width':'100px'}"></p-column>
+                                        <p-column field="UpdatedOn" header="Started" [sortable]="true" [style]="{'width':'100px'}">
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.StartedOn | date: 'shortDate'}}</span>
                                             </template>
                                         </p-column>
-                                        <p-column field="StartedBy" header="Started By" [sortable]="true"></p-column>
-                                        <p-column field="CompletedOn" header="Completed" [sortable]="true">
+                                        <p-column field="StartedBy" header="Started By" [sortable]="true" [style]="{'width':'100px'}"></p-column>
+                                        <p-column field="CompletedOn" header="Completed" [sortable]="true" [style]="{'width':'100px'}">
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.CompletedOn | date: 'shortDate'}}</span>
                                             </template>
                                         </p-column>
-                                        <p-column field="CompletedBy" header="Completed By" [sortable]="true"></p-column>                                   
+                                        <p-column field="CompletedBy" header="Completed By" [sortable]="true" [style]="{'width':'100px'}"></p-column>                                   
+                                        <p-column field="ToStep" header="Next" [sortable]="true" [style]="{'width':'150px'}"></p-column>                                   
                                     </p-dataTable>
                                 </div>
                             </div>

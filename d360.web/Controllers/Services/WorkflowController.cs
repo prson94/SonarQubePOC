@@ -1220,7 +1220,8 @@ namespace d360.web.Controllers.Services
 			                        istep.completedon as 'CompletedOn',
                                     Rc.FirstName + ' ' + Rc.LastName as CompletedBy,
                                     vs.ActivityType as ActivityType,
-                                    vs.StepType as StepType
+                                    vs.StepType as StepType,
+									vsTo.name as ToStep
                                 from
 			                        [workflow].item i
 	                                inner join [workflow].itemstep istep on (i.id = istep.itemid)
@@ -1228,6 +1229,9 @@ namespace d360.web.Controllers.Services
 			                        inner join [workflow].versionstep vs on (vs.id = istep.stepid)
                                     inner join [reporting].[Global_Resource] R on R.ResourceID = istep.startedby
                                     left join [reporting].[Global_Resource] Rc on Rc.ResourceID = istep.completedby
+									left join [workflow].itemsteptransition itrans on (itrans.fromitemStepID = istep.id)
+									left join [workflow].itemstep istepTo on (itrans.toitemstepid = istepTo.id)									                                    
+			                        left join [workflow].versionstep vsTo on (vsTo.id = istepTo.stepid)
 		                        where
 			                        i.[object] = @typename and i.[objectid] = @id and v.typeid = @workflowId;
             ";
