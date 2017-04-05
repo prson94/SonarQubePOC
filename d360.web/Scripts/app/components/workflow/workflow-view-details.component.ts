@@ -6,7 +6,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { RightSidebarService } from '../../services/right-sidebar.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
-import { StepType } from '../../models/workflow.model';
+import { StepType, WorkflowActivityType } from '../../models/workflow.model';
 
 
 @Component({
@@ -47,6 +47,7 @@ import { StepType } from '../../models/workflow.model';
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                 <p-column field="StepName" header="Step Name" sortable="false"></p-column>
                                 <p-column field="StepType" header="Step Type" sortable="false"></p-column>
+                                <p-column field="ActivityType" header="Activity Type" sortable="false"></p-column>
                                 <p-column field="StartedOn" header="Date Started" sortable="true">
                                     <template let-itemStep="rowData" pTemplate type="body">
                                         <span>{{itemStep.StartedOn | date:'shortDate'}}</span>
@@ -110,7 +111,8 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                         continue;
                     }
                     item.StepName = step[0].Name;
-                    item.StepType = StepType[step[0].StepType]
+                    item.StepType = StepType[step[0].StepType];
+                    item.ActivityType = WorkflowActivityType[step[0].ActivityType];
                 }
                 this.details = res;                                
                 this.isLoading = false;
