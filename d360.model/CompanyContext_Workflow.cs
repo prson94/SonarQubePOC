@@ -41,7 +41,11 @@ namespace d360.model
 
         private bool DoesWorkflowApply(EventObjectInfo objectInfo, WorkflowEventRegistration registration)
         {
-            Console.WriteLine($"DEBUG - TESTING TO SEE IF ${objectInfo.Object} - {objectInfo.ObjectID} IS VALID FOR WORKFLOW {registration.Type.Name} ID[{registration.Type.ID}");
+            var workflowName = "";
+            if (registration.Type != null)
+                workflowName = registration.Type.Name;
+
+            Console.WriteLine($"DEBUG - TESTING TO SEE IF ${objectInfo.Object} - {objectInfo.ObjectID} IS VALID FOR WORKFLOW {workflowName}");
 
             if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition))
             {
@@ -459,6 +463,21 @@ namespace d360.model
 
                 return;
             }
+
+            var url = "";
+            var prefix = "";
+            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.Open();
+
+                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
+
+                cnn.Close();
+            }
+
+            url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
+
+            emailSettings.BodyTemplate += $"  Item Workflow Details {url}";
 
             if (emailSettings.RecipientType == EmailTaskRecipientType.Initiator)
             {

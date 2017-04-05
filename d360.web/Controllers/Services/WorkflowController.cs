@@ -1186,10 +1186,10 @@ namespace d360.web.Controllers.Services
         [Route("item/detail/{itemId:int}"), HttpGet]
         public HttpResponseMessage GetItemDetail(int itemId)
         {
-            var item = Company.WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
-
+            var item = Company.WorkflowItems.Include(x => x.Version).Where(x => x.ID == itemId).FirstOrDefault();
+            
             if (item == null)
-                Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance.");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance.");
 
             // get the itemsteps for this workflow instance
 
