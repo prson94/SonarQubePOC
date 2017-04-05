@@ -4,6 +4,7 @@ import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { FusionAttributePagedResults, FusionAttributeValueDetails, FusionAttributeFilter } from '../models/fusion-attribute.model';
 import { SortOrder } from '../models/enums.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class FusionAttributeService extends BaseService {
@@ -102,5 +103,12 @@ export class FusionAttributeService extends BaseService {
             .toPromise()
             .then(response => <FusionAttributeValueDetails>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    saveAttribute(attribute: any): Promise<JsonResult> {
+        if (attribute.ID == undefined || !attribute.ID) {
+            return this.postDynamic(this.http, 'fusionattribute', attribute);
+        }
+        return this.putDynamic(this.http, 'fusionattribute', attribute);
     }
 }

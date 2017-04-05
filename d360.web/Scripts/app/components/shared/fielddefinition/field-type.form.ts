@@ -165,6 +165,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.isLoading = true;
             this.model = new FieldTypeEditorModel();
             this.model.FieldType = new FieldType();
+            //set boolean defaults;
+            this.model.FieldType.IsDisplayable = true;
+            this.model.FieldType.IsEditable = true;
+            this.model.FieldType.IsListable = true;
 
             this.fieldsService.getLookups(this.objectID, this.objectType)
                 .then(d => {

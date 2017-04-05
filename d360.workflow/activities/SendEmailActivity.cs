@@ -58,7 +58,7 @@ namespace d360.workflow
             }
 
             var api = new MandrillApi(constants.MANDRILL_API_KEY);
-            api.Messages.SendTemplate(message, templateID);
+            var result = api.Messages.SendTemplateAsync(message, templateID).Result;
         }
     }
 }

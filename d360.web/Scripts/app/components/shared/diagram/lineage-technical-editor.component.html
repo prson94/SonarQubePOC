@@ -93,7 +93,7 @@
                             <td>
                                 <select style="width:95%;" placeholder="Choose a value" [ngModel]="i.MapItemID" (ngModelChange)="select('selectedMapItem', i, $event)">
                                     <option></option>
-                                    <option *ngFor="let m of mapItems" [value]="m.ID">{{m.SourceSubjectName}} to {{m.TargetSubjectName}}</option>
+                                    <option *ngFor="let m of mapItems" [value]="m.ID">{{m.SourceSubjectName}} ({{m.SourceObjectName}}) to {{m.TargetSubjectName}} ({{m.TargetObjectName}})</option>
                                 </select>
                             </td>
                             <td class="RowTools">

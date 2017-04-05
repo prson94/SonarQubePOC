@@ -62,7 +62,13 @@ namespace d360.core.entities
         
         [DataMember]
         public string ObjectName { get; set; }
-        
+
+        [DataMember]
+        public bool IsDisplayable { get; set; }
+
+        [DataMember]
+        public bool IsEditable { get; set; }
+
         [DataMember]
         public bool IsListable { get; set; }
         

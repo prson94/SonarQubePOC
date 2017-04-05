@@ -34,6 +34,8 @@ namespace d360.core.entities
         public string Pattern { get; set; }
 
         /* FieldTypeRelation Properties */
+        public bool IsDisplayable { get; set; }
+        public bool IsEditable { get; set; }
         public bool IsListable { get; set; }
         public bool IsRequired { get; set; }
         public int SortOrder { get; set; }

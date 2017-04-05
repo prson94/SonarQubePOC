@@ -1065,3 +1065,29 @@ go
 -- add index on visible column to nym table
 CREATE NONCLUSTERED INDEX [IX_Nym_Visible] ON [dbo].[Nym] ( Visible ASC );
 go
+
+
+
+merge	[cache].[Object] as T
+using	(
+		select	'ReferenceItem' as [Object],
+				ID as ObjectID,
+				'ReferenceItemType' as ObjectType,
+				ReferenceItemTypeID as ObjectTypeID
+		from	ReferenceItem
+		) as S
+on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+when	matched then
+		update set	T.[ObjectType] = S.[ObjectType],
+					T.[ObjectTypeID] = S.[ObjectTypeID]
+when	not matched then
+		insert	( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
+		values	( S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID] );
+
+
+
+alter table Artifact add [Visible] BIT DEFAULT ((1)) NOT NULL
+go
+
+alter table workflow.Version add [Version] INT DEFAULT ((1)) NOT NULL
+go

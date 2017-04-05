@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿using d360.core;
 using d360.core.entities;
-using d360.core;
-using System.Runtime.Serialization;
-using System.Web.Mvc;
-using System.Web;
-using Microsoft.PowerBI.Api;
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Web;
+using System.Web.Mvc;
 
 namespace d360.web.Models
 {
@@ -262,60 +262,63 @@ namespace d360.web.Models
 
             foreach (var ft in fieldTypes)
             {
-                if (ft.Type != DataType.RelationLookup.ToString())
+                if (ft.Type != DataType.ComplexRelationLookup.ToString() && ft.Type != DataType.FilteredLookup.ToString() && ft.Type != DataType.RelationLookup.ToString())
                 {
                     string value = "";
 
-                    switch (ft.Type)
+                    if (form.AllKeys.Contains(ft.Name))
                     {
-                        case "Boolean":
-                            value = form[ft.Name];
-                            value = (value == "on" || (value??"").ToUpper() == "TRUE").ToString();
-                            break;
-                        case "Html":
-                            value = Server.HtmlDecode(form[ft.Name]);
-                            break;
-                        case "Link":
-                            var rawLinkName = form[ft.Name + "_Name"];
-                            var rawLinkUrl = form[ft.Name + "_Url"];
-                            value = string.Format("{0}|{1}", rawLinkName, rawLinkUrl);
-                            break;
-                        case "UncLink":
-                            var rawUncLinkName = form[ft.Name + "_Name"];
-                            var rawUncLinkUrl = form[ft.Name + "_Url"];
-                            value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
-                            break;
-                        case "Date":
-                            var stringDate = form[ft.Name];
-                            DateTime dateVal = DateTime.MinValue;
-                            //throw out any time piece sent in
-                            if(DateTime.TryParse(stringDate, out dateVal))
-                            {
-                                value = dateVal.ToShortDateString();
-                            }
-                            break;
-                        case "DateTime":
-                            var stringDateTime = form[ft.Name];
-                            DateTime dateTimeVal = DateTime.MinValue;
-                            //throw out any time piece sent in
-                            if (DateTime.TryParse(stringDateTime, out dateTimeVal))
-                            {
-                                value = dateTimeVal.ToString("s"); //already in utc
-                            }
-                            break;
-                        default:
-                            value = Server.HtmlEncode(form[ft.Name]);
-                            break;
-                    }
+                        switch (ft.Type)
+                        {
+                            case "Boolean":
+                                value = form[ft.Name];
+                                value = (value == "on" || (value ?? "").ToUpper() == "TRUE").ToString();
+                                break;
+                            case "Html":
+                                value = Server.HtmlDecode(form[ft.Name]);
+                                break;
+                            case "Link":
+                                var rawLinkName = form[ft.Name + "_Name"];
+                                var rawLinkUrl = form[ft.Name + "_Url"];
+                                value = string.Format("{0}|{1}", rawLinkName, rawLinkUrl);
+                                break;
+                            case "UncLink":
+                                var rawUncLinkName = form[ft.Name + "_Name"];
+                                var rawUncLinkUrl = form[ft.Name + "_Url"];
+                                value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
+                                break;
+                            case "Date":
+                                var stringDate = form[ft.Name];
+                                DateTime dateVal = DateTime.MinValue;
+                                //throw out any time piece sent in
+                                if (DateTime.TryParse(stringDate, out dateVal))
+                                {
+                                    value = dateVal.ToShortDateString();
+                                }
+                                break;
+                            case "DateTime":
+                                var stringDateTime = form[ft.Name];
+                                DateTime dateTimeVal = DateTime.MinValue;
+                                //throw out any time piece sent in
+                                if (DateTime.TryParse(stringDateTime, out dateTimeVal))
+                                {
+                                    value = dateTimeVal.ToString("s"); //already in utc
+                                }
+                                break;
+                            default:
+                                value = Server.HtmlEncode(form[ft.Name]);
+                                break;
+                        }
 
-                    if (ignoreFieldIfNull)
-                    {
-                        if (!string.IsNullOrEmpty(value))
+                        if (ignoreFieldIfNull)
+                        {
+                            if (!string.IsNullOrEmpty(value))
+                                fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
+                        }
+                        else
+                        {
                             fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
-                    }
-                    else
-                    {
-                        fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
+                        }
                     }
                 }
             }

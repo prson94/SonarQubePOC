@@ -57,11 +57,17 @@ namespace d360.core.entities
         [DataMember]
         public int ObjectID { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "IsListable_Name", Description = "IsListable_Description")]
+        [DataMember]
         public bool IsListable { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "IsRequired_Name", Description = "IsRequired_Description")]
+        [DataMember]
         public bool IsRequired { get; set; }
+
+        [DataMember]
+        public bool IsDisplayable { get; set; }
+
+        [DataMember]
+        public bool IsEditable { get; set; }
 
         [DataMember]
         public int SortOrder { get; set; }

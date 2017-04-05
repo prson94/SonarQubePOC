@@ -13,32 +13,38 @@
 <div *ngIf="!isLoading">
     <form (ngSubmit)="onSubmit()" #fieldEditor="ngForm">
         <div class="row">
-            <div class="col s4">
+            <div class="col l4 m4 s12">
                 <div id='FriendlyNameTip' class="FieldNameRequired">Name<span class="FieldNameError" data-bind="visible: FriendlyNameInvalid">*</span></div>
                 <input required name="friendlyname" pInputText type="text" [(ngModel)]="model.FieldType.FriendlyName" style="width: 98%; display: block;" (keyup)="syncApiNameWithName && updateApiName($event)" #friendlyName="ngModel" />
                 <div [hidden]="friendlyName.valid || friendlyName.pristine">Friendly name is required</div>
             </div>
-            <div class="col s4">
+            <div class="col l4 m4 s12">
                 <div id='NameTip' class="FieldNameRequired">API Name<span class="FieldNameError" data-bind="visible: ApiNameInvalid">*</span></div>
                 <input required name="name" pInputText type="text" [(ngModel)]="model.FieldType.Name" style="width: 98%; display: block;" (keyup)="syncApiNameWithName=false;" #apiName="ngModel" />
                 <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
             </div>
-            <div class="col s4">
+            <div class="col l4 m4 s12">
                 <div id='CategoryTip' class="FieldNameRequired">Category</div>
                 <input name="category" pInputText type="text" [(ngModel)]="model.FieldType.Category" style="width: 98%; display: block;" />
             </div>
         </div>
         <div class="row">
-            <div class="col s6">
+            <div class="col l8 m6 s12">
                 <div id='TypeTip' class="FieldNameRequired">Input Type<span class="FieldNameError" data-bind="visible: DataTypeInvalid">*</span></div>
                 <p-dropdown required name="datatype" [options]="lookups.DataTypes" [(ngModel)]="model.FieldType.Type" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadDataType($event.value)" #dataType="ngModel" ngDefaultControl></p-dropdown>
                 <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
             </div>
-            <div class="col s6">
-                <div class="col s3 input-field">
+            <div class="col l4 m6 s12 input-field">
+                <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
+                    <input name="isDisplayable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsDisplayable" />Show In Detail Tile?
+                </div>
+                <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
+                    <input name="isEditable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsEditable" />Is Editable?
+                </div>
+                <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
                     <input name="isListable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsListable" />Is Listable?
                 </div>
-                <div class="col s3 input-field">
+                <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
                     <input name="isRequired" #isRequired pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsRequired" (change)="model.FieldType.MinimumLength = (isRequired.checked) ? 1 : 0" />Is Required?
                 </div>
             </div>
@@ -116,20 +122,20 @@
                     <tbody *ngFor="let item of model.FusionItems; let i=index;">
                         <tr>
                             <td>
-                                <p-dropdown [ngModelOptions]="{standalone: true}"  [options]="lookups.FusionAttributeTypes" [(ngModel)]="item.SourceFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.FusionAttributeTypes" [(ngModel)]="item.SourceFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
                             </td>
                             <td>
                                 <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.ReferenceTypes" [(ngModel)]="item.ReferenceType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
                             </td>
                             <td>
-                                <p-dropdown  [ngModelOptions]="{standalone: true}" [options]="item.TargetFusionAttributeTypes" [(ngModel)]="item.TargetFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
+                                <p-dropdown [ngModelOptions]="{standalone: true}" [options]="item.TargetFusionAttributeTypes" [(ngModel)]="item.TargetFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
                             </td>
                             <td>
-                                <p-multiSelect [ngModelOptions]="{standalone: true}"  [options]="item.FusionDisplayFields" [(ngModel)]="item.DisplayFields" [style]="{ 'width' : '95%' }"></p-multiSelect>
+                                <p-multiSelect [ngModelOptions]="{standalone: true}" [options]="item.FusionDisplayFields" [(ngModel)]="item.DisplayFields" [style]="{ 'width' : '95%' }"></p-multiSelect>
                             </td>
                             <td>
                                 <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideHeader" [ngModelOptions]="{standalone: true}" /> Hide Header?</div>
-                                <div><input  pCheckbox type="checkbox" [(ngModel)]="item.HideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?</div>
+                                <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?</div>
                             </td>
                             <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeFusion(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
                         </tr>
@@ -292,15 +298,15 @@
                                                 </select>
                                             </td>
                                             <td>
-                                                <input type="checkbox" [(ngModel)]="d.Filter" [ngModelOptions]="{standalone: true}" [disabled]="!d.AllowFilter"/>
+                                                <input type="checkbox" [(ngModel)]="d.Filter" [ngModelOptions]="{standalone: true}" [disabled]="!d.AllowFilter" />
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </td>
                             <td>
-                               <input type="checkbox" [(ngModel)]="filteredLookupHideHeader" [ngModelOptions]="{standalone: true}" /> Hide Header? <br />
-                               <input type="checkbox" [(ngModel)]="filteredLookupHideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?
+                                <input type="checkbox" [(ngModel)]="filteredLookupHideHeader" [ngModelOptions]="{standalone: true}" /> Hide Header? <br />
+                                <input type="checkbox" [(ngModel)]="filteredLookupHideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?
                             </td>
                         </tr>
                     </tbody>
@@ -308,92 +314,92 @@
             </div>
         </div>
 
-                <!--legacy relation lookup -->
-                <div class="row" *ngIf="model.FieldType.Type == 'RelationLookup'">
-                    <div class="col s12" style="margin: 10px 0 10px 0">
-                        <table cellpadding="5">
-                            <thead>
-                                <tr>
-                                    <th>Relation</th>
-                                    <th>Reference Type</th>
-                                    <th>Child Relation</th>
-                                    <th>Table Settings</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="vertical-align: top; width: 260px">
-                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.selectedRelationItemID" style="width:95%" (ngModelChange)="changeLegacyRef()">
-                                            <option *ngFor="let j of lookups.IntersectTypes" [value]="j.value">{{j.title}}</option>
-                                        </select>
-                                    </td>
-                                    <td style="vertical-align: top; width: 260px">
-                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.ReferenceType" style="width:95%" (ngModelChange)="changeLegacyRef()">
-                                            <option *ngFor="let j of lookups.ReferenceTypes" [value]="j.value">{{j.label}}</option>
-                                        </select>
-                                    </td>
-                                    <td style="vertical-align: top; width: 260px">
-                                        <span *ngIf="childIntersectsLoading"><i class="fa fa-spinner fa-spin"></i></span>
-                                        <select *ngIf="!childIntersectsLoading" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.selectedChildIntersectType" style="width:95%" [disabled]="childIntersectDisabled" (ngModelChange)="changeLegacyChild()">
-                                            <option *ngFor="let j of childIntersectTypes" [value]="j.value">{{j.title}}</option>
-                                        </select>
-                                    </td>
-                                    <td style="vertical-align: middle; width: 125px">
-                                        <div><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.HideHeader" />Hide Header?</div>
-                                        <div><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.HideFooter" />Hide Footer?</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5">
-                                        <table class="striped highlight">
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Show?</th>
-                                                    <th>Sort</th>
-                                                    <th>Filter</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody *ngFor="let d of model.RelationItem.DisplayFields" style="max-height:200px; height: 200px; overflow-y: scroll">
-                                                <tr>
-                                                    <td style="width: 30%">{{d.FieldTypeName}}</td>
-                                                    <td style="width: 20%"><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="d.Show" /></td>
-                                                    <td style="width: 15%">
-                                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
-                                                            <option *ngFor="let j of model.RelationItem.SortOrderList" [value]="j.id">{{j.text}}</option>
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="d.FilterValue" />
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <!--legacy relation lookup -->
+        <div class="row" *ngIf="model.FieldType.Type == 'RelationLookup'">
+            <div class="col s12" style="margin: 10px 0 10px 0">
+                <table cellpadding="5">
+                    <thead>
+                        <tr>
+                            <th>Relation</th>
+                            <th>Reference Type</th>
+                            <th>Child Relation</th>
+                            <th>Table Settings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="vertical-align: top; width: 260px">
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.selectedRelationItemID" style="width:95%" (ngModelChange)="changeLegacyRef()">
+                                    <option *ngFor="let j of lookups.IntersectTypes" [value]="j.value">{{j.title}}</option>
+                                </select>
+                            </td>
+                            <td style="vertical-align: top; width: 260px">
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.ReferenceType" style="width:95%" (ngModelChange)="changeLegacyRef()">
+                                    <option *ngFor="let j of lookups.ReferenceTypes" [value]="j.value">{{j.label}}</option>
+                                </select>
+                            </td>
+                            <td style="vertical-align: top; width: 260px">
+                                <span *ngIf="childIntersectsLoading"><i class="fa fa-spinner fa-spin"></i></span>
+                                <select *ngIf="!childIntersectsLoading" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.selectedChildIntersectType" style="width:95%" [disabled]="childIntersectDisabled" (ngModelChange)="changeLegacyChild()">
+                                    <option *ngFor="let j of childIntersectTypes" [value]="j.value">{{j.title}}</option>
+                                </select>
+                            </td>
+                            <td style="vertical-align: middle; width: 125px">
+                                <div><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.HideHeader" />Hide Header?</div>
+                                <div><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.HideFooter" />Hide Footer?</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                                <table class="striped highlight">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Show?</th>
+                                            <th>Sort</th>
+                                            <th>Filter</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody *ngFor="let d of model.RelationItem.DisplayFields" style="max-height:200px; height: 200px; overflow-y: scroll">
+                                        <tr>
+                                            <td style="width: 30%">{{d.FieldTypeName}}</td>
+                                            <td style="width: 20%"><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="d.Show" /></td>
+                                            <td style="width: 15%">
+                                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
+                                                    <option *ngFor="let j of model.RelationItem.SortOrderList" [value]="j.id">{{j.text}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="d.FilterValue" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <div class="row">
-                    <div class="col s6">
-                        <div id='DisplayDescriptionTip' class="FieldName">Display Description</div>
-                        <p-editor name="desc" [(ngModel)]="model.FieldType.DisplayDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
-                    </div>
-                    <div class="col s6">
-                        <div id='FormDescriptionTip' class="FieldName">Form Description</div>
-                        <p-editor name="formDesc" [(ngModel)]="model.FieldType.FormDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
-                    </div>
+        <div class="row">
+            <div class="col s6">
+                <div id='DisplayDescriptionTip' class="FieldName">Display Description</div>
+                <p-editor name="desc" [(ngModel)]="model.FieldType.DisplayDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
+            </div>
+            <div class="col s6">
+                <div id='FormDescriptionTip' class="FieldName">Form Description</div>
+                <p-editor name="formDesc" [(ngModel)]="model.FieldType.FormDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div style="padding-top:10px">
+                    <button pButton type="submit" [disabled]="!fieldEditor.form.valid" label="Save"></button>
+                    <button pButton type="button" label="Cancel" (click)="cancel()"></button>
                 </div>
-                <div class="row">
-                    <div class="col s12">
-                        <div style="padding-top:10px">
-                            <button pButton type="submit" [disabled]="!fieldEditor.form.valid" label="Save"></button>
-                            <button pButton type="button" label="Cancel" (click)="cancel()"></button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+        </div>
     </form>
 </div>
 

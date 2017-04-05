@@ -1,6 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
+import { MessagesService } from '../../services/messages.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeType, FusionConfigurationDetails  } from '../../models/fusion.model';
@@ -17,14 +18,23 @@ import { StateService } from '../../services/state.service';
                 <div class="tile tile-detail" style="position:initial">
                     <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span *ngIf="!isLoading">
+                    <span *ngIf="!isLoading && !showEditor">
                         <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
                         <p-dataTable #dt resizableColumns="true" columnResizeMode="expand" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="stateService.fusionFilters.rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                        
-                           <p-column [style]="{width:'35px'}">
+                           <p-column [style]="{width:'30px'}">
                                     <template let-item="rowData" pTemplate type="body">
-                                        <a style="cursor:pointer;" (click)="selectItem(item)" title="details"><i class="fa fa-info" aria-hidden="true"></i></a>                                                                            
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selectItem(item)" title="details"><i class="fa fa-info" aria-hidden="true"></i></a> 
+                                        </div>
                                     </template>
                             </p-column>                                                        
+                           <p-column [style]="{width:'30px'}">
+                                    <template let-item="rowData" pTemplate type="body">
+                                        <div class="RowTools" *ngIf="item.IsEditable">
+                                            <a style="cursor:pointer;" (click)="fusionAttribute=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                        </div>
+                                    </template>
+                            </p-column>
                             <p-column *ngFor="let column of columns;let first = first" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <a *ngIf="first && item[column.datafield]" (click)="selectItem(item)">{{item[column.datafield]}}</a>
@@ -34,6 +44,7 @@ import { StateService } from '../../services/state.service';
                         </p-dataTable>                   
                         <div class="center" style="font-weight:bold"><d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></div>
                     </span>
+                    <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="newActionName" [objectID]="fusionAttributeTypeId" objectType="FusionAttribute" [title]="'Item'" [selection]="fusionAttribute" [rowID]="'ID'" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 </div>
                 `,
     providers: [FusionAttributeService, GridDefinitionService],
@@ -61,10 +72,11 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     columns: GridColumn[] = [];
     filtercolumns: GridFilterColumn[] = [];
     private isFiltering: boolean = false;
-    
+    showEditor: boolean = false;
     
     constructor(private gridDefinitionService: GridDefinitionService,
         private fusionAttributeService: FusionAttributeService,
+        private messagesService: MessagesService,
         private router: Router,
         private stateService: StateService,
         private changeDetectorRef: ChangeDetectorRef
@@ -93,7 +105,11 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             this.getFieldsDefinition();            
         } 
     }
-    
+
+    closeEditor() {
+        this.showEditor = false;
+    }
+
     getFieldsDefinition() {
         this.isLoading = true;
 
@@ -158,7 +174,6 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         }
     }
 
-
     private loadFusionAttributesLazy(event: LazyLoadEvent) {
         //event.first = First row offset
         //event.rows = Number of rows per page
@@ -176,6 +191,17 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     private doExport() {
         this.fusionAttributeService.getFusionAttributeExcel(this.fusionObject, this.fusionId, (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters);        
+    }
+
+    saveItem(event) {
+        this.isLoading = true;
+        this.showEditor = false;
+        this.fusionAttributeService.saveAttribute(event.item)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.getData();
+                this.isLoading = false;
+            });
     }
 
     private selectItem(item) {        

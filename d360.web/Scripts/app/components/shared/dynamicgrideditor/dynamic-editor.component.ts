@@ -92,6 +92,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     getDefinition() {      
         this.isLoading = true;  
         let id = (this.selection ? this.selection[this.rowID] : null);
+        console.log(id + " " + this.objectID + " " + this.objectType);
         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams)
             .then(result => {
                 this.isLoading = false;

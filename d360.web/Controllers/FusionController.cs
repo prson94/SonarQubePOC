@@ -33,7 +33,6 @@ namespace d360.web.Controllers
         }
 
         #endregion
-                
 
         #region Partials
 
@@ -672,6 +671,11 @@ where   A.FusionID = @f
                 }
             }
 
+            // Check to see if any field types for this fusion attribute type is set to editable, and that current user has permissions to edit anything in the first place.
+            var editable = Company.Any<FieldType>(i => i.Object == "FusionAttributeType" && i.ObjectID == fusionAttributeTypeID && i.IsEditable) ? 1 : 0;
+            var hasEditRights = Company.HasPermission(SystemObjects.Fusion, fusionID, core.enums.Claim.Update);
+            if (!hasEditRights) editable = 0;
+
             getDynamicFieldJoinStatements(fusionAttributeTypeID, "FusionAttribute", filterFields, out joins, out filterjoins, out columns, out filtercolumns, false);
 
             #region Parents
@@ -767,9 +771,10 @@ select  A.ID
         , A.Name 
         , A.FusionAttributeTypeID
         , 'FusionAttribute' as [Type]
+        , cast({editable} as bit) as IsEditable
         {columns} 
         {parentQueryColumnText} 
-from	FusionAttribute A {parentQueryJoinText} {joins}
+from	FusionAttribute A {parentQueryJoinText} {joins} 
 where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             sql = $@"select * from ({sql}) A";

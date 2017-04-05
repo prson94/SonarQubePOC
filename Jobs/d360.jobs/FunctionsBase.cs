@@ -127,7 +127,7 @@ namespace d360.jobs
             //message.Text = "Hello World plain text!"; 
 
             var api = new MandrillApi(constants.MANDRILL_API_KEY);
-            api.Messages.SendTemplate(message, templateID);
+            var ret = api.Messages.SendTemplateAsync(message, templateID).Result;
 
             message = null;
             api = null;

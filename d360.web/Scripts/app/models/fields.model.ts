@@ -22,8 +22,10 @@ export class FieldDefinition {
     Category: string;
     FriendlyName: string;
     SortOrder: string;
-    IsRequired: boolean;
+    //IsDisplayable: boolean;
+    //IsEditable: boolean;
     IsListable: boolean;
+    IsRequired: boolean;
     DisplayDescription: string;
     FormDescription: string;
     Name: string;
@@ -80,6 +82,8 @@ export class FieldType {
     Pattern: string;
     Object: string;
     ObjectID: number;
+    IsDisplayable: boolean;
+    IsEditable: boolean;
     IsListable: boolean;
     IsRequired: boolean;
     SortOrder: number;

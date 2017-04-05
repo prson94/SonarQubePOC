@@ -335,6 +335,8 @@ namespace d360.web.Controllers
                     return Resource_EditFields(ID);
                 case "FUSION":
                     return Fusion_EditFields(ID);
+                case "FUSIONATTRIBUTE":
+                    return FusionAttribute_EditFields(ID);
                 case "ARTIFACT":
                     return Artifact_EditFields(ID);
                 case "RULE":
@@ -390,6 +392,8 @@ namespace d360.web.Controllers
                     return Resource_AddFields(objectID.GetValueOrDefault());
                 case "FUSION":
                     return Fusion_AddFields(objectID.GetValueOrDefault());
+                case "FUSIONATTRIBUTE":
+                    return FusionAttribute_AddFields(objectID.GetValueOrDefault(), typeID.GetValueOrDefault());
                 case "ARTIFACT":
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "RULE":
@@ -447,72 +451,74 @@ namespace d360.web.Controllers
 
             switch ((objectType ?? "" ).ToUpper())
             {
-                case "LOOKUP":
-                    return EditLookup(form);
-                case "RULETYPE":
-                    return EditRuleType(form);
-                case "RULEDIMENSION":
-                    return EditRuleDimension(form);
-                case "POLICYTYPE":
-                    return EditPolicyType(form);    
-                case "PREDICATE":
-                    return EditPredicate(form);
-                case "RESOURCE":
-                    return EditResource(form);
-                case "STATISTICTYPE":
-                    return EditStatisticType(form);
-                case "FUSION":
-                    return EditFusion(form);
-                case "INTERSECTTYPE":
-                    return EditIntersectType(form);
-                case "REPORT":
-                    return await EditReport(form);
-                case "REPORTTILE":
-                    return EditReportTile(form,true);
-                case "ATTRIBUTETYPE":
-                    return EditAttributeType(form);
                 case "ARTIFACT":
                     return EditArtifact(form);
-                case "RULE":
-                    return EditRule(form);
-                case "SURVEYTYPE":
-                    return EditSurveyType(form);
+                case "ATTRIBUTE":
+                    return EditAttribute(form);
+                case "ATTRIBUTETYPE":
+                    return EditAttributeType(form);
+                case "FUSION":
+                    return EditFusion(form);
+                case "FUSIONATTRIBUTE":
+                    return EditFusionAttribute(form);
+                case "FUSIONQUERYATTRIBUTE":
+                    return EditFusionQueryAttribute(form);
+                case "FUSIONSCHEDULE":
+                    return EditFusionSchedule(form);
                 case "INTERSECT":
                     return EditRelationship(form);
-                case "RESOURCESELF":
-                    return EditMyInfo(form);
-                case "RESOURCESELFPASSWORD":
-                    return ChangeMyPassword(form);
-                case "TAXONOMY":
-                    return EditTaxonomy(form);
-                case "REFERENCEITEMTYPE":
-                    return EditReferenceItemType(form);
-                case "REFERENCEITEM":
-                    return EditReferenceItem(form);
-                case "POLICY":
-                    return EditPolicy(form);
+                case "INTERSECTTYPE":
+                    return EditIntersectType(form);
+                case "ISSUETYPE":
+                    return EditIssueType(form);
+                case "LOOKUP":
+                    return EditLookup(form);
+                case "MAP":
+                    return EditMap(form);
                 case "MAPRULE":
                     return EditMapRule(form);
                 case "MAPRULEITEM":
                     return EditMapRuleItem(form);
-                case "TAXONOMYTYPECLASS":
-                    return EditTaxonomyTypeClass(form);
+                case "POLICY":
+                    return EditPolicy(form);
+                case "POLICYTYPE":
+                    return EditPolicyType(form);
                 case "POLICYTYPECLASS":
                     return EditPolicyTypeClass(form);
-                case "TAXONOMYTYPELEVEL":
-                    return EditTaxonomyTypeLevel(form);
                 case "POLICYTYPELEVEL":
                     return EditPolicyTypeLevel(form);
-                case "ATTRIBUTE":
-                    return EditAttribute(form);
-                case "FUSIONQUERYATTRIBUTE":
-                    return EditFusionQueryAttribute(form);
-                case "ISSUETYPE":
-                    return EditIssueType(form);
-                case "FUSIONSCHEDULE":
-                    return EditFusionSchedule(form);
-                case "MAP":
-                    return EditMap(form);
+                case "PREDICATE":
+                    return EditPredicate(form);
+                case "REFERENCEITEM":
+                    return EditReferenceItem(form);
+                case "REFERENCEITEMTYPE":
+                    return EditReferenceItemType(form);
+                case "REPORT":
+                    return await EditReport(form);
+                case "REPORTTILE":
+                    return EditReportTile(form, true);
+                case "RESOURCE":
+                    return EditResource(form);
+                case "RESOURCESELF":
+                    return EditMyInfo(form);
+                case "RESOURCESELFPASSWORD":
+                    return ChangeMyPassword(form);
+                case "RULE":
+                    return EditRule(form);
+                case "RULEDIMENSION":
+                    return EditRuleDimension(form);
+                case "RULETYPE":
+                    return EditRuleType(form);
+                case "STATISTICTYPE":
+                    return EditStatisticType(form);
+                case "SURVEYTYPE":
+                    return EditSurveyType(form);
+                case "TAXONOMY":
+                    return EditTaxonomy(form);
+                case "TAXONOMYTYPECLASS":
+                    return EditTaxonomyTypeClass(form);
+                case "TAXONOMYTYPELEVEL":
+                    return EditTaxonomyTypeLevel(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -2915,12 +2921,37 @@ namespace d360.web.Controllers
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
-            list.Add("Name", 0);
-            list.Add("TextPath", 0);
-            if (!list.ContainsKey("Description"))
-                list.Add("Description", 0);
-            if (type == SystemObjects.ArtifactType)
-                list.Add("SubjectArea", 0);
+
+            if (type == SystemObjects.ReferenceItemType)
+            {
+                if (id == 0)
+                {
+                    list.Add("Name", 0);
+                    if (!list.ContainsKey("Description"))
+                        list.Add("Description", 0);
+                }
+                else
+                {
+                    list.Add("Code", 0);
+                }
+            }
+            else if (type == SystemObjects.ResourceType)
+            {
+                list.Add("FirstName", 0);
+                list.Add("LastName", 0);
+                list.Add("Email", 0);
+                list.Add("DateLastLoggedIn", 0);
+            }
+            else
+            {
+                list.Add("Name", 0);
+                list.Add("TextPath", 0);
+                if (!list.ContainsKey("Description"))
+                    list.Add("Description", 0);
+
+                if (type == SystemObjects.ArtifactType)
+                    list.Add("SubjectArea", 0);
+            }
 
             var relList = Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersectTypeID)
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
@@ -3286,6 +3317,10 @@ namespace d360.web.Controllers
                                 }
                             }
 
+                            model.FieldType.IsDisplayable = true;
+                            model.FieldType.IsEditable = false;
+                            model.FieldType.IsListable = false;
+                            model.FieldType.IsRequired = false;
                             model.FieldType.FieldTypeFilteredLookupDefinitions = new List<FieldTypeFilteredLookupDefinition>() { def };
                             //Company.Add<FieldTypeRelationLookupDefinition>(def);
 
@@ -3338,6 +3373,9 @@ namespace d360.web.Controllers
                             }
                             model.FieldType.FieldTypeFusionLookupDefinitions = new List<FieldTypeFusionLookupDefinition>() { def };
                         }
+
+                        model.FieldType.IsDisplayable = true;
+
                         Company.Add<FieldType>(model.FieldType);
                         break;
                     #endregion
@@ -3397,6 +3435,10 @@ namespace d360.web.Controllers
                                 Company.FieldTypeLookups.Remove(existing);
                             }
 
+                            model.FieldType.IsDisplayable = true;
+                            model.FieldType.IsEditable = false;
+                            model.FieldType.IsListable = false;
+                            model.FieldType.IsRequired = false;
 
                             Company.Add<FieldType>(model.FieldType);
                             lookupRow.FieldTypeID = model.FieldType.ID;
@@ -3527,10 +3569,14 @@ namespace d360.web.Controllers
                     (model.FieldType.Type == DataType.RelationLookup.ToString())
                     )
                 {
+                    ft.IsDisplayable = true;
+                    ft.IsEditable = false;
                     ft.IsListable = false;
                 }
                 else
                 {
+                    ft.IsDisplayable = model.FieldType.IsDisplayable;
+                    ft.IsEditable = model.FieldType.IsEditable;
                     ft.IsListable = model.FieldType.IsListable;
                 }
 
@@ -6313,6 +6359,90 @@ namespace d360.web.Controllers
                     upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region FusionAttribute
+
+        #region Field Generation
+
+        /// <param name="fat">FusionAttributeTypeID</param>
+        /// <param name="f">FusionID</param>
+        [Route("FusionAttributeType_AddFields"), NonNullableParameters]
+        public JsonResult FusionAttribute_AddFields(int fat, int f)
+        {
+            if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "FusionAttributeTypeID", FieldType = DataType.Hidden.ToString(), Value = fat.ToString() });
+            list.Add(new EditableField { FieldName = "FusionID", FieldType = DataType.Hidden.ToString(), Value = f.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, fat).ToList(), 2);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">FusionAttributeID</param>
+        [Route("FusionAttribute_EditFields"), NonNullableParameters]
+        public JsonResult FusionAttribute_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<FusionAttribute>(id, i => i.FusionAttributeType);
+
+            if (!Company.HasPermission(SystemObjects.Fusion, a.FusionID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            //list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, a.FusionAttributeTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.FusionAttribute, a.ID).ToList(), 2, true);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        [Route("EditFusionAttribute"), HttpPut, ValidateInput(false)]
+        public JsonResult EditFusionAttribute(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("Fusion Attribute");
+
+                var id = parseIntField(form, "ID");
+
+                var model = Company.GetById<FusionAttribute>(id);
+
+                if (model == null) throw new NotFoundException("Fusion Attribute");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+
+                var sType = SystemObjects.FusionAttribute.ToString();
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.FusionAttribute, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, model.FusionAttributeTypeID).ToList(), form, Server, false);
+                Company.SaveOrUpdate<FusionAttribute>(model, fields);
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.FusionAttribute.ToString(), ObjectID = id });
             }
             catch (BaseException ex)
             {

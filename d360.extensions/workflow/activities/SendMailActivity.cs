@@ -77,7 +77,7 @@ namespace d360.extensions.workflow.activities
             message.TrackClicks = false;
 
             var api = new MandrillApi(constants.MANDRILL_API_KEY);
-            api.Messages.Send(message);
+            var result = api.Messages.SendAsync(message).Result;
         }
     }
 }

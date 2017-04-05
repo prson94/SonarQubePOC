@@ -97,7 +97,7 @@ namespace d360.web.Controllers
             if (typeCheck != null)
             {
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
-                var fieldTypes = Company.Filter<FieldType>(i => i.Object == typeCheck.Type && i.ObjectID == typeCheck.ID).OrderBy(i => i.SortOrder).ToList();
+                var fieldTypes = Company.Filter<FieldType>(i => i.Object == typeCheck.Type && i.ObjectID == typeCheck.ID && i.IsDisplayable).OrderBy(i => i.SortOrder).ToList();
 
                 fieldTypes.ForEach(ft =>
                 {
@@ -2563,6 +2563,49 @@ from    [Intersect] I
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Policy', A{pos}.PolicyTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
                                 #endregion
                                 break;
+                            case "ResourceType":
+                                #region ResourceType
+
+                                if (i.FieldTypeName.In("FirstName", "LastName", "Email"))
+                                {
+                                    var rec = new ComplexColumnModel
+                                    {
+                                        DisplayColumn = objectDisplayColumn,
+                                        text = objectFriendlyName,
+                                        datafield = $"{dataField}",
+                                        OutputColumn = true,
+                                        contextfield = $"{dataField}_Context",
+                                        objectfield = $"{dataField}_Object",
+                                        objectidfield = $"{dataField}_ObjectID",
+                                        SortColumn = objectSortColumn,
+                                        urlfield = $"{dataField}_Url"
+                                    };
+
+                                    setColumnTypeInfo(ft, i, rec);
+                                    rec.datafieldtype = "lookup"; //must be done after function call above.
+                                    columnModels.Add(rec);
+                                    // Add the fields that you need to create link in Angular component.
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Resource'", datafield = $"{dataField}_Object" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ResourceID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Resource', 1, A{pos}.ResourceID)", datafield = $"{dataField}_Url" });
+                                }
+                                else
+                                {
+                                    var rec2 = new ComplexColumnModel
+                                    {
+                                        DisplayColumn = objectDisplayColumn,
+                                        text = objectFriendlyName,
+                                        datafield = $"{dataField}",
+                                        SortColumn = objectSortColumn,
+                                        OutputColumn = true
+                                    };
+                                    setColumnTypeInfo(ft, i, rec2);
+                                    columnModels.Add(rec2);
+                                }
+
+                                #endregion
+                                break;
                             case "RuleType":
                                 #region RuleType
                                 //Create the column/field to display the visible column cell.
@@ -2654,8 +2697,21 @@ from    [Intersect] I
             {
                 var join = def.Relations[i];
                 var currentObj = join.Object;
+
                 if (join.ObjectID > 0)
                     currentObj = currentObj.Replace("Type", "");
+
+                var currentObjTable = currentObj;
+                var currentObjIdColumn = "ID";
+                if (currentObj == "Resource")
+                {
+                    currentObjTable = "reporting.Global_Resource";
+                    currentObjIdColumn = "ResourceID";
+                }
+                else
+                {
+                    currentObjTable = "[" + currentObj + "]";
+                }
 
                 var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
                 var objColumn = "";
@@ -2669,19 +2725,19 @@ from    [Intersect] I
                 {
                     case ComplexLookupRelationType.StandardRelationhip:
                         #region
-                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
+                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{currentObjIdColumn} ) )";
                         if (i == 0)
                         {
-                            join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                            join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                             join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
                             objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
                             objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                         }
                         else
                         {
-                            join.JoinStatement += $" {joinType} join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
-                            objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.Object else I{i}.Subject end";
-                            objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                            join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                            objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
+                            objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                         }
                         if (addDeletedCheck)
                         {
@@ -2692,7 +2748,7 @@ from    [Intersect] I
                     case ComplexLookupRelationType.ChildRelationship:
                         #region
                         join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) ";
-                        join.JoinStatement += $" inner join [{currentObj}] A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                        join.JoinStatement += $" inner join {currentObjTable} A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.{currentObjIdColumn} = I{i}.ObjectID";
                         objColumn = $"'{join.Object.Replace("Type", "")}'";
                         objIDColumn = $"I{i}.ObjectID";
                         if (i == 0)
@@ -2814,6 +2870,18 @@ from    [Intersect] I
                     if (join.ObjectID > 0)
                         currentObj = currentObj.Replace("Type", "");
 
+                    var currentObjTable = currentObj;
+                    var currentObjIdColumn = "ID";
+                    if (currentObj == "Resource")
+                    {
+                        currentObjTable = "reporting.Global_Resource";
+                        currentObjIdColumn = "ResourceID";
+                    }
+                    else
+                    {
+                        currentObjTable = "[" + currentObj + "]";
+                    }
+
                     var addDeletedCheck = currentObj.Equals("FusionAttribute", StringComparison.CurrentCultureIgnoreCase);
                     var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
                     var objColumn = "";
@@ -2824,19 +2892,19 @@ from    [Intersect] I
                     {
                         case ComplexLookupRelationType.StandardRelationhip:
                             #region
-                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
+                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{currentObjIdColumn} ) )";
                             if (i == 0)
                             {
-                                join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
                                 objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                             }
                             else
                             {
-                                join.JoinStatement += $" {joinType} join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
-                                objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.Object else I{i}.Subject end";
-                                objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
+                                objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                             }
                             if (addDeletedCheck)
                             {
@@ -2847,7 +2915,7 @@ from    [Intersect] I
                         case ComplexLookupRelationType.ChildRelationship:
                             #region
                             join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null)";
-                            join.JoinStatement += $" {joinType} join [{currentObj}] A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                            join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
                             objColumn = $"'{join.Object.Replace("Type", "")}'";
                             objIDColumn = $"I{i}.ObjectID";
                             if (i == 0)

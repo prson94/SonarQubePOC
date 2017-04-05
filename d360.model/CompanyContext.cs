@@ -339,11 +339,19 @@ namespace d360.model
                     {
                         Set<Field>().Attach(item);
                         Entry(item).State = (string.IsNullOrEmpty(item.Value)) ? EntityState.Deleted : EntityState.Modified;
+                        if (item.ObjectType == "FusionAttribute")
+                        {
+                            item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
+                        }
                     }
                     else
                     {
                         if (!string.IsNullOrEmpty(item.Value))
                         {
+                            if (item.ObjectType == "FusionAttribute")
+                            {
+                                item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
+                            }
                             Set<Field>().Add(item);
                         }
                     }
@@ -353,7 +361,7 @@ namespace d360.model
                     var existingFields = Filter<Field>(i => i.ObjectID == oID && i.ObjectType == oType).ToList();
                     existingFields.ForEach(item =>
                     {
-                        if (!items.Any(i => i.FieldTypeID == item.FieldTypeID))
+                        if (items.Any(i => i.FieldTypeID == item.FieldTypeID && string.IsNullOrEmpty(i.Value)))
                         {
                             Set<Field>().Remove(item);
                         }
@@ -480,6 +488,25 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
         public IQueryable<AttributeHierarchyItem> GetAttributeAndIntersectHierarchyByObject(SystemObjects type, int id)
         {
             return Query<AttributeHierarchyItem>("EXEC GetAttributeAndIntersectHierarchyByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
+        }
+
+        public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
+        {
+            return
+                Database.Connection.Query<string>(@"
+declare @type varchar(25),
+        @format nvarchar(250),
+        @lo varchar(25),
+        @loid int
+
+select  @type = [Type],
+        @format = LookupDisplayFormat,
+        @lo = LookupObjectType,
+        @loid = LookupObjectID
+from    FieldType 
+where ID = @fieldTypeID
+
+select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldValue)", new { fieldTypeID, fieldValue }).First();
         }
 
         public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)

@@ -43,8 +43,9 @@ namespace d360.jobs.ReIndex
                       var source = new ElasticSearchSource();                    
 
                       using (var context = GetCompanyConnection(companyID))
-                      {   
-                                             
+                      {
+                          var isDevEnvironment = context.ConnectionString.Contains("d3sdev");
+
                           Console.WriteLine("Starting to rebuild search index [company id: {0}]", companyID);
 
                           context.OpenWithRetry(RetryPolicy.DefaultFixed);
@@ -83,7 +84,7 @@ namespace d360.jobs.ReIndex
 
                           Console.WriteLine("loading rules [company id: {0}]", companyID);
 
-                          source.AddToIndex(LoadRules(context, companyID, source));
+                          source.AddToIndex(LoadRules(context, companyID, source, isDevEnvironment));
 
                           Console.WriteLine("loading fusion attributes [company id: {0}]", companyID);
 
@@ -303,22 +304,41 @@ namespace d360.jobs.ReIndex
             }            
         }
 
-        private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source, bool isDevEnvironment)
         {
-            var sql = @"SELECT [ID]
+            string sql = "";
+
+            if (isDevEnvironment)
+            {
+                sql = @"SELECT R.[ID]
+                                  ,R.[Name]
+                                  ,R.[Description]      
+                                  ,T.Name as [RuleType]
+                              FROM [dbo].[Rule] R inner join RuleType T on T.ID = R.RuleTypeID";
+            }
+            else
+            {
+                sql = @"SELECT [ID]
                                   ,[Name]
                                   ,[Description]      
-                                  ,[RuleType]
+                                  ,case [RuleType]
+                                    when 1 then 'Informational'
+                                    when 2 then 'Quality Check'
+                                    when 3 then 'Metric'
+                                    when 4 then 'Profile'
+                                    else ''
+                                end as RuleType
                               FROM [dbo].[Rule]";
+            }
+
 
             foreach (var a in context.Query(sql))
             {
                 var item = new AddToIndexModel { Group = "Rule", CompanyID = companyID, Type = "Rule", ID = a.ID, RelativeUrl = string.Format("#/rules/{0}", a.ID) };
                 item.Fields = new Dictionary<string, string>();
                 item.Fields.Add("Name", a.Name);
-                var ruleType = (core.enums.RuleType)a.RuleType;
 
-                item.Fields.Add("Type", $"{ruleType.ToString()} Rule");
+                item.Fields.Add("Type", $"{a.RuleType} Rule");
                 item.Fields.Add("Description", a.Description);
 
                 yield return item;                

@@ -2315,6 +2315,13 @@
         <member name="M:d360.web.Controllers.FormController.FusionType_EditFields(System.Int32)">
             <param name="id">FusionTypeID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.FusionAttribute_AddFields(System.Int32,System.Int32)">
+            <param name="fat">FusionAttributeTypeID</param>
+            <param name="f">FusionID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionAttribute_EditFields(System.Int32)">
+            <param name="id">FusionAttributeID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.FusionAttributeType_AddFields(System.Int32,System.Int32)">
             <param name="fat">FusionTypeID</param>
             <param name="p">ParentID</param>

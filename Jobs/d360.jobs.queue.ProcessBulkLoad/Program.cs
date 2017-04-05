@@ -342,7 +342,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     if (verifiedType != null)
                     {
-#region Verify Item
+                        #region Verify Item
 
                         itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                         rawItemPath = itemColumn.Value.Trim().ToLower();
@@ -397,12 +397,12 @@ namespace d360.jobs.queue.ProcessBulkLoad
                             itemColumn.LookupObject = verifiedItem.Name;
                             itemColumn.LookupObjectID = verifiedItem.ID;
                         }
-                        currentColumnIndex++;
 
-#endregion
+                        #endregion
                     }
+                    currentColumnIndex++;
 
-#region Verify Responsibility
+                    #region Verify Responsibility
 
                     responsibilityColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                     rawResponsibility = responsibilityColumn.Value.Trim().ToLower();
@@ -413,10 +413,10 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         responsibilityColumn.LookupObjectID = verifiedResponsibility.ID;
                     }
                     currentColumnIndex++;
+                    
+                    #endregion
 
-#endregion
-
-#region Verify Resource
+                    #region Verify Resource
 
                     resourceColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                     rawResource = resourceColumn.Value.Trim().ToLower();
@@ -427,7 +427,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         resourceColumn.LookupObjectID = verifiedResource.ID;
                     }
 
-#endregion
+                    #endregion
 
                     if (verifiedItem != null && verifiedResource != null && verifiedResponsibility != null)
                     {

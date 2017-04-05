@@ -42,7 +42,7 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
     }
 
     ngAfterViewInit() {
-        this.biContainer.changes.subscribe(() => this.initPowerBi());                
+        this.biContainer.changes.subscribe(() => this.initPowerBi());            
     }
 
     showFullscreen() {
@@ -74,7 +74,7 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
             .then(result => { 
                 this.shouldRender = true;    // make sure only one call to power bi per load of this.           
                 this.powerBIDetails = result;      
-                this.isLoading = false;             
+                this.isLoading = false;
             });
     }
 }

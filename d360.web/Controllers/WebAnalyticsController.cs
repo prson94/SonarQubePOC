@@ -1,4 +1,5 @@
-﻿using d360.model;
+﻿using d360.core;
+using d360.model;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
@@ -28,8 +29,7 @@ namespace d360.web.Controllers
         #endregion
 
         public class WebActivityEntity : TableEntity
-        {           
-            
+        {
             public string Activity { get; set; }
 
             public int ObjectId { get; set; }
@@ -37,11 +37,17 @@ namespace d360.web.Controllers
             public string ObjectName { get; set; }
 
             public int ResourceID { get; set; }
+
             public string ResourceName { get; set; }
+
             public string IP { get; set; }
-            public string UserAgent { get; set; }            
+
+            public string UserAgent { get; set; }
+
             public string Path { get; set; }
+
             public string Host { get; set; }
+
             public string BrowserLanguages { get; set; }
         }
 
@@ -60,6 +66,7 @@ namespace d360.web.Controllers
             value.IP = GetClientIp(Request);
             value.UserAgent = HttpContext.Current.Request.UserAgent;
             value.Host = HttpContext.Current.Request.UrlReferrer.Host;
+            value.Host = value.Host.Substring(0, value.Host.IndexOf(".data3sixty")).ToLower();
             value.Path = HttpContext.Current.Request.UrlReferrer.AbsolutePath;
             value.BrowserLanguages = string.Join(",",HttpContext.Current.Request.UserLanguages);
             value.RowKey = Guid.NewGuid().ToString();
@@ -67,18 +74,30 @@ namespace d360.web.Controllers
 
             try
             {
+                Company.AddWebStatistic(Company.CurrentCompanyID,
+                    (SystemObjects)Enum.Parse(typeof(SystemObjects), value.ObjectName),
+                    value.ObjectId,
+                    value.IP,
+                    value.UserAgent,
+                    value.Host,
+                    value.BrowserLanguages,
+                    value.Activity,
+                    Company.CurrentResourceID,
+                    DateTime.UtcNow
+                );
 
-                var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
 
-                var tableClient = storageAccount.CreateCloudTableClient();
+                //var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
 
-                var table = tableClient.GetTableReference($"WebLogs{Company.CurrentCompanyID}");
-                table.CreateIfNotExists();
+                //var tableClient = storageAccount.CreateCloudTableClient();
 
-                var insertOperation = TableOperation.Insert(value);
+                //var table = tableClient.GetTableReference($"WebLogs{Company.CurrentCompanyID}");
+                //table.CreateIfNotExists();
 
-                // its logging we dont give a crap if it fails we arent able to log so lets not wait for it to complete...
-                /*await */table.ExecuteAsync(insertOperation);
+                //var insertOperation = TableOperation.Insert(value);
+
+                //// its logging we dont give a crap if it fails we arent able to log so lets not wait for it to complete...
+                ///*await */table.ExecuteAsync(insertOperation);
             }
             catch(Exception e)
             {

@@ -66,7 +66,7 @@ namespace d360.extensions.mail
             //message.Text = "Hello World plain text!"; 
 
             var api = new MandrillApi(constants.MANDRILL_API_KEY);
-            api.Messages.SendTemplate(message, templateID);
+            var result = api.Messages.SendTemplateAsync(message, templateID).Result;
             //var credential = new NetworkCredential(constants.SMTP_USERNAME, constants.SMTP_PASSWORD);
             //var transport = new Web(credential);
             //transport.Deliver(message);
