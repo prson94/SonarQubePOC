@@ -51,6 +51,10 @@ export class ResponsibilityTypeForm implements OnInit {
     save(): void {
         this.isLoading = true;
         this.getTypeRelations();
+
+        //avoid sending this back to the server
+        this.item.AllocationsList = null;
+
         if (this.id == 0) {
             this.responsibilityTypeService.postResponsibilityType(this.item)
                 .then(d => {
