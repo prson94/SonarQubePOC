@@ -11,6 +11,8 @@ namespace d360.model.workflow
     {
         public List<WorkflowFormFieldModel> Fields { get; set; }
 
+        public WorkflowFormSettingsModel Settings { get; set; }
+
         public static WorkflowFormModel ParseXml(XElement xml)
         {
             if (xml == null) throw new Exception("INVALID XML SPECIFIED FOR FORM MODEL");

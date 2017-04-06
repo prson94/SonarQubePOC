@@ -454,7 +454,13 @@ namespace d360.model
                     initiatedBy = res.FullName;
                 }
             }
-            
+
+
+            //update the xml for the number of users sent the form
+            var xml = XElement.Parse(item.Fields);
+            xml.Add(new XAttribute("TotalResources", users.Count()));
+            item.Fields = xml.ToString();
+            SaveChanges();
 
             var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
             var emailBody = $"The Data3Sixty workflow [{item.Step.Version.Type.Name}] has generated a form that you need to complete.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}";

@@ -969,6 +969,8 @@ namespace d360.web.Controllers.Services
         {
             try
             {
+                int numberOfResponses = 1;
+                int totalResources = 0;
                 var item = Company.WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
                 var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.ID == itemStepId).FirstOrDefault();
 
@@ -977,32 +979,85 @@ namespace d360.web.Controllers.Services
                     return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "CANNOT FIND THE ITEM STEP FOR THE SPEICIFIED PARAMETERS");
                 }
 
+                if (string.IsNullOrEmpty(itemStepsModel.Settings))
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Form settings is missing or invalid");
+
+                var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(itemStepsModel.Settings));
+                var isCompleted = false;
+
+                
+
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append("<fields><form>");
+                var root = XElement.Parse(itemStepsModel.Fields);
+
+                //increment the number of responses attribute
+
+                if(root.Attribute("NumberOfResponses") != null)
+                {                    
+                    int.TryParse((string)root.Attribute("NumberOfResponses"), out numberOfResponses);                    
+                    root.Attribute("NumberOfResponses").SetValue(numberOfResponses++);
+                }
+                else
+                {
+                    root.Add(new XAttribute("NumberOfResponses", numberOfResponses));
+                }
+
+                if(root.Attribute("TotalResources") != null)
+                {
+                    int.TryParse((string)root.Attribute("TotalResources"), out totalResources);                    
+                }
+
+                var newForm = new XElement("form", new XAttribute("ResourceID", Company.CurrentResourceID));
 
                 foreach (var field in model)
-                {                    
+                {
                     var val = field.Value != null ? field.Value.ToString() : "";
 
-                    if (field.FieldType == WorkflowFormModelFieldType.boolean) {
-                        var boolVal = (val ?? "").ToUpper() == "TRUE" ? "TRUE" : "FALSE";
-                        sb.Append($"<field id=\"{field.ID}\" label=\"{field.Label}\" value=\"{boolVal}\" fieldtype=\"{field.FieldType.ToString().ToLower()}\"></field>");
+                    if (field.FieldType == WorkflowFormModelFieldType.boolean)
+                    {
+                        val = (val ?? "").ToUpper() == "TRUE" ? "TRUE" : "FALSE";
                     }
-                    else
-                        sb.Append($"<field id=\"{field.ID}\" label=\"{field.Label}\" value=\"{val}\" fieldtype=\"{field.FieldType.ToString().ToLower()}\"></field>");                    
+
+                    newForm.Add(new XElement("field",
+                            new XAttribute("id", field.ID),
+                            new XAttribute("label", field.Label),
+                            new XAttribute("value", val),
+                            new XAttribute("fieldtype", field.FieldType.ToString().ToLower()))
+                        );
                 }
-                
-                sb.Append("</form></fields>");
+
+                root.Add(newForm);
 
                 if (itemStepsModel == null)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Unable to find item step");
                 }
 
-                itemStepsModel.Fields = sb.ToString();
-                itemStepsModel.CompletedOn = DateTime.UtcNow;
-                itemStepsModel.CompletedBy = Company.CurrentResourceID;
+                // check the settings for the form.  If the form is set to first response then we mark the step as complete and fire off its transitions
+                switch (formSettings.ResponseType)
+                {
+                    case FormResponseType.FirstResponse:
+                        isCompleted = true;
+                        //complete step and go to transitions                        
+                        break;
+                    case FormResponseType.All:
+                        isCompleted = numberOfResponses >= totalResources;
+                        //check that the number of users requested to fill out the form matches the number of responses recieved.
+                        break;
+                    case FormResponseType.Majority:
+                        //check if the number of responses is a majority
+                        isCompleted = numberOfResponses >= (totalResources / 2) + 1;
+                        break;
+                }
+
+                itemStepsModel.Fields = root.ToString(SaveOptions.None);
+
+                if (isCompleted)
+                {
+                    itemStepsModel.CompletedOn = DateTime.UtcNow;
+                    itemStepsModel.CompletedBy = Company.CurrentResourceID;
+                }
 
                 Company.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
                 Company.SaveChanges();
@@ -1013,8 +1068,10 @@ namespace d360.web.Controllers.Services
 
                 var type  = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj.Type);
 
-                //complete step and go to transitions
-                Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = obj.TypeID, ObjectType = type } );
+                if (isCompleted)
+                {
+                    Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = obj.TypeID, ObjectType = type });
+                }
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
             }            
