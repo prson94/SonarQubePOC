@@ -197,6 +197,8 @@ export class WorkflowDiagramLink {
     TransitionType: TransitionType;
     Condition: string;
     ConditionObject: any;
+    Settings: string;
+    SettingsObject: any;
     Name: string;
 }
 
@@ -209,9 +211,11 @@ export class LinkModel {
     diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
     frompid: string;
     topid: string;
+    icon: string;
 
     transitionType: TransitionType = TransitionType.Always;
     condition: any = [];
+    settings: any = {};
 
 }
 
@@ -234,8 +238,12 @@ export class NodeModel {
     activityDescription: string;
     activityName: string;
 
+
     settings: any = {};
     fields: any = {};
+
+    hasMultipleOutputs: boolean = false;
+
 }
 
 
@@ -371,7 +379,7 @@ export enum StepType {
 export enum TransitionType {
     Always = 1,
     Condition = 2,
-    Link = 3
+    Timer = 3
 }
 
 export enum IssueType {
@@ -385,6 +393,12 @@ export enum WorkflowType {
     WorkIssue = 3,
     ChallengeArtifact = 4,
     SuggestNewArtifactMulti = 5,
+}
+
+export enum FormResponseType {
+    FirstResponse = 0,
+    All = 1,
+    Majority = 2
 }
 
 //#endregion

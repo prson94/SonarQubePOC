@@ -33,7 +33,7 @@ import * as _ from 'lodash';
     <div class="col s12">
         <div class="FieldName">Transition Type</div>
         <div>
-            <select [ngModel]="transition.transitionType" (ngModelChange)="transition.transitionType = $event; transitionChange.emit(transition)" style="width: 95%">
+            <select [ngModel]="transition.transitionType" (ngModelChange)="changeType($event)" style="width: 95%">
                 <option *ngFor="let t of transitionTypes" [value]="t.ID">{{t.Name}}</option>
             </select>
         </div>
@@ -64,6 +64,14 @@ import * as _ from 'lodash';
                 (onClose)="showAddCondition = false;">
             </d3s-workflow-condition-editor>
 
+        </div>
+    </div>
+    <div *ngSwitchCase="TransitionType.Timer" class="row">
+        <div class="col s12">
+            <div class="FieldName">Days</div>
+            <div>
+                <input type="number" [ngModel]="transition.settings.TimerInterval" (ngModelChange)="transition.settings.TimerInterval = $event; transitionChange.emit(transition)" style="width: 95%" />
+            </div>
         </div>
     </div>
 </div>
@@ -108,6 +116,11 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     addCondition(e: any) {
         this.transition.condition.push(e);
         this.showAddCondition = false;
+        this.transitionChange.emit(this.transition);
+    }
+
+    changeType(e: any) {
+        this.transition.transitionType = e;
         this.transitionChange.emit(this.transition);
     }
 }

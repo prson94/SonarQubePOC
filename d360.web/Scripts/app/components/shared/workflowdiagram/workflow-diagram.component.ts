@@ -15,6 +15,8 @@ import {
     WorkflowEventRegistration,
     WorkflowListItem,
     WorkflowChangeType,
+    FormResponseType,
+    WorkflowActivityType,
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 
@@ -48,6 +50,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     StepType = StepType;
     TransitionType = TransitionType;
     WorkflowChangeType = WorkflowChangeType;
+    WorkflowActivityType = WorkflowActivityType;
+    FormResponseType = FormResponseType;
     model: WorkflowDiagramModel;
     fieldTypes: FieldType[] = [];
 
@@ -117,13 +121,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.nodeTemplateMap.add('task', this.createTaskNode());
         this.myDiagram.nodeTemplateMap.add('start', this.createTerminalNode(true));
         this.myDiagram.nodeTemplateMap.add('finish', this.createTerminalNode(false));
-        this.myDiagram.linkTemplateMap.add('', (this.isReadOnly) ? this.createDefaultLink() : this.createEditorLink());
+        this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
+        this.myDiagram.addDiagramListener('PartCreated', () => this.checkHasMultipleOutputs());
 
-        //''LinkDrawn
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
@@ -207,6 +211,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(nodeList);
 
+        this.checkHasMultipleOutputs();
+
         this.myDiagram.commitTransaction("load_all_data");
         this.reOrderLayout();
     }
@@ -266,7 +272,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             m.Links = links;
 
 
-            //console.log('save', this.myDiagram.model.nodeDataArray, (<go.GraphLinksModel>this.myDiagram.model).linkDataArray, nodes, links);
+            console.log('save', m);
 
             this.isLoading = true;
 
@@ -292,9 +298,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             if (m.ConditionObject != null) {
                 n.condition = [];
 
-                if (m.ConditionObject.Condition.length != null) {
+                if (m.ConditionObject.Condition != null && m.ConditionObject.Condition.length != null) {
                     n.condition = m.ConditionObject.Condition;
-                } else {
+                } else if (m.ConditionObject.Condition != null) {
                     n.condition.push(m.ConditionObject.Condition);
                 }
 
@@ -306,8 +312,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
             } else {
                 n.condition = [];
-            }     
+            } 
 
+            n.settings = (m.SettingsObject == null) ? {} : m.SettingsObject;
             n.diagramObjectType = DiagramObjectType.Link;
             n.category = '';
             n.from = m.FromKey;
@@ -317,6 +324,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.frompid = m.FromPortID;
             n.topid = m.ToPortID;
             n.name = m.Name;
+
+            this.setTransitionIcon(n);
             
             return n;
 
@@ -375,6 +384,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             let cond = _.cloneDeep(m.condition);
             cond.forEach(c => delete c['@FieldName']);
             n.Condition = JSON.stringify({ Conditions: { Condition: cond } });
+            n.Settings = JSON.stringify({ settings: m.settings });
 
             n.FromPortID = m.frompid;
             n.ToPortID = m.topid;
@@ -390,7 +400,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.Name = m.name;
             n.SettingsObject = m.settings;
             n.Settings = JSON.stringify({ settings: m.settings });
-            n.Fields = (m.fields != null && m.fields.form != null) ? JSON.stringify({ settings: m.fields }) : '';
+            n.Fields = (m.fields != null && m.fields.form != null) ? JSON.stringify({ fields: m.fields }) : '';
             
             n.StepType = m.stepType;
             n.XPosition = m.pos.split(' ')[0];
@@ -403,6 +413,19 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         }
     }
 
+    setTransitionIcon(n: LinkModel) {
+        switch (+n.transitionType) {
+            case TransitionType.Always:
+                n.icon = '';
+                break;
+            case TransitionType.Condition:
+                n.icon = '\uf121';
+                break;
+            case TransitionType.Timer:
+                n.icon = '\uf017';
+                break;
+        }
+    }
 
     changeStep(e: NodeModel) {
         let n = this.myDiagram.model.findNodeDataForKey(e.key);
@@ -422,10 +445,16 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             case 2: //status change
                 n.settings.Status = e.settings.Status;
                 break;
-            case 3:
+            case 3: //form
                 n.fields = e.fields;
+                n.settings.FormResponseType = e.settings.FormResponseType
                 break;
         }
+
+        if (e.hasMultipleOutputs && e.settings.WaitForAllTransitions != null) {
+            n.settings.WaitForAllTransitions = e.settings.WaitForAllTransitions;
+        }
+        console.log('changeStep: ', n, e);
 
     }
 
@@ -435,11 +464,25 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         if (i >= 0)
             l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray[i];
         if (l != null) {
+            //l = e;
             l.name = e.name;
             l.transitionType = e.transitionType;
             l.condition = e.condition;
+            l.settings = e.settings;
+            l.icon = e.icon;
+            this.setTransitionIcon(l);
+            //console.log('transition change: ', e, l);
         }
     }
+
+    checkHasMultipleOutputs() {
+        this.myDiagram.model.nodeDataArray.forEach(n => {
+            let count = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == (<any>n).key).length;
+            (<any>n).hasMultipleOutputs = (count > 1);
+        });
+
+    }
+    
     //#endregion
 
     //#region events
@@ -527,6 +570,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private LinkDrawn(e: any) {
         let link = e.subject;
         let l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray
+        this.checkHasMultipleOutputs();
         //console.log(link, l);
     }
     //#endregion
@@ -697,8 +741,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private createTerminalNode(isStart: boolean): go.Node {
-        let nodeWidth = 75;
-        let nodeHeight = 75;
+        let nodeWidth = 78;
+        let nodeHeight = 78;
         let nodeBorderColor = 'transparent';
         let nodeFontSize = 10;
         let backColor = isStart ? '#216b23' : '#6b2121';
@@ -756,20 +800,22 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
             this.g(go.Panel, "Auto",
-                this.g(go.Shape, {
+                this.g(go.Shape, "Circle", {
                     visible: false,
-                    fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: '#999',
-                    strokeDashArray: [3, 2]
+                    fill: 'gray',//this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: 'gray'
+                    //,width: 25,
+                    //height: 25
+                    //strokeDashArray: [2, 2]
                 },
                     //only visible if there's a label
-                    new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                    new go.Binding("visible", "icon", function (a) { return (a ? true : false) })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                    textAlign: "center", font: "9pt FontAwesome", stroke: "#fff", margin: 0.75
                 },
                     // the label
-                    new go.Binding("text", "text").makeTwoWay()
+                    new go.Binding("text", "icon").makeTwoWay()
                 )
             )
         );
@@ -790,26 +836,31 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 mouseLeave: function (e, link) { link.findObject("HIGHLIGHT").stroke = "transparent"; }
             },
             new go.Binding("points").makeTwoWay(),
-            this.g(go.Shape,
-                { isPanelMain: true, strokeWidth: 8, stroke: "transparent", name: "HIGHLIGHT" }),
             this.g(go.Shape,  // the link path shape
                 { isPanelMain: true, stroke: "gray", strokeWidth: 2 }),
             this.g(go.Shape,  // the arrowhead
                 { toArrow: "standard", stroke: null, fill: "gray" }),
-            this.g(go.Panel, "Auto",  // the link label, normally not visible
-                { visible: false, name: "LABEL", segmentIndex: 2, segmentFraction: 0.5 },
-                new go.Binding("visible", "visible").makeTwoWay(),
-                this.g(go.Shape, "RoundedRectangle",  // the label shape
-                    { fill: "#F8F8F8", stroke: null }),
-                this.g(go.TextBlock, "Yes",  // the label
-                    {
-                        textAlign: "center",
-                        font: "10pt helvetica, arial, sans-serif",
-                        stroke: "#333333",
-                        editable: true
-                    },
-                    new go.Binding("text").makeTwoWay())
-            )
+            this.g(go.Panel, "Auto",
+                this.g(go.Shape, "Circle", {
+                    visible: false,
+                    fill: 'gray',//this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: 'gray'
+                    //,width: 25,
+                    //height: 25
+                    //strokeDashArray: [2, 2]
+                },
+                    //only visible if there's a label
+                    new go.Binding("visible", "icon", function (a) { return (a ? true : false) })
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center", font: "9pt FontAwesome", stroke: "#fff", margin: 0.75
+                },
+                    // the label
+                    new go.Binding("text", "icon").makeTwoWay()
+                )
+            ),
+            this.g(go.Shape,
+                { isPanelMain: true, strokeWidth: 8, stroke: "transparent", name: "HIGHLIGHT" })
         );
     }
 

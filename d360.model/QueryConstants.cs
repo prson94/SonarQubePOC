@@ -1554,6 +1554,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            vst.ToVersionStepID as ToKey,
 	            vst.TransitionType,
 	            vst.Condition,
+                vst.Settings,
 	            vst.Name,
                 vst.FromPortID,
                 vst.ToPortID

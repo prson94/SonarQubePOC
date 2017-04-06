@@ -949,6 +949,7 @@ namespace d360.web.Controllers.Services
             links.ForEach(l =>
             {
                 l.ConditionObject = XmlToDynamic(l.Condition);
+                l.SettingsObject = XmlToDynamic(l.Settings);
             });
 
             @event.ConditionObject = XmlToDynamic(@event.Condition);
@@ -1455,7 +1456,8 @@ namespace d360.web.Controllers.Services
                                 link.ToVersionStepID = keyMapping[to];
                                 link.Name = l.Name ?? "";
                                 link.TransitionType = l.TransitionType;
-                                link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString(); 
+                                link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
+                                link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
                                 link.FromPortID = l.FromPortID;
                                 link.ToPortID = l.ToPortID;
 
@@ -1472,6 +1474,7 @@ namespace d360.web.Controllers.Services
                                     link.FromPortID = l.FromPortID;
                                     link.ToPortID = l.ToPortID;
                                     link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
+                                    link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
                                 }
                             }
                         });

@@ -68,10 +68,15 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public string Condition { get; set; }
         [DataMember]
+        public string Settings { get; set; }
+        [DataMember]
         public string Name { get; set; }
 
         [DataMember, NotMapped]
         public dynamic ConditionObject { get; set; }
+
+        [DataMember, NotMapped]
+        public dynamic SettingsObject { get; set; }
 
     }
 }

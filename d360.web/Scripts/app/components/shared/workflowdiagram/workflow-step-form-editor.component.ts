@@ -5,6 +5,7 @@ import {
     WorkflowForm,
     WorkflowFormField,
     WorkflowFormFieldType,
+    FormResponseType,
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header, MenuItem } from 'primeng/primeng';
@@ -33,6 +34,18 @@ import * as _ from 'lodash';
         </div>
         <div>
             <input type="text" [ngModel]="step.fields.form['@description']" (ngModelChange)="step.fields.form['@description']=$event; stepChange.emit(step);" style="width: 95%" />
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col s12">
+        <div class="FieldName">
+            Response Type
+        </div>
+        <div>
+            <select [ngModel]="step.settings.FormResponseType" (ngModelChange)="step.settings.FormResponseType = $event; stepChange.emit(step);" style="width: 95%">
+                <option *ngFor="let r of responseTypes" [value]="r.value">{{r.label}}</option>
+            </select>
         </div>
     </div>
 </div>
@@ -106,6 +119,14 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         { value: WorkflowFormFieldType.Text, label: 'text' },
         { value: WorkflowFormFieldType.Date, label: 'date' },
 
+    ];
+
+    FormResponseType = FormResponseType;
+
+    private responseTypes = [
+        { value: FormResponseType[FormResponseType.FirstResponse], label: 'First Response' },
+        { value: FormResponseType[FormResponseType.Majority], label: 'Majority' },
+        { value: FormResponseType[FormResponseType.All], label: 'All' },
     ];
 
     constructor() {

@@ -33,6 +33,9 @@ namespace d360.core.entities.Workflow
         [IgnoreDataMember]
         public string Condition { get; set; }
 
+        [IgnoreDataMember]
+        public string Settings { get; set; }
+
         [IgnoreDataMember, ForeignKey("FromVersionStepID")]
         public virtual WorkflowVersionStep FromVersionStep { get; set; }
 

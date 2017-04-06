@@ -16,7 +16,7 @@
                 <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'">
                     <i class="fa fa-info-circle fa-2x"></i>
                 </li>
-                <li (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'">
+                <li *ngIf="!isReadOnly" (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'">
                     <i class="fa fa-pencil fa-2x"></i>
                 </li>
             </ul>
@@ -28,10 +28,19 @@
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
                         <strong>Position:</strong> {{selectedData.x}}, {{selectedData.y}}<br />
                         <strong>Step Type:</strong> {{StepType[selectedData.stepType]}}<br />
-                        <strong>Activity Type:</strong> {{selectedData.activityDescription}}<br />
+                        <strong>Activity Type:</strong> {{WorkflowActivityType[selectedData.activityType]}}<br />
                         <div *ngIf="selectedData.settings != null && selectedData.activityType == 1">
+                            <strong>Recipient:</strong> {{selectedData.settings['MessageRecipientType']}}<br />
                             <strong>Message Subject:</strong> {{selectedData.settings['MessageSubjectTemplate']}}<br />
-                            <strong>Message Body:</strong> {{selectedData.settings['MessageBodyTemplate']}}
+                            <strong>Message Body:</strong> {{selectedData.settings['MessageBodyTemplate']}}<br />
+                        </div>
+                        <div *ngIf="selectedData.activityType == 3"> <!-- form -->
+                            <strong>Response Type:</strong> {{selectedData.settings.FormResponseType}}<br />
+                            <p-dataTable [value]="selectedData.fields.form.field" selectionMode="single">
+                                <p-column field="@id" header="Name"></p-column>
+                                <p-column field="@label" header="Label"></p-column>
+                                <p-column field="@type" header="Type"></p-column>
+                            </p-dataTable>
                         </div>
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
@@ -43,6 +52,12 @@
                                 <p-column field="@Value" header="Value"></p-column>
                             </p-dataTable>
                         </div>
+                        <div *ngIf="selectedData.transitionType == TransitionType.Timer">
+                            <strong>Days: </strong> {{selectedData.settings.TimerInterval}}<br />
+                        </div>
+                    </div>
+                    <div *ngIf="selectedData == null">
+                        Nothing selected
                     </div>
                 </div>
                 <div *ngSwitchCase="'edit'">
@@ -61,6 +76,9 @@
                                                         [transition]="selectedData" 
                                                         (transitionChange)="changeTransition($event)">
                         </d3s-workflow-transition-editor>
+                    </div>
+                    <div *ngIf="selectedData == null">
+                        Nothing selected
                     </div>
                 </div>
             </div>

@@ -81,6 +81,9 @@ import * as _ from 'lodash';
             <d3s-workflow-step-form-editor [step]="step" (stepChange)="step = $event; stepChange.emit(step)"></d3s-workflow-step-form-editor>
         </div>
     </div>
+    <div *ngIf="step.hasMultipleOutputs" class="col s12" style="padding-top: 8px">
+        <input type="checkbox" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)" /> Wait for all transitions to complete?
+    </div>
 </div>
 `
 })

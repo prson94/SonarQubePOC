@@ -137,8 +137,11 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         if (this.objectType == 'ArtifactType')
             this.loadTaxonomies();
         else if (this.model.Event.SettingsObject.Settings.TaxonomyTypeID != null) {
-            //don't store unless needed
             delete this.model.Event.SettingsObject.Settings.TaxonomyTypeID;
+        }
+
+        if (this.model.Event.ChangeType != WorkflowChangeType.Schedule && this.model.Event.SettingsObject.Settings.ScheduleInterval != null) {
+            delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
         }
 
 

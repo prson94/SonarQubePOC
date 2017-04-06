@@ -40,6 +40,14 @@
                     </select>
                 </div>
             </div>
+            <div *ngIf="model.Event.ChangeType == WorkflowChangeType.Schedule">
+                <div class="FieldName">
+                    Interval
+                </div>
+                <div>
+                    <input type="number" [(ngModel)]="model.Event.SettingsObject.Settings.ScheduleInterval" style="width: 95%"/>
+                </div>
+            </div>
         </div>
         <div class="col s12 m8">
             <div *ngIf="selectedObjectType != null && selectedObjectType != ''">
