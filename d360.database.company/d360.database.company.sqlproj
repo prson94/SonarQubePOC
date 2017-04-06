@@ -553,6 +553,7 @@
     <None Include="fusion\Stored Procedures\GenerateEagleBusinessLineageData.sql" />
     <None Include="fusion\Stored Procedures\ClearMarkitMapLineageData.sql" />
     <None Include="workflow\Functions\ConditionToPlainText.sql" />
+    <None Include="utility\Stored Procedures\GetOwnersForWorkflowV2.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

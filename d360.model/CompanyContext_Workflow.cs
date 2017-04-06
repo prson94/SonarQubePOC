@@ -428,7 +428,7 @@ namespace d360.model
         private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId)
         {
             //send an email to the owners with a form link
-            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = item.Step.Version.TypeID });
+            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
                         
             var url = "";
             var prefix = "";
@@ -514,7 +514,7 @@ namespace d360.model
             }
             else if(emailSettings.RecipientType == EmailTaskRecipientType.Owner)
             {
-                var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id", new { id = item.Step.Version.TypeID });
+                var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
 
                 foreach (var user in users)
                 {
