@@ -11,6 +11,10 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Intersect, "Intersect")]
     public class Intersect : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
     {
+        public Intersect()
+        {
+            Visible = true;
+        }
         [DataMember]
         public int IntersectTypeID { get; set; }
 
