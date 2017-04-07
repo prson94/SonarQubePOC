@@ -984,9 +984,7 @@ namespace d360.web.Controllers.Services
 
                 var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(itemStepsModel.Settings));
                 var isCompleted = false;
-
                 
-
                 StringBuilder sb = new StringBuilder();
 
                 var root = XElement.Parse(itemStepsModel.Fields);
@@ -1119,6 +1117,24 @@ namespace d360.web.Controllers.Services
 
 
             var details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
+
+            var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(itemStep.Step.Settings));
+
+            //check if the current user already completed the form
+            var formResults = XElement.Parse(itemStep.Fields);
+            bool isCompletedByCurrentUser = false;
+            
+            foreach (var form in formResults.Elements("form"))
+            {
+                int completedById = 0;
+                int.TryParse((string)form.Attribute("ResourceID") ?? "", out completedById);
+
+                if (completedById == Company.CurrentResourceID && !isCompletedByCurrentUser)
+                {
+                    isCompletedByCurrentUser = true;
+                    continue;
+                }                
+            }
             
             //parse the xml to get the form info
 
@@ -1127,7 +1143,7 @@ namespace d360.web.Controllers.Services
                 Fields = properties,
                 Title = title ?? "",
                 Description = desc ?? "",
-                IsCompleted = itemStep.CompletedOn.HasValue,
+                IsCompleted = itemStep.CompletedOn.HasValue || isCompletedByCurrentUser,
                 ObjectName = details.Name,
                 ObjectType = itemStep.Item.Object,
                 ObjectID = itemStep.Item.ObjectID
