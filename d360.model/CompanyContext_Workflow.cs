@@ -6,6 +6,7 @@ using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -87,6 +88,10 @@ namespace d360.model
             {
                 return false;
             }
+
+            
+            registration.LastExecuted = DateTime.UtcNow;
+            Entry(registration).State = EntityState.Modified;
 
             Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR ${objectInfo.Object} - {objectInfo.ObjectID}");
 

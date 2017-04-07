@@ -1,5 +1,6 @@
 ﻿using d360.core.entities.Contracts;
 using d360.core.enums.Workflow;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -28,6 +29,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public string Settings { get; set; }
+
+        [DataMember]
+        public DateTime? LastExecuted{ get; set; }
 
         [DataMember, NotMapped]
         public dynamic SettingsObject { get; set; }
