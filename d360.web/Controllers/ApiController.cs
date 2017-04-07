@@ -5900,6 +5900,11 @@ where	Object = '{type.ToString()}' and ObjectID = {id} and IntersectTypeID = {in
                 joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
             }
 
+            var intersectType = Company.IntersectTypes.Where(x => x.ID == intersectTypeID).FirstOrDefault();
+
+            var predicateId = intersectType != null ? intersectType.PredicateID : null;
+
+            var predicateClause = predicateId.HasValue ? $"and PredicateID = {predicateId}" :"";
 
             var querySql = $@"
 select  {columns} 
@@ -5934,7 +5939,7 @@ from	IntersectDetail I
 					where	ObjectType = 'Intersect' and ObjectID = I.ID
 					) A
 where	Subject ='{type.ToString()}'  and SubjectID = {id}
-		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID}
+		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID} {predicateClause}
 union
 select	
 		ID,
@@ -5967,7 +5972,7 @@ from	IntersectDetail I
 					) A
 
 where	Object = '{type.ToString()}' and ObjectID = {id}
-		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID}
+		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID} {predicateClause}
         ) A {joins}";
 
 
