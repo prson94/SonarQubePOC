@@ -974,6 +974,8 @@ namespace d360.web.Controllers.Services
                 var item = Company.WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
                 var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.ID == itemStepId).FirstOrDefault();
 
+                var versionStep = Company.WorkflowVersionSteps.Where(x => x.ID == itemStepsModel.StepID).FirstOrDefault();
+
                 if(itemStepsModel == null)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "CANNOT FIND THE ITEM STEP FOR THE SPEICIFIED PARAMETERS");
@@ -982,7 +984,7 @@ namespace d360.web.Controllers.Services
                 if (string.IsNullOrEmpty(itemStepsModel.Settings))
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Form settings is missing or invalid");
 
-                var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(itemStepsModel.Settings));
+                var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(versionStep.Settings));
                 var isCompleted = false;
                 
                 StringBuilder sb = new StringBuilder();

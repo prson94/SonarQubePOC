@@ -465,9 +465,11 @@ namespace d360.model
             var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
             var emailBody = $"The Data3Sixty workflow [{item.Step.Version.Type.Name}] has generated a form that you need to complete.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}";
 
+            var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailBody}</body></html>";
+
             foreach (var user in users)
             {
-                await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBody);
+                await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true);
             }
 
         }
@@ -503,7 +505,8 @@ namespace d360.model
 
             url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
 
-            emailSettings.BodyTemplate += $"  Item Workflow Details {url}";
+            emailSettings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailSettings.BodyTemplate}<p>Item Workflow Details {url}</p></body></html>";
+            
 
             if (emailSettings.RecipientType == EmailTaskRecipientType.Initiator)
             {
@@ -516,7 +519,7 @@ namespace d360.model
                     return;
                 }
 
-                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate);
+                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate, true);
             }
             else if(emailSettings.RecipientType == EmailTaskRecipientType.Owner)
             {
@@ -524,7 +527,7 @@ namespace d360.model
 
                 foreach (var user in users)
                 {
-                    await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate);
+                    await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate, true);
                 }
             }
             else if(emailSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
@@ -536,7 +539,7 @@ namespace d360.model
                     return;
                 }
 
-                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, emailSettings.SpecificUser, "", emailSettings.BodyTemplate);
+                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, emailSettings.SpecificUser, "", emailSettings.BodyTemplate, true);
             }
         }
 

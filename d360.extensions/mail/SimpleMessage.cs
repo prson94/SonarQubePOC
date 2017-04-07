@@ -11,18 +11,21 @@ namespace d360.extensions.mail
 {
     public static class SimpleMessage
     {
-        public static async Task SendMessage(string subject, string toEmail, string toName, string content)
+        public static async Task SendMessage(string subject, string toEmail, string toName, string content, bool useHtml = false)
         {
             var message = new MandrillMessage();
 
             message.AddTo(toEmail, toName);            
             message.FromEmail = "no-reply@data3sixty.com";
-            message.FromName = "Data3Sixty";
+            message.FromName = "Data3Sixty Workflow";
 
             // Add the message properties.
-
+            
             message.Subject = subject;
-            message.Text = content;
+            if (!useHtml)
+                message.Text = content;
+            else
+                message.Html = content;
 
             var api = new MandrillApi(constants.MANDRILL_API_KEY);
 
