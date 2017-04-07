@@ -122,7 +122,9 @@ namespace d360.model.workflow
                     return (val??"").Trim().ToUpper();                    
                 case CriteriaValueDataType.Integer:                    
                 case CriteriaValueDataType.Double:
-                    return double.Parse(val);                    
+                    double dVal = 0;
+                    double.TryParse(val, out dVal);
+                    return dVal;              
                 case CriteriaValueDataType.Date:
                     return int.Parse(val);                    
                 case CriteriaValueDataType.Lookup:

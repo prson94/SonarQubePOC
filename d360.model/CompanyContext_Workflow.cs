@@ -78,17 +78,94 @@ namespace d360.model
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
             return true;
-
         }
 
-        public bool CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false)
+        public bool ExecuteScheduledWorkflow(WorkflowEventRegistration registration)
         {
+            Console.WriteLine($"DEBUG - CHECKING IF SCHEDULED WORKFLOW SHOULD RUN TYPE ID ${registration.TypeID}");
+
+            //check the last run date of this workflow against how often it runs
+            if(registration.ChangeType != ChangeType.Schedule)
+            {
+                Console.WriteLine($"DEBUG - CURRENT REGISTRATION IS NOT OF CHANGE TYPE SCHEDULE NOT RUNNING.");
+
+                return false;
+            }
+
+            if(string.IsNullOrEmpty(registration.Settings))
+            {
+                Console.WriteLine("DEBUG - CURRENT WORKFLOW DOESNT HAVE ANY SETTINGS CANNOT CONTINUE.");
+
+                return false;
+            }
+
+            var settingsXml = XElement.Parse(registration.Settings);
+
+            var scheduledDays = 1;
+            if (settingsXml.Element("ScheduleInterval") != null)
+            {
+                int.TryParse(settingsXml.Element("ScheduleInterval").Value, out scheduledDays);
+            }
+
+            if(!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(scheduledDays) <= DateTime.UtcNow ))
+            {
+                //evaluate objects that are part of this workflow
+                switch ((registration.Object ?? "").ToUpper())
+                {
+                    case "ARTIFACTTYPE":
+                        var artifacts = Artifacts.Where(x => x.ArtifactTypeID == registration.ObjectID);
+                        foreach (var artifact in artifacts)
+                        {
+                            CreateWorkflowItem(registration.TypeID,
+                                    new EventObjectInfo
+                                    {
+                                        Object = core.SystemObjects.Artifact,
+                                        ObjectID = artifact.ID,
+                                        ObjectType = core.SystemObjects.ArtifactType,
+                                        ObjectTypeID = registration.ObjectID
+                                    },
+                                    registration,
+                                    0);
+                        }
+                        break;
+                    case "TAXONOMYTYPE":
+                        var taxonomies = Taxonomies.Where(x => x.TaxonomyTypeID == registration.ObjectID);
+                        foreach (var taxonomy in taxonomies)
+                        {
+                            CreateWorkflowItem(registration.TypeID,
+                                    new EventObjectInfo
+                                    {
+                                        Object = core.SystemObjects.Taxonomy,
+                                        ObjectID = taxonomy.ID,
+                                        ObjectType = core.SystemObjects.TaxonomyType,
+                                        ObjectTypeID = registration.ObjectID
+                                    },
+                                    registration,
+                                    0);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                //add item record for start and subsequent queue records
+
+                registration.LastExecuted = DateTime.UtcNow;
+                Entry(registration).State = EntityState.Modified;
+                SaveChanges();
+            }
+
+            return false;
+        }
+
+
+        public bool CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false)
+        {            
             //check if the current item meets the criteria if any for this workflow.
             if (!DoesWorkflowApply(objectInfo, registration))
             {
                 return false;
             }
-
             
             registration.LastExecuted = DateTime.UtcNow;
             Entry(registration).State = EntityState.Modified;
@@ -100,8 +177,6 @@ namespace d360.model
                 .Where(i => i.TypeID == workflowTypeID)
                 .OrderByDescending(i => i.Version)
                 .FirstOrDefault();
-
-            var stepIDs = version.Steps.Select(i => i.ID).ToList();
 
             var item = new WorkflowItem
             {
@@ -123,7 +198,7 @@ namespace d360.model
             var firstVersionStep = version.Steps.Single(s => s.StepType == StepType.Start);
 
             var firstItemStep = new WorkflowItemStep { CompletedBy = CurrentResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
-            
+
             WorkflowItemSteps.Add(firstItemStep);
             SaveChanges();
 
@@ -134,7 +209,7 @@ namespace d360.model
                 .ToList();
 
             //take any settings from the event registration and apply them in this start step
-            if(!string.IsNullOrEmpty(registration.Settings))
+            if (!string.IsNullOrEmpty(registration.Settings))
             {
                 Console.WriteLine("DEBUG - WORKFLOW HAS SETTINGS, STARTING TO SET THOSE.");
 
@@ -150,7 +225,7 @@ namespace d360.model
 
             return true;
         }
-
+        
         private void ProcessStartStepSettings(string settings, EventObjectInfo objectInfo)
         {
             //take the settings and see if we need to do anything
@@ -427,7 +502,8 @@ namespace d360.model
             .Where(i => i.FromVersionStepID == itemStep.StepID)
             .ToList();
 
-            StartTransitions(transitions, itemID, objectInfo);
+            if(transitions.Count > 0)
+                StartTransitions(transitions, itemID, objectInfo);
         }
 
         private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId)
@@ -486,16 +562,7 @@ namespace d360.model
 
             // build email from step settings.
             var emailSettings = WorkflowEmailModel.ParseFromXml(XElement.Parse(item.Step.Settings));
-
-            //get the email address of the user that initiated the workflow
-            //
-
-            if (item.Item.StartedBy <= 0)
-            {
-                Console.WriteLine("ERROR CANNOT DETERMINE WHO TO EMAIL WORKLFOW EMAIL TASK MESSAGE TO.");
-
-                return;
-            }
+            
 
             var url = "";
             var prefix = "";
@@ -515,6 +582,13 @@ namespace d360.model
 
             if (emailSettings.RecipientType == EmailTaskRecipientType.Initiator)
             {
+                if (item.Item.StartedBy <= 0)
+                {
+                    Console.WriteLine("ERROR CANNOT DETERMINE WHO TO EMAIL WORKLFOW EMAIL TASK MESSAGE TO.");
+
+                    return;
+                }
+
                 var res = GlobalReportingResources.Where(x => x.ResourceID == item.Item.StartedBy).FirstOrDefault();
 
                 if (res == null)
