@@ -1,6 +1,6 @@
 ﻿export class QualifierType {
     ID: number;
-    RuleID: number;
+    RuleImplementationID: number;
     Name: string;
     Order: number;
     ResolutionObject: string;

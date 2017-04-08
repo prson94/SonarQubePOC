@@ -1,16 +1,7 @@
 ﻿using d360.core;
-using d360.core.entities.Workflow;
-using d360.core.enums.Workflow;
-using d360.core.queue;
-using d360.model.workflow;
 using Dapper;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace d360.model
 {
@@ -24,7 +15,7 @@ namespace d360.model
 
         #region Engine Methods
 
-        public int AddWebStatistic(int companyID, SystemObjects @object, int objectID, string ip, string userAgent, string host, string browserLanguage, string action, int resourceID, DateTime timestamp)
+        public int AddWebStatistic(SystemObjects @object, int objectID, string ip, string userAgent, string host, string browserLanguage, string action, int resourceID, DateTime timestamp)
         {
             return Database.Connection
                 .Execute(@"analytics.AddStatistic @Object, @ObjectID, @Ip, @UserAgent, @Host, @BrowserLanguage, @Action, @ResourceID, @Timestamp",

@@ -146,7 +146,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -196,9 +196,7 @@
       <IsTransformFile>True</IsTransformFile>
     </None>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\d360-consumer-api - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-Nightly - Web Deploy.pubxml" />
-    <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.1">

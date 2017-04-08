@@ -3,7 +3,7 @@ import { Headers, Http, ResponseContentType, Response } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
-import { RuleType, RuleDimension, Rule, RuleDetail, RuleResultPagedResults, RuleResultFilter } from '../models/rule.model';
+import { RuleType, RuleDimension, Rule, RuleDetail, RuleImplementation, RuleImplementationDetail, RuleResultPagedResults, RuleResultFilter } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
 
@@ -26,10 +26,24 @@ export class RulesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getRuleImplementations(id: number): Promise<RuleImplementation[]> {
+        return this.http.get(`api/rules/${id}/implementations`)
+            .toPromise()
+            .then(response => <RuleImplementation[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getRule(id: number): Promise<RuleDetail> { 
         return this.http.get(`api/rule/${id}`)
             .toPromise()
             .then(response => <RuleDetail>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRuleImplementation(id: number): Promise<RuleImplementationDetail> {
+        return this.http.get(`api/ruleimplementations/${id}`)
+            .toPromise()
+            .then(response => <RuleImplementationDetail>response.json())
             .catch(err => this.handleError(err));
     }
 
@@ -156,5 +170,16 @@ export class RulesService extends BaseService {
         return this.putDynamic(this.http, 'ruledimension', ruleDimension);  
     }
 
+    deleteRuleImplementation(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'ruleimplementation', id);
+    }
+
+
+    saveRuleImplementation(implementation: RuleImplementation): Promise<JsonResult> {
+        if (implementation.ID == undefined || !implementation.ID) {
+            return this.postDynamic(this.http, 'ruleimplementation', implementation);
+        }
+        return this.putDynamic(this.http, 'ruleimplementation', implementation);
+    }
     
 }

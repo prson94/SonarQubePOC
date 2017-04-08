@@ -9,9 +9,18 @@ using System.Linq;
 
 namespace d360.jobs.subscriber.Audit
 {
-    class Program: FunctionsBase
+    public class Program: FunctionsBase
     {
-        static void ProcessTopicMessage([ServiceBusTrigger("Events", "Audit", AccessRights.Listen)] BrokeredMessage message)
+        static void Main()
+        {
+            JobHostConfiguration config = new JobHostConfiguration(constants.WEBJOBS_STORAGE_CONNECTION);
+            config.UseServiceBus();
+            config.NameResolver = new TopicNameResolver();
+            var host = new JobHost(config);
+            host.RunAndBlock();
+        }
+
+        public static void ProcessTopicMessage([ServiceBusTrigger("%topicname%", "Audit", AccessRights.Listen)] BrokeredMessage message)
         {
             try
             {
@@ -35,13 +44,6 @@ namespace d360.jobs.subscriber.Audit
             {
                 Console.WriteLine("Exception: " + ex.GetFullExceptionData());
             }
-        }
-
-        static void Main()
-        {
-            var config = new JobHostConfiguration(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
-            var host = new JobHost(config);
-            host.RunAndBlock();
         }
     }
 }

@@ -3,58 +3,59 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
-import { Rule, RuleResult, RuleResultPagedResults, RuleResultFilter } from '../../models/rule.model';
+import { Rule, RuleImplementation, RuleImplementationPagedResults, RuleImplementationFilter } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
-    selector: 'd3s-rule-results-grid',
-    template: `                 
-                <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions></header>
+    selector: 'd3s-rule-implementations-grid',
+    template: `
+                <header>Implementations<d3s-tile-actions [hasAdd]="true" [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions></header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading">
                         <div *ngIf="showSimpleFilter">                                                
                             <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         </div>
-                        <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
-                        <p-dataTable #dt [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onLazyLoad)="loadRuleResultsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
+                        <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                        <p-dataTable #dt [value]="results" [globalFilter]="gb" selectionMode="single" [(selection)]="selected" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked" (onRowDblclick)="selected=$event.data;showRuleImplementation(selected);">
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="EffectiveDate" header="Effective Date" [sortable]="true" [style]="{width:'120px'}">
+                            <p-column field="CreatedOn" header="Create Date" [sortable]="true" [style]="{width:'120px'}">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
+                                    <span>{{item.CreatedOn | date : 'shortDate'}}</span>
                                 </template>
                             </p-column>
-                            <p-column field="PassFraction" header="Pass Fraction" [sortable]="true" [style]="{width:'150px'}"></p-column>
-                            <p-column field="RowsPassed" header="Rows Passed" [sortable]="true" [style]="{width:'150px'}"></p-column>
-                            <p-column field="RowsFailed" header="Rows Failed" [sortable]="true" [style]="{width:'150px'}"></p-column>
-                            <p-column field="Passed" header="Passed" [sortable]="true" [style]="{width:'150px'}">
+                            <p-column field="UpdatedOn" header="Update Date" [sortable]="true" [style]="{width:'120px'}">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <span>{{item.UpdatedOn | date : 'shortDate'}}</span>
+                                </template>
+                            </p-column>
+                            <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'150px'}"></p-column>
+                            <p-column field="SourceID" header="Source Identifier" [sortable]="true" [style]="{width:'150px'}"></p-column>
+                            <p-column field="SourceUri" header="" [sortable]="true" [style]="{width:'35px'}">
                                 <template let-item="rowData" pTemplate type="body">
-                                    <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
-                                    <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
+                                    <a [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
+                                    <a *ngIf="item.SourceUri" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
                                 </template>
                             </p-column>
-                            <p-column field="FusionAttribute" header="Fusion" [sortable]="true" [style]="{width:'200px'}"></p-column>
-                            <p-column *ngFor="let q of results?.qualifiers" [field]="q.Field" [header]="q.Header" [sortable]="true" [style]="{width:'200px'}"></p-column>
                         </p-dataTable>
                 </span>                
                 `,
     providers: [RulesService],
 })
 
-export class RuleResultsGridComponent extends BaseComponent implements OnInit {
+export class RuleImplementationsGridComponent extends BaseComponent implements OnInit {
 
-    @Input() implementationId: number;
-
-    //@Input() rule: any;
-    //@Output() ruleChange = new EventEmitter();
+    @Input() ruleId: number;
 
     simpleTextFilter: string;
     showSimpleFilter: boolean = true;
-    
+    private selected: RuleImplementation;
     private rowsPerPage: number = 10;
-    private results: RuleResultPagedResults;
+    private results: RuleImplementation[];//RuleImplementationPagedResults;
     columns: GridColumn[] = [];
+    fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
 
     @ViewChild(RuleColumnFilterComponent) private filtersComponent: RuleColumnFilterComponent;
@@ -70,7 +71,10 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     simpleSearchID: number = 0;
     searchDelayMilliSeconds: number = 300;
     
-    constructor(private ruleService: RulesService) {
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        private ruleService: RulesService) {
         super();
     }
 
@@ -79,33 +83,19 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['implementationId'] && this.implementationId) {
+        if (changes['ruleId'] && this.ruleId) {
             this.filters = [];
-            //this.getFieldsDefinition();
             this.getData();
         }
     }
     
-    //getFieldsDefinition() {
-    //    this.isLoading = true;
-
-    //    //this.gridDefinitionService.getGridDefinition(this.fusionObjectID, this.fusionObject, this.fusionId, 'FusionID')
-    //    //    .then(result => {
-    //    //        if (result) {
-    //    //            this.columns = result.Columns;
-    //    //            this.filtercolumns = result.FilterColumns;
-    //    //        }                
-    //    //        this.isLoading = false;
-    //    //    });
-    //}
-
     public filterGridData(filterData) {     
         this.currentPageNumber = 0;        
         this.getData();
     }
 
     private getData() {
-        if (!this.implementationId) {
+        if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
         }
@@ -120,14 +110,9 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
             }
         }
 
-        this.ruleService.getResultsByRule(this.implementationId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleTextFilter)
+        this.ruleService.getRuleImplementations(this.ruleId)//, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.simpleTextFilter)
             .then(res => {
                 this.results = res;
-
-                //if (!this.rule && this.results && this.results.results && this.results.results.length > 0) {
-                //    this.rule = this.results.results[0];
-                //    this.ruleChange.emit(this.rule);
-                //}
             });
 
     }
@@ -166,11 +151,15 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     }
 
     private doExport() {
-        this.ruleService.getResultsByRuleExcel(this.implementationId);
+        this.ruleService.getResultsByRuleExcel(this.ruleId);
     }
 
     resetFilters() {
         this.simpleTextFilter = '';
         this.filtersComponent.resetFilters();
+    }
+
+    private showRuleImplementation(impl) {
+        this.router.navigateByUrl(SiteUrlHelpers.getDeepObjectUrl('ruleimplementation', impl.RuleTypeID, impl.RuleID, impl.ID));
     }
 };

@@ -1,206 +1,130 @@
-﻿alter table FusionQueryAttributeType alter column [Query] nvarchar(max) not null
-go
-
-delete from [cache].[object] where [object] = 'FusionAttribute';
-go
-
-drop table [dbo].[SiteNavOrder]
-go
-
-CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID_Deleted_ParentID]
-    ON [dbo].[FusionAttribute]([FusionID] ASC, [Deleted] ASC, [ParentID] ASC);
-GO
-
-DROP INDEX [IX_FusionID_ParentID] on Fusion
-GO
-
-ALTER TABLE FusionStatusLog ADD [FullRefresh]     BIT              CONSTRAINT [DF_FusionStatusLog_FullRefresh] DEFAULT ((0)) NOT NULL
-GO
-
-alter table MapItem add [Owner]             VARCHAR (100) NULL
-go
-
-alter table MapRuleItem add [Owner]             VARCHAR (100) NULL
-go
-
-alter table MapRuleItemMapItem add [Owner]             VARCHAR (100) NULL
-go
-
-CREATE FUNCTION dbo.GetWorkflowArtifactID(@Data XML)
-RETURNS INT
-WITH SCHEMABINDING
-AS BEGIN
-  DECLARE @ArtifactID INT
-
-  SELECT  
-    @ArtifactID = @Data.value('(fields/ArtifactID/text())[1]', 'int')
-
-  RETURN @ArtifactID
-END
-GO
-
-CREATE FUNCTION dbo.GetWorkflowStartDate(@Data XML)
-RETURNS varchar(33) 
-WITH SCHEMABINDING
-AS BEGIN
-  DECLARE @StartDate varchar(33)
-
-  SELECT  
-    @StartDate = @Data.value('(fields/StartDate/text())[1]', 'varchar(33)')
-
-  RETURN @StartDate
-END
-GO
-
-alter table Workflow add [ArtifactID] AS ([dbo].[GetWorkflowArtifactID]([Data])) PERSISTED
-GO
-
-CREATE XML INDEX [IXXML_Workflow_Data_Property]
-    ON [dbo].[Workflow]([Data])
-    USING XML INDEX [IXXML_Workflow_Data] FOR PROPERTY
-    WITH (PAD_INDEX = OFF);
-GO
-
-CREATE PRIMARY XML INDEX [IXXML_WorkflowTypeRelation_Fields]
-    ON [dbo].[WorkflowTypeRelation]([Fields])
-    WITH (PAD_INDEX = OFF);
-GO
-
-CREATE XML INDEX [IXXML_WorkflowTypeRelation_Fields_Property]
-    ON [dbo].[WorkflowTypeRelation]([Fields])
-    USING XML INDEX [IXXML_WorkflowTypeRelation_Fields] FOR PROPERTY
-    WITH (PAD_INDEX = OFF);
-GO
-
-CREATE XML INDEX [IXXML_WorkflowTypeRelation_Secondary_PATH]
-    ON [dbo].[WorkflowTypeRelation]([Fields])
-    USING XML INDEX [IXXML_WorkflowTypeRelation_Fields] FOR PATH
-    WITH (PAD_INDEX = OFF);
-GO
-
-CREATE XML INDEX [IXXML_WorkflowTypeRelation_Secondary_VALUE]
-    ON [dbo].[WorkflowTypeRelation]([Fields])
-    USING XML INDEX [IXXML_WorkflowTypeRelation_Fields] FOR VALUE
-    WITH (PAD_INDEX = OFF);
-GO
-
-
-
-CREATE TABLE [dbo].[FusionSchedule] (
-    [FusionID]    INT      NOT NULL,
-    [Day]         INT      NOT NULL,
-    [Time]        TIME (7) NOT NULL,
-    [FullRefresh] BIT      CONSTRAINT [DF_FusionSchedule_FullRefresh] DEFAULT ((0)) NOT NULL,
-    [CreatedOn]   DATETIME NULL,
-    [CreatedBy]   INT      NULL,
-    [UpdatedOn]   DATETIME NULL,
-    [UpdatedBy]   INT      NULL,
-    CONSTRAINT [PK_FusionSchedule] PRIMARY KEY CLUSTERED ([FusionID] ASC, [Day] ASC, [Time] ASC),
-    CONSTRAINT [FK_FusionSchedule_Fusion] FOREIGN KEY ([FusionID]) REFERENCES [dbo].[Fusion] ([ID]) ON DELETE CASCADE
+﻿CREATE TABLE [workflow].[ItemAssignment](
+	ID [bigint] IDENTITY(1,1),
+	ItemID [bigint] NOT NULL,
+	ResourceObject varchar(50) NOT NULL,
+	ResourceObjectID int NOT NULL,
+	[Active] [bit] NOT NULL,
+	CreatedBy int not null,
+	CreatedOn datetime NOT NULL,
+	UpdatedBy int not null,
+	UpdatedOn datetime NOT NULL,
+	CONSTRAINT [PK_WorkflowItemAssignment] PRIMARY KEY CLUSTERED ( [ID] ASC )
 )
 GO
 
---add owner columns used by markit lineage
-alter table mapruleitem add [Owner] varchar(100) null;
-go
-
-alter table mapitem add [Owner] varchar(100) null;
-go
-
-alter table mapruleitemmapitem add [Owner] varchar(100) null;
-go
-
-alter table [intersect] add [Owner] varchar(100) null;
-go
-
-
--- Remove the unused xml nullable column path from fusionattribute table, its not used anywhere and just makes the tables rows bigger
-ALTER TABLE fusionattribute DROP COLUMN [path]
-go
-
-
-CREATE INDEX IX_MapRuleItem_SourceFusionAttributeID_TargetFusionAttributeID ON [dbo].[MapRuleItem] (SourceFusionAttributeID asc, TargetFusionAttributeID asc)
-go
-
--- add id column to fusion schedule table
-alter table fusionschedule add ID INT IDENTITY (1, 1) NOT NULL
-go
-
--- drop the constraint
-ALTER TABLE dbo.fusionschedule DROP CONSTRAINT PK_FusionSchedule
+ALTER TABLE [workflow].[ItemAssignment] ADD  CONSTRAINT [DF_WorkflowItemAssignment_Active]  DEFAULT ((1)) FOR [Active]
 GO
 
--- add back constraint
-ALTER TABLE dbo.fusionschedule ADD CONSTRAINT PK_FusionSchedule PRIMARY KEY CLUSTERED ([ID] ASC)
+ALTER TABLE [workflow].[ItemAssignment]  WITH CHECK ADD  CONSTRAINT [FK_WorkflowItemAssignment_WorkflowItem] FOREIGN KEY([ItemID])
+REFERENCES [workflow].[Item] ([ID])
+ON DELETE CASCADE
 GO
 
--- add constraint
-ALTER TABLE dbo.fusionschedule ADD CONSTRAINT Con_FusionScheduleUniqueFusionIDDayTime UNIQUE (FusionID,Day,Time)
+ALTER TABLE [workflow].[ItemAssignment] CHECK CONSTRAINT [FK_WorkflowItemAssignment_WorkflowItem]
+GO
+
+ALTER TABLE [workflow].[ItemStep] add  ResourceObject varchar(50) NULL
+GO
+ALTER TABLE [workflow].[ItemStep] add  ResourceObjectID int NULL
+GO
+
+CREATE SCHEMA [analytics]
+GO
+
+CREATE TABLE [analytics].[Action](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Value] [varchar](50) NOT NULL,
+	CONSTRAINT [PK_Analytics_Action] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+CREATE CLUSTERED INDEX CIX_Analytics_Action ON [analytics].[Action] ( [Value] ASC )
+GO
+
+CREATE TABLE [analytics].[BrowserLanguage](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Value] [varchar](500) NOT NULL,
+	CONSTRAINT [PK_Analytics_BrowserLanguage] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+CREATE CLUSTERED INDEX CIX_Analytics_BrowserLanguage ON [analytics].[BrowserLanguage] ( [Value] ASC )
+GO
+
+CREATE TABLE [analytics].[Host](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Value] [varchar](50) NOT NULL,
+	CONSTRAINT [PK_Analytics_Host] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+CREATE CLUSTERED INDEX CIX_Analytics_Host ON [analytics].[Host] ( [Value] ASC )
+GO
+
+CREATE TABLE [analytics].[Ip](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Value] [varchar](100) NOT NULL,
+	CONSTRAINT [PK_Analytics_Ip] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+CREATE CLUSTERED INDEX CIX_Analytics_Ip ON [analytics].[Ip] ( [Value] ASC )
+GO
+
+CREATE TABLE [analytics].[Object](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Value] [varchar](50) NOT NULL,
+	CONSTRAINT [PK_Analytics_Object] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+CREATE CLUSTERED INDEX CIX_Analytics_Object ON [analytics].[Object] ( [Value] ASC )
+GO
+
+CREATE TABLE [analytics].[UserAgent](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Value] [nvarchar](250) NULL,
+	CONSTRAINT [PK_Analytics_UserAgent] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+CREATE CLUSTERED INDEX CIX_Analytics_UserAgent ON [analytics].[UserAgent] ( [Value] ASC )
+GO
+
+CREATE TABLE [analytics].[Statistic](
+	[ID] [uniqueidentifier] NOT NULL,
+	[Object] [int] NOT NULL,
+	[ObjectID] [int] NOT NULL,
+	[IpID] [int] NOT NULL,
+	[UserAgentID] [int] NOT NULL,
+	[HostID] [int] NOT NULL,
+	[BrowserLanguageID] [int] NOT NULL,
+	[ActionID] [smallint] NOT NULL,
+	[ResourceID] [int] NOT NULL,
+	[Timestamp] [datetime] NOT NULL,
+	CONSTRAINT [PK_Analytics_Statistic] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+)
+GO
+
+ALTER TABLE [analytics].[Statistic] ADD  CONSTRAINT [DF_Analytics_Statistic_ID]  DEFAULT (newid()) FOR [ID]
+GO
+
+ALTER TABLE [analytics].[Statistic] ADD  CONSTRAINT [DF_Analytics_Statistic_ResourceID]  DEFAULT ((0)) FOR [ResourceID]
+GO
+
+CREATE CLUSTERED INDEX CIX_Analytics_Statistic ON [analytics].[Statistic] ( Object ASC, ObjectID ASC )
+GO
+
+CREATE NONCLUSTERED INDEX IX_Analytics_Statistic_Object ON [analytics].[Statistic] ( Object ASC, ObjectID ASC )
+GO
+
+CREATE NONCLUSTERED INDEX IX_Analytics_Statistic_Timestamp ON [analytics].[Statistic] ( [Timestamp] ASC )
+GO
+
+alter table FieldType add IsDisplayable bit not null constraint DF_FieldType_IsDisplayable default(1)
+go
+alter table FieldType add IsEditable bit not null constraint DF_FieldType_IsEditable default(1)
 go
 
---add visible column to artifact table
-alter table artifact add [Visible] bit not null default(1)
-go
-
--- add index on visible to artifact
-CREATE NONCLUSTERED INDEX [IX_Artifact_Visible] ON [dbo].Artifact ( Visible ASC );
-go
-
--- add visible column to taxonomy table
-alter table Taxonomy add [Visible] bit not null default(1);
-go
-
--- add index on visible to taxonomy table
-CREATE NONCLUSTERED INDEX [IX_Taxonomy_Visible] ON [dbo].Taxonomy ( Visible ASC );
-go
-
--- add visible column to policy table
-alter table [dbo].[Policy] add [Visible] bit not null default(1);
-go
-
--- add index on visible to policy table
-CREATE NONCLUSTERED INDEX [IX_Policy_Visible] ON [dbo].[Policy] ( Visible ASC );
-go
-
--- add visible column to rule table
-alter table [dbo].[Rule] add [Visible] bit not null default(1);
-go
-
--- add index on visible column to rule table
-CREATE NONCLUSTERED INDEX [IX_Rule_Visible] ON [dbo].[Rule] ( Visible ASC );
-go
-
--- add visible column to reference item table
-alter table [dbo].[ReferenceItem] add [Visible] bit not null default(1)
-go
-
--- add index on visible column to reference item table
-CREATE NONCLUSTERED INDEX [IX_ReferenceItem_Visible] ON [dbo].[ReferenceItem] ( Visible ASC );
-go
-
-
--- add visible column to intersect table
-alter table [dbo].[Intersect] add [Visible] bit not null default(1)
-go
-
--- add index on visible column to intersect table
-CREATE NONCLUSTERED INDEX [IX_Intersect_Visible] ON [dbo].[Intersect] ( Visible ASC );
-go
-
-
--- add visible column to intersect table
-alter table [dbo].[Intersect] add [Visible] bit not null default(1)
-go
-
--- add index on visible column to intersect table
-CREATE NONCLUSTERED INDEX [IX_Intersect_Visible] ON [dbo].[Intersect] ( Visible ASC );
-go
-
-
--- add visible column to nym table
-alter table [dbo].[Nym] add [Visible] bit not null default(1)
-go
-
--- add index on visible column to nym table
-CREATE NONCLUSTERED INDEX [IX_Nym_Visible] ON [dbo].[Nym] ( Visible ASC );
-go
+update FieldType set IsEditable = 0 where Object = 'FusionAttributeType'
+GO

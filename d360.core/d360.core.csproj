@@ -88,7 +88,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -115,6 +115,7 @@
     <Compile Include="entities\Fusion\FusionSchedule.cs" />
     <Compile Include="entities\Issue.cs" />
     <Compile Include="entities\IssueType.cs" />
+    <Compile Include="entities\Quality\RuleResultFusionAttribute.cs" />
     <Compile Include="entities\Quality\RuleType.cs" />
     <Compile Include="entities\Reference\ReferenceItemType.cs" />
     <Compile Include="entities\Reference\ReferenceItem.cs" />
@@ -144,7 +145,7 @@
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
     <Compile Include="entities\Fusion\FusionAgentError.cs" />
     <Compile Include="entities\Fusion\FusionAgentErrorItem.cs" />
-    <Compile Include="entities\Quality\RuleMap.cs" />
+    <Compile Include="entities\Quality\RuleImplementation.cs" />
     <Compile Include="entities\Quality\RuleResultQualifier.cs" />
     <Compile Include="entities\Quality\RuleResultQualifierType.cs" />
     <Compile Include="entities\Quality\RuleResult.cs" />

@@ -74,7 +74,7 @@ namespace d360.web.Controllers
 
             try
             {
-                Company.AddWebStatistic(Company.CurrentCompanyID,
+                Company.AddWebStatistic(
                     (SystemObjects)Enum.Parse(typeof(SystemObjects), value.ObjectName),
                     value.ObjectId,
                     value.IP,

@@ -192,12 +192,6 @@ namespace d360.core.entities
     public class ObjectStatisticTileModel : BaseObject
     {
         [DataMember]
-        public int EventCount { get; set; }
-
-        [DataMember]
-        public string EventUrl { get; set; }
-
-        [DataMember]
         public int FollowerCount { get; set; }
         
         [DataMember]

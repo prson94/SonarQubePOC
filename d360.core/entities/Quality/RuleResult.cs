@@ -10,7 +10,7 @@ namespace d360.core.entities
     public class RuleResult : BaseCreatedIntObject, IIntObject, ICreatedObject
     {        
         [DataMember]
-        public int RuleID { get; set; }
+        public int RuleImplementationID { get; set; }
 
         [DataMember]
         public DateTime EffectiveDate { get; set; }
@@ -33,13 +33,13 @@ namespace d360.core.entities
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public bool Passed { get; set; }
 
-        [DataMember]
-        public int? FusionAttributeID { get; set; }
-
         [IgnoreDataMember]
-        public virtual Rule Rule { get; set; }
+        public virtual RuleImplementation RuleImplementation { get; set; }
 
         [ForeignKey("RuleResultID"), IgnoreDataMember]
         public virtual ICollection<RuleResultQualifier> RuleResultQualifiers { get; set; }
+
+        [ForeignKey("RuleResultID"), IgnoreDataMember]
+        public virtual ICollection<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
     }
 }

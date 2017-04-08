@@ -276,9 +276,11 @@ namespace d360.model
 
         public DbSet<d360.core.entities.RuleDimension> RuleDimensions { get; set; }
 
-        public DbSet<RuleMap> RuleMaps { get; set; }
+        public DbSet<RuleImplementation> RuleImplementations { get; set; }
 
         public DbSet<RuleResult> RuleResults { get; set; }
+
+        public DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
 
         public DbSet<RuleResultQualifier> RuleResultQualifiers { get; set; }
 
@@ -1060,10 +1062,6 @@ order by	ColumnIndex", new { id });
             {
                 switch (i.Group)
                 {
-                    case "Events":
-                        model.EventCount = i.Value;
-                        model.EventUrl = i.Url;
-                        break;
                     case "Comments":
                         model.CommentCount = i.Value;
                         model.CommentUrl = i.Url;

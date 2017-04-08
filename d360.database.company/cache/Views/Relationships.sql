@@ -2,8 +2,6 @@
 as
 	SELECT	IntersectTypeID,
 			ID as IntersectID,
-			Classification,
-			Description,
 			0 as SourceIntersectTypeNodeID,
 			0 as SourceIntersectNodeID,
 			Subject as SourceObject,
@@ -25,8 +23,6 @@ as
 union
 	SELECT	IntersectTypeID,
 			ID as IntersectID,
-			Classification,
-			Description,
 			0 as SourceIntersectTypeNodeID,
 			0 as SourceIntersectNodeID,
 			Object as SourceObject,

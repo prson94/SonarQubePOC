@@ -9,7 +9,7 @@ namespace d360.core.entities
     public class RuleResultQualifierType : BaseIntObject, IIntObject
     {        
         [DataMember]
-        public int RuleID { get; set; }
+        public int RuleImplementationID { get; set; }
 
         [DataMember]
         public string Name { get; set; }
@@ -30,6 +30,6 @@ namespace d360.core.entities
         public string ResolutionFieldTypeName { get; set; }
 
         [IgnoreDataMember]
-        public virtual Rule Rule { get; set; }
+        public virtual RuleImplementation RuleImplementation { get; set; }
     }
 }

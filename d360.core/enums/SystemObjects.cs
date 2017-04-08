@@ -118,6 +118,8 @@ namespace d360.core
         IssueType,
         [Description("Issue"), EnableAudit(false)]
         Issue,
+        [Description("Rule Implementation"), EnableAudit(true)]
+        RuleImplementation
     }
 
     public class SystemObjectInfo

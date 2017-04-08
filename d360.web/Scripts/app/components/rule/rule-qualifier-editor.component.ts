@@ -51,7 +51,7 @@ import { QualifierType, ResolutionObjectType } from '../../models/qualifier.mode
 
 export class RuleQualifierEditorComponent extends BaseComponent implements OnInit {
     @Input() qualifier: QualifierType = null;
-    @Input() ruleID: number = null;
+    @Input() implementationId: number = null;
     @Output() onClose  = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
@@ -76,7 +76,7 @@ export class RuleQualifierEditorComponent extends BaseComponent implements OnIni
         this.isLoading = true;
         if (this.isAdding) {
             this.qualifier = new QualifierType();
-            this.qualifier.RuleID = this.ruleID;
+            this.qualifier.RuleImplementationID = this.implementationId;
         }
         this.loadResolutionObjects()
             .then(() => this.loadResolutionFields())
@@ -116,7 +116,7 @@ export class RuleQualifierEditorComponent extends BaseComponent implements OnIni
     }
 
     private updateQualifierName(event) {
-        this.qualifier.Name = event.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
+        this.qualifier.Name = event.target.value.replace(/[^a-zA-Z0-9_-\s]/g, '');
     }
 
     private save() {

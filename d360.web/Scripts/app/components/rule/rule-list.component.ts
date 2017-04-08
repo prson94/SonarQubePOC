@@ -27,7 +27,7 @@ import * as _ from 'lodash';
                                 <div class="col s12">
                                     <header>{{modelGroup}} Rules                                
                                         <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
-                                    </header>      
+                                    </header>
                                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                                     
                                     <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule(selected);" >                                        
                                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>

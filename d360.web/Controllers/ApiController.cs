@@ -3669,13 +3669,60 @@ where    A.RuleTypeID = @id and A.[Visible] = 1", columns, joins);
             return Company.Table<RuleDimension>();
         }
 
-        [Route("rules/{ruleID:int}/qualifiers")]
-        public IQueryable<dynamic> GetRuleQualifierTypes(int ruleID)
+        [Route("ruleimplementations/{id:int}/")]
+        public HttpResponseMessage GetRuleImplementation(int id)
+        {
+            var row = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType);
+            return Request.CreateResponse<dynamic>(
+                new Dictionary<string, object>() {
+                    { "ID", row.ID },
+                    { "Name", row.Name ?? $"Implementation {row.ID}" },
+                    { "SourceID", row.SourceID },
+                    { "SourceUri", row.SourceUri },
+                    { "RuleID", row.RuleID },
+                    { "RuleName", row.Rule.Name },
+                    { "RuleTypeID", row.Rule.RuleTypeID },
+                    { "RuleTypeName", row.Rule.RuleType.Name },
+                    { "CreatedOn", row.CreatedOn.GetValueOrDefault() },
+                    { "UpdatedOn", row.UpdatedOn.GetValueOrDefault() }
+                }
+            );
+        }
+
+        [Route("rules/{id:int}/implementations")]
+        public HttpResponseMessage GetRuleImplementations(int id)
+        {
+            //return Company.Filter<Rule>(i => i.RuleTypeID == id, i => i.Dimension);
+
+            try
+            {
+                var query = Company.Query<dynamic>(@"
+select	A.ID,
+        A.RuleID,
+        R.RuleTypeID,
+        A.SourceID,
+        A.SourceUri,
+		coalesce(A.Name, A.SourceID, 'Implementation ' + cast(A.ID as varchar)) as Name,
+        A.CreatedOn,
+        A.UpdatedOn
+from	RuleImplementation A inner join [Rule] R on R.ID = A.RuleID
+where    A.RuleID = @id", new { id });
+
+                return Request.CreateResponse(HttpStatusCode.OK, query);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
+            }
+        }
+
+        [Route("ruleimplementations/{implementationID:int}/qualifiers")]
+        public IQueryable<dynamic> GetRuleimplementationQualifierTypes(int implementationID)
         {
             return Company.Query<dynamic>(@"select R.*, D.Name as ResolutionObjectName from RuleResultQualifierType R
                 left join cache.ObjectDetails D on D.[Object] = R.ResolutionObject and D.ObjectID = R.ResolutionObjectID
-                where R.RuleID = @ruleID
-                order by R.[Order]", new { ruleID }).AsQueryable();
+                where R.RuleImplementationID = @implementationID
+                order by R.[Order]", new { implementationID }).AsQueryable();
         }
 
         #endregion
@@ -4701,6 +4748,78 @@ where    A.RuleTypeID = @id and A.[Visible] = 1", columns, joins);
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = rule.CreatedOn.Value.ToShortDateString() }
+                                }
+                            });
+                        }
+                    }
+                    rule = null;
+                    break;
+                #endregion
+                case SystemObjects.RuleImplementation:
+                    #region Fields
+
+                    var impl = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType, i => i.RuleResultQualifierTypes, i => i.Rule.Dimension);
+                    if (impl != null)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_Name, FieldName = "RuleImplementation_Name", Value = $"<b>{impl.Name ?? "Implementation " + impl.ID}</b>" }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_SourceID, FieldName = "RuleImplementation_SourceID", Value = impl.SourceID }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = impl.Rule.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = impl.Rule.RuleType.Name }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = (impl.Rule.RuleDimensionID.HasValue ? impl.Rule.Dimension.Name:""), TooltipContext = "Preview", TooltipID = impl.Rule.RuleDimensionID.GetValueOrDefault(), TooltipType = "RuleDimension" }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleThreshold_Name, FieldName = "RuleThreshold", FieldDescription = Resources.FieldInfo.RuleThreshold_Description, Value = impl.Rule.Threshold.ToString() }
+                            }
+                        });
+
+                        if (impl.UpdatedOn.HasValue)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = impl.CreatedOn.Value.ToShortDateString() }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "RuleUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = impl.UpdatedOn.GetValueOrDefault().ToShortDateString() }
+                                }
+                            });
+                        }
+                        else
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = impl.CreatedOn.Value.ToShortDateString() }
                                 }
                             });
                         }

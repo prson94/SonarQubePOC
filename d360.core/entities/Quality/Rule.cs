@@ -85,12 +85,6 @@ namespace d360.core.entities
         public bool Visible { get; set; }
 
         [ForeignKey("RuleID")]
-        public virtual ICollection<RuleResult> Results { get; set; }
-
-        [ForeignKey("RuleID")]
-        public virtual ICollection<RuleMap> Maps { get; set; }
-
-        [ForeignKey("RuleID"), IgnoreDataMember]
-        public virtual ICollection<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
+        public virtual ICollection<RuleImplementation> RuleImplementations { get; set; }
     }
 }

@@ -32,7 +32,7 @@ import { FormMode } from '../../models/form.model';
                         </p-dataTable>     
                     </div>
                     <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-rule-qualifier-editor [ruleID]="ruleID" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
+                        <d3s-rule-qualifier-editor [implementationId]="implementationId" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Editing">
                         <d3s-rule-qualifier-editor [qualifier]="selectedQualifierType" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
@@ -54,7 +54,7 @@ import { FormMode } from '../../models/form.model';
 })
 
 export class RuleQualifierListComponent extends BaseComponent implements OnChanges {
-    @Input() ruleID: number;
+    @Input() implementationId: number;
 
     private qualifierTypes: QualifierType[] = [];
     private selectedQualifierType;
@@ -66,12 +66,12 @@ export class RuleQualifierListComponent extends BaseComponent implements OnChang
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['ruleID'] && this.ruleID != null) this.load();
+        if (changes['implementationId'] && this.implementationId != null) this.load();
     }
 
     private load() {
         this.isLoading = true;
-        this.qualifierService.getQualifierTypes(this.ruleID)
+        this.qualifierService.getQualifierTypes(this.implementationId)
             .then(r => {
                 this.qualifierTypes = r;
                 if (this.qualifierTypes != null)

@@ -24,8 +24,10 @@ import { RuleRoutingModule } from './rule.routes';
 import { RuleComponent } from './rule.component';
 import { RuleListComponent } from './rule-list.component';
 import { RuleItemComponent } from './rule-item.component';
+import { RuleImplementationComponent } from './rule-implementation.component';
 import { RuleResultsGridComponent } from './rule-results-grid.component';
 import { RuleColumnFilterComponent } from './rule-column-filter.component';
+import { RuleImplementationsGridComponent } from './rule-implementations-grid.component';
 import { RuleQualifierListComponent } from './rule-qualifier-list.component';
 import { RuleQualifierEditorComponent } from './rule-qualifier-editor.component';
 
@@ -84,6 +86,8 @@ import {
         RuleComponent,
         RuleListComponent,
         RuleItemComponent,
+        RuleImplementationComponent,
+        RuleImplementationsGridComponent,
         RuleResultsGridComponent,
         RuleColumnFilterComponent,   
         RuleQualifierListComponent,

@@ -163,15 +163,13 @@ inner join [Rule] T on T.ID = G.RuleID and A.EventGroupID = @id {1}", columns, j
 
             dbArgs.Add("id", id);
 
-            var querySql = @"select	A.*,
-        F.TextPath as FusionAttribute
+            var querySql = @"select	A.*
 {1}
 from	RuleResult A 
-        left join FusionAttribute F on F.ID = A.FusionAttributeID
         {0}
-where   A.RuleID = @id";
+where   A.RuleImplementationID = @id";
 
-            var ruleQualifiers = Company.Query<RuleQualifierTypeField>(@"select Name as Header, replace(Name, ' ', '') as Field from RuleResultQualifierType where RuleID = @id order by [Order]", new { id }).ToList();
+            var ruleQualifiers = Company.Query<RuleQualifierTypeField>(@"select Name as Header, replace(Name, ' ', '') as Field from RuleResultQualifierType where RuleImplementationID = @id order by [Order]", new { id }).ToList();
             var qualifierFieldsSql = "";
 
             if (ruleQualifiers.Count > 0)
@@ -181,7 +179,7 @@ where   A.RuleID = @id";
 		                        (select * from
 			                        (select q.RuleResultID as ResID, replace(QT.[Name], ' ', '') as N, Q.[Value] as Val from RuleResultQualifierType QT
 			                        join RuleResultQualifier Q on Q.RuleResultQualifierTypeID = QT.ID
-			                        where QT.RuleID = @id) as vt
+			                        where QT.RuleImplementationID = @id) as vt
 			                        pivot
 			                        (
 			                        max(Val) for N in (
@@ -235,7 +233,7 @@ where   A.RuleID = @id";
         public FileResult ExportQueryItemsByAttributeType(int id)
         {
             var detail = Company.GetObjectDetail("Rule", id);
-            var results = Company.Filter<RuleResult>(i => i.RuleID == id).OrderByDescending(i => i.EffectiveDate);
+            var results = Company.Filter<RuleResult>(i => i.RuleImplementation.RuleID == id).OrderByDescending(i => i.EffectiveDate);
 
             #region Create the list sheet
 

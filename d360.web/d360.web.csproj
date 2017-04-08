@@ -40,8 +40,8 @@
     <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=4.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.5.0\lib\net45\Autofac.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Autofac.Integration.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
@@ -76,8 +76,8 @@
       <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="IPAddressRange, Version=1.6.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\IPAddressRange.1.6.1.0\lib\net40\IPAddressRange.dll</HintPath>
+    <Reference Include="IPAddressRange, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\IPAddressRange.1.6.2.7\lib\net40\IPAddressRange.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Activities.Extensions, Version=2.0.6.9, Culture=neutral, PublicKeyToken=23b0c89d0d5ad43f, processorArchitecture=MSIL">
@@ -211,7 +211,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
@@ -222,8 +222,8 @@
       <HintPath>..\packages\routedebugger.2.1.5\lib\net40\RouteDebugger.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SpreadsheetLight, Version=3.4.8.0, Culture=neutral, PublicKeyToken=32fbb46dc1730c57, processorArchitecture=MSIL">
-      <HintPath>..\packages\SpreadsheetLight.3.4.8\lib\SpreadsheetLight.dll</HintPath>
+    <Reference Include="SpreadsheetLight, Version=3.4.9.0, Culture=neutral, PublicKeyToken=32fbb46dc1730c57, processorArchitecture=MSIL">
+      <HintPath>..\packages\SpreadsheetLight.3.4.9\lib\SpreadsheetLight.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.1.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
@@ -450,6 +450,7 @@
   <ItemGroup>
     <Content Include="App_Data\Documentation.XML" />
     <Content Include="Content\font-awesome.css" />
+    <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.svg" />
     <Content Include="Content\primeng\d3s\images\icons_16.png" />
@@ -518,6 +519,7 @@
     <Content Include="Content\styles\typeahead.min.css">
       <DependentUpon>typeahead.css</DependentUpon>
     </Content>
+    <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
     <Content Include="images\grid.gif" />
     <Content Include="images\heroAccent.png" />
@@ -584,7 +586,6 @@
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
-    <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
     <Content Include="Content\styles\images\check_black.png" />
@@ -792,16 +793,16 @@
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
     <Content Include="package.json" />
     <Content Include="Content\styles\_Variables.less" />
-    <Content Include="fonts\FontAwesome.otf" />
-    <Content Include="fonts\fontawesome-webfont.woff2" />
-    <Content Include="fonts\fontawesome-webfont.woff" />
-    <Content Include="fonts\fontawesome-webfont.ttf" />
-    <Content Include="fonts\fontawesome-webfont.eot" />
     <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.eot" />
     <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Content\styles\typeahead.less" />
+    <Content Include="fonts\FontAwesome.otf" />
+    <Content Include="fonts\fontawesome-webfont.woff2" />
+    <Content Include="fonts\fontawesome-webfont.woff" />
+    <Content Include="fonts\fontawesome-webfont.ttf" />
+    <Content Include="fonts\fontawesome-webfont.eot" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - North Central.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Client Development - EU North.pubxml" />
@@ -999,8 +1000,10 @@
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementations-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-editor-preview.component.ts" />
@@ -1515,9 +1518,9 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\BuildBundlerMinifier.2.2.306\build\BuildBundlerMinifier.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildBundlerMinifier.2.2.306\build\BuildBundlerMinifier.targets'))" />
-    <Error Condition="!Exists('..\packages\BuildWebCompiler.1.11.326\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildWebCompiler.1.11.326\build\BuildWebCompiler.targets'))" />
+    <Error Condition="!Exists('..\packages\BuildBundlerMinifier.2.4.337\build\BuildBundlerMinifier.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildBundlerMinifier.2.4.337\build\BuildBundlerMinifier.targets'))" />
+    <Error Condition="!Exists('..\packages\BuildWebCompiler.1.11.328\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildWebCompiler.1.11.328\build\BuildWebCompiler.targets'))" />
   </Target>
-  <Import Project="..\packages\BuildBundlerMinifier.2.2.306\build\BuildBundlerMinifier.targets" Condition="Exists('..\packages\BuildBundlerMinifier.2.2.306\build\BuildBundlerMinifier.targets')" />
-  <Import Project="..\packages\BuildWebCompiler.1.11.326\build\BuildWebCompiler.targets" Condition="Exists('..\packages\BuildWebCompiler.1.11.326\build\BuildWebCompiler.targets')" />
+  <Import Project="..\packages\BuildBundlerMinifier.2.4.337\build\BuildBundlerMinifier.targets" Condition="Exists('..\packages\BuildBundlerMinifier.2.4.337\build\BuildBundlerMinifier.targets')" />
+  <Import Project="..\packages\BuildWebCompiler.1.11.328\build\BuildWebCompiler.targets" Condition="Exists('..\packages\BuildWebCompiler.1.11.328\build\BuildWebCompiler.targets')" />
 </Project>

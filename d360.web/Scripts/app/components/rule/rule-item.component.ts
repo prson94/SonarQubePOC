@@ -43,13 +43,6 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                         </div>
                     </div>
                 </div>
-                <div class="row" *ngIf="!isLoading && isQualifiersVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">       
-                            <d3s-rule-qualifier-list [ruleID]="rule?.ID"></d3s-rule-qualifier-list>
-                        </div>
-                    </div>
-                </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
                     <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
@@ -74,7 +67,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                 <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-rule-results-grid [ruleId]="rule?.ID"></d3s-rule-results-grid> 
+                            <d3s-rule-implementations-grid [ruleId]="rule?.ID"></d3s-rule-implementations-grid> 
                         </div>
                     </div>
                 </div>`
@@ -101,12 +94,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         super();
         this.rightSidebarService = rightSidebarService;
         this.setCommonRightSideBar(true, true, false, true, true, true, true);
-        this.rightSidebarService.showItem(<RightSidebarItem>{
-            active: false,
-            icons: ['fa-tags'],
-            tag: 'qualifiers',
-            title: 'Qualifiers'
-        });
     }
 
     ngOnInit() {
@@ -123,19 +110,11 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
             this.load(ruleId).then(() => this.isLoading = false);
         });
-
-        this.rightSub = this.rightSidebarService.rightSidebarClicked$.subscribe(c => {
-            if (c.tag == 'qualifiers')
-                this.isQualifiersVisible = !this.isQualifiersVisible;
-            else
-                this.isQualifiersVisible = false;
-        });
-
     }
 
     ngOnDestroy() {        
         this.sub.unsubscribe();
-        this.rightSub.unsubscribe();
+        //this.rightSub.unsubscribe();
         this.clearSidebar();
     }
 

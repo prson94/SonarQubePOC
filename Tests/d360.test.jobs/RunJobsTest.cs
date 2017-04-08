@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
@@ -6,11 +7,15 @@ using d360.extensions.storage;
 using d360.model;
 using Dapper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace d360.test.jobs
 {
@@ -198,20 +203,119 @@ END",
             return hash;
         }
 
+        public class WebActivityEntity : TableEntity
+        {
+            public string Activity { get; set; }
+
+            public int ObjectId { get; set; }
+
+            public string ObjectName { get; set; }
+
+            public int ResourceID { get; set; }
+
+            public string ResourceName { get; set; }
+
+            public string IP { get; set; }
+
+            public string UserAgent { get; set; }
+
+            public string Path { get; set; }
+
+            public string Host { get; set; }
+
+            public string BrowserLanguages { get; set; }
+        }
+
         [TestMethod]
         public void MoveWebAnalyticsFromTableStorageToDb()
         {
-            //var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
+            var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
+            var tableClient = storageAccount.CreateCloudTableClient();
 
-            //var tableClient = storageAccount.CreateCloudTableClient();
+            var companyIDs = getCompanies(true);
 
-            //var table = tableClient.GetTableReference($"WebLogs{Company.CurrentCompanyID}");
-            //table.CreateIfNotExists();
+            companyIDs.AsParallel().ForAll(companyID =>
+            {
+                try
+                {
+                    //var companyID = 15;
+                    var table = tableClient.GetTableReference($"WebLogs{companyID}");
 
-            //var insertOperation = TableOperation.Insert(value);
+                    var qry = new TableQuery<WebActivityEntity>();
+                    qry.Take(10000);
+                    var list = table.ExecuteQuery<WebActivityEntity>(qry);
 
-            //// its logging we dont give a crap if it fails we arent able to log so lets not wait for it to complete...
-            ///*await */table.ExecuteAsync(insertOperation);
+                    var company = getCompanyConnection(companyID);
+                    foreach (var item in list)
+                    {
+                        var okToDelete = false;
+                        try
+                        {
+                            SystemObjects ot;
+
+                            if (Enum.TryParse(item.ObjectName, true, out ot))
+                            {
+                                company.Execute(
+                                    @"analytics.AddStatistic @Object, @ObjectID, @Ip, @UserAgent, @Host, @BrowserLanguage, @Action, @ResourceID, @Timestamp",
+                                    new
+                                    {
+                                        Object = new Dapper.DbString { Value = ot.ToString(), IsAnsi = false, IsFixedLength = false, Length = 50 },
+                                        ObjectID = item.ObjectId,
+                                        UserAgent = item.UserAgent,
+                                        Ip = new Dapper.DbString { Value = item.IP, IsAnsi = false, IsFixedLength = false, Length = 100 },
+                                        Host = new Dapper.DbString { Value = item.Host, IsAnsi = false, IsFixedLength = false, Length = 50 },
+                                        BrowserLanguage = new Dapper.DbString { Value = item.BrowserLanguages, IsAnsi = false, IsFixedLength = false, Length = 500 },
+                                        Action = new Dapper.DbString { Value = item.Activity, IsAnsi = false, IsFixedLength = false, Length = 50 },
+                                        ResourceID = item.ResourceID,
+                                        Timestamp = item.Timestamp.Date
+                                    });
+                                okToDelete = true;
+                            }
+                            else
+                            {
+                                okToDelete = true;
+                            }
+
+                            if (okToDelete)
+                            {
+                                var deleteOperation = TableOperation.Delete(item);
+                                table.Execute(deleteOperation);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
+            });
+        }
+
+        [TestMethod]
+        public void CreateKey()
+        {
+            var crypto = new RNGCryptoServiceProvider();
+
+            var buff = new byte[128];
+            crypto.GetBytes(buff);
+            var valKey = BytesToHexString(buff);
+
+            buff = new byte[64];
+            crypto.GetBytes(buff);
+            var decKey = BytesToHexString(buff);
+        }
+
+        string BytesToHexString(byte[] bytes)
+        {
+            var hexString = new StringBuilder(64);
+
+            for (int counter = 0; counter < bytes.Length; counter++)
+            {
+                hexString.Append(String.Format("{0:X2}", bytes[counter]));
+            }
+            return hexString.ToString();
         }
     }
 }

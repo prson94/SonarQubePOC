@@ -622,6 +622,21 @@
               Looks up a localized string similar to Dimension.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.RuleImplementation_Name">
+            <summary>
+              Looks up a localized string similar to Implementation Name.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleImplementation_SourceID">
+            <summary>
+              Looks up a localized string similar to Source Identifier.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleImplementation_SourceUri">
+            <summary>
+              Looks up a localized string similar to Source Web Link.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.RuleMeasurement_Description">
             <summary>
               Looks up a localized string similar to How do we measure this rule?.
@@ -1855,6 +1870,21 @@
             <param name="id">The ID of the workflow record to retrieve status for.</param>
             <returns></returns>
         </member>
+        <member name="P:d360.web.Controllers.Services.EventsController.ResultModel.SourceID">
+            <summary>
+            Implementation SourceID, if there is one.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.EventsController.ResultModel.QualifierHash">
+            <summary>
+            Used internally.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.EventsController.ResultModel.RuleImplementationID">
+            <summary>
+            Used internally.
+            </summary>
+        </member>
         <member name="M:d360.web.Controllers.Services.EventsController.GetPolicies">
             <summary>
             Gets an OData-queryable list of policies contained within your environment.
@@ -1897,7 +1927,7 @@
             <param name="models">A collection of aggregated rule results.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.GetRuleResults(System.Int32)">
+        <member name="M:d360.web.Controllers.Services.EventsController.GetRuleImplementationResults(System.Int32)">
             <summary>
             Gets all results for a rule.
             </summary>
@@ -2492,6 +2522,15 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.RuleDimension_EditFields(System.Int32)">
             <param name="id">RuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.RuleImplementation_AddFields(System.Int32)">
+            <param name="ruleID">RuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.RuleImplementation_DeleteFields(System.Int32)">
+            <param name="id">RuleImplementationID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.RuleImplementation_EditFields(System.Int32)">
+            <param name="id">RuleImplementationID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.RuleType_DeleteFields(System.Int32)">
             <param name="id">PolicyTypeID</param>

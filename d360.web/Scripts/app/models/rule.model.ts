@@ -40,6 +40,29 @@ export class Rule {
     Dimension: RuleDimension;    
 }
 
+export class RuleImplementation {
+    ID: number;
+    RuleID: number;
+    RuleTypeID: number;
+    SourceID: string;
+    SourceUri: string;
+    Name: string;
+    CreatedOn: Date;
+    UpdatedOn: Date
+}
+
+export class RuleImplementationDetail {
+    ID: number;
+    RuleID: number;
+    RuleName: string;
+    RuleTypeID: number;
+    RuleTypeName: string;
+    SourceID: string;
+    SourceUri: string;
+    Name: string;
+    CreatedOn: Date;
+    UpdatedOn: Date
+}
 
 export class RuleResult {
     ID: number;
@@ -73,6 +96,18 @@ export class RuleResultPagedResults {
     total: number;
     results: any[];
     qualifiers: any[];//string[];
+}
+
+export class RuleImplementationPagedResults {
+    total: number;
+    results: any[];
+    implementations: any[];//string[];
+}
+
+export class RuleImplementationFilter {
+    dataField: string;
+    value: string;
+    condition: string = 'CONTAINS';
 }
 
 export class RuleResultFilter {

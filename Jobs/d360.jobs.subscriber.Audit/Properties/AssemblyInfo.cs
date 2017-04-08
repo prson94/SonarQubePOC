@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("d360.jobs.CalculateAnalytics")]
+[assembly: AssemblyTitle("d360.jobs.ProcessDatabaseQueues")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Toshiba")]
-[assembly: AssemblyProduct("d360.jobs.CalculateAnalytics")]
+[assembly: AssemblyProduct("d360.jobs.ProcessDatabaseQueues")]
 [assembly: AssemblyCopyright("Copyright © Toshiba 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("171e2286-f694-47c5-aaa1-bdd27e406b18")]
+[assembly: Guid("debf4133-63dd-4397-a8c5-3186b97b849f")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -475,6 +475,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Implementation Name.
+        /// </summary>
+        public static string RuleImplementation_Name {
+            get {
+                return ResourceManager.GetString("RuleImplementation_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source Identifier.
+        /// </summary>
+        public static string RuleImplementation_SourceID {
+            get {
+                return ResourceManager.GetString("RuleImplementation_SourceID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source Web Link.
+        /// </summary>
+        public static string RuleImplementation_SourceUri {
+            get {
+                return ResourceManager.GetString("RuleImplementation_SourceUri", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to How do we measure this rule?.
         /// </summary>
         public static string RuleMeasurement_Description {

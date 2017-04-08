@@ -341,6 +341,8 @@ namespace d360.web.Controllers
                     return Artifact_EditFields(ID);
                 case "RULE":
                     return Rule_EditFields(ID);
+                case "RULEIMPLEMENTATION":
+                    return RuleImplementation_EditFields(ID);
                 case "SURVEYTYPE":
                     return SurveyType_EditFields(ID);
                 case "INTERSECTTYPE":
@@ -398,6 +400,8 @@ namespace d360.web.Controllers
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "RULE":
                     return Rule_AddFields(objectID.GetValueOrDefault());
+                case "RULEIMPLEMENTATION":
+                    return RuleImplementation_AddFields(objectID.GetValueOrDefault());
                 case "SURVEYTYPE":
                     return SurveyType_AddFields();
                 case "TAXONOMYTYPECLASS":
@@ -13724,7 +13728,7 @@ order by	T.Name, I.DisplayValue";
         #endregion
 
         #endregion
-
+        
         #region RuleDimension
 
         #region Field Generation
@@ -13902,6 +13906,182 @@ order by	T.Name, I.DisplayValue";
 
         #endregion
 
+        #region RuleImplementation
+
+        #region Field Generation
+
+        /// <param name="ruleID">RuleID</param>
+        [Route("RuleImplementation_AddFields")]
+        public JsonResult RuleImplementation_AddFields(int ruleID)
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "RuleID", Value = ruleID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleImplementation_Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = "form/Rule_SimilarItems?query=" });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "SourceID", Name = FieldInfo.RuleImplementation_SourceID, FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "SourceUri", Name = FieldInfo.RuleImplementation_SourceUri, FieldType = DataType.Text.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">RuleImplementationID</param>
+        [Route("RuleImplementation_DeleteFields"), NonNullableParameters]
+        public JsonResult RuleImplementation_DeleteFields(int id)
+        {
+            var model = Company.GetById<RuleImplementation>(id);
+
+            if (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">RuleImplementationID</param>
+        [Route("RuleImplementation_EditFields"), NonNullableParameters]
+        public JsonResult RuleImplementation_EditFields(int id)
+        {
+            var model = Company.GetById<RuleImplementation>(id);
+
+            if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Update)))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleName_Description, FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "SourceID", Name = FieldInfo.RuleImplementation_SourceID, FieldType = DataType.Text.ToString(), Value = model.SourceID });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "SourceUri", Name = FieldInfo.RuleImplementation_SourceUri, FieldType = DataType.Text.ToString(), Value = model.SourceUri });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRuleImplementation")]
+        public JsonResult AddRuleImplementation(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("Rule Implementation");
+
+                var model = new RuleImplementation
+                {
+                    RuleID = parseIntField(form, "RuleID"),
+                    Name = parseTextField(form, "Name"),
+                    SourceID = parseTextField(form, "SourceID"),
+                    SourceUri = parseTextField(form, "SourceUri")
+                };
+
+                Company.Add(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "add",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, Route("DeleteRuleImplementation")]
+        public JsonResult DeleteRuleImplementation(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("Rule Implementation");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<RuleImplementation>(id);
+                if (model == null) throw new NotFoundException("Rule Implementation");
+
+                if (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "delete",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, ValidateInput(false), Route("EditRuleImplementation")]
+        public JsonResult EditRuleImplementation(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("Rule Implementation");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<RuleImplementation>(id);
+                if (model == null) throw new NotFoundException("Rule Implementation");
+
+                if ((!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Update)) && (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Update)))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name");
+
+                model.SourceID = parseTextField(form, "SourceID");
+                model.SourceUri = parseTextField(form, "SourceUri");
+
+                Company.Update(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "edit",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
         #region RuleQualifierType
 
         #region Form Get/Post
@@ -13911,13 +14091,13 @@ order by	T.Name, I.DisplayValue";
         {
             try
             {
-                var rule = Company.GetById<RuleResultQualifierType>(id);
-                if (rule == null)
+                var q = Company.GetById<RuleResultQualifierType>(id);
+                if (q == null)
                     throw new Exception($"Could not find rule qualifier for id '{id}'");
-                var otherRule = Company.RuleResultQualifierTypes.Where(r => r.RuleID == rule.RuleID && r.Order == (moveUp ? rule.Order - 1 : rule.Order + 1)).SingleOrDefault();
+                var otherRule = Company.RuleResultQualifierTypes.Where(r => r.RuleImplementationID == q.RuleImplementationID && r.Order == (moveUp ? q.Order - 1 : q.Order + 1)).SingleOrDefault();
                 if (otherRule != null)
                 {
-                    rule.Order += (moveUp ? -1 : 1);
+                    q.Order += (moveUp ? -1 : 1);
                     otherRule.Order += (moveUp ? 1 : -1);
                     Company.SaveChanges();
                 }
@@ -13935,7 +14115,7 @@ order by	T.Name, I.DisplayValue";
             {
                 if (model == null)
                     throw new Exception("Supplied model was null");
-                model.Order = Company.Count<RuleResultQualifierType>(r => r.RuleID == model.RuleID) + 1;
+                model.Order = Company.Count<RuleResultQualifierType>(r => r.RuleImplementationID == model.RuleImplementationID) + 1;
 
                 Company.RuleResultQualifierTypes.Add(model);
                 Company.SaveChanges();

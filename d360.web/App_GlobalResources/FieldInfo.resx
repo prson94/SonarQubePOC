@@ -255,6 +255,15 @@
   <data name="RuleDimension_Name" xml:space="preserve">
     <value>Dimension</value>
   </data>
+  <data name="RuleImplementation_Name" xml:space="preserve">
+    <value>Implementation Name</value>
+  </data>
+  <data name="RuleImplementation_SourceID" xml:space="preserve">
+    <value>Source Identifier</value>
+  </data>
+  <data name="RuleImplementation_SourceUri" xml:space="preserve">
+    <value>Source Web Link</value>
+  </data>
   <data name="RuleMeasurement_Description" xml:space="preserve">
     <value>How do we measure this rule?</value>
   </data>

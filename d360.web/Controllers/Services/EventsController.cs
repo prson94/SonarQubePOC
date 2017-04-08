@@ -12,6 +12,8 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Web.Http;
 
 namespace d360.web.Controllers.Services
@@ -66,6 +68,21 @@ namespace d360.web.Controllers.Services
             public int? FusionID { get; set; }
             public List<string> FusionAttributes { get; set; }
             public List<ResultQualifierModel> Qualifiers { get; set; }
+
+            /// <summary>
+            /// Implementation SourceID, if there is one.
+            /// </summary>
+            public string SourceID { get; set; }
+
+            /// <summary>
+            /// Used internally.
+            /// </summary>
+            public string QualifierHash { get; set; }
+
+            /// <summary>
+            /// Used internally.
+            /// </summary>
+            public int? RuleImplementationID { get; set; }
         }
 
         //public class CreateEventModelResponse
@@ -160,7 +177,7 @@ namespace d360.web.Controllers.Services
 
                 if (!string.IsNullOrEmpty(model.SourceID))
                 {
-                    if (Company.Any<RuleMap>(i => i.SourceID == model.SourceID))
+                    if (Company.Any<RuleImplementation>(i => i.SourceID == model.SourceID))
                     {
                         throw new ConflictException("Rule already exists", $"A rule with the source ID of {model.SourceID} already exists.");
                     }
@@ -181,8 +198,8 @@ namespace d360.web.Controllers.Services
 
                 if (!string.IsNullOrEmpty(model.SourceID))
                 {
-                    rule.Maps = new List<RuleMap>();
-                    rule.Maps.Add(new RuleMap { SourceID = model.SourceID });
+                    rule.RuleImplementations = new List<RuleImplementation>();
+                    rule.RuleImplementations.Add(new RuleImplementation { SourceID = model.SourceID });
                 }
 
                 Company.Add<Rule>(rule);
@@ -212,7 +229,7 @@ namespace d360.web.Controllers.Services
         ]
         public HttpResponseMessage AddSourceRuleEvents(string sourceID, List<ResultModel> models)
         {
-            var rule = Company.Filter<RuleMap>(m => m.SourceID == sourceID).Select(m => m.Rule).FirstOrDefault();
+            var rule = Company.Filter<RuleImplementation>(m => m.SourceID == sourceID).Select(m => m.Rule).FirstOrDefault();
             if (rule != null)
             {
                 return AddRuleResults(rule.ID, models);
@@ -221,6 +238,16 @@ namespace d360.web.Controllers.Services
             {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule could not be located based on the Source ID: {sourceID}.");
             }
+        }
+
+        internal class ImplementationQualifier
+        {
+            public int RuleID { get; set; }
+            public int? ImplementationID { get; set; }
+            public string SourceID { get; set; }
+            public string Name { get; set; }
+            public int? Order { get; set; }
+            public int? RuleResultQualifierTypeID { get; set; }
         }
 
         /// <summary>
@@ -236,7 +263,7 @@ namespace d360.web.Controllers.Services
         ]
         public HttpResponseMessage AddRuleResults(int id, List<ResultModel> models)
         {
-                if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
+            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add results to this rule.");
 
             if (models == null)
@@ -252,47 +279,137 @@ namespace d360.web.Controllers.Services
                 Telemetry.TrackTrace(new TraceTelemetry { Message = Newtonsoft.Json.JsonConvert.SerializeObject(models), SeverityLevel = SeverityLevel.Information });
             }
 
-            var rule = Company.GetById<Rule>(id, i => i.RuleResultQualifierTypes);
+            var implementationQualifiers = Company.Query<ImplementationQualifier>(@"
+select	R.ID as RuleID,
+		I.ID as ImplementationID,
+		I.SourceID,
+		QT.ID as RuleResultQualifierTypeID,
+        QT.Name,
+		QT.[Order]
+from	[Rule] R
+        left join [RuleImplementation] I on I.RuleID = R.ID
+		left join [RuleResultQualifierType] QT on QT.RuleImplementationID = I.ID 
+where	R.ID = @id
+order by I.ID, QT.Name", new { id }).ToList();
+
+            var hashImplementations = new Dictionary<int, string>();
+            var hasher = SHA1.Create();
+
+            #region Calculate Hashes for Implementations and Qualifier Names
+
+            var uniqueImplementationIDs = implementationQualifiers.Where(i => i.ImplementationID.HasValue).Select(i => i.ImplementationID.Value).Distinct().ToList();
+            uniqueImplementationIDs.ForEach(i =>
+            {
+                var qualNames = string.Join("|", implementationQualifiers.Where(o => o.ImplementationID == i).OrderBy(o => o.Name).Select(o => o.Name));
+                byte[] hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(qualNames));
+                var sb = new StringBuilder();
+                foreach (byte bt in hashBytes)
+                {
+                    sb.Append(bt.ToString("x2"));
+                }
+                hashImplementations.Add(i, sb.ToString());
+            });
+
+            #endregion
+
+            #region Calculate Hashes for Model Qualifier Names
+
+            models.ForEach(m =>
+            {
+                var qualNames = string.Join("|", m.Qualifiers.Select(o => o.Name).OrderBy(o => o));
+                byte[] hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(qualNames));
+                var sb = new StringBuilder();
+                foreach (byte bt in hashBytes)
+                {
+                    sb.Append(bt.ToString("x2"));
+                }
+                m.QualifierHash = sb.ToString();
+            });
+
+            #endregion
 
             var errorList = new List<CreateResponse>();
 
             try
             {
-                var qualitifierTypes = rule.RuleResultQualifierTypes.ToList();
-
-                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AddRuleResults => Rule has {qualitifierTypes.Count} qualifier types.", SeverityLevel = SeverityLevel.Information });
-
                 var loop = 1;
                 foreach (var model in models)
                 {
                     try
                     {
-                        var result = new RuleResult { EffectiveDate = model.EffectiveDate, RunDate = model.RunDate, RowsFailed = model.RowsFailed, RowsPassed = model.RowsPassed, RuleID = id };
-                        var isResultValid = true;
+                        #region Try to identify or create the RuleImplementation record.
 
-                        model.Qualifiers.ForEach(q =>
+                        //First match on qualifier hash.
+                        if (hashImplementations.ContainsValue(model.QualifierHash))
                         {
-                            var qt = qualitifierTypes.SingleOrDefault(i => i.Name == q.Name);
-                            if (qt != null)
+                            model.RuleImplementationID = hashImplementations.Single(v => v.Value == model.QualifierHash).Key;
+                        }
+                        else
+                        {
+                            //If qualifier hashes do not line up, then see if we can match on incoming implementation sourceID.
+                            if (!string.IsNullOrEmpty(model.SourceID))
                             {
+                                var iq = implementationQualifiers.FirstOrDefault(i => i.SourceID.Trim() == model.SourceID.Trim());
+                                if (iq != null)
+                                {
+                                    model.RuleImplementationID = iq.ImplementationID.Value;
+                                }
+                            }
+
+                            //If still no value, then assume this is a new implementation to add.
+                            if (!model.RuleImplementationID.HasValue)
+                            {
+                                var ri = new RuleImplementation { RuleID = id, SourceID = model.SourceID };
+                                Company.Add(ri);
+
+                                model.RuleImplementationID = ri.ID;
+
+                                var position = 1;
+                                model.Qualifiers.ForEach(o =>
+                                {
+                                    var q = new RuleResultQualifierType { RuleImplementationID = ri.ID, Name = o.Name, Order = position };
+                                    Company.Add(q);
+                                    
+                                    //add to collection we are using in this execution.
+                                    implementationQualifiers.Add(new ImplementationQualifier { ImplementationID = ri.ID, Name = o.Name, Order = position, RuleID = id, RuleResultQualifierTypeID = q.ID, SourceID = ri.SourceID });
+
+                                    //increment position.
+                                    position++;
+                                });
+                            }
+                        }
+
+                        #endregion
+
+                        if (model.RuleImplementationID.HasValue)
+                        {
+                            var result = new RuleResult { EffectiveDate = model.EffectiveDate, RunDate = model.RunDate, RowsFailed = model.RowsFailed, RowsPassed = model.RowsPassed, RuleImplementationID = model.RuleImplementationID.Value };
+
+                            model.FusionAttributes.ForEach(a =>
+                            {
+                                if (result.RuleResultFusionAttributes == null)
+                                    result.RuleResultFusionAttributes = new List<RuleResultFusionAttribute>();
+
+                                result.RuleResultFusionAttributes.Add(new RuleResultFusionAttribute { FusionAttribute = a });
+                            });
+
+                            model.Qualifiers.ForEach(q =>
+                            {
+                                var qt = implementationQualifiers.Single(i => i.ImplementationID == model.RuleImplementationID && i.Name == q.Name);
+
                                 if (result.RuleResultQualifiers == null)
                                     result.RuleResultQualifiers = new List<RuleResultQualifier>();
 
-                                result.RuleResultQualifiers.Add(new RuleResultQualifier { RuleResultQualifierTypeID = qt.ID, Value = q.Value });
-                            }
-                            else
-                            {
-                                isResultValid = false;
-                            }
-                        });
+                                result.RuleResultQualifiers.Add(new RuleResultQualifier { RuleResultQualifierTypeID = qt.RuleResultQualifierTypeID.Value, Value = q.Value });
+                            });
 
-                        if (isResultValid)
                             Company.RuleResults.Add(result);
+                        }
                         else
                         {
-                            errorList.Add(new CreateResponse { Message = $"Row {loop} contains qualifiers that are not yet defined on the rule." });
+                            errorList.Add(new CreateResponse { Message = $"Row {loop} has no valid rule implementation ID." });
                         }
-                            
+
                     }
                     catch (Exception ex)
                     {
@@ -305,7 +422,7 @@ namespace d360.web.Controllers.Services
                 // Save the results.
                 Company.SaveChanges();
 
-                return Request.CreateResponse(HttpStatusCode.Created, errorList);
+                return Request.CreateResponse((errorList.Count == 0) ? HttpStatusCode.Created : HttpStatusCode.BadRequest, errorList);
             }
             catch (BaseException ex)
             {
@@ -437,12 +554,12 @@ namespace d360.web.Controllers.Services
             Route("rules/{id:int}/results"),
             HttpGet
         ]
-        public HttpResponseMessage GetRuleResults(int id)
+        public HttpResponseMessage GetRuleImplementationResults(int id)
         {
             var joins = "";
             var columns = "";
 
-            var fields = Company.Filter<RuleResultQualifierType>(i => i.RuleID == id).OrderBy(i => i.Order).ToList();
+            var fields = Company.Filter<RuleResultQualifierType>(i => i.RuleImplementationID == id).OrderBy(i => i.Order).ToList();
 
             foreach (var f in fields)
             {
@@ -461,13 +578,13 @@ select	A.ID,
         A.Passed,
         {columns}
         A.FusionAttributeID,
-        F.TextPath as FusionAttributePath,
+        --F.TextPath as FusionAttributePath,
         A.EffectiveDate,
         A.RunDate
 from	RuleResult A  
-        left join FusionAttribute F on F.ID = A.FusionAttributeID
+        --left join FusionAttribute F on F.ID = A.FusionAttributeID
         {joins} 
-where   A.RuleID = {id} 
+where   A.RuleImplementationID = {id} 
 order by A.RunDate desc, A.EffectiveDate desc";
 
             var models = Company.Query<dynamic>(sql);
