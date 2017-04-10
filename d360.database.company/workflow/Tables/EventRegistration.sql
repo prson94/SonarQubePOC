@@ -6,6 +6,7 @@
     [ChangeType] INT          NOT NULL,
     [Condition]  XML          NULL,
     [Settings] XML NULL, 
+	[LastExecuted] DATETIME NULL,
     CONSTRAINT [PK_WorkflowEventRegistration] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_WorkflowEventRegistration_WorkflowType] FOREIGN KEY ([TypeID]) REFERENCES [workflow].[Type] ([ID]) ON DELETE CASCADE
 );
