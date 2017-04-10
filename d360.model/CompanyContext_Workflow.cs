@@ -392,7 +392,7 @@ namespace d360.model
                         break;
                     case WorkflowActivityType.Form:
                         // send form notification to owners
-                        await SendFormWorkflowEmail(itemStep, itemStepID, itemID);
+                        await SendFormWorkflowEmail(itemStep, itemStepID, itemID, objectInfo);
                         break;
                     case WorkflowActivityType.StatusChange:
                         // change the status of this item
@@ -505,7 +505,7 @@ namespace d360.model
                 StartTransitions(transitions, itemID, objectInfo);
         }
 
-        private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId)
+        private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo)
         {
             //send an email to the owners with a form link
             var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
@@ -542,8 +542,10 @@ namespace d360.model
             item.Fields = xml.ToString();
             SaveChanges();
 
+            var obj = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
+
             var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
-            var emailBody = $"The Data3Sixty workflow [{item.Step.Version.Type.Name}] has generated a form that you need to complete.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}";
+            var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{obj.Name}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
             var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailBody}</body></html>";
 
