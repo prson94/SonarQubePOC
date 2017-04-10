@@ -81,7 +81,7 @@ namespace d360.model
 
         public bool ExecuteScheduledWorkflow(WorkflowEventRegistration registration)
         {
-            Console.WriteLine($"DEBUG - CHECKING IF SCHEDULED WORKFLOW SHOULD RUN TYPE ID ${registration.TypeID}");
+            Console.WriteLine($"DEBUG - CHECKING IF SCHEDULED WORKFLOW SHOULD RUN TYPE ID {registration.TypeID}");
 
             //check the last run date of this workflow against how often it runs
             if(registration.ChangeType != ChangeType.Schedule)
@@ -387,7 +387,7 @@ namespace d360.model
                 switch (itemStep.Step.ActivityType)
                 {
                     case WorkflowActivityType.EmailNotification:
-                        await SendWorkflowEmail(itemStep);
+                        await SendWorkflowEmail(itemStep, objectInfo);
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.Form:
@@ -554,7 +554,7 @@ namespace d360.model
 
         }
 
-        private async Task SendWorkflowEmail(WorkflowItemStep item)
+        private async Task SendWorkflowEmail(WorkflowItemStep item, EventObjectInfo objectInfo)
         {            
 
             if (string.IsNullOrEmpty(item.Step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
@@ -575,6 +575,8 @@ namespace d360.model
             }
 
             url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
+
+            emailSettings.BodyTemplate = ProcessMessageBody(emailSettings.BodyTemplate, objectInfo);
 
             emailSettings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailSettings.BodyTemplate}<p>Item Workflow Details {url}</p></body></html>";
             
@@ -619,6 +621,21 @@ namespace d360.model
 
                 await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, emailSettings.SpecificUser, "", emailSettings.BodyTemplate, true);
             }
+        }
+
+        private string ProcessMessageBody(string bodyTemplate, EventObjectInfo objectInfo)
+        {
+            var result = bodyTemplate;
+            //replace [OBJECT_NAME] with the object name            
+            if (result.Contains("[OBJECT_NAME]"))
+            {
+                //get the objects name
+                var item = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
+                
+                result = result.Replace("[OBJECT_NAME]", item.Name);
+            }
+            
+            return result;
         }
 
         public void DetermineTransitionBasedOnPreviousStepConditions(long itemStepID)

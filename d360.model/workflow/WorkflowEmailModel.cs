@@ -15,7 +15,7 @@ namespace d360.model.workflow
         public EmailTaskRecipientType RecipientType { get; set; }
 
         public string SpecificUser { get; set; }
-
+        
         public static WorkflowEmailModel ParseFromXml(XElement xml)
         {
             if (xml == null) throw new Exception("INVALID XML SPECIFIED");
