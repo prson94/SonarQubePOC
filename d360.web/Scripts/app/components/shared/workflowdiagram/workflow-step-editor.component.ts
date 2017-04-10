@@ -37,11 +37,11 @@ import * as _ from 'lodash';
                 </div>
                 <div>
                     <select [ngModel]="step.settings.MessageRecipientType" (ngModelChange)="step.settings.MessageRecipientType = $event; stepChange.emit(step)" style="width: 95%">
-                        <option *ngFor="let d of destination" [value]="d">{{d}}</option>
+                        <option *ngFor="let d of destination" [value]="d.value">{{d.label}}</option>
                     </select>
                 </div>
             </div>
-            <div *ngIf="step.settings.MessageRecipientType == 'Specific User'" class="col s12">
+            <div *ngIf="step.settings.MessageRecipientType == 'SpecificUser'" class="col s12">
                 <div class="FieldName">
                     Recipient
                 </div>
@@ -102,9 +102,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     ];
 
     private destination = [
-        'Initiator',
-        'Owner',
-        'Specific User'
+        { value: 'Initiator', label: 'Initiator' },
+        { value: 'Owner', label: 'Owner' },
+        { value: 'SpecificUser', label: 'Specific User' },
     ];
 
     constructor() {

@@ -1602,6 +1602,13 @@ namespace d360.web.Controllers.Services
             return Request.CreateResponse(HttpStatusCode.OK, id);
         }
 
+        [Route("type/{id:int}/versions")]
+        public HttpResponseMessage GetVersions(int id)
+        {
+            return Request.CreateResponse(HttpStatusCode.OK, Company.WorkflowVersions.Where(v => v.TypeID == id).ToList());
+        }
+
+
         #region Helper Methods
 
         private dynamic XmlToDynamic(string xml, bool omitRootElement = true)

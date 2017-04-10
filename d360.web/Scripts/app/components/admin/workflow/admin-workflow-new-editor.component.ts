@@ -191,7 +191,6 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                 this.isLoading = false;
                 this.model.Type.ID = r;
                 this.onSave.emit(this.model);
-
             });
     }
 }

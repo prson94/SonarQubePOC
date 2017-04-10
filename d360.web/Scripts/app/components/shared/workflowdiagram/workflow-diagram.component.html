@@ -1,12 +1,43 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div class="tile tile-detail" [hidden]="isLoading">
+<div class="tile tile-detail">
     <header>
         <span *ngIf="model != null && model.Name != ''">
-            Workflow - {{model.Type.Name}}
+            Workflow - {{model?.Type?.Name}}
         </span>
         <span *ngIf="model == null || model.Name != ''">
             New Workflow
         </span>
+    </header>
+    <div class="row">
+        <div class="col s12 m6">
+            <div class="FieldName">
+                Published Version
+            </div>
+            <div>
+                {{ (model?.Type?.PublishedVersionID == null) ? 'Unpublished' : model?.Type?.PublishedVersionID }}
+            </div>
+        </div>
+        <div class="col s12 m6">
+            <div class="FieldName">
+                Change Type
+            </div>
+            <div>
+                {{WorkflowChangeType[model?.Event?.ChangeType]}}
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="!isReadOnly" style="padding-top:8px">
+        <div class="col s12">
+            <div>
+                <button pButton type="button" label="Back" (click)="onBackClick.emit()"></button>
+                <button pButton type="button" label="Save" (click)="save()"></button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tile tile-detail" [hidden]="isLoading">
+    <header>
+        &nbsp;
         <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
     </header>
 
@@ -34,9 +65,10 @@
                             <strong>Message Subject:</strong> {{selectedData.settings['MessageSubjectTemplate']}}<br />
                             <strong>Message Body:</strong> {{selectedData.settings['MessageBodyTemplate']}}<br />
                         </div>
-                        <div *ngIf="selectedData.activityType == 3"> <!-- form -->
+                        <div *ngIf="selectedData.activityType == 3">
+                            <!-- form -->
                             <strong>Response Type:</strong> {{selectedData.settings.FormResponseType}}<br />
-                            <p-dataTable [value]="selectedData.fields.form.field" selectionMode="single">
+                            <p-dataTable *ngIf="selectedData.fields.form != null" [value]="selectedData.fields.form.field" selectionMode="single">
                                 <p-column field="@id" header="Name"></p-column>
                                 <p-column field="@label" header="Label"></p-column>
                                 <p-column field="@type" header="Type"></p-column>
@@ -62,18 +94,16 @@
                 </div>
                 <div *ngSwitchCase="'edit'">
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
-                        <d3s-workflow-step-editor 
-                                                  [objectId]="model.Event.ObjectID" 
-                                                  [objectType]="model.Event.Object" 
-                                                  [step]="selectedData" 
+                        <d3s-workflow-step-editor [objectId]="model.Event.ObjectID"
+                                                  [objectType]="model.Event.Object"
+                                                  [step]="selectedData"
                                                   (stepChange)="changeStep($event)">
                         </d3s-workflow-step-editor>
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
-                        <d3s-workflow-transition-editor 
-                                                        [objectId]="model.Event.ObjectID" 
-                                                        [objectType]="model.Event.Object" 
-                                                        [transition]="selectedData" 
+                        <d3s-workflow-transition-editor [objectId]="model.Event.ObjectID"
+                                                        [objectType]="model.Event.Object"
+                                                        [transition]="selectedData"
                                                         (transitionChange)="changeTransition($event)">
                         </d3s-workflow-transition-editor>
                     </div>

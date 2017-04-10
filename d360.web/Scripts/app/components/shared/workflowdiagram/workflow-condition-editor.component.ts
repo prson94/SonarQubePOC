@@ -12,107 +12,22 @@ import { WorkflowService } from '../../../services/workflow.service';
 @Component({
     selector: 'd3s-workflow-condition-editor',
     providers: [WorkflowService],
-    template: `
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="FieldName">
-                                    Field
-                                </div>
-                                <div>
-                                    <select style="width:95%;" placeholder="Choose a value" [ngModel]="condition['@FieldTypeID']" (ngModelChange)="selectFieldType($event);">
-                                        <option></option>
-                                        <option *ngFor="let i of fields" [value]="i.ID">{{i.FriendlyName}}</option>
-                                    </select>
-                                </div>
-                                <div class="FieldName">
-                                    Operator
-                                </div>
-                                <div>
-                                    <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] > 0)">
-                                        <option></option>
-                                        <option *ngFor="let i of operators" [value]="i.value">{{i.value}}</option>
-                                    </select>
-                                </div>
-                                <div *ngIf="condition['@FieldTypeID'] > 0">
-                                    <div *ngIf="selectedField.Type == 'Boolean'">
-                                        <div class="FieldName">
-                                            Value
-                                        </div>
-                                        <div>
-                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Value']">
-                                                <option></option>
-                                                <option *ngFor="let b of bool" [value]="b.value">{{b.label}}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div *ngIf="selectedField.Type == 'Date' || selectedField.Type == 'DateTime'">
-                                        <div class="FieldName">
-                                            Days Since
-                                        </div>
-                                        <div>
-                                            <input type="number" [(ngModel)]="condition['@Value']" style="width: 95%" />
-                                        </div>
-                                    </div>
-
-                                    <div *ngIf="selectedField.Type == 'Lookup'">
-                                        <div class="FieldName">
-                                            Value
-                                        </div>
-                                        <div>
-                                            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Value']">
-                                                <option></option>
-                                                <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                   <div *ngIf="selectedField.Type == 'Decimal' || selectedField.Type == 'Number'">
-                                        <div class="FieldName">
-                                            Value
-                                        </div>
-                                        <div>
-                                            <input type="number" [(ngModel)]="condition['@Value']" style="width: 95%" />
-                                        </div>
-                                   </div>
-
-                                    <div *ngIf="selectedField.Type == 'Text'">
-                                        <div class="FieldName">
-                                            Value
-                                        </div>
-                                        <div>
-                                            <input type="text" [(ngModel)]="condition['@Value']" style="width: 95%" />
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12">
-                                &nbsp;
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12" style="float: right">
-                                <button type="button" pButton label="Cancel" (click)="close()"></button>
-                                <button type="button" pButton label="Add" (click)="save()" [disabled]="condition['@Value'] == null || condition['@Operator'] == null || condition['@FieldTypeID'] == 0"></button>
-                            </div>
-                        </div>
-`
+    templateUrl: './workflow-condition-editor.component.html'
 })
 
 export class WorkflowConditionEditorComponent extends BaseComponent implements OnInit {
     @Input() objectType: string;
     @Input() objectId: number;
+    @Input() formFields: any[] = [];
     @Output() onSave = new EventEmitter();
     @Output() onClose = new EventEmitter();
 
 
     private condition: any = {};
     private fields: FieldType[] = [];
-    private selectedField: FieldType = new FieldType();
+    private selectedField;
     private lookups: any[] = [];
+    private fieldList: any[] = [];
 
     private operators = [
         { value: '=', label: 'equal to' },
@@ -142,6 +57,24 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
             .then(r => {
                 this.fields = r;
+                this.fieldList = [];
+
+                this.fields.forEach(f => {
+                    this.fieldList.push({
+                        value: 'FieldType|' + f.ID.toString(),
+                        label: f.FriendlyName
+                    });
+                });
+
+                if (this.formFields.length > 0) {
+                    this.formFields.forEach(f => {
+                        this.fieldList.push({
+                            value: 'FormInput|' + f['@FormInputID'],
+                            label: 'Form :: ' + f['@FormInputID']
+                        });
+                    });
+                }
+
                 this.isLoading = false;
             });
     }
@@ -155,24 +88,43 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
 
-    selectFieldType(e: any) {
-        this.selectedField = this.fields.find(f => f.ID == e);
+    selectField(e: any) {
+        this.selectedField = e;
 
-        this.setOperators(this.selectedField.Type);
+        if (this.selectedField.split('|')[0] == 'FieldType') {
 
-        this.condition['@FieldTypeID'] = e;
-        this.condition['@FieldName'] = this.selectedField.FriendlyName;
-        this.condition['@ValueType'] = this.getValueType(this.selectedField.Type);
+            let field = this.fields.find(f => f.ID == +this.selectedField.split('|')[1]);
 
-        this.lookups = [];
+            delete this.condition['@FormInputID'];
+            delete this.condition['@VersionStepID'];
 
-        if (this.condition['@ValueType'] == 'L') {
-            this.workflowService.getLookupList(this.condition['@FieldTypeID'])
-                .then(r => {
-                    console.log(r);
-                    this.lookups = r;
-                });
+            this.setOperators(field.Type);
+
+            this.condition['@FieldTypeID'] = field.ID.toString();
+            this.condition['@FieldName'] = field.FriendlyName;
+            this.condition['@ValueType'] = this.getValueType(field.Type);
+
+            this.lookups = [];
+
+            if (this.condition['@ValueType'] == 'L') {
+                this.workflowService.getLookupList(this.condition['@FieldTypeID'])
+                    .then(r => {
+                        console.log(r);
+                        this.lookups = r;
+                    });
+            }
+        } else if (this.selectedField.split('|')[0] == 'FormInput') {
+            let input = this.formFields.find(f => f['@FormInputID'] == this.selectedField.split('|')[1]);
+
+            delete this.condition['@FieldTypeID'];
+            delete this.condition['@FieldName'];
+            delete this.condition['@ValueType'];
+
+            this.condition['@VersionStepID'] = input['@VersionStepID'];
+            this.condition['@FormInputID'] = input['@FormInputID'];
         }
+
+        
         //else if (this.condition.ValueType == 'FL') {
         //    this.workflowService.getFusionLookupList(this.condition.FieldTypeID)
         //        .then(r => this.lookups = r);

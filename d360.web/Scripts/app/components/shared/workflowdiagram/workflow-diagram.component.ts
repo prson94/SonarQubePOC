@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, AfterViewChecked, ElementRef, OnDestroy, ViewChild, Renderer, HostListener, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { PermissionsService } from '../../../services/permissions.service';
 import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -33,7 +33,7 @@ declare var window: any;
     providers: [PermissionsService, WorkflowService]
 })
 
-export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, OnChanges {
+export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, AfterViewChecked, OnChanges {
     @Input() id: number = 0;
     @Input() readonly: boolean = true;
     @Input() hasClose: boolean = false;
@@ -71,6 +71,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private showNodeTabs = false;
     private showLinkTabs = false;
 
+    private hasType = false;
+
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private renderer: Renderer, private workflowService: WorkflowService) {
         super();
@@ -81,7 +83,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.isReadOnly = true;
         else
             this.isReadOnly = false;
-
+        
         this.initializeDiagram();
         this.loadMenuItems();
         //console.log(this.readonly, this.readonly == true, this.readonly === true, this.readonly.toString() == 'true');
@@ -98,9 +100,20 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     public ngAfterViewInit() {
+        console.log('ngAfterViewInit');
         this.resizeDiagram();
         this.resizePalette();
 
+    }
+
+    public ngAfterViewChecked() {
+
+        //if (this.isViewLoaded > 0) {
+        //    this.resizeDiagram();
+        //    this.resizePalette();
+        //    this.isViewLoaded--;
+        //    console.log('ngAfterViewChecked');
+        //}
     }
 
     public ngOnDestroy() {
@@ -138,7 +151,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.isReadOnly;
         this.myDiagram.toolManager.linkingTool.archetypeLinkData = new LinkModel();
 
-        this.getActivityTypes().then(() => this.populateDiagram()).then(() => this.initializePalette());
+        this.getActivityTypes().then(() => this.populateDiagram()).then(() => this.initializePalette());//.then(() => this.resizeDiagram());
     }
 
     private initializePalette() {
@@ -179,7 +192,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
             .then(r => this.fieldTypes = r)
             .then(() => this.parseData(this.model))
-            .then(() => { this.isLoading = false; console.log('model: ', this.model); });
+            .then(() => { this.isLoading = false; this.hasType = true; console.log('model: ', this.model);});
 
 
     }
@@ -223,15 +236,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.menuItems.push({
             icon: 'fa-info-circle'
         });
-        if (this.hasBack)
-            this.menuItems.push({
-                icon: 'fa-arrow-left'
-            });
+        //if (this.hasBack)
+        //    this.menuItems.push({
+        //        icon: 'fa-arrow-left'
+        //    });
 
-        if (!this.isReadOnly)
-            this.menuItems.push({
-                icon: 'fa-floppy-o'
-            });
+        //if (!this.isReadOnly)
+        //    this.menuItems.push({
+        //        icon: 'fa-floppy-o'
+        //    });
         if (this.hasClose)
             this.menuItems.push({
                 icon: 'fa-remove'
@@ -497,6 +510,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.save();
         if (e.icon == 'fa-arrow-left')
             this.onBackClick.emit();
+
+        //TODO: debugging remove this
+        //this.resizeDiagram();
     }
 
     @HostListener('window:resize', ['$event'])
@@ -518,6 +534,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
 
         this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
+
+        //console.log('resizeDiagram');
     }
 
     private resizePalette() {

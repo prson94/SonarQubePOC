@@ -1,0 +1,86 @@
+﻿<div class="row">
+    <div class="col s12">
+        <div class="FieldName">
+            Field
+        </div>
+        <div>
+            <select style="width:95%;" placeholder="Choose a value" [ngModel]="selectedField" (ngModelChange)="selectField($event);">
+                <option></option>
+                <option *ngFor="let i of fieldList" [value]="i.value">{{i.label}}</option>
+            </select>
+        </div>
+        <div class="FieldName">
+            Operator
+        </div>
+        <div>
+            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] > 0)">
+                <option></option>
+                <option *ngFor="let i of operators" [value]="i.value">{{i.value}}</option>
+            </select>
+        </div>
+        <div *ngIf="condition['@FieldTypeID'] > 0">
+            <div *ngIf="selectedField.Type == 'Boolean'">
+                <div class="FieldName">
+                    Value
+                </div>
+                <div>
+                    <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Value']">
+                        <option></option>
+                        <option *ngFor="let b of bool" [value]="b.value">{{b.label}}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div *ngIf="selectedField.Type == 'Date' || selectedField.Type == 'DateTime'">
+                <div class="FieldName">
+                    Days Since
+                </div>
+                <div>
+                    <input type="number" [(ngModel)]="condition['@Value']" style="width: 95%" />
+                </div>
+            </div>
+
+            <div *ngIf="selectedField.Type == 'Lookup'">
+                <div class="FieldName">
+                    Value
+                </div>
+                <div>
+                    <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Value']">
+                        <option></option>
+                        <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div *ngIf="selectedField.Type == 'Decimal' || selectedField.Type == 'Number'">
+                <div class="FieldName">
+                    Value
+                </div>
+                <div>
+                    <input type="number" [(ngModel)]="condition['@Value']" style="width: 95%" />
+                </div>
+            </div>
+
+            <div *ngIf="selectedField.Type == 'Text'">
+                <div class="FieldName">
+                    Value
+                </div>
+                <div>
+                    <input type="text" [(ngModel)]="condition['@Value']" style="width: 95%" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col s12">
+        &nbsp;
+    </div>
+</div>
+<div class="row">
+    <div class="col s12" style="float: right">
+        <button type="button" pButton label="Cancel" (click)="close()"></button>
+        <button type="button" pButton label="Add" (click)="save()" [disabled]="condition['@Value'] == null || condition['@Operator'] == null || condition['@FieldTypeID'] == 0"></button>
+    </div>
+</div>
