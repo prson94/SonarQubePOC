@@ -6646,6 +6646,17 @@ SELECT (
                                 inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
                                 left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
                                 where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3                        
+                        union
+                        select
+	                            t.name as Name, count(1) as Total
+                            from
+	                            workflow.itemassignment ia
+	                            inner join workflow.item i on (ia.itemid = i.id)
+	                            inner join workflow.[version] v on (v.id = i.versionid)
+	                            inner join workflow.[type] t on (v.typeid = t.id)
+                            where
+	                            ia.resourceobject = 'Resource' and ia.resourceobjectid = @r
+                            group by t.name
                         ) order by Name";
 
             return Company.Query<CountModel>(sql, new { r = resourceId });
