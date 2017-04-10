@@ -30,6 +30,8 @@ namespace d360.model
 
         public DbSet<WorkflowItem> WorkflowItems { get; set; }
 
+        public DbSet<WorkflowItemAssignment> WorkflowItemAssignments { get; set; }
+
         public DbSet<WorkflowItemStep> WorkflowItemSteps { get; set; }
 
         public DbSet<WorkflowItemStepTransition> WorkflowItemStepTransitions { get; set; }
@@ -376,7 +378,7 @@ namespace d360.model
 
                 return;
             }
-                        
+                                    
             var stepType = itemStep.Step.StepType;
 
             Console.WriteLine($"Debug - Processing step of type {stepType}");
@@ -420,13 +422,49 @@ namespace d360.model
                 item.CompletedBy = CurrentResourceID;
                 item.CompletedOn = DateTime.UtcNow;
                 SaveChanges();
+
+                //Mark any assignments as inactive / update them
+                CompleteItemAssignments(itemID);
             }
-            
+                        
             if (isStepCompleted)
             {
                 MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
             }
         }
+
+        private void SaveItemAssignments(IEnumerable<dynamic> users, long itemId)
+        {
+            foreach (var user in users)
+            {
+                var assignment = new WorkflowItemAssignment
+                {
+                    CreatedBy = 0,
+                    CreatedOn = DateTime.UtcNow,
+                    ItemID = itemId,
+                    ResourceObject = "Resource",
+                    ResourceObjectID = user.ID,
+                    UpdatedBy = 0,
+                    UpdatedOn = DateTime.UtcNow
+                };
+
+                WorkflowItemAssignments.Add(assignment);
+            }
+            SaveChanges();
+        }
+
+        private void CompleteItemAssignments(long itemID)
+        {
+            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemID == itemID);
+
+            foreach (var assignment in itemAssignments)
+            {
+                WorkflowItemAssignments.Remove(assignment);
+            }            
+
+            SaveChanges();
+        }
+            
 
         private void ChangeItemStatus(WorkflowVersionStep step, EventObjectInfo objectInfo)
         {
@@ -553,6 +591,8 @@ namespace d360.model
             {
                 await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true);
             }
+
+            SaveItemAssignments(users, itemId);
 
         }
 
