@@ -140,18 +140,20 @@ namespace d360.model.workflow
                 DateTime dt = DateTime.Parse(givenValue);
                 DateTime currentDate = DateTime.UtcNow;
 
+                var numDays = (dt - currentDate).Days;
+
                 if (Operator == CriteriaOperator.Equal)
-                    return ((currentDate - dt).Days == (int)Value);
+                    return (numDays == (int)Value);
                 else if (Operator == CriteriaOperator.NotEqual)
-                    return ((currentDate - dt).Days != (int)Value);
+                    return (numDays != (int)Value);
                 else if(Operator == CriteriaOperator.GreaterThan)
-                    return ((currentDate - dt).Days > (int)Value);
+                    return (numDays > (int)Value);
                 else if (Operator == CriteriaOperator.GreaterThanOrEqual)
-                    return ((currentDate - dt).Days >= (int)Value);
+                    return (numDays >= (int)Value);
                 else if (Operator == CriteriaOperator.LessThan)
-                    return ((currentDate - dt).Days < (int)Value);
+                    return (numDays < (int)Value);
                 else if (Operator == CriteriaOperator.LessThanOrEqual)
-                    return ((currentDate - dt).Days <= (int)Value);
+                    return (numDays <= (int)Value);
                 throw new Exception("INVALID DATE OPERATION");
             }
             
