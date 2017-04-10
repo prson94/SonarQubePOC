@@ -2,7 +2,7 @@
   {
     "outputFileName": "content/styles/ang.css",
     "inputFiles": [
-      "content/font-awesome.css",
+      "content/font-awesome.min.css",
       "Content/styles/materialize.css",
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
