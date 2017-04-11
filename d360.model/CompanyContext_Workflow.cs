@@ -618,7 +618,7 @@ namespace d360.model
 
             url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
 
-            emailSettings.BodyTemplate = ProcessMessageBody(emailSettings.BodyTemplate, objectInfo);
+            emailSettings.BodyTemplate = ProcessMessageBody(emailSettings.BodyTemplate, objectInfo, prefix);
 
             emailSettings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailSettings.BodyTemplate}<p>Item Workflow Details {url}</p></body></html>";
             
@@ -665,7 +665,7 @@ namespace d360.model
             }
         }
 
-        private string ProcessMessageBody(string bodyTemplate, EventObjectInfo objectInfo)
+        private string ProcessMessageBody(string bodyTemplate, EventObjectInfo objectInfo, string prefix)
         {
             var result = bodyTemplate;
             //replace [OBJECT_NAME] with the object name            
@@ -674,7 +674,9 @@ namespace d360.model
                 //get the objects name
                 var item = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
                 
-                result = result.Replace("[OBJECT_NAME]", item.Name);
+                var itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+
+                result = result.Replace("[OBJECT_NAME]", itemLink);
             }
             
             return result;
