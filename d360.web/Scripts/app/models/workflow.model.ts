@@ -403,3 +403,17 @@ export enum FormResponseType {
 }
 
 //#endregion
+
+
+export class WorkflowAssignmentDetail {
+    Object: string;
+    ObjectID: number;
+    ObjectName: string;
+    ObjectType: string;
+    ObjectTypeID: number;
+    StartedBy: string;
+    StartedByResourceID: number;
+    StartedOn: Date;
+    TypeName: string;
+    WorkflowName: string;
+}

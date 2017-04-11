@@ -20,7 +20,7 @@ import {
     WorkflowObjectType,
     ChangeTypeInfo,
     WorkflowEventRegistration,
-    TransitionTypeInfo,
+    TransitionTypeInfo    
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';

@@ -3,7 +3,7 @@ import { Location } from '@angular/common';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { WorkflowType } from '../../models/workflow.model';
+import { WorkflowType, WorkflowAssignmentDetail } from '../../models/workflow.model';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
@@ -54,7 +54,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
     private sub: any;
     private tempWorkflowtype = WorkflowType;
-    private items: any[];
+    private items: WorkflowAssignmentDetail[];
     private workflow: any;
 
     constructor(private route: ActivatedRoute,
