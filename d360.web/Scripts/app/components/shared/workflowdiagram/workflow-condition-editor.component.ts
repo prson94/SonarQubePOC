@@ -8,6 +8,7 @@ import {
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 
 @Component({
     selector: 'd3s-workflow-condition-editor',
@@ -26,6 +27,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     private condition: any = {};
     private fields: FieldType[] = [];
     private selectedField;
+    private selectedType;
     private lookups: any[] = [];
     private fieldList: any[] = [];
 
@@ -43,13 +45,14 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         { value: 'false', label: 'False' }
     ];
 
-    constructor(private workflowService: WorkflowService) {
+    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
         super();
     }
 
     ngOnInit() {
         this.setOperators();
         this.load();
+        //console.log('condition editor form fields: ', this.formFields);
     }
 
     load() {
@@ -69,12 +72,13 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 if (this.formFields.length > 0) {
                     this.formFields.forEach(f => {
                         this.fieldList.push({
-                            value: 'FormInput|' + f['@FormInputID'],
-                            label: 'Form :: ' + f['@FormInputID']
+                            value: 'FormInput|' + f['@id'],
+                            label: 'Form :: ' + f['@id']
                         });
                     });
                 }
 
+                //console.log(this.fieldList, this.formFields, this.fields);
                 this.isLoading = false;
             });
     }
@@ -90,13 +94,19 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     selectField(e: any) {
         this.selectedField = e;
+        //console.log('selectField: ',e);
 
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
             let field = this.fields.find(f => f.ID == +this.selectedField.split('|')[1]);
 
+            this.selectedType = field.Type.toLowerCase();
+
             delete this.condition['@FormInputID'];
             delete this.condition['@VersionStepID'];
+            delete this.condition['@label'];
+            delete this.condition['@id'];
+            delete this.condition['@type'];
 
             this.setOperators(field.Type);
 
@@ -114,38 +124,39 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     });
             }
         } else if (this.selectedField.split('|')[0] == 'FormInput') {
-            let input = this.formFields.find(f => f['@FormInputID'] == this.selectedField.split('|')[1]);
+            let input = this.formFields.find(f => f['@id'] == this.selectedField.split('|')[1]);
+
+            this.selectedType = input['@type'].toLowerCase();
+
+            this.setOperators(this.selectedType);
 
             delete this.condition['@FieldTypeID'];
-            delete this.condition['@FieldName'];
-            delete this.condition['@ValueType'];
+            delete this.condition['@label'];
+            delete this.condition['@id'];
+            delete this.condition['@type'];
 
-            this.condition['@VersionStepID'] = input['@VersionStepID'];
-            this.condition['@FormInputID'] = input['@FormInputID'];
+            this.condition['@FromVersionStepID'] = input['@stepId'];
+            this.condition['@FormInputID'] = input['@id'];
+            this.condition['@ValueType'] = this.getValueType(this.selectedType);
+            this.condition['@FieldName'] = 'Form :: ' + input['@id']
         }
-
-        
-        //else if (this.condition.ValueType == 'FL') {
-        //    this.workflowService.getFusionLookupList(this.condition.FieldTypeID)
-        //        .then(r => this.lookups = r);
-        //}
     }
 
     setOperators(type: string = '') {
-        switch (type) {
-            case 'Boolean':
-            case 'Lookup':
-            case 'FusionLookup':
-            case 'Text':
+        switch (type.toLowerCase()) {
+            case 'boolean':
+            case 'lookup':
+            case 'fusionlookup':
+            case 'text':
                 this.operators = [
                     { value: '=', label: 'equal to' },
                     { value: '!=', label: 'not equal to' },
                 ];
                 break;
-            case 'Decimal':
-            case 'Number':
-            case 'Date':
-            case 'DateTime':
+            case 'decimal':
+            case 'number':
+            case 'date':
+            case 'datetime':
             default:
                 this.operators = [
                     { value: '=', label: 'equal to' },
@@ -160,20 +171,20 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     getValueType(type: string): string {
-        switch (type) {
-            case 'Boolean':
+        switch (type.toLowerCase()) {
+            case 'boolean':
                 return 'B';
-            case 'Lookup':
+            case 'lookup':
                 return 'L';
             //case 'FusionLookup':
             //    return 'FL';
-            case 'Decimal':
-            case 'Number':
+            case 'decimal':
+            case 'number':
                 return 'D';
-            case 'Date':
-            case 'DateTime':
+            case 'date':
+            case 'dateTime':
                 return 'DT';
-            case 'Text':
+            case 'text':
                 return 'T';
             default:
                 return 'U';

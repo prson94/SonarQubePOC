@@ -25,6 +25,8 @@ import { WorkflowTransitionEditorComponent } from './workflow-transition-editor.
 import { WorkflowConditionEditorComponent } from './workflow-condition-editor.component';
 import { WorkflowStepFormEditorComponent } from './workflow-step-form-editor.component';
 
+import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -55,6 +57,7 @@ import { WorkflowStepFormEditorComponent } from './workflow-step-form-editor.com
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        WorkflowFieldsService
     ]
 })
 export class WorkflowDiagramModule { }

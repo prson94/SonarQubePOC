@@ -13,13 +13,13 @@
             Operator
         </div>
         <div>
-            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] > 0)">
+            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] != '')">
                 <option></option>
                 <option *ngFor="let i of operators" [value]="i.value">{{i.value}}</option>
             </select>
         </div>
-        <div *ngIf="condition['@FieldTypeID'] > 0">
-            <div *ngIf="selectedField.Type == 'Boolean'">
+        <div *ngIf="condition['@FieldTypeID'] != ''">
+            <div *ngIf="selectedType == 'boolean' || selectedType == 'bool'">
                 <div class="FieldName">
                     Value
                 </div>
@@ -31,7 +31,7 @@
                 </div>
             </div>
 
-            <div *ngIf="selectedField.Type == 'Date' || selectedField.Type == 'DateTime'">
+            <div *ngIf="selectedType == 'date' || selectedType == 'datetime'">
                 <div class="FieldName">
                     Days Since
                 </div>
@@ -40,7 +40,7 @@
                 </div>
             </div>
 
-            <div *ngIf="selectedField.Type == 'Lookup'">
+            <div *ngIf="selectedType == 'lookup'">
                 <div class="FieldName">
                     Value
                 </div>
@@ -52,7 +52,7 @@
                 </div>
             </div>
 
-            <div *ngIf="selectedField.Type == 'Decimal' || selectedField.Type == 'Number'">
+            <div *ngIf="selectedType == 'decimal' || selectedType == 'number'">
                 <div class="FieldName">
                     Value
                 </div>
@@ -61,7 +61,7 @@
                 </div>
             </div>
 
-            <div *ngIf="selectedField.Type == 'Text'">
+            <div *ngIf="selectedType == 'text'">
                 <div class="FieldName">
                     Value
                 </div>
@@ -81,6 +81,6 @@
 <div class="row">
     <div class="col s12" style="float: right">
         <button type="button" pButton label="Cancel" (click)="close()"></button>
-        <button type="button" pButton label="Add" (click)="save()" [disabled]="condition['@Value'] == null || condition['@Operator'] == null || condition['@FieldTypeID'] == 0"></button>
+        <button type="button" pButton label="Add" (click)="save()" [disabled]="condition['@Value'] == null || condition['@Operator'] == null || condition['@FieldTypeID'] == ''"></button>
     </div>
 </div>

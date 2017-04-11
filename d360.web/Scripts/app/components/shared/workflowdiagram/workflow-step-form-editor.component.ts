@@ -10,6 +10,8 @@ import {
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header, MenuItem } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
+import { FormMode } from '../../../models/form.model';
 
 import * as _ from 'lodash';
 
@@ -69,7 +71,7 @@ import * as _ from 'lodash';
         </p-dataTable>
     </div>
 </div>
-<div *ngIf="isAdding">
+<div *ngIf="formMode == FormMode.Adding">
     <div class="row">
         <div class="col s12">
             <div class="FieldName">
@@ -99,10 +101,36 @@ import * as _ from 'lodash';
         </div>
     </div>
 </div>
+<div *ngIf="formMode == FormMode.Deleting">
+    <div class="row" *ngIf="usedIn.length < 1">
+        <div class="col s12">
+            <div>
+                Are you sure you want to delete the {{deletingField['@id']}} field?
+            </div>
+            <div>
+                <button pButton type="button" label="Delete" (click)="confirmDelete()"></button>
+                <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="usedIn.length > 0">
+        <div class="col s12">
+            <div>
+                The field {{deletingField['@id']}} cannot be deleted because it is used in the following transition conditions:
+            </div>
+            <div *ngFor="let u of usedIn" style="margin-left: 8px;">
+               &bull; {{(u.transitionName == '') ? '[No name]' : u.transitionName }}
+            </div>
+            <div>
+                <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+            </div>
+        </div>
+    </div>
+</div>
 `
 })
 
-export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit {
+export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() step: NodeModel;
     @Output() stepChange = new EventEmitter();
 
@@ -110,8 +138,13 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     private originalStep: NodeModel;
     WorkflowFormFieldType = WorkflowFormFieldType;
+    FormMode = FormMode;
     private newField: any = {};
-    private isAdding = false;
+    private formMode = FormMode.Default;
+    private usedIn: any[] = [];
+    private deletingField;
+
+    private usedFields: any[] = [];
 
     private types = [
         { value: WorkflowFormFieldType.Boolean, label: 'boolean' },
@@ -129,7 +162,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         { value: FormResponseType[FormResponseType.All], label: 'All' },
     ];
 
-    constructor() {
+    private fieldsSub: any;
+
+    constructor(private workflowFieldsService: WorkflowFieldsService) {
         super();
     }
 
@@ -153,40 +188,62 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             this.step.fields.form.field.push(f);
         }
 
-        //console.log('step: ', this.step);
+        this.usedFields = this.workflowFieldsService.getUsedFields();
+
+    }
+
+    ngOnDestroy() {
+        //this.fieldsSub.unsubscribe();
     }
 
     add() {
-       // console.log(this.step);
-        this.isAdding = true;
+        this.formMode = FormMode.Adding;
     }
 
     remove(item: any) {
-        let i = this.step.fields.form.field.findIndex(f => f['@id'] == item['@id']);
+        this.deletingField = item;
+
+        this.usedIn = [];
+        this.usedIn = this.usedFields.filter(u => u.stepId == this.step.key && u.fieldId == item['@id']);
+
+        this.formMode = FormMode.Deleting;
+    }
+
+    confirmDelete() {
+        let i = this.step.fields.form.field.findIndex(f => f['@id'] == this.deletingField['@id']);
+
         if (i >= 0) {
             this.step.fields.form.field.splice(i, 1);
             this.stepChange.emit(this.step);
+            this.workflowFieldsService.deleteFormField(this.deletingField);
         }
+
+        this.formMode = FormMode.Default;
     }
 
     cancel() {
-        this.isAdding = false;
+        this.formMode = FormMode.Default;
         this.newField = {};
     }
 
     save() {
-
-        //let count = this.model.Fields.filter(f => f.FieldType == this.newField.type).length + 1;
-
         let count = this.step.fields.form.field.filter(f => f['@type'] == this.newField['@type']).length + 1;
 
         this.newField['@id'] = this.newField['@type'].toString().toLowerCase() + count.toString();
 
+        let f = {};
+        f['@id'] = this.newField['@id'];
+        f['@label'] = this.newField['@label'];
+        f['@type'] = this.newField['@type'];
+        f['@stepId'] = this.step.key;
+
         this.step.fields.form.field.push(_.cloneDeep(this.newField));
-        //this.model.Fields.push(_.cloneDeep(this.newField));
         this.newField = {};
-        this.isAdding = false;
+        this.formMode = FormMode.Default;
         this.stepChange.emit(this.step);
+
+
+        this.workflowFieldsService.pushFormField(f);
     }
 
 }

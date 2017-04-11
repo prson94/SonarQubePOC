@@ -2,6 +2,7 @@
 import { PermissionsService } from '../../../services/permissions.service';
 import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 import {
     WorkflowDiagramModel,
     WorkflowDiagramNode,
@@ -30,7 +31,7 @@ declare var window: any;
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [PermissionsService, WorkflowService]
+    providers: [PermissionsService, WorkflowService ]
 })
 
 export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, AfterViewChecked, OnChanges {
@@ -73,8 +74,16 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private hasType = false;
 
+    private formFields: any[] = [];
+    private fieldsSub: any;
 
-    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private renderer: Renderer, private workflowService: WorkflowService) {
+
+    constructor(
+        private myElement: ElementRef,
+        protected permissionsService: PermissionsService,
+        private renderer: Renderer,
+        private workflowService: WorkflowService,
+        private workflowFieldsService: WorkflowFieldsService) {
         super();
     }
 
@@ -86,6 +95,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         
         this.initializeDiagram();
         this.loadMenuItems();
+
+        //this.formFields = this.workflowFieldsService.getFields();
+
+        //this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
+        //    this.formFields = s;
+        //});
         //console.log(this.readonly, this.readonly == true, this.readonly === true, this.readonly.toString() == 'true');
         //console.log({ val: this.readonly });
     }
@@ -100,7 +115,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     public ngAfterViewInit() {
-        console.log('ngAfterViewInit');
+        //console.log('ngAfterViewInit');
         this.resizeDiagram();
         this.resizePalette();
 
@@ -119,12 +134,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     public ngOnDestroy() {
         //garbage collection
         this.myDiagram.div = null;
+        this.unsubscribe();
     }
 
     //#region helper methods
 
     private unsubscribe() {
-
+        if (this.fieldsSub != null)
+            this.fieldsSub.unsubscribe();
     }
 
     private initializeDiagram() {
@@ -151,12 +168,73 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.isReadOnly;
         this.myDiagram.toolManager.linkingTool.archetypeLinkData = new LinkModel();
 
-        this.getActivityTypes().then(() => this.populateDiagram()).then(() => this.initializePalette());//.then(() => this.resizeDiagram());
+        this.getActivityTypes()
+            .then(() => this.populateDiagram())
+            .then(() => this.initializePalette())
+            .then(() => this.initializeFormFields());
     }
 
     private initializePalette() {
         this.myPalette = this.createPalette();
     }
+
+    private initializeFormFields() {
+
+        if (this.fieldsSub != null) {
+            this.fieldsSub.unsubscribe();
+            this.fieldsSub = null;
+        }
+
+        this.workflowFieldsService.clearUsedFields();
+
+        this.formFields = [];
+        console.log('initializeFormFields', this.myDiagram.model.nodeDataArray);
+        this.myDiagram.model.nodeDataArray.forEach(n => {
+            
+            if (+(<NodeModel>n).activityType == WorkflowActivityType.Form
+                && (<NodeModel>n).fields != null
+                && (<NodeModel>n).fields.form.field != null
+                && (<NodeModel>n).fields.form.field.length != null) {
+
+                (<NodeModel>n).fields.form.field.forEach(f => {
+                    let ff = {};
+                    ff['@id'] = f['@id'];
+                    ff['@label'] = f['@label'];
+                    ff['@FieldName'] = 'Form :: ' + f['@id'];
+                    ff['@type'] = f['@type'];
+                    ff['@stepId'] = (<NodeModel>n).key;
+                    ff['@FromVersionStepID'] = (<NodeModel>n).key;
+
+                    this.formFields.push(ff);
+                });
+
+            }
+        });
+
+        this.workflowFieldsService.clearFormFields();
+        this.workflowFieldsService.setFormFields(this.formFields);
+
+        (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
+            if ((<LinkModel>l).condition != null && (<LinkModel>l).condition.length > 0) {
+                (<LinkModel>l).condition.forEach(c => {
+                    let i = this.formFields.findIndex(f => f['@id'] == c['@FormInputID'] && f['@FromVersionStepID'] == c['@FromVersionStepID']);
+
+                    if (i > -1) {
+                        c['@FieldName'] = this.formFields[i]['@FieldName']; 
+                    }
+
+                    this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@FromVersionStepID'], (<LinkModel>l).key, (<LinkModel>l).name);
+                });
+            }
+
+        });
+
+        if (this.fieldsSub == null)
+            this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
+                this.formFields = s;
+            });
+    }
+
 
     private getActivityTypes(): Promise<any> {
         return this.workflowService.getActivityTypes()
@@ -167,7 +245,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     r.splice(none, 1);
 
                 this.activityTypes = r;
-                console.log(r);
+                //console.log(r);
             });
 
     }
@@ -186,7 +264,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 this.model = r;
                 if (this.model.Nodes != null)
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
-                console.log(this.model);
+                //console.log(this.model);
                 //this.parseData(this.model);
             })
             .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
@@ -356,6 +434,17 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.category = 'task';
             n.fields = m.FieldsObject;
 
+
+            //special case for Form to deal with XML returning an object when field count = 1 instead of an array
+            if (n.activityType == WorkflowActivityType.Form) {
+                if (n.fields.form != null && n.fields.form.field != null && n.fields.form.field.length == null) {
+                    let f = _.cloneDeep(n.fields.form.field);
+
+                    n.fields.form.field = [];
+                    n.fields.form.field.push(f);
+                }
+            }
+
             if (m.ActivityTypeInfo != null) {
                 n.fore = m.ActivityTypeInfo.ForeColor;
                 n.back = m.ActivityTypeInfo.BackColor;
@@ -467,7 +556,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         if (e.hasMultipleOutputs && e.settings.WaitForAllTransitions != null) {
             n.settings.WaitForAllTransitions = e.settings.WaitForAllTransitions;
         }
-        console.log('changeStep: ', n, e);
+        //console.log('changeStep: ', n, e);
 
     }
 

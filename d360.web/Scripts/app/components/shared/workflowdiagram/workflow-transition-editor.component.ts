@@ -16,6 +16,7 @@ import {
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 
 import * as _ from 'lodash';
 
@@ -61,7 +62,8 @@ import * as _ from 'lodash';
                 [objectId]="objectId" 
                 [objectType]="objectType" 
                 (onSave)="addCondition($event)" 
-                (onClose)="showAddCondition = false;">
+                (onClose)="showAddCondition = false;"
+                [formFields]="formFields">
             </d3s-workflow-condition-editor>
 
         </div>
@@ -78,7 +80,7 @@ import * as _ from 'lodash';
 `
 })
 
-export class WorkflowTransitionEditorComponent extends BaseComponent implements OnInit {
+export class WorkflowTransitionEditorComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() transition: LinkModel;
@@ -90,7 +92,12 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     TransitionType = TransitionType;
 
-    constructor(private workflowService: WorkflowService) {
+    private fieldsSub: any;
+    private formFields: any[] = [];
+
+
+
+    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
         super();
     }
 
@@ -101,6 +108,16 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
             .then(r => {
                 this.transitionTypes = r;
             });
+
+        this.formFields = this.workflowFieldsService.getFields();
+
+        this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
+            this.formFields = s;
+        });
+    }
+
+    ngOnDestroy() {
+        this.fieldsSub.unsubscribe();
     }
 
     add() {
@@ -109,11 +126,18 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     remove(e: any) {
         let i = this.transition.condition.findIndex(c => c == e);
+
+        if (e['@FormInputID'] != null)
+            this.workflowFieldsService.deleteUsedField(this.transition.condition[i]['@FormInputID'], this.transition.condition[i]['@FromVersionStepID'], this.transition.key);
+
         this.transition.condition.splice(i, 1);
         this.transitionChange.emit(this.transition);
     }
 
     addCondition(e: any) {
+        if (e['@FormInputID'] != null)
+            this.workflowFieldsService.pushUsedField(e['@FormInputID'], e['@FromVersionStepID'], this.transition.key, this.transition.name);
+
         this.transition.condition.push(e);
         this.showAddCondition = false;
         this.transitionChange.emit(this.transition);

@@ -1522,15 +1522,49 @@ namespace d360.web.Controllers.Services
                             bool fromNew = (from < 0);
                             bool toNew = (to < 0);
 
+                            var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
 
-                            if (fromNew || toNew)
+
+
+                            if (fromNew || toNew || link == null)
                             {
-                                var link = new WorkflowVersionStepTransition();
+                                if (link == null)
+                                    link = new WorkflowVersionStepTransition();
 
                                 link.FromVersionStepID = keyMapping[from];
                                 link.ToVersionStepID = keyMapping[to];
                                 link.Name = l.Name ?? "";
                                 link.TransitionType = l.TransitionType;
+
+                                //need to map new form conditions to their appropriate step id's 
+                                if (!string.IsNullOrEmpty(l.Condition))
+                                {
+                                    dynamic condition = JsonConvert.DeserializeObject(l.Condition);
+
+                                    if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count > 0)
+                                    {
+                                        for (int i = 0; i < condition.Conditions.Condition.Count; i++)
+                                        {
+                                            var c = condition.Conditions.Condition[i];
+
+                                            if (c["@FromVersionStepID"] != null && c["@FromVersionStepID"] < 0)
+                                            {
+                                                condition.Conditions.Condition[i]["@FromVersionStepID"] = keyMapping[(int)c["@FromVersionStepID"]];
+                                            }
+                                        }
+                                        l.Condition = JsonConvert.SerializeObject(condition);
+                                    }
+                                    else if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count == 0)
+                                    {
+                                        condition.Conditions = null;
+                                        l.Condition = JsonConvert.SerializeObject(condition);
+                                    }
+                                    else
+                                    {
+                                        l.Condition = JsonConvert.SerializeObject(condition);
+                                    }
+                                }
+
                                 link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
                                 link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
                                 link.FromPortID = l.FromPortID;
@@ -1540,7 +1574,7 @@ namespace d360.web.Controllers.Services
                             }
                             else
                             {
-                                var link = Company.WorkflowVersionStepTransitions.Single(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
+                                //var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
 
                                 if (link != null)
                                 {
@@ -1548,6 +1582,38 @@ namespace d360.web.Controllers.Services
                                     link.TransitionType = l.TransitionType;
                                     link.FromPortID = l.FromPortID;
                                     link.ToPortID = l.ToPortID;
+
+                                    //need to map new form conditions to their appropriate step id's 
+                                    if (!string.IsNullOrEmpty(l.Condition))
+                                    {
+                                        dynamic condition = JsonConvert.DeserializeObject(l.Condition);
+
+                                        if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count > 0)
+                                        {
+                                            for (int i = 0; i < condition.Conditions.Condition.Count; i++)
+                                            {
+                                                var c = condition.Conditions.Condition[i];
+
+                                                if (c["@FromVersionStepID"] != null && c["@FromVersionStepID"] < 0)
+                                                {
+                                                    condition.Conditions.Condition[i]["@FromVersionStepID"] = keyMapping[(int)c["@FromVersionStepID"]];
+                                                }
+                                            }
+                                            l.Condition = JsonConvert.SerializeObject(condition);
+                                        }
+                                        else if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count == 0)
+                                        {
+                                            condition.Conditions = null;
+                                            l.Condition = JsonConvert.SerializeObject(condition);
+                                        }
+                                        else
+                                        {
+                                            l.Condition = JsonConvert.SerializeObject(condition);
+                                        }
+                                    }
+
+
+
                                     link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
                                     link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
                                 }
