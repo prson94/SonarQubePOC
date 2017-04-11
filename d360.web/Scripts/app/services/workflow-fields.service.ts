@@ -61,7 +61,7 @@ export class WorkflowFieldsService {
     }
 
     deleteFormField(field: any) {
-        let i = this.formFields.findIndex(f => f['@FromVersionStepID'] == field['@FromVersionStepID']);
+        let i = this.formFields.findIndex(f => f['@VersionStepID'] == field['@VersionStepID']);
         if (i > -1) {
             this.formFields.splice(i, 1);
             this.formFieldsSource.next(this.formFields);

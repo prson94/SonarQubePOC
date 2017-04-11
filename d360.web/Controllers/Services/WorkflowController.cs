@@ -1547,9 +1547,9 @@ namespace d360.web.Controllers.Services
                                         {
                                             var c = condition.Conditions.Condition[i];
 
-                                            if (c["@FromVersionStepID"] != null && c["@FromVersionStepID"] < 0)
+                                            if (c["@VersionStepID"] != null && c["@VersionStepID"] < 0)
                                             {
-                                                condition.Conditions.Condition[i]["@FromVersionStepID"] = keyMapping[(int)c["@FromVersionStepID"]];
+                                                condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
                                             }
                                         }
                                         l.Condition = JsonConvert.SerializeObject(condition);
@@ -1594,9 +1594,9 @@ namespace d360.web.Controllers.Services
                                             {
                                                 var c = condition.Conditions.Condition[i];
 
-                                                if (c["@FromVersionStepID"] != null && c["@FromVersionStepID"] < 0)
+                                                if (c["@VersionStepID"] != null && c["@VersionStepID"] < 0)
                                                 {
-                                                    condition.Conditions.Condition[i]["@FromVersionStepID"] = keyMapping[(int)c["@FromVersionStepID"]];
+                                                    condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
                                                 }
                                             }
                                             l.Condition = JsonConvert.SerializeObject(condition);

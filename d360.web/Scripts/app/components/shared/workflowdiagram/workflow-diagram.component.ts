@@ -203,7 +203,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     ff['@FieldName'] = 'Form :: ' + f['@id'];
                     ff['@type'] = f['@type'];
                     ff['@stepId'] = (<NodeModel>n).key;
-                    ff['@FromVersionStepID'] = (<NodeModel>n).key;
+                    ff['@VersionStepID'] = (<NodeModel>n).key;
 
                     this.formFields.push(ff);
                 });
@@ -217,13 +217,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
             if ((<LinkModel>l).condition != null && (<LinkModel>l).condition.length > 0) {
                 (<LinkModel>l).condition.forEach(c => {
-                    let i = this.formFields.findIndex(f => f['@id'] == c['@FormInputID'] && f['@FromVersionStepID'] == c['@FromVersionStepID']);
+                    let i = this.formFields.findIndex(f => f['@id'] == c['@FormInputID'] && f['@VersionStepID'] == c['@VersionStepID']);
 
                     if (i > -1) {
                         c['@FieldName'] = this.formFields[i]['@FieldName']; 
                     }
 
-                    this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@FromVersionStepID'], (<LinkModel>l).key, (<LinkModel>l).name);
+                    this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], (<LinkModel>l).key, (<LinkModel>l).name);
                 });
             }
 

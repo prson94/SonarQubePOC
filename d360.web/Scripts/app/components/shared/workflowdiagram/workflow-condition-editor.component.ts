@@ -135,7 +135,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@id'];
             delete this.condition['@type'];
 
-            this.condition['@FromVersionStepID'] = input['@stepId'];
+            this.condition['@VersionStepID'] = input['@stepId'];
             this.condition['@FormInputID'] = input['@id'];
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
             this.condition['@FieldName'] = 'Form :: ' + input['@id']

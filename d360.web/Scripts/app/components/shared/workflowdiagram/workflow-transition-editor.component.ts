@@ -128,7 +128,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         let i = this.transition.condition.findIndex(c => c == e);
 
         if (e['@FormInputID'] != null)
-            this.workflowFieldsService.deleteUsedField(this.transition.condition[i]['@FormInputID'], this.transition.condition[i]['@FromVersionStepID'], this.transition.key);
+            this.workflowFieldsService.deleteUsedField(this.transition.condition[i]['@FormInputID'], this.transition.condition[i]['@VersionStepID'], this.transition.key);
 
         this.transition.condition.splice(i, 1);
         this.transitionChange.emit(this.transition);
@@ -136,7 +136,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     addCondition(e: any) {
         if (e['@FormInputID'] != null)
-            this.workflowFieldsService.pushUsedField(e['@FormInputID'], e['@FromVersionStepID'], this.transition.key, this.transition.name);
+            this.workflowFieldsService.pushUsedField(e['@FormInputID'], e['@VersionStepID'], this.transition.key, this.transition.name);
 
         this.transition.condition.push(e);
         this.showAddCondition = false;
