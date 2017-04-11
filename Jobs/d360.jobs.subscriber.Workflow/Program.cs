@@ -20,7 +20,7 @@ namespace d360.jobs.subscriber.Workflow
     {
         public static int MAX_NUMBER_OF_WORKFLOW_EVENTS = 25;
 
-        public static async Task ProcessTopicMessage([ServiceBusTrigger("%topicname%", "Workflow", AccessRights.Listen)] BrokeredMessage message)
+        public static async Task ProcessTopicMessage([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Listen)] BrokeredMessage message)
         {            
             try
             {

@@ -20,7 +20,7 @@ namespace d360.jobs.subscriber.Audit
             host.RunAndBlock();
         }
 
-        public static void ProcessTopicMessage([ServiceBusTrigger("%topicname%", "Audit", AccessRights.Listen)] BrokeredMessage message)
+        public static void ProcessTopicMessage([ServiceBusTrigger("%EventBusTopicName%", "Audit", AccessRights.Listen)] BrokeredMessage message)
         {
             try
             {

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using d360.core.enums.Workflow;
 using System.Threading.Tasks;
 using System.Configuration;
+using Microsoft.Azure;
 
 namespace d360.extensions.queue
 {
@@ -132,8 +133,8 @@ namespace d360.extensions.queue
         }
 
         private string getTopicName()
-        {
-            return (ConfigurationManager.AppSettings["EventBusTopicName"] ?? "events-debug").ToString();
+        {            
+            return (CloudConfigurationManager.GetSetting("EventBusTopicName") ?? "events-debug");
         }
 
         public Task CreateTopicMessagesAsync(List<EventInfo> events)
