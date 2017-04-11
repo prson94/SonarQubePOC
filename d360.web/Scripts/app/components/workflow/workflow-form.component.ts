@@ -43,6 +43,10 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                                 <header>{{title}}</header>
                                 <div class="row">
                                     <div class="col s12">Thank you, your responses have been submitted.</div>
+                                    <div class="col s12">&nbsp;</div>
+                                    <div class="col s12">
+                                        <button pButton *ngIf="hasCloseButton" type="button" (click)="close();" label="Close" style="width: 150px;"></button>
+                                    </div>
                                 </div>
                             </div>                              
                         </div>
