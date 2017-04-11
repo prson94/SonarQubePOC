@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("d360.jobs.ProcessDatabaseQueues")]
+[assembly: AssemblyTitle("d360.jobs.subscriber.Audit")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Toshiba")]
-[assembly: AssemblyProduct("d360.jobs.ProcessDatabaseQueues")]
-[assembly: AssemblyCopyright("Copyright © Toshiba 2014")]
+[assembly: AssemblyProduct("d360.jobs.subscriber.Audit")]
+[assembly: AssemblyCopyright("Copyright © Infogix, Inc. 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
