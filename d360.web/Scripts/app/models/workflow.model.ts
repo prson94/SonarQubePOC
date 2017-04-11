@@ -388,6 +388,7 @@ export enum IssueType {
 }
 
 export enum WorkflowType {
+    None = 0,
     SuggestNewArtifact = 1,
     CertifyArtifact = 2,
     WorkIssue = 3,

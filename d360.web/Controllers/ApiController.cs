@@ -6638,25 +6638,28 @@ SELECT (
 
         private IEnumerable<CountModel> LoadWorkflowAssignmentsCount(int resourceId)
         {
-            var sql = @"(select '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType in(1,5)
+            var sql = @"(select '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, null as Id, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType in(1,5)
                         union
-                        select '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
+                        select '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, null as Id, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
                         union
-                        select '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID)
+                        select '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, null as Id, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID)
                                 inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
                                 left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
                                 where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3                        
                         union
                         select
-	                            t.name as Name, count(1) as Total
+	                            t.name as Name
+                                ,t.id as Id
+                                ,count(1) as Total                                
                             from
 	                            workflow.itemassignment ia
 	                            inner join workflow.item i on (ia.itemid = i.id)
 	                            inner join workflow.[version] v on (v.id = i.versionid)
 	                            inner join workflow.[type] t on (v.typeid = t.id)
+                                inner join [cache].[object] co on (i.[object] = co.[object] and i.[objectid] = co.[objectid])
                             where
 	                            ia.resourceobject = 'Resource' and ia.resourceobjectid = @r
-                            group by t.name
+                            group by t.name, t.id
                         ) order by Name";
 
             return Company.Query<CountModel>(sql, new { r = resourceId });

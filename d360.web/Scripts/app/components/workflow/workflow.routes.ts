@@ -6,6 +6,7 @@ import { WorkflowRaiseIssueComponent} from './workflow-raise-issue.component';
 import { WorkflowWorkItemComponent } from './workflow-work-item.component';
 import { WorkflowViewStatusComponent } from './workflow-view-status.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
+import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 import { WorkflowDetailComponent } from './workflow-detail.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
@@ -26,6 +27,9 @@ const routes: Routes = [
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST + '/:workflowType', component: WorkflowDetailComponent
             },
+            {
+                path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2 + '/:workflowTypeId', component: WorkflowNewDetailComponent
+            },            
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_FORM + '/:workflowId/:stepId/:itemId', component: WorkflowFormComponent
             },                   

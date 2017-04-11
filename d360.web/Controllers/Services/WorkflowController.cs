@@ -1608,6 +1608,46 @@ namespace d360.web.Controllers.Services
             return Request.CreateResponse(HttpStatusCode.OK, Company.WorkflowVersions.Where(v => v.TypeID == id).ToList());
         }
 
+        [Route("type/{typeId:int}/myinstances")]
+        public HttpResponseMessage GetAssignedWorkflowInstances(int typeId)
+        {
+            try
+            {
+                //get workflow instances of the type specified assigned to the current user
+                var sql = @"    select
+                                    wt.name as 'WorkflowName'
+	                                ,wi.[object] as 'Object'
+	                                ,wi.[objectid] as 'ObjectID'
+	                                ,wi.startedOn as 'StartedOn'
+	                                ,wi.startedBy as 'StartedByResourceID'
+	                                ,gr.firstName + ' ' + gr.lastName as 'StartedBy'
+	                                ,od.ObjectTypeName as 'TypeName'
+	                                ,od.ObjectType as 'ObjectType'
+	                                ,od.ObjectTypeID as 'ObjectTypeID'
+	                                ,od.Name as 'ObjectName'
+                                from
+                                   [workflow].[type] wt
+                                   inner join[workflow].[version] wv on (wt.id = wv.typeid)
+                                   inner join[workflow].[item] wi on(wv.id = wi.versionid)
+                                   inner join[reporting].global_resource gr on(wi.startedby = gr.resourceid)
+                                   inner join[cache].objectdetails od on(od.[object] = wi.[object] and od.[objectid] = wi.[objectid])
+                                   inner join[workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+                                where
+                                    wt.id = @typeId
+                           ";
+
+                var w = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
+
+                var res = Company.Query<dynamic>(sql, new { r = Company.CurrentResourceID, typeId = typeId });
+
+                return Request.CreateResponse(new { items = res, workflow = w });
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
 
         #region Helper Methods
 

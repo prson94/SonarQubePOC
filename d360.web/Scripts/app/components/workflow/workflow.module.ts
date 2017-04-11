@@ -25,6 +25,7 @@ import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.compon
 import { WorkflowViewStatusComponent } from './workflow-view-status.component';
 import { WorkflowWorkItemComponent } from './workflow-work-item.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
+import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 
 import { WorkflowRoutingModule } from './workflow.routes';
 
@@ -86,6 +87,7 @@ import {
         WorkflowViewDetailsComponent,
         WorkflowViewStatusComponent,
         WorkflowWorkItemComponent,        
+        WorkflowNewDetailComponent,
     ],
     exports: [        
         WorkflowCertifyDetailsComponent,
@@ -99,6 +101,7 @@ import {
         WorkflowDetailedViewComponent,
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
+        WorkflowNewDetailComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

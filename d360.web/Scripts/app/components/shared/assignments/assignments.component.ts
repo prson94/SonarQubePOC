@@ -70,9 +70,11 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
     }
 
     private doSelect(item) {
+
         this.showItemDetail.emit({
             workflowType: this.getWorkflowType(item),
-            resourceID: this.resourceId
+            resourceID: this.resourceId,
+            workflowId: item.Id
         });
     }
 
@@ -87,9 +89,9 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
             case "PROPOSE NEW ARTIFACT":
                 return WorkflowType.SuggestNewArtifact;
             case "ACTIONS":
-                return WorkflowType.WorkIssue;            
-        }        
-        return null;
+                return WorkflowType.WorkIssue;                          
+        }
+        return WorkflowType.None;
     }
 }
 

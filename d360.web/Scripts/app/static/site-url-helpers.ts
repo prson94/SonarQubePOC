@@ -32,6 +32,7 @@
     static SITE_URL_WORKFLOW_VIEW_STATUS = 'status';
     static SITE_URL_WORKFLOW_V2_VIEW_STATUS = 'details';
     static SITE_URL_WORKFLOW_LIST = 'workflowlist';
+    static SITE_URL_WORKFLOW_LIST_V2 = 'workflowlistnew';
     static SITE_URL_WORKFLOW_FORM = 'form';
     
     //fusion child routes
