@@ -33,7 +33,8 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                                             <div class="col s12">&nbsp;</div>
                                         </div>                                        
                                         <div class="col s12">
-                                                <button pButton type="submit" [disabled]="!workflowForm.valid" style="width: '150px';" label="Submit"></button>                                    
+                                                <button pButton type="submit" [disabled]="!workflowForm.valid" style="width: 150px;" label="Submit"></button>                                    
+                                                <button pButton *ngIf="hasCloseButton" type="button" (click)="close();" label="Close" style="width: 150px;"></button>
                                         </div>
                                     </div>                                        
                                 </form>                                                                                     
@@ -43,7 +44,7 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                                 <div class="row">
                                     <div class="col s12">Thank you, your responses have been submitted.</div>
                                 </div>
-                            </div>  
+                            </div>                              
                         </div>
                     </div>                                               
                 `,
@@ -63,6 +64,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private objectID: number;
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
+
+    @Input() hasCloseButton: boolean = true;
 
     constructor(private route: ActivatedRoute,
             private location: Location,
@@ -111,5 +114,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.objectType = res.ObjectType;    
                 this.objectID = res.ObjectID;    
             });
+    }
+
+    private close() {
+        this.location.back();
     }
 };

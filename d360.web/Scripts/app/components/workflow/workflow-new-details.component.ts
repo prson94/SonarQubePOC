@@ -7,7 +7,7 @@ import { WorkflowType, WorkflowAssignmentDetail } from '../../models/workflow.mo
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
-
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-workflow-new-detail',
@@ -22,9 +22,10 @@ import { WorkflowService } from '../../services/workflow.service';
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                 <p-column field="ObjectName" header="Name" sortable="true" [filter]="!showSimpleFilter">
                                     <template let-col let-item="rowData" pTemplate type="body">
-                                        <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.ObjectName}}</d3s-tooltip>
+                                        <a (click)="open(item)"><d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.ObjectName}}</d3s-tooltip></a>
                                     </template>
                                 </p-column>
+                                <p-column field="StepName" header="Step" sortable="true" [filter]="!showSimpleFilter"></p-column>                                
                                 <p-column field="Object" header="Object" sortable="true" [filter]="!showSimpleFilter"></p-column>
                                 <p-column field="TypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column>
                                 <p-column field="StartedOn" header="Started On" sortable="true" [filter]="!showSimpleFilter">
@@ -100,4 +101,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
         this.sub.unsubscribe();
     }
 
+    private open(item: WorkflowAssignmentDetail) {        
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowTypeId}/${item.ItemStepID}/${item.ItemID}`);
+    }
 };

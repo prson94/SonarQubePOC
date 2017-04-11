@@ -406,6 +406,8 @@ export enum FormResponseType {
 
 
 export class WorkflowAssignmentDetail {
+    ItemID: number;
+    ItemStepID: number;
     Object: string;
     ObjectID: number;
     ObjectName: string;
@@ -416,4 +418,7 @@ export class WorkflowAssignmentDetail {
     StartedOn: Date;
     TypeName: string;
     WorkflowName: string;
+    StepName: string;
+    StepType: StepType;    
+    ActivityType: WorkflowActivityType;
 }

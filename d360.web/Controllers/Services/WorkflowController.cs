@@ -1615,23 +1615,30 @@ namespace d360.web.Controllers.Services
             {
                 //get workflow instances of the type specified assigned to the current user
                 var sql = @"    select
-                                    wt.name as 'WorkflowName'
+	                                wt.name as 'WorkflowName'
 	                                ,wi.[object] as 'Object'
 	                                ,wi.[objectid] as 'ObjectID'
 	                                ,wi.startedOn as 'StartedOn'
 	                                ,wi.startedBy as 'StartedByResourceID'
+                                    ,wi.id as 'ItemID'
 	                                ,gr.firstName + ' ' + gr.lastName as 'StartedBy'
 	                                ,od.ObjectTypeName as 'TypeName'
 	                                ,od.ObjectType as 'ObjectType'
 	                                ,od.ObjectTypeID as 'ObjectTypeID'
 	                                ,od.Name as 'ObjectName'
+	                                ,wis.id as 'ItemStepID'
+	                                ,wvs.name as 'StepName'
+	                                ,wvs.steptype as 'StepType'
+	                                ,wvs.activitytype as 'ActivityType'
                                 from
-                                   [workflow].[type] wt
-                                   inner join[workflow].[version] wv on (wt.id = wv.typeid)
-                                   inner join[workflow].[item] wi on(wv.id = wi.versionid)
-                                   inner join[reporting].global_resource gr on(wi.startedby = gr.resourceid)
-                                   inner join[cache].objectdetails od on(od.[object] = wi.[object] and od.[objectid] = wi.[objectid])
-                                   inner join[workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+	                                [workflow].[type] wt
+	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
+	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)
+	                                inner join [reporting].global_resource gr on (wi.startedby = gr.resourceid)
+	                                inner join [cache].objectdetails od on(od.[object] = wi.[object] and od.[objectid] = wi.[objectid])
+	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                                 where
                                     wt.id = @typeId
                            ";
