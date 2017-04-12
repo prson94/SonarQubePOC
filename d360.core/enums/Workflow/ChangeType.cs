@@ -21,7 +21,9 @@ namespace d360.core.enums.Workflow
         [Description("Score Changed")]
         ScoreUpdate = 5,
         [Description("Rule Result")]
-        RuleResult = 6
+        RuleResult = 6,
+        [Description("Loaded")]
+        Loaded = 7,
     }
 
     public class ChangeTypeInfo
