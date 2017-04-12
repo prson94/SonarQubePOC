@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -307,7 +308,7 @@ namespace d360.model
 
                 if (WorkflowItemSteps.Where(x => x.ItemID == itemID && x.StepID == transition.ToVersionStepID).Any())
                 {
-                    Console.WriteLine("ERROR ENCOUNTERED CASE WHERE ITEMSTEP DATA ALREADY EXISTS");
+                    Console.WriteLine("DEBUG - ITEMSTEP DATA ALREADY EXISTS");
 
                     return;
                 }
@@ -627,8 +628,50 @@ namespace d360.model
 
             emailSettings.BodyTemplate = ProcessMessageBody(emailSettings.BodyTemplate, objectInfo, prefix, item);
 
-            emailSettings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailSettings.BodyTemplate}<p>Item Workflow Details {url}</p></body></html>";
-            
+            emailSettings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailSettings.BodyTemplate}<p>Item Workflow Details {url}</p>";
+
+            //if the setting to include responses from froms is enabled then get previous form responses and put in xml
+            if (emailSettings.ShouldIncludeFormResponses)
+            {
+                var formResponses = WorkflowItemSteps.Where(x => x.ItemID == item.ItemID && x.Step.ActivityType == WorkflowActivityType.Form);
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append($"<br><br><b>Form responses</b><br>");
+
+                foreach(var formResponse in formResponses)
+	            {
+                    if (string.IsNullOrEmpty(formResponse.Fields)) continue;
+
+                    var xml = XElement.Parse(formResponse.Fields);
+                    
+                    foreach (var form in xml.Elements("form"))
+                    {
+                        int resourceID = 0;
+                                         
+                        if(int.TryParse((string)form.Attribute("ResourceID"), out resourceID))
+                        {
+                            var user = GlobalReportingResources.Where(x => x.ResourceID == resourceID).FirstOrDefault();
+
+                            if(user != null)
+                            {
+                                sb.Append($"Response from user <b>{user.FullName}</b><br>");
+                            }
+                        }
+
+                        foreach(var field in form.Elements("field"))
+                        {
+                            var fieldName = (string)field.Attribute("label");
+                            var value = (string)field.Attribute("value");
+
+                            sb.Append($"<b>{fieldName}</b> {value}<br>");
+                        }
+                    }
+
+                    emailSettings.BodyTemplate += sb.ToString();
+	            }
+            }
+
+            emailSettings.BodyTemplate += "</body></html>";
 
             if (emailSettings.RecipientType == EmailTaskRecipientType.Initiator)
             {
@@ -726,7 +769,8 @@ namespace d360.model
                     {
                         var fieldRecord = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
 
-                        fieldValue = fieldRecord.FormattedValue;
+                        if(fieldRecord != null)
+                            fieldValue = fieldRecord.FormattedValue;
                     }
 
                     result = result.Replace(item, fieldValue);
