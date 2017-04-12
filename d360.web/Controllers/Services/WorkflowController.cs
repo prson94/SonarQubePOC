@@ -1060,6 +1060,16 @@ namespace d360.web.Controllers.Services
                 }
 
                 Company.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
+
+                //remove any assignment records in the workflow item assignment table so this item doesnt appear assigned to this user anymore
+
+                var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID).FirstOrDefault();
+
+                if(assignment!= null)
+                {
+                    Company.WorkflowItemAssignments.Remove(assignment);
+                }
+
                 Company.SaveChanges();
 
                 var @object = (SystemObjects)Enum.Parse(typeof(SystemObjects), item.Object);
