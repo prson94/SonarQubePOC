@@ -116,6 +116,20 @@ namespace d360.utils.company
             return companies;
         }
 
+        public static string GetEventTopicName(int companyID)
+        {
+            var topic = "";
+            using(var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                community.Open();
+                var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
+
+                topic = db.EventTopic;
+            }
+            
+            return topic;
+        }
+
         public static bool IsCompanyDevelopmentEnvironment(int companyID)
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);

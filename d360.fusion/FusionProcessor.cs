@@ -13,6 +13,10 @@ using d360.extensions;
 using Newtonsoft.Json;
 using System.Data;
 using Microsoft.ApplicationInsights;
+using d360.extensions.info;
+using d360.extensions.caching;
+using d360.extensions.queue;
+using d360.model;
 
 namespace d360.fusion
 {
@@ -183,7 +187,10 @@ namespace d360.fusion
                     await UpdateExecutionWithStats(companyConnection);
 
                     //If any changes were made add record to queue.task
-                    await UpdateQueue(companyConnection);                    
+                    await UpdateQueue(companyConnection);
+
+                    //if any changes occured fire off message to say 
+                    MarkFusionJobAsHavingLoaded();
                 }
                 catch (AggregateException exception)
                 {                                           
@@ -216,6 +223,32 @@ namespace d360.fusion
             ai.TrackEvent("Fusion Job Complete", null, metrics);
 
             ai.TrackRequest(FUSION_PROCESSOR_AI_NAME_TOTAL, DateTime.Now, jobDuration.Elapsed, "", true); 
+        }
+
+        private void MarkFusionJobAsHavingLoaded()
+        {
+            if (_workArea.Changes.AddCount <= 0 && _workArea.Changes.UpdateCount <= 0 && _workArea.Changes.DeleteCount <= 0) return;
+
+            var topicName = CompanyConnectionUtils.GetEventTopicName(CompanyID);
+
+            if (string.IsNullOrEmpty(topicName)) return;
+
+            var eventBus = new AzureQueueSource();
+            
+            eventBus.CreateTopicMessage(new core.queue.EventInfo
+            {
+                CompanyID = CompanyID,
+                Action = core.enums.Workflow.ChangeType.Loaded,
+                ResourceID = 0,
+                Object = new core.queue.EventObjectInfo
+                {
+                    Object = SystemObjects.Fusion,
+                    ObjectID = FusionID,
+                    ObjectType = SystemObjects.FusionType,
+                    ObjectTypeID = -1
+                },
+                DomainPrefix = "demo.dev"
+            });
         }
 
         private async Task UpdateQueue(SqlConnection companyConnection)
