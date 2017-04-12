@@ -499,26 +499,31 @@ namespace d360.model
             {
                 case core.SystemObjects.Artifact:
                     var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    if (artifact == null) return;
                     artifact.Visible = visiblity;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Intersect:
                     var intersect = Intersects.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    if (intersect == null) return;
                     intersect.Visible = visiblity;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Taxonomy:
                     var taxonomy = Taxonomies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    if (taxonomy == null) return;
                     taxonomy.Visible = visiblity;
                     SaveChanges();
                     break;                                
                 case core.SystemObjects.Policy:
                     var policy = Policies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    if (policy == null) return;
                     policy.Visible = visiblity;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Rule:
                     var rule = Rules.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+                    if (rule == null) return;
                     rule.Visible = visiblity;
                     SaveChanges();
                     break;                                             
@@ -582,8 +587,9 @@ namespace d360.model
 
             var obj = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
 
+            var itemName = (obj != null) ? "(unknown)" : obj.Name;
             var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
-            var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{obj.Name}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
+            var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
             var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailBody}</body></html>";
 
@@ -618,7 +624,7 @@ namespace d360.model
 
             url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
 
-            emailSettings.BodyTemplate = ProcessMessageBody(emailSettings.BodyTemplate, objectInfo, prefix);
+            emailSettings.BodyTemplate = ProcessMessageBody(emailSettings.BodyTemplate, objectInfo, prefix, item);
 
             emailSettings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailSettings.BodyTemplate}<p>Item Workflow Details {url}</p></body></html>";
             
@@ -665,7 +671,7 @@ namespace d360.model
             }
         }
 
-        private string ProcessMessageBody(string bodyTemplate, EventObjectInfo objectInfo, string prefix)
+        private string ProcessMessageBody(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep)
         {
             var result = bodyTemplate;
             //replace [OBJECT_NAME] with the object name            
@@ -673,12 +679,31 @@ namespace d360.model
             {
                 //get the objects name
                 var item = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
-                
-                var itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+                var itemLink = "(unknown item)";
+
+                if (item != null)                
+                    itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
 
                 result = result.Replace("[OBJECT_NAME]", itemLink);
             }
-            
+
+            if (result.Contains("[WORKFLOW_INITIATOR]"))
+            {
+                var initiator = "unknown user";
+
+                if (itemStep.Item != null && itemStep.Item.StartedBy > 0)
+                {
+                    var user = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
+
+                    if(user != null)
+                    {
+                        initiator = user.FullName;
+                    }
+                }
+
+                result = result.Replace("[WORKFLOW_INITIATOR]", initiator);
+            }
+
             return result;
         }
 
