@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -171,7 +172,7 @@ namespace d360.model
             registration.LastExecuted = DateTime.UtcNow;
             Entry(registration).State = EntityState.Modified;
 
-            Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR ${objectInfo.Object} - {objectInfo.ObjectID}");
+            Console.WriteLine($"DEBUG - CREATING NEW WORKFLOW ITEM FOR {objectInfo.Object} - {objectInfo.ObjectID}");
 
             var version = WorkflowVersions
                 .Include(i => i.Steps)
@@ -587,7 +588,7 @@ namespace d360.model
 
             var obj = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
 
-            var itemName = (obj != null) ? "(unknown)" : obj.Name;
+            var itemName = (obj == null) ? "(unknown)" : obj.Name;
             var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
             var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
@@ -702,6 +703,34 @@ namespace d360.model
                 }
 
                 result = result.Replace("[WORKFLOW_INITIATOR]", initiator);
+            }
+
+            if (Regex.IsMatch(result, "\\[FIELD([0-9.]+)\\]"))
+            {
+                var fields = Regex.Matches(result, "\\[FIELD([0-9.]+)\\]");
+
+                foreach (var field in fields)
+                {
+                    var item = field.ToString();
+
+                    var fieldId = 0;
+
+                    var fieldIdStringitem = item.Replace("[FIELD", "");
+                    fieldIdStringitem = fieldIdStringitem.Replace("]", "");
+
+                    int.TryParse(fieldIdStringitem, out fieldId);
+
+                    var fieldValue = "";
+
+                    if (fieldId > 0)
+                    {
+                        var fieldRecord = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
+
+                        fieldValue = fieldRecord.FormattedValue;
+                    }
+
+                    result = result.Replace(item, fieldValue);
+                }
             }
 
             return result;
