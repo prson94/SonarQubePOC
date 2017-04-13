@@ -654,7 +654,7 @@ namespace d360.model
 
                             if(user != null)
                             {
-                                sb.Append($"Response from user <b>{user.FullName}</b><br>");
+                                sb.Append($"<br>Response from user <b>{user.FullName}</b><br>");
                             }
                         }
 

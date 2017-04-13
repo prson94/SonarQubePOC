@@ -7,7 +7,9 @@ namespace d360.model.workflow
 {
     public class WorkflowFormModel
     {
-        public List<WorkflowFormFieldModel> Fields { get; set; }
+        
+
+        public List<WorkflowFormFormModel> Forms { get; set; }
 
         public WorkflowFormSettingsModel Settings { get; set; }
 
@@ -16,25 +18,15 @@ namespace d360.model.workflow
             if (xml == null) throw new Exception("INVALID XML SPECIFIED FOR FORM MODEL");
 
             var model = new WorkflowFormModel();
-            model.Fields = new List<WorkflowFormFieldModel>();
+            model.Forms = new List<WorkflowFormFormModel>();
 
-            var form = xml.Elements("form");
+            var forms = xml.Elements("form");
 
-            if (form == null) return model;
+            if (forms == null) return model;
 
-            var fields = form.Elements("field");
-
-            foreach (var field in fields)
+            foreach (var form in forms)
             {
-                model.Fields.Add(
-                        new WorkflowFormFieldModel
-                        {
-                            FieldType = (string)field.Attribute("fieldtype"),
-                            Label = (string)field.Attribute("label"),
-                            Value = (string)field.Attribute("value"),
-                            ID = ((string)field.Attribute("id"))
-                        }
-                    );
+                model.Forms.Add(WorkflowFormFormModel.ParseXml(form));                
             }
 
             return model;
@@ -42,11 +34,30 @@ namespace d360.model.workflow
 
         public string GetFormValueById(string id)
         {
-            var res = Fields.Where(x => x.ID == id).FirstOrDefault();
+            var form = Forms.FirstOrDefault();
+
+            if (form == null) return "";
+
+            var res = form.Fields.Where(x => x.ID == id).FirstOrDefault();
 
             if (res == null) return "";
 
             return (res.Value??"").Trim();
+        }
+
+        public List<string> GetFormValuesById(string id)
+        {
+            List<string> vals = new List<string>();
+            foreach (var form in Forms)
+            {
+                var res = form.Fields.Where(x => x.ID == id).FirstOrDefault();
+
+                if (res == null) continue; ;
+
+                vals.Add((res.Value ?? "").Trim());
+            }
+
+            return vals;
         }
     }
 }

@@ -996,7 +996,7 @@ namespace d360.web.Controllers.Services
                 if(root.Attribute("NumberOfResponses") != null)
                 {                    
                     int.TryParse((string)root.Attribute("NumberOfResponses"), out numberOfResponses);                    
-                    root.Attribute("NumberOfResponses").SetValue(numberOfResponses++);
+                    root.Attribute("NumberOfResponses").SetValue(++numberOfResponses);
                 }
                 else
                 {
@@ -1046,8 +1046,9 @@ namespace d360.web.Controllers.Services
                         //check that the number of users requested to fill out the form matches the number of responses recieved.
                         break;
                     case FormResponseType.Majority:
-                        //check if the number of responses is a majority
-                        isCompleted = numberOfResponses >= (totalResources / 2) + 1;
+                        //wait for all users to complete so we can determine what the majority says.
+                        //isCompleted = numberOfResponses >= (totalResources / 2) + 1;
+                        isCompleted = numberOfResponses >= totalResources;
                         break;
                 }
 

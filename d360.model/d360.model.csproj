@@ -155,6 +155,7 @@
     <Compile Include="workflow\WorkflowCriteriaExpressionModel.cs" />
     <Compile Include="workflow\WorkflowEmailModel.cs" />
     <Compile Include="workflow\WorkflowFormFieldModel.cs" />
+    <Compile Include="workflow\WorkflowFormFormModel.cs" />
     <Compile Include="workflow\WorkflowFormModel.cs" />
     <Compile Include="workflow\WorkflowFormSettingsModel.cs" />
     <Compile Include="workflow\WorkflowRegistrationCriteriaProcessor.cs" />

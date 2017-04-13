@@ -86,10 +86,58 @@ namespace d360.model.workflow
 
                     var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
 
-                    //check if the value matches
-                    var formValue = formModel.GetFormValueById(item.FormInputId);
+                    if (string.IsNullOrEmpty(formStep.Step.Settings))
+                    {
+                        Console.WriteLine("DEBUG - FORM SETTINGS ARE MISSING");
 
-                    return string.Compare(formValue, (item.Value.ToString()??"").Trim(), true) == 0;
+                        return false;
+                    }
+
+                    //check the form response type is it all, first or majority
+                    var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(formStep.Step.Settings));
+
+                    switch (formSettings.ResponseType)
+                        {
+                            case core.enums.Workflow.FormResponseType.FirstResponse:
+                                {
+                                    //check if the value matches
+                                    var formValue = formModel.GetFormValueById(item.FormInputId);
+
+                                    return string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0;
+                                }
+                        case core.enums.Workflow.FormResponseType.All:
+                                {
+                                    // ALL USERS NEED TO RESPOND AND APPROVE
+
+                                    // GET RESPONSES FROM EACH FORM AND MAKE SURE THEY ARE THE SAME IF NOT RETURN FALSE
+                                    var formValues = formModel.GetFormValuesById(item.FormInputId);
+
+                                    foreach (var val in formValues)
+                                    {
+                                        if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
+                                    }
+                                    return true;
+                                }
+                        case core.enums.Workflow.FormResponseType.Majority:
+                            {
+                                var formValues = formModel.GetFormValuesById(item.FormInputId);
+
+                                var matchCount = 0;
+                                
+                                foreach (var val in formValues)
+                                {
+                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;                                    
+                                }
+
+                                return matchCount > (formValues.Count / 2);
+                            }
+                        default:
+                            Console.WriteLine("DEBUG - FORM HAS UNKNOWN OR UNSUPPORTED FORM RESPONSE TYPE");
+
+                            return false;
+                        
+
+                    }
                 }
             }
 
