@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -10,17 +10,19 @@ import {
     WorkflowDiagramModel,
     WorkflowDiagramNode,
     NodeModel,
+    WorkflowActivityType,
     
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-step-editor',
-    providers: [WorkflowService],
+    providers: [WorkflowService, ResponsibilityTypeService],
     template: `
 <div class="row">
     <div class="col s12">
@@ -30,7 +32,7 @@ import * as _ from 'lodash';
         </div>
     </div>
     <div [ngSwitch]="step.activityType">
-        <div class="row" *ngSwitchCase="1">
+        <div class="row" *ngSwitchCase="WorkflowActivityType.EmailNotification">
             <div class="col s12">
                 <div class="FieldName">
                     Recipient Type
@@ -54,8 +56,9 @@ import * as _ from 'lodash';
                     Owner
                 </div>
                 <div>
-                    <select>
+                    <select [ngModel]="step.settings.ResponsibilityTypeID" (ngModelChange)="step.settings.ResponsibilityTypeID = $event; stepChange.emit(step)" style="width: 95%">
                         <option></option>
+                        <option *ngFor="let r of responsibilities" [value]="r.ID">{{r.Name}}</option>
                     </select>
                 </div>
             </div>
@@ -81,7 +84,7 @@ import * as _ from 'lodash';
                 </div>
             </div>
         </div>
-        <div class="row" *ngSwitchCase="2">
+        <div class="row" *ngSwitchCase="WorkflowActivityType.StatusChange">
             <div class="col s12">
                 <div class="FieldName">Status</div>
                 <div>
@@ -92,7 +95,7 @@ import * as _ from 'lodash';
                 </div>
             </div>
         </div>
-        <div class="row" *ngSwitchCase="3">
+        <div class="row" *ngSwitchCase="WorkflowActivityType.Form">
             <d3s-workflow-step-form-editor [step]="step" (stepChange)="step = $event; stepChange.emit(step)"></d3s-workflow-step-form-editor>
         </div>
     </div>
@@ -103,11 +106,13 @@ import * as _ from 'lodash';
 `
 })
 
-export class WorkflowStepEditorComponent extends BaseComponent implements OnInit {
+export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() step: NodeModel;
     @Output() stepChange = new EventEmitter();
+
+    WorkflowActivityType = WorkflowActivityType;
 
     private originalStep: NodeModel;
     private status = [
@@ -122,14 +127,27 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         { value: 'SpecificUser', label: 'Specific User' },
     ];
 
-    constructor() {
+    private responsibilities = [];
+
+    constructor(private responsibilityService: ResponsibilityTypeService) {
         super();
     }
 
     ngOnInit() {
+    }
+
+    ngOnChanges() {
         if (this.step.settings == null)
             this.step.settings = {};
         this.originalStep = _.cloneDeep(this.step);
+
+        if (this.step.activityType == WorkflowActivityType.EmailNotification) {
+            this.responsibilityService.getResponsibilityTypes()
+                .then(r => {
+                    this.responsibilities = r;
+                    console.log(r);
+                });
+        }
     }
 
 }

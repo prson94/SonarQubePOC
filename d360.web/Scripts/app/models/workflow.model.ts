@@ -294,6 +294,8 @@ export class WorkflowListItem {
     ChangeType: WorkflowChangeType;
     Published: string;
     NumberOfEvents: number;
+
+    ChangeTypeName: string;
 }
 
 export class WorkflowEventRegistration {
@@ -347,7 +349,10 @@ export enum WorkflowChangeType {
     Add = 1,
     Update = 2,
     Delete = 3,
-    Schedule = 4
+    Schedule = 4,
+    ScoreUpdate = 5,
+    RuleResult = 6,
+    Loaded = 7
 }
 
 export enum WorkflowFormFieldType {

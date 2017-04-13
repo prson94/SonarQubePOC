@@ -1,7 +1,7 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { WorkflowListItem } from '../../../models/workflow.model';
+import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 
@@ -16,6 +16,7 @@ import { WorkflowService } from '../../../services/workflow.service';
     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>        
     <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
+    <p-column field="ChangeTypeName" header="Change Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
     <p-column field="CreatedOn" header="Created On" [sortable]="true" [filter]="!showSimpleFilter" >
         <template let-item="rowData" pTemplate type="body">
             <span>{{item.CreatedOn | date:'shortDate'}}</span>
@@ -51,6 +52,8 @@ export class AdminWorkflowNewListComponent extends BaseComponent implements OnIn
     private items: WorkflowListItem[] = [];
     private selection: WorkflowListItem;
 
+    private changeTypes: ChangeTypeInfo[] = [];
+
     constructor(private workflowService: WorkflowService) {
         super();
     }
@@ -61,10 +64,15 @@ export class AdminWorkflowNewListComponent extends BaseComponent implements OnIn
 
     load() {
         this.isLoading = true;
-        this.workflowService.getTypes().then(r => {
-            this.items = r;
-            //console.log(r);
-        });
 
+        this.workflowService.getChangeTypes()
+            .then(r => this.changeTypes = r)
+            .then(() => this.workflowService.getTypes())
+            .then(r => {
+                this.items = r
+                this.items.forEach(i => {
+                    i.ChangeTypeName = this.changeTypes.find(c => c.ID == i.ChangeType).Description;
+                });
+            });
     }
 }

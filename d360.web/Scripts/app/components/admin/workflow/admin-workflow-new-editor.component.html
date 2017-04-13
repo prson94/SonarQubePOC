@@ -1,5 +1,8 @@
 ﻿<div class="tile tile-detail">
-    <header>
+    <header *ngIf="model?.Type?.Name != null">
+        {{model.Type.Name}}
+    </header>
+    <header *ngIf="model?.Type?.Name == null">
         New Workflow Type
     </header>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>

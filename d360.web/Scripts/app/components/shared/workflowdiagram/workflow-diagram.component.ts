@@ -583,6 +583,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                 n.settings.MessageToUser = e.settings.MessageToUser;
                 n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
+                n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
+
+                if (e.settings.MessageRecipientType == 'SpecificUser')
+                    delete e.settings.ResponsibilityTypeID;
+                if (e.settings.MessageRecipientType == 'Owner')
+                    delete e.settings.MessageToUser;
                 break;
             case 2: //status change
                 n.settings.Status = e.settings.Status;
@@ -596,6 +602,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         if (e.hasMultipleInputs && e.settings.WaitForAllTransitions != null) {
             n.settings.WaitForAllTransitions = e.settings.WaitForAllTransitions;
         }
+
+        if (!e.hasMultipleInputs && n.settings.WaitForAllTransitions != null)
+            delete n.settings.WaitForAllTransitions;
         //console.log('changeStep: ', n, e);
 
     }
