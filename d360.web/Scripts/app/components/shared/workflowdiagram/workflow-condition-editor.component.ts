@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import {
@@ -16,7 +16,7 @@ import { WorkflowFieldsService } from '../../../services/workflow-fields.service
     templateUrl: './workflow-condition-editor.component.html'
 })
 
-export class WorkflowConditionEditorComponent extends BaseComponent implements OnInit {
+export class WorkflowConditionEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() objectType: string;
     @Input() objectId: number;
     @Input() formFields: any[] = [];
@@ -55,6 +55,33 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         //console.log('condition editor form fields: ', this.formFields);
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+
+        //this.load();
+
+        if (!changes['formFields'].isFirstChange()) {
+
+            console.log('formFields change');
+            this.fieldList = [];
+
+            this.fields.forEach(f => {
+                this.fieldList.push({
+                    value: 'FieldType|' + f.ID.toString(),
+                    label: f.FriendlyName
+                });
+            });
+
+            if (this.formFields.length > 0) {
+                this.formFields.forEach(f => {
+                    this.fieldList.push({
+                        value: 'FormInput|' + f['@id'],
+                        label: 'Form :: ' + f['@label']
+                    });
+                });
+            }
+        }
+    }
+
     load() {
         this.isLoading = true;
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
@@ -73,7 +100,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     this.formFields.forEach(f => {
                         this.fieldList.push({
                             value: 'FormInput|' + f['@id'],
-                            label: 'Form :: ' + f['@id']
+                            label: 'Form :: ' + f['@label']
                         });
                     });
                 }
@@ -138,7 +165,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@VersionStepID'] = input['@stepId'];
             this.condition['@FormInputID'] = input['@id'];
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
-            this.condition['@FieldName'] = 'Form :: ' + input['@id']
+            this.condition['@FieldName'] = 'Form :: ' + input['@label']
         }
     }
 

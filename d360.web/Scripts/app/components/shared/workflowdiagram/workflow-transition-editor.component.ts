@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -80,7 +80,7 @@ import * as _ from 'lodash';
 `
 })
 
-export class WorkflowTransitionEditorComponent extends BaseComponent implements OnInit, OnDestroy {
+export class WorkflowTransitionEditorComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() transition: LinkModel;
@@ -102,18 +102,28 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     ngOnInit() {
-        console.log(this.transition);
         this.originalTransition = _.cloneDeep(this.transition);
         this.workflowService.getTransitionTypes()
             .then(r => {
                 this.transitionTypes = r;
             });
 
-        this.formFields = this.workflowFieldsService.getFields();
+        this.filterFormFields();
 
         this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
-            this.formFields = s;
+            this.filterFormFields();
+            //console.log('(sub) transition editor form fields:', this.formFields);
         });
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (!changes['transition'].isFirstChange() && changes['transition'].currentValue.key != changes['transition'].previousValue.key) {
+            this.showAddCondition = false;
+            this.filterFormFields();
+            //console.log('(change) transition editor form fields:', this.formFields);
+        } else if (!changes['transition'].isFirstChange()) {
+            this.filterFormFields();
+        }
     }
 
     ngOnDestroy() {
@@ -121,6 +131,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     add() {
+        this.filterFormFields();
         this.showAddCondition = true;
     }
 
@@ -146,5 +157,12 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     changeType(e: any) {
         this.transition.transitionType = e;
         this.transitionChange.emit(this.transition);
+        this.filterFormFields();
+    }
+
+    filterFormFields() {
+        this.formFields = this.workflowFieldsService.getFields();
+        //console.log('filterFormFields: ', this.formFields, this.transition.formInputs);
+        this.formFields = this.formFields.filter(f => this.transition.formInputs.indexOf(f['@stepId']) > -1);
     }
 }

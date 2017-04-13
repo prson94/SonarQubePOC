@@ -49,6 +49,16 @@ import * as _ from 'lodash';
                     <input type="text" [ngModel]="step.settings.MessageToUser" (ngModelChange)="step.settings.MessageToUser = $event; stepChange.emit(step)" style="width: 95%" />
                 </div>
             </div>
+            <div *ngIf="step.settings.MessageRecipientType == 'Owner'" class="col s12">
+                <div class="FieldName">
+                    Owner
+                </div>
+                <div>
+                    <select>
+                        <option></option>
+                    </select>
+                </div>
+            </div>
             <div class="col s12">
                 <div class="FieldName">
                     Subject
@@ -86,7 +96,7 @@ import * as _ from 'lodash';
             <d3s-workflow-step-form-editor [step]="step" (stepChange)="step = $event; stepChange.emit(step)"></d3s-workflow-step-form-editor>
         </div>
     </div>
-    <div *ngIf="step.hasMultipleOutputs" class="col s12" style="padding-top: 8px">
+    <div *ngIf="step.hasMultipleInputs" class="col s12" style="padding-top: 8px">
         <input type="checkbox" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)" /> Wait for all transitions to complete?
     </div>
 </div>

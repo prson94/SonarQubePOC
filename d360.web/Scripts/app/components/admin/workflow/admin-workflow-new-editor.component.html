@@ -98,7 +98,7 @@
         <div class="col s12">
             <div>
                 <button type="button" pButton label="Cancel" (click)="onClose.emit()"></button>
-                <button type="button" pButton label="Next" (click)="save()" [disabled]="model.Type.Name == null || model.Type.Name == '' || model.Event.ChangeType == null || selectedObjectType == null"></button>
+                <button type="button" pButton label="Next" (click)="save()" [disabled]="model.Type.Name == null || model.Type.Name == '' || model.Event.ChangeType == null || selectedObjectType == null || (model.Event.ChangeType == WorkflowChangeType.Schedule && conditions.length < 1)"></button>
             </div>
         </div>
     </div>

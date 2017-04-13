@@ -216,6 +216,7 @@ export class LinkModel {
     transitionType: TransitionType = TransitionType.Always;
     condition: any = [];
     settings: any = {};
+    formInputs: any = [];
 
 }
 
@@ -242,7 +243,7 @@ export class NodeModel {
     settings: any = {};
     fields: any = {};
 
-    hasMultipleOutputs: boolean = false;
+    hasMultipleInputs: boolean = false;
 
 }
 

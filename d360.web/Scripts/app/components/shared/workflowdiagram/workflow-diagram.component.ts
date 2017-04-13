@@ -153,15 +153,17 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     forms.push((<NodeModel>n).key);
                 }
 
-                links.concat((<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == (<any>n).key));
+                links = links.concat((<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
+                //console.log('links all', (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key), (<go.GraphLinksModel>this.myDiagram.model).linkDataArray);
             });
-
+            //console.log('nodes: ', nodes);
             nodes = [];
             links.forEach(l => {
-                nodes.concat(this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from));
+                nodes = nodes.concat(this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from));
             });
+            //console.log('links: ', links);
         }
-
+        //console.log('forms: ', forms);
         return forms;
     }
 
@@ -183,7 +185,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.addDiagramListener('SelectionDeleting', e => this.SelectionDeleting(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
-        this.myDiagram.addDiagramListener('PartCreated', () => this.checkHasMultipleOutputs());
+        this.myDiagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
 
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
@@ -218,11 +220,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.workflowFieldsService.clearUsedFields();
 
         this.formFields = [];
-        console.log('initializeFormFields', this.myDiagram.model.nodeDataArray);
+        //console.log('initializeFormFields', this.myDiagram.model.nodeDataArray);
         this.myDiagram.model.nodeDataArray.forEach(n => {
             
             if (+(<NodeModel>n).activityType == WorkflowActivityType.Form
                 && (<NodeModel>n).fields != null
+                && (<NodeModel>n).fields.form != null
                 && (<NodeModel>n).fields.form.field != null
                 && (<NodeModel>n).fields.form.field.length != null) {
 
@@ -230,7 +233,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     let ff = {};
                     ff['@id'] = f['@id'];
                     ff['@label'] = f['@label'];
-                    ff['@FieldName'] = 'Form :: ' + f['@id'];
+                    ff['@FieldName'] = 'Form :: ' + f['@label'];
                     ff['@type'] = f['@type'];
                     ff['@stepId'] = (<NodeModel>n).key;
                     ff['@VersionStepID'] = (<NodeModel>n).key;
@@ -328,11 +331,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         nodeList.forEach(n => this.myDiagram.model.addNodeData(n));
         linkList.forEach(l => dm.addLinkData(l));
 
+        dm.linkDataArray.forEach(l => (<LinkModel>l).formInputs = this.getAvailableFormInputs(<LinkModel>l));
+
         //get deep copy of lists
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(nodeList);
 
-        this.checkHasMultipleOutputs();
+        this.checkHasMultipleInputs();
 
         this.myDiagram.commitTransaction("load_all_data");
         this.reOrderLayout();
@@ -445,6 +450,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.frompid = m.FromPortID;
             n.topid = m.ToPortID;
             n.name = m.Name;
+
+            if (n.transitionType == TransitionType.Condition) {
+                n.formInputs = this.getAvailableFormInputs(n);
+            }
 
             this.setTransitionIcon(n);
             
@@ -584,7 +593,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 break;
         }
 
-        if (e.hasMultipleOutputs && e.settings.WaitForAllTransitions != null) {
+        if (e.hasMultipleInputs && e.settings.WaitForAllTransitions != null) {
             n.settings.WaitForAllTransitions = e.settings.WaitForAllTransitions;
         }
         //console.log('changeStep: ', n, e);
@@ -603,16 +612,21 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             l.condition = e.condition;
             l.settings = e.settings;
             l.icon = e.icon;
-            l.formInputs = this.getAvailableFormInputs(l);
+            l.formInputs = this.getAvailableFormInputs(e);
+            if (this.selectedData != null && this.selectedData.diagramObjectType == DiagramObjectType.Link) {
+                this.selectedData.formInputs = l.formInputs;
+            }
+
             this.setTransitionIcon(l);
+            
             //console.log('transition change: ', e, l);
         }
     }
 
-    checkHasMultipleOutputs() {
+    checkHasMultipleInputs() {
         this.myDiagram.model.nodeDataArray.forEach(n => {
-            let count = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == (<any>n).key).length;
-            (<any>n).hasMultipleOutputs = (count > 1);
+            let count = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == (<any>n).key).length;
+            (<any>n).hasMultipleInputs = (count > 1);
         });
 
     }
@@ -690,8 +704,16 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 this.selectedData = sel[0].data;
                 if (this.selectedData.diagramObjectType == DiagramObjectType.Node) {
                     this.showNodeTabs = true; this.showLinkTabs = false;
+                    let i = this.myDiagram.model.nodeDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
+                    if (i > -1) {
+                       // this.selectedData = this.myDiagram.model.nodeDataArray[i];
+                    }
                 } else if (this.selectedData.diagramObjectType == DiagramObjectType.Link) {
                     this.showNodeTabs = false; this.showLinkTabs = true;
+                    let i = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
+                    if (i > -1) {
+                        //this.selectedData = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray[i];
+                    }
                 }
             }
         }
@@ -708,8 +730,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private LinkDrawn(e: any) {
         let link = e.subject;
-        let l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray
-        this.checkHasMultipleOutputs();
+        let l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.findIndex(l => (<any>l).from == link.from && (<any>l).to == link.to);
+        this.checkHasMultipleInputs();
+
+        if (l > -1) {
+            let k = (<LinkModel>(<go.GraphLinksModel>this.myDiagram.model).linkDataArray[l]);
+            k.formInputs = this.getAvailableFormInputs(k);
+        }
         //console.log(link, l);
     }
 

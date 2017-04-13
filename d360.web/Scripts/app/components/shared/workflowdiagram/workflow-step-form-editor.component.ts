@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
     NodeModel,
@@ -119,7 +119,7 @@ import * as _ from 'lodash';
                 The field {{deletingField['@id']}} cannot be deleted because it is used in the following transition conditions:
             </div>
             <div *ngFor="let u of usedIn" style="margin-left: 8px;">
-               &bull; {{(u.transitionName == '') ? '[No name]' : u.transitionName }}
+               &bull; {{(u.transitionName == '' || u.transitionName == null) ? '[No name]' : u.transitionName }}
             </div>
             <div>
                 <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
@@ -130,7 +130,7 @@ import * as _ from 'lodash';
 `
 })
 
-export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnDestroy {
+export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() step: NodeModel;
     @Output() stepChange = new EventEmitter();
 
@@ -173,6 +173,22 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
 
         //deal with xml-json nonsense
+        //this.initFields();
+
+        this.usedFields = this.workflowFieldsService.getUsedFields();
+
+    }
+
+    ngOnChanges() {
+        this.initFields();
+    }
+
+    ngOnDestroy() {
+        //this.fieldsSub.unsubscribe(); 
+    }
+
+    initFields() {
+        //deal with xml-json nonsense
         if (this.step.fields == null || this.step.fields.form == null) {
             this.step.fields = {};
             this.step.fields.form = {};
@@ -189,12 +205,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
-
     }
 
-    ngOnDestroy() {
-        //this.fieldsSub.unsubscribe();
-    }
 
     add() {
         this.formMode = FormMode.Adding;
@@ -215,6 +227,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         if (i >= 0) {
             this.step.fields.form.field.splice(i, 1);
             this.stepChange.emit(this.step);
+            this.deletingField['@stepId'] = this.step.key;
             this.workflowFieldsService.deleteFormField(this.deletingField);
         }
 

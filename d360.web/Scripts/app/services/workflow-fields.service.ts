@@ -61,15 +61,15 @@ export class WorkflowFieldsService {
     }
 
     deleteFormField(field: any) {
-        let i = this.formFields.findIndex(f => f['@VersionStepID'] == field['@VersionStepID']);
+        //console.log('delete form field', field);
+        //if (field['@VersionStepID'] == null || field['@FormInputID'] == null) {
+        //    console.warn('[workflow fields service] field passed to deleteFormFields is missing values', field);
+        //}
+        let i = this.formFields.findIndex(f => f['@stepId'] == field['@stepId'] && f['@id'] == field['@id']);
         if (i > -1) {
             this.formFields.splice(i, 1);
             this.formFieldsSource.next(this.formFields);
             console.log(this.formFields);
         }
-    }
-
-    setCanDelete(canDelete: boolean) {
-
     }
 }

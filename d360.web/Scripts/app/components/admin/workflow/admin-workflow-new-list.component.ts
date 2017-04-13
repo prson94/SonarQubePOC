@@ -63,7 +63,7 @@ export class AdminWorkflowNewListComponent extends BaseComponent implements OnIn
         this.isLoading = true;
         this.workflowService.getTypes().then(r => {
             this.items = r;
-            console.log(r);
+            //console.log(r);
         });
 
     }
