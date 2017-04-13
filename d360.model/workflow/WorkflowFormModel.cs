@@ -7,11 +7,9 @@ namespace d360.model.workflow
 {
     public class WorkflowFormModel
     {
-        
-
         public List<WorkflowFormFormModel> Forms { get; set; }
 
-        public WorkflowFormSettingsModel Settings { get; set; }
+        public WorkflowItemStepSettingModel Settings { get; set; }
 
         public static WorkflowFormModel ParseXml(XElement xml)
         {

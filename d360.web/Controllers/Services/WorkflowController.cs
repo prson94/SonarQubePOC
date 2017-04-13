@@ -984,7 +984,7 @@ namespace d360.web.Controllers.Services
                 if (string.IsNullOrEmpty(itemStepsModel.Settings))
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Form settings is missing or invalid");
 
-                var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(versionStep.Settings));
+                var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Settings));
                 var isCompleted = false;
                 
                 StringBuilder sb = new StringBuilder();
@@ -1131,7 +1131,7 @@ namespace d360.web.Controllers.Services
 
             var details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
 
-            var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(itemStep.Step.Settings));
+            var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(itemStep.Step.Settings));
 
             //check if the current user already completed the form
             var formResults = XElement.Parse(itemStep.Fields);

@@ -304,31 +304,42 @@ namespace d360.model
 
                 if (fromItemStep == null) throw new Exception("ERROR - CANNOT FIND ITEM FROM STEP");
 
+                long toItemStepID = 0;
                 // insert item step record for the to item step if none exist
+                var itemStepTo = WorkflowItemSteps.Where(x => x.ItemID == itemID && x.StepID == transition.ToVersionStepID).FirstOrDefault();
 
-                if (WorkflowItemSteps.Where(x => x.ItemID == itemID && x.StepID == transition.ToVersionStepID).Any())
+                if (itemStepTo == null)
                 {
-                    Console.WriteLine("DEBUG - ITEMSTEP DATA ALREADY EXISTS");
+                    Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
+
+                    var toItemStep = new WorkflowItemStep
+                    {
+                        StartedOn = DateTime.UtcNow,
+                        StartedBy = CurrentResourceID,
+                        StepID = transition.ToVersionStepID,
+                        Fields = "<fields/>",
+                        Settings = "<settings/>",
+                        ItemID = itemID
+                    };
+
+                    WorkflowItemSteps.Add(toItemStep);
+                    SaveChanges();
+
+                    toItemStepID = toItemStep.ID;
+                }
+                else
+                {
+                    Console.WriteLine($"DEBUG ITEMSTEP DATA ALREADY EXISTS {itemStepTo.ID}");
+
+                    toItemStepID = itemStepTo.ID;
+                }
+                
+                if(toItemStepID <= 0)
+                {
+                    Console.WriteLine($"ERROR - ITEMSTEP ID IS LESS THAN OR EQUAL TO ZERO MEANING IT DOESNT EXIST AND WE CANT INSERT A NEW ONE.  THIS SHOULD NOT HAPPEN!");
 
                     return;
                 }
-               
-
-                Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
-
-                var toItemStep = new WorkflowItemStep
-                {
-                    StartedOn = DateTime.UtcNow,
-                    StartedBy = CurrentResourceID,
-                    StepID = transition.ToVersionStepID,
-                    Fields = "<fields/>",
-                    Settings = "<settings/>",
-                    ItemID = itemID
-                };
-
-                WorkflowItemSteps.Add(toItemStep);
-                SaveChanges();
-                
 
                 // insert record into itemsteptransition
                 WorkflowItemStepTransition trans = new WorkflowItemStepTransition
@@ -336,7 +347,7 @@ namespace d360.model
                     Condition = "<condition></condition>",
                     Date = DateTime.UtcNow,
                     FromItemStepID = fromItemStep.ID,
-                    ToItemStepID = toItemStep.ID
+                    ToItemStepID = toItemStepID
                 };
 
                 WorkflowItemStepTransitions.Add(trans);
@@ -351,7 +362,7 @@ namespace d360.model
                     DomainPrefix = CurrentCompanyDomain,
                     ResourceID = CurrentResourceID,
                     WorkflowItemID = itemID,
-                    ItemStepID = toItemStep.ID,                    
+                    ItemStepID = toItemStepID,                    
                     Action = ChangeType.Add, // irrelevant
                     Object = objectInfo
                 });
@@ -380,7 +391,34 @@ namespace d360.model
 
                 return;
             }
-                                    
+                        
+            if(itemStep.Step == null)
+            {
+                Console.WriteLine($"STEP WITH ID {itemStepID} HAS NULL STEP REFERENCE CANNOT CONTINUE");
+
+                return;
+            }
+            
+            var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+            //does the step need to wait for all transitions before running?
+            if (stepSettings.WaitForAllTransitions)
+            {
+                //get count of the number of transitions to this step
+                var expectedTransitionCount = WorkflowVersionStepTransitions.Where(x => x.ToVersionStepID == itemStep.StepID).Count();
+
+                //get count of the completed transitions to this step
+                var completedTransitionsCount = WorkflowItemStepTransitions.Where(x => x.ToItemStepID == itemStepID).Count();
+
+                if(expectedTransitionCount != completedTransitionsCount)
+                {
+                    Console.WriteLine($"STEP WITH ID {itemStepID} HAS WAIT FOR ALL TRANSITIONS TO COMPLETE ENABLED NOT ALL HAVE COMPLETED expected:{expectedTransitionCount} actual completed:{completedTransitionsCount}");
+
+                    return;
+                }
+            }
+
+
             var stepType = itemStep.Step.StepType;
 
             Console.WriteLine($"Debug - Processing step of type {stepType}");

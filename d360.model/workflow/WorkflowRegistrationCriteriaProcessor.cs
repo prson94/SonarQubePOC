@@ -94,7 +94,7 @@ namespace d360.model.workflow
                     }
 
                     //check the form response type is it all, first or majority
-                    var formSettings = WorkflowFormSettingsModel.ParseXml(XElement.Parse(formStep.Step.Settings));
+                    var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(formStep.Step.Settings));
 
                     switch (formSettings.ResponseType)
                         {
