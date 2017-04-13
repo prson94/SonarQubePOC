@@ -139,6 +139,32 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     //#region helper methods
 
+    private getAvailableFormInputs(link: LinkModel): string[] {
+        let links = [];
+        let forms = [];
+
+
+        let nodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
+
+        while (nodes.length > 0) {
+            links = [];
+            nodes.forEach(n => {
+                if ((<NodeModel>n).activityType == WorkflowActivityType.Form) {
+                    forms.push((<NodeModel>n).key);
+                }
+
+                links.concat((<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == (<any>n).key));
+            });
+
+            nodes = [];
+            links.forEach(l => {
+                nodes.concat(this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from));
+            });
+        }
+
+        return forms;
+    }
+
     private unsubscribe() {
         if (this.fieldsSub != null)
             this.fieldsSub.unsubscribe();
@@ -154,6 +180,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
+        this.myDiagram.addDiagramListener('SelectionDeleting', e => this.SelectionDeleting(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.myDiagram.addDiagramListener('PartCreated', () => this.checkHasMultipleOutputs());
@@ -167,6 +194,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.isReadOnly;
         this.myDiagram.toolManager.linkingTool.archetypeLinkData = new LinkModel();
+
+        //disallow cycles
+        this.myDiagram.validCycle = go.Diagram.CycleNotDirected;
 
         this.getActivityTypes()
             .then(() => this.populateDiagram())
@@ -543,6 +573,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                 n.settings.MessageToUser = e.settings.MessageToUser;
+                n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
                 break;
             case 2: //status change
                 n.settings.Status = e.settings.Status;
@@ -572,6 +603,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             l.condition = e.condition;
             l.settings = e.settings;
             l.icon = e.icon;
+            l.formInputs = this.getAvailableFormInputs(l);
             this.setTransitionIcon(l);
             //console.log('transition change: ', e, l);
         }
@@ -679,6 +711,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         let l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray
         this.checkHasMultipleOutputs();
         //console.log(link, l);
+    }
+
+    private SelectionDeleting(e: any) {
+        console.log(e);
     }
     //#endregion
 

@@ -65,6 +65,11 @@ import * as _ from 'lodash';
                     <input type="text" style="width:95%" [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" />
                 </div>
             </div>
+            <div class="col s12">
+                <div>
+                    <input type="checkbox" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)" /> Include previous form responses
+                </div>
+            </div>
         </div>
         <div class="row" *ngSwitchCase="2">
             <div class="col s12">
