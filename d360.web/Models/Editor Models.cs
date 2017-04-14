@@ -338,6 +338,8 @@ namespace d360.web.Models
 
         [DataMember]
         public string SimilarItemsUri { get; set; }
+        [DataMember]
+        public string Category { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

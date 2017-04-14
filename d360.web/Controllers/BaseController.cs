@@ -486,7 +486,8 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                             Name = f.FriendlyName,
                             FieldType = f.Type.ToString(),
                             FieldDescription = f.FormDescription,
-                            Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage)
+                            Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage),
+                            Category = f.Category
                         };
 
                         if (f.Type == DataType.FusionLookup.ToString())
@@ -591,7 +592,8 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                             Name = ft.FriendlyName,
                             FieldType = ft.Type.ToString(),
                             FieldDescription = ft.FormDescription,
-                            Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage)
+                            Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage),
+                            Category = ft.Category
                         };
 
                         if (ft.Type == DataType.FusionLookup.ToString())

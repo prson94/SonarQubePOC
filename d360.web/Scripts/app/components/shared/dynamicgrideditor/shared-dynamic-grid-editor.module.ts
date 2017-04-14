@@ -28,6 +28,7 @@ import { DynamicFieldComponent } from './dynamic-field.component';
 import { DynamicFieldValueComponent } from './dynamic-field-value.component';
 import { DynamicGridComponent } from './dynamic-grid.component';
 import { MultiSelectGridComponent } from './multiselect-grid.component';
+import { SimpleAccordionModule } from '../simple-accordion.part';
 
 @NgModule({
     imports: [CommonModule,
@@ -40,6 +41,7 @@ import { MultiSelectGridComponent } from './multiselect-grid.component';
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
         TilesModule,
+        SimpleAccordionModule,
 
         //prime        
         CalendarModule,

@@ -3,7 +3,7 @@ import { FormArray, FormGroup, FormBuilder, Validators, FormControl } from '@ang
 import { EditorDefinitionService } from '../../../services/editor-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { MessagesService } from '../../../services/messages.service';
-import { EditorField, EditorRow, FieldValidation, EditorDropDownItem } from '../../../models/editor-field.model';
+import { EditorField, EditorRow, FieldValidation, EditorDropDownItem, EditorCategory } from '../../../models/editor-field.model';
 import { BaseComponent } from '../base.component';
 
 import * as _ from 'lodash';
@@ -13,12 +13,23 @@ import * as _ from 'lodash';
     template: ` <header *ngIf="hasHeader">{{action}} {{title}} <div *ngIf="hasCloseButton" (click)="closeClick.emit()" style="cursor: pointer; float: right; font-size: 1.3em"><i class="fa fa-remove"></i></div></header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">                                        
-                    <form (ngSubmit)="onSubmit()" [formGroup]="form">                        
-                        <div class="row" *ngFor="let row of rows">
-                            <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">
-                                <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
+                    <form (ngSubmit)="onSubmit()" [formGroup]="form">        
+                        <template ngFor let-category [ngForOf]="categories">
+                            <simple-accordion *ngIf="category.name" [header]="category.name" [active]="true">                
+                                <div class="row" *ngFor="let row of category.rows">                          
+                                    <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
+                                        <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
+                                    </div>
+                                </div>
+                            </simple-accordion>
+                            <span *ngIf="!category.name">
+                            <div class="row" *ngFor="let row of category.rows">                          
+                                <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
+                                    <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
+                                </div>
                             </div>
-                        </div>
+                            </span>
+                        </template>
                         <div *ngIf="hasIconFields && fore.Value == back.Value" class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
@@ -57,7 +68,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     action: string = "Edit";
     fields: EditorField[] = [];
-    rows: EditorRow[] = [];
+   
+    categories: EditorCategory[] = [];
 
     editedItem: any;
 
@@ -91,15 +103,34 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     getDefinition() {      
         this.isLoading = true;  
-        let id = (this.selection ? this.selection[this.rowID] : null);
-        console.log(this.selection);
-        //console.log(id + " " + this.objectID + " " + this.objectType);
+        let id = (this.selection ? this.selection[this.rowID] : null);        
         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams)
             .then(result => {
                 this.isLoading = false;
-                this.rows = [];
+                this.categories = [];
+                
+                result = _.orderBy(result, [field => field.Category ? field.Category.toLowerCase():''], ['asc']);
                 this.fields = result;                
+                let previousCategory = null;
+                let currentCategory = null;
+                let rows = [];                
+                let firstRow = true;
+
                 this.fields.forEach(f => {
+                    currentCategory = f.Category;
+                    if (firstRow) {
+                        previousCategory = f.Category;
+                        firstRow = false;
+                    }
+
+                    if (previousCategory != currentCategory) {
+                        let category = new EditorCategory();
+                        category.category = previousCategory;
+                        category.rows= rows;
+                        this.categories.push(category);
+                        previousCategory = currentCategory;
+                        rows = [];
+                    }
                     if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
                         if (f.Value)
                             f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false); //checkbox doesnt work binding to a string
@@ -107,25 +138,29 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                             f.Value = false;
                     }
 
-                    let r = this.rows.find(r => r.Row == (f.Row||0));
+                    let r = rows.find(r => r.Row == (f.Row || 0));
                     if (r)
                         r.Fields.push(f);
                     else {
                         let n = new EditorRow();
                         n.Row = f.Row;
                         n.Fields.push(f);
-                        this.rows.push(n);
+                        rows.push(n);
                     }
                 });
 
+                let category = new EditorCategory();
+                category.category = currentCategory;
+                category.rows = rows;
+                this.categories.push(category);
+                                
                 this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
                 this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
                 if (this.fore != null && this.back != null)  
                     this.hasIconFields = true;
 
                 this.form = this.toFormGroup(this.fields);
-                this.ref.markForCheck();
-                console.log(this.fields);
+                this.ref.markForCheck();                
             });
     }   
 

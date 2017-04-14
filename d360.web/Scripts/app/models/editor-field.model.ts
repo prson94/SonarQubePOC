@@ -25,6 +25,12 @@ export class EditorField {
     SimilarItemsUri: string;
     Validations: FieldValidation[];
     TypeaheadUri: string;
+    Category: string;
+}
+
+export class EditorCategory {
+    category: string;
+    rows: EditorRow[];
 }
 
 export class EditorRow {
