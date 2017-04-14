@@ -17,5 +17,7 @@ namespace d360.core.entities
         public string SearchServer { get; set; }
 
         public string EventTopic { get; set; }
+
+        public bool IsDevelopment { get; set; }
     }
 }

@@ -104,6 +104,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.WorkflowSchedules
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.subscriber.Audit", "Jobs\d360.jobs.subscriber.Audit\d360.jobs.subscriber.Audit.csproj", "{142E97C4-77E2-4C34-BFFB-E6E8777301AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.ProcessRuleResults", "Jobs\d360.jobs.ProcessRuleResults\d360.jobs.ProcessRuleResults.csproj", "{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Client Development|Any CPU = Client Development|Any CPU
@@ -1212,6 +1214,36 @@ Global
 		{142E97C4-77E2-4C34-BFFB-E6E8777301AF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{142E97C4-77E2-4C34-BFFB-E6E8777301AF}.Release|x86.ActiveCfg = Release|Any CPU
 		{142E97C4-77E2-4C34-BFFB-E6E8777301AF}.Release|x86.Build.0 = Release|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Client Development|Any CPU.ActiveCfg = Client Development|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Client Development|Any CPU.Build.0 = Client Development|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Client Development|Mixed Platforms.ActiveCfg = Client Development|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Client Development|Mixed Platforms.Build.0 = Client Development|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Client Development|x86.ActiveCfg = Client Development|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Client Development|x86.Build.0 = Client Development|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Debug|x86.Build.0 = Debug|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Nightly|Any CPU.ActiveCfg = Nightly|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Nightly|Any CPU.Build.0 = Nightly|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Nightly|Mixed Platforms.ActiveCfg = Nightly|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Nightly|Mixed Platforms.Build.0 = Nightly|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Nightly|x86.ActiveCfg = Nightly|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Nightly|x86.Build.0 = Nightly|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Production|Any CPU.ActiveCfg = Production|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Production|Any CPU.Build.0 = Production|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Production|Mixed Platforms.ActiveCfg = Production|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Production|Mixed Platforms.Build.0 = Production|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Production|x86.ActiveCfg = Production|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Production|x86.Build.0 = Production|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Release|x86.ActiveCfg = Release|Any CPU
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1255,12 +1287,13 @@ Global
 		{46859820-5B26-4472-9932-747522442C8E} = {EF5589EF-1E6B-46A8-AF58-9C5F62639F0D}
 		{825C8F80-E78F-49A7-A278-B801B6101617} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{142E97C4-77E2-4C34-BFFB-E6E8777301AF} = {EF5589EF-1E6B-46A8-AF58-9C5F62639F0D}
+		{725AD8D4-A9AC-4115-A9E6-9DBF58ACF09E} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 37
+		SccNumberOfProjects = 38
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/
 		SccLocalPath0 = .
@@ -1408,6 +1441,10 @@ Global
 		SccProjectTopLevelParentUniqueName36 = D360.sln
 		SccProjectName36 = Jobs/d360.jobs.subscriber.Audit
 		SccLocalPath36 = Jobs\\d360.jobs.subscriber.Audit
+		SccProjectUniqueName37 = Jobs\\d360.jobs.ProcessRuleResults\\d360.jobs.ProcessRuleResults.csproj
+		SccProjectTopLevelParentUniqueName37 = D360.sln
+		SccProjectName37 = Jobs/d360.jobs.ProcessRuleResults
+		SccLocalPath37 = Jobs\\d360.jobs.ProcessRuleResults
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi

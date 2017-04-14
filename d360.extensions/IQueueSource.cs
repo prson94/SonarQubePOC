@@ -14,11 +14,15 @@ namespace d360.extensions
         void CreateMessages(QueueType type, List<QueueObject> items);
 
         void CreateTopicMessage(EventInfo e);
+        void CreateTopicMessage(string topicName, EventInfo e);
 
         Task CreateTopicMessageAsync(EventInfo e);
+        Task CreateTopicMessageAsync(string topicName, EventInfo e);
 
         void CreateTopicMessages(List<EventInfo> events);
+        void CreateTopicMessages(string topicName, List<EventInfo> events);
 
         Task CreateTopicMessagesAsync(List<EventInfo> events);
+        Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events);
     }
 }

@@ -549,8 +549,6 @@ namespace d360.web.Models
         public int ObjectID { get; set; }
         public int RelationType { get; set; }
 
-
-
         public FieldValidity Validation()
         {
             var prefix = "You are missing a";
@@ -598,6 +596,24 @@ namespace d360.web.Models
         }
     }
 
+    public class FieldTypeOwnershipLookupEditorModel
+    {
+        public bool HideHeader { get; set; }
+        public bool HideFooter { get; set; }
+        public bool HideFilter { get; set; } = false;
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+
+        public bool DisplayAssignmentSource { get; set; }
+        public bool ExpandGroupMembership { get; set; }       
+
+        public FieldValidity Validation()
+        {
+            var valid = new FieldValidity();
+            return valid;
+        }
+    }
+
     public class FieldTypeEditorModel
     {
 
@@ -612,6 +628,8 @@ namespace d360.web.Models
         public FieldTypeRelationItemEditorModel RelationItem { get; set; }
 
         public List<FieldTypeRelationItemEditorModel> RelationItems { get; set; }
+
+        public FieldTypeOwnershipLookupEditorModel OwnershipLookupSettings { get; set; }
 
         public FieldValidity Validation()
         {

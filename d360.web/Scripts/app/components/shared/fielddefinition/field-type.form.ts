@@ -7,6 +7,7 @@ import {
     FilteredLookupDisplayField,
     Lookups,
     FieldTypeFusionItemEditorModel,
+    OwnershipLookupSettings,
     FieldTypeFusionLookupDisplayField,
     FieldTypeRelationItemEditorModel,
     ComplexLookupRelationType,
@@ -135,6 +136,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     if (f) {
                         //console.log("form data: ", f);
 
+                        this.model.OwnershipLookupSettings = f.OwnershipLookupSettings;
                         this.model.RelationItems = f.RelationItems;
                         this.model.FusionItems = f.FusionItems;
                         if (this.model.FusionItems != null)
@@ -169,6 +171,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.IsDisplayable = true;
             this.model.FieldType.IsEditable = true;
             this.model.FieldType.IsListable = true;
+
+            this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
+            this.model.OwnershipLookupSettings.DisplayAssignmentSource = false;
+            this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
 
             this.fieldsService.getLookups(this.objectID, this.objectType)
                 .then(d => {

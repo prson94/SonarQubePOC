@@ -40,6 +40,24 @@ namespace d360.core.entities
         public HashAlgorithmType HashAlgorithmType { get; set; }
     }
 
+    /// <summary>
+    /// Used in CompanyConnectionUtils.
+    /// </summary>
+    public class CompanyWithDatabaseServerSettings
+    {
+        public int CompanyID { get; set; }
+        public string Status { get; set; }
+        public string Server { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string FusionQueue { get; set; }
+        public string SearchServer { get; set; }
+        public string EventTopic { get; set; }
+        public bool IsDevelopment { get; set; }
+        public string UrlPrefix { get; set; }
+    }
+
+
     [DataContract(Namespace = NAMESPACE), System.ComponentModel.DataAnnotations.Schema.Table("Global_Resource", Schema = "reporting")]
     public class GlobalReportingResource : BaseObject
     {

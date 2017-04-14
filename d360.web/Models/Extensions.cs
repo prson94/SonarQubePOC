@@ -7,7 +7,7 @@ using System.Web;
 
 namespace d360.web.Models
 {
-    public class FieldTypeLookupDefinitionField
+    public class FieldTypeComplexLookupDefinitionField
     {
         public string Object { get; set; }
         public int ObjectID { get; set; }
@@ -19,7 +19,7 @@ namespace d360.web.Models
         public int SortOrder { get; set; }
         public bool Show { get; set; } = true;
     }
-    public class FieldTypeLookupDefinitionRelation
+    public class FieldTypeComplexLookupDefinitionRelation
     {
         public int IntersectTypeID { get; set; }
         public string Object { get; set; }
@@ -43,17 +43,29 @@ namespace d360.web.Models
         /// </summary>
         public string WhereStatement { get; set; }
     }
-    public class FieldTypeLookupDefinition
+    public class FieldTypeComplexLookupDefinition
     {
-        public List<FieldTypeLookupDefinitionField> Fields { get; set; }
-        public List<FieldTypeLookupDefinitionRelation> Relations { get; set; }
+        public List<FieldTypeComplexLookupDefinitionField> Fields { get; set; }
+        public List<FieldTypeComplexLookupDefinitionRelation> Relations { get; set; }
+    }
+
+    public class FieldTypeOwnershipLookupDefinition
+    {
+        public bool DisplayAssignmentSource { get; set; } = true;
+
+        public bool ExpandGroupMembership { get; set; } = true;
     }
 
     public static class Extensions
     {
-        public static FieldTypeLookupDefinition ParseDefinition(this FieldTypeLookup lookup)
+        public static FieldTypeComplexLookupDefinition ParseComplexLookupDefinition(this FieldTypeLookup lookup)
         {
-            return JsonConvert.DeserializeObject<FieldTypeLookupDefinition>(lookup.Definition);
+            return JsonConvert.DeserializeObject<FieldTypeComplexLookupDefinition>(lookup.Definition);
+        }
+
+        public static FieldTypeOwnershipLookupDefinition ParseOwnershipLookupDefinition(this FieldTypeLookup lookup)
+        {
+            return JsonConvert.DeserializeObject<FieldTypeOwnershipLookupDefinition>(lookup.Definition);
         }
     }
 }

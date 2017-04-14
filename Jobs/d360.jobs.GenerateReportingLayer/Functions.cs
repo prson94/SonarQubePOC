@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using d360.core;
 using Dapper;
 using System.Text.RegularExpressions;
+using d360.utils.company;
 
 namespace d360.jobs.GenerateReportingLayer
 {
@@ -42,318 +43,332 @@ namespace d360.jobs.GenerateReportingLayer
             fields = null;
         }
 
+        static void executeSqlWithTry(SqlConnection companyConnection, string viewSql)
+        {
+            try
+            {
+                companyConnection.Execute(viewSql.ToString());
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                Console.WriteLine(msg);
+                Console.WriteLine("Attempted SQL: " + viewSql);
+            }
+        }
+
         #endregion
 
         #region Object Missing Views
 
-        static void GenerateMissingAttributeView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
-        {
-            name = cleanObjectName(name);
-            var objectName = string.Format("{0}.[{1}_{2}MissingAttributes]", schema, prefix, name);
-            viewNames.Add(objectName);
+//        static void GenerateMissingAttributeView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
+//        {
+//            name = cleanObjectName(name);
+//            var objectName = string.Format("{0}.[{1}_{2}MissingAttributes]", schema, prefix, name);
+//            viewNames.Add(objectName);
 
-            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var sql = new StringBuilder("");
-            sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
-            sql.AppendFormat("VIEW {0} AS ", objectName);
+//            var sql = new StringBuilder("");
+//            sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
+//            sql.AppendFormat("VIEW {0} AS ", objectName);
 
-            sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
-            if (includeOwningModel) sql.Append("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, ");
-            sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as Url, Attr.AttributeType, Attr.Category, Attr.[Count] ", objectType, objectTypeKeyName);
-            sql.AppendFormat("from {0} A ", tableName);
-            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
-            sql.AppendFormat(@"cross apply (
-					select		coalesce(C.Name, 'Enterprise-wide') as Category,
-								AT.Name as AttributeType,
-								count(ATTR.ID) as [Count] 
-					from		AttributeTypeRelation ATR
-								inner join AttributeType AT on AT.ID = ATR.AttributeTypeID and ATR.ObjectType = '{0}Type' and ATR.ObjectID = A.{2}
-								left join AttributeTypeCategory C on C.ID = AT.AttributeTypeCategoryID
-								left join Attribute ATTR on ATTR.ObjectType = '{0}' and ATTR.ObjectID = A.ID
-					group by	C.Name,
-								AT.Name
-					) Attr
-where	A.{2} = {1}", objectType, typeID, objectTypeKeyName);
+//            sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
+//            if (includeOwningModel) sql.Append("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, ");
+//            sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as Url, Attr.AttributeType, Attr.Category, Attr.[Count] ", objectType, objectTypeKeyName);
+//            sql.AppendFormat("from {0} A ", tableName);
+//            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
+//            sql.AppendFormat(@"cross apply (
+//					select		coalesce(C.Name, 'Enterprise-wide') as Category,
+//								AT.Name as AttributeType,
+//								count(ATTR.ID) as [Count] 
+//					from		AttributeTypeRelation ATR
+//								inner join AttributeType AT on AT.ID = ATR.AttributeTypeID and ATR.ObjectType = '{0}Type' and ATR.ObjectID = A.{2}
+//								left join AttributeTypeCategory C on C.ID = AT.AttributeTypeCategoryID
+//								left join Attribute ATTR on ATTR.ObjectType = '{0}' and ATTR.ObjectID = A.ID
+//					group by	C.Name,
+//								AT.Name
+//					) Attr
+//where	A.{2} = {1}", objectType, typeID, objectTypeKeyName);
 
-            try 
-            {
-                companyConnection.Execute(sql.ToString());
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                Console.WriteLine(msg);
-                Console.WriteLine("Attempted SQL: " + sql);
-            }
-        }
+//            try 
+//            {
+//                companyConnection.Execute(sql.ToString());
+//            }
+//            catch (Exception ex)
+//            {
+//                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                Console.WriteLine(msg);
+//                Console.WriteLine("Attempted SQL: " + sql);
+//            }
+//        }
 
-        static void GenerateMissingRelationshipView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
-        {
-            name = cleanObjectName(name);
-            var objectName = string.Format("{0}.[{1}_{2}MissingRelationships]", schema, prefix, name);
-            viewNames.Add(objectName);
+//        static void GenerateMissingRelationshipView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
+//        {
+//            name = cleanObjectName(name);
+//            var objectName = string.Format("{0}.[{1}_{2}MissingRelationships]", schema, prefix, name);
+//            viewNames.Add(objectName);
 
-            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
-            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
+//            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
+//            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
-            var selectSql = string.Format(@"select	A.ID as [{0}ID], A.Name as [{0}Name], {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, O.RelationshipType, O.RelationshipTypeID, O.[Count]
-from	{4} A {6}
-		cross apply (
-					select	IT.ID as RelationshipTypeID,
-                            IT.Name as RelationshipType,
-							count(I.ID)as [Count]
-					from	IntersectType IT
-							left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{1}' and I.SubjectID = A.ID) OR (I.Object = '{1}' and I.ObjectID = A.ID) )
-					where	( (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) OR (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) )
-							and I.ID is null
-					group by IT.ID, IT.Name
-					) O
-where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owningModelColumns, owningModelJoins);
+//            var selectSql = string.Format(@"select	A.ID as [{0}ID], A.Name as [{0}Name], {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, O.RelationshipType, O.RelationshipTypeID, O.[Count]
+//from	{4} A {6}
+//		cross apply (
+//					select	IT.ID as RelationshipTypeID,
+//                            IT.Name as RelationshipType,
+//							count(I.ID)as [Count]
+//					from	IntersectType IT
+//							left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{1}' and I.SubjectID = A.ID) OR (I.Object = '{1}' and I.ObjectID = A.ID) )
+//					where	( (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) OR (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) )
+//							and I.ID is null
+//					group by IT.ID, IT.Name
+//					) O
+//where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owningModelColumns, owningModelJoins);
 
-            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+//            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-            try
-            {
-                companyConnection.Execute(viewSql.ToString());
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                Console.WriteLine(msg);
-                Console.WriteLine("Attempted SQL: " + viewSql);
-            }
-        }
+//            try
+//            {
+//                companyConnection.Execute(viewSql.ToString());
+//            }
+//            catch (Exception ex)
+//            {
+//                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                Console.WriteLine(msg);
+//                Console.WriteLine("Attempted SQL: " + viewSql);
+//            }
+//        }
 
-        static void GenerateMissingResponsibilityView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
-        {
-            name = cleanObjectName(name);
-            var objectName = string.Format("{0}.[{1}_{2}MissingResponsibilities]", schema, prefix, name);
-            viewNames.Add(objectName);
+//        static void GenerateMissingResponsibilityView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
+//        {
+//            name = cleanObjectName(name);
+//            var objectName = string.Format("{0}.[{1}_{2}MissingResponsibilities]", schema, prefix, name);
+//            viewNames.Add(objectName);
 
-            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
-            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
+//            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
+//            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
-            var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, T.ID as ResponsibilityTypeID, T.Name as ResponsibilityType, coalesce(O.[Count], 0) as [Count]
-from	{4} A {6}
-inner join ResponsibilityTypeRelation R on R.ObjectType = '{1}Type' and R.ObjectID = A.{3} and A.{3} = {2}
-inner join ResponsibilityType T on R.ResponsibilityTypeID = T.ID and T.ResponsibilityTypeGroup = 1
-outer apply (
-			select	ResponsibilityTypeID,
-					count(1) as [Count]
-			from	[cache].[Responsibilities] --utility.ResponsibilityHierarchy
-			where	[Object] = '{1}' and ObjectID = A.ID and ResponsibilityTypeID = T.ID
-			group by ResponsibilityTypeID
-			) O", name, objectType, typeID, objectTypeKeyName, tableName, owningModelColumns, owningModelJoins);
+//            var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, T.ID as ResponsibilityTypeID, T.Name as ResponsibilityType, coalesce(O.[Count], 0) as [Count]
+//from	{4} A {6}
+//inner join ResponsibilityTypeRelation R on R.ObjectType = '{1}Type' and R.ObjectID = A.{3} and A.{3} = {2}
+//inner join ResponsibilityType T on R.ResponsibilityTypeID = T.ID and T.ResponsibilityTypeGroup = 1
+//outer apply (
+//			select	ResponsibilityTypeID,
+//					count(1) as [Count]
+//			from	[cache].[Responsibilities] --utility.ResponsibilityHierarchy
+//			where	[Object] = '{1}' and ObjectID = A.ID and ResponsibilityTypeID = T.ID
+//			group by ResponsibilityTypeID
+//			) O", name, objectType, typeID, objectTypeKeyName, tableName, owningModelColumns, owningModelJoins);
 
-            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+//            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-            try
-            {
-                companyConnection.Execute(viewSql.ToString());
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                Console.WriteLine(msg);
-                Console.WriteLine("Attempted SQL: " + viewSql);
-            }
-        }
+//            try
+//            {
+//                companyConnection.Execute(viewSql.ToString());
+//            }
+//            catch (Exception ex)
+//            {
+//                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                Console.WriteLine(msg);
+//                Console.WriteLine("Attempted SQL: " + viewSql);
+//            }
+//        }
 
-        static void GenerateMissingOverallView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
-        {
-            name = cleanObjectName(name);
-            var objectName = string.Format("{0}.[{1}_{2}Missing]", schema, prefix, name);
-            viewNames.Add(objectName);
+//        static void GenerateMissingOverallView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
+//        {
+//            name = cleanObjectName(name);
+//            var objectName = string.Format("{0}.[{1}_{2}Missing]", schema, prefix, name);
+//            viewNames.Add(objectName);
 
-            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
-            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
+//            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
+//            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
-            var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, Att.MissingAttributes, Rel.MissingRelationships, Res.MissingResponsibilities
-from	{4} A {6}
-		cross apply (
-					select		case 
-									when count(ATTR.ID) < count(ATR.AttributeTypeID) then cast(1 as bit)
-									else cast(0 as bit)
-								end as MissingAttributes
-					from		AttributeTypeRelation ATR
-								inner join AttributeType AT on AT.ID = ATR.AttributeTypeID and ATR.ObjectType = '{1}Type' and ATR.ObjectID = A.{3}
-								left join AttributeTypeCategory C on C.ID = AT.AttributeTypeCategoryID
-								left join Attribute ATTR on ATTR.ObjectType = '{1}' and ATTR.ObjectID = A.ID
-					) Att
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as MissingRelationships
-					from	( 
-					        select	case 
-								        when count(I.ID) = 0 then cast(1 as bit)
-								        else cast(0 as bit)
-							        end as O
-					        from	IntersectType IT
-							        left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{1}' and I.SubjectID = A.ID) OR (I.Object = '{1}' and I.ObjectID = A.ID) )
-					        where	( (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) OR (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) )
-							        and I.ID is null
-					        group by IT.ID having count(I.ID) = 0
-                            ) R
-					) Rel
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as MissingResponsibilities
-					from	( 
-							select	case 
-										when count(1) = 0 then cast(1 as bit)
-										else cast(0 as bit) 
-									end as MissingResponsibilities
-							from	[cache].[Responsibilities] --utility.ResponsibilityHierarchy
-							where	[Object] = '{1}' and ObjectID = A.ID
-							group by ResponsibilityTypeID having count(1) = 0
-							) R
-					) Res
-where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owningModelColumns, owningModelJoins);
+//            var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, Att.MissingAttributes, Rel.MissingRelationships, Res.MissingResponsibilities
+//from	{4} A {6}
+//		cross apply (
+//					select		case 
+//									when count(ATTR.ID) < count(ATR.AttributeTypeID) then cast(1 as bit)
+//									else cast(0 as bit)
+//								end as MissingAttributes
+//					from		AttributeTypeRelation ATR
+//								inner join AttributeType AT on AT.ID = ATR.AttributeTypeID and ATR.ObjectType = '{1}Type' and ATR.ObjectID = A.{3}
+//								left join AttributeTypeCategory C on C.ID = AT.AttributeTypeCategoryID
+//								left join Attribute ATTR on ATTR.ObjectType = '{1}' and ATTR.ObjectID = A.ID
+//					) Att
+//		cross apply (
+//					select	case 
+//								when count(1) > 0 then cast(1 as bit)
+//								else cast(0 as bit)
+//							end as MissingRelationships
+//					from	( 
+//					        select	case 
+//								        when count(I.ID) = 0 then cast(1 as bit)
+//								        else cast(0 as bit)
+//							        end as O
+//					        from	IntersectType IT
+//							        left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{1}' and I.SubjectID = A.ID) OR (I.Object = '{1}' and I.ObjectID = A.ID) )
+//					        where	( (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) OR (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) )
+//							        and I.ID is null
+//					        group by IT.ID having count(I.ID) = 0
+//                            ) R
+//					) Rel
+//		cross apply (
+//					select	case 
+//								when count(1) > 0 then cast(1 as bit)
+//								else cast(0 as bit)
+//							end as MissingResponsibilities
+//					from	( 
+//							select	case 
+//										when count(1) = 0 then cast(1 as bit)
+//										else cast(0 as bit) 
+//									end as MissingResponsibilities
+//							from	[cache].[Responsibilities] --utility.ResponsibilityHierarchy
+//							where	[Object] = '{1}' and ObjectID = A.ID
+//							group by ResponsibilityTypeID having count(1) = 0
+//							) R
+//					) Res
+//where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owningModelColumns, owningModelJoins);
 
-            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+//            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-            try
-            {
-                companyConnection.Execute(viewSql.ToString());
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                Console.WriteLine(msg);
-                Console.WriteLine("Attempted SQL: " + viewSql);
-            }
-        }
+//            try
+//            {
+//                companyConnection.Execute(viewSql.ToString());
+//            }
+//            catch (Exception ex)
+//            {
+//                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                Console.WriteLine(msg);
+//                Console.WriteLine("Attempted SQL: " + viewSql);
+//            }
+//        }
 
         #endregion
 
         #region Object Views
 
-        static void GenerateAttributeView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
-        {
-            name = cleanObjectName(name);
-            var objectName = string.Format("{0}.[{1}_{2}Attributes]", schema, prefix, name);
-            viewNames.Add(objectName);
+        //static void GenerateAttributeView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
+        //{
+        //    name = cleanObjectName(name);
+        //    var objectName = string.Format("{0}.[{1}_{2}Attributes]", schema, prefix, name);
+        //    viewNames.Add(objectName);
 
-            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+        //    var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var sql = new StringBuilder("");
-            sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
-            sql.AppendFormat("VIEW {0} AS ", objectName);
+        //    var sql = new StringBuilder("");
+        //    sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
+        //    sql.AppendFormat("VIEW {0} AS ", objectName);
 
-            sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
-            if (includeOwningModel) sql.Append("V.ID as SubjectAreaID, V.Name as SubjectArea, ");
-            sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as {0}Url, AD.ID as AttributeID, AD.ParentID as ParentAttributeID, AD.Name as Attribute, AD.FormattedValue as AttributeValue ", objectType, objectTypeKeyName);
-            sql.AppendFormat("from {0} A ", tableName);
-            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
-            sql.AppendFormat(@"inner join AttributeDetail AD on AD.ObjectType = '{0}' and AD.ObjectID = A.ID and A.{2} = {1}", objectType, typeID, objectTypeKeyName);
+        //    sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
+        //    if (includeOwningModel) sql.Append("V.ID as SubjectAreaID, V.Name as SubjectArea, ");
+        //    sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as {0}Url, AD.ID as AttributeID, AD.ParentID as ParentAttributeID, AD.Name as Attribute, AD.FormattedValue as AttributeValue ", objectType, objectTypeKeyName);
+        //    sql.AppendFormat("from {0} A ", tableName);
+        //    if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
+        //    sql.AppendFormat(@"inner join AttributeDetail AD on AD.ObjectType = '{0}' and AD.ObjectID = A.ID and A.{2} = {1}", objectType, typeID, objectTypeKeyName);
 
-            try
-            {
-                companyConnection.Execute(sql.ToString());
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                Console.WriteLine(msg);
-                Console.WriteLine("Attempted SQL: " + sql);
-            }
-        }
+        //    try
+        //    {
+        //        companyConnection.Execute(sql.ToString());
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+        //        Console.WriteLine(msg);
+        //        Console.WriteLine("Attempted SQL: " + sql);
+        //    }
+        //}
 
-        static void GeneratObjectRelationshipView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
-        {
-            name = cleanObjectName(name);
-            var objectName = string.Format("{0}.[{1}_{2}Relationships]", schema, prefix, name);
-            viewNames.Add(objectName);
+//        static void GeneratObjectRelationshipView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
+//        {
+//            name = cleanObjectName(name);
+//            var objectName = string.Format("{0}.[{1}_{2}Relationships]", schema, prefix, name);
+//            viewNames.Add(objectName);
 
-            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var sql = new StringBuilder("");
-            sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
-            sql.AppendFormat("VIEW {0} AS ", objectName);
+//            var sql = new StringBuilder("");
+//            sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
+//            sql.AppendFormat("VIEW {0} AS ", objectName);
 
-            sql.AppendFormat("select R.ID as IntersectID, A.ID as [{0}ID], A.Name as [{0}Name], ", name);
-            if (includeOwningModel) sql.AppendFormat("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, P.ID as [{0}ParentID], P.TextPath as [{0}ParentName], ", name);
-            sql.Append(@"case when (R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectTypeName else R.SubjectTypeName end as TargetType, 
-case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.Object else R.Subject end as Target,
-case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectID else R.SubjectID end as TargetID,
-case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectName else R.SubjectName end as TargetName,
-case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectUrl else R.SubjectUrl end as TargetUrl,
-TR.[Count] as ChildRelationshipCount ");
-            sql.Append("from IntersectDetail R ");
-            sql.Append($"inner join {tableName} A on A.{objectTypeKeyName} = {typeID} and ((R.Subject = '{objectType}' and A.ID = R.SubjectID) OR (R.Object = '{objectType}' and A.ID = R.ObjectID)) ");
-            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
-            if (includeOwningModel) sql.Append("left join Artifact P on P.ID = A.ParentID ");
-            sql.Append("outer apply (select	count(1) as [Count] from [Intersect] where Subject = 'Intersect' and SubjectID = R.ID) TR");
+//            sql.AppendFormat("select R.ID as IntersectID, A.ID as [{0}ID], A.Name as [{0}Name], ", name);
+//            if (includeOwningModel) sql.AppendFormat("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, P.ID as [{0}ParentID], P.TextPath as [{0}ParentName], ", name);
+//            sql.Append(@"case when (R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectTypeName else R.SubjectTypeName end as TargetType, 
+//case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.Object else R.Subject end as Target,
+//case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectID else R.SubjectID end as TargetID,
+//case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectName else R.SubjectName end as TargetName,
+//case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectUrl else R.SubjectUrl end as TargetUrl,
+//TR.[Count] as ChildRelationshipCount ");
+//            sql.Append("from IntersectDetail R ");
+//            sql.Append($"inner join {tableName} A on A.{objectTypeKeyName} = {typeID} and ((R.Subject = '{objectType}' and A.ID = R.SubjectID) OR (R.Object = '{objectType}' and A.ID = R.ObjectID)) ");
+//            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
+//            if (includeOwningModel) sql.Append("left join Artifact P on P.ID = A.ParentID ");
+//            sql.Append("outer apply (select	count(1) as [Count] from [Intersect] where Subject = 'Intersect' and SubjectID = R.ID) TR");
 
-            try
-            {
-                companyConnection.Execute(sql.ToString());
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                Console.WriteLine(msg);
-                Console.WriteLine("Attempted SQL: " + sql);
-            }
-        }
+//            try
+//            {
+//                companyConnection.Execute(sql.ToString());
+//            }
+//            catch (Exception ex)
+//            {
+//                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                Console.WriteLine(msg);
+//                Console.WriteLine("Attempted SQL: " + sql);
+//            }
+//        }
 
-        static void GenerateObjectResponsibilityView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectType, int typeID)
-        {
-            name = cleanObjectName(name);
-            var objectName = string.Format("{0}.[{1}_{2}Responsibilities]", schema, prefix, name);
-            viewNames.Add(objectName);
+//        static void GenerateObjectResponsibilityView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectType, int typeID)
+//        {
+//            name = cleanObjectName(name);
+//            var objectName = string.Format("{0}.[{1}_{2}Responsibilities]", schema, prefix, name);
+//            viewNames.Add(objectName);
 
-            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var selectSql = string.Format(@"select	R.ObjectID as {0}ID,
-		R.ObjectName as Name,
-		R.ObjectUrl as Url,
-		R.ResponsibleObjectName,
-		R.ResponsibleObjectType,
-		R.ResponsibleObjectUrl,
-		R.PrimaryOwnerResourceID,
-		R.PrimaryOwnerResourceName,
-		R.PrimaryOwnerResourceUrl,
-		R.Role,
-		--R.RedFlagged,
-		R.CurrentScore,
-		R.ContextItems,
-		R.AssigningItemType,
-		R.AssigningItemID--,
-		--R.AssigningItemName,
-		--R.AssigningItemUrl,
-		--R.AssigningTypeName
-from	ResponsibilityDetail R
-where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
+//            var selectSql = string.Format(@"select	R.ObjectID as {0}ID,
+//		R.ObjectName as Name,
+//		R.ObjectUrl as Url,
+//		R.ResponsibleObjectName,
+//		R.ResponsibleObjectType,
+//		R.ResponsibleObjectUrl,
+//		R.PrimaryOwnerResourceID,
+//		R.PrimaryOwnerResourceName,
+//		R.PrimaryOwnerResourceUrl,
+//		R.Role,
+//		--R.RedFlagged,
+//		R.CurrentScore,
+//		R.ContextItems,
+//		R.AssigningItemType,
+//		R.AssigningItemID--,
+//		--R.AssigningItemName,
+//		--R.AssigningItemUrl,
+//		--R.AssigningTypeName
+//from	ResponsibilityDetail R
+//where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
-            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+//            var viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-            try
-            {
-                companyConnection.Execute(viewSql.ToString());
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                Console.WriteLine(msg);
-                Console.WriteLine("Attempted SQL: " + viewSql);
-            }
-        }
+//            try
+//            {
+//                companyConnection.Execute(viewSql.ToString());
+//            }
+//            catch (Exception ex)
+//            {
+//                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                Console.WriteLine(msg);
+//                Console.WriteLine("Attempted SQL: " + viewSql);
+//            }
+//        }
 
         #endregion
 
@@ -368,28 +383,26 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
             try
             {
 
-                var companies = GetActiveCompanyIDs();
+                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
 
 #if DEBUG
-                companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
+                companies = companies.Where(i => i.CompanyID == 4).ToList();
 #endif
 
-                companies.ForEach(companyID =>
+                companies.ForEach(company =>
                 {
                     try
                     {
-                        Console.WriteLine("BEGIN COMPANY {0} -----------", companyID);
+                        Console.WriteLine("BEGIN COMPANY {0} -----------", company.CompanyID);
 
-                        var companyConnection = GetCompanyConnection(companyID);
+                        var companyConnection = GetCompanyConnection(company.CompanyID);
                         companyConnection.Open();
 
                         var selectSql = "";
                         var viewSql = "";
                         var objectName = "";
                         var objectType = "Artifact";
-                        var objectTypeKey = "ArtifactTypeID";
                         var prefix = "Glossary";
-                        var tableName = "Artifact";
                         string objectID;
                         List<FieldTypeWithRelation> fieldTypes = null;
 
@@ -435,98 +448,23 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
                             viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                             viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                            try
-                            {
-                                companyConnection.Execute(viewSql.ToString());
-                            }
-                            catch (Exception ex)
-                            {
-                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                Console.WriteLine(msg);
-                                Console.WriteLine("Attempted SQL: " + viewSql);
-                            }
+                            executeSqlWithTry(companyConnection, viewSql);
 
                             #endregion
 
                             // Object Views
-                            GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
+                            //GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
 
                             // Object Missing Views
-                            GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
                         });
 
                         artifactTypes = null;
-
-                        #endregion
-
-                        #region Fusion
-
-                        //var fusionAttributeTypes = companyConnection.Query<FusionAttributeType>("select * from FusionAttributeType").ToList();
-
-                        //try
-                        //{
-                        //    fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'FusionAttributeType'").ToList();
-                        //}
-                        //catch (Exception)
-                        //{
-                        //    fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'FusionAttributeType'").ToList();
-                        //}
-
-                        //fusionAttributeTypes.ForEach(o =>
-                        //{
-                        //    objectType = "FusionAttribute";
-                        //    objectTypeKey = "FusionAttributeTypeID";
-                        //    prefix = "Fusion";
-                        //    tableName = "FusionAttribute";
-
-                        //    #region Object Views
-
-                        //    var joins = "";
-                        //    var columns = "";
-
-                        //    getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "FusionAttribute", out joins, out columns);
-
-                        //    objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.TextPath.Replace(".", "").Replace("_", ""))));
-                        //    viewNames.Add(objectName);
-
-                        //    selectSql = string.Format(@"select FT.Name as FusionType, F.Name as Fusion, A.ID, A.Name as [Attribute], A.TextPath, {0} AC.AttributeCount, Rels.[Count] as RelationshipCount from FusionAttribute A inner join Fusion F on F.ID = A.FusionID and A.FusionAttributeTypeID = {1} inner join FusionType FT on FT.ID = F.FusionTypeID {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.FusionAttributeTypeID = {1}", columns, o.ID, joins, objectType);
-
-                        //    objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                        //    viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        //    viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
-
-                        //    try
-                        //    {
-                        //        companyConnection.Execute(viewSql.ToString());
-                        //    }
-                        //    catch (Exception ex)
-                        //    {
-                        //        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                        //        Console.WriteLine(msg);
-                        //        Console.WriteLine("Attempted SQL: " + viewSql);
-                        //    }
-
-                        //    #endregion
-
-                        //    // Object Views
-                        //    //GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                        //    GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.TextPath.Replace(".", "").Replace("_", ""), objectTypeKey, tableName, objectType, o.ID, false);
-                        //    //GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
-
-                        //    // Object Missing Views
-                        //    //GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                        //    //GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                        //    //GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                        //    //GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                        //});
-
-                        //fusionAttributeTypes = null;
 
                         #endregion
 
@@ -534,9 +472,7 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
 
                         prefix = "Glossary";
                         objectType = "Taxonomy";
-                        objectTypeKey = "TaxonomyTypeID";
                         prefix = "Model";
-                        tableName = "Taxonomy";
 
                         var taxonomyTypes = companyConnection.Query<TaxonomyType>("select * from TaxonomyType").ToList();
 
@@ -577,29 +513,20 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
                             viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                             viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                            try
-                            {
-                                companyConnection.Execute(viewSql.ToString());
-                            }
-                            catch (Exception ex)
-                            {
-                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                Console.WriteLine(msg);
-                                Console.WriteLine("Attempted SQL: " + viewSql);
-                            }
+                            executeSqlWithTry(companyConnection, viewSql);
 
                             #endregion
 
                             // Object Views
-                            GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
+                            //GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+                            //GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+                            //GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
 
                             // Object Missing Views
-                            GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+                            //GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+                            //GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+                            //GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+                            //GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
                         });
 
                         taxonomyTypes = null;
@@ -609,9 +536,7 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
                         #region Policy Type
 
                         objectType = "Policy";
-                        objectTypeKey = "PolicyTypeID";
                         prefix = "Policy";
-                        tableName = "Policy";
 
                         var policyTypes = companyConnection.Query<PolicyType>("select * from PolicyType").ToList();
 
@@ -643,29 +568,20 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
                             viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                             viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                            try
-                            {
-                                companyConnection.Execute(viewSql.ToString());
-                            }
-                            catch (Exception ex)
-                            {
-                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                Console.WriteLine(msg);
-                                Console.WriteLine("Attempted SQL: " + viewSql);
-                            }
+                            executeSqlWithTry(companyConnection, viewSql);
 
                             #endregion
 
                             // Object Views
-                            GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
-                            GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
-                            GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
+                            //GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            //GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            //GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
 
                             // Object Missing Views
-                            GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
-                            GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
-                            GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
-                            GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            //GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            //GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            //GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            //GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
                         });
 
                         policyTypes = null;
@@ -705,16 +621,417 @@ from      Artifact A
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region Glossary Attributes
+
+                        objectName = $"{SCHEMA}.[Glossary_AllAttributes]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	A.ID as ArtifactID,
+		A.TextPath as ArtifactName, 
+		[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+		A.ArtifactTypeID,
+		T.Name as ArtifactTypeName,
+		V.ID as SubjectAreaID, 
+		V.Name as SubjectArea, 
+		AD.ID as AttributeID, 
+		AD.ParentID as ParentAttributeID, 
+		AD.Name as Attribute, 
+		AD.FormattedValue as AttributeValue 
+from	Artifact A 
+		inner join ArtifactType T on T.ID = A.ArtifactTypeID
+		inner join TaxonomyType V on V.ID = A.TaxonomyTypeID 
+		inner join AttributeDetail AD on AD.ObjectType = 'Artifact' and AD.ObjectID = A.ID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region Model Attributes
+
+                        objectName = $"{SCHEMA}.[Model_AllAttributes]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	A.ID as TaxonomyID,
+		A.TextPath as TaxonomyName, 
+		[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+		A.TaxonomyTypeID,
+		T.Name as TaxonomyTypeName,
+		AD.ID as AttributeID, 
+		AD.ParentID as ParentAttributeID, 
+		AD.Name as Attribute, 
+		AD.FormattedValue as AttributeValue 
+from	Taxonomy A 
+		inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+		inner join AttributeDetail AD on AD.ObjectType = 'Taxonomy' and AD.ObjectID = A.ID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region Missing Stats
+
+                        #region
+
+                        var statusSuffixColumnSql = @" Att.MissingAttributes, Rel.MissingRelationships, Res.MissingResponsibilities";
+
+                        Func<string, string> getStatsSuffixSql = (obj) =>
                         {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                            return $@"
+        cross apply (
+					select		case 
+									when count(ATTR.ID) < count(ATR.AttributeTypeID) then cast(1 as bit)
+									else cast(0 as bit)
+								end as MissingAttributes
+					from		AttributeTypeRelation ATR
+								inner join AttributeType AT on AT.ID = ATR.AttributeTypeID and ATR.ObjectType = '{obj}Type' and ATR.ObjectID = A.{obj}TypeID
+								left join AttributeTypeCategory C on C.ID = AT.AttributeTypeCategoryID
+								left join Attribute ATTR on ATTR.ObjectType = '{obj}' and ATTR.ObjectID = A.ID
+					) Att
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as MissingRelationships
+					from	( 
+					        select	case 
+								        when count(I.ID) = 0 then cast(1 as bit)
+								        else cast(0 as bit)
+							        end as O
+					        from	IntersectType IT
+							        left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{obj}' and I.SubjectID = A.ID) OR (I.Object = '{obj}' and I.ObjectID = A.ID) )
+					        where	( (IT.Subject = '{obj}Type' and IT.SubjectID = A.{obj}TypeID) OR (IT.Subject = '{obj}Type' and IT.SubjectID = A.{obj}TypeID) )
+							        and I.ID is null
+					        group by IT.ID having count(I.ID) = 0
+                            ) R
+					) Rel
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as MissingResponsibilities
+					from	( 
+							select	case 
+										when count(1) = 0 then cast(1 as bit)
+										else cast(0 as bit) 
+									end as MissingResponsibilities
+							from	[cache].[Responsibilities]
+							where	[Object] = '{obj}' and ObjectID = A.ID
+							group by ResponsibilityTypeID having count(1) = 0
+							) R
+					) Res
+where	Att.MissingAttributes > 0 
+		OR Rel.MissingRelationships > 0  
+		OR Res.MissingResponsibilities > 0";
+                        };
+
+
+                        #endregion
+
+                        #region Glossary Missing Stats
+
+                        objectName = $"{SCHEMA}.[Glossary_MissingItems_Count]";
+                        viewNames.Add(objectName);
+
+                        selectSql = $@"
+select	A.ID as ArtifactID, 
+		A.TextPath as ArtifactName, 
+		[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+		A.Status, 
+		A.ArtifactTypeID,
+		T.Name as ArtifactTypeName,
+		V.ID as SubjectAreaID, 
+		V.Name as SubjectArea, 
+		{statusSuffixColumnSql}
+from	Artifact A 
+		inner join ArtifactType T on T.ID = A.ArtifactTypeID
+		inner join TaxonomyType V on V.ID = A.TaxonomyTypeID 
+        {getStatsSuffixSql("Artifact")}";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region Model Missing Stats
+
+                        objectName = $"{SCHEMA}.[Model_MissingItems_Count]";
+                        viewNames.Add(objectName);
+
+                        selectSql = $@"
+select	A.ID as TaxonomyID, 
+		A.TextPath as TaxonomyName, 
+		[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+		A.TaxonomyTypeID,
+		T.Name as TaxonomyTypeName,
+		{statusSuffixColumnSql}
+from	Taxonomy A 
+		inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+        {getStatsSuffixSql("Taxonomy")}";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region Policy Missing Stats
+
+                        objectName = $"{SCHEMA}.[Policy_MissingItems_Count]";
+                        viewNames.Add(objectName);
+
+                        selectSql = $@"
+select	A.ID as PolicyID, 
+		A.TextPath as PolicyName, 
+		[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
+		A.PolicyTypeID,
+		T.Name as PolicyTypeName,
+		{statusSuffixColumnSql}
+from	[Policy] A 
+		inner join PolicyType T on T.ID = A.PolicyTypeID
+        {getStatsSuffixSql("Policy")}";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #endregion
+
+                        #region Missing
+
+                        #region Glossary Missing
+
+                        objectName = $"{SCHEMA}.[Glossary_MissingItems]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select		A.ID as ArtifactID, 
+			A.TextPath as ArtifactName, 
+			A.Status, 
+			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+			A.ArtifactTypeID,
+			T.Name as ArtifactTypeName,
+			V.ID as SubjectAreaID, 
+			V.Name as SubjectArea, 
+			'Attribute' as MissingObjectType,
+			[AT].Name as MissingObjectName
+from		Artifact A 
+			inner join ArtifactType T on T.ID = A.ArtifactTypeID
+			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
+			
+			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'ArtifactType' and ATR.ObjectID = T.ID
+			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
+			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Artifact' and ATTR.ObjectID = A.ID
+
+where		ATTR.ID is null 
+group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [AT].Name
+union
+select		A.ID as ArtifactID, 
+			A.TextPath as ArtifactName, 
+			A.Status, 
+			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+			A.ArtifactTypeID,
+			T.Name as ArtifactTypeName,
+			V.ID as SubjectAreaID, 
+			V.Name as SubjectArea, 
+			'Relationship' as MissingObjectType,
+			IT.Name as MissingObjectName
+from		Artifact A 
+			inner join ArtifactType T on T.ID = A.ArtifactTypeID
+			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
+			
+			inner join IntersectType IT on ( (IT.Subject = 'ArtifactType' and IT.SubjectID = A.ArtifactTypeID) OR (IT.Subject = 'ArtifactType' and IT.SubjectID = A.ArtifactTypeID) )
+			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Artifact' and I.SubjectID = A.ID) OR (I.Object = 'Artifact' and I.ObjectID = A.ID) )
+
+where		I.ID is null
+group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [IT].Name
+union
+select		A.ID as ArtifactID, 
+			A.TextPath as ArtifactName, 
+			A.Status, 
+			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+			A.ArtifactTypeID,
+			T.Name as ArtifactTypeName,
+			V.ID as SubjectAreaID, 
+			V.Name as SubjectArea, 
+			'Relationship' as MissingObjectType,
+			RT.Name as MissingObjectName
+from		Artifact A 
+			inner join ArtifactType T on T.ID = A.ArtifactTypeID
+			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
+			
+			inner join ResponsibilityTypeRelation R on R.ObjectType = 'ArtifactType' and R.ObjectID = A.ArtifactTypeID
+			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
+			left join [cache].[ResponsibilityItem] O on O.Object = 'Artifact' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
+
+where		O.ResponsibilityID is null
+group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [RT].Name";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region Policy Missing
+
+                        objectName = $"{SCHEMA}.[Policy_MissingItems]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select		A.ID as PolicyID, 
+			A.TextPath as PolicyName, 
+			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
+			A.PolicyTypeID,
+			T.Name as PolicyTypeName,
+			'Attribute' as MissingObjectType,
+			[AT].Name as MissingObjectName
+from		[Policy] A 
+			inner join PolicyType T on T.ID = A.PolicyTypeID
+			
+			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'PolicyType' and ATR.ObjectID = T.ID
+			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
+			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Policy' and ATTR.ObjectID = A.ID
+
+where		ATTR.ID is null 
+group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [AT].Name
+union
+select		A.ID as PolicyID, 
+			A.TextPath as PolicyName, 
+			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
+			A.PolicyTypeID,
+			T.Name as PolicyTypeName,
+			'Relationship' as MissingObjectType,
+			IT.Name as MissingObjectName
+from		[Policy] A 
+			inner join PolicyType T on T.ID = A.PolicyTypeID
+			
+			inner join IntersectType IT on ( (IT.Subject = 'PolicyType' and IT.SubjectID = A.PolicyTypeID) OR (IT.Subject = 'PolicyType' and IT.SubjectID = A.PolicyTypeID) )
+			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Policy' and I.SubjectID = A.ID) OR (I.Object = 'Policy' and I.ObjectID = A.ID) )
+
+where		I.ID is null
+group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [IT].Name
+union
+select		A.ID as PolicyID, 
+			A.TextPath as PolicyName, 
+			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
+			A.PolicyTypeID,
+			T.Name as PolicyTypeName,
+			'Relationship' as MissingObjectType,
+			RT.Name as MissingObjectName
+from		[Policy] A 
+			inner join PolicyType T on T.ID = A.PolicyTypeID
+			
+			inner join ResponsibilityTypeRelation R on R.ObjectType = 'PolicyType' and R.ObjectID = A.PolicyTypeID
+			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
+			left join [cache].[ResponsibilityItem] O on O.Object = 'Policy' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
+
+where		O.ResponsibilityID is null
+group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [RT].Name";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region Model Missing
+
+                        objectName = $"{SCHEMA}.[Model_MissingItems]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select		A.ID as TaxonomyID, 
+			A.TextPath as TaxonomyName, 
+			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+			A.TaxonomyTypeID,
+			T.Name as TaxonomyTypeName,
+			'Attribute' as MissingObjectType,
+			[AT].Name as MissingObjectName
+from		[Taxonomy] A 
+			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+			
+			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'TaxonomyType' and ATR.ObjectID = T.ID
+			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
+			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Taxonomy' and ATTR.ObjectID = A.ID
+
+where		ATTR.ID is null 
+group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [AT].Name
+union
+select		A.ID as TaxonomyID, 
+			A.TextPath as TaxonomyName, 
+			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+			A.TaxonomyTypeID,
+			T.Name as TaxonomyTypeName,
+			'Relationship' as MissingObjectType,
+			IT.Name as MissingObjectName
+from		Taxonomy A 
+			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+			
+			inner join IntersectType IT on ( (IT.Subject = 'TaxonomyType' and IT.SubjectID = A.TaxonomyTypeID) OR (IT.Subject = 'TaxonomyType' and IT.SubjectID = A.TaxonomyTypeID) )
+			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Taxonomy' and I.SubjectID = A.ID) OR (I.Object = 'Taxonomy' and I.ObjectID = A.ID) )
+
+where		I.ID is null
+group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [IT].Name
+union
+select		A.ID as TaxonomyID, 
+			A.TextPath as TaxonomyName, 
+			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+			A.TaxonomyTypeID,
+			T.Name as TaxonomyTypeName,
+			'Relationship' as MissingObjectType,
+			RT.Name as MissingObjectName
+from		Taxonomy A 
+			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+			
+			inner join ResponsibilityTypeRelation R on R.ObjectType = 'TaxonomyType' and R.ObjectID = A.TaxonomyTypeID 
+			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
+			left join [cache].[ResponsibilityItem] O on O.Object = 'Taxonomy' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
+
+where		O.ResponsibilityID is null
+group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [RT].Name";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
 
                         #endregion
 
@@ -745,16 +1062,7 @@ from	FusionAttribute A
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -780,16 +1088,7 @@ from	FusionAttribute O
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -815,16 +1114,7 @@ from	Artifact O
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -857,16 +1147,7 @@ SELECT T.[ID]                                                                as 
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -892,16 +1173,7 @@ from	Taxonomy O
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -925,16 +1197,7 @@ from	ResponsibilityTypeRelation R
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -969,16 +1232,7 @@ SELECT p.[ID] as [PolicyID]
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1007,16 +1261,7 @@ FROM [dbo].[Group]";
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1047,16 +1292,7 @@ SELECT [ResponsibilityID]
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1098,16 +1334,7 @@ SELECT
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1139,16 +1366,7 @@ from	IntersectDetail O
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1183,21 +1401,44 @@ from	[Rule] R
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         objectName = $"{SCHEMA}.[Rules_Results]";
                         viewNames.Add(objectName);
 
-                        selectSql = @"
+                        if (company.IsDevelopment)
+                        {
+                            selectSql = @"
+select	RI.RuleID,
+		R.Name as RuleName,
+        RI.Name as RuleImplementationName,
+		R.RuleDimensionID,
+		D.Name as RuleDimensionName,
+        RR.EffectiveDate,
+		RR.RowsPassed,
+		RR.RowsFailed,
+		RR.PassFraction,
+		RR.FailFraction,
+		R.Threshold,
+		RR.Passed,
+		RR.CreatedOn,
+		--RR.FusionAttributeID,
+		--FA.TextPath as FusionAttributeName,
+		Q.C as QualifierCount
+from	RuleResult RR
+		inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
+        inner join [Rule] R on R.ID = RI.RuleID
+        left join RuleDimension D on D.ID = R.RuleDimensionID
+		--left join FusionAttribute FA on Fa.ID = RR.FusionAttributeID
+		cross apply (
+					select	count(1) as C
+					from	RuleResultQualifier 
+					where	RuleResultID = RR.ID
+					) Q";
+                        }
+                        else
+                        {
+                            selectSql = @"
 select	RR.RuleID,
 		R.Name as RuleName,
 		R.RuleDimensionID,
@@ -1214,7 +1455,7 @@ select	RR.RuleID,
 		FA.TextPath as FusionAttributeName,
 		Q.C as QualifierCount
 from	RuleResult RR
-		inner join [Rule] R on R.ID = RR.RuleID
+        inner join [Rule] R on R.ID = RR.RuleID
         left join RuleDimension D on D.ID = R.RuleDimensionID
 		left join FusionAttribute FA on Fa.ID = RR.FusionAttributeID
 		cross apply (
@@ -1222,22 +1463,13 @@ from	RuleResult RR
 					from	RuleResultQualifier 
 					where	RuleResultID = RR.ID
 					) Q";
-
+                        }
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
 
                         #endregion
@@ -1287,16 +1519,7 @@ from	Workflow W
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1340,16 +1563,7 @@ from	Workflow W
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1392,16 +1606,7 @@ from	Workflow W
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
                         viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1432,11 +1637,11 @@ from	Workflow W
                         companyConnection.Close();
                         companyConnection.Dispose();
 
-                        Console.WriteLine("END COMPANY {0} -------------", companyID);
+                        Console.WriteLine("END COMPANY {0} -------------", company.CompanyID);
                     }
                     catch (Exception ex)
                     {
-                        var msg = "CompanyID: " + companyID + " - " + ex.GetFullExceptionData();
+                        var msg = "CompanyID: " + company.CompanyID + " - " + ex.GetFullExceptionData();
                         Console.WriteLine(msg);
                     }
                 });

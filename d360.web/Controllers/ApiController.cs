@@ -183,6 +183,11 @@ namespace d360.web.Controllers
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderComplexLookupField(type.ToString(), id, ft.ID));
                         }
+                        if (ft.Type == DataType.OwnershipLookup.ToString())
+                        {
+                            //look at fusionlookup field and figure out what to show
+                            list.AddRange(RenderOwnershipLookupField(type.ToString(), id, ft.ID));
+                        }
                     }
                 });
             }
@@ -2241,16 +2246,16 @@ from    [Intersect] I
         }
 
         private void loadComplexLookupColumns(List<FieldType> fieldTypes,
-            List<FieldTypeLookupDefinitionField> fields,
+            List<FieldTypeComplexLookupDefinitionField> fields,
             List<ComplexColumnModel> columnModels,
-            FieldTypeLookupDefinitionRelation join,
+            FieldTypeComplexLookupDefinitionRelation join,
             string intersectIDColumn,
             string objColumn,
             string objIDColumn,
             string joinType,
             int pos)
         {
-            Func<FieldType, FieldTypeLookupDefinitionField, ComplexColumnModel, string> setColumnTypeInfo = (ft, df, c) =>
+            Func<FieldType, FieldTypeComplexLookupDefinitionField, ComplexColumnModel, string> setColumnTypeInfo = (ft, df, c) =>
             {
 
                 c.format = "";
@@ -2688,7 +2693,7 @@ from    [Intersect] I
 
         private bool AnyComplexLookupGridValues(string type, int id, FieldTypeLookup lookup)
         {
-            var def = lookup.ParseDefinition();
+            var def = lookup.ParseComplexLookupDefinition();
             type = type.CleanForSql();
 
             #region Process Relations
@@ -2855,7 +2860,7 @@ from    [Intersect] I
                 var lookup = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == fieldTypeID).SingleOrDefault();
                 if (lookup == null) throw new Exception("Invalid complex lookup field is specified.");
 
-                var def = lookup.ParseDefinition();
+                var def = lookup.ParseComplexLookupDefinition();
                 var fields = def.Fields.ToList();
 
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
@@ -3053,6 +3058,234 @@ from    [Intersect] I
         public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)
         {
             return await Company.GetFieldFiltersByType(type, id);
+        }
+
+        #endregion
+
+        #region Ownership Lookup Fields
+
+        private List<DetailReadOnlyRowModel> RenderOwnershipLookupField(string type, int id, int fieldTypeID)
+        {
+            var list = new List<DetailReadOnlyRowModel>();
+
+            var ft = Company.GetById<FieldType>(fieldTypeID, i => i.FieldTypeLookup);
+            var lookup = ft.FieldTypeLookup;
+
+            if (ft != null && lookup != null)
+            {
+                if (AnyOwnershipLookupGridValues(type, id, lookup))
+                {
+                    list.Add(new DetailReadOnlyRowModel
+                    {
+                        columns = 1,
+                        FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Column = 1,
+                                        Name = ft.FriendlyName,
+                                        FieldDescription = ft.DisplayDescription,
+                                        FieldName = ft.Name,
+                                        HideHeader = lookup.HideHeader,
+                                        HideFooter = lookup.HideFooter,
+                                        HideFilter = lookup.HideFilter,
+                                        LookupGridUrl = $"/api/OwnershipLookupField/{type}/{id}/{ft.ID}/values"
+                                    }
+                                },
+                        Category = ft.Category
+                    });
+                }
+            }
+
+            return list;
+        }
+
+        private bool AnyOwnershipLookupGridValues(string type, int id, FieldTypeLookup lookup)
+        {
+            var def = lookup.ParseOwnershipLookupDefinition();
+            type = type.CleanForSql();
+
+            var sql = @"
+select  case 
+            when count(1) > 0 then cast(1 as bit)
+			else cast(0 as bit)
+        end 
+from    [cache].[Responsibilities] 
+where   Object = @type 
+		and ObjectID = @id 
+		and [Visible] = 1";
+
+            return Company.Query<bool>(sql, new { type, id }).First();
+        }
+
+        [Route("OwnershipLookupField/{type}/{id:int}/{fieldTypeID:int}/values")]
+        public HttpResponseMessage GetOwnershipLookupGridField(string type, int id, int fieldTypeID)
+        {
+            var columnModels = new List<ComplexColumnModel>();
+            var gridFields = new List<GridField>();
+            var columns = new List<GridColumn>();
+            IEnumerable<dynamic> results = null;
+
+            try
+            {
+                var lookup = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == fieldTypeID).SingleOrDefault();
+                if (lookup == null) throw new Exception("Invalid ownership lookup field is specified.");
+
+                var def = lookup.ParseOwnershipLookupDefinition();
+                type = type.CleanForSql();
+
+                var sql = "SELECT ResponsibilityType";
+                var tableSql = " from [cache].[Responsibilities] R";
+
+                #region Common fields/columns
+
+                gridFields.Add(new GridField { name = "ResponsibilityType", type = "string" });
+                columns.Add(new GridColumn
+                {
+                    text = "Responsibility",
+                    datafield = "ResponsibilityType",
+                    //description = "Role assigned",
+                    columntype = "textbox",
+                    filtertype = "textbox"
+                });
+
+                #endregion
+
+                if (def.DisplayAssignmentSource)
+                {
+                    sql += ", [AssigningItem], [AssigningItemID], [AssigningItemName], [AssigningItemUrl] , 'Preview' as AssigningItemContext";
+
+                    #region Fields/Columns when displaying assignment source
+
+                    gridFields.Add(new GridField { name = "AssigningItem", type = "string" });
+                    gridFields.Add(new GridField { name = "AssigningItemID", type = "number" });
+                    gridFields.Add(new GridField { name = "AssigningItemName", type = "lookup" });
+                    gridFields.Add(new GridField { name = "AssigningItemContext", type = "string" });
+                    gridFields.Add(new GridField { name = "AssigningItemUrl", type = "string" });
+
+                    columns.Add(new GridColumn
+                    {
+                        text = "Assignment Source",
+                        datafield = "AssigningItemName",
+                        contextfield = "AssigningItemContext",
+                        objectfield = "AssigningItem",
+                        objectidfield = "AssigningItemID",
+                        urlfield = "AssigningItemUrl",
+                        //description = "Role assigned",
+                        columntype = "textbox",
+                        filtertype = "textbox"
+                    });
+
+                    #endregion
+                }
+
+                if (def.ExpandGroupMembership)
+                {
+                    sql += @"
+, U.FirstName + ' ' + U.LastName as ResourceName
+, U.ResourceID
+, 'Resource' as ResourceObject
+, 'Preview' as ResourceItemContext
+, '/resource/' + cast(U.ResourceID as varchar) as ResourceItemUrl
+, R.[ResponsibleObject]
+, R.[ResponsibleObjectID] 
+, 'Preview' as ResponsibleObjectContext
+, R.ResponsibleObjectUrl
+, case R.ResponsibleObject when 'Group' then[ResponsibleObjectName] else '' end as ViaGroup";
+                    tableSql += @"
+ left join ResourceGroup RG on R.ResponsibleObject = 'Group' and RG.GroupID = R.ResponsibleObjectID 
+ left join reporting.Global_Resource U on (R.ResponsibleObject = 'Group' and RG.ResourceID = U.ResourceID) or (R.ResponsibleObject = 'Resource' and U.ResourceID = R.ResponsibleObjectID) and U.Status = 'Active' ";
+
+                    #region Fields/Columns when expanding group membership
+
+                    gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
+                    gridFields.Add(new GridField { name = "ResourceID", type = "number" });
+                    gridFields.Add(new GridField { name = "ResourceObject", type = "string" });
+                    gridFields.Add(new GridField { name = "ResourceItemContext", type = "string" });
+                    gridFields.Add(new GridField { name = "ResourceItemUrl", type = "string" });
+
+                    columns.Add(new GridColumn
+                    {
+                        text = "Assigned User",
+                        datafield = "ResourceName",
+                        contextfield = "ResourceItemContext",
+                        objectfield = "ResourceObject",
+                        objectidfield = "ResourceID",
+                        urlfield = "ResourceItemUrl",
+                        //description = "User assigned to the role",
+                        columntype = "textbox",
+                        filtertype = "textbox"
+                    });
+
+                    gridFields.Add(new GridField { name = "ViaGroup", type = "lookup" });
+                    gridFields.Add(new GridField { name = "ResponsibleObjectID", type = "number" });
+                    gridFields.Add(new GridField { name = "ResponsibleObject", type = "string" });
+                    gridFields.Add(new GridField { name = "ResponsibleObjectContext", type = "string" });
+                    gridFields.Add(new GridField { name = "ResponsibleObjectUrl", type = "string" });
+
+                    columns.Add(new GridColumn
+                    {
+                        text = "Via Group",
+                        datafield = "ViaGroup",
+                        contextfield = "ResponsibleObjectContext",
+                        objectfield = "ResponsibleObject",
+                        objectidfield = "ResponsibleObjectID",
+                        urlfield = "ResponsibleObjectUrl",
+                        description = "Group assigned to the role",
+                        columntype = "textbox",
+                        filtertype = "textbox"
+                    });
+
+                    #endregion
+                }
+                else
+                {
+                    sql += @", R.[ResponsibleObject]
+, R.[ResponsibleObjectID]
+, R.[ResponsibleObjectName]
+, 'Preview' as ResponsibleObjectContext
+, R.ResponsibleObjectUrl";
+
+                    #region Fields/Columns when not expanding group membership
+
+                    gridFields.Add(new GridField { name = "ResponsibleObjectName", type = "lookup" });
+                    gridFields.Add(new GridField { name = "ResponsibleObjectID", type = "number" });
+                    gridFields.Add(new GridField { name = "ResponsibleObject", type = "string" });
+                    gridFields.Add(new GridField { name = "ResponsibleObjectContext", type = "string" });
+                    gridFields.Add(new GridField { name = "ResponsibleObjectUrl", type = "string" });
+
+                    columns.Add(new GridColumn
+                    {
+                        text = "Responsible Party",
+                        datafield = "ResponsibleObjectName",
+                        contextfield = "ResponsibleObjectContext",
+                        objectfield = "ResponsibleObject",
+                        objectidfield = "ResponsibleObjectID",
+                        urlfield = "ResponsibleObjectUrl",
+                        //description = "Group/User assigned to the role",
+                        columntype = "textbox",
+                        filtertype = "textbox"
+                    });
+
+                    #endregion
+                }
+
+                sql += tableSql + " where R.Object = @type and R.ObjectID = @id and R.[Visible] = 1";
+
+                results = Company.Query<dynamic>(sql, new { type, id }).Distinct();
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, new
+                {
+                    Error = ex.GetFullExceptionData(),
+                });
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                Values = results,
+                Columns = columns,
+                Fields = gridFields
+            });
         }
 
         #endregion

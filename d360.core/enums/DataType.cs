@@ -49,6 +49,8 @@ namespace d360.core
         Percentage, // used for range of > 0 and < 1
         [Description("DataTableSelect"), ReadOnly(true)]
         DataTableSelect,
+        [Description("Ownership Lookup")]//, ReadOnly(true)]
+        OwnershipLookup
     }
 
     public class DataTypeInfo

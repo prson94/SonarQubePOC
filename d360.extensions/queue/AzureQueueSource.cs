@@ -95,9 +95,13 @@ namespace d360.extensions.queue
 
         public void CreateTopicMessage(EventInfo e)
         {
-            var bm = new BrokeredMessage(e);
-
             var topicName = getTopicName();
+            CreateTopicMessageAsync(topicName, e);
+        }
+
+        public void CreateTopicMessage(string topicName, EventInfo e)
+        {
+            var bm = new BrokeredMessage(e);
 
             var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             client.Send(bm);
@@ -106,16 +110,26 @@ namespace d360.extensions.queue
 
         public Task CreateTopicMessageAsync(EventInfo e)
         {
-            var bm = new BrokeredMessage(e);
             var topicName = getTopicName();
+            return CreateTopicMessageAsync(topicName, e);
+        }
+
+        public Task CreateTopicMessageAsync(string topicName, EventInfo e)
+        {
+            var bm = new BrokeredMessage(e);
             var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             return client.SendAsync(bm);
         }
 
         public void CreateTopicMessages(List<EventInfo> events)
         {
-            var list = new List<BrokeredMessage>();
             var topicName = getTopicName();
+            CreateTopicMessages(topicName, events);
+        }
+
+        public void CreateTopicMessages(string topicName, List<EventInfo> events)
+        {
+            var list = new List<BrokeredMessage>();
             foreach (var e in events)
             {
                 var bm = new BrokeredMessage(e);
@@ -140,6 +154,11 @@ namespace d360.extensions.queue
         public Task CreateTopicMessagesAsync(List<EventInfo> events)
         {
             var topicName = getTopicName();
+            return CreateTopicMessagesAsync(topicName, events);
+        }
+
+        public Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
+        {
             var list = new List<BrokeredMessage>();
             foreach (var e in events)
             {

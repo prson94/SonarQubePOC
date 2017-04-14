@@ -1,24 +1,24 @@
+using d360.core;
+using d360.core.entities;
+using d360.core.enums.Workflow;
+using d360.core.queue;
+using d360.extensions;
+using d360.extensions.queue;
+using d360.utils.company;
+using Dapper;
+using Mandrill;
+using Mandrill.Model;
+using Microsoft.WindowsAzure.ServiceRuntime;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.Diagnostics;
-using Microsoft.WindowsAzure.ServiceRuntime;
-using Microsoft.WindowsAzure.Storage;
-using d360.core;
-using d360.utils.company;
-using d360.core.entities;
-using d360.core.queue;
-using Dapper;
 using System.Xml.Linq;
-using Mandrill.Model;
-using Mandrill;
-using System.Data.SqlClient;
-using d360.extensions;
+
 
 namespace d360.workers.ProcessDatabaseTasksWorkerRole
 {
@@ -81,7 +81,7 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
             //message.Text = "Hello World plain text!"; 
 
             var api = new MandrillApi(constants.MANDRILL_API_KEY);
-            api.Messages.SendTemplate(message, templateID);
+            var resp = api.Messages.SendTemplateAsync(message, templateID).Result;
 
             message = null;
             api = null;
@@ -135,14 +135,17 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                 try
                 {
                     var checkDelayInSeconds = 10;
-                    
+
                     await Task.Run(delegate {
+
                         //var companies = new List<int>() { 4 };
-                        var companies = CompanyConnectionUtils.GetActiveCompanyIDs();
-                        var domainPrefixes = CompanyConnectionUtils.GetCompanyDomainPrefixes();
+                        var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.Status == "Active").ToList();
+
+#if DEBUG
+                        companies = companies.Where(i => i.CompanyID == 4).ToList();
+#endif
 
                         companies.Shuffle(); //Randomize
-
 
                         #region Must keep this segment here b/c this webjob can execute on multiple machines.  We do not want two or more machines trying to grab hold of the same queue item.
                         var rand = new Random();
@@ -151,14 +154,12 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                         #endregion
 
                         //companies.ForEach(companyID =>
-                        companies.AsParallel().ForAll(companyID =>
+                        companies.AsParallel().ForAll(company =>
                         {
-                            var isCompanyInDev = CompanyConnectionUtils.IsCompanyDevelopmentEnvironment(companyID);
-
                             var numberOfQueueItems = 1000;
                             var indexCollectionModel = new ObjectIndexCollectionModel();
 
-                            var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(companyID);
+                            var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID);
                             outerCompanyConnection.Open();
 
                             #region Indexer Func
@@ -218,7 +219,7 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                                 switch (a)
                                 {
                                     case "A":   //Add
-                                        var add = new AddToIndexModel { CompanyID = companyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.AddToIndex, Type = detail.TypeName };
+                                        var add = new AddToIndexModel { CompanyID = company.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.AddToIndex, Type = detail.TypeName };
                                         if (o == "Synonym")
                                         {
                                             add.ItemUniqueID = $"custom|{detail.Name}|{detail.ParentType}|{detail.ParentID.Value}";
@@ -226,7 +227,7 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                                         indexCollectionModel.Adds.Add(add);
                                         break;
                                     case "U":   //Update
-                                        var update = new UpdateInIndexModel { CompanyID = companyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.UpdateInIndex, Type = detail.TypeName };
+                                        var update = new UpdateInIndexModel { CompanyID = company.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.UpdateInIndex, Type = detail.TypeName };
                                         if (o == "Synonym")
                                         {
                                             update.ItemUniqueID = $"custom|{detail.Name}|{detail.ParentType}|{detail.ParentID.Value}";
@@ -234,7 +235,7 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                                         indexCollectionModel.Updates.Add(update);
                                         break;
                                     case "D":   //Delete
-                                        var delete = new RemoveFromIndexModel { CompanyID = companyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName
+                                        var delete = new RemoveFromIndexModel { CompanyID = company.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName
                                         indexCollectionModel.Deletes.Add(delete);
                                         break;
                                 }
@@ -278,7 +279,7 @@ from    [queue].[Task] T
                             .AsParallel().ForAll(q =>
                             //.ForEach(q =>
                             {
-                                var companyConnection = CompanyConnectionUtils.GetCompanyConnection(companyID);
+                                var companyConnection = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID);
                                 companyConnection.Open();
 
                                 try
@@ -334,26 +335,55 @@ from    [queue].[Task] T
                                             }
                                             break;
                                         #endregion
-                                        case "Update":
+                                        case "EventTopicNotification":
                                             #region
                                             if (!string.IsNullOrEmpty(q.Custom))
                                             {
                                                 var customXml = XElement.Parse(q.Custom);
-                                                companyConnection.Execute(
-                                                    "exec AsyncUpdateObject @Object, @ObjectID, @ParentObject, @ParentObjectID, @ResourceID",
-                                                    new
-                                                    {
-                                                        q.Object,
-                                                        q.ObjectID,
-                                                        ParentObject = customXml.Element("ActionObject").Value,
-                                                        ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                                                        ResourceID = int.Parse(customXml.Element("ResourceID").Value)
-                                                    },
-                                                    null,
-                                                    10800);    // 180 minute timeout.
 
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
+                                                var queue = new AzureQueueSource();
+
+                                                ChangeType ct;
+                                                if (Enum.TryParse<ChangeType>(customXml.Element("ChangeType").Value, out ct))
+                                                {
+                                                    SystemObjects obj;
+                                                    SystemObjects objType;
+                                                    if (Enum.TryParse<SystemObjects>(customXml.Element("ObjectType").Value, out objType))
+                                                    {
+                                                        if (Enum.TryParse<SystemObjects>(q.Object, out obj))
+                                                        {
+                                                            int objectTypeID;
+                                                            if (int.TryParse(customXml.Element("ObjectTypeID").Value, out objectTypeID))
+                                                            {
+                                                                var topicName = company.EventTopic;
+#if DEBUG
+                                                                topicName = "events-debug";
+#endif
+                                                                queue.CreateTopicMessage(company.EventTopic, new EventInfo
+                                                                {
+                                                                    Action = ct,
+                                                                    CompanyID = company.CompanyID,
+                                                                    DomainPrefix = company.UrlPrefix,
+                                                                    Object = new EventObjectInfo
+                                                                    {
+                                                                        Object = obj,
+                                                                        ObjectID = q.ObjectID,
+                                                                        ObjectType = objType,
+                                                                        ObjectTypeID = objectTypeID
+                                                                    },
+                                                                    ResourceID = 0
+                                                                });
+                                                            }
+                                                            else { throw new ApplicationException("Unable to parse the ObjectTypeID specified."); }
+                                                        }
+                                                        else { throw new ApplicationException("Unable to identify the Object specified."); }
+                                                    }
+                                                    else { throw new ApplicationException("Unable to identify the ObjectType specified."); }
+                                                }
+                                                else { throw new ApplicationException("Unable to identify the ChangeType specified."); }
                                             }
+                                            else { throw new ApplicationException("XML field does not have any valid information contained within."); }
+
                                             break;
                                         #endregion
                                         case "FollowChildren":
@@ -380,7 +410,6 @@ from    [queue].[Task] T
                                         #endregion
                                         case "Notify":
                                             #region
-                                            var domainPrefix = domainPrefixes.First(i => i.Key == companyID).Value;
 
                                             switch (q.Object)
                                             {
@@ -401,7 +430,7 @@ from    [queue].[Task] T
                                                             tags.Add("ownerName", comment.OwnerName);
                                                             tags.Add("ownerType", comment.OwnerTypeName);
                                                             tags.Add("body", comment.Body);
-                                                            tags.Add("ownerUrl", $"https://{domainPrefix}.data3sixty.com/{comment.OwnerUrl}");
+                                                            tags.Add("ownerUrl", $"https://{company.UrlPrefix}.data3sixty.com/{comment.OwnerUrl}");
                                                             var parentReference = "";
                                                             if (comment.ParentID.HasValue)
                                                             {
@@ -432,8 +461,8 @@ from    [queue].[Task] T
                                                             tags.Add("adds", execution.Adds.HasValue ? execution.Adds.Value.ToString() : "None");
                                                             tags.Add("updates", execution.Updates.HasValue ? execution.Updates.Value.ToString() : "None");
                                                             tags.Add("deletes", execution.Deletes.HasValue ? execution.Deletes.Value.ToString() : "None");
-                                                            tags.Add("fusionUrl", $"https://{domainPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}");
-                                                            tags.Add("executionUrl", $"https://{domainPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}?execution={execution.ID}");
+                                                            tags.Add("fusionUrl", $"https://{company.UrlPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}");
+                                                            tags.Add("executionUrl", $"https://{company.UrlPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}?execution={execution.ID}");
                                                             tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
                                                             tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
                                                             SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");
@@ -480,11 +509,33 @@ from    [queue].[Task] T
                                                     7200);
                                             }
                                             break;
+                                        #endregion
+                                        case "Update":
+                                            #region
+                                            if (!string.IsNullOrEmpty(q.Custom))
+                                            {
+                                                var customXml = XElement.Parse(q.Custom);
+                                                companyConnection.Execute(
+                                                    "exec AsyncUpdateObject @Object, @ObjectID, @ParentObject, @ParentObjectID, @ResourceID",
+                                                    new
+                                                    {
+                                                        q.Object,
+                                                        q.ObjectID,
+                                                        ParentObject = customXml.Element("ActionObject").Value,
+                                                        ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
+                                                        ResourceID = int.Parse(customXml.Element("ResourceID").Value)
+                                                    },
+                                                    null,
+                                                    10800);    // 180 minute timeout.
+
+                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U");
+                                            }
+                                            break;
                                             #endregion
                                     }
 
                                     companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                    Debug.WriteLine($"Completed for: Company {companyID}, ID {q.ID}");
+                                    Debug.WriteLine($"Completed for: Company {company.CompanyID}, ID {q.ID}");
                                 }
                                 catch (Exception ex)
                                 {
@@ -494,7 +545,7 @@ from    [queue].[Task] T
                                         if (q.NumberOfRetries >= 2)
                                             companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
                                         else
-                                            companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = true }, null, 500);
+                                            companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
                                     }
                                     catch (Exception iex)
                                     {

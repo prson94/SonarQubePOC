@@ -43,7 +43,19 @@ export class FieldTypeEditorModel {
     LookupTokens: SelectItem[] = new Array<SelectItem>();
     FilteredLookupItems: FilteredLookupItem[] = [];
     FilteredLookupItem: FilteredLookupItem;
+    OwnershipLookupSettings: OwnershipLookupSettings;
 
+}
+
+export class OwnershipLookupSettings {
+    HideFilter: boolean;
+    HideFooter: boolean;
+    HideHeader: boolean;
+    ID: number;
+    Object: string;
+    ObjectID: number;
+    DisplayAssignmentSource: boolean;
+    ExpandGroupMembership: boolean;
 }
 
 export class FilteredLookupItem {

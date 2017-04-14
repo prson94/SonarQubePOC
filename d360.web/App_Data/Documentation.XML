@@ -2620,22 +2620,22 @@
             </summary>
             <param name="filterContext"></param>
         </member>
-        <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.ColumnStatement">
+        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.ColumnStatement">
             <summary>
             Generated when it comes time to create a dynamic SQL query.
             </summary>
         </member>
-        <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.JoinStatement">
+        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.JoinStatement">
             <summary>
             Generated when it comes time to create a dynamic SQL query.
             </summary>
         </member>
-        <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.OrderByStatement">
+        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.OrderByStatement">
             <summary>
             Generated when it comes time to create a dynamic SQL query.
             </summary>
         </member>
-        <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.WhereStatement">
+        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.WhereStatement">
             <summary>
             Generated when it comes time to create a dynamic SQL query.
             </summary>

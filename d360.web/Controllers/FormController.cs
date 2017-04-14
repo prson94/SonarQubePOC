@@ -3103,6 +3103,8 @@ namespace d360.web.Controllers
             List<dynamic> filteredLookupItems = null;
             List<dynamic> fusionItems = null;
             List<dynamic> relationItems = null;
+            dynamic ownershipLookupSettings = null;
+
             if (id > 0)
             {
                 ft = Company.GetById<FieldType>(id, i => i.FieldTypeFusionLookupDefinitions);
@@ -3150,32 +3152,46 @@ namespace d360.web.Controllers
                 var lookup = Company.FieldTypeLookups.Where(i => i.FieldTypeID == id).FirstOrDefault();
                 if (lookup != null)
                 {
-                    relationItems = new List<dynamic>();
-                    var relations = (dynamic)Newtonsoft.Json.JsonConvert.DeserializeObject(lookup.Definition);
-                    foreach(var r in relations.Relations)
-                    {
-                        relationItems.Add(new
-                        {
-                            ID = r.ID,
-                            IntersectType = r.IntersectTypeID,
-                            ReferenceType = r.RelationType,
-                            ChildIntersectType = 0,
-                            DisplayFields = new List<dynamic>(),
-                            HideHeader = lookup.HideHeader,
-                            HideFooter = lookup.HideFooter,
-                            HideFilter = lookup.HideFilter,
-                            Object = r.Object,
-                            ObjectID = r.ObjectID
-                        });
-                    }
-                    foreach(var f in relations.Fields)
-                    {
-                        var r = relationItems.Where(i => i.Object == f.Object && i.ObjectID == f.ObjectID).FirstOrDefault();
+                    var definition = (dynamic)Newtonsoft.Json.JsonConvert.DeserializeObject(lookup.Definition);
 
-                        if (r != null)
+                    if (ft.Type == DataType.ComplexRelationLookup.ToString())
+                    {
+                        relationItems = new List<dynamic>();
+                        foreach (var r in definition.Relations)
                         {
-                            r.DisplayFields.Add(f);
+                            relationItems.Add(new
+                            {
+                                ID = r.ID,
+                                IntersectType = r.IntersectTypeID,
+                                ReferenceType = r.RelationType,
+                                ChildIntersectType = 0,
+                                DisplayFields = new List<dynamic>(),
+                                HideHeader = lookup.HideHeader,
+                                HideFooter = lookup.HideFooter,
+                                HideFilter = lookup.HideFilter,
+                                Object = r.Object,
+                                ObjectID = r.ObjectID
+                            });
                         }
+                        foreach (var f in definition.Fields)
+                        {
+                            var r = relationItems.Where(i => i.Object == f.Object && i.ObjectID == f.ObjectID).FirstOrDefault();
+
+                            if (r != null)
+                            {
+                                r.DisplayFields.Add(f);
+                            }
+                        }
+                    }
+                    else if (ft.Type == DataType.OwnershipLookup.ToString())
+                    {
+                        ownershipLookupSettings = new {
+                            definition.DisplayAssignmentSource,
+                            definition.ExpandGroupMembership,
+                            lookup.HideFilter,
+                            lookup.HideFooter,
+                            lookup.HideHeader
+                        };
                     }
                 }
             }
@@ -3187,6 +3203,7 @@ namespace d360.web.Controllers
                     FieldType = ft,
                     FilteredLookupItems = filteredLookupItems,
                     FusionItems = fusionItems,
+                    OwnershipLookupSettings = ownershipLookupSettings,
                     RelationItems = relationItems
                 },
                 Formatting = Newtonsoft.Json.Formatting.None
@@ -3447,6 +3464,48 @@ namespace d360.web.Controllers
                             Company.Add<FieldType>(model.FieldType);
                             lookupRow.FieldTypeID = model.FieldType.ID;
                             Company.FieldTypeLookups.Add(lookupRow);
+                            Company.SaveChanges();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+
+                        break;
+                    #endregion
+                    case "OwnershipLookup":
+                        #region
+                         var ownershipSettings = new
+                        {
+                            DisplayAssignmentSource = model.OwnershipLookupSettings.DisplayAssignmentSource,
+                            ExpandGroupMembership = model.OwnershipLookupSettings.ExpandGroupMembership
+                        };
+                        var ownershipLookupRow = new FieldTypeLookup
+                        {
+                            FieldTypeID = model.FieldType.ID,
+                            HideFooter = model.OwnershipLookupSettings.HideFooter,
+                            HideHeader = model.OwnershipLookupSettings.HideHeader,
+                            HideFilter = model.OwnershipLookupSettings.HideFilter,
+                            LookupType = 1,
+                            Definition = Newtonsoft.Json.JsonConvert.SerializeObject(ownershipSettings)
+                        };
+                        try
+                        {
+                            var existing = Company.FieldTypeLookups.Where(i => i.FieldTypeID == model.FieldType.ID).FirstOrDefault();
+
+                            if (existing != null)
+                            {
+                                Company.FieldTypeLookups.Remove(existing);
+                            }
+
+                            model.FieldType.IsDisplayable = true;
+                            model.FieldType.IsEditable = false;
+                            model.FieldType.IsListable = false;
+                            model.FieldType.IsRequired = false;
+
+                            Company.Add<FieldType>(model.FieldType);
+                            ownershipLookupRow.FieldTypeID = model.FieldType.ID;
+                            Company.FieldTypeLookups.Add(ownershipLookupRow);
                             Company.SaveChanges();
                         }
                         catch (Exception ex)
@@ -3975,6 +4034,47 @@ namespace d360.web.Controllers
                             Company.FieldTypeLookups.Add(lookupRow);
                             Company.SaveChanges();
                         } catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+
+                        break;
+                    #endregion
+                    case "OwnershipLookup":
+                        #region
+                        var ownershipSettings = new
+                        {
+                            DisplayAssignmentSource = model.OwnershipLookupSettings.DisplayAssignmentSource,
+                            ExpandGroupMembership = model.OwnershipLookupSettings.ExpandGroupMembership
+                        };
+                        var ownershipLookupRow = new FieldTypeLookup
+                        {
+                            FieldTypeID = model.FieldType.ID,
+                            HideFooter = model.OwnershipLookupSettings.HideFooter,
+                            HideHeader = model.OwnershipLookupSettings.HideHeader,
+                            HideFilter = model.OwnershipLookupSettings.HideFilter,
+                            LookupType = 1,
+                            Definition = Newtonsoft.Json.JsonConvert.SerializeObject(ownershipSettings)
+                        };
+                        try
+                        {
+                            var existing = Company.FieldTypeLookups.Where(i => i.FieldTypeID == model.FieldType.ID).FirstOrDefault();
+
+                            if (existing != null)
+                            {
+                                Company.FieldTypeLookups.Remove(existing);
+                            }
+
+                            model.FieldType.IsDisplayable = true;
+                            model.FieldType.IsEditable = false;
+                            model.FieldType.IsListable = false;
+                            model.FieldType.IsRequired = false;
+
+                            ownershipLookupRow.FieldTypeID = model.FieldType.ID;
+                            Company.FieldTypeLookups.Add(ownershipLookupRow);
+                            Company.SaveChanges();
+                        }
+                        catch (Exception ex)
                         {
                             throw ex;
                         }

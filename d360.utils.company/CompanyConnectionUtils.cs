@@ -105,6 +105,7 @@ namespace d360.utils.company
             }
             return cnn;
         }
+
         public static List<int> GetActiveCompanyIDs()
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
@@ -134,21 +135,45 @@ namespace d360.utils.company
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
             cnn.Open();
-            var db = cnn.Query<int>(
-                @"select DatabaseServerID from Company where ID = @id",
+            var IsDevelopment = cnn.Query<bool>(
+                @"select DS.IsDevelopment from Company C inner join DatabaseServer DS on DS.ID = C.DatabaseServerID and C.ID = @id",
                 new { id = companyID }
             ).Single();
             cnn.Close();
             cnn.Dispose();
 
-            return (db == 6);
+            return IsDevelopment;
         }
 
         public static List<int> GetActiveDevelopmentCompanyIDs()
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
             cnn.Open();
-            var companies = cnn.Query<int>(@"select c.id from company c inner join databaseserver ds on (c.databaseserverid = ds.id and ds.Server like 'd3sdev%' and c.[status] ='Active')").ToList();
+            var companies = cnn.Query<int>(@"select c.id from company c inner join databaseserver ds on (c.databaseserverid = ds.id and ds.IsDevelopment = 1 and c.[status] ='Active')").ToList();
+            cnn.Close();
+            cnn.Dispose();
+
+            return companies;
+        }
+
+        public static List<CompanyWithDatabaseServerSettings> GetCompaniesWithDatabaseServerSettings()
+        {
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.Open();
+            var companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
+select  c.ID as CompanyID, 
+        c.Status, 
+        ds.Server, 
+        ds.Username, 
+        ds.Password, 
+        ds.FusionQueue, 
+        ds.SearchServer, 
+        ds.EventTopic, 
+        ds.IsDevelopment,
+        CDS.UrlPrefix
+from    company c 
+        inner join databaseserver ds on c.databaseserverid = ds.id
+        inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
             cnn.Close();
             cnn.Dispose();
 
