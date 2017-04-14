@@ -38,6 +38,8 @@ namespace d360.model
 
         public DbSet<WorkflowItemStepTransition> WorkflowItemStepTransitions { get; set; }
 
+        public DbSet<WorkflowTaskProcedure> WorkflowTaskProcedures { get; set; }
+
         #endregion
 
 
@@ -442,6 +444,11 @@ namespace d360.model
                         ChangeItemStatus(itemStep.Step,objectInfo);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.Procedure:
+                        // execute proc with specified id
+                        ExecuteProc(itemStep, objectInfo, stepSettings);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -471,6 +478,32 @@ namespace d360.model
             if (isStepCompleted)
             {
                 MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
+            }
+        }
+
+        private void ExecuteProc(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
+        {
+            if(settings.StoredProcedureID <= 0)
+            {
+                Console.WriteLine($"DEBUG : STORED PROC STEP DOESNT HAVE A VALID PROCEDURE ID.");
+
+                return;
+            }
+
+            var procInfo = WorkflowTaskProcedures.Where(x => x.ID == settings.StoredProcedureID).FirstOrDefault();
+
+
+            if (!procInfo.PassObjectInfo)
+            {
+                Console.WriteLine($"DEBUG : EXECUTING PROCEDURE ID[{procInfo.ID}] PROC[{procInfo.Name}].  NOT PASSING OBJECT INFO.");
+
+                Database.Connection.Execute($"{procInfo.Procedure}", commandType: System.Data.CommandType.StoredProcedure);
+            }
+            else
+            {
+                Console.WriteLine($"DEBUG : EXECUTING PROCEDURE ID[{procInfo.ID}] PROC[{procInfo.Name}].  PASSING OBJECT INFO.");
+
+                Database.Connection.Execute($"{procInfo.Procedure} @obj,@objectId", new { obj = objectInfo.Object.ToString(), objectId = objectInfo.ObjectID });
             }
         }
 

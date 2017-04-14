@@ -292,6 +292,7 @@
     <Compile Include="entities\Workflow\DiagramModels.cs" />
     <Compile Include="entities\Workflow\Models.cs" />
     <Compile Include="entities\Workflow\WorkflowItemAssignment.cs" />
+    <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
     <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\Workflow\ActivityType.cs" />
     <Compile Include="enums\Workflow\CriteriaValueDataType.cs" />

@@ -17,7 +17,9 @@ namespace d360.core.enums.Workflow
         [Name("Status Change"), Description("Status Change"), BackColor("#1d339d"), ForeColor("#fff"), Icon("\uf024")]
         StatusChange = 2,
         [Name("Form"), Description("Form"), BackColor("#aa2a83"), ForeColor("#fff"), Icon("\uf1de")]
-        Form = 3
+        Form = 3,
+        [Name("Procedure"), Description("Sql Procedure"), BackColor("#4cde77"), ForeColor("#fff"), Icon("\uf1c0")]
+        Procedure = 4,
     }
 
     public class ActivityTypeInfo
