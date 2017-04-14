@@ -29,7 +29,7 @@ export class EditorField {
 }
 
 export class EditorCategory {
-    category: string;
+    name: string;
     rows: EditorRow[];
 }
 

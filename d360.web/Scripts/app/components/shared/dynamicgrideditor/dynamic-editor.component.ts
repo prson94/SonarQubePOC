@@ -125,7 +125,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                     if (previousCategory != currentCategory) {
                         let category = new EditorCategory();
-                        category.category = previousCategory;
+                        category.name = previousCategory;
                         category.rows= rows;
                         this.categories.push(category);
                         previousCategory = currentCategory;
@@ -150,9 +150,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 });
 
                 let category = new EditorCategory();
-                category.category = currentCategory;
+                category.name = currentCategory;
                 category.rows = rows;
                 this.categories.push(category);
+                console.log(this.categories);
                                 
                 this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
                 this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
