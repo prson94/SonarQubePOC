@@ -34,8 +34,8 @@ import * as _ from 'lodash';
         <div class="FieldName">
             Description
         </div>
-        <div>
-            <input type="text" [ngModel]="step.fields.form['@description']" (ngModelChange)="step.fields.form['@description']=$event; stepChange.emit(step);" style="width: 95%" />
+        <div style="width: 95%">
+            <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="step.fields.form['@description'] = $event; stepChange.emit(step)"></p-editor>
         </div>
     </div>
 </div>
@@ -48,6 +48,13 @@ import * as _ from 'lodash';
             <select [ngModel]="step.settings.FormResponseType" (ngModelChange)="step.settings.FormResponseType = $event; stepChange.emit(step);" style="width: 95%">
                 <option *ngFor="let r of responseTypes" [value]="r.value">{{r.label}}</option>
             </select>
+        </div>
+    </div>
+</div>
+<div class="row" style="padding-top: 8px">
+    <div class="col s12">
+        <div>
+            <input type="checkbox" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);"/> Send form email?
         </div>
     </div>
 </div>
@@ -145,6 +152,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private deletingField;
 
     private usedFields: any[] = [];
+    private showHelp = false;
 
     private types = [
         { value: WorkflowFormFieldType.Boolean, label: 'boolean' },
@@ -203,6 +211,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             this.step.fields.form.field = [];
             this.step.fields.form.field.push(f);
         }
+
+        if (this.step.settings == null)
+            this.step.settings = {};
+
+        if (this.step.settings.SendFormEmail == null)
+            this.step.settings.SendFormEmail = true;
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
     }

@@ -74,8 +74,8 @@ import * as _ from 'lodash';
                 <div class="FieldName">
                     Body
                 </div>
-                <div>
-                    <input type="text" style="width:95%" [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" />
+                <div style="width: 95%">
+                    <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)"></p-editor>
                 </div>
             </div>
             <div class="col s12">

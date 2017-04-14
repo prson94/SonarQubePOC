@@ -43,6 +43,9 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     private subjectAreaName: string;
     private taxonomies: Taxonomy[] = [];
 
+    private arbitraryScheduleObjectLimit = 2000;
+    private isValid = false;
+
     WorkflowChangeType = WorkflowChangeType;
 
     constructor(private workflowService: WorkflowService, private taxonomyService: TaxonomiesService) {
@@ -119,7 +122,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                         });
                 }
             })
-            .then(() => { this.isLoading = false; console.log(this.model) });
+            .then(() => { this.validate(); this.isLoading = false; });
 
     }
 
@@ -144,6 +147,12 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
             delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
         }
 
+        let type = this.workflowObjectTypes.find(f => f.value == e);
+        if (type != null && type.count > this.arbitraryScheduleObjectLimit) {
+            if (this.model.Event.ChangeType == WorkflowChangeType.Schedule)
+                this.model.Event.ChangeType = null;
+        }
+        this.validate();
 
     }
 
@@ -161,12 +170,14 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     addCondition(e: any) {
         this.conditions.push(e);
         this.showAddCondition = false;
-        console.log(this.conditions);
+        this.validate();
+        //console.log(this.conditions);
     }
 
     remove(item: any) {
         let i = this.conditions.findIndex(c => c == item);
         this.conditions.splice(i, 1);
+        this.validate();
     }
 
     save() {
@@ -192,5 +203,32 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                 this.model.Type.ID = r;
                 this.onSave.emit(this.model);
             });
+    }
+
+    validate() {
+        if (this.model.Type.Name == null || this.model.Type.Name == '') {
+            this.isValid = false;
+            return;
+        }
+
+        if (this.model.Event.ChangeType == null || this.selectedObjectType == null) {
+            this.isValid = false;
+            return;
+        }
+        if (this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
+            if (this.conditions.length < 1) {
+                this.isValid = false;
+                return;
+            }
+
+            let t = this.workflowObjectTypes.find(t => t.value == this.selectedObjectType);
+
+            if (t != null && t.count > this.arbitraryScheduleObjectLimit) {
+                this.isValid = false;
+                return;
+            }
+        }
+
+        this.isValid = true;
     }
 }

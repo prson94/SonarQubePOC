@@ -317,6 +317,7 @@ export class WorkflowObjectType {
     id: number;
     type: string;
     name: string;
+    count: number;
 }
 
 export class ChangeTypeInfo {

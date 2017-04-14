@@ -14,7 +14,7 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
     [style.max-height]="maxHeight + 'px'" 
     [style.max-width]="maxWidth + 'px'" 
     [style.padding]="padding + 'px'"
-    [style.overflow-y]="overflowScroll ? 'auto' : 'initial'">
+    [style.overflow-y]="overflowScroll ? 'auto' : 'hidden'">
     <header style="background-color: #f9f9f9 !important; min-height: 2em">
         {{headerText}}
         <span *ngIf="hasCloseButton" style="float:right;cursor: pointer; margin-right: 7px; font-size:1.1em;"><a style="color:#000;" (click)="visibleChange.emit(!visible)"><i class='fa fa-close'></i></a></span>

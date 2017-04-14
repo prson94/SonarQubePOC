@@ -59,9 +59,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         //this.load();
 
-        if (!changes['formFields'].isFirstChange()) {
+        if (changes['formFields'] != null && !changes['formFields'].isFirstChange()) {
 
-            console.log('formFields change');
+            //console.log('formFields change');
             this.fieldList = [];
 
             this.fields.forEach(f => {

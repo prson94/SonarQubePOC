@@ -12,13 +12,13 @@
                 Name
             </div>
             <div>
-                <input type="text" [(ngModel)]="model.Type.Name" style="width: 95%" />
+                <input type="text" [ngModel]="model.Type.Name" (ngModelChange)="model.Type.Name = $event; validate();" style="width: 95%" />
             </div>
             <div class="FieldName">
                 Change Type
             </div>
             <div>
-                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="model.Event.ChangeType">
+                <select style="width:95%;" placeholder="Choose a value" [ngModel]="model.Event.ChangeType" (ngModelChange)="model.Event.ChangeType = $event; validate();">
                     <option></option>
                     <option *ngFor="let i of changesTypes" [value]="i.ID">{{i.Description}}</option>
                 </select>
@@ -48,7 +48,7 @@
                     Interval
                 </div>
                 <div>
-                    <input type="number" [(ngModel)]="model.Event.SettingsObject.Settings.ScheduleInterval" style="width: 95%"/>
+                    <input type="number" [ngModel]="model.Event.SettingsObject.Settings.ScheduleInterval" (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event;  validate();" style="width: 95%"/>
                 </div>
             </div>
         </div>
@@ -101,7 +101,7 @@
         <div class="col s12">
             <div>
                 <button type="button" pButton label="Cancel" (click)="onClose.emit()"></button>
-                <button type="button" pButton label="Next" (click)="save()" [disabled]="model.Type.Name == null || model.Type.Name == '' || model.Event.ChangeType == null || selectedObjectType == null || (model.Event.ChangeType == WorkflowChangeType.Schedule && conditions.length < 1)"></button>
+                <button type="button" pButton label="Next" (click)="save()" [disabled]="!isValid"></button>
             </div>
         </div>
     </div>

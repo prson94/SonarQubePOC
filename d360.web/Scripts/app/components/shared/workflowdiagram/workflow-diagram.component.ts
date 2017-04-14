@@ -71,6 +71,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private tab = 'info';
     private showNodeTabs = false;
     private showLinkTabs = false;
+    private overlayHeader = 'Info';
 
     private hasType = false;
 
@@ -281,6 +282,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 //console.log(r);
             });
 
+    }
+
+    private setOverlayHeaderName(p: any) {
+        if (p == null) {
+            this.overlayHeader = this.tab;
+        } else {
+            let a = this.activityTypes.find(a => a.ID == p.activityType);
+            this.overlayHeader = (a == null) ? ((p.name == null || p.name == '') ? this.tab : p.name) : a.Description + ' - ' + p.name;
+        }
     }
 
     private populateDiagram(): Promise<any> {
@@ -596,6 +606,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             case 3: //form
                 n.fields = e.fields;
                 n.settings.FormResponseType = e.settings.FormResponseType
+                n.settings.SendFormEmail = e.settings.SendFormEmail;
                 break;
         }
 
@@ -715,7 +726,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     this.showNodeTabs = true; this.showLinkTabs = false;
                     let i = this.myDiagram.model.nodeDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
                     if (i > -1) {
-                       // this.selectedData = this.myDiagram.model.nodeDataArray[i];
+                        // this.selectedData = this.myDiagram.model.nodeDataArray[i];
                     }
                 } else if (this.selectedData.diagramObjectType == DiagramObjectType.Link) {
                     this.showNodeTabs = false; this.showLinkTabs = true;
@@ -726,6 +737,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 }
             }
         }
+        this.setOverlayHeaderName(this.selectedData);
         this.selection = this.selectedData;
         this.selectionChange.emit(this.selection);
         //console.log('selection changed: ', e);
