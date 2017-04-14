@@ -434,7 +434,8 @@ namespace d360.model
                         break;
                     case WorkflowActivityType.Form:
                         // send form notification to owners
-                        await SendFormWorkflowEmail(itemStep, itemStepID, itemID, objectInfo);
+                        if(stepSettings.FormShouldSendEmail)
+                            await SendFormWorkflowEmail(itemStep, itemStepID, itemID, objectInfo);
                         break;
                     case WorkflowActivityType.StatusChange:
                         // change the status of this item

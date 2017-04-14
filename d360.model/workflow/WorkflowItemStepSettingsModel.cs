@@ -9,6 +9,9 @@ namespace d360.model.workflow
         private static string RESPONSIBILITY_TYPE_ID = "ResponsibilityTypeID";
         private static string FORM_RESPONSE_TYPE = "FormResponseType";
         private static string WAIT_FOR_ALL = "WaitForAllTransitions";
+        private static string FORM_SHOULD_EMAIL_USERS = "SendFormEmail";
+
+        public bool FormShouldSendEmail { get; set; }
 
         public int ResponsibilityTypeID { get; set; }
         public FormResponseType ResponseType { get; set; }
@@ -31,6 +34,7 @@ namespace d360.model.workflow
             int responsibilityTypeID = -1;
             FormResponseType responseType = FormResponseType.FirstResponse;
             bool waitForAll = false;
+            bool formShouldEmailUsers = true;
 
             if (root != null)
             {
@@ -48,13 +52,19 @@ namespace d360.model.workflow
                 {
                     bool.TryParse(root.Element(WAIT_FOR_ALL).Value, out waitForAll);
                 }
+
+                if(root.Element(FORM_SHOULD_EMAIL_USERS) != null)
+                {
+                    bool.TryParse(root.Element(FORM_SHOULD_EMAIL_USERS).Value, out formShouldEmailUsers);
+                }
             }
 
             return new WorkflowItemStepSettingModel
             {
                 ResponseType = responseType,
                 ResponsibilityTypeID = responsibilityTypeID,
-                WaitForAllTransitions = waitForAll
+                WaitForAllTransitions = waitForAll,
+                FormShouldSendEmail = formShouldEmailUsers
             };
         }
     }
