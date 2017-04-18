@@ -34,7 +34,7 @@ declare var window: any;
     providers: [PermissionsService, WorkflowService ]
 })
 
-export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, AfterViewChecked, OnChanges {
+export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() id: number = 0;
     @Input() readonly: boolean = true;
     @Input() hasClose: boolean = false;
@@ -87,93 +87,48 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         super();
     }
 
+    //#region angular
+
     public ngOnInit() {
         if (this.readonly.toString().toLowerCase() == 'true')
             this.isReadOnly = true;
         else
             this.isReadOnly = false;
-        
+
         this.initializeDiagram();
-        this.loadMenuItems();
+        this.initializeMenuItems();
 
-        //this.formFields = this.workflowFieldsService.getFields();
+        this.load();
 
-        //this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
-        //    this.formFields = s;
-        //});
-        //console.log(this.readonly, this.readonly == true, this.readonly === true, this.readonly.toString() == 'true');
-        //console.log({ val: this.readonly });
     }
-    
+
     public ngOnChanges(changes: SimpleChanges) {
         //TODO: handle on id change
         if (changes['id'].currentValue != changes['id'].previousValue && !changes['id'].isFirstChange) {
             this.myDiagram.div = null;
             this.initializeDiagram();
-            this.loadMenuItems();
+            this.initializeMenuItems();
         }
     }
 
     public ngAfterViewInit() {
-        //console.log('ngAfterViewInit');
         this.resizeDiagram();
         this.resizePalette();
-
-    }
-
-    public ngAfterViewChecked() {
-
-        //if (this.isViewLoaded > 0) {
-        //    this.resizeDiagram();
-        //    this.resizePalette();
-        //    this.isViewLoaded--;
-        //    console.log('ngAfterViewChecked');
-        //}
     }
 
     public ngOnDestroy() {
         //garbage collection
         this.myDiagram.div = null;
-        this.unsubscribe();
-    }
-
-    //#region helper methods
-
-    private getAvailableFormInputs(link: LinkModel): string[] {
-        let links = [];
-        let forms = [];
-
-
-        let nodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
-
-        while (nodes.length > 0) {
-            links = [];
-            nodes.forEach(n => {
-                if ((<NodeModel>n).activityType == WorkflowActivityType.Form) {
-                    forms.push((<NodeModel>n).key);
-                }
-
-                links = links.concat((<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
-                //console.log('links all', (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key), (<go.GraphLinksModel>this.myDiagram.model).linkDataArray);
-            });
-            //console.log('nodes: ', nodes);
-            nodes = [];
-            links.forEach(l => {
-                nodes = nodes.concat(this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from));
-            });
-            //console.log('links: ', links);
-        }
-        //console.log('forms: ', forms);
-        return forms;
-    }
-
-    private unsubscribe() {
         if (this.fieldsSub != null)
             this.fieldsSub.unsubscribe();
     }
 
+    //#endregion
+
+    //#region initialization
+
     private initializeDiagram() {
-        
+
         this.myDiagram = this.createDiagram();
 
         this.myDiagram.nodeTemplateMap.add('task', this.createTaskNode());
@@ -182,7 +137,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
-        //this.myDiagram.addDiagramListener('SelectionDeleting', e => this.SelectionDeleting(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.myDiagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
@@ -199,90 +153,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         this.myDiagram.commandHandler.deleteSelection = () => this.deleteSelection();
 
-        //this.myDiagram.removeParts = (coll, check) => {
-        //};
-
         //disallow cycles
         this.myDiagram.validCycle = go.Diagram.CycleNotDirected;
-
-        this.getActivityTypes()
-            .then(() => this.populateDiagram())
-            .then(() => this.initializePalette())
-            .then(() => this.initializeFormFields());
-    }
-
-    private deleteSelection() {
-
-        let links: LinkModel[] = [];
-        let nodes: NodeModel[] = [];
-        let coll: go.Part[] = [];
-
-        this.myDiagram.selection.each(x => {
-            if (x.data.diagramObjectType == DiagramObjectType.Node) {
-                nodes.push(x.data);
-            } else if (x.data.diagramObjectType == DiagramObjectType.Link) {
-                links.push(x.data);
-            }
-        });
-
-        //get links attached to node if they weren't selected. They will be deleted automagically
-        nodes.forEach(n => {
-            let to = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == n.key);
-            let from = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == n.key);
-
-            to.forEach(t => {
-                if (links.findIndex(l => l.key == (<any>t).key) < 0)
-                    links.push(<LinkModel>t);
-            });
-
-            from.forEach(f => {
-                if (links.findIndex(l => l.key == (<any>f).key) < 0)
-                    links.push(<LinkModel>f);
-            });
-        });
-
-
-        links.forEach(l => {
-            //remove used fields from global list
-            let fields = this.workflowFieldsService.getUsedFields().filter(u => u.transitionId == l.key);
-            fields.forEach(f => this.workflowFieldsService.deleteUsedField(f.fieldId, f.stepId, f.transitionId));
-            coll.push(this.myDiagram.findPartForData(l));
-        });
-
-        nodes.forEach(n => {
-            if (n.activityType == WorkflowActivityType.Form) {
-                let canDelete = true;
-                n.fields.form.field.forEach(f => {
-                    if (this.workflowFieldsService.getUsedFields().findIndex(u => u.stepId == n.key) > -1) {
-                        canDelete = false;
-
-                        //need to remove pending delete on link
-                        let parts = coll.filter(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == n.key);
-                        parts.forEach(p => {
-                            let i = coll.findIndex(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == p.data.from);
-                            let l = this.myDiagram.findPartForData(p);
-                            if (i > -1) {
-                                coll = coll.splice(i, 1);
-                            }
-                            if (l != null && l.data.condition != null)
-                                l.data.condition.forEach(c => {
-                                    this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], l.data.key, l.data.name);
-                                });
-                        });
-                    }
-                });
-                if (canDelete) {
-                    //remove form fields from global list
-                    n.fields.form.field.forEach(f => this.workflowFieldsService.deleteFormField(f));
-                    coll.push(this.myDiagram.findPartForData(n));
-                }
-            } else {
-                coll.push(this.myDiagram.findPartForData(n));
-            }
-        });
-
-        console.log(nodes, links, coll, this.workflowFieldsService.getFields(), this.workflowFieldsService.getUsedFields());
-        this.myDiagram.removeParts(coll, false);
     }
 
     private initializePalette() {
@@ -301,7 +173,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.formFields = [];
         //console.log('initializeFormFields', this.myDiagram.model.nodeDataArray);
         this.myDiagram.model.nodeDataArray.forEach(n => {
-            
+
             if (+(<NodeModel>n).activityType == WorkflowActivityType.Form
                 && (<NodeModel>n).fields != null
                 && (<NodeModel>n).fields.form != null
@@ -332,7 +204,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     let i = this.formFields.findIndex(f => f['@id'] == c['@FormInputID'] && f['@VersionStepID'] == c['@VersionStepID']);
 
                     if (i > -1) {
-                        c['@FieldName'] = this.formFields[i]['@FieldName']; 
+                        c['@FieldName'] = this.formFields[i]['@FieldName'];
                     }
 
                     this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], (<LinkModel>l).key, (<LinkModel>l).name);
@@ -347,29 +219,21 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             });
     }
 
+    private initializeMenuItems() {
+        this.menuItems = [];
 
-    private getActivityTypes(): Promise<any> {
-        return this.workflowService.getActivityTypes()
-            .then(r => {
-                let none = r.findIndex(a => a.ID == 0);
-
-                if (none >= 0)
-                    r.splice(none, 1);
-
-                this.activityTypes = r;
-                //console.log(r);
+        this.menuItems.push({
+            icon: 'fa-info-circle'
+        });
+        if (this.hasClose)
+            this.menuItems.push({
+                icon: 'fa-remove'
             });
-
     }
 
-    private setOverlayHeaderName(p: any) {
-        if (p == null) {
-            this.overlayHeader = this.tab;
-        } else {
-            let a = this.activityTypes.find(a => a.ID == p.activityType);
-            this.overlayHeader = (a == null) ? ((p.name == null || p.name == '') ? this.tab : p.name) : a.Description + ' - ' + p.name;
-        }
-    }
+    //#endregion
+
+    //#region save/load
 
     private populateDiagram(): Promise<any> {
         if (this.id < 1) {
@@ -391,7 +255,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
             .then(r => this.fieldTypes = r)
             .then(() => this.parseData(this.model))
-            .then(() => { this.isLoading = false; this.hasType = true; console.log('model: ', this.model);});
+            .then(() => { this.isLoading = false; this.hasType = true; console.log('model: ', this.model); });
 
 
     }
@@ -431,36 +295,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.reOrderLayout();
     }
 
-    private loadMenuItems() {
-        this.menuItems = [];
-
-        this.menuItems.push({
-            icon: 'fa-info-circle'
-        });
-        //if (this.hasBack)
-        //    this.menuItems.push({
-        //        icon: 'fa-arrow-left'
-        //    });
-
-        //if (!this.isReadOnly)
-        //    this.menuItems.push({
-        //        icon: 'fa-floppy-o'
-        //    });
-        if (this.hasClose)
-            this.menuItems.push({
-                icon: 'fa-remove'
-            });
-    }
-
-    private selectTab(s: string) {
-        this.tab = s;
-        switch (s) {
-            case 'info':
-                break;
-        }
-    }
-
-    save() {
+    private save() {
         if (this.id < 1 || true) {
 
 
@@ -495,15 +330,85 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     //TODO: mesasage and automatically switch to readonly or edit??
                     this.onCloseClick.emit();
                 });
-           
-            
+
+
 
         } else {
             //edit
         }
     }
 
-    convertToDiagramModel(model: WorkflowDiagramNode | WorkflowDiagramLink, type: DiagramObjectType): NodeModel | LinkModel {
+    private load() {
+        this.getActivityTypes()
+            .then(() => this.populateDiagram())
+            .then(() => this.initializePalette())
+            .then(() => this.initializeFormFields());
+    }
+
+    //#endregion
+
+    //#region helper methods
+
+    private getAvailableFormInputs(link: LinkModel): string[] {
+        let links = [];
+        let forms = [];
+
+
+        let nodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
+
+        while (nodes.length > 0) {
+            links = [];
+            nodes.forEach(n => {
+                if ((<NodeModel>n).activityType == WorkflowActivityType.Form) {
+                    forms.push((<NodeModel>n).key);
+                }
+
+                links = links.concat((<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
+                //console.log('links all', (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key), (<go.GraphLinksModel>this.myDiagram.model).linkDataArray);
+            });
+            //console.log('nodes: ', nodes);
+            nodes = [];
+            links.forEach(l => {
+                nodes = nodes.concat(this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from));
+            });
+            //console.log('links: ', links);
+        }
+        //console.log('forms: ', forms);
+        return forms;
+    }
+
+    private getActivityTypes(): Promise<any> {
+        return this.workflowService.getActivityTypes()
+            .then(r => {
+                let none = r.findIndex(a => a.ID == 0);
+
+                if (none >= 0)
+                    r.splice(none, 1);
+
+                this.activityTypes = r;
+                //console.log(r);
+            });
+
+    }
+
+    private setOverlayHeaderName(p: any) {
+        if (p == null) {
+            this.overlayHeader = this.tab;
+        } else {
+            let a = this.activityTypes.find(a => a.ID == p.activityType);
+            this.overlayHeader = (a == null) ? ((p.name == null || p.name == '') ? this.tab : p.name) : a.Description + ' - ' + p.name;
+        }
+    }
+
+    private selectTab(s: string) {
+        this.tab = s;
+        switch (s) {
+            case 'info':
+                break;
+        }
+    }
+
+    private convertToDiagramModel(model: WorkflowDiagramNode | WorkflowDiagramLink, type: DiagramObjectType): NodeModel | LinkModel {
 
         if (type == DiagramObjectType.Link) {
             let m: WorkflowDiagramLink = <WorkflowDiagramLink>model;
@@ -598,7 +503,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         }
     }
 
-    convertToWorkflowModel(model: NodeModel | LinkModel): WorkflowDiagramNode | WorkflowDiagramLink {
+    private convertToWorkflowModel(model: NodeModel | LinkModel): WorkflowDiagramNode | WorkflowDiagramLink {
         if (model.diagramObjectType == DiagramObjectType.Link) {
             let m: LinkModel = <LinkModel>model;
 
@@ -642,7 +547,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         }
     }
 
-    setTransitionIcon(n: LinkModel) {
+    private setTransitionIcon(n: LinkModel) {
         switch (+n.transitionType) {
             case TransitionType.Always:
                 n.icon = '';
@@ -656,7 +561,19 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         }
     }
 
-    changeStep(e: NodeModel) {
+    private checkHasMultipleInputs() {
+        this.myDiagram.model.nodeDataArray.forEach(n => {
+            let count = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == (<any>n).key).length;
+            (<any>n).hasMultipleInputs = (count > 1);
+        });
+
+    }
+    
+    //#endregion
+
+    //#region events
+
+    private changeStep(e: NodeModel) {
         let n = this.myDiagram.model.findNodeDataForKey(e.key);
         if (n != null) {
             n.name = e.name;
@@ -698,7 +615,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     }
 
-    changeTransition(e: LinkModel) {
+    private changeTransition(e: LinkModel) {
         let i = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.findIndex(l => (<any>l).from == e.from && (<any>l).to == e.to);
         let l = null;
         if (i >= 0)
@@ -716,22 +633,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             }
 
             this.setTransitionIcon(l);
-            
+
             //console.log('transition change: ', e, l);
         }
     }
-
-    checkHasMultipleInputs() {
-        this.myDiagram.model.nodeDataArray.forEach(n => {
-            let count = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == (<any>n).key).length;
-            (<any>n).hasMultipleInputs = (count > 1);
-        });
-
-    }
-    
-    //#endregion
-
-    //#region events
 
     private menuClick(e: any) {
         //console.log(e);
@@ -841,12 +746,80 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         //console.log(link, l);
     }
 
-    private SelectionDeleting(e: any) {
-        console.log(_.cloneDeep(this.myDiagram.selection));
-        //let sub = e.subject;
-        return false;
-        
+    private deleteSelection() {
+
+        let links: LinkModel[] = [];
+        let nodes: NodeModel[] = [];
+        let coll: go.Part[] = [];
+
+        this.myDiagram.selection.each(x => {
+            if (x.data.diagramObjectType == DiagramObjectType.Node) {
+                nodes.push(x.data);
+            } else if (x.data.diagramObjectType == DiagramObjectType.Link) {
+                links.push(x.data);
+            }
+        });
+
+        //get links attached to node if they weren't selected. They will be deleted automagically
+        nodes.forEach(n => {
+            let to = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == n.key);
+            let from = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == n.key);
+
+            to.forEach(t => {
+                if (links.findIndex(l => l.key == (<any>t).key) < 0)
+                    links.push(<LinkModel>t);
+            });
+
+            from.forEach(f => {
+                if (links.findIndex(l => l.key == (<any>f).key) < 0)
+                    links.push(<LinkModel>f);
+            });
+        });
+
+
+        links.forEach(l => {
+            //remove used fields from global list
+            let fields = this.workflowFieldsService.getUsedFields().filter(u => u.transitionId == l.key);
+            fields.forEach(f => this.workflowFieldsService.deleteUsedField(f.fieldId, f.stepId, f.transitionId));
+            coll.push(this.myDiagram.findPartForData(l));
+        });
+
+        nodes.forEach(n => {
+            if (n.activityType == WorkflowActivityType.Form) {
+                let canDelete = true;
+                n.fields.form.field.forEach(f => {
+                    if (this.workflowFieldsService.getUsedFields().findIndex(u => u.stepId == n.key) > -1) {
+                        canDelete = false;
+
+                        //need to remove pending delete on link
+                        let parts = coll.filter(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == n.key);
+                        parts.forEach(p => {
+                            let i = coll.findIndex(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == p.data.from);
+                            let l = this.myDiagram.findPartForData(p);
+                            if (i > -1) {
+                                coll = coll.splice(i, 1);
+                            }
+                            if (l != null && l.data.condition != null)
+                                l.data.condition.forEach(c => {
+                                    this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], l.data.key, l.data.name);
+                                });
+                        });
+                    }
+                });
+                if (canDelete) {
+                    //remove form fields from global list
+                    n.fields.form.field.forEach(f => this.workflowFieldsService.deleteFormField(f));
+                    coll.push(this.myDiagram.findPartForData(n));
+                }
+            } else {
+                coll.push(this.myDiagram.findPartForData(n));
+            }
+        });
+
+        console.log(nodes, links, coll, this.workflowFieldsService.getFields(), this.workflowFieldsService.getUsedFields());
+        this.myDiagram.removeParts(coll, false);
     }
+
     //#endregion
 
     //#region templates
@@ -1224,5 +1197,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     //#endregion
+
 }
 
