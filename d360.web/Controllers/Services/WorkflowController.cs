@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 using System.Web;
 using d360.model.workflow;
 using System.Data.Entity;
+using System.Collections;
 
 namespace d360.web.Controllers.Services
 {
@@ -1722,8 +1723,7 @@ namespace d360.web.Controllers.Services
             }
         }
 
-
-        [Route("workflow/procedures")]
+        [Route("procedures"), HttpGet]
         public IQueryable GetWorkflowProcedures()
         {
             return Company.WorkflowTaskProcedures;

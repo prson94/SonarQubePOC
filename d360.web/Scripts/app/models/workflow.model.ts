@@ -217,7 +217,6 @@ export class LinkModel {
     condition: any = [];
     settings: any = {};
     formInputs: any = [];
-
 }
 
 export class NodeModel {
@@ -244,7 +243,6 @@ export class NodeModel {
     fields: any = {};
 
     hasMultipleInputs: boolean = false;
-
 }
 
 
@@ -344,6 +342,16 @@ export class EventCondition {
     //}
 }
 
+
+export class WorkflowTaskProcedure {
+    ID: number;
+    Name: string;
+    Procedure: string;
+    PassObjectInfo: boolean;
+    UpdatedBy: number;
+    UpdatedOn: string;
+}
+
 //#region enums
 
 export enum WorkflowChangeType {
@@ -368,7 +376,8 @@ export enum WorkflowActivityType {
     None = 1,
     EmailNotification = 1,
     StatusChange = 2,
-    Form = 3
+    Form = 3,
+    Procedure = 4,
 }
 
 export enum DiagramObjectType {

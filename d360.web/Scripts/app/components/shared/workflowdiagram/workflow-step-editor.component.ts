@@ -11,7 +11,8 @@ import {
     WorkflowDiagramNode,
     NodeModel,
     WorkflowActivityType,
-    
+    WorkflowTaskProcedure,
+
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
@@ -98,6 +99,16 @@ import * as _ from 'lodash';
         <div class="row" *ngSwitchCase="WorkflowActivityType.Form">
             <d3s-workflow-step-form-editor [step]="step" (stepChange)="step = $event; stepChange.emit(step)"></d3s-workflow-step-form-editor>
         </div>
+        <div class="row" *ngSwitchCase="WorkflowActivityType.Procedure">
+            <div class="col s12">
+                <div class="FieldName">Procedure</div>
+                <div>
+                    <select style="width: 95%" [ngModel]="step.settings.ProcedureID" (ngModelChange)="step.settings.ProcedureID = $event; stepChange.emit(step);">
+                        <option *ngFor="let p of procedures" [value]="p.ID">{{p.Name}} ({{p.Procedure}})</option>
+                    </select>
+                </div>
+            </div>
+        </div>
     </div>
     <div *ngIf="step.hasMultipleInputs" class="col s12" style="padding-top: 8px">
         <input type="checkbox" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)" /> Wait for all transitions to complete?
@@ -128,8 +139,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     ];
 
     private responsibilities = [];
+    private procedures: WorkflowTaskProcedure[] = [];
 
-    constructor(private responsibilityService: ResponsibilityTypeService) {
+    constructor(private responsibilityService: ResponsibilityTypeService, private workflowService: WorkflowService) {
         super();
     }
 
@@ -146,6 +158,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 .then(r => {
                     this.responsibilities = r;
                     console.log(r);
+                });
+        } else if (this.step.activityType == WorkflowActivityType.Procedure) {
+            this.workflowService.getWorkflowProcedures()
+                .then(r => {
+                    this.procedures = r;
                 });
         }
     }

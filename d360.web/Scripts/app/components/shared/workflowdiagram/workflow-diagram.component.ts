@@ -78,7 +78,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private formFields: any[] = [];
     private fieldsSub: any;
 
-
     constructor(
         private myElement: ElementRef,
         protected permissionsService: PermissionsService,
@@ -183,7 +182,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
-        this.myDiagram.addDiagramListener('SelectionDeleting', e => this.SelectionDeleting(e));
+        //this.myDiagram.addDiagramListener('SelectionDeleting', e => this.SelectionDeleting(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.myDiagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
@@ -198,6 +197,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.isReadOnly;
         this.myDiagram.toolManager.linkingTool.archetypeLinkData = new LinkModel();
 
+        this.myDiagram.commandHandler.deleteSelection = () => this.deleteSelection();
+
+        //this.myDiagram.removeParts = (coll, check) => {
+        //};
+
         //disallow cycles
         this.myDiagram.validCycle = go.Diagram.CycleNotDirected;
 
@@ -205,6 +209,80 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             .then(() => this.populateDiagram())
             .then(() => this.initializePalette())
             .then(() => this.initializeFormFields());
+    }
+
+    private deleteSelection() {
+
+        let links: LinkModel[] = [];
+        let nodes: NodeModel[] = [];
+        let coll: go.Part[] = [];
+
+        this.myDiagram.selection.each(x => {
+            if (x.data.diagramObjectType == DiagramObjectType.Node) {
+                nodes.push(x.data);
+            } else if (x.data.diagramObjectType == DiagramObjectType.Link) {
+                links.push(x.data);
+            }
+        });
+
+        //get links attached to node if they weren't selected. They will be deleted automagically
+        nodes.forEach(n => {
+            let to = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == n.key);
+            let from = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == n.key);
+
+            to.forEach(t => {
+                if (links.findIndex(l => l.key == (<any>t).key) < 0)
+                    links.push(<LinkModel>t);
+            });
+
+            from.forEach(f => {
+                if (links.findIndex(l => l.key == (<any>f).key) < 0)
+                    links.push(<LinkModel>f);
+            });
+        });
+
+
+        links.forEach(l => {
+            //remove used fields from global list
+            let fields = this.workflowFieldsService.getUsedFields().filter(u => u.transitionId == l.key);
+            fields.forEach(f => this.workflowFieldsService.deleteUsedField(f.fieldId, f.stepId, f.transitionId));
+            coll.push(this.myDiagram.findPartForData(l));
+        });
+
+        nodes.forEach(n => {
+            if (n.activityType == WorkflowActivityType.Form) {
+                let canDelete = true;
+                n.fields.form.field.forEach(f => {
+                    if (this.workflowFieldsService.getUsedFields().findIndex(u => u.stepId == n.key) > -1) {
+                        canDelete = false;
+
+                        //need to remove pending delete on link
+                        let parts = coll.filter(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == n.key);
+                        parts.forEach(p => {
+                            let i = coll.findIndex(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == p.data.from);
+                            let l = this.myDiagram.findPartForData(p);
+                            if (i > -1) {
+                                coll = coll.splice(i, 1);
+                            }
+                            if (l != null && l.data.condition != null)
+                                l.data.condition.forEach(c => {
+                                    this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], l.data.key, l.data.name);
+                                });
+                        });
+                    }
+                });
+                if (canDelete) {
+                    //remove form fields from global list
+                    n.fields.form.field.forEach(f => this.workflowFieldsService.deleteFormField(f));
+                    coll.push(this.myDiagram.findPartForData(n));
+                }
+            } else {
+                coll.push(this.myDiagram.findPartForData(n));
+            }
+        });
+
+        console.log(nodes, links, coll, this.workflowFieldsService.getFields(), this.workflowFieldsService.getUsedFields());
+        this.myDiagram.removeParts(coll, false);
     }
 
     private initializePalette() {
@@ -723,7 +801,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             if (sel != null && sel.length != 0) {
                 this.selectedData = sel[0].data;
                 if (this.selectedData.diagramObjectType == DiagramObjectType.Node) {
-                    this.showNodeTabs = true; this.showLinkTabs = false;
+                    this.showNodeTabs = true;
+                    this.showLinkTabs = false;
+
                     let i = this.myDiagram.model.nodeDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
                     if (i > -1) {
                         // this.selectedData = this.myDiagram.model.nodeDataArray[i];
@@ -762,7 +842,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private SelectionDeleting(e: any) {
-        console.log(e);
+        console.log(_.cloneDeep(this.myDiagram.selection));
+        //let sub = e.subject;
+        return false;
+        
     }
     //#endregion
 

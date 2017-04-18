@@ -128,7 +128,7 @@ import * as _ from 'lodash';
             <div *ngFor="let u of usedIn" style="margin-left: 8px;">
                &bull; {{(u.transitionName == '' || u.transitionName == null) ? '[No name]' : u.transitionName }}
             </div>
-            <div>
+            <div style="padding-top: 8px">
                 <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
             </div>
         </div>
@@ -178,10 +178,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     ngOnInit() {
         this.originalStep = _.cloneDeep(this.step);
-
-
-        //deal with xml-json nonsense
-        //this.initFields();
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
