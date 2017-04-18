@@ -250,7 +250,7 @@ namespace d360.web.Controllers
             return string.Format("{0}%", thisColumnWidth + ((dynamicFieldWidth == 0) ? remainingWidth / staticFieldCount : 0));
         }
 
-        GridColumn getGridColumnForColumn(FieldTypeWithRelation item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true)
+        GridColumn getGridColumnForColumn(FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true)
         {
             string cellsFormat = "";
             string columnType = GridColumn.COLUMN_TYPE_STRING;
@@ -300,7 +300,7 @@ namespace d360.web.Controllers
             return gc;
         }
 
-        GridField getGridFieldForColumn(FieldTypeWithRelation item)
+        GridField getGridFieldForColumn(FieldType item)
         {
             string fieldType = "string";
 
@@ -326,7 +326,7 @@ namespace d360.web.Controllers
             return new GridField { name = $"Field{item.ID}", type = fieldType };
         }
 
-        void parseDynamicColumnsAndFields(List<FieldTypeWithRelation> items, List<GridColumn> columns, List<GridField> fields, List<GridColumnGroup> groups, decimal dynamicFieldWidth, bool serverPaged = false)
+        void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, List<GridColumnGroup> groups, decimal dynamicFieldWidth, bool serverPaged = false)
         {
             items.ForEach(i =>
             {
@@ -340,7 +340,7 @@ namespace d360.web.Controllers
             });
         }
 
-        void parseDynamicFilterFields(List<FieldTypeWithRelation> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth, bool relatedField, bool hiddenField)
+        void parseDynamicFilterFields(List<FieldType> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth, bool relatedField, bool hiddenField)
         {
             items.ForEach(i =>
             {
@@ -374,7 +374,7 @@ namespace d360.web.Controllers
             #endregion
 
             var sType = type.ToString();
-            var totalItems = Company.Filter<FieldTypeWithRelation>(i => i.Object == sType && i.ObjectID == id).ToList();
+            var totalItems = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).ToList();
             var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
 
             var columns = new List<GridColumn>();
@@ -450,7 +450,7 @@ namespace d360.web.Controllers
 
                     if (intersectTypeIDs.Any())
                     {
-                        var totalRelItems = Company.Filter<FieldTypeWithRelation>(i => i.Object == "IntersectType" && intersectTypeIDs.Contains(i.ObjectID)).ToList();
+                        var totalRelItems = Company.Filter<FieldType>(i => i.Object == "IntersectType" && intersectTypeIDs.Contains(i.ObjectID)).ToList();
                         var relItems = totalRelItems.Where(i => i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
 
                         if (relItems.Any())
@@ -3132,8 +3132,18 @@ where   Object = @type
                 var def = lookup.ParseOwnershipLookupDefinition();
                 type = type.CleanForSql();
 
-                var sql = "SELECT ResponsibilityType";
-                var tableSql = " from [cache].[Responsibilities] R";
+                var sql = "SELECT R.ResponsibilityType, CI.ContextItems";
+                var tableSql = @" from [cache].[Responsibilities] R
+            outer apply (
+                        select(
+                                select  D.Name + ': ' + I.Code + '; '
+                                from    ResponsibilityContextItem C
+                                        inner join ReferenceItem I on C.ObjectType = 'ReferenceItem' and C.ObjectID = I.ID
+                                        inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
+                                where   ResponsibilityID = R.ResponsibilityID
+                                for xml path ('')
+                                ) as ContextItems
+						) CI ";
 
                 #region Common fields/columns
 
@@ -3269,6 +3279,20 @@ where   Object = @type
                 }
 
                 sql += tableSql + " where R.Object = @type and R.ObjectID = @id and R.[Visible] = 1";
+
+                #region Common fields/columns
+
+                gridFields.Add(new GridField { name = "ContextItems", type = "string" });
+                columns.Add(new GridColumn
+                {
+                    text = "Context",
+                    datafield = "ContextItems",
+                    description = "Associated contexts",
+                    columntype = "textbox",
+                    filtertype = "textbox"
+                });
+
+                #endregion
 
                 results = Company.Query<dynamic>(sql, new { type, id }).Distinct();
             }
@@ -5943,7 +5967,7 @@ where    A.RuleID = @id", new { id });
         public List<EditableFieldItem> GetFieldTypesByObject(SystemObjects type, int id)
         {
             List<EditableFieldItem> list = Company
-                    .GetFieldTypeRelationsByObject(type, id)
+                    .GetFieldTypesByObject(type, id)
                     .Select(i => new EditableFieldItem
                     {
                         Text = i.FriendlyName,
@@ -6049,7 +6073,7 @@ where    A.RuleID = @id", new { id });
                 }
             ).ToList();
 
-            var fieldTypes = Company.Filter<FieldTypeWithRelation>(i =>
+            var fieldTypes = Company.Filter<FieldType>(i =>
                 i.Object == "IntersectType" &&
                 IDs.Contains(i.ObjectID) &&
                 i.IsListable
@@ -6333,7 +6357,7 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
             var results = Company.Query<dynamic>(querySql);
 
             //get the fields for the spreadsheet
-            var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "IntersectType" && i.ObjectID == intersectTypeID && i.IsListable).ToList().OrderBy(x => x.SortOrder);
+            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && i.ObjectID == intersectTypeID && i.IsListable).ToList().OrderBy(x => x.SortOrder);
 
             var document = new SLDocument();
             document.AddWorksheet("Items");

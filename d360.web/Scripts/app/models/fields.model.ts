@@ -80,6 +80,7 @@ export class FieldType {
     ID: number;
     Name: string;
     Category: string;
+    DefaultValue: string;
     DisplayDescription: string;
     FormDescription: string;
     ValidationDescription: string;

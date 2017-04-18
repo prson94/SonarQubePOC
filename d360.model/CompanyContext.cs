@@ -129,7 +129,7 @@ namespace d360.model
 
         public DbSet<FieldTypeLookupValue> FieldTypeLookupValues { get; set; }                  /* VIEW */
 
-        public DbSet<FieldTypeWithRelation> FieldTypeWithRelations { get; set; }                /* VIEW */
+        //public DbSet<FieldTypeWithRelation> FieldTypeWithRelations { get; set; }                /* VIEW */
 
         public DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
 
@@ -293,12 +293,6 @@ namespace d360.model
         public DbSet<Nym> Nyms { get; set; }
 
         public DbSet<NymRelation> NymRelations { get; set; }
-
-        public DbSet<Statistic> Statistics { get; set; }
-
-        public DbSet<StatisticType> StatisticTypes { get; set; }
-
-        public DbSet<StatisticTypeCheckOption> StatisticTypeCheckOptions { get; set; }
 
         public DbSet<Survey> Surveys { get; set; }
 
@@ -606,10 +600,10 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             return Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == id);
         }
 
-        public IQueryable<FieldTypeWithRelation> GetFieldTypeRelationsByObject(SystemObjects type, int id)
+        public IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id)
         {
-            var sType = type.ToString();
-            return Filter<FieldTypeWithRelation>(
+            var sType = type.ToString(); 
+            return Filter<FieldType>(
                 i => i.Object == sType && i.ObjectID == id
                 )
                 .OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName)

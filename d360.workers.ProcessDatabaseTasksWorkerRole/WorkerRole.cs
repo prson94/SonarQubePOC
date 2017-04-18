@@ -359,7 +359,7 @@ from    [queue].[Task] T
 #if DEBUG
                                                                 topicName = "events-debug";
 #endif
-                                                                queue.CreateTopicMessage(company.EventTopic, new EventInfo
+                                                                queue.CreateTopicMessage(topicName, new EventInfo
                                                                 {
                                                                     Action = ct,
                                                                     CompanyID = company.CompanyID,

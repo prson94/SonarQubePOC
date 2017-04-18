@@ -10,8 +10,8 @@ namespace d360.core.enums
     {
         [Name("Existence Check"), Description("")]
         Existence = 1,
-        [Name("Count Metric"), Description("This is generally used purely to display a KPI, and not for scoring.")]
-        Count = 2,
+        [Name("External Metric"), Description("This metric is loaded from an external source.")]
+        External = 2,
         [Name("Field Value Check"), Description("")]
         PropertyValueCheck = 3,
         [Name("Field Populated Check"), Description("")]
@@ -24,8 +24,8 @@ namespace d360.core.enums
         ScoreRollupViaRelationship = 7,
         [Name("Ownership Score Rollup Check"), Description("")]
         ScoreRollupViaOwnership = 8,
-        [Name("Event Metric Check"), Description("")]
-        EventMetric = 9,
+        [Name("Result Metric Check"), Description(""), ReadOnly(true)]
+        ResultMetric = 9,
         [Name("Predicate Existence Check"), Description("")]
         PredicateMetric = 10
     }

@@ -24,7 +24,7 @@ namespace d360.jobs.GenerateReportingLayer
             return name;
         }
 
-        static void getDynamicFieldJoinStatements(List<FieldTypeWithRelation> fields, string type, out string joins, out string columns)
+        static void getDynamicFieldJoinStatements(List<FieldType> fields, string type, out string joins, out string columns)
         {
             columns = "";
             joins = "";
@@ -404,7 +404,7 @@ namespace d360.jobs.GenerateReportingLayer
                         var objectType = "Artifact";
                         var prefix = "Glossary";
                         string objectID;
-                        List<FieldTypeWithRelation> fieldTypes = null;
+                        List<FieldType> fieldTypes = null;
 
                         var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
@@ -414,11 +414,11 @@ namespace d360.jobs.GenerateReportingLayer
 
                         try
                         {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'ArtifactType'").ToList();
+                            fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'ArtifactType'").ToList();
                         }
                         catch (Exception)
                         {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'ArtifactType'").ToList();
+                            fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'ArtifactType'").ToList();
                         }
 
                         artifactTypes.ForEach(o =>
@@ -478,11 +478,11 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
 
                         try
                         {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'TaxonomyType'").ToList();
+                            fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'TaxonomyType'").ToList();
                         }
                         catch (Exception)
                         {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'TaxonomyType'").ToList();
+                            fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'TaxonomyType'").ToList();
                         }
 
                         taxonomyTypes.ForEach(o =>
@@ -542,11 +542,11 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
 
                         try
                         {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'PolicyType'").ToList();
+                            fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'PolicyType'").ToList();
                         }
                         catch (Exception)
                         {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'PolicyType'").ToList();
+                            fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'PolicyType'").ToList();
                         }
 
                         policyTypes.ForEach(o =>

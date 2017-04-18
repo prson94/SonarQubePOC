@@ -950,7 +950,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                             }
                             model.RequestingResourceID = load.UpdatedBy.Value;
 
-                            var fields = company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, load.ObjectID).OrderBy(i => i.SortOrder).ToList();
+                            var fields = company.GetFieldTypesByObject(SystemObjects.ArtifactType, load.ObjectID).OrderBy(i => i.SortOrder).ToList();
 
                             if (fields.Count > 0)
                             {

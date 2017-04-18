@@ -120,6 +120,7 @@
     <Compile Include="entities\Reference\ReferenceItemType.cs" />
     <Compile Include="entities\Reference\ReferenceItem.cs" />
     <Compile Include="entities\Relation\MapType.cs" />
+    <Compile Include="entities\Score\ScoreTypeMetricVersion.cs" />
     <Compile Include="entities\Social\Favorite.cs" />
     <Compile Include="entities\FieldTypeLookup.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDefinition.cs" />
@@ -173,6 +174,10 @@
     <Compile Include="entities\Quality\PolicyTypeLevel.cs" />
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
+    <Compile Include="entities\Score\Score.cs" />
+    <Compile Include="entities\Score\ScoreType.cs" />
+    <Compile Include="entities\Score\ScoreMetric.cs" />
+    <Compile Include="entities\Score\ScoreTypeMetric.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />
     <Compile Include="entities\Transitive\FieldFilterModel.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
@@ -215,8 +220,8 @@
     <Compile Include="entities\Security\ResponsibilityTypeClaim.cs" />
     <Compile Include="entities\Security\ResponsibilityType.cs" />
     <Compile Include="entities\Security\Responsibility.cs" />
-    <Compile Include="entities\Statistic.cs" />
-    <Compile Include="entities\StatisticType.cs" />
+    <Compile Include="entities\Score\Statistic.cs" />
+    <Compile Include="entities\Score\StatisticType.cs" />
     <Compile Include="entities\Glossary\Artifact.cs" />
     <Compile Include="entities\Glossary\ArtifactType.cs" />
     <Compile Include="entities\Glossary\AttributeTypeRelation.cs">
@@ -377,6 +382,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Values.resx</DependentUpon>
     </Compile>
+    <Compile Include="ScoreTypeMetric.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="resources\Fields.resx">

@@ -25,7 +25,7 @@ namespace d360.web.Controllers
         [Route("{type}/{id:int}.json")]
         public JsonResult _FieldTypesByObject(SystemObjects type, int id)
         {
-            var list = Company.GetFieldTypeRelationsByObject(type, id).ToList();
+            var list = Company.GetFieldTypesByObject(type, id).ToList();
 
             return Json(
                 list.Select(i => new
@@ -50,7 +50,7 @@ namespace d360.web.Controllers
         [Route("{type}/{id:int}/full")]
         public JsonResult _FieldTypesByObjectFull(SystemObjects type, int id)
         {
-            var list = Company.GetFieldTypeRelationsByObject(type, id).ToList();
+            var list = Company.GetFieldTypesByObject(type, id).ToList();
 
             return Json(
                 list.Select(i => new

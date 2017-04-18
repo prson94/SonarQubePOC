@@ -49,6 +49,15 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
+    getLookupDefaultValueOptions(id: number, type: string): Promise<SelectItem[]> {
+        return this.http.get(`form/FieldType_Lookup_DefaultValueOptions?id=${id}&type=${type}`)
+            .toPromise()
+            .then(response => <FtItem[]>response.json())
+            .then(r => this.ftItemToSelectItem(r))
+            .catch(err => this.handleError(err));
+    }
+
+
     getLookupTokens(id: number, type: string): Promise<SelectItem[]> {        
         return this.http.get(`form/FieldType_Lookup_Tokens?id=${id}&type=${type}`)
             .toPromise()

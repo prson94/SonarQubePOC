@@ -52,7 +52,7 @@ namespace d360.web.Controllers.Services
             var joins = "";
             var columns = "";
 
-            var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "ArtifactType" && i.ObjectID == id).ToList();
+            var fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id).ToList();
             var fieldTypeIDs = fields.Select(i => i.ID).ToList();
             var filteredLookupDefinitions = Company.Filter<FieldTypeFilteredLookupDefinition>(i => fieldTypeIDs.Contains(i.FieldTypeID), i => i.FieldTypeFilteredLookupDisplayFields).ToList();
 
@@ -343,7 +343,7 @@ where A.ArtifactTypeID = @id", columns, joins);
                 }
                 if (parentID > 0) item.ParentID = parentID;
 
-                var fieldTypes = Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, id).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, id).ToList();
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
@@ -406,7 +406,7 @@ where A.ArtifactTypeID = @id", columns, joins);
                     }
                 }
 
-                var fieldTypes = Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, typeID).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList();
 
                 if (model.ContainsKey("Name")) item.Name = model["Name"].ToString();
                 if (model.ContainsKey("Description")) item.Description = model["Description"].ToString();
@@ -546,7 +546,7 @@ where A.TaxonomyTypeID = @id ", columns, joins);
                 }
                 if (parentID > 0) item.ParentID = parentID;
 
-                var fieldTypes = Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, id).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, id).ToList();
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
@@ -610,7 +610,7 @@ where A.TaxonomyTypeID = @id ", columns, joins);
                     }
                 }
 
-                var fieldTypes = Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, typeID).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList();
 
                 if (model.ContainsKey("Name")) item.Name = model["Name"].ToString();
                 if (model.ContainsKey("Description")) item.Description = model["Description"].ToString();

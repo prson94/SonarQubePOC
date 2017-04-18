@@ -6,6 +6,7 @@ import {
     FilteredLookupItem,
     FilteredLookupDisplayField,
     Lookups,
+    //LookupItem,
     FieldTypeFusionItemEditorModel,
     OwnershipLookupSettings,
     FieldTypeFusionLookupDisplayField,
@@ -58,6 +59,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Output() onCancel = new EventEmitter();
 
     private lookups: Lookups = new Lookups();
+    private lookupDefaultValueOptions: SelectItem[];
     private model: FieldTypeEditorModel;    
     private initialItem: FieldTypeEditorModel;
 
@@ -336,7 +338,24 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectID = id;
         this.model.FieldType.LookupObjectType = type;
 
+
+        this.loadDefaultValueOptions(type, id);
         return this.loadTokens(type, id);
+    }
+
+    private loadDefaultValueOptions(objectType: string, objectId: number): Promise<void> {
+        if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
+            console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD DEFAULT VALUES FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
+            return;
+        }
+
+        if (objectType != "DomainItem" && objectType != "ReferenceItemType") objectType += 'Type';
+
+
+        return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType)
+            .then(r => {
+                this.lookupDefaultValueOptions = r;
+            });
     }
 
     private loadTokens(objectType: string, objectId: number): Promise<void> {

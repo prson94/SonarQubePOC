@@ -58,7 +58,7 @@ namespace d360.web.Controllers.Services
 
                 item.LookupTypeID = typeID;
 
-                var fieldTypes = Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, typeID).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.LookupType, typeID).ToList();
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
@@ -219,7 +219,7 @@ namespace d360.web.Controllers.Services
                     }
                 }
 
-                var fieldTypes = Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, typeID).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.LookupType, typeID).ToList();
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
@@ -292,7 +292,7 @@ namespace d360.web.Controllers.Services
             var joins = "";
             var columns = "";
 
-            var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "LookupType" && i.ObjectID == typeID).ToList();
+            var fields = Company.Filter<FieldType>(i => i.Object == "LookupType" && i.ObjectID == typeID).ToList();
             var fieldTypeIDs = fields.Select(i => i.ID).ToList();
 
             foreach (var f in fields)

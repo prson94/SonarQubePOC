@@ -53,7 +53,7 @@ namespace d360.web.Controllers
             var requiredStyle = new SLStyle { Font = new SLFont { Bold = true } };
 
             var targetAttributeType = fusion.FusionType.FusionAttributeTypes.SingleOrDefault(i => i.ID == attributeTypeID);
-            var targetAttributeTypeFields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "FusionAttributeType" && i.ObjectID == attributeTypeID).ToList();
+            var targetAttributeTypeFields = Company.Filter<FieldType>(i => i.Object == "FusionAttributeType" && i.ObjectID == attributeTypeID).ToList();
             
             if (targetAttributeType != null)
             {
@@ -138,7 +138,7 @@ namespace d360.web.Controllers
                     var mXml = new XElement("ms");
 
                     var targetAttributeType = fusion.FusionType.FusionAttributeTypes.SingleOrDefault(i => i.ID == attributeTypeID);
-                    var targetAttributeTypeFields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "FusionAttributeType" && i.ObjectID == attributeTypeID).ToList();
+                    var targetAttributeTypeFields = Company.Filter<FieldType>(i => i.Object == "FusionAttributeType" && i.ObjectID == attributeTypeID).ToList();
 
                     if (targetAttributeType != null)
                     {

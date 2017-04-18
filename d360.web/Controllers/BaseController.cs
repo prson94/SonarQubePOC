@@ -197,7 +197,7 @@ namespace d360.web.Controllers
                     fieldTypeRelationTypeString += "Type";
                     break;
             }
-            var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == fieldTypeRelationTypeString && i.ObjectID == typeID && i.IsListable).ToList();
+            var fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationTypeString && i.ObjectID == typeID && i.IsListable).ToList();
 
             foreach (var f in fields)
             {
@@ -446,7 +446,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
             };
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldTypeWithRelation> fields, int startRow = 10)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10)
         {
             var row = startRow;
 
@@ -489,6 +489,11 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                             Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage),
                             Category = f.Category
                         };
+
+                        if (!string.IsNullOrEmpty(f.DefaultValue))
+                        {
+                            fld.Value = f.DefaultValue;
+                        }
 
                         if (f.Type == DataType.FusionLookup.ToString())
                         {
@@ -551,7 +556,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
             return list;
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldTypeWithRelation> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
         {
             var row = startRow;
 
@@ -637,6 +642,10 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                         fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
                         /* Boolean, Date, DateTime, Decimal, Integer, String */
                         if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
+                        if (f == null && !string.IsNullOrEmpty(ft.DefaultValue))
+                        {
+                            fld.Value = ft.DefaultValue;
+                        }
                         list.Add(fld);
 
                         row++;
@@ -697,9 +706,9 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                 var name = $"Field{f.ID}";//f.Name.Replace("'", "''").Replace("--", "");
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                columns += $"{name}_T.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
-                joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
-left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
+                columns += $"coalesce({name}_T.FormattedValue, {name}_TT.DefaultFormattedValue) as [{(useFriendlyName ? friendlyName : name)}], ";
+                joins += $@" left join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} and {name}_TT.IsListable = 1 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
             }
 
             fields = null;
@@ -776,9 +785,9 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
 
-                var thisColumn = $", {name}_T.FormattedValue as [{(useFriendlyName ? friendlyName : name)}]";
-                var thisJoin = $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
-left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
+                var thisColumn = $", coalesce({name}_T.FormattedValue, {name}_TT.DefaultFormattedValue) as [{(useFriendlyName ? friendlyName : name)}]";
+                var thisJoin = $@" left join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} and {name}_TT.IsListable = 1 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_T.FieldTypeID ";
 
                 columns += thisColumn;
                 joins += thisJoin;

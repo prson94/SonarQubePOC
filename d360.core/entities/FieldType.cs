@@ -72,6 +72,9 @@ namespace d360.core.entities
         [DataMember]
         public int SortOrder { get; set; }
 
+        [DataMember]
+        public string DefaultValue { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 

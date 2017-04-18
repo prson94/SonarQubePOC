@@ -256,7 +256,7 @@ namespace d360.web.Models
             return fields;
         }
 
-        public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldTypeWithRelation> fieldTypes, FormCollection form, HttpServerUtilityBase Server, bool ignoreFieldIfNull = true)
+        public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server, bool ignoreFieldIfNull = true)
         {
             var fields = new List<Field>();
 

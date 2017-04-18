@@ -54,6 +54,7 @@
                 <div style="color:red">{{errorMessage}}</div>
             </div>
         </div>
+
         <div class="row" *ngIf="model.FieldType.Type == 'Lookup'">
             <div class="col s6">
                 <div id='LookupDisplayFormatTip' class="FieldNameRequired">Type of List</div>
@@ -100,6 +101,14 @@
             <div class="col s12">
                 <div id='ValidationDescriptionTip' class="FieldName">Validation Message</div>
                 <p-editor name="validationDesc" [(ngModel)]="model.FieldType.ValidationDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
+            </div>
+        </div>
+
+        <div class="row" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text'">
+             <div class="col s12">
+                <div id='LookupDisplayFormatTip' class="FieldName">Default Value (if any)</div>
+                <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
+                <input *ngIf="model.FieldType.Type == 'Text'" pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
             </div>
         </div>
 

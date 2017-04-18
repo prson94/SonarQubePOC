@@ -750,7 +750,7 @@ namespace d360.web.Controllers
             }
 
             row++;
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, at).ToList(), row + 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), row + 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -801,7 +801,7 @@ namespace d360.web.Controllers
             if (!workflowEnabled)
                 list = loadStatusField(list, SystemObjects.Artifact, a.Status, 4, 1);
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 5, true);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 5, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -875,7 +875,7 @@ namespace d360.web.Controllers
             row++;
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
             row++;
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, at).ToList(), row + 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), row + 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -929,7 +929,7 @@ namespace d360.web.Controllers
                     if (model.ParentID == 0) model.ParentID = null;
                 }
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, typeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Artifact>(model, fields);
 
                 return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
@@ -1006,7 +1006,7 @@ namespace d360.web.Controllers
                 model.ParentID = parseIntField(form, "ParentID");
                 if (model.ParentID == 0) model.ParentID = null;
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Artifact>(model, fields);
 
 
@@ -1247,7 +1247,7 @@ namespace d360.web.Controllers
                 model.RequestingResourceID = Company.CurrentResourceID;
 
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, 0, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, typeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, 0, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList(), form, Server);
                 if (fields.Count > 0)
                 {
                     model.Fields = new Dictionary<string, object>();
@@ -1508,7 +1508,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ObjectType", FieldType = DataType.Hidden.ToString(), Value = ot });
             list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = oid.ToString() });
             list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.AttributeType, at).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.AttributeType, at).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -1531,7 +1531,7 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list = loadDynamicFields(list,
-                Company.GetFieldTypeRelationsByObject(SystemObjects.AttributeType, a.AttributeTypeID).ToList(),
+                Company.GetFieldTypesByObject(SystemObjects.AttributeType, a.AttributeTypeID).ToList(),
                 Company.GetFieldRelationsByObject(SystemObjects.Attribute, id).ToList(),
                 1);
 
@@ -1568,7 +1568,7 @@ namespace d360.web.Controllers
 
                 // Dynamic fields
                 var loader = new FieldLoader();
-                var fields = loader.GetFormDynamicFieldValues(SystemObjects.Attribute, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.AttributeType, typeID).ToList(), form, Server);
+                var fields = loader.GetFormDynamicFieldValues(SystemObjects.Attribute, a.ID, Company.GetFieldTypesByObject(SystemObjects.AttributeType, typeID).ToList(), form, Server);
 
                 Company.SaveOrUpdate<d360.core.entities.Attribute>(a, fields);
 
@@ -1639,7 +1639,7 @@ namespace d360.web.Controllers
                 if (model == null) throw new NotFoundException("attribute");
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Attribute, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.AttributeType, model.AttributeTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Attribute, model.ID, Company.GetFieldTypesByObject(SystemObjects.AttributeType, model.AttributeTypeID).ToList(), form, Server, false);
 
                 Company.SaveOrUpdate<core.entities.Attribute>(model, fields);
 
@@ -2815,7 +2815,7 @@ namespace d360.web.Controllers
         [Route("FieldType_FilteredLookup_DisplayFields"), NonNullableParameters]
         public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
         {
-            var list = Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, listID)
+            var list = Company.GetFieldTypesByObject(SystemObjects.LookupType, listID)
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .OrderBy(i => i.Name)
                 .Select(i => new { i.ID, i.Name, i.FriendlyName, i.LookupObjectType, i.LookupObjectID })
@@ -2841,7 +2841,7 @@ namespace d360.web.Controllers
         [Route("FieldType_FusionLookup_DisplayFields"), NonNullableParameters]
         public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
         {
-            var list = Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, id)
+            var list = Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, id)
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
@@ -2921,7 +2921,7 @@ namespace d360.web.Controllers
         [Route("FieldType_RelationLookup_DisplayFields"), NonNullableParameters]
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
-            var list = Company.GetFieldTypeRelationsByObject(type, id)
+            var list = Company.GetFieldTypesByObject(type, id)
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
@@ -2957,7 +2957,7 @@ namespace d360.web.Controllers
                     list.Add("SubjectArea", 0);
             }
 
-            var relList = Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersectTypeID)
+            var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name }).ToList();
             relList.ForEach(r =>
@@ -2989,7 +2989,7 @@ namespace d360.web.Controllers
         [Route("FieldType_Lookup_Tokens"), NonNullableParameters]
         public JsonNetResult FieldType_Lookup_Tokens(SystemObjects type, int id)
         {
-            var list = Company.GetFieldTypeRelationsByObject(type, id)
+            var list = Company.GetFieldTypesByObject(type, id)
                 .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.Name);
@@ -3040,6 +3040,64 @@ namespace d360.web.Controllers
             return new JsonNetResult
             {
                 Data = list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Route("FieldType_Lookup_DefaultValueOptions"), NonNullableParameters]
+        public JsonNetResult FieldType_Lookup_DefaultValueOptions(SystemObjects type, int id)
+        {
+            Dictionary<string, int> list = null;
+
+            switch (type)
+            {
+                case SystemObjects.ArtifactType:
+                    list = Company.Filter<Artifact>(i => i.ArtifactTypeID == id)
+                        .OrderBy(i => i.TextPath)
+                        .Select(i => new { i.TextPath, i.ID })
+                        .ToDictionary(k => k.TextPath, v => v.ID);
+                    break;
+                case SystemObjects.ReferenceItem:
+                case SystemObjects.ReferenceItemType:
+                    list = Company.Filter<ReferenceItem>(i => i.ReferenceItemTypeID == id)
+                        .OrderBy(i => i.DisplayValue)
+                        .Select(i => new { i.DisplayValue, i.ID })
+                        .ToDictionary(k => k.DisplayValue, v => v.ID);
+                    break;
+                case SystemObjects.PolicyType:
+                    list = Company.Filter<Policy>(i => i.PolicyTypeID == id)
+                        .OrderBy(i => i.TextPath)
+                        .Select(i => new { i.TextPath, i.ID })
+                        .ToDictionary(k => k.TextPath, v => v.ID);
+                    break;
+                case SystemObjects.Resource:
+                case SystemObjects.ResourceType:
+                    list = Company.Table<GlobalReportingResource>()
+                        .OrderBy(i => i.FullName)
+                        .Select(i => new { i.FullName, i.ResourceID })
+                        .ToDictionary(k => k.FullName, v => v.ResourceID);
+                    break;
+                case SystemObjects.RuleType:
+                    list = Company.Filter<Rule>(i => i.RuleTypeID == id)
+                        .OrderBy(i => i.Name)
+                        .Select(i => new { i.Name, i.ID })
+                        .ToDictionary(k => k.Name, v => v.ID);
+                    break;
+                case SystemObjects.TaxonomyType:
+                    list = Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == id)
+                        .OrderBy(i => i.TextPath)
+                        .Select(i => new { i.TextPath, i.ID })
+                        .ToDictionary(k => k.TextPath, v => v.ID);
+                    break;
+                    //default:
+                    //    list.Add("Name", "Name");
+                    //    list.Add("TextPath", "TextPath");
+                    //    break;
+            }
+
+            return new JsonNetResult
+            {
+                Data = list.Select(i => new { title = i.Key, value = i.Value }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -3249,7 +3307,7 @@ namespace d360.web.Controllers
             try
             {
                 int maxSort = 0;
-                try { maxSort = Company.GetFieldTypeRelationsByObject((SystemObjects)Enum.Parse(typeof(SystemObjects), model.FieldType.Object), model.FieldType.ObjectID).Max(i => i.SortOrder); }
+                try { maxSort = Company.GetFieldTypesByObject((SystemObjects)Enum.Parse(typeof(SystemObjects), model.FieldType.Object), model.FieldType.ObjectID).Max(i => i.SortOrder); }
                 catch { }
 
                 //dont let fields with reserved names in
@@ -3622,6 +3680,7 @@ namespace d360.web.Controllers
                 ft.Name = model.FieldType.Name;
                 ft.Category = model.FieldType.Category;
                 ft.FriendlyName = model.FieldType.FriendlyName;
+                ft.DefaultValue = (string.IsNullOrEmpty(model.FieldType.DefaultValue.Trim())) ? null : model.FieldType.DefaultValue.Trim();
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
@@ -4136,7 +4195,7 @@ namespace d360.web.Controllers
             var owners = Company.GetFusionOwnerOptions().Select(i => new SelectListItem { Text = i.Name, Value = $"{i.ID}", Selected = false }).ToList();
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
             
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, ft).ToList(), 7);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.FusionType, ft).ToList(), 7);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -4186,7 +4245,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners});
 
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, a.FusionTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Fusion, id).ToList(), 7);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.FusionType, a.FusionTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Fusion, id).ToList(), 7);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -4229,7 +4288,7 @@ namespace d360.web.Controllers
                 };
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, typeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionType, typeID).ToList(), form, Server);
 
                 Company.SaveOrUpdate<Fusion>(model, fields);
 
@@ -4331,7 +4390,7 @@ namespace d360.web.Controllers
                 #endregion
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server, false);
 
                 Company.SaveOrUpdate<Fusion>(model, fields);
 
@@ -6497,7 +6556,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "FusionID", FieldType = DataType.Hidden.ToString(), Value = f.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, fat).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, fat).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -6515,7 +6574,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             //list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, a.FusionAttributeTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.FusionAttribute, a.ID).ToList(), 2, true);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, a.FusionAttributeTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.FusionAttribute, a.ID).ToList(), 2, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -6543,7 +6602,7 @@ namespace d360.web.Controllers
 
                 var sType = SystemObjects.FusionAttribute.ToString();
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.FusionAttribute, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, model.FusionAttributeTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.FusionAttribute, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, model.FusionAttributeTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<FusionAttribute>(model, fields);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.FusionAttribute.ToString(), ObjectID = id });
@@ -9224,7 +9283,7 @@ from ArtifactType A
             var type = Company.GetById<LookupType>(id);
 
             list.Add(new EditableField { FieldName = "LookupTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, id).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.LookupType, id).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9255,7 +9314,7 @@ from ArtifactType A
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, a.LookupTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Lookup, id).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.LookupType, a.LookupTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Lookup, id).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9284,7 +9343,7 @@ from ArtifactType A
                     LookupTypeID = typeID
                 };
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, typeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, a.ID, Company.GetFieldTypesByObject(SystemObjects.LookupType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Lookup>(a, fields);
 
                 return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
@@ -9344,7 +9403,7 @@ from ArtifactType A
                 if (!Company.HasPermission(SystemObjects.LookupType, model.LookupTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, model.LookupTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, model.ID, Company.GetFieldTypesByObject(SystemObjects.LookupType, model.LookupTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Lookup>(model, fields);
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
@@ -9921,7 +9980,7 @@ from ArtifactType A
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, typeID).ToList(), 3);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.PolicyType, typeID).ToList(), 3);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9956,7 +10015,7 @@ from ArtifactType A
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString(), Value = ((int)model.Status).ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = model.Description });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 5, true);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 5, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10000,7 +10059,7 @@ from ArtifactType A
                 }
                 Company.Add<Policy>(model);
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
                 Company.AddOrUpdateFields(fields);
 
                 dynamic custom = new
@@ -10091,7 +10150,7 @@ from ArtifactType A
 
                 Company.Update<Policy>(model);
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 dynamic custom = new
@@ -11046,7 +11105,7 @@ order by D.TextPath";
                 });
             }
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, it).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, it).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11078,7 +11137,7 @@ order by D.TextPath";
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11121,7 +11180,7 @@ order by D.TextPath";
                             itemInfo[0], int.Parse(itemInfo[1])
                         );
 
-                        var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, typeID).ToList(), form, Server);
+                        var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, typeID).ToList(), form, Server);
                         Company.AddOrUpdateFields(fields);
                     }
                 });
@@ -11157,7 +11216,7 @@ order by D.TextPath";
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Update<Intersect>(intersect);
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 return jsonSuccess("Relationship successfully updated.", intersect.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
@@ -12956,7 +13015,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Status", Name = "Active?", FieldType = DataType.Boolean.ToString(), Value = "true" });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, id).ToList(), 5);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, id).ToList(), 5);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -12987,7 +13046,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString(), Value = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID).IsAdministrator.ToString() });
             list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Status", Name = "Active?", FieldType = DataType.Boolean.ToString(), Value = (a.Status == "Active").ToString() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(), 4);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(), 4);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13002,7 +13061,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Value = a.FirstName, Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Value = a.LastName, Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13118,7 +13177,7 @@ order by	T.Name, I.DisplayValue";
                 }
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, typeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, a.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, typeID).ToList(), form, Server);
                 Company.AddOrUpdateFields(fields);
 
                 return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
@@ -13252,7 +13311,7 @@ order by	T.Name, I.DisplayValue";
                 Company.Update<GlobalReportingResource>(gr);
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 if (Request.ContentLength > 0)
@@ -13289,7 +13348,7 @@ order by	T.Name, I.DisplayValue";
                 model.LastName = parseTextField(form, "LastName");
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 Community.Update<Resource>(model);
@@ -13626,7 +13685,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 5, Column = 1, Required = false, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString() });
             list.Add(new EditableField { Row = 5, Column = 2, Required = false, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.RuleType, typeID).ToList(), 6);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).ToList(), 6);
 
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -13674,7 +13733,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 5, Column = 1, Required = false, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString(), Value = model.Purpose });
             list.Add(new EditableField { Row = 5, Column = 2, Required = false, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString(), Value = model.Resolution });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Rule, id).ToList(), 6);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Rule, id).ToList(), 6);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13714,7 +13773,7 @@ order by	T.Name, I.DisplayValue";
                     Threshold = decimal.Parse(form["Threshold"])
                 };
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Rule>(model, fields);
 
                 dynamic custom = new
@@ -13802,7 +13861,7 @@ order by	T.Name, I.DisplayValue";
                 model.Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]);
                 model.Threshold = decimal.Parse(form["Threshold"]);
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Rule>(model, fields);
 
                 dynamic custom = new
@@ -14750,7 +14809,7 @@ from    [IntersectType] RT
                             models.Add(new KnockoutListItem("Description", "Description"));
                             break;
                     }
-                    models.AddRange(Company.GetFieldTypeRelationsByObject(type, id).Select(i => new KnockoutListItem { title = i.FriendlyName, value = i.Name }));
+                    models.AddRange(Company.GetFieldTypesByObject(type, id).Select(i => new KnockoutListItem { title = i.FriendlyName, value = i.Name }));
                     break;
                 case StatisticCheckType.Relationship:
                     models.AddRange(Company.Query<KnockoutListItem>(@"
@@ -15467,7 +15526,7 @@ from    [IntersectType] RT
             list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"form/Taxonomy_SimilarItems?typeID={t}&id={p}&query=" });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, t).ToList(), 3);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, t).ToList(), 3);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -15528,7 +15587,7 @@ order by TextPath
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = Resources.FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parents, Value = ((a.ParentID.HasValue) ? a.ParentID.Value.ToString() : "0") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, a.TaxonomyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Taxonomy, id).ToList(), 3);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, a.TaxonomyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Taxonomy, id).ToList(), 3);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -15594,7 +15653,7 @@ order by TextPath
                     if (a.ParentID == 0) a.ParentID = null;
                 }
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, typeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, a.ID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Taxonomy>(a, fields);
 
                 dynamic custom = new
@@ -15680,7 +15739,7 @@ order by TextPath
                 model.ParentID = parseIntField(form, "ParentID");
                 if (model.ParentID == 0) model.ParentID = null;
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, model.TaxonomyTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.TaxonomyTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Taxonomy>(model, fields);
 
                 dynamic custom = new
@@ -17005,7 +17064,7 @@ order by TextPath
 
             list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, id).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -17036,7 +17095,7 @@ order by TextPath
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -17097,7 +17156,7 @@ order by TextPath
                     //DisplayValue = 
                 };
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
                 Company.SaveOrUpdate<ReferenceItem>(a, fields);
 
                 return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
@@ -17131,7 +17190,7 @@ order by TextPath
 
                 model.Code = form["Code"];
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<ReferenceItem>(model, fields);
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
@@ -17302,7 +17361,7 @@ order by TextPath
             var names = Enum.GetNames(typeof(IssueCriticality)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
 
             list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Criticality", Name = "Criticality", Required = true, FieldType = DataType.Lookup.ToString(), Items = names });            
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -17343,7 +17402,7 @@ order by TextPath
                 };
 
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IssueType, issueTypeId).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, model.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), form, Server);
                 Company.SaveOrUpdate<Issue>(model, fields);
 
                 var relations = new List<CommentRelation>();
