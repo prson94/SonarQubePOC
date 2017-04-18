@@ -1723,6 +1723,13 @@ namespace d360.web.Controllers.Services
         }
 
 
+        [Route("workflow/procedures")]
+        public IQueryable GetWorkflowProcedures()
+        {
+            return Company.WorkflowTaskProcedures;
+        }
+
+
         #region Helper Methods
 
         private dynamic XmlToDynamic(string xml, bool omitRootElement = true)
