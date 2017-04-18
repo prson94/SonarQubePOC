@@ -120,6 +120,7 @@
     <Compile Include="entities\Reference\ReferenceItemType.cs" />
     <Compile Include="entities\Reference\ReferenceItem.cs" />
     <Compile Include="entities\Relation\MapType.cs" />
+    <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\Score\ScoreTypeMetricVersion.cs" />
     <Compile Include="entities\Social\Favorite.cs" />
     <Compile Include="entities\FieldTypeLookup.cs" />

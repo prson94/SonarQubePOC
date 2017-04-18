@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Xml.Linq;
+using System.Data.Entity;
 
 namespace d360.web.Controllers
 {
@@ -163,7 +164,22 @@ namespace d360.web.Controllers
         [Route("reports")]
         public JsonNetResult GetReports()
         {
-            return new JsonNetResult { Data = Company.Table<Report>().OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };
+            var reports = Company.Reports.Include(rpt=>rpt.Responsibilities).OrderBy(x => x.Name).ToList();
+
+            foreach (var report in reports)
+            {                
+                if (report.Responsibilities == null) continue;
+                var visibleTo = "";
+                foreach (var responsibility in report.Responsibilities)
+                {
+                    if (!string.IsNullOrEmpty(visibleTo))
+                        visibleTo += ",";
+                    visibleTo += responsibility.ResponsibilityTypeID.ToString();
+                }
+                report.VisibleTo = string.IsNullOrEmpty(visibleTo)? null:visibleTo;
+            }
+
+            return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [Route("ByContext/{type}/{id:int}/{reportType?}")]
@@ -172,9 +188,74 @@ namespace d360.web.Controllers
             if (!string.IsNullOrEmpty(reportType))
             {
                 if (id > 0)
-                    return new JsonNetResult { Data = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == id && x.ReportType == reportType).OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };
+                {
+                    var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == id && x.ReportType == reportType).Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
+
+                    var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == id && x.ObjectType == type && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
+
+                    var currentUserResponsibilityTypeID = 0;
+
+                    if (currentUserResponsibilityType != null)
+                        currentUserResponsibilityTypeID = currentUserResponsibilityType.ResponsibilityTypeID;
+
+                    //check that the current user has access to the current report
+                    for (int i = reports.Count - 1; i >= 0; i--)
+                    {
+                        var report = reports[i];
+
+                        if (report.Responsibilities != null && report.Responsibilities.Count > 0)
+                        {
+                            bool userHasAccess = false;
+
+                            foreach (var responsibility in report.Responsibilities)
+                            {
+                                if (responsibility.ResponsibilityTypeID == currentUserResponsibilityTypeID)
+                                {
+                                    userHasAccess = true;
+                                    break;
+                                }
+                            }
+                            if (!userHasAccess)
+                                reports.RemoveAt(i);
+                        }
+                    }
+
+                    return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
+                }
                 else
-                    return new JsonNetResult { Data = Company.Filter<Report>(x => x.ReportType == reportType).OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };
+                {
+                    var reports = Company.Filter<Report>(x => x.ReportType == reportType).OrderBy(i => i.Name).ToList();
+
+                    for (int i = reports.Count - 1; i >= 0; i--)
+                    {
+                        var report = reports[i];
+
+                        if (report.Responsibilities != null && report.Responsibilities.Count > 0)
+                        {
+                            var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == report.ObjectID && x.ObjectType == report.ObjectType && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
+
+                            var currentUserResponsibilityTypeID = 0;
+
+                            if (currentUserResponsibilityType != null)
+                                currentUserResponsibilityTypeID = currentUserResponsibilityType.ResponsibilityTypeID;
+
+                            bool userHasAccess = false;
+
+                            foreach (var responsibility in report.Responsibilities)
+                            {
+                                if (responsibility.ResponsibilityTypeID == currentUserResponsibilityTypeID)
+                                {
+                                    userHasAccess = true;
+                                    break;
+                                }
+                            }
+                            if (!userHasAccess)
+                                reports.RemoveAt(i);
+                        }
+                    }
+
+                    return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
+                }
             }
 
             if (id > 0)

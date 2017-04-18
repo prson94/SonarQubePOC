@@ -5241,7 +5241,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Report:
                     #region Fields
-                    var report = Company.GetById<Report>(id, i => i.ReportLayout);
+                    var report = Company.GetById<Report>(id, i => i.ReportLayout, i => i.Responsibilities );
                     if (report == null)
                         report = Company.GetById<Report>(id);
 
@@ -5288,6 +5288,32 @@ where    A.RuleID = @id", new { id });
                                 }
                             });
                         }
+
+                        if(report.Responsibilities != null && report.Responsibilities.Count > 0)
+                        {
+                            var responsibilityIds = report.Responsibilities.Select(x => x.ResponsibilityTypeID).ToList();
+                            var responsibilities = Company.ResponsibilityTypes.Where(x => responsibilityIds.Contains(x.ID));
+
+                            if (responsibilities != null)
+                            {
+                                var val = "";
+                                foreach(var responsibility in responsibilities)
+                                {
+                                    if (val.Length > 0) val += ", ";
+                                    val += responsibility.Name;
+                                }
+
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = "Visible To", FieldName = "ReportResponsibilities", FieldDescription = "The report is only executable by users in the following roles.", Value = val }
+                                    }
+                                });
+                            }
+                        }
+                        
 
                         if (report.ReportLayout != null)
                         {

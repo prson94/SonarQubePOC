@@ -58,6 +58,9 @@ namespace d360.core.entities
         [Column(TypeName = "varchar"), StringLength(260)]
         public string FileName { get; set; }
 
+        [NotMapped,DataMember]
+        public string VisibleTo { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 
@@ -67,5 +70,8 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual ICollection<ReportTile> ReportTiles { get; set; }
+
+        [IgnoreDataMember, ForeignKey("ReportID")]
+        public virtual ICollection<ReportResponsibility> Responsibilities { get; set; }
     }
 }

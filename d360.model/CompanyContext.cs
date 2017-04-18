@@ -246,6 +246,8 @@ namespace d360.model
 
         public DbSet<Report> Reports { get; set; }
 
+        public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
+
         public DbSet<ReportTile> ReportTiles { get; set; }
 
         public DbSet<ResourceGroup> ResourceGroups { get; set; }

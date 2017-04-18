@@ -11602,6 +11602,25 @@ where		D.ObjectType = @targetType and D.ObjectTypeID = @targetTypeID
                         FileName = filename
                     };
 
+                    var visibleTo = form["VisibleTo"];
+
+                    if (!string.IsNullOrEmpty(visibleTo))
+                    {
+                        model.Responsibilities = new List<ReportResponsibility>();
+
+                        var visibleToResponsibilityTypes = visibleTo.Split(',').Select(x => int.Parse(x));
+                                                
+                        //add any new responsibilities
+                        foreach (var newResponsibilityType in visibleToResponsibilityTypes)
+                        {
+                            model.Responsibilities.Add(new ReportResponsibility
+                            {
+                                    ReportID = model.ID,
+                                    ResponsibilityTypeID = newResponsibilityType
+                            });                            
+                        }
+                    }
+
                     Company.Add<Report>(model);
 
                     return jsonSuccess("Dashboard successfully created", model.ID.ToString(), "add", HttpStatusCode.Created);
@@ -11754,6 +11773,41 @@ where		D.ObjectType = @targetType and D.ObjectTypeID = @targetTypeID
                     }           
                 }
 
+                var visibleTo = form["VisibleTo"];
+
+                if (!string.IsNullOrEmpty(visibleTo))
+                {
+                    var visibleToResponsibilityTypes = visibleTo.Split(',').Select(x => int.Parse(x));
+
+                    //delete any removed responsibilities
+                    foreach (var responsibility in model.Responsibilities.ToList())
+                    {
+                        if (!visibleToResponsibilityTypes.Contains(responsibility.ResponsibilityTypeID))
+                            Company.ReportResponsibilities.Remove(responsibility);
+                                      
+                    }
+
+                    //add any new responsibilities
+                    foreach (var newResponsibilityType in visibleToResponsibilityTypes)
+                    {
+                        if(!model.Responsibilities.Any(x=>x.ResponsibilityTypeID == newResponsibilityType))
+                        {
+                            model.Responsibilities.Add(new ReportResponsibility
+                            {
+                                ReportID = model.ID,
+                                ResponsibilityTypeID = newResponsibilityType
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var responsibility in model.Responsibilities.ToList())
+                    {
+                        Company.ReportResponsibilities.Remove(responsibility);
+                    }
+                }
+
                 // Static fields
                 var objectType = form["ObjectType"].Split('|').ToArray();
 
@@ -11783,6 +11837,8 @@ where		D.ObjectType = @targetType and D.ObjectTypeID = @targetTypeID
                 {
                     throw new MissingPropertiesException("Report");
                 }
+
+                
             }
             catch (BaseException ex)
             {

@@ -13,6 +13,8 @@ export class Report {
     PowerBIReportID: string;
     ReportLayoutID: number;
     ReportType: string;
+    VisibleToRoles: string[];
+    VisibleTo: string;
 }
 
 export class ReportTile {

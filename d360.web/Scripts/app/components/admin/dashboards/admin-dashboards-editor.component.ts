@@ -4,6 +4,7 @@ import { SelectItem } from 'primeng/primeng';
 import { ReportsService} from '../../../services/reports.service';
 import { Report, ReportType } from '../../../models/report.model';
 import { DropdownOption } from '../../../models/dropdown.model';
+import { ClaimsService } from '../../../services/claims.service';
 
 import * as _ from 'lodash';
 
@@ -32,7 +33,7 @@ import * as _ from 'lodash';
                         <div class="col s12">
                             <div class="FieldName">Target Type</div>
                             <div>                                
-                                <select required [(ngModel)]="editedReport.ObjectType" name="targetType" #targetType="ngModel" style="width:100%;">
+                                <select required [ngModel]="editedReport.ObjectType" (ngModelChange)="editedReport.ObjectType=$event;objectTypeChanged($event);" name="targetType" #targetType="ngModel" style="width:100%;">
                                   <option *ngFor="let p of targetTypes" [value]="p.value">{{p.title}}</option>
                                 </select>
                             </div>       
@@ -51,6 +52,10 @@ import * as _ from 'lodash';
                             <div class="FieldName">File</div>
                             <div><input type="file" (change)="changeFile($event);" accept=".pbix" style="width: 99%" name="File" formenctype="multipart/form-data" /></div>
                         </div>
+                        <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi' && editedReport.ObjectType">
+                            <div class="FieldName">Restrict Visibility To</div>
+                            <div><p-multiSelect [options]="responsibilities" [(ngModel)]="editedReport.VisibleToRoles" [style]="{'width':'100%'}" name="responsibilities"></p-multiSelect></div>
+                        </div>
                         <div class="col s12">
                             <div class="FieldName">Description</div>
                             <p-editor name="description" [style]="{'height':'150px'}" [(ngModel)]="editedReport.Description"></p-editor>
@@ -63,7 +68,7 @@ import * as _ from 'lodash';
                     </form>                           
                 </div>
                 `,
-    providers: [ReportsService],
+    providers: [ReportsService, ClaimsService],
 })
 
 export class AdminDashboardsEditor {
@@ -78,9 +83,13 @@ export class AdminDashboardsEditor {
     reportTypes: DropdownOption[] = [];
     targetTypes: DropdownOption[] = [];
     reportLayouts: DropdownOption[] = [];
+    responsibilities: SelectItem[] = [];
     file: File;
     
-    constructor(private reportsService: ReportsService) {        
+    constructor(
+        private reportsService: ReportsService,
+        private claimsService: ClaimsService
+    ) {        
         this.reportTypes.push({ value:"legacy", title:"Default" });
         this.reportTypes.push({ value:"powerbi", title:"PowerBI" });
     }
@@ -88,7 +97,8 @@ export class AdminDashboardsEditor {
     ngOnInit() {
         if (this.report != undefined) {
             this.editedReport = _.cloneDeep(this.report);
-            this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();
+            this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();            
+            this.objectTypeChanged(this.editedReport.ObjectType,true);
         }
         else {
             this.editedReport = new Report();
@@ -127,4 +137,28 @@ export class AdminDashboardsEditor {
     private changeFile(e) {
         this.file = e.srcElement.files[0];
     }    
+
+    private objectTypeChanged(type: string, isInitialLoad?: boolean) {
+        let object = type.split("|");
+        if (!object || object.length < 2) {
+            console.log("ERROR - INVALID OBJECT INFO SPECIFIED.");
+            return;
+        }
+        if (!isInitialLoad) {
+            this.editedReport.VisibleToRoles = [];
+        }
+        this.claimsService.getClaims(Number(object[1]), object[0]).
+            then(res => {
+                this.responsibilities = [];
+                res.forEach(o => {
+                    this.responsibilities.push({
+                        label: o.Name,
+                        value: o.ResponsibilityTypeID
+                    });                    
+                });
+                if (isInitialLoad) {
+                    this.editedReport.VisibleToRoles = this.editedReport.VisibleTo.split(',');
+                }
+            });
+    }
 };
