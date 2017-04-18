@@ -5468,21 +5468,21 @@ where    A.RuleID = @id", new { id });
                                 dtl = null;
                                 break;
                             #endregion
-                            case StatisticCheckType.Count:                  //2
-                                #region
-                                oID = int.Parse(fields.Element("ObjectID").Value);
-                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
-                                    }
-                                });
-                                dtl = null;
-                                break;
-                            #endregion
+                            //case StatisticCheckType.Count:                  //2
+                            //    #region
+                            //    oID = int.Parse(fields.Element("ObjectID").Value);
+                            //    dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
+                            //    model.rows.Add(new DetailReadOnlyRowModel
+                            //    {
+                            //        columns = 1,
+                            //        FirstColumnFields = new List<ReadOnlyField>
+                            //        {
+                            //            new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
+                            //        }
+                            //    });
+                            //    dtl = null;
+                            //    break;
+                            //#endregion
                             case StatisticCheckType.PropertyValueCheck:     //3
                                 #region
                                 model.rows.Add(new DetailReadOnlyRowModel
@@ -5591,30 +5591,30 @@ where    A.RuleID = @id", new { id });
                                 dtl = null;
                                 break;
                             #endregion
-                            case StatisticCheckType.EventMetric:        //9
-                                #region
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 2,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_ValidField", Name = "Valid Field", Value = fields.Element("ValidField").Value }
-                                    },
-                                    SecondColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_InvalidField", Name = "Invalid Field", Value = fields.Element("InvalidField").Value }
-                                    }
-                                });
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { FieldName = "Display_Threshold", Name = "Threshold", Value = fields.Element("Threshold").Value }
-                                    }
-                                });
-                                break;
-                            #endregion
+                            //case StatisticCheckType.EventMetric:        //9
+                            //    #region
+                            //    model.rows.Add(new DetailReadOnlyRowModel
+                            //    {
+                            //        columns = 2,
+                            //        FirstColumnFields = new List<ReadOnlyField>
+                            //        {
+                            //            new ReadOnlyField { FieldName = "Display_ValidField", Name = "Valid Field", Value = fields.Element("ValidField").Value }
+                            //        },
+                            //        SecondColumnFields = new List<ReadOnlyField>
+                            //        {
+                            //            new ReadOnlyField { FieldName = "Display_InvalidField", Name = "Invalid Field", Value = fields.Element("InvalidField").Value }
+                            //        }
+                            //    });
+                            //    model.rows.Add(new DetailReadOnlyRowModel
+                            //    {
+                            //        columns = 1,
+                            //        FirstColumnFields = new List<ReadOnlyField>
+                            //        {
+                            //            new ReadOnlyField { FieldName = "Display_Threshold", Name = "Threshold", Value = fields.Element("Threshold").Value }
+                            //        }
+                            //    });
+                            //    break;
+                            //#endregion
                             case StatisticCheckType.PredicateMetric:    //10
                                 #region
                                 oID = int.Parse(fields.Element("Predicate").Value);

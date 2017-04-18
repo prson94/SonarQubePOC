@@ -382,7 +382,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Values.resx</DependentUpon>
     </Compile>
-    <Compile Include="ScoreTypeMetric.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="resources\Fields.resx">

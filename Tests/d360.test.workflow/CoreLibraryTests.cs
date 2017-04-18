@@ -35,7 +35,7 @@ namespace d360.test.workflow
             }
 
             var api = new MandrillApi("XBspYSVRlKva-pXOlDYWEg");
-            api.Messages.SendTemplate(message, templateID);
+            var result = api.Messages.SendTemplateAsync(message, templateID).Result;
 
             message = null;
             api = null;
@@ -98,7 +98,7 @@ namespace d360.test.workflow
             message.AddRcptMergeVars(toEmail, "request_url", "http://www.cnn.com/#");
 
             var api = new MandrillApi("XBspYSVRlKva-pXOlDYWEg");
-            api.Messages.SendTemplate(message, "suggest-new-artifact-approver");
+            var result = api.Messages.SendTemplateAsync(message, "suggest-new-artifact-approver").Result;
         }
 
         [TestMethod]

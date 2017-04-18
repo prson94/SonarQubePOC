@@ -224,12 +224,12 @@ namespace d360.test.web.Tests.Controllers.ApiController
             Assert.IsNotNull(result);
         }
 
-        [TestMethod, TestCategory("ApiController"), TestCategory("Fusion"), TestCategory("Fusion Rules"), TestCategory("Relationships"), TestCategory("Lineage")]
-        public void GetIntersectRoles()
-        {
-            var result = controller.GetIntersectRoles();
-            Assert.IsNotNull(result);
-        }
+        //[TestMethod, TestCategory("ApiController"), TestCategory("Fusion"), TestCategory("Fusion Rules"), TestCategory("Relationships"), TestCategory("Lineage")]
+        //public void GetIntersectRoles()
+        //{
+        //    var result = controller.GetIntersectRoles();
+        //    Assert.IsNotNull(result);
+        //}
 
         [TestMethod, TestCategory("ApiController"), TestCategory("Fusion"), TestCategory("Fusion Rules"), TestCategory("Relationships")]
         public void GetDirectObjectRelateTypes()

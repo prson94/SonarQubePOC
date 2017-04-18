@@ -171,28 +171,28 @@ namespace d360.test.web.Tests.Controllers.ApiController
             Assert.IsNotNull(result);
         }
 
-        [TestMethod, TestCategory("ApiController"), TestCategory("Relationships")]
-        public void GetCriticalRelations()
-        {
-            var result = controller.GetCriticalRelations(testObject, testObjectId).ToList();
+        //[TestMethod, TestCategory("ApiController"), TestCategory("Relationships")]
+        //public void GetCriticalRelations()
+        //{
+        //    var result = controller.GetCriticalRelations(testObject, testObjectId).ToList();
 
-            Assert.IsNotNull(result);
-        }
+        //    Assert.IsNotNull(result);
+        //}
 
-        [TestMethod, TestCategory("ApiController"), TestCategory("Relationships")]
-        public void RelationshipsForObjectByTargetType()
-        {
-            var targetType = SystemObjects.Artifact;
-            var targetId = 4648;
-            var intersectTypeId = 8306;
+        //[TestMethod, TestCategory("ApiController"), TestCategory("Relationships")]
+        //public void RelationshipsForObjectByTargetType()
+        //{
+        //    var targetType = SystemObjects.Artifact;
+        //    var targetId = 4648;
+        //    var intersectTypeId = 8306;
 
-            var result = controller.RelationshipsForObjectByTargetType(testObject, testObjectId, targetType, targetId, intersectTypeId, false).ToList();
+        //    var result = controller.RelationshipsForObjectByTargetType(testObject, testObjectId, targetType, targetId, intersectTypeId, false).ToList();
 
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result.Count > 0);
-            Assert.IsFalse(result.Any(r => r.IntersectTypeID != intersectTypeId));
+        //    Assert.IsNotNull(result);
+        //    Assert.IsTrue(result.Count > 0);
+        //    Assert.IsFalse(result.Any(r => r.IntersectTypeID != intersectTypeId));
             
-        }
+        //}
 
         [TestMethod, TestCategory("ApiController"), TestCategory("Relationships"), TestCategory("Exports")]
         public void RelationshipsForObjectByTargetTypeExportExcel()

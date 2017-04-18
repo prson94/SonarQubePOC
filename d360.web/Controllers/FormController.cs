@@ -14687,7 +14687,7 @@ order by	T.Name, I.DisplayValue";
             var xml = XElement.Parse(type.Configuration);
             switch (type.CheckType)
             {
-                case StatisticCheckType.Count:
+                //case StatisticCheckType.Count:
                 case StatisticCheckType.Existence:
                 case StatisticCheckType.ScoreRollupViaRelationship:
                 case StatisticCheckType.ScoreRollupViaOwnership:
@@ -14701,11 +14701,11 @@ order by	T.Name, I.DisplayValue";
                     model.Add("PropertyName", xml.Element("PropertyName").Value);
                     model.Add("PropertyValue", (xml.Element("PropertyValue") != null) ? xml.Element("PropertyValue").Value : "");
                     break;
-                case StatisticCheckType.EventMetric:
-                    model.Add("ValidField", xml.Element("ValidField").Value);
-                    model.Add("InvalidField", xml.Element("InvalidField").Value);
-                    model.Add("Threshold", xml.Element("Threshold").Value);
-                    break;
+                //case StatisticCheckType.EventMetric:
+                //    model.Add("ValidField", xml.Element("ValidField").Value);
+                //    model.Add("InvalidField", xml.Element("InvalidField").Value);
+                //    model.Add("Threshold", xml.Element("Threshold").Value);
+                //    break;
                 case StatisticCheckType.PredicateMetric:
                     model.Add("Predicate", xml.Element("Predicate").Value);
                     break;
@@ -14737,7 +14737,7 @@ order by	T.Name, I.DisplayValue";
         [Route("StatisticType_CheckTypeOptions")]
         public JsonNetResult StatisticType_CheckTypeOptions()
         {
-            var models = StatisticCheckType.Count.GetEnumList().Select(i => new KnockoutListItem(i.Name, ((int)i.ID).ToString()));
+            var models = StatisticCheckType.Existence.GetEnumList().Select(i => new KnockoutListItem(i.Name, ((int)i.ID).ToString()));
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -14767,29 +14767,29 @@ SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value,
 from	ResponsibilityType T
 		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
                     break;
-                case StatisticCheckType.Count:
-                    models.AddRange(Company.Query<KnockoutListItem>(@"
-SELECT	'AttributeType|'+ cast(T.ID as varchar) as value, 
-		'Attribute :' + T.Name as title
-from	AttributeType T
-		inner join AttributeTypeRelation R on R.AttributeTypeID = T.ID and T.ParentID is null and R.ObjectType = @type and R.ObjectID = @id
-union 
-SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value, 
-		'Responsibility :' + Name as title 
-from	ResponsibilityType T
-		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id
-union
-select  distinct 
-        D.Object + '|' + cast(D.ObjectID as varchar) as value, 
-        'Relationship :' + D.TextPath as title
-from    [IntersectType] RT
-        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
-                                            and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
-                                            and ( 
-                                                (RT.Subject = @type and RT.SubjectID = @id) OR 
-                                                (RT.Object = @type and RT.ObjectID = @id) 
-                                                )", new { type = type.ToString(), id }).OrderBy(i => i.title));
-                    break;
+//                case StatisticCheckType.Count:
+//                    models.AddRange(Company.Query<KnockoutListItem>(@"
+//SELECT	'AttributeType|'+ cast(T.ID as varchar) as value, 
+//		'Attribute :' + T.Name as title
+//from	AttributeType T
+//		inner join AttributeTypeRelation R on R.AttributeTypeID = T.ID and T.ParentID is null and R.ObjectType = @type and R.ObjectID = @id
+//union 
+//SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value, 
+//		'Responsibility :' + Name as title 
+//from	ResponsibilityType T
+//		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id
+//union
+//select  distinct 
+//        D.Object + '|' + cast(D.ObjectID as varchar) as value, 
+//        'Relationship :' + D.TextPath as title
+//from    [IntersectType] RT
+//        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
+//                                            and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
+//                                            and ( 
+//                                                (RT.Subject = @type and RT.SubjectID = @id) OR 
+//                                                (RT.Object = @type and RT.ObjectID = @id) 
+//                                                )", new { type = type.ToString(), id }).OrderBy(i => i.title));
+//                    break;
                 case StatisticCheckType.PropertyValueCheck:
                 case StatisticCheckType.PropertyPopulated:
                     switch (type)
@@ -14864,7 +14864,7 @@ from    [IntersectType] RT
 
             switch (checkType)
             {
-                case StatisticCheckType.Count:
+                //case StatisticCheckType.Count:
                 case StatisticCheckType.Existence:
                 case StatisticCheckType.ScoreRollupViaRelationship:
                 case StatisticCheckType.ScoreRollupViaOwnership:
@@ -14897,11 +14897,11 @@ from    [IntersectType] RT
                         fields.Add(checksElement);
                     }
                     break;
-                case StatisticCheckType.EventMetric:
-                    fields.Add(new XElement("ValidField", form["ValidField"]));
-                    fields.Add(new XElement("InvalidField", form["InvalidField"]));
-                    fields.Add(new XElement("Threshold", decimal.Parse(form["Threshold"])));
-                    break;
+                //case StatisticCheckType.EventMetric:
+                //    fields.Add(new XElement("ValidField", form["ValidField"]));
+                //    fields.Add(new XElement("InvalidField", form["InvalidField"]));
+                //    fields.Add(new XElement("Threshold", decimal.Parse(form["Threshold"])));
+                //    break;
                 case StatisticCheckType.PredicateMetric:
                     fields.Add(new XElement("Predicate", form["Predicate"]));
                     break;
