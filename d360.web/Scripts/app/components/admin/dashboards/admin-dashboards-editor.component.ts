@@ -156,7 +156,7 @@ export class AdminDashboardsEditor {
                         value: o.ResponsibilityTypeID
                     });                    
                 });
-                if (isInitialLoad) {
+                if (isInitialLoad && this.editedReport && this.editedReport.VisibleTo) {
                     this.editedReport.VisibleToRoles = this.editedReport.VisibleTo.split(',');
                 }
             });
