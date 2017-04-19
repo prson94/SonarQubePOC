@@ -18,3 +18,4 @@ import 'brace/mode/sql';
 import 'brace/theme/eclipse';
 import 'gojs';
 import 'ng2-ace-editor';
+import 'powerbi-client';

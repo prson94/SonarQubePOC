@@ -4,6 +4,7 @@ import { MessagesService } from '../../../services/messages.service';
 import { DashboardService } from '../../../services/dashboard.service';
 import { Dashboard } from '../../../models/dashboard.model'
 
+
 @Component({
     selector: 'd3s-dashboard-tab',
     template: `
@@ -15,7 +16,7 @@ import { Dashboard } from '../../../models/dashboard.model'
                         <div class="row">
                             <div class="col s12">
                                 <span style="padding:0 10px;">Dashboard:</span>
-                                <select [(ngModel)]="dashboard" style="width:300px;">
+                                <select [(ngModel)]="dashboard" (change)="selected=null" style="width:300px;">
                                     <option></option>
                                     <option *ngFor="let dashboard of dashboards" [ngValue]="dashboard">{{dashboard.Name}}</option>
                                 </select>                                
@@ -26,7 +27,7 @@ import { Dashboard } from '../../../models/dashboard.model'
                         </div>                        
                     </div>
                     <div class="tile tile-detail" *ngIf="selected">
-                        <d3s-powerbi-viewer [dashboard]="selected"></d3s-powerbi-viewer>                        
+                        <d3s-powerbi-viewer #viewer [dashboard]="selected"></d3s-powerbi-viewer>                        
                     </div>
                     <div class="tile tile-detail" *ngIf="!selected">
                         <h4 class="center" style="padding:30px;">Please choose a dashboard from the dropdown above and press render to view the specified dashboards content.</h4>
@@ -62,4 +63,6 @@ export class DashboardTabComponent extends BaseComponent implements OnInit {
                 this.isLoading = false;
             });
     }  
+
+   
 }

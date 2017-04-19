@@ -125,7 +125,7 @@ namespace d360.extensions.powerbi
                             // Update the datasource with the specified credentials
                             await client.Gateways.PatchDatasourceAsync(workspaceCollectionName, workspaceId, datasources.Value[datasources.Value.Count - 1].GatewayId, datasources.Value[datasources.Value.Count - 1].Id, delta);
 
-                            return;
+                            //return;
                         }
                     }
                     catch
