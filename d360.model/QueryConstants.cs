@@ -1540,10 +1540,15 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            vs.ActivityType,
 	            vs.Settings,
                 vs.Fields,
-	            vs.Name
+	            vs.Name,
+				i.RunCount
             from workflow.[type] t
             inner join workflow.[version] v on v.typeid = t.id
             inner join workflow.[versionstep] vs on vs.versionid = v.id
+			left join (
+				select stepid, count(stepid) as RunCount from workflow.itemstep
+				group by stepid
+			) i on i.stepid = vs.id
             where t.id = @id
 ";
 

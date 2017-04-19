@@ -40,6 +40,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     @Input() hasClose: boolean = false;
     @Input() hasBack: boolean = false;
     @Input() selection: NodeModel | LinkModel;
+    @Input() selectedStepId: string;
+    @Output() selectedStepIdChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
     @Output() selectionChange = new EventEmitter();
@@ -109,11 +111,16 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.initializeDiagram();
             this.initializeMenuItems();
         }
+
+        if (changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue) {
+            this.myDiagram.clearSelection();
+            this.myDiagram.select(this.myDiagram.findPartForKey(changes['selectedStepId'].currentValue));
+        }
     }
 
     public ngAfterViewInit() {
         this.resizeDiagram();
-        this.resizePalette();
+        //this.resizePalette();
     }
 
     public ngOnDestroy() {
@@ -153,8 +160,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         this.myDiagram.commandHandler.deleteSelection = () => this.deleteSelection();
 
-        //disallow cycles
-        this.myDiagram.validCycle = go.Diagram.CycleNotDirected;
+
+        this.myDiagram.validCycle = go.Diagram.CycleNotDirected; //disallow cycles
+        this.myDiagram.maxSelectionCount = 1; //only select 1 item at a time, this simplifies a lot of things
     }
 
     private initializePalette() {
@@ -342,7 +350,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.getActivityTypes()
             .then(() => this.populateDiagram())
             .then(() => this.initializePalette())
-            .then(() => this.initializeFormFields());
+            .then(() => this.initializeFormFields())
+            .then(() => this.isWindowVisible = !this.isReadOnly);
+            //.then(() => { this.resizeDiagram(); this.resizePalette(); });
     }
 
     //#endregion
@@ -465,11 +475,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.stepType = m.StepType;
             n.category = 'task';
             n.fields = m.FieldsObject;
-
+            n.runCount = m.RunCount;
 
             //special case for Form to deal with XML returning an object when field count = 1 instead of an array
             if (n.activityType == WorkflowActivityType.Form) {
-                if (n.fields.form != null && n.fields.form.field != null && n.fields.form.field.length == null) {
+                if (n.fields != null && n.fields.form != null && n.fields.form.field != null && n.fields.form.field.length == null) {
                     let f = _.cloneDeep(n.fields.form.field);
 
                     n.fields.form.field = [];
@@ -550,13 +560,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private setTransitionIcon(n: LinkModel) {
         switch (+n.transitionType) {
             case TransitionType.Always:
-                n.icon = '';
+                (<go.GraphLinksModel>this.myDiagram.model).setDataProperty(n, 'icon', '');
                 break;
             case TransitionType.Condition:
-                n.icon = '\uf121';
+                (<go.GraphLinksModel>this.myDiagram.model).setDataProperty(n, 'icon', '\uf121');
                 break;
             case TransitionType.Timer:
-                n.icon = '\uf017';
+                (<go.GraphLinksModel>this.myDiagram.model).setDataProperty(n, 'icon', '\uf017');
                 break;
         }
     }
@@ -574,6 +584,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     //#region events
 
     private changeStep(e: NodeModel) {
+
+        this.myDiagram.startTransaction('changeStep');
+
         let n = this.myDiagram.model.findNodeDataForKey(e.key);
         if (n != null) {
             n.name = e.name;
@@ -613,17 +626,23 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             delete n.settings.WaitForAllTransitions;
         //console.log('changeStep: ', n, e);
 
+        this.myDiagram.commitTransaction('changeStep');
+
     }
 
     private changeTransition(e: LinkModel) {
+        this.myDiagram.startTransaction('changeTransition');
+
         let i = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.findIndex(l => (<any>l).from == e.from && (<any>l).to == e.to);
         let l = null;
         if (i >= 0)
             l = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray[i];
         if (l != null) {
-            //l = e;
-            l.name = e.name;
+
             l.transitionType = e.transitionType;
+
+            this.setTransitionIcon(l);
+            l.name = e.name;
             l.condition = e.condition;
             l.settings = e.settings;
             l.icon = e.icon;
@@ -633,9 +652,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             }
 
             this.setTransitionIcon(l);
-
             //console.log('transition change: ', e, l);
         }
+
+        this.myDiagram.commitTransaction('changeTransition');
     }
 
     private menuClick(e: any) {
@@ -656,7 +676,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         this.resizeDiagram();
-        this.resizePalette();
+        //this.resizePalette();
     }
 
     private resizeDiagram() {
@@ -670,22 +690,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
         }
 
+        //debugging
+        //console.log('resizeDiagram :: innerHeight', window.innerHeight);
+        //console.log('resizeDiagram :: offsetTop', this.diagramRef.nativeElement.offsetTop);
+        //console.log('resizeDiagram :: offsetParent', (this.diagramRef.nativeElement.offsetParent) ? this.diagramRef.nativeElement.offsetParent.offsetTop : 0);
+        //console.log('resizeDiagram :: height', height - offset - 35);
 
-        this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
-
-        //console.log('resizeDiagram');
-    }
-
-    private resizePalette() {
-        let offset = this.paletteRef.nativeElement.offsetTop;
-        let height = window.innerHeight;
-
-        if (this.paletteRef.nativeElement.offsetParent) {
-            offset += this.paletteRef.nativeElement.offsetParent.offsetTop;
-        }
-
-
-        this.paletteRef.nativeElement.style.height = (height - offset - 50) + 'px';
+        this.diagramRef.nativeElement.style.height = (height - offset - 35) + 'px';
+        this.paletteRef.nativeElement.style.height = (height - offset - 35) + 'px';
     }
 
     private reOrderLayout() {
@@ -695,11 +707,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private ChangedSelection(e: any) {
         this.sel = e.diagram.selection;
-
         if (this.sel.count == 0) {
             this.selectedData = null;
             this.showNodeTabs = false;
             this.showLinkTabs = false;
+            this.selectedStepId = null;
+            this.selectedStepIdChange.emit(null);
         } else {
             var sel = _.cloneDeep(this.sel.toArray());
 
@@ -708,6 +721,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 if (this.selectedData.diagramObjectType == DiagramObjectType.Node) {
                     this.showNodeTabs = true;
                     this.showLinkTabs = false;
+                    this.selectedStepId = this.selectedData.key;
+                    this.selectedStepIdChange.emit(this.selectedData.key);
 
                     let i = this.myDiagram.model.nodeDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
                     if (i > -1) {
@@ -818,6 +833,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         console.log(nodes, links, coll, this.workflowFieldsService.getFields(), this.workflowFieldsService.getUsedFields());
         this.myDiagram.removeParts(coll, false);
+        this.myDiagram.clearSelection();
+        this.selectedStepId = null;
+        this.selectedStepIdChange.emit(null);
+        this.selectedData = null;
     }
 
     //#endregion
@@ -965,6 +984,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     margin: 5
                 },
                     this.makeIconPanel(nodeFontSize)
+                ),
+                this.g(go.Panel, go.Panel.Horizontal, {
+                    alignment: go.Spot.BottomRight,
+                    margin: 5
+                },
+                    this.makeCountPanel(nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -1119,13 +1144,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 alignment: go.Spot.Center,
                 margin: 2
             },
-            //this.g(go.Shape, "Circle",
-            //    {
-            //        stroke: null,
-            //        toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
-            //    })
-            //    ,
-            //new go.Binding("fill", "fore")),
             this.g(go.TextBlock,
                 {
                     row: 0,
@@ -1136,14 +1154,42 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 },
                 new go.Binding("text", "icon").makeTwoWay(),
                 new go.Binding("stroke", "fore").makeTwoWay()
-                //,
-                //new go.Binding("stroke", "back")
             )
-            //,
-            //new go.Binding("visible", binding)
         );
 
         return iconPanel;
+    }
+
+    private makeCountPanel(fontSize) {
+        fontSize -= 1;
+        let countPanel = this.g(go.Panel,
+            "Auto",
+            {
+                alignment: go.Spot.Center,
+                margin: 1
+            },
+            this.g(go.Shape, "RoundedRectangle",
+                {
+                    stroke: null,
+                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: 'Item count' })))
+                },
+                new go.Binding("fill", "fore")
+            ),
+            this.g(go.TextBlock,
+                {
+                    row: 0,
+                    margin: 0,
+                    alignment: go.Spot.Center,
+                    editable: false,
+                    font: (fontSize) + "pt sans-serif",
+                },
+                new go.Binding("text", "runCount").makeTwoWay(),
+                new go.Binding("stroke", "back").makeTwoWay()
+            )
+            , new go.Binding("visible", "runCount", (k) => { return this.isReadOnly && k > 0; })
+        );
+
+        return countPanel;
     }
 
     private makePort2(name: string, leftside: boolean) {

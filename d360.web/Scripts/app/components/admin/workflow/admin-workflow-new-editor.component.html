@@ -45,7 +45,7 @@
             </div>
             <div *ngIf="model.Event.ChangeType == WorkflowChangeType.Schedule">
                 <div class="FieldName">
-                    Interval
+                    Run Frequency (Days)
                 </div>
                 <div>
                     <input type="number" [ngModel]="model.Event.SettingsObject.Settings.ScheduleInterval" (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event;  validate();" style="width: 95%"/>

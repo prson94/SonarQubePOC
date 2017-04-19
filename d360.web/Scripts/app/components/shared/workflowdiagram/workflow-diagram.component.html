@@ -1,13 +1,5 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="tile tile-detail">
-    <header>
-        <span *ngIf="model != null && model.Name != ''">
-            Workflow - {{model?.Type?.Name}}
-        </span>
-        <span *ngIf="model == null || model.Name != ''">
-            New Workflow
-        </span>
-    </header>
     <div class="row">
         <div class="col s12 m6">
             <div class="FieldName">
@@ -42,7 +34,7 @@
     </header>
 
     <div style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
-        <d3s-overlay-window width="500" maxHeight="450" padding="0" [(visible)]="isWindowVisible" [headerText]="overlayHeader" [overflowScroll]="false">
+        <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="overlayHeader" [overflowScroll]="false">
             <ul class="tab-menu">
                 <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'">
                     <i class="fa fa-info-circle fa-2x"></i>
@@ -50,8 +42,11 @@
                 <li *ngIf="!isReadOnly" (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'">
                     <i class="fa fa-pencil fa-2x"></i>
                 </li>
+                <!--<li *ngIf="isReadOnly" (click)="selectTab('history')" class="tab-item" [class.selected]="tab == 'history'">
+                    <i class="fa fa-history fa-2x"></i>
+                </li>-->
             </ul>
-            <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px; overflow-y:scroll; width:100%; height: 350px;">
+            <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px; overflow-y: auto; width:100%; height: 350px;">
                 <div *ngSwitchCase="'info'">
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
                         <div class="row">
@@ -156,11 +151,19 @@
                         </div>
                         <div *ngIf="selectedData.transitionType == TransitionType.Timer">
                             <div class="FieldName">
-                                Days
+                                Frequency (Days)
                             </div>
                             <div>
                                 {{selectedData.settings.TimerInterval}}
                             </div>
+                            <div class="FieldName">
+                                Conditions
+                            </div>
+                            <p-dataTable [value]="selectedData.condition" selectionMode="single">
+                                <p-column field="@FieldName" header="Field Name"></p-column>
+                                <p-column field="@Operator" header="Operator"></p-column>
+                                <p-column field="@Value" header="Value"></p-column>
+                            </p-dataTable>
                         </div>
                     </div>
                     <div *ngIf="selectedData == null">
@@ -186,16 +189,36 @@
                         Nothing selected
                     </div>
                 </div>
+                <!--<div *ngSwitchCase="'history'">
+                    history goes here
+                </div>-->
             </div>
         </d3s-overlay-window>
     </div>
 
     <div class="row">
+        <div class="col s12" style="padding: 0">
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="vertical-align: top; background-color: #e8eaee; padding: 0; width: 210px;" [style.display]="(isReadOnly) ? 'none' : 'table-cell'">
+                            <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--<div class="row">
+        <div class="col" style="background-color:#eee; width:20%; max-width:210px;" [style.display]="(isReadOnly) ? 'none' : 'block'">
+            <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
+        </div>
         <div class="col" [ngClass]="(isReadOnly) ? 's12' : 's9 m10'">
             <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
         </div>
-        <div class="col s3 m2" style="background-color:#eee;" [style.display]="(isReadOnly) ? 'none' : 'block'">
-            <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
-        </div>
-    </div>
+    </div>-->
 </div>

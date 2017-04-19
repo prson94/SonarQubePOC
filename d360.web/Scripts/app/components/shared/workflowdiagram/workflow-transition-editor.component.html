@@ -1,0 +1,78 @@
+﻿<div class="row">
+    <div class="col s12">
+        <div class="FieldName">Name</div>
+        <div>
+            <input type="text" style="width: 95%" [ngModel]="transition.name" (ngModelChange)="transition.name = $event; transitionChange.emit(transition)" />
+        </div>
+    </div>
+    <div class="col s12">
+        <div class="FieldName">Transition Type</div>
+        <div>
+            <select [ngModel]="transition.transitionType" (ngModelChange)="changeType($event)" style="width: 95%">
+                <option *ngFor="let t of transitionTypes" [value]="t.ID">{{t.Name}}</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div [ngSwitch]="transition.transitionType">
+    <div *ngSwitchCase="TransitionType.Condition" class="row">
+        <div class="col s12">
+            <header>&nbsp;<d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions></header>
+            <p-dataTable [value]="transition.condition" selectionMode="single">
+                <p-column field="@FieldName" header="Field Name"></p-column>
+                <p-column field="@Operator" header="Operator"></p-column>
+                <p-column field="@Value" header="Value"></p-column>
+                <p-column>
+                    <template let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">
+                            <a style="cursor:pointer;" (click)="remove(item)"><i class="fa fa-trash"></i></a>
+                        </div>
+                    </template>
+                </p-column>
+            </p-dataTable>
+
+            <d3s-workflow-condition-editor *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing"
+                                           [objectId]="objectId"
+                                           [objectType]="objectType"
+                                           [condition]="condition"
+                                           (onSave)="saveCondition($event)"
+                                           (onClose)="formMode = FormMode.Default"
+                                           [formFields]="formFields">
+            </d3s-workflow-condition-editor>
+
+        </div>
+    </div>
+    <div *ngSwitchCase="TransitionType.Timer" class="row">
+        <div class="col s12">
+            <div class="FieldName">Frequency (Days)</div>
+            <div>
+                <input type="number" [ngModel]="transition.settings.TimerInterval" (ngModelChange)="transition.settings.TimerInterval = $event; transitionChange.emit(transition)" style="width: 95%" />
+            </div>
+        </div>
+        <div class="col s12">
+            <header>&nbsp;<d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions></header>
+            <p-dataTable [value]="transition.condition" selectionMode="single">
+                <p-column field="@FieldName" header="Field Name"></p-column>
+                <p-column field="@Operator" header="Operator"></p-column>
+                <p-column field="@Value" header="Value"></p-column>
+                <p-column>
+                    <template let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">
+                            <a style="cursor:pointer;" (click)="remove(item)"><i class="fa fa-trash"></i></a>
+                        </div>
+                    </template>
+                </p-column>
+            </p-dataTable>
+
+            <d3s-workflow-condition-editor *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing"
+                                           [objectId]="objectId"
+                                           [objectType]="objectType"
+                                           [condition]="condition"
+                                           (onSave)="saveCondition($event)"
+                                           (onClose)="formMode = FormMode.Default"
+                                           [formFields]="formFields">
+            </d3s-workflow-condition-editor>
+
+        </div>
+    </div>
+</div>

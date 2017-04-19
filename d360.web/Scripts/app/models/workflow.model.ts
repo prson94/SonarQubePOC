@@ -186,6 +186,7 @@ export class WorkflowDiagramNode {
     Fields: string;
     FieldsObject: any;
     Name: string;
+    RunCount: number;
 }
 
 export class WorkflowDiagramLink {
@@ -237,6 +238,7 @@ export class NodeModel {
     icon: string;
     activityDescription: string;
     activityName: string;
+    runCount: number;
 
 
     settings: any = {};

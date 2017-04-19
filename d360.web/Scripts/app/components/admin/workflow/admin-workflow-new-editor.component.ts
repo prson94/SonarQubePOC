@@ -60,22 +60,25 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
             this.subjectAreaName = 'Subject Area';
         }
 
-        this.load();
+        this.load().then(() => {
+            //create initial model and settings if needed
+            if (this.model == null)
+                this.model = new WorkflowDiagramModel();
+            if (this.model.Event.SettingsObject == null)
+                this.model.Event.SettingsObject = {};
+            if (this.model.Event.SettingsObject.Settings == null)
+                this.model.Event.SettingsObject.Settings = {};
+            this.isLoading = false;
+        });
 
-        //create initial model and settings if needed
-        if (this.model == null)
-            this.model = new WorkflowDiagramModel();
-        if (this.model.Event.SettingsObject == null)
-            this.model.Event.SettingsObject = {};
-        if (this.model.Event.SettingsObject.Settings == null)
-            this.model.Event.SettingsObject.Settings = {};
+
 
     }
 
-    load() {
+    load(): Promise<any> {
         this.isLoading = true;
 
-        this.workflowService.getWorkflowObjectTypes()
+        return this.workflowService.getWorkflowObjectTypes()
             .then(r => { this.workflowObjectTypes = r; })
             .then(() => this.workflowService.getChangeTypes())
             .then(r => { this.changesTypes = r; })
@@ -122,7 +125,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                         });
                 }
             })
-            .then(() => { this.validate(); this.isLoading = false; });
+            .then(() => { this.validate(); });
 
     }
 

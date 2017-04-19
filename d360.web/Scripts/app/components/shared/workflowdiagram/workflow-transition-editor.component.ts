@@ -14,6 +14,7 @@ import {
     TransitionTypeInfo,
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
+import { FormMode } from '../../../models/form.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
@@ -23,61 +24,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-workflow-transition-editor',
     providers: [WorkflowService],
-    template: `
-<div class="row">
-    <div class="col s12">
-        <div class="FieldName">Name</div>
-        <div>
-            <input type="text" style="width: 95%" [ngModel]="transition.name" (ngModelChange)="transition.name = $event; transitionChange.emit(transition)" />
-        </div>
-    </div>
-    <div class="col s12">
-        <div class="FieldName">Transition Type</div>
-        <div>
-            <select [ngModel]="transition.transitionType" (ngModelChange)="changeType($event)" style="width: 95%">
-                <option *ngFor="let t of transitionTypes" [value]="t.ID">{{t.Name}}</option>
-            </select>
-        </div>
-    </div>
-</div>
-<div [ngSwitch]="transition.transitionType">
-    <div *ngSwitchCase="TransitionType.Condition" class="row">
-        <div class="col s12">
-            <header>&nbsp;<d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions></header>
-            <p-dataTable [value]="transition.condition" selectionMode="single">
-                <p-column field="@FieldName" header="Field Name"></p-column>
-                <p-column field="@Operator" header="Operator"></p-column>
-                <p-column field="@Value" header="Value"></p-column>
-                <p-column>
-                    <template let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <a style="cursor:pointer;" (click)="remove(item)"><i class="fa fa-trash"></i></a>
-                        </div>
-                    </template>
-                </p-column>
-            </p-dataTable>
-            
-            <d3s-workflow-condition-editor
-                *ngIf="showAddCondition"
-                [objectId]="objectId" 
-                [objectType]="objectType" 
-                (onSave)="addCondition($event)" 
-                (onClose)="showAddCondition = false;"
-                [formFields]="formFields">
-            </d3s-workflow-condition-editor>
-
-        </div>
-    </div>
-    <div *ngSwitchCase="TransitionType.Timer" class="row">
-        <div class="col s12">
-            <div class="FieldName">Days</div>
-            <div>
-                <input type="number" [ngModel]="transition.settings.TimerInterval" (ngModelChange)="transition.settings.TimerInterval = $event; transitionChange.emit(transition)" style="width: 95%" />
-            </div>
-        </div>
-    </div>
-</div>
-`
+    templateUrl: './workflow-transition-editor.component.html'
 })
 
 export class WorkflowTransitionEditorComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
@@ -88,13 +35,15 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     private originalTransition: LinkModel;
     private transitionTypes: TransitionTypeInfo[] = [];
-    private showAddCondition = false;
+    private condition = null;
 
     TransitionType = TransitionType;
 
     private fieldsSub: any;
     private formFields: any[] = [];
+    private formMode = FormMode.Default;
 
+    FormMode = FormMode;
 
 
     constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
@@ -118,9 +67,8 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     ngOnChanges(changes: SimpleChanges) {
         if (!changes['transition'].isFirstChange() && changes['transition'].currentValue.key != changes['transition'].previousValue.key) {
-            this.showAddCondition = false;
+            this.formMode = FormMode.Adding;
             this.filterFormFields();
-            //console.log('(change) transition editor form fields:', this.formFields);
         } else if (!changes['transition'].isFirstChange()) {
             this.filterFormFields();
         }
@@ -131,8 +79,9 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     add() {
+        this.condition = null;
         this.filterFormFields();
-        this.showAddCondition = true;
+        this.formMode = FormMode.Adding;
     }
 
     remove(e: any) {
@@ -145,13 +94,24 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         this.transitionChange.emit(this.transition);
     }
 
-    addCondition(e: any) {
-        if (e['@FormInputID'] != null)
-            this.workflowFieldsService.pushUsedField(e['@FormInputID'], e['@VersionStepID'], this.transition.key, this.transition.name);
+    edit(e: any) {
+        this.condition = this.transition.condition;
+        this.formMode = FormMode.Editing;
+    }
 
-        this.transition.condition.push(e);
-        this.showAddCondition = false;
-        this.transitionChange.emit(this.transition);
+    saveCondition(e: any) {
+        if (this.formMode == FormMode.Adding) {
+            if (e['@FormInputID'] != null)
+                this.workflowFieldsService.pushUsedField(e['@FormInputID'], e['@VersionStepID'], this.transition.key, this.transition.name);
+
+            this.transition.condition.push(e);
+            this.transitionChange.emit(this.transition);
+
+        } else if (this.formMode == FormMode.Editing) {
+            this.transition.condition = e;
+        }
+
+        this.formMode = FormMode.Default;
     }
 
     changeType(e: any) {

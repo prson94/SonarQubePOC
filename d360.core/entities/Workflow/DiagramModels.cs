@@ -48,6 +48,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember, NotMapped]
         public dynamic SettingsObject { get; set; }
+
+        [DataMember, NotMapped]
+        public int RunCount { get; set; }
     }
 
     public class WorkflowDiagramLink

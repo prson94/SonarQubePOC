@@ -7,7 +7,7 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 @Component({
     selector: 'd3s-overlay-window',
     template: `
-<div *ngIf="visible" class="container" 
+<div *ngIf="visible" class="container"
     [style.left]="(width >= 0) ? '-' + width + 'px' : null" 
     [style.width]="width + 'px'" 
     [style.height]="(height >= 0) ? height + 'px' : null" 
@@ -33,14 +33,15 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
         box-shadow: 2px 2px 7px 0px rgba(0,0,0,0.5);
         z-index: 899;
         border: 1px solid #ccc;
+        /*resize: both;*/
 }
 `
     ]
 })
 
 export class OverlayWindowComponent {
-    @Input() maxWidth: number = 500;
-    @Input() maxHeight: number = 400;
+    @Input() maxWidth: number = Infinity;
+    @Input() maxHeight: number = Infinity;
     @Input() width: number = -1;
     @Input() height: number = -1;
     @Input() hasCloseButton: boolean = true;
@@ -48,9 +49,18 @@ export class OverlayWindowComponent {
     @Input() headerText: string = '';
     @Input() overflowScroll: boolean = true;
     @Input() visible: boolean = true;
+    @Input() draggable: boolean = false;
     @Output() visibleChange = new EventEmitter();
 
     constructor() { }
+
+    onDrag(e: any) {
+        console.log(e);
+    }
+
+    onDrop(e: any) {
+        console.log(e);
+    }
 
 }
 

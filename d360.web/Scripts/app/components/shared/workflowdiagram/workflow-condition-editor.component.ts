@@ -20,11 +20,12 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Input() objectType: string;
     @Input() objectId: number;
     @Input() formFields: any[] = [];
+    @Input() condition: any = null;
     @Output() onSave = new EventEmitter();
     @Output() onClose = new EventEmitter();
 
 
-    private condition: any = {};
+    //private condition: any = {};
     private fields: FieldType[] = [];
     private selectedField;
     private selectedType;
@@ -52,6 +53,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     ngOnInit() {
         this.setOperators();
         this.load();
+        if (this.condition == null) this.condition = {};
         //console.log('condition editor form fields: ', this.formFields);
     }
 

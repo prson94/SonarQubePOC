@@ -575,6 +575,8 @@
     <Content Include="Scripts\app\components\shared\diagram\lineage-technical-editor.component.html" />
     <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-condition-editor.component.html" />
     <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.component.html" />
+    <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-step-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-transition-editor.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
     <Content Include="Scripts\app\vendor.bundle.js" />
