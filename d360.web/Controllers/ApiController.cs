@@ -842,7 +842,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("Status", a.Status);
 
             //check if this object has dashboards             
-            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();
+            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "Artifact" && x.ObjectID == a.ArtifactTypeID && x.ReportType == "powerbi").Any();
             model.Add("HasDashboards", hasDashboards);
 
             var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && i.WorkflowType == WorkflowType.CertifyArtifact).Any();
@@ -3723,10 +3723,14 @@ where    A.PolicyTypeID = @id and A.[Visible] = 1", columns, joins);
         {
             var items = Company.Query<dynamic>(@"
 select      *
-from        (            
+from        (                 
             select      'ArtifactType|' + cast(ID as varchar(15)) as value,
                         'Artifact Type : ' + Name as title
             from        ArtifactType                        
+            union       
+            select      'Artifact|' + cast(ID as varchar(15)) as value,
+                        'Artifact Instance : ' + Name as title
+            from        ArtifactType            
             union
             select      'Resource|1' as value,
                         'Resource' as title

@@ -187,9 +187,18 @@ namespace d360.web.Controllers
         {
             if (!string.IsNullOrEmpty(reportType))
             {
+                
                 if (id > 0)
                 {
-                    var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == id && x.ReportType == reportType).Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
+                    SystemObjects objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
+                    var objectId = id;
+                    if(objectType == SystemObjects.Artifact)
+                    {
+                        var artifact = Company.Artifacts.Where(x => x.ID == id).First();
+                        objectId = artifact.ArtifactTypeID;
+                    }
+
+                    var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType == reportType).Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
                     var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == id && x.ObjectType == type && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
 
