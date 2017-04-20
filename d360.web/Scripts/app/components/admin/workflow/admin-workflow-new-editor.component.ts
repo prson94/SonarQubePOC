@@ -14,12 +14,13 @@ import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 import { TaxonomiesService } from '../../../services/taxonomies.service';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-admin-workflow-new-editor',
-    providers: [WorkflowService, TaxonomiesService],
+    providers: [WorkflowService, TaxonomiesService, ResponsibilityTypeService],
     templateUrl: './admin-workflow-new-editor.component.html'
 })
 
@@ -48,7 +49,18 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
 
     WorkflowChangeType = WorkflowChangeType;
 
-    constructor(private workflowService: WorkflowService, private taxonomyService: TaxonomiesService) {
+    private destination = [
+        { value: 'Initiator', label: 'Initiator' },
+        { value: 'Owner', label: 'Owner' },
+        { value: 'SpecificUser', label: 'Specific User' },
+    ];
+
+    private responsibilities = [];
+
+    constructor(
+        private workflowService: WorkflowService,
+        private taxonomyService: TaxonomiesService,
+        private responsibilityService: ResponsibilityTypeService) {
         super();
     }
 
@@ -82,6 +94,8 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
             .then(r => { this.workflowObjectTypes = r; })
             .then(() => this.workflowService.getChangeTypes())
             .then(r => { this.changesTypes = r; })
+            .then(() => this.responsibilityService.getResponsibilityTypes())
+            .then(r => { this.responsibilities = r; })
             .then(() => {
                 if (this.id < 1) {
                     this.saveButtonText = 'Next';
@@ -146,7 +160,8 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
             delete this.model.Event.SettingsObject.Settings.TaxonomyTypeID;
         }
 
-        if (this.model.Event.ChangeType != WorkflowChangeType.Schedule && this.model.Event.SettingsObject.Settings.ScheduleInterval != null) {
+        if (this.model.Event.ChangeType != WorkflowChangeType.Schedule
+            && this.model.Event.SettingsObject.Settings.ScheduleInterval != null) {
             delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
         }
 
@@ -194,6 +209,22 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
             delete c['@FieldName'];
         });
 
+        if (this.model.Event.SettingsObject.Settings.SendAggregateEmail == false
+            || this.model.Event.SettingsObject.Settings.SendAggregateEmail == null) {
+            //delete aggregate email settings
+            delete this.model.Event.SettingsObject.Settings.MessageSubjectTemplate;
+            delete this.model.Event.SettingsObject.Settings.MessageRecipientType;
+            delete this.model.Event.SettingsObject.Settings.MessageToUser;
+            delete this.model.Event.SettingsObject.Settings.ResponsibilityTypeID;
+            delete this.model.Event.SettingsObject.Settings.MessageBodyTemplate;
+
+            if (this.model.Event.ChangeType != WorkflowChangeType.Schedule) {
+                delete this.model.Event.SettingsObject.Settings.SendAggregateEmail;
+            }
+
+        }
+
+
         this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
         this.model.Event.Settings = JSON.stringify( this.model.Event.SettingsObject );
 
@@ -209,6 +240,8 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     }
 
     validate() {
+        if (this.model == null) return;
+
         if (this.model.Type.Name == null || this.model.Type.Name == '') {
             this.isValid = false;
             return;

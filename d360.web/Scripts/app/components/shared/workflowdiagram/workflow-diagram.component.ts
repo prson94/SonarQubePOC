@@ -896,6 +896,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             m.pos = "0 0";
             m.diagramObjectType = DiagramObjectType.Node;
             m.activityType = a.ID;
+            m.runCount = 0;
 
             paletteModel.push(m);
 

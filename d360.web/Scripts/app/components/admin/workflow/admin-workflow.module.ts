@@ -49,6 +49,7 @@ import {
         InputTextModule,
         SharedModule,
         DataTableModule,
+        EditorModule,
 
         //d3s                
         CoreModule,

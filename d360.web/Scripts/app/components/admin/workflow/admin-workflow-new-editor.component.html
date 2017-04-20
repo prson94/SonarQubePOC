@@ -48,7 +48,7 @@
                     Run Frequency (Days)
                 </div>
                 <div>
-                    <input type="number" [ngModel]="model.Event.SettingsObject.Settings.ScheduleInterval" (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event;  validate();" style="width: 95%"/>
+                    <input type="number" [ngModel]="model.Event.SettingsObject.Settings.ScheduleInterval" (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event;  validate();" style="width: 95%" />
                 </div>
             </div>
         </div>
@@ -83,6 +83,62 @@
                         </d3s-workflow-condition-editor>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule" style="padding-top: 8px;">
+        <div class="col s12">
+            <div>
+                <input type="checkbox" [(ngModel)]="model.Event.SettingsObject.Settings.SendAggregateEmail"/> Send aggregated email?
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail.toString() === 'true'">
+        <div class="col s12 m4 offset-m2">
+            <div class="FieldName">
+                Subject
+            </div>
+            <div>
+                <input type="text" style="width:100%" [(ngModel)]="model.Event.SettingsObject.Settings.MessageSubjectTemplate" />
+            </div>
+        </div>
+        <div class="col s12 m4">
+            <div class="FieldName">
+                Recipient Type
+            </div>
+            <div>
+                <select [(ngModel)]="model.Event.SettingsObject.Settings.MessageRecipientType" style="width: 100%">
+                    <option *ngFor="let d of destination" [value]="d.value">{{d.label}}</option>
+                </select>
+            </div>
+            <div *ngIf="model.Event.SettingsObject.Settings.MessageRecipientType == 'Owner'">
+                <div class="FieldName">
+                    Owner
+                </div>
+                <div>
+                    <select [(ngModel)]="model.Event.SettingsObject.Settings.ResponsibilityTypeID" style="width: 100%">
+                        <option></option>
+                        <option *ngFor="let r of responsibilities" [value]="r.ID">{{r.Name}}</option>
+                    </select>
+                </div>
+            </div>
+            <div *ngIf="model.Event.SettingsObject.Settings.MessageRecipientType == 'SpecificUser'">
+                <div class="FieldName">
+                    Recipient
+                </div>
+                <div>
+                    <input type="text" [(ngModel)]="model.Event.SettingsObject.Settings.MessageToUser" style="width: 100%" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail.toString() === 'true'">
+        <div class="col s12 m8 offset-m2">
+            <div class="FieldName">
+                Body
+            </div>
+            <div style="width: 100%">
+                <p-editor [(ngModel)]="model.Event.SettingsObject.Settings.MessageBodyTemplate" [style]="{'height':'150px'}"></p-editor>
             </div>
         </div>
     </div>
