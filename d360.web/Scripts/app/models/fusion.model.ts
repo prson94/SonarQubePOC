@@ -46,6 +46,7 @@ export class FusionQueryAttributeType {
     ID: number;
     FusionID: number;
     Name: string;
+    DisplayFormat: string;
     Query: string;
     CreatedOn: string;
     CreatedBy: number;

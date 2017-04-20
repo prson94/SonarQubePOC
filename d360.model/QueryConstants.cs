@@ -1492,7 +1492,7 @@ select
 	P.ID,
 	P.AttributeID,
     P.AttributeType,
-	FT.Name as AttributeName,
+	FA.DisplayValue as AttributeName,
 	P.ObjectType as [Object],
 	P.ObjectID,
 	D.Name as ObjectName,
@@ -1501,7 +1501,7 @@ select
 	P.UpdatedOn
 from fusion.RulePromotion P
 join cache.ObjectDetails D on D.Object = P.ObjectType and D.ObjectID = P.ObjectID
-join FieldType FT ON P.AttributeID = FT.ID and P.AttributeType = 'FusionQueryAttribute'
+join FusionQueryAttribute FA ON P.AttributeID = FA.ID and P.AttributeType = 'FusionQueryAttribute'
 where P.RuleStepID = @id;";
 
         public static string MapItems = @"

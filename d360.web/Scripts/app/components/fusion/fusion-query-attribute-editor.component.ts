@@ -18,6 +18,10 @@ import * as _ from 'lodash';
                             <div [hidden]="name.valid || name.pristine">Name is required</div>
                         </div>   
                         <div class="col s12">
+                            <div class="FieldName" pTooltip="Used to format the value used for display in tooltips, and relationships. Each field should be surrounded by {}.  For example, {Name}.">Display Format</div>
+                            <div><input required type="text" name="format" pInputText [(ngModel)]="editedQuery.DisplayFormat" style="width: 100%;" #name="ngModel" /></div>                        
+                        </div>
+                        <div class="col s12">
                             <div class="FieldName">SQL</div>
                             <div ace-editor
                                     [(text)]="editedQuery.Query"                                     

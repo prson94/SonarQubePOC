@@ -6851,6 +6851,7 @@ namespace d360.web.Controllers
                 }
                 
                 model.Name = parseTextField(form, "Name");
+                model.DisplayFormat = parseTextField(form, "DisplayFormat");
                 model.Query = sql;
                 Company.Update<FusionQueryAttributeType>(model);
 
@@ -6899,7 +6900,8 @@ namespace d360.web.Controllers
                 {
                     FusionID = fusionID,
                     Query = sql,                     
-                    Name = parseTextField(form, "Name")
+                    Name = parseTextField(form, "Name"),
+                    DisplayFormat = parseTextField(form, "DisplayFormat")
                 };
 
                 Company.Add<FusionQueryAttributeType>(model);

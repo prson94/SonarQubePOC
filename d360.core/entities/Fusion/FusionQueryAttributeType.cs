@@ -18,6 +18,9 @@ namespace d360.core.entities
         [DataMember]
         public string Query { get; set; }
 
+        [DataMember]
+        public string DisplayFormat { get; set; }
+
         public DateTime? CreatedOn { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? UpdatedOn { get; set; }

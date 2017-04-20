@@ -1,6 +1,7 @@
 ﻿using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -12,6 +13,10 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
+
+        [DataMember]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string DisplayValue { get; set; }
 
         public DateTime? CreatedOn { get; set; }
         public int? CreatedBy { get; set; }
