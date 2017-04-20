@@ -161,10 +161,6 @@
       <HintPath>..\packages\Microsoft.PowerBI.Api.1.1.10\lib\portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10\Microsoft.PowerBI.Api.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.PowerBI.AspNet.Mvc, Version=1.1.10.17058, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.PowerBI.AspNet.Mvc.1.1.10\lib\net45\Microsoft.PowerBI.AspNet.Mvc.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.PowerBI.Core, Version=1.1.10.17058, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.PowerBI.Core.1.1.10\lib\net45\Microsoft.PowerBI.Core.dll</HintPath>
       <Private>True</Private>
@@ -583,8 +579,6 @@
     <Content Include="Scripts\app\vendor.bundle.js" />
     <Content Include="Scripts\jquery-2.2.4.min.js" />
     <Content Include="Scripts\jquery.qtip.min.js" />
-    <Content Include="Scripts\powerbi.js" />
-    <Content Include="Scripts\powerbi.min.js" />
     <Content Include="Scripts\quill.min.js" />
     <Content Include="Scripts\worker-json.js" />
     <Content Include="webpack.aot.config.js" />
@@ -834,7 +828,6 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\version.json" />
-    <Content Include="Scripts\powerbi.js.map" />
     <None Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
