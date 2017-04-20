@@ -164,6 +164,10 @@
       <Project>{9341cca8-d3f2-467a-ae9c-0581054b8de2}</Project>
       <Name>d360.core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\d360.utils.company\d360.utils.company.csproj">
+      <Project>{88bba351-da2a-4551-af28-5f1568952f7e}</Project>
+      <Name>d360.utils.company</Name>
+    </ProjectReference>
     <ProjectReference Include="..\d360.jobs\d360.jobs.csproj">
       <Project>{46267409-f388-4058-a12e-49ec7e855c9d}</Project>
       <Name>d360.jobs</Name>

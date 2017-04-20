@@ -1117,6 +1117,14 @@ where	(
 		)
 order by MS.Sequence";
 
+        public static string ScoreTypeMetricDetailList = @"
+select	S.*,
+		D.Name as ObjectName
+from	ScoreTypeMetric S
+		inner join cache.ObjectDetails D on D.Object = S.Object and D.ObjectID = S.ObjectID 
+where   S.ScoreTypeID = @id and S.Deleted = 0
+order by D.Name, S.Name";
+
         public static string StatisticTypeDetailList = @"
 select	S.*,
 		D.Name as ObjectName

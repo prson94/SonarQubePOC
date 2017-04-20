@@ -58,10 +58,10 @@ namespace d360.core
         FieldType,
         [Description("Response Type"), AllowSurvey(false), EnableAudit(false)]
         ResponseType,
-        [Description("Statistic"), AllowSurvey(false), EnableAudit(false)]
-        Statistic,
-        [Description("Statistic Type"), AllowSurvey(false), EnableAudit(true)]
-        StatisticType,
+        [Description("Score"), AllowSurvey(false), EnableAudit(false)]
+        Score,
+        [Description("Score Type"), AllowSurvey(false), EnableAudit(true)]
+        ScoreType,
         [Description("Responsibility"), AllowSurvey(false), EnableAudit(true)]
         Responsibility,
         [Description("Responsibility Type"), AllowSurvey(false), EnableAudit(true)]
@@ -119,7 +119,9 @@ namespace d360.core
         [Description("Issue"), EnableAudit(false)]
         Issue,
         [Description("Rule Implementation"), EnableAudit(true)]
-        RuleImplementation
+        RuleImplementation,
+        [Description("Score Type Metric"), EnableAudit(true)]
+        ScoreTypeMetric
     }
 
     public class SystemObjectInfo

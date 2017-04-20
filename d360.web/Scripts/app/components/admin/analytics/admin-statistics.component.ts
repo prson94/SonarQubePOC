@@ -4,54 +4,52 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { StatisticService } from '../../../services/statistics.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
-import { StatisticType } from '../../../models/statistic.model';
+import { ScoreType, ScoreTypeMetric } from '../../../models/statistic.model';
 import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-statistics-component',
     providers: [StatisticService],
-    template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'StatisticType'"></d3s-audit>
-                <div *ngIf="!isAuditVisible" class="row">
-                    <div class="col s12" *ngIf="showEditor">
+    template: ` <div class="row">
+                    <div class="col s12" *ngIf="showTypeEditor">
                         <div class="tile tile-detail">
-                            <d3s-admin-statistic-editor [statisticID]="selected?.ID" (saveClick)="saveStatisticType($event)" (closeClick)="closeEditor()"></d3s-admin-statistic-editor>                                 
+                            <d3s-admin-scoretype-editor [scoretype]="selectedType" (saveClick)="saveScoreType($event)" (closeClick)="closeTypeEditor()"></d3s-admin-scoretype-editor>  
                         </div>
                     </div>
-                    <div class="col s12" *ngIf="showDelete">
+                    <div class="col s12" *ngIf="showTypeDelete">
                         <div class="tile tile-detail">
                             <d3s-delete-form
-                                    [callback]="theDeleteCallback"
-                                    [itemId]="selected?.ID"
+                                    [callback]="theDeleteTypeCallback"
+                                    [itemId]="selectedType?.ID"
                                     [method]="'callback'"
-                                    [prompt]="'Are you sure you want to delete the Analytic type [' + [selected?.Name] + ']?'"                                         
-                                    (onCancel)="showDelete=false;"
+                                    [prompt]="'Are you sure you want to delete the score type [' + [selectedType?.Name] + ']?'"                                         
+                                    (onCancel)="showTypeDelete=false;"
                                 ></d3s-delete-form>
                         </div>
                     </div>
-                    <div class="col l6 s12" *ngIf="!showEditor && !showDelete">                    
+                    <div class="col l3 m4 s12" *ngIf="!showTypeEditor && !showTypeDelete">                    
                         <div class="tile tile-detail">
-                            <header>Analytic Types
-                                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                            <header>Score Types
+                                <d3s-tile-actions [hasAdd]="true" (addClick)="addType()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span  *ngIf="!isLoading">
                                 <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                                <p-dataTable #dt [globalFilter]="gb" sortField="ObjectName" [sortOrder]="1" [value]="statistics" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                <p-dataTable #dt [globalFilter]="gb" sortField="Name" [sortOrder]="1" [value]="scoretypes" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selectedType"  (onRowDblclick)="selectedType=$event.data;showEditor=true;" (onRowSelect)="selectedType=$event.data;getScoreMetrics(selectedType.ID);" >
                                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                                    <p-column field="ObjectName" header="Object" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
-                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
-                                    <p-column field="Score" header="Score" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
+                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'40px'}">
                                         <template let-analytic="rowData" pTemplate type="body">
                                             <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="selected=analytic;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                                <a style="cursor:pointer;" (click)="selectedType=analytic;showTypeEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                             </div>
                                         </template>
                                     </p-column>                            
                                     <p-column  [style]="{width:'40px'}">
                                         <template let-analytic="rowData" pTemplate type="body">
                                             <div class="RowTools">                                
-                                                <a style="cursor:pointer;" (click)="selected=analytic;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                                <a style="cursor:pointer;" (click)="selectedType=analytic;showTypeDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
                                         </template>
                                     </p-column>    
@@ -59,13 +57,47 @@ import { Title } from '@angular/platform-browser';
                             </span>                            
                         </div>
                     </div>                    
-                    <div class="col l6 s12" *ngIf="!showEditor && !showDelete && selected">                        
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">           
-                                    <object-detail [objectType]="'StatisticType'" [objectID]="selected?.ID"></object-detail>
-                                </div>
-                            </div>
+                    <div class="col l9 m8 s12" *ngIf="!showTypeEditor && !showTypeDelete">
+                        <div class="tile tile-detail" *ngIf="showMetricEditor">
+                            <d3s-admin-scoretypemetric-editor [scoreTypeID]="selectedType?.ID" [metricID]="selectedMetric?.ID" (saveClick)="saveScoreMetric($event)" (closeClick)="closeMetricEditor()"></d3s-admin-scoretypemetric-editor>                                 
+                        </div>
+                        <div class="tile tile-detail" *ngIf="showMetricDelete && selectedMetric">
+                            <d3s-delete-form
+                                    [callback]="theDeleteMetricCallback"
+                                    [itemId]="selectedMetric?.ID"
+                                    [method]="'callback'"
+                                    [prompt]="'Are you sure you want to delete the score metric [' + [selectedMetric?.Name] + ']?'"                                         
+                                    (onCancel)="showMetricDelete=false;"
+                                ></d3s-delete-form>
+                        </div>
+                        <div class="tile tile-detail" *ngIf="!showMetricEditor && !showMetricDelete">           
+                            <header>Metrics
+                                <d3s-tile-actions [hasAdd]="true" (addClick)="addMetric()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                            </header>  
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                            <span  *ngIf="!isLoading">
+                                <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                                <p-dataTable #dt [globalFilter]="gb" sortField="ObjectName" [sortOrder]="1" [value]="metrics" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selectedMetric"  (onRowDblclick)="selectedMetric=$event.data;showMetricEditor=true;" >
+                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                                    <p-column field="ObjectName" header="Object Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
+                                    <p-column [style]="{width:'40px'}">
+                                        <template let-metric="rowData" pTemplate type="body">
+                                            <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="selectedMetric=metric;showMetricEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                            </div>
+                                        </template>
+                                    </p-column>                            
+                                    <p-column  [style]="{width:'40px'}">
+                                        <template let-metric="rowData" pTemplate type="body">
+                                            <div class="RowTools">                                
+                                                <a style="cursor:pointer;" (click)="selectedMetric=metric;showMetricDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                            </div>
+                                        </template>
+                                    </p-column>    
+                                </p-dataTable>      
+                            </span> 
                         </div>
                     <div>
                 </div>  
@@ -75,84 +107,157 @@ import { Title } from '@angular/platform-browser';
 export class AdminStatisticsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     @Input() rowsPerPage: number = 10;
 
-    statistics: StatisticType[] = [];
-    selected: StatisticType;
-    showEditor: boolean = false;
-    showDelete: boolean = false;
-    theDeleteCallback: Function;
+    scoretypes: ScoreType[] = [];
+    selectedType: ScoreType;
+
+    metrics: ScoreTypeMetric[] = [];
+    selectedMetric: ScoreTypeMetric;
+
+    showTypeEditor: boolean = false;
+    showTypeDelete: boolean = false;
+
+    showMetricEditor: boolean = false;
+    showMetricDelete: boolean = false;
+
+    theDeleteTypeCallback: Function;
+    theDeleteMetricCallback: Function;
 
     constructor(rightSidebarService: RightSidebarService, private statisticService: StatisticService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
-        this.areaName = "Analytic Types";
+        this.areaName = "Scoring";
         this.setCommonItems();
-        this.theDeleteCallback = this.deleteStatisticType.bind(this);
-        this.setCommonRightSideBar();
+        this.theDeleteTypeCallback = this.deleteScoreType.bind(this);
+        this.theDeleteMetricCallback = this.deleteScoreMetric.bind(this);
+        this.setCommonRightSideBar(false);
     }
 
     ngOnInit() {
-        this.getStatistics();
+        this.getScoreTypes();
     }
 
     ngOnDestroy() {
         this.clearSidebar();
     }
 
-    getStatistics() {
+    getScoreTypes() {
         this.isLoading = true;
-        this.statisticService.getStatistics()
+        this.statisticService.getScoreTypes()
             .then(result => {
-                this.statistics = result;
+                this.scoretypes = result;
                 this.isLoading = false;
-                if (this.statistics.length > 0) this.selected = this.statistics[0];
+                if (this.scoretypes.length > 0) {
+                    this.selectedType = this.scoretypes[0];
+                    this.getScoreMetrics(this.selectedType.ID);
+                }
             });
     }
 
-    findStatisticTypeIndex(id: number) {
+    getScoreMetrics(scoreTypeId: number) {
+        this.isLoading = true;
+        this.statisticService.getScoreTypeMetrics(scoreTypeId)
+            .then(result => {
+                this.metrics = result;
+                this.isLoading = false;
+                if (this.metrics.length > 0) this.selectedMetric = this.metrics[0];
+            });
+    }
+
+
+    findScoreTypeIndex(id: number) {
         var index: number = -1;
-        for (var analytic of this.statistics) {
+        for (var analytic of this.scoretypes) {
             index++;
             if (analytic.ID == id) return index;
         }
     }
 
-    deleteStatisticType(id: number) {
-        this.statisticService.deleteStatistic(id).
-            then(result => {
-                this.showDelete = false;
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
-                    this.selected = this.statistics.length > 0 ? this.statistics[0] : null;
-                    this.statistics.splice(this.findStatisticTypeIndex(id), 1);
-                }
-            });
-    }
-
-    saveStatisticType(event) {
-        this.statisticService.saveStatistic(event.statistic)
-            .then(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (event.statistic.ID == undefined) {
-                    event.statistic.ID = Number(result.id);
-                    this.statistics[this.statistics.length] = event.statistic;
-                }
-                else {
-                    this.statistics[this.findStatisticTypeIndex(event.statistic.ID)] = event.statistic;
-                }
-                this.selected = event.statistic;
-                this.showEditor = false;
-            });
-    }
-
-    closeEditor() {
-        this.showEditor = false;
-        if (this.selected == null) {
-            this.selected = this.statistics.length > 0 ? this.statistics[0] : null;
+    findScoreMetricIndex(id: number) {
+        var index: number = -1;
+        for (var m of this.metrics) {
+            index++;
+            if (m.ID == id) return index;
         }
     }
 
-    add() {
-        this.showEditor = true;
-        this.selected = null;
+
+    deleteScoreType(id: number) {
+        this.statisticService.deleteScoreType(id).
+            then(result => {
+                this.showTypeDelete = false;
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {
+                    this.selectedType = this.scoretypes.length > 0 ? this.scoretypes[0] : null;
+                    this.scoretypes.splice(this.findScoreTypeIndex(id), 1);
+                }
+            });
+    }
+
+    deleteScoreMetric(id: number) {
+        this.statisticService.deleteScoreTypeMetric(id).
+            then(result => {
+                this.showMetricDelete = false;
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {
+                    this.selectedMetric = this.metrics.length > 0 ? this.metrics[0] : null;
+                    this.metrics.splice(this.findScoreMetricIndex(id), 1);
+                }
+            });
+    }
+
+    saveScoreType(event) {
+        this.statisticService.saveScoreType(event.scoretype)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                if (event.scoretype.ID == undefined) {
+                    event.scoretype.ID = Number(result.id);
+                    this.scoretypes[this.scoretypes.length] = event.scoretype;
+                }
+                else {
+                    this.scoretypes[this.findScoreTypeIndex(event.scoretype.ID)] = event.scoretype;
+                }
+                this.selectedType = event.scoretype;
+                this.showTypeEditor = false;
+            });
+    }
+
+    saveScoreMetric(event) {
+        this.statisticService.saveScoreTypeMetric(event.metric)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                if (event.metric.ID == undefined) {
+                    event.metric.ID = Number(result.id);
+                    this.metrics[this.metrics.length] = event.metric;
+                }
+                else {
+                    this.metrics[this.findScoreMetricIndex(event.metric.ID)] = event.metric;
+                }
+                this.selectedMetric = event.metric;
+                this.showMetricEditor = false;
+            });
+    }
+
+    closeTypeEditor() {
+        this.showTypeEditor = false;
+        if (this.selectedType == null) {
+            this.selectedType = this.scoretypes.length > 0 ? this.scoretypes[0] : null;
+        }
+    }
+
+    closeMetricEditor() {
+        this.showMetricEditor = false;
+        if (this.selectedMetric == null) {
+            this.selectedMetric = this.metrics.length > 0 ? this.metrics[0] : null;
+        }
+    }
+
+    addType() {
+        this.showTypeEditor = true;
+        this.selectedType = null;
+    }
+
+    addMetric() {
+        this.showMetricEditor = true;
+        this.selectedMetric = null;
     }
 
 }

@@ -2,25 +2,25 @@
 import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
 import { StatisticService } from '../../../services/statistics.service';
-import { StatisticType, StatisticCheckTypes } from '../../../models/statistic.model';
+import { ScoreTypeMetric, StatisticCheckTypes } from '../../../models/statistic.model';
 import * as _ from 'lodash';
 
 @Component({
-    selector: 'd3s-admin-statistic-editor',
+    selector: 'd3s-admin-scoretypemetric-editor',
     template: ` 
-                <header>{{action}} Analytic Type</header>                
+                <header>{{action}} Metric Type</header>                
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
                     <form (ngSubmit)="onSubmit()" #statisticEditorForm="ngForm">                        
                         <div class="col s12">
                             <div class="FieldName">Name</div>
-                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedStatistic.Name" #name="ngModel" maxlength="250"></div>                            
+                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="metric.Name" #name="ngModel" maxlength="250"></div>                            
                             <div [hidden]="name.valid || name.pristine" class="errorMessage">Name is required</div>
                         </div>                        
                         <div class="col s12">
-                            <div class="FieldName">Type to assign analytic to</div>
+                            <div class="FieldName">Type to assign metric to</div>
                             <div>
-                                <select required name="object" [ngModel]="editedStatistic.ObjectCombined" (ngModelChange)="editedStatistic.ObjectCombined=$event;objectChanged($event);" style="width:100%" #object="ngModel">
+                                <select required name="object" [(ngModel)]="metric.ObjectCombined" (ngModelChange)="metric.ObjectCombined=$event;objectChanged($event);" style="width:100%" #object="ngModel">
                                     <option></option>
                                     <option *ngFor="let p of sourceTypes" [value]="p.value">{{p.label}}</option>                                    
                                 </select>                                
@@ -28,28 +28,24 @@ import * as _ from 'lodash';
                             <div [hidden]="object.valid || object.pristine" class="errorMessage">Type is required</div>
                         </div>
                         <div class="col l6 s12">
-                            <div class="FieldName">Part of Scoring?</div>
-                            <div><input name="partOfScore" type="checkbox" [(ngModel)]="editedStatistic.PartOfScore"></div>                            
-                        </div>                                        
-                        <div class="col l6 s12" *ngIf="editedStatistic?.PartOfScore">
-                            <div class="FieldName">Score</div>
-                            <div><input style="width: 100%;" name="score" type="number" [(ngModel)]="editedStatistic.Score" #score="ngModel"></div>                            
+                            <div class="FieldName">Maximum Score</div>
+                            <div><input style="width: 100%;" name="score" type="number" [(ngModel)]="metric.MaximumScore" #score="ngModel"></div>                            
                             <div [hidden]="score.valid || score.pristine" class="errorMessage">Score is required</div>
                         </div>                                        
                         <div class="col s12">
                             <div class="FieldName">Check Type</div>
                             <div>                                
-                                <select required name="CheckType" [(ngModel)]="editedStatistic.CheckType" (ngModelChange)="changeCheckType($event);" style="width:100%" #checkType="ngModel">
+                                <select required name="CheckType" [(ngModel)]="metric.CheckType" (ngModelChange)="changeCheckType($event);" style="width:100%" #checkType="ngModel">
                                     <option></option>
                                     <option *ngFor="let p of checkTypes" [value]="p.value">{{p.label}}</option>                                    
                                 </select>                                
                             </div>
                             <div [hidden]="checkType.valid || checkType.pristine"  class="errorMessage">Check Type is required</div>
                         </div>                        
-                        <d3s-admin-statistic-checktype-input [(statistic)]="editedStatistic"></d3s-admin-statistic-checktype-input>                                                                  
+                        <d3s-admin-metric-checktype-input [(metric)]="metric"></d3s-admin-metric-checktype-input>                                                                  
                         <div class="col l12 s12">
                             <div class="FieldName">Description</div>
-                            <div><p-editor name="Description" [style]="{'height':'150px'}" [ngModel]="editedStatistic?.Description" (ngModelChange)="editedStatistic.Description=$event" ></p-editor></div>                            
+                            <div><p-editor name="Description" [style]="{'height':'150px'}" [ngModel]="metric?.Description" (ngModelChange)="metric.Description=$event" ></p-editor></div>                            
                         </div>                        
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
@@ -62,13 +58,14 @@ import * as _ from 'lodash';
     providers: [StatisticService],
 })
 
-export class AdminStatisticEditor {
-    @Input() statisticID: number = 0;
+export class AdminScoreTypeMetricEditorComponent {
+    @Input() scoreTypeID: number = 0;
+    @Input() metricID: number = 0;
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
     action: string = "Edit";
     error: any;
-    editedStatistic: StatisticType;
+    metric: ScoreTypeMetric;
     checkTypes: SelectItem[] = [];
     sourceTypes: SelectItem[] = [];
     isLoading: boolean = false;
@@ -78,15 +75,17 @@ export class AdminStatisticEditor {
 
     ngOnInit() {        
 
-        if (this.statisticID > 0) {
+        if (this.metricID > 0) {
             this.isLoading = true;
-            this.statisticService.getStatistic(this.statisticID).then(result => {                
-                this.editedStatistic = result;                
+            this.statisticService.getScoreTypeMetric(this.metricID).then(result => {                
+                this.metric = result;                
                 this.isLoading = false;
             });
         }
         else {
-            this.editedStatistic = new StatisticType();           
+            console.log(this.scoreTypeID);
+            this.metric = new ScoreTypeMetric();   
+            this.metric.ScoreTypeID = this.scoreTypeID;        
             this.action = "New";
         }        
         this.getCheckTypes();
@@ -95,7 +94,7 @@ export class AdminStatisticEditor {
 
     getObjectOptions() {
         this.statisticService
-            .getStatisticObjects()
+            .getMetricObjects()
             .then(sources => {
                 this.sourceTypes = [];
                 for (let source of sources) {
@@ -103,14 +102,14 @@ export class AdminStatisticEditor {
                         label: source.title, value: source.value
                     });
                 }                
-                this.editedStatistic.ObjectCombined = this.editedStatistic.Object + '|' + this.editedStatistic.ObjectID.toString();
+                this.metric.ObjectCombined = this.metric.Object + '|' + this.metric.ObjectID.toString();
             })
             .catch(error => this.error = error);
     }
     
     getCheckTypes() {
         this.statisticService
-            .getStatisticCheckTypes()
+            .getMetricCheckTypes()
             .then(checktypes => {
                 this.checkTypes = [];
                 
@@ -119,9 +118,9 @@ export class AdminStatisticEditor {
                         label: checktype.title, value: Number(checktype.value)
                     });
                 }
-                var check = this.editedStatistic.CheckType;
-                this.editedStatistic.CheckType = 0;
-                this.editedStatistic.CheckType = check;
+                var check = this.metric.CheckType;
+                this.metric.CheckType = 0;
+                this.metric.CheckType = check;
             })
             .catch(error => this.error = error);
     }
@@ -129,9 +128,9 @@ export class AdminStatisticEditor {
     objectChanged(event) {        
         var info = event.split("|");
         if (info.length < 2) return;
-        this.editedStatistic.Object = info[0];
-        this.editedStatistic.ObjectID = Number(info[1]);     
-        this.editedStatistic = _.cloneDeep(this.editedStatistic);    //cloning for child component immutability
+        this.metric.Object = info[0];
+        this.metric.ObjectID = Number(info[1]);     
+        this.metric = _.cloneDeep(this.metric);    //cloning for child component immutability
     }
 
     private GetObjectName(value: string): string {
@@ -143,14 +142,14 @@ export class AdminStatisticEditor {
 
     onSubmit() {
         //populate objectname        
-        this.editedStatistic.ObjectName = this.GetObjectName(this.editedStatistic.ObjectCombined);
+        this.metric.ObjectName = this.GetObjectName(this.metric.ObjectCombined);
 
         //save the item back to the save or edit url        
-        this.saveClick.emit({ statistic: this.editedStatistic, action: this.statisticID > 0 ? "new" : "edit" });
+        this.saveClick.emit({ metric: this.metric, action: this.metricID > 0 ? "new" : "edit" });
     }      
     
     changeCheckType(checkType) {
-        this.editedStatistic.CheckType = Number(checkType);
-        this.editedStatistic = _.cloneDeep(this.editedStatistic);    //cloning for child component immutability        
+        this.metric.CheckType = Number(checkType);
+        this.metric = _.cloneDeep(this.metric);    //cloning for child component immutability        
     }
 };

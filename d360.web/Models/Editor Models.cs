@@ -108,6 +108,11 @@ namespace d360.web.Models
         public string FusionAttributeTextPath { get; set; }
     }
 
+    public class ExternalScoreModel
+    {
+        public decimal Value { get; set; }
+    }
+
     public class SourcePostModel
     {
         public SourcePostModel()

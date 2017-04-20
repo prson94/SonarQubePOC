@@ -14,8 +14,9 @@ import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
 import { AdminStatisticsComponent } from './admin-statistics.component';
-import { AdminStatisticCheckTypeInput } from './admin-statistic-checktype-input';
-import { AdminStatisticEditor } from './admin-statistics-editor.component';
+import { AdminScoreTypeMetricCheckTypeInput } from './admin-scoretypemetric-checktype-input';
+import { AdminScoreTypeMetricEditorComponent } from './admin-scoretypemetric-editor.component';
+import { AdminScoreTypeEditorComponent } from './admin-scoretype-editor.component';
 
 import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
 
@@ -55,8 +56,9 @@ import {
     ],
     declarations: [
         AdminStatisticsComponent,
-        AdminStatisticCheckTypeInput,
-        AdminStatisticEditor,
+        AdminScoreTypeMetricCheckTypeInput,
+        AdminScoreTypeMetricEditorComponent,
+        AdminScoreTypeEditorComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

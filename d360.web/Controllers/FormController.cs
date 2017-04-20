@@ -513,8 +513,10 @@ namespace d360.web.Controllers
                     return EditRuleDimension(form);
                 case "RULETYPE":
                     return EditRuleType(form);
-                case "STATISTICTYPE":
-                    return EditStatisticType(form);
+                case "SCORETYPE":
+                    return EditScoreType(form);
+                case "SCORETYPEMETRIC":
+                    return EditScoreTypeMetric(form);
                 case "SURVEYTYPE":
                     return EditSurveyType(form);
                 case "TAXONOMY":
@@ -542,14 +544,16 @@ namespace d360.web.Controllers
                     return DeletePolicyType(form);
                 case "PREDICATE":
                     return DeletePredicate(form);
-                case "STATISTICTYPE":
-                    return DeleteStatisticType(form);
+                case "SCORETYPE":
+                    return DeleteScoreType(form);
                 case "INTERSECTTYPE":
                     return DeleteIntersectType(form);
                 case "REPORT":
                     return DeleteReport(form);
                 case "REPORTTILE":
                     return DeleteReportTile(form);
+                case "SCORETYPEMETRIC":
+                    return DeleteScoreTypeMetric(form);
                 case "ATTRIBUTETYPE":
                     return DeleteAttributeType(form);
                 case "ARTIFACT":
@@ -626,8 +630,10 @@ namespace d360.web.Controllers
                     return AddPredicate(form);
                 case "RESOURCE":
                     return AddResource(form);                             
-                case "STATISTICTYPE":
-                    return AddStatisticType(form);
+                case "SCORETYPE":
+                    return AddScoreType(form);
+                case "SCORETYPEMETRIC":
+                    return AddScoreTypeMetric(form);
                 case "FUSION":
                     return AddFusion(form);
                 case "INTERSECTTYPE":
@@ -3680,7 +3686,7 @@ namespace d360.web.Controllers
                 ft.Name = model.FieldType.Name;
                 ft.Category = model.FieldType.Category;
                 ft.FriendlyName = model.FieldType.FriendlyName;
-                ft.DefaultValue = (string.IsNullOrEmpty(model.FieldType.DefaultValue.Trim())) ? null : model.FieldType.DefaultValue.Trim();
+                ft.DefaultValue = (string.IsNullOrEmpty(model.FieldType.DefaultValue)) ? null : model.FieldType.DefaultValue.Trim();
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
@@ -14701,19 +14707,134 @@ order by	T.Name, I.DisplayValue";
 
         #endregion
 
-        #region StatisticType
+        #region ScoreType Form Get/Post
 
         #region Field Generation
 
-        /// <param name="id">StatisticTypeID</param>
-        [Route("StatisticType_DeleteFields"), NonNullableParameters]
-        public JsonResult StatisticType_DeleteFields(int id)
+        /// <param name="id">ScoreTypeID</param>
+        [Route("ScoreType_DeleteFields"), NonNullableParameters]
+        public JsonResult ScoreType_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.StatisticType, id, Claim.Delete))
+            if (!Company.HasPermission(SystemObjects.ScoreType, id, Claim.Delete))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            var a = Company.GetById<StatisticType>(id);
+            var a = Company.GetById<ScoreType>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddScoreType")]
+        public JsonResult AddScoreType(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.ScoreType, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("score type");
+
+                var a = new ScoreType
+                {
+                    Name = parseTextField(form, "Name"),
+                    Description = parseTextField(form, "Description"),
+                };
+
+                Company.Add<ScoreType>(a);
+
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, Route("DeleteScoreType")]
+        public JsonResult DeleteScoreType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("score type");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ScoreType>(id);
+                if (model == null) throw new NotFoundException("score type");
+
+                if (!Company.HasPermission(SystemObjects.ScoreType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<ScoreType>(model);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, ValidateInput(false), Route("EditScoreType")]
+        public JsonResult EditScoreType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("score type");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ScoreType>(id);
+                if (model == null) throw new NotFoundException("score type");
+
+                if (!Company.HasPermission(SystemObjects.ScoreType, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name");
+                model.Description = parseTextField(form, "Description");
+
+                Company.Update<ScoreType>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region ScoreTypeMetric Form Get/Post
+
+        #region Field Generation
+
+        /// <param name="id">ScoreTypeMetricID</param>
+        [Route("ScoreTypeMetric_DeleteFields"), NonNullableParameters]
+        public JsonResult ScoreTypeMetric_DeleteFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<ScoreTypeMetric>(id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
@@ -14724,10 +14845,10 @@ order by	T.Name, I.DisplayValue";
 
         #region JSON Feeds
 
-        [Route("StatisticType_FormData"), NonNullableParameters]
-        public JsonNetResult StatisticType_FormData(int id)
+        [Route("ScoreTypeMetric_FormData"), NonNullableParameters]
+        public JsonNetResult ScoreTypeMetric_FormData(int id)
         {
-            var type = Company.GetById<StatisticType>(id);
+            var type = Company.GetById<ScoreTypeMetric>(id);
             if (type == null) return new JsonNetResult { Data = null };
 
             var model = new Dictionary<string, object>();
@@ -14737,8 +14858,8 @@ order by	T.Name, I.DisplayValue";
             model.Add("Description", type.Description);
             model.Add("Object", type.Object);
             model.Add("ObjectID", type.ObjectID);
-            model.Add("PartOfScore", type.PartOfScore);
-            model.Add("Score", type.Score);
+            model.Add("ObjectCombined", $"{type.Object}|{type.ObjectID}");
+            model.Add("MaximumScore", type.MaximumScore);
 
             var xml = XElement.Parse(type.Configuration);
             switch (type.CheckType)
@@ -14790,22 +14911,22 @@ order by	T.Name, I.DisplayValue";
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("StatisticType_CheckTypeOptions")]
-        public JsonNetResult StatisticType_CheckTypeOptions()
+        [Route("ScoreTypeMetric_CheckTypeOptions")]
+        public JsonNetResult ScoreTypeMetric_CheckTypeOptions()
         {
             var models = StatisticCheckType.Existence.GetEnumList().Select(i => new KnockoutListItem(i.Name, ((int)i.ID).ToString()));
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("StatisticType_ObjectOptions")]
-        public JsonNetResult StatisticType_ObjectOptions()
+        [Route("ScoreTypeMetric_ObjectOptions")]
+        public JsonNetResult ScoreTypeMetric_ObjectOptions()
         {
             var models = Company.GetTypes().Select(i => new KnockoutListItem(i.Name, $"{i.ObjectType}|{i.ObjectTypeID}"));
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("StatisticType_CheckObjectOptions"), NonNullableParameters]
-        public JsonNetResult StatisticType_CheckObjectOptions(SystemObjects type, int id, StatisticCheckType check)
+        [Route("ScoreTypeMetric_CheckObjectOptions"), NonNullableParameters]
+        public JsonNetResult ScoreTypeMetric_CheckObjectOptions(SystemObjects type, int id, StatisticCheckType check)
         {
             var models = new List<KnockoutListItem>();
 
@@ -14823,29 +14944,6 @@ SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value,
 from	ResponsibilityType T
 		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
                     break;
-//                case StatisticCheckType.Count:
-//                    models.AddRange(Company.Query<KnockoutListItem>(@"
-//SELECT	'AttributeType|'+ cast(T.ID as varchar) as value, 
-//		'Attribute :' + T.Name as title
-//from	AttributeType T
-//		inner join AttributeTypeRelation R on R.AttributeTypeID = T.ID and T.ParentID is null and R.ObjectType = @type and R.ObjectID = @id
-//union 
-//SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value, 
-//		'Responsibility :' + Name as title 
-//from	ResponsibilityType T
-//		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id
-//union
-//select  distinct 
-//        D.Object + '|' + cast(D.ObjectID as varchar) as value, 
-//        'Relationship :' + D.TextPath as title
-//from    [IntersectType] RT
-//        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
-//                                            and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
-//                                            and ( 
-//                                                (RT.Subject = @type and RT.SubjectID = @id) OR 
-//                                                (RT.Object = @type and RT.ObjectID = @id) 
-//                                                )", new { type = type.ToString(), id }).OrderBy(i => i.title));
-//                    break;
                 case StatisticCheckType.PropertyValueCheck:
                 case StatisticCheckType.PropertyPopulated:
                     switch (type)
@@ -14909,10 +15007,8 @@ from    [IntersectType] RT
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
-        
-        #endregion
 
-        #region Form Get/Post
+        #endregion
 
         string getXmlConfigurationFromFormFields(FormCollection form, StatisticCheckType checkType)
         {
@@ -14966,34 +15062,32 @@ from    [IntersectType] RT
             return fields.ToString();
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddStatisticType")]
-        public JsonResult AddStatisticType(FormCollection form)
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddScoreTypeMetric")]
+        public JsonResult AddScoreTypeMetric(FormCollection form)
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.StatisticType, 0, Claim.Create))
+                if (!Company.HasPermission(SystemObjects.ScoreTypeMetric, 0, Claim.Create))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("statistic type");
+                if (!form.HasKeys()) throw new NoFormDataException("score type metric");
 
-                var a = new StatisticType
+                var a = new ScoreTypeMetric
                 {
                     Name = parseTextField(form, "Name"),
+                    ScoreTypeID = parseIntField(form, "ScoreTypeID"),
                     Description = parseTextField(form, "Description"),
                     CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]),
-                    PartOfScore = parseBooleanField(form, "PartOfScore"),
-                    Score = parseIntField(form, "Score"),
+                    MaximumScore = parseIntField(form, "MaximumScore"),
                     Object = parseTextField(form, "Object"),
                     ObjectID = parseIntField(form, "ObjectID")
                 };
                 a.Configuration = getXmlConfigurationFromFormFields(form, a.CheckType);
 
-                //while (a.Score.ToString().StartsWith("0"))
-                //{
-                //    return jsonException(FormInfo., HttpStatusCode.Conflict);
-                //}
+                Company.Add(a);
 
-                Company.Add<StatisticType>(a);
+                var version = new ScoreTypeMetricVersion { CheckType = a.CheckType, Configuration = a.Configuration, Description = a.Description, MaximumScore = a.MaximumScore, Name = a.Name, ScoreTypeMetricID = a.ID };
+                Company.Add(version);
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -15008,21 +15102,22 @@ from    [IntersectType] RT
             }
         }
 
-        [HttpDelete, Route("DeleteStatisticType")]
-        public JsonResult DeleteStatisticType(FormCollection form)
+        [HttpDelete, Route("DeleteScoreTypeMetric")]
+        public JsonResult DeleteScoreTypeMetric(FormCollection form)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("statistic type");
+                if (!form.HasKeys()) throw new NoFormDataException("score type metric");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<StatisticType>(id);
-                if (model == null) throw new NotFoundException("statistic type");
+                var model = Company.GetById<ScoreTypeMetric>(id);
+                if (model == null) throw new NotFoundException("score type");
 
-                if (!Company.HasPermission(SystemObjects.StatisticType, id, Claim.Delete))
+                if (!Company.HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<StatisticType>(model);
+                model.Deleted = true;
+                Company.Update<ScoreTypeMetric>(model);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -15037,29 +15132,30 @@ from    [IntersectType] RT
             }
         }
 
-        [HttpPut, ValidateInput(false), Route("EditStatisticType")]
-        public JsonResult EditStatisticType(FormCollection form)
+        [HttpPut, ValidateInput(false), Route("EditScoreTypeMetric")]
+        public JsonResult EditScoreTypeMetric(FormCollection form)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("statistic type");
+                if (!form.HasKeys()) throw new NoFormDataException("score type");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<StatisticType>(id);
-                if (model == null) throw new NotFoundException("statistic type");
+                var model = Company.GetById<ScoreTypeMetric>(id);
+                if (model == null) throw new NotFoundException("score type");
 
-                if (!Company.HasPermission(SystemObjects.StatisticType, id, Claim.Update))
+                if (!Company.HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
-                model.PartOfScore = parseBooleanField(form, "PartOfScore");
-                model.Score = parseIntField(form, "Score");
+                model.MaximumScore = parseIntField(form, "MaximumScore");
                 model.CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]);
-
                 model.Configuration = getXmlConfigurationFromFormFields(form, model.CheckType);
 
-                Company.Update<StatisticType>(model);
+                var version = new ScoreTypeMetricVersion { CheckType = model.CheckType, Configuration = model.Configuration, Description = model.Description, MaximumScore = model.MaximumScore, Name = model.Name, ScoreTypeMetricID = model.ID };
+                Company.Add(version);
+
+                Company.Update<ScoreTypeMetric>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -15073,8 +15169,6 @@ from    [IntersectType] RT
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        #endregion
 
         #endregion
 

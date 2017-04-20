@@ -197,93 +197,96 @@ order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityT
         [Route("{type}/{id:int}/PointBreakdownByObject")]
         public JsonNetResult GetPointBreakdownByObject(SystemObjects type, int id)
         {
-            var query = Company.Query<dynamic>(@"select T.Name, T.Score as MaxScore, coalesce(S.Score, 0) as Score
-from	StatisticType T
-inner join cache.Object D on D.[Object] = @type and D.ObjectID = @id and D.ObjectType = T.[Object]  and T.ObjectID = D.ObjectTypeID and T.PartOfScore = 1
-outer apply (
-			select	top 1
-					*
-			from	Statistic
-			where	StatisticTypeID = T.ID
-					and ObjectType = @type
-					and ObjectID = @id
-			order by DateStart desc
-			) S
-order by	T.Name", new { type = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id });
+            var query = Company.Query<dynamic>(@"
+select  V.Name,
+		V.MaximumScore as MaxScore, 
+		M.Value as Score
+FROM	(
+			select	max(ID) as ScoreID,
+					Object,
+					ObjectID,
+					ScoreTypeID
+			from	Score
+			where	Object = @type and ObjectID = @id
+			group by Object, ObjectID, ScoreTypeID
+		) MS 
+        inner join ScoreMetric M on M.ScoreID = MS.ScoreID
+		inner join ScoreTypeMetricVersion V on V.ID = M.ScoreTypeMetricVersionID
+order by	V.Name", new { type = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("Rule/{id:int}/EventStatusBreakdown")]
-        public JsonNetResult GetEventStatusBreakdownByRule(int id, int? maxHistoryDays)
-        {
-            var sql = "";
+        //[Route("Rule/{id:int}/EventStatusBreakdown")]
+        //public JsonNetResult GetEventStatusBreakdownByRule(int id, int? maxHistoryDays)
+        //{
+        //    var sql = "";
 
-            if (maxHistoryDays.HasValue)
-            {
-                sql = @"select	Status, count(1) as [Count] from Event E inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id where DATEDIFF(dd, E.[Date], getutcdate()) <= @m group by Status";
-            }
-            else
-            {
-                sql = @"select	Status, count(1) as [Count] from Event E inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id group by Status";
-            }
+        //    if (maxHistoryDays.HasValue)
+        //    {
+        //        sql = @"select	Status, count(1) as [Count] from Event E inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id where DATEDIFF(dd, E.[Date], getutcdate()) <= @m group by Status";
+        //    }
+        //    else
+        //    {
+        //        sql = @"select	Status, count(1) as [Count] from Event E inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id group by Status";
+        //    }
 
-            var query = Company.Query<dynamic>(sql, new { id = id, m = maxHistoryDays });
+        //    var query = Company.Query<dynamic>(sql, new { id = id, m = maxHistoryDays });
 
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+        //    return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+        //}
 
-        [Route("Rule/{id:int}/EventAgeBreakdown")]
-        public JsonNetResult GetEventAgeBreakdownByRule(int id, int? maxHistoryDays)
-        {
-            var whereClause = "";
+   //     [Route("Rule/{id:int}/EventAgeBreakdown")]
+   //     public JsonNetResult GetEventAgeBreakdownByRule(int id, int? maxHistoryDays)
+   //     {
+   //         var whereClause = "";
 
-            if (maxHistoryDays.HasValue)
-            {
-                whereClause = @" where DATEDIFF(dd, E.[Date], getutcdate()) <= @m ";
-            }
-            var query = Company.Query<dynamic>(string.Format(@"select	cast(E.[Date] as Date) as [Date],
-					count(1) as [Count]
-			from	Event E
-					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id 
-            {0}
-            group by cast(E.[Date] as Date)
-			order by cast(E.[Date] as Date)", whereClause), new { id = id, m = maxHistoryDays });
+   //         if (maxHistoryDays.HasValue)
+   //         {
+   //             whereClause = @" where DATEDIFF(dd, E.[Date], getutcdate()) <= @m ";
+   //         }
+   //         var query = Company.Query<dynamic>(string.Format(@"select	cast(E.[Date] as Date) as [Date],
+			//		count(1) as [Count]
+			//from	Event E
+			//		inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id 
+   //         {0}
+   //         group by cast(E.[Date] as Date)
+			//order by cast(E.[Date] as Date)", whereClause), new { id = id, m = maxHistoryDays });
             
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+   //         return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+   //     }
 
-        [Route("Rule/{id:int}/EventCriticalityBreakdown")]
-        public JsonNetResult GetEventCriticalityBreakdownByRule(int id, int? maxHistoryDays)
-        {
-            var whereClause = "";
+//        [Route("Rule/{id:int}/EventCriticalityBreakdown")]
+//        public JsonNetResult GetEventCriticalityBreakdownByRule(int id, int? maxHistoryDays)
+//        {
+//            var whereClause = "";
 
-            if (maxHistoryDays.HasValue)
-            {
-                whereClause = @" where DATEDIFF(dd, E.[Date], getutcdate()) <= @m ";
-            }
+//            if (maxHistoryDays.HasValue)
+//            {
+//                whereClause = @" where DATEDIFF(dd, E.[Date], getutcdate()) <= @m ";
+//            }
 
-            var query = Company.Query<dynamic>(string.Format(@"
-select		Criticality,
-			count(1) as [Count]
-from		(
-			select	case E.Criticality
-						when 5 then 'Critical'
-						when 4 then 'High'
-						when 3 then 'Medium'
-						when 2 then 'Low'
-						else 'Negligible'
-					end as Criticality,
-					E.Criticality as SortOrder
-			from	Event E
-					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id 
-            {0}
-			) o
-group by	Criticality, SortOrder
-order by	SortOrder desc", whereClause), new { id = id, m = maxHistoryDays });
+//            var query = Company.Query<dynamic>(string.Format(@"
+//select		Criticality,
+//			count(1) as [Count]
+//from		(
+//			select	case E.Criticality
+//						when 5 then 'Critical'
+//						when 4 then 'High'
+//						when 3 then 'Medium'
+//						when 2 then 'Low'
+//						else 'Negligible'
+//					end as Criticality,
+//					E.Criticality as SortOrder
+//			from	Event E
+//					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id 
+//            {0}
+//			) o
+//group by	Criticality, SortOrder
+//order by	SortOrder desc", whereClause), new { id = id, m = maxHistoryDays });
 
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
         [Route("{type}/{id:int}/SocialBreakdown")]
         public JsonNetResult GetSocialBreakdownByObject(string type, int id)
@@ -303,51 +306,51 @@ from	Comment C
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("RelatedArtifacts"), NonNullableParameters]
-        public JsonNetResult RelatedArtifacts(int artifactID)
-        {
-            var query = Company.Query<dynamic>(@"select TA.*, 
-dbo.GenerateObjectUrl('Artifact', TA.ArtifactTypeID, TA.ID) as Url
-from	RelatedArtifact SR
-		inner join RelatedArtifact TR on TR.GroupID = SR.GroupID and SR.ArtifactID = @artifactID
-		inner join Artifact TA on TR.ArtifactID = TA.ID and TA.ID <> SR.ArtifactID", new { artifactID = artifactID });
+//        [Route("RelatedArtifacts"), NonNullableParameters]
+//        public JsonNetResult RelatedArtifacts(int artifactID)
+//        {
+//            var query = Company.Query<dynamic>(@"select TA.*, 
+//dbo.GenerateObjectUrl('Artifact', TA.ArtifactTypeID, TA.ID) as Url
+//from	RelatedArtifact SR
+//		inner join RelatedArtifact TR on TR.GroupID = SR.GroupID and SR.ArtifactID = @artifactID
+//		inner join Artifact TA on TR.ArtifactID = TA.ID and TA.ID <> SR.ArtifactID", new { artifactID = artifactID });
 
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
-        [Route("RelatedArtifactOptions"), NonNullableParameters]
-        public JsonNetResult RelatedArtifactOptions(int typeID, int artifactID)
-        {
-            var query = Company.Query<dynamic>(@"if not exists(select GroupID from RelatedArtifact where ArtifactID = @a)
-begin
-	select		A.ID,
-				A.Name
-	from		Artifact A
-	where		A.ArtifactTypeID = @t and A.ID <> @a
-				and (
-					A.ID in (select ObjectID from ResponsibilityDetailForResource where ObjectType = 'Artifact' and ResponsibleObjectID = @r)
-					or
-					@admin = 1
-					) 
-	order by	A.Name
-end
-else
-begin
-	select		A.ID,
-				A.Name
-	from		Artifact A
-				left join RelatedArtifact SA on SA.ArtifactID = A.ID
-	where		A.ArtifactTypeID = @t
-				and SA.GroupID is null
-				and (
-					A.ID in (select ObjectID from ResponsibilityDetailForResource where ObjectType = 'Artifact' and ResponsibleObjectID = @r)
-					or
-					@admin = 1
-					) 
-	order by	A.Name
-end", new { t = typeID, a = artifactID, r = Company.CurrentResourceID, admin = Company.CurrentResourceIsAdmin });
+//        [Route("RelatedArtifactOptions"), NonNullableParameters]
+//        public JsonNetResult RelatedArtifactOptions(int typeID, int artifactID)
+//        {
+//            var query = Company.Query<dynamic>(@"if not exists(select GroupID from RelatedArtifact where ArtifactID = @a)
+//begin
+//	select		A.ID,
+//				A.Name
+//	from		Artifact A
+//	where		A.ArtifactTypeID = @t and A.ID <> @a
+//				and (
+//					A.ID in (select ObjectID from ResponsibilityDetailForResource where ObjectType = 'Artifact' and ResponsibleObjectID = @r)
+//					or
+//					@admin = 1
+//					) 
+//	order by	A.Name
+//end
+//else
+//begin
+//	select		A.ID,
+//				A.Name
+//	from		Artifact A
+//				left join RelatedArtifact SA on SA.ArtifactID = A.ID
+//	where		A.ArtifactTypeID = @t
+//				and SA.GroupID is null
+//				and (
+//					A.ID in (select ObjectID from ResponsibilityDetailForResource where ObjectType = 'Artifact' and ResponsibleObjectID = @r)
+//					or
+//					@admin = 1
+//					) 
+//	order by	A.Name
+//end", new { t = typeID, a = artifactID, r = Company.CurrentResourceID, admin = Company.CurrentResourceIsAdmin });
 
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
     }
 }

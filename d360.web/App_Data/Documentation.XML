@@ -1783,6 +1783,21 @@
             Retrieve report tile results.
             </summary>
         </member>
+        <member name="T:d360.web.Controllers.Services.ScoringController">
+            <summary>
+            Search everything in Data3Sixty.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ScoringController.AddScoreValueForMetric(System.String,System.Int32,System.Int32,d360.web.Models.ExternalScoreModel)">
+            <summary>
+            NOT YET FUNCTIONAL.  DO NOT USE.
+            </summary>
+            <param name="object">the type of the object (i.e. Artifact, Taxonomy, Policy).</param>
+            <param name="objectID">The ID of the object.</param>
+            <param name="scoreTypeMetricID">The Score type metric ID.</param>
+            <param name="model">The value to storage.  This should be a decimal that represents the fulfillment % of the maximum score stored in Data3Sixty.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.Services.AgentController.GetPackages">
             <summary>
             Get a list of packages.
@@ -2538,8 +2553,11 @@
         <member name="M:d360.web.Controllers.FormController.RuleType_EditFields(System.Int32)">
             <param name="id">PolicyTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.StatisticType_DeleteFields(System.Int32)">
-            <param name="id">StatisticTypeID</param>
+        <member name="M:d360.web.Controllers.FormController.ScoreType_DeleteFields(System.Int32)">
+            <param name="id">ScoreTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ScoreTypeMetric_DeleteFields(System.Int32)">
+            <param name="id">ScoreTypeMetricID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.SurveyType_DeleteFields(System.Int32)">
             <param name="id">SurveyTypeID</param>

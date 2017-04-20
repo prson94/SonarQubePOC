@@ -1,4 +1,49 @@
-﻿export enum StatisticCheckTypes {
+﻿export class ScoreType {
+    ID: number;
+    Name: string;
+    Description: string;
+}
+
+export class ScoreTypeMetric {
+    ID: number;
+    ScoreTypeID: number;
+    Name: string;
+    Description: string;
+    CheckType: MetricCheckTypes;
+    MaximumScore: number;
+
+    ObjectCombined: string;  
+    Object: string;
+    ObjectID: number;
+    ObjectName: string;
+
+    CheckObject: string;
+    CheckObjectID: number;
+    CheckObjectCombined: string;
+
+    Configuration: string;
+    PropertyName: string;
+    PropertyValue: string;
+    Threshold: string;
+    ValidField: string;
+    InvalidField: string;
+    CheckObjects: string[];
+}
+
+export enum MetricCheckTypes {
+    Existence = 1,
+    External = 2,
+    PropertyValueCheck = 3,
+    PropertyPopulated = 4,
+    Relationship = 5,
+    FusionOwnership = 6,
+    ScoreRollupViaRelationship = 7,
+    ScoreRollupViaOwnership = 8,
+    //ResultMetric = 9,
+    PredicateMetric = 10
+}
+
+export enum StatisticCheckTypes {
     Existence = 1,
     Count = 2,
     PropertyValueCheck = 3,    

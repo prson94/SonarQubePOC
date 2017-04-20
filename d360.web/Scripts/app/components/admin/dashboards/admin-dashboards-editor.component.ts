@@ -147,7 +147,10 @@ export class AdminDashboardsEditor {
         if (!isInitialLoad) {
             this.editedReport.VisibleToRoles = [];
         }
-        this.claimsService.getClaims(Number(object[1]), object[0]).
+        let ot = object[0];
+        if (!ot.endsWith("Type"))
+            ot += "Type";
+        this.claimsService.getClaims(Number(object[1]), ot).
             then(res => {
                 this.responsibilities = [];
                 res.forEach(o => {

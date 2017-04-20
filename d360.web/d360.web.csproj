@@ -376,6 +376,7 @@
     <Compile Include="Controllers\Services\CommunityController.cs" />
     <Compile Include="Controllers\Services\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
+    <Compile Include="Controllers\Services\ScoringController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\WorkflowController.cs" />
     <Compile Include="Controllers\Services\AgentController.cs" />
@@ -938,6 +939,7 @@
     <TypeScriptCompile Include="Scripts\app\authentication-connection-backend.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretype-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.ts" />
@@ -1018,8 +1020,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-tile-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistic-checktype-input.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistics-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretypemetric-checktype-input.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretypemetric-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.component.ts" />

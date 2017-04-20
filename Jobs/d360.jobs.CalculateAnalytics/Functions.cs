@@ -1,4 +1,10 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using d360.utils.company;
+using Microsoft.Azure.WebJobs;
+using System.Linq;
+using Dapper;
+using System.Data.SqlClient;
+using System;
+using d360.core;
 
 namespace d360.jobs.CalculateAnalytics
 {
@@ -7,7 +13,40 @@ namespace d360.jobs.CalculateAnalytics
         [NoAutomaticTrigger]
         public static void CallDatabase()
         {
-            ExecuteActionOnAllCompanies("CalculateAnalytics.CallDatabase", "exec utility.CalculateStatistics", 600);
+            var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
+
+#if DEBUG
+            companies = companies.Where(i => i.CompanyID == 4).ToList();
+#endif
+
+            companies.ForEach(company =>
+            {
+                SqlConnection companyConnection = null;
+
+                try
+                {
+                    companyConnection = GetCompanyConnection(company.CompanyID);
+                    companyConnection.Open();
+
+                    if (company.IsDevelopment)
+                    {
+                        companyConnection.Execute("exec utility.CalculateScores", commandTimeout: 1400);
+                    }
+                    else
+                    {
+                        companyConnection.Execute("exec utility.CalculateStatistics", commandTimeout: 1400);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.GetFullExceptionData());
+                }
+                finally
+                {
+                    if (companyConnection != null)
+                        companyConnection.Close();
+                }
+            });
         }
     }
 }

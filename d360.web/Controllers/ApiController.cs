@@ -101,68 +101,86 @@ namespace d360.web.Controllers
 
                 fieldTypes.ForEach(ft =>
                 {
+                    var formattedValue = string.Empty;
+                    var value = string.Empty;
+
                     var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
                     if (k != null)
                     {
-                        if (!string.IsNullOrEmpty(k.Value))
+                        value = k.Value;
+                        formattedValue = k.FormattedValue;
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
                         {
-                            if (k.Type == DataType.FusionLookup.ToString())
+                            value = ft.DefaultValue;
+                            formattedValue = ft.DefaultFormattedValue;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(formattedValue))
+                    {
+                        if (ft.Type == DataType.FusionLookup.ToString())
+                        {
+                            if (k != null)
                             {
                                 //look at fusionlookup field and figure out what to show
                                 list.AddRange(RenderFusionLookupField(k));
                             }
-                            else
+                        }
+                        else
+                        {
+                            var ro = new ReadOnlyField
                             {
-                                var ro = new ReadOnlyField
-                                {
-                                    Name = k.FriendlyName,
-                                    Value = (k.LookupDisplayFormat == k.FormattedValue) ? "" : k.FormattedValue,
-                                    FieldDescription = k.DisplayDescription,
-                                    FieldName = k.Name
-                                };
-                                if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
-                                {
-                                    ro.TooltipContext = TemplateAction.LookupPreview.ToString();
+                                Name = ft.FriendlyName,
+                                Value = (ft.LookupDisplayFormat == formattedValue) ? "" : formattedValue,
+                                FieldDescription = ft.DisplayDescription,
+                                FieldName = ft.Name
+                            };
+                            if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
+                            {
+                                ro.TooltipContext = TemplateAction.LookupPreview.ToString();
 
-                                    if (k.LookupObjectType == "Lookup")
+                                if (ft.LookupObjectType == "Lookup")
+                                {
+                                    if (ft.LookupObjectID.HasValue)
                                     {
-                                        if (k.LookupObjectID.HasValue)
-                                        {
-                                            ro.TooltipID = k.LookupObjectID;
-                                        }
-                                        else
-                                        {
-                                            ro.TooltipID = 0;
-                                        }
+                                        ro.TooltipID = ft.LookupObjectID;
                                     }
                                     else
                                     {
-                                        if (string.IsNullOrEmpty(k.Value))
+                                        ro.TooltipID = 0;
+                                    }
+                                }
+                                else
+                                {
+                                    if (string.IsNullOrEmpty(value))
+                                    {
+                                        ro.TooltipID = 0;
+                                    }
+                                    else
+                                    {
+                                        int textValue;
+                                        if (int.TryParse(value, out textValue))
                                         {
-                                            ro.TooltipID = 0;
-                                        }
-                                        else
-                                        {
-                                            int textValue;
-                                            if (int.TryParse(k.Value, out textValue))
-                                            {
-                                                ro.TooltipID = textValue;
-                                            }
+                                            ro.TooltipID = textValue;
                                         }
                                     }
-
-                                    ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
-                                    ro.TooltipUrl = k.LookupUrl;
-
                                 }
 
-                                list.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField> { ro },
-                                    Category = ft.Category
-                                });
+                                ro.TooltipType = ft.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : ft.LookupObjectType;
+                                if (k != null)
+                                    ro.TooltipUrl = k.LookupUrl;
+
                             }
+
+                            list.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> { ro },
+                                Category = ft.Category
+                            });
                         }
                     }
                     else
@@ -5438,50 +5456,79 @@ where    A.RuleID = @id", new { id });
                     resourceType = null;
                     break;
                 #endregion
-                case SystemObjects.StatisticType:
+                case SystemObjects.ScoreType:
                     #region Fields
-                    var statisticType = Company.GetById<StatisticType>(id);
-                    if (statisticType != null)
+                    var scoreType = Company.GetById<ScoreType>(id);
+                    if (scoreType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 2,
+                            columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = statisticType.GetName(i => i.Name), FieldName = "StatisticTypeName", FieldDescription = statisticType.GetDescription(i => i.Name), Value = statisticType.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = statisticType.GetName(i => i.PartOfScore), FieldName = "StatisticTypePartOfScore", FieldDescription = statisticType.GetDescription(i => i.PartOfScore), Value = statisticType.PartOfScore.FormatBooleanReadOnlyValue() }
+                                new ReadOnlyField { Name = scoreType.GetName(i => i.Name), FieldName = "ScoreTypeName", FieldDescription = scoreType.GetDescription(i => i.Name), Value = scoreType.Name }
                             }
                         });
 
-                        if (!string.IsNullOrEmpty(statisticType.Description))
+                        if (!string.IsNullOrEmpty(scoreType.Description))
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = statisticType.GetName(i => i.Description), FieldName = "StatisticTypeDescription", FieldDescription = statisticType.GetDescription(i => i.Description), Value = statisticType.Description }
+                                new ReadOnlyField { Name = scoreType.GetName(i => i.Description), FieldName = "ScoreTypeDescription", FieldDescription = scoreType.GetDescription(i => i.Description), Value = scoreType.Description }
+                            }
+                            });
+                        }
+                    }
+                    scoreType = null;
+                    break;
+                #endregion
+                case SystemObjects.ScoreTypeMetric:
+                    #region Fields
+                    var metric = Company.GetById<ScoreTypeMetric>(id);
+                    if (metric != null)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = metric.GetName(i => i.Name), FieldName = "StatisticTypeName", FieldDescription = metric.GetDescription(i => i.Name), Value = metric.Name }
+                            }
+                        });
+
+                        if (!string.IsNullOrEmpty(metric.Description))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = metric.GetName(i => i.Description), FieldName = "StatisticTypeDescription", FieldDescription = metric.GetDescription(i => i.Description), Value = metric.Description }
                             }
                             });
                         }
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
-                        {
-                            new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), FieldName = "StatisticTypeCheckType", FieldDescription = statisticType.GetDescription(i => i.CheckType), Value = statisticType.CheckType.GetDisplayName() }
-                        }
+                            {
+                                new ReadOnlyField { Name = metric.GetName(i => i.CheckType), FieldName = "StatisticTypeCheckType", FieldDescription = metric.GetDescription(i => i.CheckType), Value = metric.CheckType.GetDisplayName() }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = metric.GetName(i => i.MaximumScore), FieldName = "MetricMaximumScore", FieldDescription = metric.GetDescription(i => i.MaximumScore), Value = metric.MaximumScore.ToString() }
+                            }
                         });
 
-                        var fields = XElement.Parse(statisticType.Configuration);
+                        var fields = XElement.Parse(metric.Configuration);
                         int oID = 0;
                         ObjectDetail dtl = null;
 
-                        switch (statisticType.CheckType)
+                        switch (metric.CheckType)
                         {
                             case StatisticCheckType.Existence:              //1
                                 #region
@@ -5662,7 +5709,7 @@ where    A.RuleID = @id", new { id });
                                 #endregion
                         }
                     }
-                    statisticType = null;
+                    metric = null;
                     break;
                 #endregion
                 case SystemObjects.SurveyType:
@@ -6756,15 +6803,21 @@ SELECT (
 
             return Company.Query<ObjectSurveyQuestionValuesModel>(sql, new { id = questionId });
         }
-        
+
         #endregion
 
-        #region Statistics
+        #region Scoring
 
-        [Route("statistics")]
-        public IEnumerable<dynamic> GetStatisticTypes()
+        [Route("scoring/types/{id:int}/metrics")]
+        public IEnumerable<dynamic> GetStatisticTypeMetricsByScoreType(int id)
         {
-            return Company.Query<dynamic>(QueryConstants.StatisticTypeDetailList);
+            return Company.Query<dynamic>(QueryConstants.ScoreTypeMetricDetailList, new { id });
+        }
+
+        [Route("scoring/types")]
+        public IQueryable<ScoreType> GetScoreTypes()
+        {
+            return Company.Table<ScoreType>();
         }
 
         #endregion
