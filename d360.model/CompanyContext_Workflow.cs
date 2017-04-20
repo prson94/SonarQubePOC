@@ -104,15 +104,9 @@ namespace d360.model
                 return false;
             }
 
-            var settingsXml = XElement.Parse(registration.Settings);
-
-            var scheduledDays = 1;
-            if (settingsXml.Element("ScheduleInterval") != null)
-            {
-                int.TryParse(settingsXml.Element("ScheduleInterval").Value, out scheduledDays);
-            }
-
-            if(!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(scheduledDays) <= DateTime.UtcNow ))
+            var settings = WorkflowEventRegistrationSettingsModel.Parse(registration.Settings);
+            
+            if(!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(settings.ScheduleInterval) <= DateTime.UtcNow ))
             {
                 //evaluate objects that are part of this workflow
                 switch ((registration.Object ?? "").ToUpper())
@@ -154,10 +148,15 @@ namespace d360.model
                 }
 
                 //add item record for start and subsequent queue records
-
                 registration.LastExecuted = DateTime.UtcNow;
                 Entry(registration).State = EntityState.Modified;
                 SaveChanges();
+
+                //if the scheduled workflow needs an aggregate email send it
+                if (settings.SendAggregateEmail)
+                {
+                    SendAggregateWorkflowEmail(settings);
+                }
             }
 
             return false;
@@ -200,7 +199,14 @@ namespace d360.model
             SaveChanges();
 
             //initiate start step and mark as completed
-            var firstVersionStep = version.Steps.Single(s => s.StepType == StepType.Start);
+            var firstVersionStep = version.Steps.Where(s => s.StepType == StepType.Start).FirstOrDefault();
+
+            if(firstVersionStep == null)
+            {
+                Console.WriteLine("ERROR - WORKFLOW HAS NO START STEP.  DONE.");
+
+                return true;
+            }
 
             var firstItemStep = new WorkflowItemStep { CompletedBy = CurrentResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
 
@@ -676,6 +682,36 @@ namespace d360.model
 
         }
 
+        private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings)
+        {
+            
+            var url = "";
+            var prefix = "";
+            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.Open();
+
+                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
+
+                cnn.Close();
+            }
+
+            settings.EmailMessageTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{settings.EmailMessageTemplate}";
+            settings.EmailMessageTemplate += "</body></html>";
+
+            if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
+            {
+                if (string.IsNullOrEmpty(settings.SpecificUser))
+                {
+                    Console.Write("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER EMAIL TASK.");
+
+                    return;
+                }
+
+                await extensions.mail.SimpleMessage.SendMessage(settings.EmailHeader, settings.SpecificUser, "", settings.EmailMessageTemplate, true);
+            }
+        }
+
         private async Task SendWorkflowEmail(WorkflowItemStep item, EventObjectInfo objectInfo)
         {            
 
@@ -851,6 +887,8 @@ namespace d360.model
 
             return result;
         }
+
+
 
         public void DetermineTransitionBasedOnPreviousStepConditions(long itemStepID)
         {
