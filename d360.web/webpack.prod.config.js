@@ -12,7 +12,7 @@ var webpackConfig = {
     },
 
     output: {
-        path: './scripts/app/',
+        path: __dirname + '/scripts/app/',
         publicPath: './scripts/app/'
     },
 

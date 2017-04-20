@@ -14,9 +14,9 @@ var webpackConfig = {
     entry: './scripts/app/main.aot.ts',
 
     output: {
-        path: './scripts/app/',
+        path: __dirname + '/scripts/app/',
     },
-
+    
     plugins: [
         new ngtools.AotPlugin({
             tsConfigPath: './scripts/app/tsconfig.aot.json',

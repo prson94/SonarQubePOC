@@ -14,7 +14,7 @@ var webpackConfig = {
       hints: false
   },
   output: {
-      path: './scripts/app/',
+      path: __dirname + '/scripts/app/',
       publicPath: './scripts/app/'
   },
 
