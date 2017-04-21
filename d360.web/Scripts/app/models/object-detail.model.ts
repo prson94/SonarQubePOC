@@ -51,6 +51,7 @@ export class DetailField {
     Values: DetailSubField[];
     Type: DetailFieldType = DetailFieldType.Field;
     Data: any;
+    DataType: string;
 }
 
 export class Synonym {

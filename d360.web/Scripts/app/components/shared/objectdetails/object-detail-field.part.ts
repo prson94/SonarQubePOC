@@ -15,7 +15,8 @@ import { Router } from '@angular/router';
             </div>            
             <template [ngIf]="!field.Values || field.Values.length == 0">
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name == 'Email'" class="FieldDisplayContent"><a [href]="'mailto:' + field.Value">{{field.Value}}</a></div>
-                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email'" class="FieldDisplayContent" [innerHtml]="field.Value"></div>
+                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'date'" class="FieldDisplayContent" [innerHtml]="field.Value | date:'shortDate'"></div>
+                <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date'" class="FieldDisplayContent" [innerHtml]="field.Value"></div>
                 <div *ngIf="field.Type == DetailFieldType.Tooltip" class="FieldDisplayContent">
                     <d3s-tooltip [tooltipType]="field.TooltipContext" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
                         <a (click)="navigate(field.TooltipUrl)" [innerHtml]="field.Value"></a>
