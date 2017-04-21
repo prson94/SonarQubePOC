@@ -46,7 +46,7 @@
                     <i class="fa fa-history fa-2x"></i>
                 </li>-->
             </ul>
-            <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px; overflow-y: auto; width:100%; height: 350px;">
+            <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px; overflow-y: auto; width:100%; height: 300px;">
                 <div *ngSwitchCase="'info'">
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
                         <div class="row">
