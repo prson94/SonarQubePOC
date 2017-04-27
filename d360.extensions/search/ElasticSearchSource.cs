@@ -464,7 +464,7 @@ namespace d360.extensions.search
                 sb.Append(",\"filter\": { \"term\":  { \"Type.raw\": \"" + group + "\" } }");                
             }
                         
-            sb.Append("}},\"from\":" + from + ",\"size\":" + size+ ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
+            sb.Append("}},\"from\":" + from + ",\"size\":" + size );
 
             // if no group filter then we need to get list of categories
             if (string.IsNullOrEmpty(group))
@@ -562,9 +562,6 @@ namespace d360.extensions.search
 
                 phrase = EscapeSpecialCharacters(phrase).ToLower();
                                 
-                // works seams case sensitive
-                //sb.Append("{\"query\":{\"match_phrase_prefix\": {\"Name\": \"" + phrase + "\"} }, \"size\":" + size + "} ");
-
                 //split on spaces
                 var parts = phrase.Split(' ');
                 sb.Append("{\"query\": {\"bool\": {\"must\": [ ");

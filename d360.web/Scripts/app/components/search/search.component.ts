@@ -90,8 +90,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
         }
 
         this.resultsPerPage = event.size;
-
-        this.pageNumber = event.first == 0 ? 0 : (event.first / this.resultsPerPage);
+        
+        this.pageNumber=event.first;
 
         this.doSearch(this.selectedCategory);
     }
