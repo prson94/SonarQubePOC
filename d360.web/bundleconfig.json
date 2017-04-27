@@ -10,5 +10,13 @@
       "Content/styles/typeahead.css",
       "Content/quill/quill.snow.css"
     ]
+  },
+  {
+    "outputFileName": "scripts/legacy.js",
+    "inputFiles": [
+      "Scripts/jquery-2.2.4.min.js",
+      "Scripts/jquery.qtip.min.js",
+      "Scripts/quill.min.js"
+    ]
   }
 ]

@@ -27,59 +27,37 @@
 <!DOCTYPE html>
 <html class="no-js">
 <head>
-    <base href="/" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta charset="utf-8" />
+    <base href="/"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta charset="utf-8"/>
     <title>@ViewBag.Title - Data3Sixty, Inc.</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
-    <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
-    <link rel="Shortcut Icon" href="@(companyIcon)" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <meta name="description" content="Data3Sixty: Data Collaboration Suite"/>
+    <link rel="icon" href="@(companyIcon)" type="image/x-icon"/>
+    <link rel="Shortcut Icon" href="@(companyIcon)"/>
     <script type="text/javascript">
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
     </script>
-    <link rel="stylesheet" type="text/css" href="/node_modules/primeng/resources/primeng.min.css" />
-    <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
-    <link rel="stylesheet" type="text/css" href="/Content/primeng/d3s/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/node_modules/primeng/resources/primeng.min.css"/>
+    <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)"/>
+    <link rel="stylesheet" type="text/css" href="/Content/primeng/d3s/theme.css"/>
     <style type="text/css">
         nav.top .logo {
             background-color:@(settings["HeaderBackgroundColor"]);
             background-image:url(@(companyLogo));
-            background-repeat:no-repeat;
-            background-position:left top;
-            background-size: auto 40px;
-            height:40px;
-            width:200px;
-            display:inline-block;
-        }
-        nav.top{
-            border-bottom:1px solid @(settings["HeaderBackgroundColor"]);
-        }
+            background-repeat:no-repeat;background-position:left top;background-size: auto 40px;height:40px;width:200px;display:inline-block;}
+        nav.top{border-bottom:1px solid @(settings["HeaderBackgroundColor"]);}
         .header-search .search-child {
             border-bottom:1px solid @(settings["HeaderBackgroundColor"]);
             border-right:1px solid @(settings["HeaderBackgroundColor"]);
             border-left:1px solid @(settings["HeaderBackgroundColor"]);
         }
-        .ng-loading{
-            position:fixed;
-            height:100%;
-            width:100%;
-            top:0;
-            left:0;
-            background:#54a4da;
-        }
-        .ng-loading-wrap{
-            position:fixed;
-            top:45%;
-            left:50%;
-            color:white;
-        }
+        .ng-loading{position:fixed;height:100%;width:100%;top:0;left:0;background:#54a4da;}
+        .ng-loading-wrap{position:fixed;top:45%;left:50%;color:white;}
         .ng-loading-image{background-image: url(/Content/images/logo.new.png);background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-80px;}
     </style>
-    <script src="/Scripts/jquery-2.2.4.min.js"></script>
-    <script src="/Scripts/jquery.qtip.min.js"></script>
-    <script src="https://cdn.quilljs.com/1.1.2/quill.min.js"></script>    
+    <script src="/Scripts/legacy.min.js"></script>
 </head>
 <body>
     <d3s-app><div class="ng-loading"><div class="ng-loading-wrap"><div class="ng-loading-image">&nbsp;</div>Loading...</div></div></d3s-app>

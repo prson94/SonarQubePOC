@@ -579,6 +579,10 @@
     <Content Include="Scripts\app\vendor.bundle.js" />
     <Content Include="Scripts\jquery-2.2.4.min.js" />
     <Content Include="Scripts\jquery.qtip.min.js" />
+    <Content Include="Scripts\legacy.js" />
+    <Content Include="Scripts\legacy.min.js">
+      <DependentUpon>legacy.js</DependentUpon>
+    </Content>
     <Content Include="Scripts\quill.min.js" />
     <Content Include="Scripts\worker-json.js" />
     <Content Include="webpack.aot.config.js" />
