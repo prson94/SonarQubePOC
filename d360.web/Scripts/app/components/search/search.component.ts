@@ -46,6 +46,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.sub = this.route.queryParams.subscribe(params => {
             this.showAdvanced = params['advanced'] == '1';
             this.searchText = params['query'] ? params['query'] : '';
+            this.isExactMatch = params['exactMatch'] ? params['exactMatch'] != '0' : true;
             if (params['types']) {
                 this.searchTypes = params['types'].split(',');
             }
