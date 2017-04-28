@@ -3036,11 +3036,7 @@ namespace d360.web.Controllers
                     list.Add("Name", "Name");
                     list.Add("Description", "Description");
                     list.Add("TextPath", "TextPath");
-                    break;
-                //default:
-                //    list.Add("Name", "Name");
-                //    list.Add("TextPath", "TextPath");
-                //    break;
+                    break;                
             }
 
             return new JsonNetResult
@@ -3053,7 +3049,7 @@ namespace d360.web.Controllers
         [Route("FieldType_Lookup_DefaultValueOptions"), NonNullableParameters]
         public JsonNetResult FieldType_Lookup_DefaultValueOptions(SystemObjects type, int id)
         {
-            Dictionary<string, int> list = null;
+            Dictionary<string, int> list = new Dictionary<string, int>();
 
             switch (type)
             {
@@ -3078,7 +3074,7 @@ namespace d360.web.Controllers
                     break;
                 case SystemObjects.Resource:
                 case SystemObjects.ResourceType:
-                    list = Company.Table<GlobalReportingResource>()
+                    list = Company.Table<GlobalReportingResource>().ToList()
                         .OrderBy(i => i.FullName)
                         .Select(i => new { i.FullName, i.ResourceID })
                         .ToDictionary(k => k.FullName, v => v.ResourceID);
@@ -3094,13 +3090,9 @@ namespace d360.web.Controllers
                         .OrderBy(i => i.TextPath)
                         .Select(i => new { i.TextPath, i.ID })
                         .ToDictionary(k => k.TextPath, v => v.ID);
-                    break;
-                    //default:
-                    //    list.Add("Name", "Name");
-                    //    list.Add("TextPath", "TextPath");
-                    //    break;
+                    break;                
             }
-
+            
             return new JsonNetResult
             {
                 Data = list.Select(i => new { title = i.Key, value = i.Value }),
