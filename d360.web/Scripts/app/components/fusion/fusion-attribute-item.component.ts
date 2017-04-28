@@ -64,8 +64,7 @@ export class FusionAttributeItemComponent extends BaseComponent implements OnIni
         private fusionService: FusionService,
         private route: ActivatedRoute,
         private router: Router) {
-        super();
-        
+        super();        
     }
 
     ngOnInit() {
@@ -85,7 +84,5 @@ export class FusionAttributeItemComponent extends BaseComponent implements OnIni
 
     ngOnDestroy() {
         this.sub.unsubscribe();
-    }
-
-    
+    }    
 };
