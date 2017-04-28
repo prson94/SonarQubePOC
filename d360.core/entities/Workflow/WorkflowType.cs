@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using d360.core.enums;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -22,6 +23,8 @@ namespace d360.core.entities.Workflow
         public int? PublishedVersionID { get; set; }
 
         public bool Deleted { get; set; } = false;
+
+        public State State { get; set; } = State.Unknown;
 
     }
 }

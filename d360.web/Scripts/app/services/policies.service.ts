@@ -24,8 +24,8 @@ export class PoliciesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getPolicies(policyTypeId: number): Promise<Policy[]> {
-        return this.http.get(`api/policytypes/${policyTypeId}/policies`)
+    getPolicies(policyTypeId: number, stripHtml: boolean = false): Promise<Policy[]> {
+        return this.http.get(`api/policytypes/${policyTypeId}/policies?stripHtml=${stripHtml}`)
             .toPromise()
             .then(response => <Policy[]>response.json())
             .catch(err => this.handleError(err));

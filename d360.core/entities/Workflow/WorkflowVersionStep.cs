@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using d360.core.enums;
 using d360.core.enums.Workflow;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -42,7 +43,12 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public int YPosition { get; set; }
 
+        [DataMember]
+        public State State { get; set; } = State.Unknown;
+
         [IgnoreDataMember, ForeignKey("VersionID")]
         public virtual WorkflowVersion Version { get; set; }
+
+
     }
 }

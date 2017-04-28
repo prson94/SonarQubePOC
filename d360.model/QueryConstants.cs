@@ -1557,7 +1557,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 				select stepid, count(stepid) as RunCount from workflow.itemstep
 				group by stepid
 			) i on i.stepid = vs.id
-            where t.id = @id
+            where t.id = @id and vs.[State] = 1
 ";
 
         public static string WorkflowDiagramLinks = @"
@@ -1575,7 +1575,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             inner join workflow.[version] v on v.typeid = t.id
             inner join workflow.[versionstep] vs on vs.versionid = v.id
             inner join workflow.[versionsteptransition] vst on vst.fromversionstepid = vs.id
-            where t.id = @id
+            where t.id = @id and vst.State = 1
 ";
 
         public static string WorkflowObjectTypes = @"

@@ -17,12 +17,6 @@ import { WorkflowService } from '../../../services/workflow.service';
     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>        
     <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
     <p-column field="ChangeTypeName" header="Change Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
-    <!--<p-column field="CreatedOn" header="Created On" [sortable]="true" [filter]="!showSimpleFilter" >
-        <template let-item="rowData" pTemplate type="body">
-            <span>{{item.CreatedOn | date:'shortDate'}}</span>
-        </template>
-    </p-column> 
-    <p-column field="CreatedBy" header="Created By" [sortable]="true" [filter]="!showSimpleFilter"></p-column>-->
     <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter">
         <template let-item="rowData" pTemplate type="body">
             <span>{{item.UpdatedOn | date:'shortDate'}}</span>

@@ -206,7 +206,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         this.model.Event.ObjectID = this.objectId;
 
         this.conditions.forEach(c => {
-            delete c['@FieldName'];
+            delete c['@FieldName']; 
         });
 
         if (this.model.Event.SettingsObject.Settings.SendAggregateEmail == false

@@ -93,7 +93,7 @@
             </div>
         </div>
     </div>
-    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail.toString() === 'true'">
+    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == 'true'">
         <div class="col s12 m4 offset-m2">
             <div class="FieldName">
                 Subject
@@ -132,7 +132,7 @@
             </div>
         </div>
     </div>
-    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail.toString() === 'true'">
+    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == 'true'">
         <div class="col s12 m8 offset-m2">
             <div class="FieldName">
                 Body

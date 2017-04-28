@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using d360.core.enums;
 using d360.core.enums.Workflow;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,6 +30,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public string ToPortID { get; set; }
+
+        [DataMember]
+        public State State { get; set; } = State.Unknown;
         
         [IgnoreDataMember]
         public string Condition { get; set; }

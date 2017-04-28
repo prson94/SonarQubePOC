@@ -3671,7 +3671,7 @@ order by C.TextPath";
         }
 
         [Route("policytypes/{id:int}/policies")]
-        public IEnumerable<dynamic> GetPoliciesByType(int id)
+        public IEnumerable<dynamic> GetPoliciesByType(int id, bool stripHtml = false)
         {
             var joins = "";
             var columns = "";
@@ -3691,7 +3691,16 @@ where    A.PolicyTypeID = @id and A.[Visible] = 1", columns, joins);
 
             sql = applyFilteringSuffix(sql, Request);
 
-            return Company.Query<dynamic>(sql, new { id = id });
+            var policies = Company.Query<dynamic>(sql, new { id = id }).ToList();
+
+            policies.ForEach(p =>
+            {
+                if (stripHtml)
+                    p.Description = System.Text.RegularExpressions.Regex.Replace(p.Description, @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty);
+                p.Description = HttpUtility.HtmlDecode(p.Description);
+            });
+
+            return policies;
         }
 
 

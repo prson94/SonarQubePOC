@@ -1383,6 +1383,7 @@ namespace d360.web.Controllers.Services
                         type.UpdatedBy = Company.CurrentResourceID;
                         type.UpdatedOn = DateTime.UtcNow;
                         type.Name = model.Type.Name;
+                        type.State = core.enums.State.Active;
 
                         Company.Add(type);
                         Company.SaveChanges();
@@ -1427,7 +1428,7 @@ namespace d360.web.Controllers.Services
                             @event.ChangeType = model.Event.ChangeType;
                             @event.Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
                             @event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
-
+                            @event.State = core.enums.State.Active;
 
                             Company.Add(@event);
                             Company.SaveChanges();
@@ -1452,6 +1453,21 @@ namespace d360.web.Controllers.Services
 
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
 
+                    var existingSteps = Company.WorkflowVersionSteps.Where(s => 
+                        s.State == core.enums.State.Active 
+                        && s.VersionID == versionID)
+                        .ToList();
+
+                    var existingLinks = new List<WorkflowVersionStepTransition>();
+
+                    existingSteps.ForEach(s =>
+                    {
+                        var transition = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == s.ID && t.State == core.enums.State.Active);
+                        if (transition != null)
+                            existingLinks.AddRange(transition);
+                    });
+
+
                     if (model?.Nodes?.Count > 0)
                     {
                         //TODO: parse nodes and add
@@ -1472,6 +1488,7 @@ namespace d360.web.Controllers.Services
                                 step.YPosition = n.YPosition;
                                 step.VersionID = versionID;
                                 step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                step.State = core.enums.State.Active;
 
                                 if (string.IsNullOrEmpty(n.Fields))
                                     step.Fields = null;
@@ -1486,7 +1503,11 @@ namespace d360.web.Controllers.Services
                             {
                                 //modify
 
+
                                 var node = Company.WorkflowVersionSteps.Find(id);
+
+                                var existing = existingSteps.Find(s => s.ID == id);
+                                if (existing != null) existingSteps.Remove(existing);
 
                                 if (node != null)
                                 {
@@ -1507,6 +1528,13 @@ namespace d360.web.Controllers.Services
                                 }
                             }
                         });
+                        Company.SaveChanges();
+                    }
+
+                    if (existingSteps.Count > 0 && model?.Nodes?.Count > 0)
+                    {
+                        //mark anything left as deleted
+                        existingSteps.ForEach(s => s.State = core.enums.State.Deleted);
                         Company.SaveChanges();
                     }
 
@@ -1571,12 +1599,16 @@ namespace d360.web.Controllers.Services
                                 link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
                                 link.FromPortID = l.FromPortID;
                                 link.ToPortID = l.ToPortID;
+                                link.State = core.enums.State.Active;
 
                                 Company.Add(link);
                             }
                             else
                             {
                                 //var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
+
+                                var existing = existingLinks.Find(t => t.FromVersionStepID == link.FromVersionStepID && t.ToVersionStepID == link.ToVersionStepID);
+                                if (existing != null) existingLinks.Remove(existing);
 
                                 if (link != null)
                                 {
@@ -1622,6 +1654,12 @@ namespace d360.web.Controllers.Services
                             }
                         });
 
+                        Company.SaveChanges();
+                    }
+
+                    if (existingLinks.Count > 0 && model?.Links?.Count > 0)
+                    {
+                        existingLinks.ForEach(l => l.State = core.enums.State.Deleted);
                         Company.SaveChanges();
                     }
                 }

@@ -156,7 +156,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
 
     private loadPolicyHierarchy(policyTypeId: number) {
-        this.policiesService.getPolicies(policyTypeId)
+        this.policiesService.getPolicies(policyTypeId, true)
             .then(result => {
                 for (let policy of result) {
                     policy.StatusName = PolicyStatus[policy.Status];
@@ -180,7 +180,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 label: root.Name,
                 expanded: true,
                 data: {
-                    ID: root.ID, Name: root.Name, Description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : ''), ParentID: root.ParentID, StatusName: root.StatusName, Level: root.Level
+                    ID: root.ID, Name: root.Name, Description: root.Description, ParentID: root.ParentID, StatusName: root.StatusName, Level: root.Level
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
