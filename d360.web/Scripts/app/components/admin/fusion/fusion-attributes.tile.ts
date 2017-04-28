@@ -29,7 +29,7 @@ export class FusionAttributesTile implements OnChanges {
 
     constructor(
         private fusionService: FusionService,
-        private objectStyleService: ObjectStyleService
+        private objectStyleService: ObjectStyleService        
     ) {
     }
 
@@ -38,7 +38,6 @@ export class FusionAttributesTile implements OnChanges {
             if (p == 'fusionType') {
                 this.load();
             }
-
         }
     }
 
@@ -55,7 +54,7 @@ export class FusionAttributesTile implements OnChanges {
             .then(data => {
                 this.fusionAttributeTypes = data;
                 this.selectedRow = this.fusionAttributeTypes[0];
-                this.isLoading = false;
+                this.isLoading = false;                
             });
     }
 
@@ -90,7 +89,7 @@ export class FusionAttributesTile implements OnChanges {
             this.newFusion.ParentID = null;
 
         this.formMode = FormMode.Adding;
-        //this.newFusion.
+        this.newFusion.ScanEnabled = true;
     }
 
     delete() {
@@ -116,7 +115,4 @@ export class FusionAttributesTile implements OnChanges {
                 });
         }
     }
-
 }
-
-

@@ -8,7 +8,13 @@
         <div id="FusionAttributeTypes"></div>
         <p-treeTable [value]="fusionAttributeTypes" selectionMode="single" [(selection)]="selectedRow">
             <p-column field="Name" header="Name"></p-column>
-            <p-column field="ID" header="ID"></p-column>
+            <p-column field="ScanEnabled" header="Enabled" [style]="{width:'80px'}">
+                <template let-item="rowData" pTemplate type="body">
+                    <span><i *ngIf="item.data.ScanEnabled" class="fa fa-check enabled" title="True"></i></span>
+                    <span><i *ngIf="!item.data.ScanEnabled" class="fa fa-times disabled" title="False"></i></span>
+                </template>
+            </p-column>
+            <p-column field="ID" header="ID" [style]="{width:'60px'}"></p-column>
             <p-column>
                 <template let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
@@ -34,7 +40,7 @@
             </div>
             <div class="col s12">
                 <div class="FieldName">
-                    <span pTooltip="Allow the fusion agent to scan for this metadata. If disabled on a parent, scanning will also be disabled on all child attribute types.">Agent Scanning Enabled?</span>
+                    <span>Enabled?</span>
                 </div>
                 <div>
                     <input type="checkbox" [(ngModel)]="newFusion.ScanEnabled" />
