@@ -31,7 +31,7 @@ declare var window: any;
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [PermissionsService, WorkflowService ]
+    providers: [PermissionsService, WorkflowService]
 })
 
 export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, OnChanges {
@@ -352,7 +352,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             .then(() => this.initializePalette())
             .then(() => this.initializeFormFields())
             .then(() => this.isWindowVisible = !this.isReadOnly);
-            //.then(() => { this.resizeDiagram(); this.resizePalette(); });
+        //.then(() => { this.resizeDiagram(); this.resizePalette(); });
     }
 
     //#endregion
@@ -436,12 +436,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 n.condition.forEach(c => {
                     let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
                     if (i >= 0)
-                       c['@FieldName'] = this.fieldTypes[i].FriendlyName;
+                        c['@FieldName'] = this.fieldTypes[i].FriendlyName;
                 });
 
             } else {
                 n.condition = [];
-            } 
+            }
 
             n.settings = (m.SettingsObject == null) ? {} : m.SettingsObject;
             n.diagramObjectType = DiagramObjectType.Link;
@@ -459,7 +459,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             }
 
             this.setTransitionIcon(n);
-            
+
             return n;
 
         } else if (type == DiagramObjectType.Node) {
@@ -523,7 +523,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.ToKey = m.to;
             n.TransitionType = m.transitionType;
             n.Name = m.name;
-            
+
             //clone conditions so we can remove field name
             let cond = _.cloneDeep(m.condition);
             cond.forEach(c => delete c['@FieldName']);
@@ -545,7 +545,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.SettingsObject = m.settings;
             n.Settings = JSON.stringify({ settings: m.settings });
             n.Fields = (m.fields != null && m.fields.form != null) ? JSON.stringify({ fields: m.fields }) : '';
-            
+
             n.StepType = m.stepType;
             n.XPosition = m.pos.split(' ')[0];
             n.YPosition = m.pos.split(' ')[1];
@@ -578,7 +578,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         });
 
     }
-    
+
     //#endregion
 
     //#region events
@@ -1017,7 +1017,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         let nodeWidth = 78;
         let nodeHeight = 78;
         let nodeBorderColor = 'transparent';
-        let nodeFontSize = 10;
+        let nodeFontSize = 8;
         let backColor = isStart ? '#216b23' : '#6b2121';
 
         return this.g(go.Node, "Auto",
@@ -1029,7 +1029,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             },
             this.g(go.Panel, "Auto", {
                 width: nodeWidth,
-                height: nodeHeight
+                height: nodeHeight,
+                margin: 0,
+                alignment: go.Spot.Center
             },
                 this.g(go.Shape, "Circle", {
                     stroke: nodeBorderColor,
@@ -1038,22 +1040,20 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     height: 74,
                     name: "NodeShape",
                     fill: backColor
-                }),
-                this.g(go.Panel, "Table",
-                    this.g(go.TextBlock, {
-                        row: 0,
-                        margin: 0,
-                        alignment: go.Spot.Center,
-                        editable: false,
-                        font: "bold " + nodeFontSize + "pt sans-serif",
-                        stroke: "#fff"
-                    },
-                        new go.Binding("text", "name").makeTwoWay()
-                    )
+                }
                 ),
-                this.makePort((isStart) ? 'B' : 'T', (isStart) ? go.Spot.Bottom : go.Spot.Top, isStart, !isStart),
-                this.makePort((isStart) ? 'R' : 'L', (isStart) ? go.Spot.Right : go.Spot.Left, isStart, !isStart)
-            )
+                this.g(go.TextBlock, {
+                    margin: 0,
+                    alignment: go.Spot.Center,
+                    editable: false,
+                    font: "bold " + nodeFontSize + "pt sans-serif",
+                    stroke: "#fff",
+                },
+                    new go.Binding("text", "name").makeTwoWay()
+                )
+            ),
+            this.makePort((isStart) ? 'B' : 'T', (isStart) ? go.Spot.Bottom : go.Spot.Top, isStart, !isStart),
+            this.makePort((isStart) ? 'R' : 'L', (isStart) ? go.Spot.Right : go.Spot.Left, isStart, !isStart)
         );
     }
 
