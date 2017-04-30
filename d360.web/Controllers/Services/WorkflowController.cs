@@ -1096,7 +1096,7 @@ namespace d360.web.Controllers.Services
         [Route("form/{typeID:int}/{itemStepID:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, int itemStepID)
         {
-            var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x=>x.Item).FirstOrDefault();
+            var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x=>x.Item).Include(x=>x.Step).FirstOrDefault();
 
             if(itemStep == null)
             {

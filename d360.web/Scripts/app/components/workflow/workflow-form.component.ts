@@ -18,12 +18,12 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                         <div class="col s12">
                             <div class="tile tile-detail" *ngIf="!isCompleted">                        
                                 <header>{{title}}</header>
-                                <div class="form-instructions">The following form is for the [{{objectType}}] named [<d3s-tooltip objectType="Artifact" [objectId]="objectID" tooltipType="preview">{{objectName}}</d3s-tooltip>].  {{description}}</div>                                            
+                                <div class="form-instructions">The following form is for the [{{objectType}}] named [<d3s-tooltip objectType="Artifact" [objectId]="objectID" tooltipType="preview">{{objectName}}</d3s-tooltip>].  <span [innerHtml]="description"></span></div>                                            
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
                                     <div class="row">
                                         <div *ngFor="let field of fields;let indx=index" class="row">
                                             <div [ngSwitch]="field.FieldType" class="col s12">
-                                                <div class="FieldName">{{field.Label}}</div>
+                                                <div class="FieldName" [innerHtml]="field.Label"></div>
                                                 <input *ngSwitchCase="fieldType.Text" [name]="'input_'+indx" style="width: 100%;" type="string" [(ngModel)]="field.Value" >  
                                                 <input *ngSwitchCase="fieldType.Boolean" type="checkbox" [(ngModel)]="field.Value" [name]="'input_'+indx"/> 
                                                 <input *ngSwitchCase="fieldType.Integer" [name]="'input_'+indx" style="width: 100%;" type="number" [(ngModel)]="field.Value" >  
