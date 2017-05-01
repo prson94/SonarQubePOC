@@ -750,7 +750,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 sb.Append($"({name} like @simpleFilter + '%')");
             }
 
-            var val = new Dapper.DbString { Value = filterExp, Length = 200};
+            var val = new Dapper.DbString { Value = filterExp.Replace('*','%').Replace('?','_'), Length = 200};
                         
             dbArgs.Add("simpleFilter", val);
 
@@ -814,7 +814,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             switch (condition)
             {
                 case "CONTAINS":
-                    dbParams.Add(bind, $"%{value}%");
+                    var val = (value ?? "").Replace('*', '%').Replace('?', '_');
+                    dbParams.Add(bind, $"%{val}%");
                     return $"{field} LIKE @{bind}";
                 case "DOES_NOT_CONTAIN":
                     dbParams.Add(bind, $"%{value}%");
