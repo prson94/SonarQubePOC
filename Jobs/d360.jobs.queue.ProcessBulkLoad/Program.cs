@@ -357,7 +357,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                         x.TextPath.ToLower() == rawItemPath
                                     )
                                     .Select(x => new SimpleTypeModel { Name = "Artifact", ID = x.ID })
-                                    .SingleOrDefault();
+                                    .FirstOrDefault();
                                 }
                                 break;
                             case "ReferenceItemType":
@@ -365,7 +365,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                     x.Name.ToLower() == rawItemPath
                                 )
                                 .Select(x => new SimpleTypeModel { Name = "ReferenceItemType", ID = x.ID })
-                                .SingleOrDefault();
+                                .FirstOrDefault();
                                 break;
                             case "FusionType":
                                 verifiedItem = company.Filter<Fusion>(x =>
@@ -373,7 +373,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                     x.Name.ToLower() == rawItemPath
                                 )
                                 .Select(x => new SimpleTypeModel { Name = "Fusion", ID = x.ID })
-                                .SingleOrDefault();
+                                .FirstOrDefault();
                                 break;
                             case "PolicyType":
                                 verifiedItem = company.Filter<Policy>(x =>
@@ -381,7 +381,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                     x.TextPath.ToLower() == rawItemPath
                                 )
                                 .Select(x => new SimpleTypeModel { Name = "Policy", ID = x.ID })
-                                .SingleOrDefault();
+                                .FirstOrDefault();
                                 break;
                             case "TaxonomyType":
                                 verifiedItem = company.Filter<Taxonomy>(x =>
@@ -389,7 +389,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                     x.TextPath.ToLower() == rawItemPath
                                 )
                                 .Select(x => new SimpleTypeModel { Name = "Taxonomy", ID = x.ID })
-                                .SingleOrDefault();
+                                .FirstOrDefault();
                                 break;
                         }
                         if (verifiedItem != null)
@@ -405,7 +405,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     #region Verify Responsibility
 
                     responsibilityColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                    rawResponsibility = responsibilityColumn.Value.Trim().ToLower();
+                    rawResponsibility = string.IsNullOrEmpty(responsibilityColumn.Value) ? "" : responsibilityColumn.Value.Trim().ToLower();
                     verifiedResponsibility = responsibilities.SingleOrDefault(i => i.Name == rawResponsibility);
                     if (verifiedResponsibility != null)
                     {
