@@ -89,6 +89,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             this.workflowId = +params['workflowId'];
             this.workflowItemStepId = +params['stepId'];
             this.workflowItemId = +params['itemId'];
+            if (!window.history || window.history.length <= 2) this.hasCloseButton = false;
             this.load();
         });
     }
@@ -120,7 +121,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             });
     }
 
-    private close() {
+    private close() {        
         this.location.back();
     }
 };
