@@ -707,7 +707,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                 columns += $"coalesce({name}_T.FormattedValue, {name}_TT.DefaultFormattedValue) as [{(useFriendlyName ? friendlyName : name)}], ";
-                joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} and {name}_TT.IsListable = 1 
+                joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
             }
 
