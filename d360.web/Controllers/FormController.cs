@@ -17166,6 +17166,7 @@ order by TextPath
                         Object = SystemObjects.ReferenceItemType.ToString(),
                         IsListable = true,
                         IsRequired = true,
+                        IsEditable = true,
                         FriendlyName = "Long Description",
                         Name = "LongDesc",
                         MaximumLength = 500,
