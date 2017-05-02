@@ -303,47 +303,40 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.reOrderLayout();
     }
 
-    private save() {
-        if (this.id < 1 || true) {
+    private save(publish: boolean = false) {
+
+        let links = []; //(<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
+        let nodes = []; //this.myDiagram.model.nodeDataArray;
 
 
-            let links = []; //(<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
-            let nodes = []; //this.myDiagram.model.nodeDataArray;
+        this.myDiagram.model.nodeDataArray.forEach(n => {
+            nodes.push(this.convertToWorkflowModel(<NodeModel>n));
+        });
+
+        (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
+            links.push(this.convertToWorkflowModel(<LinkModel>l));
+        });
 
 
-            this.myDiagram.model.nodeDataArray.forEach(n => {
-                nodes.push(this.convertToWorkflowModel(<NodeModel>n));
+
+        let m = new WorkflowDiagramModel();
+
+        this.model.Type.PublishedVersionID = publish ? -1 : null;
+        m.Type = this.model.Type;
+        m.Event = null; //this.model.Event;
+        m.Nodes = nodes;
+        m.Links = links;
+
+
+        console.log('save', m);
+
+        this.isLoading = true;
+
+        this.workflowService.saveWorkflowDiagramModel(m)
+            .then(r => {
+                //TODO: message and automatically switch to readonly or edit??
+                this.onCloseClick.emit();
             });
-
-            (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
-                links.push(this.convertToWorkflowModel(<LinkModel>l));
-            });
-
-
-
-            let m = new WorkflowDiagramModel();
-
-            m.Type = this.model.Type;
-            m.Event = null; //this.model.Event;
-            m.Nodes = nodes;
-            m.Links = links;
-
-
-            console.log('save', m);
-
-            this.isLoading = true;
-
-            this.workflowService.saveWorkflowDiagramModel(m)
-                .then(r => {
-                    //TODO: mesasage and automatically switch to readonly or edit??
-                    this.onCloseClick.emit();
-                });
-
-
-
-        } else {
-            //edit
-        }
     }
 
     private load() {
@@ -1014,8 +1007,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private createTerminalNode(isStart: boolean): go.Node {
-        let nodeWidth = 78;
-        let nodeHeight = 78;
+        let nodeWidth = 80;
+        let nodeHeight = 80;
         let nodeBorderColor = 'transparent';
         let nodeFontSize = 8;
         let backColor = isStart ? '#216b23' : '#6b2121';
@@ -1036,8 +1029,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 this.g(go.Shape, "Circle", {
                     stroke: nodeBorderColor,
                     strokeWidth: 2,
-                    width: 74,
-                    height: 74,
+                    width: 78,
+                    height: 78,
                     name: "NodeShape",
                     fill: backColor
                 }

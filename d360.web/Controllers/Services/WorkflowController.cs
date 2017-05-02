@@ -1331,7 +1331,7 @@ namespace d360.web.Controllers.Services
         [Route("objecttypes"), HttpGet]
         public HttpResponseMessage GetObjectTypes()
         {
-            var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes);
+            var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes).OrderBy(t => t.name);
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
 
@@ -1401,6 +1401,12 @@ namespace d360.web.Controllers.Services
                         Company.Add(version);
                         Company.SaveChanges();
                         versionID = version.ID;
+
+                        if (model.Type.PublishedVersionID != null)
+                        {
+                            type.PublishedVersionID = versionID;
+                            Company.SaveChanges();
+                        }
                     }
                     else
                     {
@@ -1408,9 +1414,46 @@ namespace d360.web.Controllers.Services
                         type.Name = model.Type.Name;
                         type.UpdatedOn = DateTime.UtcNow;
                         type.UpdatedBy = Company.CurrentResourceID;
-
                         
-                        versionID = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First().ID;
+                       
+                        var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
+                        versionID = currentVersion.ID;
+
+                        //the current version is published
+                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0)
+                        {
+
+                            var version = new WorkflowVersion();
+                            version.TypeID = type.ID;
+                            version.CreatedBy = Company.CurrentResourceID;
+                            version.CreatedOn = DateTime.UtcNow;
+                            version.UpdatedBy = Company.CurrentResourceID;
+                            version.UpdatedOn = DateTime.UtcNow;
+                            version.Version = currentVersion.Version + 1;
+
+                            Company.WorkflowVersions.Add(version);
+                            Company.SaveChanges();
+
+                            //create a new version
+                            if (model.Type.PublishedVersionID == null)
+                            {
+                                versionID = version.ID;
+                            } 
+                            else
+                            {
+                                versionID = version.ID;
+                                type.PublishedVersionID = version.ID;
+                            }
+                        } 
+                        //current version is not published
+                        else if (type.PublishedVersionID != versionID && model.Nodes.Count > 0 && model.Links.Count > 0)
+                        {
+                            //publish it
+                            if (model.Type.PublishedVersionID != null)
+                            {
+                                type.PublishedVersionID = versionID;
+                            }
+                        }
 
                         Company.SaveChanges();
                     }

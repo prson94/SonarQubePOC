@@ -20,6 +20,7 @@ namespace d360.core.entities.Workflow
 
         public DateTime? UpdatedOn { get; set; }
 
+        [DataMember]
         public int? PublishedVersionID { get; set; }
 
         public bool Deleted { get; set; } = false;

@@ -4416,8 +4416,10 @@ namespace d360.web.Controllers
         [HttpGet, Route("GetAddFusionRule"), NonNullableParameters]
         public JsonNetResult GetAddFusionRule(int typeID, int fusionID)
         {
-            var attributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).Select(i => new { i.ID, i.Name, @Type = "FusionAttributeType" }).ToList();
+            var attributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).Select(i => new { i.ID, Name = i.TextPath, @Type = "FusionAttributeType" }).ToList();
             attributeTypes.AddRange(Company.Filter<FusionQueryAttributeType>(i => i.FusionID == fusionID).Select(i => new { i.ID, Name = "Query :: " + i.Name, @Type = "FusionQueryAttributeType" }).ToList());
+            attributeTypes = attributeTypes.AsEnumerable().OrderBy(a => a.Name).ToList();
+
             return new JsonNetResult
             {
                 Data = attributeTypes,

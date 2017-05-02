@@ -205,6 +205,8 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         this.model.Event.Object = this.objectType;
         this.model.Event.ObjectID = this.objectId;
 
+        this.model.Type.PublishedVersionID = null;
+
         this.conditions.forEach(c => {
             delete c['@FieldName']; 
         });
