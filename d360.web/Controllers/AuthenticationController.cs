@@ -483,26 +483,9 @@ namespace d360.web.Controllers
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
             { 
                 case AuthenticationType.SSO:
-                    // Receive the single logout request or response.
-                    // If a request is received then single logout is being initiated by the identity provider.
-                    // If a response is received then this is in response to single logout having been initiated by the service provider.
-                    bool isRequest = false;
-                    string logoutReason = null;
-                    string partnerSP = null;
-
-                    SAMLServiceProvider.ReceiveSLO(Request, out isRequest, out logoutReason, out partnerSP);
-
-                    if (isRequest)
-                    {
-                        FormsAuthentication.SignOut();                  // Logout locally.
-                        SAMLServiceProvider.SendSLO(Response, null);    // Respond to the IdP-initiated SLO request indicating successful logout.
-                    }
-                    else
-                    {
-                        FormsAuthentication.RedirectToLoginPage();      // SP-initiated SLO has completed.
-                    }
-
-                    return new EmptyResult();
+                    FormsAuthentication.SignOut();                  // Logout locally.                    
+                    ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+                    return View("Logout");
                 default:
                     FormsAuthentication.SignOut();
                     FormsAuthentication.RedirectToLoginPage();

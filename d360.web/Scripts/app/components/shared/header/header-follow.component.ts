@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { FollowerService } from '../../../services/follower.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -15,7 +15,8 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
         </span>
     `,
-    providers: [FollowerService]
+    providers: [FollowerService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class HeaderFollowComponent implements OnInit, OnDestroy {
@@ -43,7 +44,9 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private followerService: FollowerService,
         private breadcrumbService: HeaderBreadcrumbService,
-        protected headerActionsService: HeaderActionsService) { }
+        protected headerActionsService: HeaderActionsService,
+        private ref: ChangeDetectorRef
+    ) { }
 
     ngOnInit() {
 
@@ -104,6 +107,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
                     this.checkActive();
                 }
                 this.isLoading = false;
+                this.ref.markForCheck();
             });
     }
 
@@ -122,6 +126,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
             this.tooltipString = 'Stop following';
         else if (this.isFollowingParent && !this.objectType.endsWith('Type'))
             this.tooltipString = 'Following parent item';
+        this.ref.markForCheck();
     }
 }
 

@@ -842,6 +842,7 @@
     <Content Include="Service References\Application Insights\ConnectedService.json" />
     <Content Include="typings.json" />
     <Content Include="Views\Shared\App.cshtml" />
+    <Content Include="Views\Authentication\Logout.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

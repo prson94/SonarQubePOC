@@ -5,8 +5,7 @@ import { Favorite } from '../models/favorite.model';
 @Injectable()
 export class HeaderActionsService {    
     showFavorite: boolean = true;
-    showNotifications: boolean = false;
-    showLegacy: boolean = false;
+    showNotifications: boolean = false;    
     showHelp: boolean = true;
     showSearch: boolean = true;
     showRaiseIssue: boolean = false;  
@@ -15,8 +14,7 @@ export class HeaderActionsService {
     // Observable sources
     private onFavoritesChangeSource = new Subject();
     public onFavoritesChanges$ = this.onFavoritesChangeSource.asObservable();
-
-
+    
     private onSiteNavChangeSource = new Subject();
     public onSiteNavChanges$ = this.onSiteNavChangeSource.asObservable();
 

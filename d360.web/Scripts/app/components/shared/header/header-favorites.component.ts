@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { MessagesService } from '../../../services/messages.service';
 import { FavoritesService } from '../../../services/favorites.service';
@@ -16,7 +16,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
             <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
         </span>
     `,
-    providers: [FavoritesService]
+    providers: [FavoritesService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
@@ -39,7 +40,9 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         private messagesService: MessagesService,
         private favoritesService: FavoritesService,
         private breadcrumbService: HeaderBreadcrumbService,
-        protected headerActionsService: HeaderActionsService) {        
+        protected headerActionsService: HeaderActionsService,
+        private ref: ChangeDetectorRef
+    ) {        
     }
     
     ngOnInit() {        
@@ -104,6 +107,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             .then(fav => {                
                 this.headerActionsService.emitFavoritesChange();                
                 this.isLoading = false;
+                this.ref.markForCheck();
             });            
     }
     
