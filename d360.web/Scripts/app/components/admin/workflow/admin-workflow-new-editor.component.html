@@ -58,26 +58,15 @@
                     Conditions
                 </div>
                 <div>
-                    <header>
-                        &nbsp;
-                        <d3s-tile-actions hasAdd="true" (addClick)="showCondition()"></d3s-tile-actions>
-                    </header>
-                    <p-dataTable [value]="conditions" selectionMode="single">
-                        <p-column field="@FieldName" header="Field Name"></p-column>
-                        <p-column field="@Operator" header="Operator"></p-column>
-                        <p-column field="@Value" header="Value"></p-column>
-                        <p-column>
-                            <template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="remove(item)"><i class="fa fa-trash"></i></a>
-                                </div>
-                            </template>
-                        </p-column>
-                    </p-dataTable>
+                    <d3s-workflow-condition-list 
+                                                 (removeClick)="remove($event)"
+                                                 (addClick)="showCondition()" 
+                                                 [conditions]="conditions"></d3s-workflow-condition-list>
 
                     <div *ngIf="showAddCondition">
                         <d3s-workflow-condition-editor [objectId]="objectId"
                                                        [objectType]="objectType"
+                                                       [changeType]="model.Event.ChangeType"
                                                        (onSave)="addCondition($event)"
                                                        (onClose)="showAddCondition = false;">
                         </d3s-workflow-condition-editor>

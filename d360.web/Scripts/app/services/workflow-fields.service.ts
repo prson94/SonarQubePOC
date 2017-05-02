@@ -1,5 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Subject} from 'rxjs/Subject';
+import { WorkflowChangeType } from '../models/workflow.model';
 
 
 @Injectable()
@@ -11,6 +12,7 @@ export class WorkflowFieldsService {
 
     private formFields: any[] = [];
     private usedFields: any[] = [];
+    private contextualFields: any[] = [];
 
 
     pushUsedField(fieldId: string, stepId: string, transitionId: string, transitionName: string) {
@@ -71,5 +73,24 @@ export class WorkflowFieldsService {
             this.formFieldsSource.next(this.formFields);
             console.log(this.formFields);
         }
+    }
+
+    setContextualFieldsForType(changeType: WorkflowChangeType) {
+        this.contextualFields = [];
+        switch (+changeType) {
+            case WorkflowChangeType.ScoreUpdate:
+                this.contextualFields.push({
+                    value: 'Contextual|score',
+                    label: 'Score',
+                    type: 'number'
+                });
+                break;
+            default:
+                this.contextualFields = [];
+        }
+    }
+
+    getContextualFields() {
+        return this.contextualFields;
     }
 }

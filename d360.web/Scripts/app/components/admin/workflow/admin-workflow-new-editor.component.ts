@@ -135,7 +135,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                                 let c = this.conditions.find(c => c['@FieldTypeID'] == t.ID);
                                 if (c != null)
                                     c['@FieldName'] = t.FriendlyName;
-                            })
+                            });
                         });
                 }
             })
@@ -208,7 +208,8 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         this.model.Type.PublishedVersionID = null;
 
         this.conditions.forEach(c => {
-            delete c['@FieldName']; 
+            if (c['@ContextualFieldID'] == null)
+                delete c['@FieldName']; 
         });
 
         if (this.model.Event.SettingsObject.Settings.SendAggregateEmail == false

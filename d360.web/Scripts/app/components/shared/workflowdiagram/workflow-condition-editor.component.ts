@@ -4,6 +4,7 @@ import { Title } from '@angular/platform-browser';
 import {
     WorkflowEventRegistration,
     EventCondition,
+    WorkflowChangeType,
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
@@ -21,6 +22,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Input() objectId: number;
     @Input() formFields: any[] = [];
     @Input() condition: any = null;
+    @Input() changeType: WorkflowChangeType = null;
     @Output() onSave = new EventEmitter();
     @Output() onClose = new EventEmitter();
 
@@ -31,6 +33,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     private selectedType;
     private lookups: any[] = [];
     private fieldList: any[] = [];
+    private contextualFields: any[] = [];
 
     private operators = [
         { value: '=', label: 'equal to' },
@@ -54,16 +57,19 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.setOperators();
         this.load();
         if (this.condition == null) this.condition = {};
-        //console.log('condition editor form fields: ', this.formFields);
+
     }
 
     ngOnChanges(changes: SimpleChanges) {
 
         //this.load();
 
-        if (changes['formFields'] != null && !changes['formFields'].isFirstChange()) {
+        if ((changes['formFields'] != null && !changes['formFields'].isFirstChange()) ||
+            (changes['changeType'] != null && !changes['changeType'].isFirstChange()))    {
 
-            //console.log('formFields change');
+            this.loadContextualFields();
+            this.loadFormFields();
+
             this.fieldList = [];
 
             this.fields.forEach(f => {
@@ -81,14 +87,21 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     });
                 });
             }
+
+            if (this.contextualFields.length > 0) {
+                this.fieldList = this.fieldList.concat(this.contextualFields);
+            }
+
+
         }
     }
 
     load() {
         this.isLoading = true;
-        this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
-            .then(r => {
-                this.fields = r;
+        this.loadObjectFields()
+            //.then(() => this.loadFormFields())
+            .then(() => this.loadContextualFields())
+            .then(() => {
                 this.fieldList = [];
 
                 this.fields.forEach(f => {
@@ -107,9 +120,12 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     });
                 }
 
-                //console.log(this.fieldList, this.formFields, this.fields);
-                this.isLoading = false;
+                if (this.contextualFields.length > 0) {
+                    this.fieldList = this.fieldList.concat(this.contextualFields);
+                }
+
             });
+       
     }
 
     save() {
@@ -120,6 +136,41 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.onClose.emit();
     }
 
+    loadObjectFields(): Promise<any> {
+        return this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
+            .then(r => {
+                this.fields = [];
+                this.fields = r;
+            });
+    }
+
+    loadFormFields() {
+        if (this.formFields.length > 0) {
+            this.formFields.forEach(f => {
+                this.fieldList.push({
+                    value: 'FormInput|' + f['@id'],
+                    label: 'Form :: ' + f['@label']
+                });
+            });
+        }
+    }
+
+    loadContextualFields() {
+        this.workflowFieldsService.setContextualFieldsForType(this.changeType);
+        this.contextualFields = this.workflowFieldsService.getContextualFields();
+
+        //switch (+this.changeType) {
+        //    case WorkflowChangeType.ScoreUpdate:
+        //        this.contextualFields.push({
+        //            value: 'Contextual|score',
+        //            label: 'Score',
+        //            type: 'number'
+        //        });
+        //        break;
+        //    default:
+        //        this.contextualFields = [];
+        //}
+    }
 
     selectField(e: any) {
         this.selectedField = e;
@@ -136,6 +187,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@label'];
             delete this.condition['@id'];
             delete this.condition['@type'];
+            delete this.condition['@ContextualFieldID'];
 
             this.setOperators(field.Type);
 
@@ -163,11 +215,30 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@label'];
             delete this.condition['@id'];
             delete this.condition['@type'];
+            delete this.condition['@ContextualFieldID'];
 
             this.condition['@VersionStepID'] = input['@stepId'];
             this.condition['@FormInputID'] = input['@id'];
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
             this.condition['@FieldName'] = 'Form :: ' + input['@label']
+
+        } else if (this.selectedField.split('|')[0] == 'Contextual') {
+            let special = this.contextualFields.find(s => s.value == this.selectedField);
+            this.selectedType = special.type.toLowerCase();
+
+            delete this.condition['@FormInputID'];
+            delete this.condition['@VersionStepID'];
+            delete this.condition['@FieldTypeID'];
+            delete this.condition['@label'];
+            delete this.condition['@id'];
+            delete this.condition['@type'];
+
+            this.setOperators(this.selectedType);
+
+            this.condition['@ContextualFieldID'] = this.selectedField.split('|')[1];
+            this.condition['@FieldName'] = special.label;
+            this.condition['@ValueType'] = this.getValueType(this.selectedType);
+
         }
     }
 

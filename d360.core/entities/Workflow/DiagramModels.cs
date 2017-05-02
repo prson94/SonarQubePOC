@@ -19,6 +19,10 @@ namespace d360.core.entities.Workflow
         public List<WorkflowDiagramNode> Nodes { get; set; } = new List<WorkflowDiagramNode>();
         [DataMember]
         public List<WorkflowDiagramLink> Links { get; set; } = new List<WorkflowDiagramLink>();
+        [DataMember]
+        public int? CurrentVersion { get; set; }
+        [DataMember]
+        public int? PublishedVersion { get; set; }
     }
 
     public class WorkflowDiagramNode

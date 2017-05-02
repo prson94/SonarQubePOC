@@ -24,6 +24,7 @@ import { WorkflowStepEditorComponent } from './workflow-step-editor.component';
 import { WorkflowTransitionEditorComponent } from './workflow-transition-editor.component';
 import { WorkflowConditionEditorComponent } from './workflow-condition-editor.component';
 import { WorkflowStepFormEditorComponent } from './workflow-step-form-editor.component';
+import { WorkflowConditionListComponent } from './workflow-condition-list.component';
 
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 
@@ -50,10 +51,12 @@ import { WorkflowFieldsService } from '../../../services/workflow-fields.service
         WorkflowTransitionEditorComponent,
         WorkflowConditionEditorComponent,
         WorkflowStepFormEditorComponent,
+        WorkflowConditionListComponent,
     ],
     exports: [
         WorkflowDiagramComponent,
         WorkflowConditionEditorComponent,
+        WorkflowConditionListComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

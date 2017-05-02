@@ -608,6 +608,20 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 n.fields = e.fields;
                 n.settings.FormResponseType = e.settings.FormResponseType
                 n.settings.SendFormEmail = e.settings.SendFormEmail;
+                if (n.settings.SendFormEmail == true) {
+                    n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
+                    n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
+                    n.settings.MessageRecipientType = e.settings.MessageRecipientType;
+                    n.settings.MessageToUser = e.settings.MessageToUser;
+                    n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
+                } else {
+                    delete n.settings.MessageSubjectTemplate;
+                    delete n.settings.MessageBodyTemplate;
+                    delete n.settings.MessageRecipientType;
+                    delete n.settings.MessageToUser;
+                    delete n.settings.ResponsibilityTypeID;
+                }
+
                 break;
         }
 
@@ -890,6 +904,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             m.diagramObjectType = DiagramObjectType.Node;
             m.activityType = a.ID;
             m.runCount = 0;
+            m.settings = {};
+            m.fields = {};
 
             paletteModel.push(m);
 

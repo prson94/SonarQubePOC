@@ -573,6 +573,7 @@
     <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-condition-editor.component.html" />
     <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-step-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-step-form-editor.component.html" />
     <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-transition-editor.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
@@ -1105,6 +1106,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-step-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-step-form-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-transition-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-condition-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowmonitor\workflow-monitor.component.ts" />

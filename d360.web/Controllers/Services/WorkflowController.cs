@@ -941,6 +941,9 @@ namespace d360.web.Controllers.Services
             var type = Company.WorkflowTypes.Find(id);
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
+            var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
+            var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
+
             nodes.ForEach(n =>
             {
                 n.SettingsObject = XmlToDynamic(n.Settings, false);
@@ -961,7 +964,9 @@ namespace d360.web.Controllers.Services
                 Nodes = nodes,
                 Links = links,
                 Type = type,
-                Event = @event
+                Event = @event,
+                CurrentVersion = currentVersion?.Version,
+                PublishedVersion = publishedVersion?.Version
             };
         }
 
@@ -1343,11 +1348,13 @@ namespace d360.web.Controllers.Services
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
 
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
+            var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
+            var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
 
             @event.ConditionObject = XmlToDynamic(@event.Condition);
             @event.SettingsObject = (@event.Settings == null) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XDocument.Parse(@event.Settings)));
 
-            return Request.CreateResponse(HttpStatusCode.OK, new { Type = type, Event = @event });
+            return Request.CreateResponse(HttpStatusCode.OK, new { Type = type, Event = @event, PublishedVersion = publishedVersion?.Version ?? -1, CurrentVersion = currentVersion.Version });
         }
 
         [Route("fieldtypes/{type}/{id:int}"), HttpGet]

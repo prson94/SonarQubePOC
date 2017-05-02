@@ -172,6 +172,9 @@ export class WorkflowDiagramModel {
     Nodes: WorkflowDiagramNode[] = [];
     Links: WorkflowDiagramLink[] = [];
 
+    CurrentVersion: number;
+    PublishedVersion: number;
+
 }
 
 export class WorkflowDiagramNode {
@@ -218,6 +221,9 @@ export class LinkModel {
     condition: any = [];
     settings: any = {};
     formInputs: any = [];
+
+    valid: boolean = false;
+    errors: string[] = [];
 }
 
 export class NodeModel {
@@ -240,11 +246,12 @@ export class NodeModel {
     activityName: string;
     runCount: number;
 
-
     settings: any = {};
     fields: any = {};
 
     hasMultipleInputs: boolean = false;
+    valid: boolean = false;
+    errors: string[] = [];
 }
 
 

@@ -11,130 +11,15 @@ import { FieldType } from '../../../models/fields.model';
 import { Column, Header, MenuItem } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { FormMode } from '../../../models/form.model';
 
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-step-form-editor',
-    providers: [WorkflowService],
-    template: `
-<div class="row">
-    <div class="col s12">
-        <div class="FieldName">
-            Title
-        </div>
-        <div>
-            <input type="text" [ngModel]="step.fields.form['@title']" (ngModelChange)="step.fields.form['@title']=$event; stepChange.emit(step);" style="width: 95%" />
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col s12">
-        <div class="FieldName">
-            Description
-        </div>
-        <div style="width: 95%">
-            <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="step.fields.form['@description'] = $event; stepChange.emit(step)"></p-editor>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col s12">
-        <div class="FieldName">
-            Response Type
-        </div>
-        <div>
-            <select [ngModel]="step.settings.FormResponseType" (ngModelChange)="step.settings.FormResponseType = $event; stepChange.emit(step);" style="width: 95%">
-                <option *ngFor="let r of responseTypes" [value]="r.value">{{r.label}}</option>
-            </select>
-        </div>
-    </div>
-</div>
-<div class="row" style="padding-top: 8px">
-    <div class="col s12">
-        <div>
-            <input type="checkbox" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);"/> Send form email?
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col s12">   
-        <header>
-            &nbsp;
-            <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
-        </header>
-        <p-dataTable [value]="step.fields.form.field" selectionMode="single">
-            <p-column field="@id" header="Name"></p-column>
-            <p-column field="@label" header="Label"></p-column>
-            <p-column field="@type" header="Type"></p-column>
-            <p-column>
-                <template let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">
-                        <a style="cursor:pointer;" (click)="remove(item)"><i class="fa fa-trash"></i></a>
-                    </div>
-                </template>
-            </p-column>
-        </p-dataTable>
-    </div>
-</div>
-<div *ngIf="formMode == FormMode.Adding">
-    <div class="row">
-        <div class="col s12">
-            <div class="FieldName">
-                Field Type
-            </div>
-            <div>
-                <select [(ngModel)]="newField['@type']" style="width:95%">
-                    <option *ngFor="let t of types" [value]="t.label">{{t.label}}</option>
-                </select>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            <div class="FieldName">
-                Label
-            </div>
-            <div>
-                <input type="text" [(ngModel)]="newField['@label']" style="width: 95%" />
-            </div>
-        </div>
-    </div>
-    <div class="row" style="padding-top: 8px;">
-        <div class="col s12">
-            <button pButton type="button" label="Add" (click)="save()" [disabled]="newField['@label'] == null || newField['@label'].length < 1 || newField['@type'] == null"></button>
-            <button pButton type="button" label="Cancel" (click)="cancel()"></button>
-        </div>
-    </div>
-</div>
-<div *ngIf="formMode == FormMode.Deleting">
-    <div class="row" *ngIf="usedIn.length < 1">
-        <div class="col s12">
-            <div>
-                Are you sure you want to delete the {{deletingField['@id']}} field?
-            </div>
-            <div>
-                <button pButton type="button" label="Delete" (click)="confirmDelete()"></button>
-                <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
-            </div>
-        </div>
-    </div>
-    <div class="row" *ngIf="usedIn.length > 0">
-        <div class="col s12">
-            <div>
-                The field {{deletingField['@id']}} cannot be deleted because it is used in the following transition conditions:
-            </div>
-            <div *ngFor="let u of usedIn" style="margin-left: 8px;">
-               &bull; {{(u.transitionName == '' || u.transitionName == null) ? '[No name]' : u.transitionName }}
-            </div>
-            <div style="padding-top: 8px">
-                <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
-            </div>
-        </div>
-    </div>
-</div>
-`
+    providers: [WorkflowService, ResponsibilityTypeService],
+    templateUrl: './workflow-step-form-editor.component.html'
 })
 
 export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
@@ -153,6 +38,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     private usedFields: any[] = [];
     private showHelp = false;
+    private responsibilities = [];
+    private destination = [
+        { value: 'Initiator', label: 'Initiator' },
+        { value: 'Owner', label: 'Owner' },
+        { value: 'SpecificUser', label: 'Specific User' },
+    ];
 
     private types = [
         { value: WorkflowFormFieldType.Boolean, label: 'boolean' },
@@ -172,7 +63,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     private fieldsSub: any;
 
-    constructor(private workflowFieldsService: WorkflowFieldsService) {
+    constructor(private workflowFieldsService: WorkflowFieldsService, private responsibilityService: ResponsibilityTypeService) {
         super();
     }
 
@@ -180,6 +71,11 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.originalStep = _.cloneDeep(this.step);
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
+
+        this.responsibilityService.getResponsibilityTypes()
+            .then(r => {
+                this.responsibilities = r;
+            });
 
     }
 
@@ -212,7 +108,10 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             this.step.settings = {};
 
         if (this.step.settings.SendFormEmail == null)
-            this.step.settings.SendFormEmail = true;
+            this.step.settings.SendFormEmail = false;
+        else
+            //convert to bool
+            this.step.settings.SendFormEmail = this.step.settings.SendFormEmail.toString().toLowerCase() === 'true' ? true : false;
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
     }
