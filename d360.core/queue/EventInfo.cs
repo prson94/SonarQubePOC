@@ -35,6 +35,8 @@ namespace d360.core.queue
 
         public long ItemStepID { get; set; }
 
-        public long VersionStepTransitionID { get; set; }        
+        public long VersionStepTransitionID { get; set; }  
+        
+        public int? Score { get; set; }      
     }
 }

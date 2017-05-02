@@ -48,7 +48,7 @@ namespace d360.jobs.subscriber.Workflow
                     Console.WriteLine($"Debug - New {info.Action} event received.");
 
                     var sObject = info.Object.ObjectType.ToString();
-                    var registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID && i.Type.Deleted == false).OrderBy(x=>x.ID);
+                    var registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID && i.Type.Deleted == false && i.Type.PublishedVersionID != null).OrderBy(x=>x.ID);
 
                     foreach (var registration in registrations)
                     {

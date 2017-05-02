@@ -11,7 +11,10 @@ namespace d360.model.workflow
         {
             if (xml == null) throw new Exception("INVALID XML SPECIFIED");
 
-            var status = xml.Element("Status").Value;
+            var status = string.Empty;
+
+            if(xml.Element("Status") != null)
+                status = xml.Element("Status").Value;
             
             return new WorkflowStatusModel
             {
