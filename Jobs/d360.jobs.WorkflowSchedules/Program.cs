@@ -46,7 +46,7 @@ namespace d360.jobs.WorkflowSchedules
                         #endregion
                         //load all workflows of type schedule
 
-                        var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == core.enums.Workflow.ChangeType.Schedule);
+                        var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == core.enums.Workflow.ChangeType.Schedule && x.Type.Deleted == false && x.Type.PublishedVersionID != null);
 
                         foreach (var registration in scheduledWorkflows)
                         {
