@@ -10,7 +10,7 @@ namespace d360.model.workflow
     {
         internal static List<WorkflowCriteriaExpressionModel> expression;
 
-        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1)
+        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -20,7 +20,7 @@ namespace d360.model.workflow
             PopulateExpressionFromXml(criteria);
 
             //load the values for each of the fields for the given object
-            return EvaluateObject(context, @object, objectId, itemId);            
+            return EvaluateObject(context, @object, objectId, itemId, score);            
         }
 
         public static string ToPlainText(CompanyContext context, string criteria)
@@ -48,7 +48,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(CompanyContext context, string @object, int objectId, long itemId)
+        private static bool EvaluateObject(CompanyContext context, string @object, int objectId, long itemId, int score = -1)
         {
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
 
@@ -61,6 +61,10 @@ namespace d360.model.workflow
                     if (value == null) return false;
 
                     if (!item.IsValueMatch(value.FormattedValue)) return false;
+                }
+                else if((item.ContextualFieldID ?? "").ToLower() == "score")
+                {
+                    if (!item.IsValueMatch(score.ToString())) return false;
                 }
                 else if(item.VersionStepId > 0)
                 {

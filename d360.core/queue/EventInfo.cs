@@ -16,7 +16,7 @@ namespace d360.core.queue
         public SystemObjects ObjectType { get; set; }
 
         public int ObjectTypeID { get; set; }
-
+        public int? Score { get; set; }
     }
 
     public class EventInfo
@@ -36,7 +36,5 @@ namespace d360.core.queue
         public long ItemStepID { get; set; }
 
         public long VersionStepTransitionID { get; set; }  
-        
-        public int? Score { get; set; }      
     }
 }

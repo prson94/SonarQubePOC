@@ -53,7 +53,7 @@ namespace d360.model
 
             Console.WriteLine($"DEBUG - TESTING TO SEE IF ${objectInfo.Object} - {objectInfo.ObjectID} IS VALID FOR WORKFLOW {workflowName}");
 
-            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition))
+            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, (objectInfo.Score.HasValue ? objectInfo.Score.Value : -1)))
             {
                 Console.WriteLine("DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 
@@ -854,6 +854,13 @@ namespace d360.model
                 }
 
                 result = result.Replace("[WORKFLOW_INITIATOR]", initiator);
+            }
+
+            if (result.Contains("[SCORE]"))
+            {
+                var score = objectInfo.Score.HasValue ? "(unknown score)" : objectInfo.Score.Value.ToString();
+                
+                result = result.Replace("[SCORE]", score);
             }
 
             if (Regex.IsMatch(result, "\\[FIELD([0-9.]+)\\]"))
