@@ -6985,16 +6985,7 @@ SELECT (
 
         private IEnumerable<CountModel> LoadWorkflowAssignmentsCount(int resourceId)
         {
-            var sql = @"(select '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, null as Id, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType in(1,5)
-                        union
-                        select '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, null as Id, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
-                        union
-                        select '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, null as Id, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID)
-                                inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-                                left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
-                                where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3                        
-                        union
-                        select
+            var sql = @"select
 	                            t.name as Name
                                 ,t.id as Id
                                 ,count(1) as Total                                
@@ -7006,8 +6997,7 @@ SELECT (
                                 inner join [cache].[object] co on (i.[object] = co.[object] and i.[objectid] = co.[objectid])
                             where
 	                            ia.resourceobject = 'Resource' and ia.resourceobjectid = @r
-                            group by t.name, t.id
-                        ) order by Name";
+                            group by t.name, t.id order by t.Name";
 
             return Company.Query<CountModel>(sql, new { r = resourceId });
         }
