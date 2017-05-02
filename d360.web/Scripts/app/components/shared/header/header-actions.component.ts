@@ -20,8 +20,7 @@ declare var CompanySettings;
                     <li><a href="/slo" title="Sign out"><i class="fa fa-sign-out"></i></a></li>
                     <li><a [routerLink]="resourceUrl()" class="photo" title="Go to your profile"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a></li>                    
                 </ul> 
-                `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+                `,  
 })
 
 export class HeaderActionsComponent {        

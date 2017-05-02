@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild } from '@angular/core';
+﻿import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { Subscription }   from 'rxjs/Subscription';
@@ -16,7 +16,8 @@ import { Subscription }   from 'rxjs/Subscription';
                         <d3s-header-breadcrumb-item *ngIf="!last" [ngStyle]="{'padding-left': index *10 + 'px'}" [showSeperator]="false" [breadcrumb]="breadcrumb" [lastItem]="last"></d3s-header-breadcrumb-item>
                     </div>
                 </p-overlayPanel>
-              `
+              `,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class HeaderBreadcrumbComponent {
@@ -27,20 +28,26 @@ export class HeaderBreadcrumbComponent {
     showLastOnly: boolean = false;
     @ViewChild('bread') breadcrumbUIElement;
         
-    constructor(private headerBreadcrumbService: HeaderBreadcrumbService) {
+    constructor(
+        private headerBreadcrumbService: HeaderBreadcrumbService,
+        private ref: ChangeDetectorRef
+    ) {
         this.breadcrumbs = [];
         this.subscriptionAdd = headerBreadcrumbService.breadcrumbs$.subscribe(
             breadcrumb => {
                 this.breadcrumbs.push(breadcrumb);
-                this.resizeControlsToFit(window.innerWidth, this.breadcrumbUIElement);    
+                this.resizeControlsToFit(window.innerWidth, this.breadcrumbUIElement);
+                this.ref.markForCheck();
             });
         this.subscriptionClear = headerBreadcrumbService.breadcrumbClear$.subscribe(
             breadcrumb => {
                 this.breadcrumbs.splice(0, this.breadcrumbs.length);                
+                this.ref.markForCheck();
             })
         this.subscriptionPop = headerBreadcrumbService.breadcrumbPopLastSource$.subscribe(
             breadcrumb => {
                 this.breadcrumbs.pop();                
+                this.ref.markForCheck();
             })
     }
 

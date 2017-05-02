@@ -1,4 +1,4 @@
-﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit, OnInit } from '@angular/core';
+﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
@@ -38,7 +38,8 @@ import { TreeNode } from 'primeng/primeng';
                             </template>
                         </p-tree>
                 </p-overlayPanel>                
-              `
+              `,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit {    

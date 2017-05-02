@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 
@@ -11,7 +11,7 @@ import { BaseComponent } from '../../shared/base.component';
                     <d3s-header-actions></d3s-header-actions>
                 </nav>
                 </div>
-              `,
+              `,    
 })
 
 export class HeaderComponent extends BaseComponent {    
