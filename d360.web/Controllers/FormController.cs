@@ -743,7 +743,7 @@ namespace d360.web.Controllers
                 ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID",
                 FieldDescription = Resources.FieldInfo.TaxonomyType_Description,
                 FieldType = DataType.Lookup.ToString(),
-                Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
+                Items = Company.Table<TaxonomyType>().OrderBy(x=>x.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
                 Value = parentTaxonomyId == 0 ? string.Empty : parentTaxonomyId.ToString()
             });
             row++;
