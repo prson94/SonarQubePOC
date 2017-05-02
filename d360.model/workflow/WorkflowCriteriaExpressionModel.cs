@@ -13,6 +13,7 @@ namespace d360.model.workflow
         public CriteriaValueDataType ValueDataType { get; set; }
         public string FormInputId { get; set; }
         public int VersionStepId { get; set; }
+        public string ContextualFieldID { get; set; }
 
 
         public static WorkflowCriteriaExpressionModel Parse(XElement element)
@@ -22,6 +23,7 @@ namespace d360.model.workflow
             return new WorkflowCriteriaExpressionModel
             {
                 FieldTypeId = int.Parse(((string)element.Attribute("FieldTypeID") ?? "0")),
+                ContextualFieldID = ((string)element.Attribute("ContextualFieldID") ?? ""),
                 Operator = operatorFromString((string)element.Attribute("Operator")),
                 ValueDataType = dataType,
                 Value = valueFromString(dataType, (string)element.Attribute("Value")),
