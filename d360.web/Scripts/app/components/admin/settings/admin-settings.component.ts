@@ -10,8 +10,6 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
 
-import * as _ from 'lodash';
-
 @Component({
     selector: 'admin-settings',
     providers: [CompanySettingsService, SiteMenuService],

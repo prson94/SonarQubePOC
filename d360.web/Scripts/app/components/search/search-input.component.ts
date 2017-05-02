@@ -111,6 +111,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
         { title: "Reference", value: "Reference" },
         { title: "User", value: "Users" },
         { title: "Grammatic Type", value: "Synonym" },
+        { title: "Data Quality", value: "Rule" },
     ];
 
     private searchObjectTypes: SelectItem[] = [
@@ -123,6 +124,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
         { value: "Reference", label: "Reference" },
         { value: "Users", label: "User" },
         { value: "Synonym", label: "Grammatic Type" },
+        { value: "Rule", label: "Data Quality" },
     ];
         
     private simpleSearchID: number = 0;

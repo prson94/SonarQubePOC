@@ -85,7 +85,7 @@ namespace d360.jobs.ReIndex
                           Console.WriteLine("loading rules [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadRules(context, companyID, source, isDevEnvironment));
-
+                          
                           Console.WriteLine("loading fusion attributes [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadFusionAttributes(context, companyID, source));
@@ -97,7 +97,6 @@ namespace d360.jobs.ReIndex
                           Console.WriteLine("loading custom synonyms [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadCustomSynonyms(context, companyID, source));
-
                       }
 
                       using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
@@ -314,6 +313,7 @@ namespace d360.jobs.ReIndex
                                   ,R.[Name]
                                   ,R.[Description]      
                                   ,T.Name as [RuleType]
+								  ,[dbo].GenerateNgObjectUrl('Rule',R.RuleTypeID,R.ID) as [Url]
                               FROM [dbo].[Rule] R inner join RuleType T on T.ID = R.RuleTypeID";
             }
             else
@@ -328,13 +328,14 @@ namespace d360.jobs.ReIndex
                                     when 4 then 'Profile'
                                     else ''
                                 end as RuleType
+                                   ,[dbo].GenerateNgObjectUrl('Rule',0,ID) as [Url]
                               FROM [dbo].[Rule]";
             }
 
 
             foreach (var a in context.Query(sql))
             {
-                var item = new AddToIndexModel { Group = "Rule", CompanyID = companyID, Type = "Rule", ID = a.ID, RelativeUrl = string.Format("#/rules/{0}", a.ID) };
+                var item = new AddToIndexModel { Group = "Rule", CompanyID = companyID, Type = "Rule", ID = a.ID, RelativeUrl = a.Url };
                 item.Fields = new Dictionary<string, string>();
                 item.Fields.Add("Name", a.Name);
 

@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { Router, NavigationEnd } from '@angular/router';
@@ -26,18 +26,23 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         </p-autoComplete>
                     </div>
                 <span>`,
-    providers: [TypeaheadSearchService]
+    providers: [TypeaheadSearchService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class HeaderTypeaheadSearchComponent {
-    constructor(private router: Router, private typeaheadSearchService : TypeaheadSearchService) { }
-
-    private result: SearchResult; 
+    private result: SearchResult;
     private searchText: string;
     private results: SearchResult[];
     private active: boolean = false;
     private hideHandle: number = 0;
-    
+
+    constructor(
+        private router: Router,
+        private typeaheadSearchService: TypeaheadSearchService,
+        private ref: ChangeDetectorRef
+    ) { }
+
     search(event) {
         this.searchText = event.query;
         this.typeaheadSearchService.getResults(20, event.query).then(data => {
@@ -68,15 +73,15 @@ export class HeaderTypeaheadSearchComponent {
                     inputs[0].focus();
                 }
             }, 300);            
-        }
-        
+        }        
     }
 
     hide(item) {
         if (this.hideHandle > 0) return; //pending hide ignore new request
         //queue up a request to hide the window.
         this.hideHandle = window.setTimeout(() => {
-                this.active = false;
+            this.active = false;
+            this.ref.markForCheck();
             },
             500);        
     }

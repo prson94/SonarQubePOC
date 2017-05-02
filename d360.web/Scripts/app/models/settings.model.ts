@@ -73,7 +73,8 @@ export module SettingsHelper {
             { title: "Model", value: "Taxonomy", selected: false },
             { title: "Reference", value: "Reference", selected: false },
             { title: "User", value: "Users", selected: false },
-            { title: "Grammatic Type", value: "Synonym", selected: false }
+            { title: "Grammatic Type", value: "Synonym", selected: false },
+            { title: "Data Quality", value: "Rule", selected: false }
         ];
     }
 
