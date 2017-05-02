@@ -14,8 +14,7 @@ export class ArtifactType {
     AllowHierarchy: boolean;
     AllowRelatedArtifacts: boolean;
     CanOwnFusion: boolean;
-    HasDashboards: boolean;
-    HasSuggestWorkflow: boolean;
+    HasDashboards: boolean;    
     HasV2Workflows: boolean;
 }
 

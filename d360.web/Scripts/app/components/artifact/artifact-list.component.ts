@@ -23,7 +23,7 @@ declare var CompanySettings;
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible && !isWorkflowStatusVisible && !isWorkflowMonitorVisible">
-                            <d3s-artifact-grid [artifactType]="artifactType" [hasSuggest]="hasSuggest"></d3s-artifact-grid>                                                                       
+                            <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>                                                                       
                         </div>
                     </div>
                 </div>
@@ -36,8 +36,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private sub: any;
     private isMetricsVisible: boolean = false;
     private isWorkflowStatusVisible: boolean = false;
-    private isWorkflowMonitorVisible: boolean = false;
-    private hasSuggest: boolean = false;
+    private isWorkflowMonitorVisible: boolean = false;    
     private hasNewWorkflow: boolean = false;
 
     constructor(private route: ActivatedRoute,
@@ -71,7 +70,6 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
                     this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
 
-                    this.hasSuggest = this.artifactType.HasSuggestWorkflow;
                     this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o']));
 
                     if (!this.hasNewWorkflow) this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus', ['fa-hourglass-start']));

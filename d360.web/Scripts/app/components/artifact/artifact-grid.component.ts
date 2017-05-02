@@ -18,7 +18,7 @@ import { StringConstants } from '../../static/string-constants';
     selector: 'd3s-artifact-grid',
     providers: [GridDefinitionService, ArtifactService, PermissionsService],
     template: ` <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
-                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions() && !hasSuggest" [hasSuggest]="hasSuggest" (suggestClick)="add()" [hasExport]="true" (addClick)="add()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
+                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="true" (addClick)="add()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>                
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                    
@@ -75,7 +75,7 @@ import { StringConstants } from '../../static/string-constants';
                         </p-dataTable>                           
                     </div>
                 </div>                                  
-                <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="newActionName" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="New" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <d3s-delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
@@ -93,8 +93,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     @Input() rowID: string = 'ID';
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
-    @Input() rowsPerPage: number = 25;
-    @Input() hasSuggest: boolean = false;
+    @Input() rowsPerPage: number = 25;    
             
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
@@ -137,10 +136,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     get showGridSimpleFilter(): boolean {        
         return this.stateService.artifactTypeFilters.showSimpleFilter;
-    }
-
-    get newActionName(){
-        return this.hasSuggest ? "Suggest New" : "New";
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -221,7 +216,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true; 
         this.showEditor = false;              
-        this.artifactService.saveArtifact(event.item, this.hasSuggest)
+        this.artifactService.saveArtifact(event.item, false)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);                
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
