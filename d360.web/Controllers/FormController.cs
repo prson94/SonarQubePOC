@@ -1039,40 +1039,26 @@ namespace d360.web.Controllers
 
                 try
                 {
-                    var workflowSettings = Company.Filter<WorkflowTypeRelation>(i =>
-                        i.Object == "ArtifactType" &&
-                        i.ObjectID == model.ArtifactTypeID &&
-                        i.WorkflowType == WorkflowType.CertifyArtifact &&
-                        i.Enabled
-                        ).ToList();
+                    var certificationWorkflowEnabled = Company.WorkflowEventRegistrations.Where(x => x.Object == "ArtifactType" && x.ObjectID == model.ArtifactTypeID && x.Type.PublishedVersionID != null && x.Type.Deleted == false).Any();
 
-                    if (model.Status == "Certified" && workflowSettings.Count > 0)
+                    if (model.Status == "Certified" && certificationWorkflowEnabled)
                     {
-                        var specificWorkflow = workflowSettings.FirstOrDefault(i => i.ParentID == model.TaxonomyTypeID);
+                        //check for any outstanding certification workflows for this item
+                        var sql = @"select
+                                count(1)
+                            from
+                                workflow.eventregistration we
+                                inner join workflow.type wt on we.typeid = wt.id
+                                inner join workflow.version wv on wt.id = wv.typeid
+                                inner join workflow.item wi on wi.versionid = wv.id and(wi.[object] = 'Artifact' and wi.objectid = @id)
+                            where
+                                we.changetype = 8 and wi.completedOn is null";
 
-                        if (specificWorkflow == null)
+                        var count = Company.Query<int>(sql, new { id = id }).FirstOrDefault();
+
+                        if (count == 0)
                         {
-                            specificWorkflow = workflowSettings.FirstOrDefault(i => !i.ParentID.HasValue);
-                        }
-
-                        var workflow = Company.GetMostRecentCertificationWorkflowByArtifact(id);
-                        bool shouldProceed = (workflow != null) ? (workflow.DateCompleted.HasValue) : true;
-
-                        if (shouldProceed)
-                        {
-                            int daysGivenToComplete = (specificWorkflow.Fields.ContainsKey("DaysGivenToCompleteCertification")) ? int.Parse(specificWorkflow.Fields["DaysGivenToCompleteCertification"]) : 7;
-
-                            var processor = new Processor();
-                            var dictionary = new Dictionary<string, object>();
-                            dictionary.Add("CompanyID", Company.CurrentCompanyID);
-                            dictionary.Add("requestInfo", new CertifyArtifactRequest
-                            {
-                                ArtifactID = model.ID,
-                                DueDate = DateTime.UtcNow.AddDays(daysGivenToComplete),
-                                StartDate = DateTime.UtcNow,
-                                SendMailFromWorkflow = true
-                            });
-                            processor.CreateNewWorkflowInstance(WorkflowVersionMap.CertifyArtifactIdentity_vCurrent, dictionary);
+                            Company.RequestObjectCertification(SystemObjects.Artifact, model.ID, SystemObjects.ArtifactType, model.ArtifactTypeID);
                         }
                     }
                 }
