@@ -1175,6 +1175,12 @@ namespace d360.web.Controllers.Services
             return d360.core.enums.Workflow.WorkflowActivityType.EmailNotification.GetList().ToList();
         }
 
+        [Route("emailtaskrecipienttypes"), HttpGet]
+        public List<EmailTaskRecipientTypeInfo> GetEmailTaskRecipientTypes()
+        {
+            return EmailTaskRecipientType.None.GetList().ToList();
+        }
+
         [Route("changetypes"), HttpGet]
         public List<ChangeTypeInfo> GetChangeTypes()
         {

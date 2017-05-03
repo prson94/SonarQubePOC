@@ -82,7 +82,7 @@
             </div>
         </div>
     </div>
-    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == 'true'">
+    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == true">
         <div class="col s12 m4 offset-m2">
             <div class="FieldName">
                 Subject
@@ -100,9 +100,9 @@
                     <option *ngFor="let d of destination" [value]="d.value">{{d.label}}</option>
                 </select>
             </div>
-            <div *ngIf="model.Event.SettingsObject.Settings.MessageRecipientType == 'Owner'">
+            <div *ngIf="model.Event.SettingsObject.Settings.MessageRecipientType == 'Responsibility'">
                 <div class="FieldName">
-                    Owner
+                    Responsibility
                 </div>
                 <div>
                     <select [(ngModel)]="model.Event.SettingsObject.Settings.ResponsibilityTypeID" style="width: 100%">
@@ -121,7 +121,7 @@
             </div>
         </div>
     </div>
-    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == 'true'">
+    <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == true">
         <div class="col s12 m8 offset-m2">
             <div class="FieldName">
                 Body

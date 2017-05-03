@@ -1,4 +1,19 @@
-﻿import { Component, Input, OnInit, AfterViewInit, AfterViewChecked, ElementRef, OnDestroy, ViewChild, Renderer, HostListener, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+﻿import {
+    Component,
+    Input,
+    OnInit,
+    AfterViewInit,
+    AfterViewChecked,
+    ElementRef,
+    OnDestroy,
+    ViewChild,
+    Renderer,
+    HostListener,
+    Output,
+    EventEmitter,
+    OnChanges,
+    SimpleChanges
+} from '@angular/core';
 import { PermissionsService } from '../../../services/permissions.service';
 import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -399,7 +414,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.overlayHeader = this.tab;
         } else {
             let a = this.activityTypes.find(a => a.ID == p.activityType);
-            this.overlayHeader = (a == null) ? ((p.name == null || p.name == '') ? this.tab : p.name) : a.Description + ' - ' + p.name;
+            this.overlayHeader = (a == null) ? ((p.name == null || p.name == '') ? this.tab : p.name) : a.Description + (p.name == null ? '' : ' - ' + p.name);
         }
     }
 
@@ -446,7 +461,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             n.frompid = m.FromPortID;
             n.topid = m.ToPortID;
             n.name = m.Name;
-
+            
             if (n.transitionType == TransitionType.Condition) {
                 n.formInputs = this.getAvailableFormInputs(n);
             }
@@ -497,6 +512,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                 n.category = 'finish';
             else if (m.StepType == StepType.Terminate)
                 n.category = 'finish';
+
+            n.valid = this.validateNode(n);
 
             return n;
 
@@ -572,6 +589,71 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     }
 
+    private validateNode(n: NodeModel): boolean {
+        switch (n.activityType) {
+            case WorkflowActivityType.EmailNotification:
+
+                if (n.settings == null || n.settings == {})
+                    return false;
+                if (n.settings.MessageSubjectTemplate == null || n.settings.MessageSubjectTemplate.length < 1)
+                    return false;
+                if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
+                    return false;
+                if (n.settings.MessageRecipientType == null)
+                    return false;
+
+                switch (n.settings.MessageRecipientType) {
+                    case 'SpecificUser':
+                        if (n.settings.MessageToUser == null || n.settings.MessageToUser.length < 1)
+                            return false;
+                        break;
+                    case 'Responsibility':
+                        if (n.settings.ResponsibilityTypeID == null || n.settings.ResponsibilityTypeID < 0)
+                            return false;
+                        break;
+                }
+                break;
+            case WorkflowActivityType.Form:
+                if (n.settings == null || n.settings == {})
+                    return false;
+                if (n.settings.FormResponseType == null)
+                    return false;
+                if (n.settings.SendFormEmail != null && n.settings.SendFormEmail.toString().toLowerCase() == 'true') {
+                    if (n.settings.MessageRecipientType == null)
+                        return false;
+                    switch (n.settings.MessageRecipientType) {
+                        case 'SpecificUser':
+                            if (n.settings.MessageToUser == null || n.settings.MessageToUser.length < 1)
+                                return false;
+                            break;
+                        case 'Responsibility':
+                            if (n.settings.ResponsibilityTypeID == null || n.settings.ResponsibilityTypeID < 0)
+                                return false;
+                            break;
+                    }
+                }
+
+                if (n.fields == null || n.fields == {})
+                    return false;
+                if (n.fields.form == null)
+                    return false;
+                if (n.fields.form['@title'] == null || n.fields.form['@title'].length < 1)
+                    return false;
+
+                break;
+            case WorkflowActivityType.Procedure:
+                if (n.settings.ProcedureID == null || n.settings.ProcedureID == '')
+                    return false;
+                break;
+            case WorkflowActivityType.StatusChange:
+                if (n.settings.Status == null || n.settings.Status == '')
+                    return false;
+                break;
+        }
+
+        return true;
+    }
+
     //#endregion
 
     //#region events
@@ -588,7 +670,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         //TODO: just set n = e??
 
         switch (n.activityType) {
-            case 1: //email
+            case WorkflowActivityType.EmailNotification: //email
                 n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
                 n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
@@ -598,30 +680,29 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
                 if (e.settings.MessageRecipientType == 'SpecificUser')
                     delete e.settings.ResponsibilityTypeID;
-                if (e.settings.MessageRecipientType == 'Owner')
+                if (e.settings.MessageRecipientType == 'Responsibility')
                     delete e.settings.MessageToUser;
+
                 break;
-            case 2: //status change
+            case WorkflowActivityType.StatusChange: //status change
                 n.settings.Status = e.settings.Status;
                 break;
-            case 3: //form
+            case WorkflowActivityType.Form: //form
                 n.fields = e.fields;
                 n.settings.FormResponseType = e.settings.FormResponseType
                 n.settings.SendFormEmail = e.settings.SendFormEmail;
                 if (n.settings.SendFormEmail == true) {
-                    n.settings.MessageSubjectTemplate = e.settings.MessageSubjectTemplate;
-                    n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                     n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                     n.settings.MessageToUser = e.settings.MessageToUser;
                     n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
                 } else {
-                    delete n.settings.MessageSubjectTemplate;
-                    delete n.settings.MessageBodyTemplate;
                     delete n.settings.MessageRecipientType;
                     delete n.settings.MessageToUser;
                     delete n.settings.ResponsibilityTypeID;
                 }
-
+                break;
+            case WorkflowActivityType.Procedure:
+                n.settings.ProcedureID = e.settings.ProcedureID;
                 break;
         }
 
@@ -632,6 +713,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         if (!e.hasMultipleInputs && n.settings.WaitForAllTransitions != null)
             delete n.settings.WaitForAllTransitions;
         //console.log('changeStep: ', n, e);
+
+        //n.valid = this.validateNode(n);
+
+        this.myDiagram.model.setDataProperty(n, 'valid', this.validateNode(n));
 
         this.myDiagram.commitTransaction('changeStep');
 
@@ -866,6 +951,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         start.stepType = StepType.Start;
         start.activityType = 0;
         start.pos = "0 0";
+        start.valid = true;
 
         paletteModel.push(start);
 
@@ -876,6 +962,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         finish.stepType = StepType.Finish;
         finish.activityType = 0;
         finish.pos = "0 0";
+        finish.valid = true;
 
         paletteModel.push(finish);
 
@@ -886,6 +973,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         terminate.stepType = StepType.Terminate;
         terminate.activityType = 0;
         terminate.pos = "0 0";
+        terminate.valid = true;
 
         paletteModel.push(terminate);
 
@@ -906,6 +994,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             m.runCount = 0;
             m.settings = {};
             m.fields = {};
+            m.valid = true;
 
             paletteModel.push(m);
 
@@ -983,12 +1072,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             },
                 this.g(go.Shape, "RoundedRectangle", {
                     stroke: nodeBorderColor,
-                    strokeWidth: 2,
+                    strokeWidth: 3,
                     spot1: go.Spot.TopLeft,
                     spot2: go.Spot.BottomRight,
                     name: "NodeShape",
                 },
-                    new go.Binding("fill", "back").makeTwoWay()),
+                    new go.Binding("fill", "back").makeTwoWay(),
+                    new go.Binding("stroke", "valid", v => { return v ? nodeBorderColor : '#f00' }).makeTwoWay()
+                ),
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomLeft,
                     margin: 5

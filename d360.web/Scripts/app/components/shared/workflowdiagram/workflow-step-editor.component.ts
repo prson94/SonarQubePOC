@@ -12,6 +12,7 @@ import {
     NodeModel,
     WorkflowActivityType,
     WorkflowTaskProcedure,
+    EmailTaskRecipientType
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
@@ -33,6 +34,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     @Output() stepChange = new EventEmitter();
 
     WorkflowActivityType = WorkflowActivityType;
+    EmailTaskRecipientType = EmailTaskRecipientType;
 
     private originalStep: NodeModel;
     private status = [
@@ -41,11 +43,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         'Certified'
     ];
 
-    private destination = [
-        { value: 'Initiator', label: 'Initiator' },
-        { value: 'Owner', label: 'Owner' },
-        { value: 'SpecificUser', label: 'Specific User' },
-    ];
+    private destination = [];
 
     private responsibilities = [];
     private procedures: WorkflowTaskProcedure[] = [];
@@ -55,6 +53,17 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     ngOnInit() {
+        this.workflowService.getEmailTaskRecipientType()
+            .then(r => {
+                r.forEach(e => {
+                    if (e.ID < 1)
+                        return;
+                    this.destination.push({
+                        value: EmailTaskRecipientType[e.ID],
+                        label: e.Name
+                    });
+                });
+            });
     }
 
     ngOnChanges() {

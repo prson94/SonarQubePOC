@@ -6,6 +6,8 @@ import {
     WorkflowFormField,
     WorkflowFormFieldType,
     FormResponseType,
+    EmailTaskRecipientType,
+    EmailTaskRecipientTypeInfo,
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header, MenuItem } from 'primeng/primeng';
@@ -39,11 +41,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private usedFields: any[] = [];
     private showHelp = false;
     private responsibilities = [];
-    private destination = [
-        { value: 'Initiator', label: 'Initiator' },
-        { value: 'Owner', label: 'Owner' },
-        { value: 'SpecificUser', label: 'Specific User' },
-    ];
+    private destination = [];
 
     private types = [
         { value: WorkflowFormFieldType.Boolean, label: 'boolean' },
@@ -54,6 +52,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     ];
 
     FormResponseType = FormResponseType;
+    EmailTaskRecipientType = EmailTaskRecipientType;
 
     private responseTypes = [
         { value: FormResponseType[FormResponseType.FirstResponse], label: 'First Response' },
@@ -63,7 +62,10 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     private fieldsSub: any;
 
-    constructor(private workflowFieldsService: WorkflowFieldsService, private responsibilityService: ResponsibilityTypeService) {
+    constructor(
+        private workflowService: WorkflowService,
+        private workflowFieldsService: WorkflowFieldsService,
+        private responsibilityService: ResponsibilityTypeService) {
         super();
     }
 
@@ -75,6 +77,18 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.responsibilityService.getResponsibilityTypes()
             .then(r => {
                 this.responsibilities = r;
+            });
+
+        this.workflowService.getEmailTaskRecipientType()
+            .then(r => {
+                r.forEach(e => {
+                    if (e.ID < 1)
+                        return;
+                    this.destination.push({
+                        value: EmailTaskRecipientType[e.ID],
+                        label: e.Name
+                    });
+                });
             });
 
     }

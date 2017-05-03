@@ -25,9 +25,9 @@
                     <input type="text" [ngModel]="step.settings.MessageToUser" (ngModelChange)="step.settings.MessageToUser = $event; stepChange.emit(step)" style="width: 95%" />
                 </div>
             </div>
-            <div *ngIf="step.settings.MessageRecipientType == 'Owner'" class="col s12">
+            <div *ngIf="step.settings.MessageRecipientType == 'Responsibility'" class="col s12">
                 <div class="FieldName">
-                    Owner
+                    Responsibility
                 </div>
                 <div>
                     <select [ngModel]="step.settings.ResponsibilityTypeID" (ngModelChange)="step.settings.ResponsibilityTypeID = $event; stepChange.emit(step)" style="width: 95%">

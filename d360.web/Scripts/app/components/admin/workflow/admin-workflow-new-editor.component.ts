@@ -8,11 +8,13 @@ import {
     EventCondition,
     WorkflowListItem,
     WorkflowDiagramModel,
+    EmailTaskRecipientType,
 } from '../../../models/workflow.model';
 import { Taxonomy } from '../../../models/taxonomy.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 import { TaxonomiesService } from '../../../services/taxonomies.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
@@ -48,17 +50,15 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     private isValid = false;
 
     WorkflowChangeType = WorkflowChangeType;
+    EmailTaskRecipientType = EmailTaskRecipientType;
 
-    private destination = [
-        { value: 'Initiator', label: 'Initiator' },
-        { value: 'Owner', label: 'Owner' },
-        { value: 'SpecificUser', label: 'Specific User' },
-    ];
+    private destination = [];
 
     private responsibilities = [];
 
     constructor(
         private workflowService: WorkflowService,
+        private workflowFieldsService: WorkflowFieldsService,
         private taxonomyService: TaxonomiesService,
         private responsibilityService: ResponsibilityTypeService) {
         super();
@@ -72,7 +72,19 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
             this.subjectAreaName = 'Subject Area';
         }
 
-        this.load().then(() => {
+        this.load()
+            .then(() => this.workflowService.getEmailTaskRecipientType())
+            .then(r => {
+                r.forEach(e => {
+                    if (e.ID < 1)
+                        return;
+                    this.destination.push({
+                        value: EmailTaskRecipientType[e.ID],
+                        label: e.Name
+                    });
+                });
+            })
+            .then(() => {
             //create initial model and settings if needed
             if (this.model == null)
                 this.model = new WorkflowDiagramModel();
@@ -108,6 +120,10 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
 
                             if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null) {
                                 this.hideObject = (this.model.Event.SettingsObject.Settings.Visible == "false") ? true : false;
+
+                                if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null)
+                                    //convert to bool
+                                    this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() == "true" ? true : false;
                             }
 
                             this.selectedObjectType = this.model.Event.Object + '|' + this.model.Event.ObjectID.toString();
@@ -135,6 +151,16 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                                 let c = this.conditions.find(c => c['@FieldTypeID'] == t.ID);
                                 if (c != null)
                                     c['@FieldName'] = t.FriendlyName;
+                            });
+                        })
+                        .then(() => {
+                            //apply names to contextual fields
+                            this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
+                                let cx = this.workflowFieldsService
+                                    .getContextualFieldsForType(this.model.Event.ChangeType)
+                                    .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
+                                if (cx != null)
+                                    c['@FieldName'] = cx.label;
                             });
                         });
                 }
@@ -208,7 +234,6 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         this.model.Type.PublishedVersionID = null;
 
         this.conditions.forEach(c => {
-            if (c['@ContextualFieldID'] == null)
                 delete c['@FieldName']; 
         });
 

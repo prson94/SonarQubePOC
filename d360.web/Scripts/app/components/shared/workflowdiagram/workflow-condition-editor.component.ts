@@ -156,20 +156,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     loadContextualFields() {
-        this.workflowFieldsService.setContextualFieldsForType(this.changeType);
-        this.contextualFields = this.workflowFieldsService.getContextualFields();
-
-        //switch (+this.changeType) {
-        //    case WorkflowChangeType.ScoreUpdate:
-        //        this.contextualFields.push({
-        //            value: 'Contextual|score',
-        //            label: 'Score',
-        //            type: 'number'
-        //        });
-        //        break;
-        //    default:
-        //        this.contextualFields = [];
-        //}
+        this.contextualFields = this.workflowFieldsService.getContextualFieldsForType(this.changeType);
     }
 
     selectField(e: any) {

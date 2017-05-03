@@ -125,7 +125,7 @@
                                 <div class="FieldName">
                                     Form Inputs
                                 </div>
-                                <p-dataTable *ngIf="selectedData.fields.form != null && selectedData.fields.form.field.length > 0" [value]="selectedData.fields.form.field" selectionMode="single">
+                                <p-dataTable *ngIf="selectedData.fields.form != null && selectedData.fields.form.field != null && selectedData.fields.form.field.length > 0" [value]="selectedData.fields.form.field" selectionMode="single">
                                     <p-column field="@id" header="Name"></p-column>
                                     <p-column field="@label" header="Label"></p-column>
                                     <p-column field="@type" header="Type"></p-column>
@@ -218,13 +218,4 @@
             </table>
         </div>
     </div>
-
-    <!--<div class="row">
-        <div class="col" style="background-color:#eee; width:20%; max-width:210px;" [style.display]="(isReadOnly) ? 'none' : 'block'">
-            <div id="WorkflowPalette" #workflowPalette style="overflow: hidden;" class="diagram"></div>
-        </div>
-        <div class="col" [ngClass]="(isReadOnly) ? 's12' : 's9 m10'">
-            <div id="WorkflowDiagram" #workflowDiagram style="overflow: hidden;" class="diagram"></div>
-        </div>
-    </div>-->
 </div>

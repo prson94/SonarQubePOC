@@ -22,6 +22,7 @@ import {
     WorkflowEventRegistration,
     TransitionTypeInfo,
     WorkflowTaskProcedure,   
+    EmailTaskRecipientTypeInfo,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -414,6 +415,13 @@ export class WorkflowService extends BaseService implements IWorkflowService {
         return this.http.get('services/workflow/procedures')
             .toPromise()
             .then(response => <WorkflowTaskProcedure[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEmailTaskRecipientType(): Promise<EmailTaskRecipientTypeInfo[]> {
+        return this.http.get('services/workflow/emailtaskrecipienttypes')
+            .toPromise()
+            .then(response => <EmailTaskRecipientTypeInfo[]>response.json())
             .catch(err => this.handleError(err));
     }
 }

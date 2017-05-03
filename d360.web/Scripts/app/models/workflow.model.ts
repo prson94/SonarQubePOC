@@ -427,6 +427,13 @@ export enum FormResponseType {
     Majority = 2
 }
 
+export enum EmailTaskRecipientType {
+    None = 0,
+    Initiator,
+    Responsibility,
+    SpecificUser
+}
+
 //#endregion
 
 
@@ -446,4 +453,10 @@ export class WorkflowAssignmentDetail {
     StepName: string;
     StepType: StepType;    
     ActivityType: WorkflowActivityType;
+}
+
+
+export class EmailTaskRecipientTypeInfo {
+    ID: number;
+    Name: string;
 }
