@@ -17523,7 +17523,7 @@ order by TextPath
 
                 var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
 
-                if (dtl != null)
+             /*   if (dtl != null)
                 {
                     var processor = new Processor();
                     var dictionary = new Dictionary<string, object>();
@@ -17535,7 +17535,7 @@ order by TextPath
                     dictionary.Add("IssueID", model.ID);
 
                     processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
-                }
+                }*/
                 return jsonSuccess("Successfully created issue.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)

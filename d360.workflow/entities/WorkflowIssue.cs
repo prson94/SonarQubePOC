@@ -49,6 +49,9 @@ namespace d360.workflow.entities
         public string Url { get; set; }
 
         [DataMember]
+        public string Notes { get; set; }
+
+        [DataMember]
         public string Comments { get; set; }
 
         [DataMember]
