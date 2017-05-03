@@ -801,7 +801,7 @@ namespace d360.model
 
                 await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate, true);
             }
-            else if(emailSettings.RecipientType == EmailTaskRecipientType.Owner)
+            else if(emailSettings.RecipientType == EmailTaskRecipientType.Responsibility)
             {
                 var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
 
