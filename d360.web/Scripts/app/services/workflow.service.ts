@@ -346,8 +346,8 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    getWorkflowItemDetails(typeId: number, object: string, objectId: number): Promise<any[]> {
-        return this.http.get(`services/workflow/item/details/${typeId}/${object}/${objectId}`)
+    getWorkflowItemDetails(typeId: number, itemId: number): Promise<any[]> {
+        return this.http.get(`services/workflow/item/details/${typeId}/${itemId}`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));

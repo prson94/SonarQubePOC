@@ -1269,7 +1269,7 @@ namespace d360.web.Controllers.Services
                             ,i.numberofevents as 'NumberOfEvents'
 	                        ,od.name as 'Name'
                             ,od.NgUrl as 'Url'
-                            
+                            ,i.id as 'ItemID'
                           from
 	                        [workflow].[version] v
 	                        inner join [workflow].item i on v.id = i.versionid
@@ -1310,8 +1310,8 @@ namespace d360.web.Controllers.Services
                 });
         }
 
-        [Route("item/details/{workflowId:int}/{objectType}/{objectId:int}"), HttpGet]
-        public HttpResponseMessage GetItemDetailsForWorkflow(int workflowId, string objectType, int objectId)
+        [Route("item/details/{workflowId:int}/{itemId:int}"), HttpGet]
+        public HttpResponseMessage GetItemDetailsForWorkflow(int workflowId, int itemId)
         {
             string sql = @"		select
 			                        vs.name as 'Name',
@@ -1333,10 +1333,10 @@ namespace d360.web.Controllers.Services
 									left join [workflow].itemstep istepTo on (itrans.toitemstepid = istepTo.id)									                                    
 			                        left join [workflow].versionstep vsTo on (vsTo.id = istepTo.stepid)
 		                        where
-			                        i.[object] = @typename and i.[objectid] = @id and v.typeid = @workflowId;
+			                        i.id = @itemId and v.typeid = @workflowId;
             ";
 
-            var types = Company.Query<dynamic>(sql, new { workflowId = workflowId, id = objectId, typename = objectType }).ToList();
+            var types = Company.Query<dynamic>(sql, new { workflowId = workflowId, itemId = itemId }).ToList();
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
 

@@ -302,6 +302,7 @@ export class WorkflowListItem {
     Published: string;
     NumberOfEvents: number;
     VersionID: number;
+    ItemID: number;
     ChangeTypeName: string;
 }
 

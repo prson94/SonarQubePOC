@@ -137,7 +137,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
 
     private loadItemsDetails(selectedItem: any) {
         
-        this.workflowService.getWorkflowItemDetails(this.selected.ID, selectedItem.Object, selectedItem.ObjectId)
+        this.workflowService.getWorkflowItemDetails(this.selected.ID, selectedItem.ItemID)
             .then(res => {
                 for (let i of res) {
                     i.ActivityTypeString = WorkflowActivityType[i.ActivityType];
