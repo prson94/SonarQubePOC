@@ -24,6 +24,8 @@ namespace d360.core.enums.Workflow
         RuleResult = 6,
         [Description("Loaded")]
         Loaded = 7,
+        [Description("Request Certification")]
+        RequestCertification = 8
     }
 
     public class ChangeTypeInfo
