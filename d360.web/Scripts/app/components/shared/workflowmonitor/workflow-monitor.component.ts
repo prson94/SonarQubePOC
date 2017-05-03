@@ -123,8 +123,8 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
     }
 
     private loadWorkflowItems(selected: WorkflowListItem) {    
-        this.itemdetails = [];    
-        this.workflowService.getWorkflowItems(selected.ID)
+        this.itemdetails = [];
+        this.workflowService.getWorkflowItems(selected.VersionID)
             .then(res => {
                 this.selected = selected;
                 this.details = res;

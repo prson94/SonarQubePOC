@@ -301,7 +301,7 @@ export class WorkflowListItem {
     ChangeType: WorkflowChangeType;
     Published: string;
     NumberOfEvents: number;
-
+    VersionID: number;
     ChangeTypeName: string;
 }
 

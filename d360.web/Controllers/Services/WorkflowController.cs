@@ -1235,6 +1235,7 @@ namespace d360.web.Controllers.Services
                     ,'' as 'ConditionText'
                     ,e.[Condition] as 'Condition'
                     ,v.Version as Version
+                    ,v.ID as VersionID
                 from workflow.type t
                 join workflow.eventregistration e on e.typeid = t.id    
                 join workflow.[version] v on t.id = v.typeid            
@@ -1257,8 +1258,8 @@ namespace d360.web.Controllers.Services
 
         }
 
-        [Route("items/{typeId:int}"), HttpGet]
-        public HttpResponseMessage GetItemsForWorkflow(int typeId)
+        [Route("items/{versionId:int}"), HttpGet]
+        public HttpResponseMessage GetItemsForWorkflow(int versionId)
         {
             string sql = @"select
 	                        i.[object] as 'Object'
@@ -1274,10 +1275,10 @@ namespace d360.web.Controllers.Services
 	                        inner join [workflow].item i on v.id = i.versionid
 	                        inner join [cache].objectdetails od on i.objectid = od.objectid and i.[object] = od.[object]                            
                           where 
-	                        v.typeid = @id
+	                        v.id = @id
             ";
 
-            var types = Company.Query<dynamic>(sql, new { id = typeId }).ToList();
+            var types = Company.Query<dynamic>(sql, new { id = versionId }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
