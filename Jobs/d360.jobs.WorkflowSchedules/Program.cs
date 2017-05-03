@@ -5,6 +5,7 @@ using d360.model;
 using Microsoft.Azure.WebJobs;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 namespace d360.jobs.WorkflowSchedules
@@ -46,7 +47,7 @@ namespace d360.jobs.WorkflowSchedules
                         #endregion
                         //load all workflows of type schedule
 
-                        var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == core.enums.Workflow.ChangeType.Schedule && x.Type.Deleted == false && x.Type.PublishedVersionID != null);
+                        var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == core.enums.Workflow.ChangeType.Schedule && x.Type.Deleted == false && x.Type.PublishedVersionID != null).Include(x=>x.Type);
 
                         foreach (var registration in scheduledWorkflows)
                         {

@@ -784,28 +784,26 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
             var a = Company.GetById<Artifact>(id);
-            var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).Any();
-
+            
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
             var type = Company.GetById<ArtifactType>(a.ArtifactTypeID, i => i.Parent);
 
-            if (type.ParentID.HasValue) //a.ParentID.HasValue)
+            if (type.ParentID.HasValue)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);                
                 var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(type.Parent.Name)}", FieldType = DataType.Lookup.ToString(), Value = (a.ParentID.HasValue ? a.ParentID.ToString() : ""), Items = parents });                
             }
 
-            bool isPromoted = false;// Company.Filter<FusionAttributePromotion>(i => i.ObjectType == "Artifact" && i.ObjectID == id).Any();
+            bool isPromoted = false;
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, ReadOnly = isPromoted, FieldName = "Name", Name = "Name", FieldDescription = ((isPromoted) ? "Artifact promoted via Fusion.  No changes allowed to the Name." : ""), FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Value = a.TaxonomyTypeID.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
 
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
-            if (!workflowEnabled)
-                list = loadStatusField(list, SystemObjects.Artifact, a.Status, 4, 1);
+            list = loadStatusField(list, SystemObjects.Artifact, a.Status, 4, 1);
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 5, true);
 
@@ -998,15 +996,12 @@ namespace d360.web.Controllers
 
                 var sType = SystemObjects.Artifact.ToString();
                 bool isPromoted = false;// Company.Filter<FusionAttributePromotion>(i => i.ObjectType == sType && i.ObjectID == id).Any();
-
-                var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == model.ArtifactTypeID && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).Any();
-
-
+                                
                 // Static fields
                 if (!isPromoted) model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.TaxonomyTypeID = parseIntField(form, "TaxonomyTypeID");
-                if (!workflowEnabled) model.Status = form["Status"];
+                model.Status = form["Status"];
 
                 //model.TaxonomyTypeID = string.IsNullOrEmpty(form["TaxonomyTypeID"]) ? new Nullable<int>() : parseIntField(form, "TaxonomyTypeID");
                 model.ParentID = parseIntField(form, "ParentID");
@@ -1167,53 +1162,26 @@ namespace d360.web.Controllers
                 if (artifact == null) throw new NotFoundException("artifact");
                 if (artifact.Status != "Draft") throw new ConflictException("Certification Not Allowed", "You may not request a certification on this item as it is not in Draft status.");
 
-                var workflow = Company.GetMostRecentCertificationWorkflowByArtifact(id);
+                //check for any outstanding certification workflows for this item
+                var sql = @"select
+                                count(1)
+                            from
+                                workflow.eventregistration we
+                                inner join workflow.type wt on we.typeid = wt.id
+                                inner join workflow.version wv on wt.id = wv.typeid
+                                inner join workflow.item wi on wi.versionid = wv.id and(wi.[object] = 'Artifact' and wi.objectid = @id)
+                            where
+                                we.changetype = 8 and wi.completedOn is null";
 
-                if (workflow != null) {
-                    if (!workflow.DateCompleted.HasValue)
-                        throw new ConflictException("Certification Not Allowed", "There is already a certification request in process for this item.");
+                var count = Company.Query<int>(sql, new { id = id }).FirstOrDefault();
+
+                if(count > 0)
+                {
+                    throw new ConflictException("Certification Not Allowed", "There is already a certification request in process for this item.");
                 }
 
-                //try taxonomy type first
-                WorkflowTypeRelation workflowSettings = Company.Filter<WorkflowTypeRelation>(i => i.Enabled
-                    && i.WorkflowType == WorkflowType.CertifyArtifact
-                    && i.Object == "ArtifactType"
-                    && i.ObjectID == artifact.ArtifactTypeID
-                    && i.Parent == "TaxonomyType"
-                    && i.ParentID == artifact.TaxonomyTypeID
-                    && i.Enabled
-                    ).SingleOrDefault();
-
-                //if null try null taxonomy
-                if (workflowSettings == null)
-                {
-                    workflowSettings = Company.Filter<WorkflowTypeRelation>(i => i.Enabled
-                       && i.WorkflowType == WorkflowType.CertifyArtifact
-                       && i.Object == "ArtifactType"
-                       && i.ObjectID == artifact.ArtifactTypeID                   
-                       && i.Parent == null
-                       && i.Enabled
-                   ).SingleOrDefault();
-                }
-
-
-                if (workflowSettings == null)
-                    throw new ConflictException("Certification Not Allowed", string.Format("There is no enabled workflow allocated to {0}.  Please check with an administrator.", artifact.ArtifactType.Name));
-
-                int daysGivenToComplete = (workflowSettings.Fields.ContainsKey("DaysGivenToCompleteCertification")) ? int.Parse(workflowSettings.Fields["DaysGivenToCompleteCertification"]) : 7;
-
-                var processor = new Processor();
-                var dictionary = new Dictionary<string, object>();
-                dictionary.Add("CompanyID", Company.CurrentCompanyID);
-                dictionary.Add("requestInfo", new CertifyArtifactRequest
-                {
-                    ArtifactID = artifact.ID,
-                    DueDate = DateTime.UtcNow.AddDays(daysGivenToComplete),
-                    StartDate = DateTime.UtcNow,
-                    SendMailFromWorkflow = true
-                });
-                processor.CreateNewWorkflowInstance(WorkflowVersionMap.CertifyArtifactIdentity_vCurrent, dictionary);
-
+                Company.RequestObjectCertification(SystemObjects.Artifact, artifact.ID, SystemObjects.ArtifactType, artifact.ArtifactTypeID);
+                
                 return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)

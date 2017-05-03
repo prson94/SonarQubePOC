@@ -178,7 +178,7 @@ namespace d360.model
 
             var version = WorkflowVersions
                 .Include(i => i.Steps)
-                .Where(i => i.TypeID == workflowTypeID)
+                .Where(i => i.TypeID == workflowTypeID && i.ID == registration.Type.PublishedVersionID)
                 .OrderByDescending(i => i.Version)
                 .FirstOrDefault();
 
@@ -610,6 +610,28 @@ namespace d360.model
                 default:
                     break;
             }
+        }
+
+        public void RequestObjectCertification(core.SystemObjects @object, int objectId, core.SystemObjects objectType, int objectTypeId)
+        {
+            var events = new List<EventInfo>();
+
+            events.Add(new EventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                DomainPrefix = CurrentCompanyDomain,
+                ResourceID = CurrentResourceID,                
+                Action = ChangeType.RequestCertification,
+                Object = new EventObjectInfo
+                {
+                    Object = @object,
+                    ObjectID = objectId,
+                    ObjectType = objectType,
+                    ObjectTypeID = objectTypeId
+                }
+            });
+                        
+            QueueSource.CreateTopicMessages(events);
         }
 
         public void MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo)

@@ -864,8 +864,8 @@ where   h.ID <> @t order by h.[Level] desc;
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "Artifact" && x.ObjectID == a.ArtifactTypeID && x.ReportType == "powerbi").Any();
             model.Add("HasDashboards", hasDashboards);
 
-            var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && i.WorkflowType == WorkflowType.CertifyArtifact).Any();
-            model.Add("HasWorkflow", workflowEnabled);
+            var certificationWorkflowEnabled = Company.WorkflowEventRegistrations.Where(x => x.Object == "ArtifactType" && x.ObjectID == a.ArtifactTypeID && x.Type.PublishedVersionID != null && x.Type.Deleted == false).Any();            
+            model.Add("HasWorkflow", certificationWorkflowEnabled);
 
             //chick if this object has any child objects
             bool hasChildren = Company.Filter<Artifact>(x => x.ParentID == a.ID).Any();
