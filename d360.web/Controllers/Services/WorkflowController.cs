@@ -1745,24 +1745,7 @@ namespace d360.web.Controllers.Services
             type.UpdatedOn = DateTime.UtcNow;
             type.UpdatedBy = Company.CurrentResourceID;
             Company.SaveChanges();
-
-            //var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
-
-            //var versions = Company.WorkflowVersions.Where(v => v.TypeID == id).ToList();
-            //var versionSteps = Company.WorkflowVersionSteps.Where(s => versions.Select(v => v.ID).Contains(s.ID)).ToList();
-            //var versionStepTransitions = Company.WorkflowVersionStepTransitions.Where(t => versions.Select(v => v.ID).Contains(t.FromVersionStepID) || versions.Select(v => v.ID).Contains(t.ToVersionStepID)).ToList();
-
-            //Company.WorkflowVersionStepTransitions.RemoveRange(versionStepTransitions);
-            //Company.WorkflowVersionSteps.RemoveRange(versionSteps);
-            //Company.WorkflowVersionStepTransitions.RemoveRange(versionStepTransitions);
-
-            //Company.WorkflowVersions.RemoveRange(versions);
-
-            //Company.Delete(@event);
-            //Company.Delete(type);
-
-            //Company.SaveChanges();
-
+            
             return Request.CreateResponse(HttpStatusCode.OK, id);
         }
 
