@@ -17871,25 +17871,6 @@ order by TextPath
 
                 if (obj == null) throw new NoFormDataException("GetObject");
 
-                //insert issue into issue table
-                var model = new Issue
-                {
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow,
-                    IssueTypeID = issueTypeId,
-                    Criticality = criticality,
-                    Object = objectType,
-                    ObjectID = objectId,
-                    ObjectType = obj.Type,
-                    ObjectTypeID = obj.TypeID
-                };
-
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, model.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), form, Server);
-                Company.SaveOrUpdate<Issue>(model, fields);
-
                 var relations = new List<CommentRelation>();
                 var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
                 var comment = new Comment();
@@ -17907,19 +17888,26 @@ order by TextPath
 
                 var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
 
-             /*   if (dtl != null)
+                //insert issue into issue table
+                var model = new Issue
                 {
-                    var processor = new Processor();
-                    var dictionary = new Dictionary<string, object>();
-                    dictionary.Add("CompanyID", Company.CurrentCompanyID);
-                    dictionary.Add("CommentID", dtl.ID);
-                    dictionary.Add("IssueType", issueTypeId);
-                    dictionary.Add("IssueTypeDesc", issueType.Name);
-                    dictionary.Add("ObjectName", obj.Name);
-                    dictionary.Add("IssueID", model.ID);
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow,
+                    IssueTypeID = issueTypeId,
+                    Criticality = criticality,
+                    Object = objectType,
+                    ObjectID = objectId,
+                    ObjectType = obj.Type,
+                    ObjectTypeID = obj.TypeID,
+                    CommentID = dtl.ID
+                };
 
-                    processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
-                }*/
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, model.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), form, Server);
+                Company.SaveOrUpdate<Issue>(model, fields);
+
                 return jsonSuccess("Successfully created issue.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)

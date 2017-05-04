@@ -1,4 +1,4 @@
-﻿create VIEW [dbo].[WorkflowIssue]
+﻿CREATE VIEW [dbo].[WorkflowIssue]
 AS
 (
 (select		W.ID as WorkflowID
@@ -65,7 +65,7 @@ from	    Workflow W
 union
 (select		null as WorkflowID
 			,wi.ID as WorkflowItemID
-		    ,-1 as CommentID
+		    ,I.CommentID as CommentID
 			,I.CreatedBy as CreatingResourceID
 			,wi.StartedOn
 			,wi.CompletedOn
@@ -77,7 +77,7 @@ union
 			,R.FirstName + ' ' + R.LastName as RaisedBy			
 			,case when wi.CompletedOn is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted	
 			,'' as Notes					
-			,'' as Comments
+			,C.Body as Comments
 			,IT.ID as IssueType
             ,IT.Name as IssueTypeName
 			,I.ID as IssueID
@@ -87,9 +87,11 @@ union
 from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
-			left outer join cache.ObjectDetails A on A.[Object] = I.ObjectType and A.ObjectID = I.ObjectID            		
+			left outer join cache.ObjectDetails A on A.[Object] = I.[Object] and A.ObjectID = I.ObjectID            		
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
+			left outer join Comment C on C.ID = I.CommentID
 )
+
 
 
 GO

@@ -10,6 +10,7 @@
 	[UpdatedOn] [datetime] NOT NULL DEFAULT GETUTCDATE(),
 	[UpdatedBy] [int] NULL,	
 	[Criticality] [int] NOT NULL DEFAULT 0,
+	[CommentID] [int] NULL,
 	CONSTRAINT [PK_Issue] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Issue_IssueType] FOREIGN KEY ([IssueTypeID]) REFERENCES [dbo].[IssueType] ([ID]) ON DELETE CASCADE
 )

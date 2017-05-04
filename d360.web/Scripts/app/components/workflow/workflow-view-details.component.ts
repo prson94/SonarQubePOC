@@ -19,7 +19,7 @@ import { StepType, WorkflowActivityType } from '../../models/workflow.model';
                         <div class="col s12 FieldName">Workflow Name</div>
                         <div class="col s12">{{details?.Workflow.Name}}</div>
                         <div class="col s12 FieldName">Name</div>
-                        <div class="col s12">{{details?.ObjectDetails.Name}}</div>
+                        <div class="col s12" [innerHtml]="details?.ObjectDetails.Name"></div>
                         <div class="col s12 FieldName">Type Name</div>
                         <div class="col s12">{{details?.ObjectDetails.TypeName}}</div>
                         <div class="col s12 FieldName">Type</div>

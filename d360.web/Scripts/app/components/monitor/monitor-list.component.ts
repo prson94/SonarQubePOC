@@ -22,8 +22,9 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
-                                    <d3s-tooltip  *ngIf="!data.AllowAction" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>                                    
-                                    <d3s-tooltip *ngIf="data.AllowAction" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview"><a (click)="handleIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
+                                    <a *ngIf="!data.WorkflowID && data.WorkflowItemID" (click)="openNewWorkflow(data)">{{data.ActivityName}}</a>
+                                    <d3s-tooltip  *ngIf="!data.AllowAction && data.WorkflowID" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>                                    
+                                    <d3s-tooltip *ngIf="data.AllowAction && data.WorkflowID" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview"><a (click)="handleIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
                                 </template>
                             </p-column>
                             <p-column field="Criticality" header="Criticality" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
@@ -81,8 +82,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
 
     private issues: IssueDetail[] = [];
     private selected: IssueDetail;
-
-    private showEditor: boolean = false;
+        
     private showUser: boolean = false;
 
     constructor(protected workflowService: WorkflowService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, protected router: Router) {
@@ -108,9 +108,12 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private handleIssue(issue: IssueDetail) {
-        this.showEditor = true;
+    private handleIssue(issue: IssueDetail) {        
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
+    }
+
+    private openNewWorkflow(issue: IssueDetail) {
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS}/${issue.WorkflowItemID}`);
     }
 
     private export() {

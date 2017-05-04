@@ -63,6 +63,7 @@ export class IssueDetail {
     Url: string;
     WorkflowID: string;
     EllapsedDays: number;
+    WorkflowItemID: number;
 }
 
 export class CertifyItem {
