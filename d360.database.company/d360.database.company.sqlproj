@@ -556,6 +556,7 @@
     <None Include="utility\Stored Procedures\GetOwnersForWorkflowV2.sql" />
     <None Include="workflow\Tables\TaskProcedure.sql" />
     <None Include="dbo\Tables\ReportResponsibility.sql" />
+    <None Include="dbo\Tables\ResourcePasswordReset.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

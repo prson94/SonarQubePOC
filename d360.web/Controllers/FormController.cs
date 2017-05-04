@@ -13604,22 +13604,8 @@ order by	T.Name, I.DisplayValue";
                 if (model == null) throw new NotFoundException("resource");
 
                 //valid user at this point generate a password
-
-                var generatedPassword = System.Web.Security.Membership.GeneratePassword(10, 3);
+                ResetResourcePassword(model.ID, model.FirstName, model.Email, model.FormatDisplayName());
                 
-                Community.ChangePassword(model.ID, "", generatedPassword);
-
-                var templateValues = new Dictionary<string, string>();
-                                
-                string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
-
-                templateValues["firstname"] = model.FirstName;
-                templateValues["password"] = generatedPassword;
-                templateValues["request_url"] = strUrl;
-
-                //email user 
-                extensions.mail.TemplateMessage.SendMessage("Data3Sixty Password Reset", model.Email, model.FormatDisplayName(), templateValues, "forms-password-reset");
-
                 return jsonSuccess("Users password has been successfully updated!", id.ToString(), "reset", HttpStatusCode.OK);
 
             }

@@ -254,6 +254,8 @@ namespace d360.model
 
         public DbSet<ResourceGroup> ResourceGroups { get; set; }
 
+        public DbSet<ResourcePasswordReset> ResourcePasswordResets { get; set; }
+
         public DbSet<Responsibility> Responsibilities { get; set; }
 
         public DbSet<ResponsibilityContextItem> ResponsibilityContextItems { get; set; }

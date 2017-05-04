@@ -1,6 +1,6 @@
 ﻿@model d360.web.Models.LoginModel
 @{
-    ViewBag.Title = "Login";
+    ViewBag.Title = "Reset Password";
     Layout = null;
     var VersionNumber = ViewData["VersionNumber"].ToString();
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
@@ -14,10 +14,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="Shortcut Icon" href="/favicon.ico" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <link rel="stylesheet" href="/Content/styles/root@(suffix).css?version=@(VersionNumber)" />
     <script type="text/javascript">
-    $(document).ready(function () {        
+    $(document).ready(function () {
         $("#UserName").focus();
         $('input').keypress(function (e) {
             if (e.which == 13) {
@@ -27,38 +27,32 @@
     });
     </script>
     <style>
-        .loginlogo{
+        .loginlogo {
             background-image: url(/Content/images/logo.new.png);
             background-repeat: no-repeat;
             background-position: left top;
             background-size: auto 40px;
             height: 40px;
-            width:200px;
-            display:inline-block;
+            width: 200px;
+            display: inline-block;
         }
     </style>
 </head>
 <body class="loginBody">
     <span class="loginlogo"></span>
     <div id="loginForm">
-        <h4>Log in To Data3Sixty</h4>
+        <h4>Reset Password</h4>
         @Html.ValidationSummary()
 
         @using (Html.BeginForm())
         {
             <input placeholder="Username" type="text" id="UserName" name="UserName" required pattern=".{10,}" title="Username must be at least 10 characters long." style="width:100%" />
             @Html.ValidationMessageFor(m => m.UserName)
-            <div>&nbsp;</div>
-            <input type="password" placeholder="Password" id="Password" name="Password" autocomplete="off" required pattern=".{6,}" title="Password must be at least 6 characters long." style="width:100%" />
-            @Html.ValidationMessageFor(m => m.Password)
             <br /><br />
-            <div><input id="loginButton" type="submit" value="Log in" tabindex="3" style="width:100%" /></div>
-            <br/>
-            <a href="reset">Forgot your Password?</a>
+            <div><input id="loginButton" type="submit" value="Reset" tabindex="3" style="width:100%" /></div>
+            <br />
+            <p>After you reset your password an email will be sent to the email account you registered with containing a link to reset your password.</p>
         }
     </div>
 </body>
-
-
-
 </html>

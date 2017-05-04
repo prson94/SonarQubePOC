@@ -10,6 +10,7 @@ using d360.web.Models;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net;
@@ -29,7 +30,7 @@ namespace d360.web.Controllers
         TelemetryClient Telemetry;
 
         public AuthenticationController(CommunityContext community, CompanyContext company)
-            : base(community, company) 
+            : base(community, company)
         {
             Telemetry = new TelemetryClient();
             Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
@@ -41,15 +42,16 @@ namespace d360.web.Controllers
         private XmlElement createAuthnRequest()
         {
             // Create the authentication request.
-            AuthnRequest authnRequest = new AuthnRequest {
+            AuthnRequest authnRequest = new AuthnRequest
+            {
                 AssertionConsumerServiceURL = string.Format("{0}://{1}/sso/acs", Request.Url.Scheme, Request.Url.Authority),
                 Destination = Community.CurrentCompanySsoModel.IdpSsoEndpoint,// "https://login.windows.net/21a2b0d9-a4b4-449e-af0b-f22a7129b71f/saml2",
                 //IsPassive = true,
                 Issuer = new Issuer("https://data3sixty.com/ui"),
                 ForceAuthn = false,
-                NameIDPolicy = new NameIDPolicy(null, null, true)                
+                NameIDPolicy = new NameIDPolicy(null, null, true)
             };
-            
+
             // Serialize the authentication request to XML for transmission.
             var authnRequestXml = authnRequest.ToXml();
 
@@ -107,11 +109,11 @@ namespace d360.web.Controllers
         public ActionResult Login()
         {
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
-            { 
+            {
                 case AuthenticationType.SSO:
                     var telemetry = new TelemetryClient();
                     var authnRequestXml = createAuthnRequest();
-                    
+
                     string returnUrl = Request.QueryString["ReturnUrl"];
 
                     Uri testUri;
@@ -137,12 +139,12 @@ namespace d360.web.Controllers
                     //}
 
                     #region Hash Choice
-                    
+
                     //http://www.w3.org/TR/xmlsec-algorithms/
 
                     var hashString = "";
                     switch (Community.CurrentCompanySsoModel.HashAlgorithmType)
-                    { 
+                    {
                         case HashAlgorithmType.SHA1:
                             hashString = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
                             break;
@@ -165,7 +167,7 @@ namespace d360.web.Controllers
                     telemetry = null;
 
                     ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState, null, hashString);
-                                
+
                     return new EmptyResult();
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
@@ -198,7 +200,7 @@ namespace d360.web.Controllers
 
             // Check whether the SAML response indicates success or an error and process accordingly.
             if (samlResponse.IsSuccess())
-            {              
+            {
                 SAMLAssertion samlAssertion = null;
 
                 Telemetry.TrackTrace(
@@ -298,7 +300,7 @@ namespace d360.web.Controllers
                 Resource resource = null;
 
                 if (!string.IsNullOrEmpty(userName))
-                { 
+                {
                     userName = userName.ToLower();
                     resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
                     if (resource == null)
@@ -331,7 +333,7 @@ namespace d360.web.Controllers
                             //Trace.TraceInformation("AssertionConsumerService => Finished creating resource account for Username: {0}.", userName);
                         }
                     }
-                    else 
+                    else
                     {
                         var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == resource.ID).SingleOrDefault();
                         if (companyResource == null)
@@ -421,7 +423,7 @@ namespace d360.web.Controllers
                         //Trace.TraceError("AssertionConsumerService => Referencing resource: {0}. Should not authorize with the system account.  The username is: {1}", resource.ID, userName);
                     }
                 }
-                
+
                 //If you go this far a problem occurred.
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
@@ -479,18 +481,114 @@ namespace d360.web.Controllers
 
         [Route("slo")]
         public ActionResult Logout()
-        {          
+        {
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
-            { 
+            {
                 case AuthenticationType.SSO:
                     FormsAuthentication.SignOut();                  // Logout locally.                    
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
                     return View("Logout");
                 default:
                     FormsAuthentication.SignOut();
-                    FormsAuthentication.RedirectToLoginPage();
-                    return new EmptyResult();
+                    ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+                    return View("Logout");
             }
+        }
+
+        [AllowAnonymous, Route("reset"), HttpPost]
+        public ActionResult Reset(LoginModel model)
+        {
+            //add record with guid that the user requested password reset
+            var resource = Company.GlobalReportingResources.Where(x => x.Email == model.UserName).FirstOrDefault();
+
+            if (resource != null)
+            {
+                // delete any pending requests for this resource id
+
+                var pending = Company.ResourcePasswordResets.Where(x => x.ResourceID == resource.ResourceID);
+
+                if (pending.Any())
+                {
+                    Company.ResourcePasswordResets.RemoveRange(pending);
+                    Company.SaveChanges();
+                }
+
+                // add record for password reset request
+                var resetModel = new ResourcePasswordReset
+                {
+                    CreateDate = DateTime.UtcNow,
+                    ResourceID = resource.ResourceID
+                };
+
+                Company.ResourcePasswordResets.Add(resetModel);
+                Company.SaveChanges();
+
+                //send email with link
+                var templateValues = new Dictionary<string, string>();
+
+                string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
+                strUrl += $"doreset?id={resetModel.ID}";
+
+                templateValues["firstname"] = resource.FirstName;                
+                templateValues["request_url"] = strUrl;
+
+                //email user 
+                extensions.mail.TemplateMessage.SendMessage("Data3Sixty Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
+            }
+            //redirect to login page
+            FormsAuthentication.RedirectToLoginPage();
+            return new EmptyResult();
+        }
+
+
+        [AllowAnonymous, Route("reset")]
+        public ActionResult Reset()
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            return View("Reset");
+        }
+
+        [AllowAnonymous, Route("doreset")]
+        public ActionResult DoReset()
+        {
+            var id = Request.QueryString["id"];
+
+            if(!string.IsNullOrEmpty(id))
+            {
+                Guid guidId = Guid.Empty;
+
+                if (Guid.TryParse(id, out guidId))
+                {
+                    var resetRequest = Company.ResourcePasswordResets.Where(x => x.ID == guidId).FirstOrDefault();
+
+                    if(resetRequest != null)
+                    {
+                        var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resetRequest.ResourceID).FirstOrDefault();
+                        if (resource != null)
+                        {
+                            bool success = false;
+                            // check that the request is less then 24 hours old
+                            if ((resetRequest.CreateDate - DateTime.UtcNow).TotalDays < 1)
+                            {
+                                ResetResourcePassword(resource.ResourceID, resource.FirstName, resource.Email, resource.FullName);
+                                success = true;
+                            }
+
+                            Company.ResourcePasswordResets.Remove(resetRequest);
+                            Company.SaveChanges();
+
+                            if (success)
+                            {
+                                ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+                                return View("ResetMessage");
+                            }
+                        }
+                    }
+                }
+            }
+
+            FormsAuthentication.RedirectToLoginPage();
+            return new EmptyResult();
         }
     }
 }

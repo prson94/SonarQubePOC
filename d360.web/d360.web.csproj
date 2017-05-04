@@ -843,6 +843,8 @@
     <Content Include="typings.json" />
     <Content Include="Views\Shared\App.cshtml" />
     <Content Include="Views\Authentication\Logout.cshtml" />
+    <Content Include="Views\Authentication\Reset.cshtml" />
+    <Content Include="Views\Authentication\ResetMessage.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

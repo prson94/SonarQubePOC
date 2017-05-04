@@ -1138,6 +1138,24 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return sql;
         }
 
+        protected void ResetResourcePassword(int resourceId, string firstName, string email, string fullName)
+        {
+            var generatedPassword = System.Web.Security.Membership.GeneratePassword(10, 3);
+
+            Community.ChangePassword(resourceId, "", generatedPassword);
+
+            var templateValues = new Dictionary<string, string>();
+
+            string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
+
+            templateValues["firstname"] = firstName;
+            templateValues["password"] = generatedPassword;
+            templateValues["request_url"] = strUrl;
+
+            //email user 
+            extensions.mail.TemplateMessage.SendMessage("Data3Sixty Password Reset", email, fullName, templateValues, "forms-password-reset");
+        }
+
         #endregion
     }
 }

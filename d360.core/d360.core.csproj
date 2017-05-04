@@ -122,6 +122,7 @@
     <Compile Include="entities\Reference\ReferenceItem.cs" />
     <Compile Include="entities\Relation\MapType.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
+    <Compile Include="entities\ResourcePasswordReset.cs" />
     <Compile Include="entities\Score\ScoreTypeMetricVersion.cs" />
     <Compile Include="entities\Social\Favorite.cs" />
     <Compile Include="entities\FieldTypeLookup.cs" />
