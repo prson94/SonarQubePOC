@@ -3693,7 +3693,7 @@ where    A.PolicyTypeID = @id and A.[Visible] = 1", columns, joins);
             policies.ForEach(p =>
             {
                 if (stripHtml)
-                    p.Description = System.Text.RegularExpressions.Regex.Replace(p.Description, @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty);
+                    p.Description = System.Text.RegularExpressions.Regex.Replace(p.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty);
                 p.Description = HttpUtility.HtmlDecode(p.Description);
             });
 
