@@ -24,8 +24,8 @@ export class ModelsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getModelHierarchy(id: number, details?: boolean): Promise<ModelHierarchy[]> {
-        return this.http.get(`internal/taxonomy/ModelHierarchy${details ? 'Detailed': ''}?id=${id}`)
+    getModelHierarchy(id: number, details?: boolean, stripHtml: boolean = false): Promise<ModelHierarchy[]> {
+        return this.http.get(`internal/taxonomy/ModelHierarchy${details ? 'Detailed': ''}?id=${id}${(details && stripHtml) ? '&stripHtml=true' : ''}`)
             .toPromise()
             .then(response => <ModelHierarchy[]>response.json())
             .catch(err => this.handleError(err));

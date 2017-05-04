@@ -1,11 +1,11 @@
 ﻿<form #ruleStepRelate="ngForm">
     <div class="row">
         <div class="col l4 m12 s12">
-            <div class="FieldName" style="display:block">Intersect Type</div>
+            <div class="FieldName" style="display:block">Relationship Type</div>
             <select [(ngModel)]="settings.IntersectType" style="width:100%" name="intersecttype" #intersecttype="ngModel" required (ngModelChange)="validate()">
                 <option *ngFor="let i of relations" [value]="i.ID">{{i.Name}}</option>
             </select>
-            <div class="errorMessage" [hidden]="!showErrors || intersecttype.valid">Intersect Type is required</div>
+            <div class="errorMessage" [hidden]="!showErrors || intersecttype.valid">Relationship Type is required</div>
         </div>
         <div class="col l4 m12 s12">
             <div class="FieldName" style="display:block">Subject Search Type</div>

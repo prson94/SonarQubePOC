@@ -175,7 +175,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private loadModelHierarchy(modelId: number) {
-        this.modelsService.getModelHierarchy(modelId, true)
+        this.modelsService.getModelHierarchy(modelId, true, true)
             .then(result => {
                 this.modelHierarchy = result;
 

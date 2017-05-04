@@ -12,10 +12,11 @@ import { WorkflowService } from '../../../services/workflow.service';
 
 <div>
     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-    <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" >                                                        
+    <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowDblclick)="onEditClick.emit($event.data.ID)">                                                        
     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>        
     <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
+    <p-column field="Type" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
     <p-column field="ChangeTypeName" header="Change Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
     <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter">
         <template let-item="rowData" pTemplate type="body">

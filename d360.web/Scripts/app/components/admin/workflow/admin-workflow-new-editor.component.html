@@ -1,8 +1,8 @@
 ﻿<div class="tile tile-detail">
-    <header *ngIf="model?.Type?.Name != null">
+    <header *ngIf="model?.Type?.Name != null && !isLoading">
         {{model.Type.Name}}
     </header>
-    <header *ngIf="model?.Type?.Name == null">
+    <header *ngIf="model?.Type?.Name == null  && !isLoading">
         New Workflow Type
     </header>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -134,7 +134,7 @@
     <div class="row">
         <div class="col s12">&nbsp;</div>
     </div>
-    <div class="row" *ngIf="objectType == 'ArtifactType' && model.Event.ChangeType == WorkflowChangeType.Add">
+    <div class="row" *ngIf="objectType == 'ArtifactType' && model.Event.ChangeType == WorkflowChangeType.Add && !isLoading">
         <div class="col s12">
             <input type="checkbox" [(ngModel)]="hideObject" /> Hide new objects until workflow runs?
         </div>
@@ -146,7 +146,7 @@
         <div class="col s12">
             <div>
                 <button type="button" pButton label="Cancel" (click)="onClose.emit()"></button>
-                <button type="button" pButton label="Next" (click)="save()" [disabled]="!isValid"></button>
+                <button type="button" pButton label="Next" (click)="save()" [disabled]="!isValid || isLoading"></button>
             </div>
         </div>
     </div>

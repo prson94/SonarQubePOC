@@ -1197,32 +1197,9 @@ namespace d360.web.Controllers.Services
         [Route("types"), HttpGet]
         public HttpResponseMessage GetWorkflowTypes()
         {
-            string sql = @"select t.ID
-                    ,t.Name
-                    ,t.CreatedOn
-					,coalesce(rc.FirstName + ' ' + rc.LastName, '') as CreatedBy
-                    ,t.UpdatedOn
-					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
-                    ,e.ChangeType
-                    ,d.Name as TypeName,
-					case when t.PublishedVersionID is not null then
-						'Version ' + cast(v.Version as varchar) + ' Published'
-					else
-						'Unpublished'
-					end as Published
-                from workflow.type t
-                inner join workflow.eventregistration e on e.typeid = t.id
-                inner join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid 
-				left join workflow.version v on v.id = t.publishedversionid
-				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
-				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
-				where t.State = 1
-        ";
-
-            var types = Company.Query<dynamic>(sql).ToList();
+            var types = Company.Query<dynamic>(QueryConstants.WorkflowList).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, types);
-
         }
 
         [Route("types/{objectID:int}/{objectType}"), HttpGet]

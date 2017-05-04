@@ -3,6 +3,7 @@ using System.Web.Mvc;
 using d360.core.entities;
 using d360.model;
 using d360.web.Models.Attributes;
+using System.Web;
 
 namespace d360.web.Controllers
 {
@@ -38,18 +39,27 @@ where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => ne
         }
 
         [HttpGet, Route("ModelHierarchyDetailed"), NonNullableParameters]
-        public JsonNetResult ModelHierarchyDetailed(int id)
+        public JsonNetResult ModelHierarchyDetailed(int id, bool stripHtml = false)
         {
             var models = Company.Query<TaxonomyDetail>(
-@"select	T.*,
-			case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren		 
-	from	Taxonomy T
-			CROSS APPLY (
-				select	count(1) as [ItemsCount]
-				from	[Intersect]
-				where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
-				) DC
-where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.Name, i.ParentID, i.Description, i.Level });
+                @"select	T.*,
+			                case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren		 
+	                from	Taxonomy T
+			                CROSS APPLY (
+				                select	count(1) as [ItemsCount]
+				                from	[Intersect]
+				                where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
+				                ) DC
+                where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i =>
+                new
+                {
+                    i.HasChildren,
+                    i.ID,
+                    i.Name,
+                    i.ParentID,
+                    Description = HttpUtility.HtmlDecode(stripHtml ? System.Text.RegularExpressions.Regex.Replace(i.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty) : i.Description ?? ""),
+                    i.Level
+                });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
