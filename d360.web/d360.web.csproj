@@ -793,7 +793,6 @@
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
     <Content Include="package.json" />
     <Content Include="Content\styles\_Variables.less" />
     <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.eot" />
@@ -992,6 +991,8 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-filter-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-filter-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-item-editor.component.ts" />

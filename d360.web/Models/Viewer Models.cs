@@ -548,6 +548,12 @@ namespace d360.web.Models
         public string value { get; set; }
     }
 
+    public class ListIntItem
+    {
+        public string title { get; set; }
+        public int? value { get; set; }
+    }
+
     public class SourceTargetIntersectModels
     {
         public List<SourceTargetIntersectModel> Items { get; set; }

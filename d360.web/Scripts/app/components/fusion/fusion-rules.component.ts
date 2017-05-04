@@ -2,7 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/fusion.service';
 import { MessagesService } from '../../services/messages.service';
-import { FusionRule, FusionRuleStep, FusionRuleItem, FusionRuleMapping } from '../../models/fusion.model';
+import { FusionRule, FusionRuleStep, FusionRuleFilter, FusionRuleItem, FusionRuleMapping } from '../../models/fusion.model';
 
 
 @Component({
@@ -19,11 +19,11 @@ export class FusionRulesComponent extends BaseComponent {
 
     selectedFusionRule: FusionRule = null;
     selectedFusionRuleStep: FusionRuleStep = null;
-    selectedFusionRuleItem: FusionRuleItem = null;
+    selectedFusionRuleFilter: FusionRuleFilter = null;
     selectedFusionRuleStepMapping: FusionRuleMapping = null;
 
     showRulePromotionHistory: boolean;
-    showItemAdd: boolean = true;
+    showFilterAdd: boolean = true;
 
     constructor(private fusionService: FusionService, private messagesService: MessagesService) {
         super();
@@ -54,15 +54,20 @@ export class FusionRulesComponent extends BaseComponent {
             this.formMode = FormMode.EditMapping;
     }
 
-    addItem() {
-        if (this.selectedFusionRule != null && this.selectedFusionRule.ObjectType != 'FusionQueryAttributeType')
-            this.formMode = FormMode.AddItem;
+    addFilter() {
+        if (this.selectedFusionRule != null)
+            this.formMode = FormMode.AddFilter;
+    }
+
+    editFilter() {
+        if (this.selectedFusionRule != null)
+            this.formMode = FormMode.EditFilter;
     }
 
     deleteRule() {
         this.selectedFusionRuleStepMapping = null;
         this.selectedFusionRuleStep = null;
-        this.selectedFusionRuleItem = null;
+        this.selectedFusionRuleFilter = null;
         this.selectedFusionRule = null;
     }
 
@@ -71,18 +76,14 @@ export class FusionRulesComponent extends BaseComponent {
         this.selectedFusionRuleStep = null;
     }
 
-    deleteItem() {
-        if (this.selectedFusionRule.ObjectType != 'FusionQueryAttributeType')
-            this.formMode = FormMode.DeleteItem;
+    deleteFilter() {
+        this.formMode = FormMode.DeleteFilter;
     }
 
     selectRule(e: any) {
         this.selectedFusionRule = e;
         this.showRulePromotionHistory = false;
-        if (this.selectedFusionRule.ObjectType == 'FusionQueryAttributeType')
-            this.showItemAdd = false;
-        else
-            this.showItemAdd = true;
+        this.showFilterAdd = true;
 
     }
 };
@@ -95,8 +96,9 @@ enum FormMode {
     EditStep,
     DeleteStep,
     AddStep,
-    DeleteItem,
-    AddItem,
+    DeleteFilter,
+    EditFilter,
+    AddFilter,
     EditMapping,
     AddMapping,
     DeleteMapping,

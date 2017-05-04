@@ -11,9 +11,6 @@
         public const string WORKFLOW_DATABASE_CONNECTION = @"Server=tcp:bzbdz2ikmp.database.windows.net;Database=Workflow;User ID=d3s_user;Password=d3fGt$$@eEwq00y;Trusted_Connection=False;Encrypt=true";
         public const string WORKFLOW_DATABASE_CONNECTION_FAILOVER = @"Server=tcp:d3smainwest.database.windows.net;Database=Workflow;User ID=d3s_user;Password=FFhdit^WQgLKjeEwq017;Trusted_Connection=False;";
 
-        public const string ANALYTICS_DATABASE_CONNECTION = @"Server=tcp:bzbdz2ikmp.database.windows.net;Database=Analytics;User ID=d3s_user;Password=d3fGt$$@eEwq00y;Trusted_Connection=False;Encrypt=true";
-        public const string ANALYTICS_DATABASE_CONNECTION_FAILOVER = @"Server=tcp:d3smainwest.database.windows.net;Database=Analytics;User ID=d3s_user;Password=FFhdit^WQgLKjeEwq017;Trusted_Connection=False;";
-
         //public const string SERVICE_BUS_UI = @"Endpoint=sb://d3s-ui.servicebus.windows.net/;SharedSecretIssuer=owner;SharedSecretValue=rhrehB7tlnGohmpWROp/mD51MseScPk01vbgw6P7Lsg=";
         //public const string SERVICE_BUS_ACTIONS = @"Endpoint=sb://d3s-actions.servicebus.windows.net/;SharedSecretIssuer=owner;SharedSecretValue=3954e8EnfAJYrLwGdp5R9IYCro5Y5HZv+lSRHPm/JWU=";
         //public const string MEDIA_SERVICE_KEY = "iuaqQ9vyffao1Rtm1BADcSEv7qz6h1Mw9ewab+JLTgg=";

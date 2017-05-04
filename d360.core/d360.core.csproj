@@ -112,6 +112,7 @@
     <Compile Include="entities\Contracts\IEventTrackedEntity.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttribute.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttributeType.cs" />
+    <Compile Include="entities\Fusion\FusionRuleFilter.cs" />
     <Compile Include="entities\Fusion\FusionSchedule.cs" />
     <Compile Include="entities\Issue.cs" />
     <Compile Include="entities\IssueType.cs" />
@@ -180,6 +181,7 @@
     <Compile Include="entities\Score\ScoreMetric.cs" />
     <Compile Include="entities\Score\ScoreTypeMetric.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />
+    <Compile Include="entities\Transitive\FusionRuleFilterItem.cs" />
     <Compile Include="entities\Transitive\FieldFilterModel.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
     <Compile Include="entities\Views\MapRuleItemDetail.cs" />

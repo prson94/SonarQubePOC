@@ -197,6 +197,40 @@ export class FusionRuleStep {
     FormSettings: any;
 }
 
+export class FusionRuleFilter {
+    ID: number;
+    RuleID: number;
+    Name: string;
+}
+
+export class FusionRuleFilterItem {
+    FusionRuleFilterID: number;
+    FieldTypeID: number;
+    Type: string;
+    Operator: string;
+    Value: string;
+}
+
+export class FusionRuleFilterFieldEditorModel {
+    ID: number;
+    Name: string;
+    Type: string;
+}
+
+export class FusionRuleFilterEditorModel {
+    FormName: string;
+    FusionRuleID: number;
+
+    ID: number;
+    Name: string;
+    All: boolean;
+    Items: FusionRuleFilterItem[] = [];
+
+    FieldTypes: FusionRuleFilterFieldEditorModel[] = [];
+    BoolOperators: string[] = [];
+    TextOperators: string[] = [];
+}
+
 
 export class FusionRuleItem {
     ID: number;

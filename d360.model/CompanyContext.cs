@@ -163,6 +163,8 @@ namespace d360.model
 
         public DbSet<FusionRule> FusionRules { get; set; }
 
+        public DbSet<FusionRuleFilter> FusionRuleFilters { get; set; }
+
         public DbSet<FusionRuleItem> FusionRuleItem { get; set; }
         
         public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }

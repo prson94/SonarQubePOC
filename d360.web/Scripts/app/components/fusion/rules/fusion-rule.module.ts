@@ -28,6 +28,8 @@ import { FusionRuleStepMappingListComponent } from './fusion-rule-step-mapping-l
 import { FusionRuleStepMappingEditorComponent } from './fusion-rule-step-mapping-editor.component';
 import { FusionRuleListComponent } from './fusion-rule-list.component';
 import { FusionRuleEditorComponent } from './fusion-rule-editor.component';
+import { FusionRuleFilterListComponent } from './fusion-rule-filter-list.component';
+import { FusionRuleFilterEditorComponent } from './fusion-rule-filter-editor.component';
 import { FusionRuleItemListComponent } from './fusion-rule-item-list.component';
 import { FusionRuleItemEditorComponent } from './fusion-rule-item-editor.component';
 import { FusionRuleStepListComponent } from './fusion-rule-step-list.component';
@@ -48,6 +50,8 @@ import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.compone
         FusionRuleStepMappingEditorComponent,
         FusionRuleListComponent,
         FusionRuleEditorComponent,
+        FusionRuleFilterListComponent,
+        FusionRuleFilterEditorComponent,
         FusionRuleItemListComponent,
         FusionRuleItemEditorComponent,
         FusionRuleStepListComponent,
@@ -64,6 +68,8 @@ import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.compone
         FusionRuleStepMappingEditorComponent,
         FusionRuleListComponent,
         FusionRuleEditorComponent,
+        FusionRuleFilterListComponent,
+        FusionRuleFilterEditorComponent,
         FusionRuleItemListComponent,
         FusionRuleItemEditorComponent,
         FusionRuleStepListComponent,

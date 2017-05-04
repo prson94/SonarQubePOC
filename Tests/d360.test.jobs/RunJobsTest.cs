@@ -25,8 +25,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 17; //10
-            var fusionTypeID = 13;//13;
+            var companyID = 53; //10
+            var fusionTypeID = 12;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -36,8 +36,8 @@ namespace d360.test.jobs
             var company = getCompanyConnection(companyID);
 
             company.Execute(@"SET IDENTITY_INSERT FusionType ON
-if not exists(select 1 from FusionType where ID = @i) BEGIN INSERT INTO FusionType (ID, Name, Description) VALUES (@i, @n, @d) END
-SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Name, d = fusionType.Description });
+if not exists(select 1 from FusionType where ID = @i) BEGIN INSERT INTO FusionType (ID, Name, Description, UpdatedOn, UpdatedBy) VALUES (@i, @n, @d, @dt, @u) END
+SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Name, d = fusionType.Description, dt = DateTime.UtcNow, u = 0 });
 
             foreach (var o in fusionType.FusionTypeFields)
             {
@@ -45,9 +45,9 @@ SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Nam
                     declare @ft int
                     if not exists(select 1 from FieldType where Name = @n and [Object] = 'FusionType' and ObjectID = @oid) 
                     BEGIN 
-                    INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable) VALUES (@n, @f, @t, 'FusionType', @oid, @s, 0, @l) 
+                    INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable) VALUES (@n, @f, @t, 'FusionType', @oid, @s, 0, @l, @d, @e)
                     END",
-                new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionTypeID, s = o.SortOrder, l = o.IsListable });
+                new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionTypeID, s = o.SortOrder, l = o.IsListable, d = true, e = false });
             }
 
             loadFusionAttributeTypes(company, fusionType.ID, "FusionAttributeType", null, fusionAttributeTypes);
@@ -56,9 +56,10 @@ SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Nam
                 company.Execute(@"
 if not exists(select 1 from IntersectType where Subject = @type and SubjectID = @si and Object = @type and ObjectID = @ti) 
 BEGIN 
-			INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy, IsSystem) values (@type, @si, @type, @ti, getutcdate(), 0, 1)
+			INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy, IsSystem, CreatedBy, CreatedOn) 
+            values (@type, @si, @type, @ti, @dt, @u, @system, @u, @dt)
 END", 
-                new { type = "FusionAttributeType", si = t.StartFusionAttributeTypeID, ti = t.EndFusionAttributeTypeID, ro = t.ReadOnly });
+                new { type = "FusionAttributeType", si = t.StartFusionAttributeTypeID, ti = t.EndFusionAttributeTypeID, system = true, ro = t.ReadOnly, dt = DateTime.UtcNow, u = 0 });
             });
         }
 

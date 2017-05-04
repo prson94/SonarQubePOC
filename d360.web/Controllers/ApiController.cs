@@ -1329,6 +1329,53 @@ from	cte a
             return Company.GetFusionPromotionOptions();
         }
 
+        [Route("fusion/{id:int}/FusionRuleFilters")]
+        public HttpResponseMessage GetFusionRuleFilters(int id)
+        {
+            var list = Company.Filter<FusionRuleFilter>(i => i.RuleID == id).OrderBy(i => i.Name).ToList();
+
+            if (list.Count >= 0)
+            {
+                var fieldTypeIDs = (
+                    from f in list
+                    from fld in f.FieldsDocument.Elements("field")
+                    where fld.Element("FieldTypeID").Value != "0"
+                    select int.Parse(fld.Element("FieldTypeID").Value)
+                    ).ToList();
+
+                var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID))
+                    .Select(i => new { i.ID, i.FriendlyName, i.Name, i.Type})
+                    .ToList()
+                    .Select(i => new { i.ID, Name = $"{i.FriendlyName} ({i.Name})", i.Type })
+                    .ToList();
+
+                list.ForEach(f =>
+                {
+                    foreach (var e in f.FieldsDocument.Elements("field"))
+                    {
+                        var fld = new FusionRuleFilterItem
+                        {
+                            FieldTypeID = int.Parse(e.Element("FieldTypeID").Value),
+                            FusionRuleFilterID = f.ID,
+                            Operator = e.Element("Operator").Value,
+                            Value = e.Element("Value").Value
+                        };
+
+                        if (fld.FieldTypeID > 0)
+                        {
+                            var ft = fieldTypes.FirstOrDefault(i => i.ID == fld.FieldTypeID);
+                            fld.Type = (ft != null) ? ft.Type : "Text";
+                        }
+
+                        f.Items.Add(fld);
+                    }
+
+                });
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, list);
+        }
+
         [Route("fusion/{id:int}/FusionRuleItems")]
         public HttpResponseMessage GetFusionRuleItems(int id)
         {

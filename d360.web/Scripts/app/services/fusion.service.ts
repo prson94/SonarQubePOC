@@ -23,6 +23,7 @@ import {
     MapRuleItemDetail,
     FusionRule,
     FusionRuleStep,
+    FusionRuleFilter,
     FusionRuleItem,
     FusionRuleMapping,
     FusionAgentError,
@@ -31,6 +32,7 @@ import {
     FusionProcessError,
     FusionRuleEditorModel,
     FusionRuleStepEditorModel,
+    FusionRuleFilterEditorModel,
     FusionRuleItemEditorModel,
     FusionRuleMappingEditorModel,
     PromotionObject,
@@ -312,6 +314,13 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFusionRuleFilters(id: number): Promise<FusionRuleFilter[]> {
+        return this.http.get(`api/fusion/${id}/FusionRuleFilters`)
+            .toPromise()
+            .then(response => <FusionRuleFilter[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getFusionRuleItems(id: number): Promise<FusionRuleItem[]> {
         return this.http.get(`api/fusion/${id}/FusionRuleItems`)
             .toPromise()
@@ -494,6 +503,49 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getAddFusionRuleFilter(id: number): Promise<FusionRuleFilterEditorModel> {
+        return this.http.get(`form/GetAddFusionRuleFilter?id=${id}`)
+            .toPromise()
+            .then(response => <FusionRuleFilterEditorModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEditFusionRuleFilter(id: number): Promise<FusionRuleFilterEditorModel> {
+        return this.http.get(`form/GetEditFusionRuleFilter?id=${id}`)
+            .toPromise()
+            .then(response => <FusionRuleFilterEditorModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postAddFusionRuleFilter(form: FusionRuleFilterEditorModel) {
+        return this.http.post('form/AddFusionRuleFilter', form)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    putEditFusionRuleFilter(form: FusionRuleFilterEditorModel) {
+        console.log(form);
+        return this.http.put('form/EditFusionRuleFilter', form)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteFusionRuleFilter(id: number) {
+        return this.http.delete(`form/DeleteFusionRuleFilterByID?id=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionRuleFilterTestResults(form: FusionRuleFilterEditorModel) {
+        return this.http.post('form/TestFusionRuleFilter', form)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getAddFusionRuleItem(id: number): Promise<FusionRuleItemEditorModel> {
         return this.http.get(`form/GetAddFusionRuleItem?id=${id}`)
             .toPromise()
@@ -507,7 +559,6 @@ export class FusionService extends BaseService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
-
 
     deleteFusionRuleItem(id: number) {
         return this.http.delete(`form/DeleteFusionRuleItemByID?id=${id}`)

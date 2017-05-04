@@ -1,13 +1,10 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 //using Arango.Client;
 using System.Collections.Generic;
 using Dapper;
 using System.Linq;
-using Newtonsoft.Json;
 using ArangoDB.Client;
 using System.Net;
-using ArangoDB.Client.Data;
 using System.Xml.Linq;
 //using Neo4jClient;
 

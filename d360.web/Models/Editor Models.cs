@@ -722,6 +722,48 @@ namespace d360.web.Models
         public List<FusionAttributeType> AttributeTypes { get; set; }        
     }
 
+    public class FusionRuleFilterFieldEditorModel
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+    }
+
+    public class FusionRuleFilterEditorModel
+    {
+        public FusionRuleFilterEditorModel()
+        {
+            Items = new List<FusionRuleFilterItem>();
+            TextOperators = new List<string>() { "StartsWith", "Contains", "EndsWith", "Equals" };
+            BoolOperators = new List<string>() { "Equals" };
+            FieldTypes = new List<FusionRuleFilterFieldEditorModel>();
+        }
+
+        public int FusionRuleID { get; set; }
+
+        #region These fields will be populated on edit
+
+        public int? ID { get; set; }
+
+        public string Name { get; set; }
+
+        public bool All { get; set; }
+
+        public List<FusionRuleFilterItem> Items { get; set; }
+
+        #endregion
+
+        #region These lists will always be populated
+
+        public List<FusionRuleFilterFieldEditorModel> FieldTypes { get; set; }
+
+        public List<string> TextOperators { get; set; }
+
+        public List<string> BoolOperators { get; set; }
+
+        #endregion
+    }
+
     public class FusionRuleItemEditorModel
     {
         public string FormUri { get; set; }

@@ -44,7 +44,9 @@ export class FieldTypeEditorModel {
     FilteredLookupItems: FilteredLookupItem[] = [];
     FilteredLookupItem: FilteredLookupItem;
     OwnershipLookupSettings: OwnershipLookupSettings;
-
+    IsEditableDisabled: boolean;
+    IsListableDisabled: boolean;
+    IsRequiredDisabled: boolean;
 }
 
 export class OwnershipLookupSettings {

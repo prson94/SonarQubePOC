@@ -39,13 +39,13 @@
                     <input name="isDisplayable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsDisplayable" />Show In Detail Tile?
                 </div>
                 <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
-                    <input name="isEditable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsEditable" />Is Editable?
+                    <input name="isEditable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsEditable" [(disabled)]="model.IsEditableDisabled" />Is Editable?
                 </div>
                 <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
-                    <input name="isListable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsListable" />Is Listable?
+                    <input name="isListable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsListable" [(disabled)]="model.IsListableDisabled" />Is Listable?
                 </div>
                 <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
-                    <input name="isRequired" #isRequired pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsRequired" (change)="model.FieldType.MinimumLength = (isRequired.checked) ? 1 : 0" />Is Required?
+                    <input name="isRequired" #isRequired pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsRequired" (change)="model.FieldType.MinimumLength = (isRequired.checked) ? 1 : 0" [(disabled)]="model.IsRequiredDisabled" />Is Required?
                 </div>
             </div>
         </div>

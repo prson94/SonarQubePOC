@@ -1091,3 +1091,27 @@ go
 
 alter table workflow.Version add [Version] INT DEFAULT ((1)) NOT NULL
 go
+
+
+ALTER TABLE StatisticType ADD [ScoreTypeID] INT CONSTRAINT [DF_StatisticType_ScoreTypeID] DEFAULT ((1)) NOT NULL
+GO
+
+--CREATE FUNCTION [utility].[GetFormattedFieldLookupValueWrapper]
+
+
+ALTER TABLE FieldType DROP COLUMN [DefaultFormattedValue]
+GO
+ALTER TABLE FieldType ADD [DefaultFormattedValue]  AS ([utility].[GetFormattedFieldLookupValueWrapper]([Type],[LookupDisplayFormat],[LookupObjectType],[LookupObjectID],[DefaultValue]))
+GO
+
+--ALTER FUNCTION [utility].[GetFormattedFieldLookupValue]
+
+alter table [dbo].[FusionQueryAttribute] DROP COLUMN DisplayValue
+go
+
+--ALTER FUNCTION [utility].[GetFormattedFieldFusionQueryAttributeValueWrapper]
+
+--ALTER FUNCTION [utility].[GetFormattedFieldFusionQueryAttributeValue]
+
+alter table [dbo].[FusionQueryAttribute] add [DisplayValue]  AS ([utility].[GetFormattedFieldFusionQueryAttributeValueWrapper]([ID],[FusionQueryAttributeTypeID]))
+go

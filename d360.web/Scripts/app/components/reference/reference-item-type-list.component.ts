@@ -11,7 +11,7 @@ import { ReferenceItemType } from '../../models/reference.model';
     selector: 'd3s-reference-item-type-list',
     template: ` 
                 <div class="tile tile-detail">
-                    <header *ngIf="!showEditor">Reference Types
+                    <header *ngIf="!showEditor">Reference Lists
                         <d3s-tile-actions [hasAdd]="!showDelete && hasRootCreatePermissions()" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
