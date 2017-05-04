@@ -22,9 +22,7 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public int? PublishedVersionID { get; set; }
-
-        public bool Deleted { get; set; } = false;
-
+        
         public State State { get; set; } = State.Unknown;
 
     }

@@ -1216,7 +1216,7 @@ namespace d360.web.Controllers.Services
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
-				where t.Deleted = 0              
+				where t.State = 1
         ";
 
             var types = Company.Query<dynamic>(sql).ToList();
@@ -1352,7 +1352,7 @@ namespace d360.web.Controllers.Services
         public HttpResponseMessage GetWorkflowType(int id)
         {
             var type = Company.WorkflowTypes.Find(id);
-            if (type == null || type.Deleted)
+            if (type == null || type.State != core.enums.State.Active)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
 
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
@@ -1738,10 +1738,10 @@ namespace d360.web.Controllers.Services
             if (type == null)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type ID {id} could not be found");
 
-            if (type.Deleted)
+            if (type.State == core.enums.State.Deleted)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type ID {id} is already deleted");
 
-            type.Deleted = true;
+            type.State = core.enums.State.Deleted;
             type.UpdatedOn = DateTime.UtcNow;
             type.UpdatedBy = Company.CurrentResourceID;
             Company.SaveChanges();

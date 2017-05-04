@@ -1044,7 +1044,7 @@ namespace d360.web.Controllers
 
                 try
                 {
-                    var certificationWorkflowEnabled = Company.WorkflowEventRegistrations.Where(x => x.Object == "ArtifactType" && x.ObjectID == model.ArtifactTypeID && x.Type.PublishedVersionID != null && x.Type.Deleted == false).Any();
+                    var certificationWorkflowEnabled = Company.WorkflowEventRegistrations.Where(x => x.Object == "ArtifactType" && x.ObjectID == model.ArtifactTypeID && x.Type.PublishedVersionID != null && x.Type.State == State.Active).Any();
 
                     if (model.Status == "Certified" && certificationWorkflowEnabled)
                     {
