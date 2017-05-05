@@ -10,7 +10,7 @@
             </div>
             <div class="col l6 m6 s12">
                 <label id='ResponsibleObjectTip' class="FieldNameRequired">Resource</label>
-                <p-dropdown [options]="model.resources" [(ngModel)]="model.selectedResource" [style]="{'width':'90%', 'display':'block'}" name="resource" required></p-dropdown>
+                <p-dropdown [options]="model.resources" [(ngModel)]="model.selectedResource" [style]="{'width':'90%', 'display':'block'}" name="resource" required [filter]="true"></p-dropdown>
             </div>
         </div>
         <div class="row">
