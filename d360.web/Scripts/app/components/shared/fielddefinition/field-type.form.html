@@ -63,7 +63,7 @@
         </div>
         <div class="row">
             <div class="col offset-l6 offset-m6 l3 m3 s12">
-                <div *ngIf="supportsPrimaryFilterOption">
+                <div *ngIf="supportsPrimaryFilterOption && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
                     <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsPrimaryFilter" label="Show As Top Level Filter?" [ngModelOptions]="{standalone: true}"></p-checkbox>
                 </div>
             </div>           

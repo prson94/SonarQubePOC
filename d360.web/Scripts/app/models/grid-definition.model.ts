@@ -54,6 +54,7 @@ export class GridFilterColumn {
     id: string;
     type: string;
     description: string;
+    value: string;
 }
 
 export class GridDefinition {

@@ -207,7 +207,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
         this.filtersChange.emit(this.filters);
                         
-        this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilters, attributes: this.attributeFilters });
+        this.filterChanged.emit();
     }
 
     public resetFilters() {

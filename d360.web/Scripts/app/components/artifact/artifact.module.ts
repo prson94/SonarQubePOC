@@ -37,6 +37,7 @@ import { ArtifactTypeMetricsComponent } from './artifact-type-metrics.component'
 import { ArtifactTypeWorkflowStatusComponent } from './artifact-type-workflow-status.component';
 import { ArtifactItemChildrenComponent } from './artifact-item-children.component';
 import { ArtifactItemChildGridComponent } from './artifact-item-child-grid.component';
+import { ArtifactTopLevelFilterComponent } from './artifact-top-level-filter.component';
 
 import {    
     InputTextModule,    
@@ -101,6 +102,7 @@ import {
         ArtifactTypeWorkflowStatusComponent,
         ArtifactItemChildrenComponent,
         ArtifactItemChildGridComponent,
+        ArtifactTopLevelFilterComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

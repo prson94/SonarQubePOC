@@ -27,7 +27,7 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                     <div class="col s12" *ngIf="showGridSimpleFilter">                                                
                         <input type="text" *ngIf="topLevelFilters.length ==0" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
-                        
+                        <d3s-artifact-top-level-filter *ngIf="topLevelFilters.length > 0" [(filters)]="stateService.artifactTypeFilters.filters" [fields]="topLevelFilters" (filterChanged)="filterGridData()"></d3s-artifact-top-level-filter>
                     </div>
                     <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
                     <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
@@ -36,8 +36,7 @@ import { StringConstants } from '../../static/string-constants';
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" sortable="true">
                                 <template let-item="rowData" pTemplate type="body">
-                                    <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)">{{item.Name}}</a>
-                                    <!--<d3s-artifact-grid-link [name]="item.Name" [objectId]="item.ID" [objectTypeId]="artifactType.ID"></d3s-artifact-grid-link>-->
+                                    <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)">{{item.Name}}</a>                                    
                                 </template>
                             </p-column>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
@@ -191,8 +190,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             });
     }
     
-    getData() {   
-
+    getData() {        
         this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners)
             .then(result => {
                 this.items = result.results;
@@ -284,9 +282,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.isMenuOpen = true;        
         var gridRect = grid.el.nativeElement.getBoundingClientRect();
         var itemRect = event.srcElement.getBoundingClientRect();
-  //      console.log(itemRect);
-//        console.log(gridRect);
-      //  console.log(event);
         rightMenu.style.top = (event.screenY - gridRect.top) + 'px';    
         rightMenu.style.left = (event.offsetX) + 'px'; //correct
         this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', artifact.ID, this.artifactType.ID);        

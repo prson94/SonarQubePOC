@@ -501,8 +501,19 @@ namespace d360.web.Controllers
                     filterColumns = filterColumns.OrderByDescending(x => x.datafield == "Name").ThenByDescending(x => x.datafield == "Description").ThenByDescending(x => x.datafield == "Status").ThenBy(x => x.text).ToList();
 
                     //Load any field types that are top level filter fields
-                    var topFilters = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
-                    parseDynamicFilterFields(topFilters, topLevelFilterFields, 0, false, false);
+                    var topFiltersHidden = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+
+                    topFiltersHidden.ForEach(i =>
+                    {
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
+
+                        col.id = i.ID.ToString();
+                        col.relatedfield = false;
+                        col.hiddenfield = !i.IsListable;
+
+                        topLevelFilterFields.Add(col);
+
+                    });
 
                     break;
                 #endregion
