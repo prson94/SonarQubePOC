@@ -1456,6 +1456,7 @@ namespace d360.web.Controllers.Services
                         Company.Add(version);
                         Company.SaveChanges();
                         versionID = version.ID;
+                        newVersion = true;
 
                         if (model.Type.PublishedVersionID != null)
                         {
@@ -1488,6 +1489,7 @@ namespace d360.web.Controllers.Services
 
                             Company.WorkflowVersions.Add(version);
                             Company.SaveChanges();
+                            newVersion = true;
 
                             //create a new version
                             if (model.Type.PublishedVersionID == null)
@@ -1565,6 +1567,19 @@ namespace d360.web.Controllers.Services
                             existingLinks.AddRange(transition);
                     });
 
+                    existingLinks.ForEach(l =>
+                    {
+                        if (existingSteps.Count(s => s.ID == l.ToVersionStepID) < 1)
+                        {
+                            l.State = core.enums.State.Deleted;
+                            var fromLinks = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == l.ToVersionStepID && t.State == core.enums.State.Active).ToList();
+
+                            fromLinks.ForEach(f => { f.State = core.enums.State.Deleted; });
+                        }
+
+                    });
+
+                    Company.SaveChanges();
 
                     if (model?.Nodes?.Count > 0)
                     {
