@@ -15,15 +15,12 @@ export interface IFieldsService {
 }
 
 export class FieldDefinition {
-
     ObjectType: string;
     ObjectID: string;
     ID: number;
     Category: string;
     FriendlyName: string;
     SortOrder: string;
-    //IsDisplayable: boolean;
-    //IsEditable: boolean;
     IsListable: boolean;
     IsRequired: boolean;
     DisplayDescription: string;
@@ -47,6 +44,7 @@ export class FieldTypeEditorModel {
     IsEditableDisabled: boolean;
     IsListableDisabled: boolean;
     IsRequiredDisabled: boolean;
+    IsPrimaryFilter: boolean;
 }
 
 export class OwnershipLookupSettings {

@@ -64,6 +64,7 @@ export class GridDefinition {
     ID: number;
     Title: string;
     Type: string;
+    TopLevelFilterColumns: GridFilterColumn[];
 }
 
 

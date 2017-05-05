@@ -26,7 +26,8 @@ import { StringConstants } from '../../static/string-constants';
                         <a [href]="itemUrl" target="_blank">Open in new window</a>
                     </div>
                     <div class="col s12" *ngIf="showGridSimpleFilter">                                                
-                        <input type="text" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
+                        <input type="text" *ngIf="topLevelFilters.length ==0" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
+                        
                     </div>
                     <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
                     <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
@@ -112,6 +113,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     columns: GridColumn[] = [];    
     fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
+    topLevelFilters: GridFilterColumn[] = [];
     
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -184,7 +186,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             .then(result => {
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
                 this.filtercolumns = result.FilterColumns;
-                this.fields = result.Fields;  
+                this.fields = result.Fields;
+                this.topLevelFilters = result.TopLevelFilterColumns;
             });
     }
     

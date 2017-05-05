@@ -40,30 +40,33 @@
             </div>
             <div class="col l3 m3 s12">
                 <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
-                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsDisplayable" label="Show In Detail Tile?" [ngModelOptions]="{standalone: true}"></p-checkbox>
-                    <!--<input name="isDisplayable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsDisplayable" />Show In Detail Tile?-->
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsDisplayable" label="Show In Detail Tile?" [ngModelOptions]="{standalone: true}"></p-checkbox>                    
                 </div>
             </div>
             <div class="col l3 m3 s12">
                 <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
-                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsEditable" label="Is Editable?" [ngModelOptions]="{standalone: true}"></p-checkbox>
-                    <!--<input name="isEditable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsEditable" [(disabled)]="model.IsEditableDisabled" />Is Editable?-->
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsEditable" label="Is Editable?" [ngModelOptions]="{standalone: true}"></p-checkbox>                    
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col offset-l6 offset-m6 l3 m3 s12">
                 <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
-                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsListable" label="Is Listable?" [ngModelOptions]="{standalone: true}"></p-checkbox>
-                    <!--<input name="isListable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsListable" [(disabled)]="model.IsListableDisabled" />Is Listable?-->
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsListable" label="Is Listable?" [ngModelOptions]="{standalone: true}"></p-checkbox>                    
                 </div>
             </div>
             <div class="col l3 m3 s12">
                 <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
-                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsRequired" label="Is Required?" [ngModelOptions]="{standalone: true}"></p-checkbox>
-                    <!--<input name="isRequired" #isRequired pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsRequired" (change)="model.FieldType.MinimumLength = (isRequired.checked) ? 1 : 0" [(disabled)]="model.IsRequiredDisabled" />Is Required?-->
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsRequired" label="Is Required?" [ngModelOptions]="{standalone: true}"></p-checkbox>                    
                 </div>
             </div>
+        </div>
+        <div class="row">
+            <div class="col offset-l6 offset-m6 l3 m3 s12">
+                <div *ngIf="supportsPrimaryFilterOption">
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsPrimaryFilter" label="Show As Top Level Filter?" [ngModelOptions]="{standalone: true}"></p-checkbox>
+                </div>
+            </div>           
         </div>
         <div class="row" *ngIf="errorMessage != ''">
             <div class="col s12">

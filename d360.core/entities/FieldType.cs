@@ -84,6 +84,9 @@ namespace d360.core.entities
         [DataMember]
         public string AllowAllLabel { get; set; }
 
+        [DataMember]
+        public bool IsPrimaryFilter { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 

@@ -5,8 +5,7 @@ import {
     FieldTypeEditorModel,
     FilteredLookupItem,
     FilteredLookupDisplayField,
-    Lookups,
-    //LookupItem,
+    Lookups,    
     FieldTypeFusionItemEditorModel,
     OwnershipLookupSettings,
     FieldTypeFusionLookupDisplayField,
@@ -29,7 +28,6 @@ import * as _ from 'lodash';
             padding:3px;
             border-radius: 0;
         }
-
         .relation-table tr td {
             border-radius: 0;
         }
@@ -42,8 +40,7 @@ import * as _ from 'lodash';
             color: #5c5e60 !important;
             font-size: 1rem;
             font-weight: bold;
-        }
-`
+        }`
     ],
     providers: [FieldsService, ObjectDetailService],
 })
@@ -53,7 +50,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() actionName: string = "Add";
-    @Input() objectName: string = '';
+    @Input() objectName: string = '';   
     @Output() onComplete = new EventEmitter();
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
@@ -79,6 +76,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private filteredLookupHideHeader: boolean = false;
     private filteredLookupHideFooter: boolean = false; 
 
+    private supportsPrimaryFilterOption: boolean = false;
+
     private errorMessage: string = "";
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
@@ -103,7 +102,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.Object = this.objectType;
                 this.model.FieldType.ObjectID = this.objectID;
             }
-        }
+            else if (p == 'objectType') {
+                this.supportsPrimaryFilterOption = (this.objectType && this.objectType.toLowerCase() == 'artifacttype');
+            }
+        }        
     }
 
     //#region load functions
@@ -111,10 +113,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private load(): void {
         if (this.id > 0) {
             this.actionName = 'Edit';
-            this.isLoading = true;
+            this.isLoading = true;                        
             this.fieldsService.getFieldTypeEditor(this.id)
-                .then(data => {
-                    //console.log('data: ', data);
+                .then(data => {                    
                     this.model = data;
                     if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
                         this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
@@ -122,8 +123,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         this.model.selectedLookup = null;
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
-                .then(d => {
-                    //console.log('lookups: ', d);
+                .then(d => {                    
                     this.lookups = d;
 
                     this.lookups.IntersectTypes.forEach(i => {
@@ -135,9 +135,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 })
                 .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
                 .then(f => {
-                    if (f) {
-                        //console.log("form data: ", f);
-
+                    if (f) {                        
                         this.model.OwnershipLookupSettings = f.OwnershipLookupSettings;
                         this.model.RelationItems = f.RelationItems;
                         this.model.FusionItems = f.FusionItems;
@@ -204,8 +202,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
 
             this.fieldsService.getLookups(this.objectID, this.objectType)
-                .then(d => {
-                    //console.log('lookups: ', d);
+                .then(d => {                    
                     this.lookups = d;
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
                     this.lookups.DataTypes.unshift({ label: 'Choose...', value: null });
@@ -220,8 +217,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private loadComplexRelationLookup() {
         //load existing values
         this.model.RelationItems.forEach(r => {
-            //console.log(r);
-
+            
             let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
 
             if (r.Object == null || r.Object == '')
@@ -254,9 +250,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             this.objectName = o.Name;
                         });
                 }
-
-                //console.log(item);
-
+                
                 //load cascading dropdowns
                 this.changeRefType(i)
                     .then(() => {
@@ -304,8 +298,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private loadDataType(value: string): Promise<void> {
         let promises = [];
-        //console.log('load data type');
-        //console.log(value);
         if (value == null)
             return Promise.resolve();
 
@@ -484,11 +476,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.onCancel.emit(null);
     }
 
-    private onSubmit(): any {
-
-        //if (!this.validate())
-        //    return;
-
+    private onSubmit(): any {        
         //convert DisplayFields to objects
         if (this.model.FusionItems) {
             this.model.FusionItems.forEach(i => {
@@ -538,8 +526,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     FieldTypeName: i.value.split('|')[1]
                 });
             });
-            this.model.FilteredLookupItem = item;
-            //console.log(item);
+            this.model.FilteredLookupItem = item;            
         }
 
         this.isLoading = true;
@@ -659,9 +646,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private changeRel(index: number): Promise<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-
-        //console.log(item);
-
+        
         let params = [];
         if (item.selectedRelationItemID) {
             params = item.selectedRelationItemID.split('|');
@@ -797,7 +782,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private changeFilteredLookup(): Promise<any> {
-        //console.log(this.filteredLookup);
         if (this.filteredLookup == null || this.filteredLookup == '') {
             this.filteredLookupDisplayFields = [];
             return Promise.resolve();
@@ -817,8 +801,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         id: i + 1,
                         text: i + 1
                     });
-                }
-                //console.log(d);
+                }                
             });
     }
 

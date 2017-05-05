@@ -3664,6 +3664,7 @@ namespace d360.web.Controllers
                     ft.IsDisplayable = model.FieldType.IsDisplayable;
                     ft.IsEditable = model.FieldType.IsEditable;
                     ft.IsListable = model.FieldType.IsListable;
+                    ft.IsPrimaryFilter = model.FieldType.IsPrimaryFilter;
                 }
 
                 if (model.FieldType.Type == DataType.Lookup.ToString())

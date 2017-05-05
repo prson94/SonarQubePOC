@@ -419,6 +419,7 @@ namespace d360.web.Controllers
             var fields = new List<GridField>();
             var filterColumns = new List<GridFilterColumn>();
             var groups = new List<GridColumnGroup>();
+            var topLevelFilterFields = new List<GridFilterColumn>();
             decimal dynamicFieldWidth = 0;
             int remainingWidth = 0;
             int staticFieldCount = 0;
@@ -498,6 +499,10 @@ namespace d360.web.Controllers
                     }
 
                     filterColumns = filterColumns.OrderByDescending(x => x.datafield == "Name").ThenByDescending(x => x.datafield == "Description").ThenByDescending(x => x.datafield == "Status").ThenBy(x => x.text).ToList();
+
+                    //Load any field types that are top level filter fields
+                    var topFilters = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    parseDynamicFilterFields(topFilters, topLevelFilterFields, 0, false, false);
 
                     break;
                 #endregion
@@ -784,7 +789,8 @@ where   h.ID <> @t order by h.[Level] desc;
                 Fields = fields,
                 Columns = columns,
                 FilterColumns = filterColumns,
-                ColumnGroups = groups
+                ColumnGroups = groups,
+                TopLevelFilterColumns = topLevelFilterFields
             });
         }
 
