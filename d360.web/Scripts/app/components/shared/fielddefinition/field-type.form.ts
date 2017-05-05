@@ -1,5 +1,5 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem, CheckboxModule } from 'primeng/primeng';
 import {
     FieldType, 
     FieldTypeEditorModel,

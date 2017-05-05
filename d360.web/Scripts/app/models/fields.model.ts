@@ -101,6 +101,8 @@ export class FieldType {
     IsEditable: boolean;
     IsListable: boolean;
     IsRequired: boolean;
+    AllowAllValue: boolean;
+    AllowAllLabel: string;
     SortOrder: number;
     Fields: Field[];
     FieldTypeFusionLookupDefinitions: FieldTypeFusionLookupDefinition[];

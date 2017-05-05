@@ -13,6 +13,7 @@ import {
     EditorModule,
     MultiSelectModule,    
     SharedModule,
+    CheckboxModule
 } from 'primeng/primeng';
 
 import { CoreModule } from '../core.module';
@@ -38,6 +39,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
 
         //prime
         ButtonModule,
+        CheckboxModule,
         DataTableModule,
         DropdownModule,
         InputTextModule,

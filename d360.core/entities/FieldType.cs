@@ -78,6 +78,12 @@ namespace d360.core.entities
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string DefaultFormattedValue { get; set; }
 
+        [DataMember]
+        public bool AllowAllValue { get; set; }
+
+        [DataMember]
+        public string AllowAllLabel { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 

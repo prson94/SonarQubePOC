@@ -206,19 +206,36 @@ namespace d360.web.Controllers
                 {
                     var fieldName = $"Field{f.ID}";
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                    columns += $"{name}_T.FormattedValue as [{fieldName}], ";
-                    joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
-left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
+
+                    columns += $@"case 
+    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
+    when {name}_T.Value is not null then {name}_T.FormattedValue 
+    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
+    else '' 
+end as [{fieldName}], ";
+
+//                    joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
+//left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
+
+                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{type}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
                 else
                 {
                     if (includeIdColumn) columns += string.Format("{0}_T.Value as [{0}ID], ", name);
-                    columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
-                    joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
-left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
+                    columns += $@"case 
+    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
+    when {name}_T.Value is not null then {name}_T.FormattedValue 
+    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
+    else '' 
+end as [{name}], ";
+                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{type}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+
+//                    joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
+//left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
                 }
             }
-
             fields = null;
         }
 
@@ -531,12 +548,18 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                                 //}
                                 //else
                                 //{
-                                fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                fld.Items = new List<SelectListItem>();
+
+                                if (!f.IsRequired) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+                                if (f.AllowAllValue) fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
+
+                                fld.Items.AddRange(
+                                    Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
                                     .OrderBy(o => o.Text)
                                     .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                    .ToList();
+                                    .ToList()
+                                );
                                 //}
-                                if (!f.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
                             }
                             catch
                             {
@@ -628,11 +651,20 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                             //fld.FieldType = DataType.Lookup.ToString();
                             try
                             {
-                                fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
-                                    .OrderBy(o => o.Text)
-                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                    .ToList();
-                                if (!ft.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+                                fld.Items = new List<SelectListItem>();
+
+                                if (!ft.IsRequired)
+                                    fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+
+                                if (ft.AllowAllValue)
+                                    fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
+
+                                fld.Items.AddRange(
+                                    Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+                                        .OrderBy(o => o.Text)
+                                        .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                        .ToList()
+                                );
                             }
                             catch
                             {
@@ -706,7 +738,12 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
                 var name = $"Field{f.ID}";//f.Name.Replace("'", "''").Replace("--", "");
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                columns += $"coalesce({name}_T.FormattedValue, {name}_TT.DefaultFormattedValue) as [{(useFriendlyName ? friendlyName : name)}], ";
+                columns += $@"case 
+    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
+    when {name}_T.Value is not null then {name}_T.FormattedValue 
+    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
+    else '' 
+end as [{(useFriendlyName ? friendlyName : name)}], ";
                 joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
             }
@@ -751,7 +788,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
 
             var val = new Dapper.DbString { Value = filterExp.Replace('*','%').Replace('?','_'), Length = 200};
-                        
+
             dbArgs.Add("simpleFilter", val);
 
             return $"({sb.ToString()})";
@@ -785,7 +822,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
 
-                var thisColumn = $", coalesce({name}_T.FormattedValue, {name}_TT.DefaultFormattedValue) as [{(useFriendlyName ? friendlyName : name)}]";
+                //var thisColumn = $", coalesce({name}_T.FormattedValue, {name}_TT.DefaultFormattedValue) as [{(useFriendlyName ? friendlyName : name)}]";
+                var thisColumn = $@", case 
+    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
+    when {name}_T.Value is not null then {name}_T.FormattedValue 
+    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
+    else '' 
+end as [{(useFriendlyName ? friendlyName : name)}]";
+
                 var thisJoin = $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} and {name}_TT.IsListable = 1 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
 
@@ -1059,6 +1103,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             #endregion
 
+            #region Attribute Filters
+
             int attcount = 0;
 
             if (int.TryParse(query["attcount"], out attcount))
@@ -1098,6 +1144,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     }
                 }
             }
+
+            #endregion
 
             sql += filters;
 

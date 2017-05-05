@@ -3666,6 +3666,17 @@ namespace d360.web.Controllers
                     ft.IsListable = model.FieldType.IsListable;
                 }
 
+                if (model.FieldType.Type == DataType.Lookup.ToString())
+                {
+                    ft.AllowAllLabel = model.FieldType.AllowAllLabel;
+                    ft.AllowAllValue = model.FieldType.AllowAllValue;
+                }
+                else
+                {
+                    ft.AllowAllLabel = null;
+                    ft.AllowAllValue = false;
+                }
+
                 ft.IsRequired = model.FieldType.IsRequired;
 
                 ft.MinimumLength = model.FieldType.MinimumLength;

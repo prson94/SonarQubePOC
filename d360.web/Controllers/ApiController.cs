@@ -108,7 +108,15 @@ namespace d360.web.Controllers
                     if (k != null)
                     {
                         value = k.Value;
-                        formattedValue = k.FormattedValue;
+                        if (value == "0" && ft.AllowAllValue && ft.Type == DataType.Lookup.ToString())
+                        {
+                            formattedValue = ft.AllowAllLabel;
+                        }
+                        else
+                        {
+                            formattedValue = k.FormattedValue;
+                        }
+                        
                     }
                     else
                     {
@@ -141,39 +149,50 @@ namespace d360.web.Controllers
                             };
                             if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                             {
-                                ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-
-                                if (ft.LookupObjectType == "Lookup")
+                                bool showPreviewLink = true;
+                                if (k != null)
                                 {
-                                    if (ft.LookupObjectID.HasValue)
+                                    if (k.Value == "0")
                                     {
-                                        ro.TooltipID = ft.LookupObjectID;
-                                    }
-                                    else
-                                    {
-                                        ro.TooltipID = 0;
+                                        showPreviewLink = false;
                                     }
                                 }
-                                else
+
+                                if (showPreviewLink)
                                 {
-                                    if (string.IsNullOrEmpty(value))
+                                    ro.TooltipContext = TemplateAction.LookupPreview.ToString();
+
+                                    if (ft.LookupObjectType == "Lookup")
                                     {
-                                        ro.TooltipID = 0;
-                                    }
-                                    else
-                                    {
-                                        int textValue;
-                                        if (int.TryParse(value, out textValue))
+                                        if (ft.LookupObjectID.HasValue)
                                         {
-                                            ro.TooltipID = textValue;
+                                            ro.TooltipID = ft.LookupObjectID;
+                                        }
+                                        else
+                                        {
+                                            ro.TooltipID = 0;
                                         }
                                     }
+                                    else
+                                    {
+                                        if (string.IsNullOrEmpty(value))
+                                        {
+                                            ro.TooltipID = 0;
+                                        }
+                                        else
+                                        {
+                                            int textValue;
+                                            if (int.TryParse(value, out textValue))
+                                            {
+                                                ro.TooltipID = textValue;
+                                            }
+                                        }
+                                    }
+
+                                    ro.TooltipType = ft.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : ft.LookupObjectType;
+                                    if (k != null)
+                                        ro.TooltipUrl = k.LookupUrl;
                                 }
-
-                                ro.TooltipType = ft.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : ft.LookupObjectType;
-                                if (k != null)
-                                    ro.TooltipUrl = k.LookupUrl;
-
                             }
 
                             list.Add(new DetailReadOnlyRowModel

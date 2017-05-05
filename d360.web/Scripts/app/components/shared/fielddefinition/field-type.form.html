@@ -29,23 +29,39 @@
             </div>
         </div>
         <div class="row">
-            <div class="col l8 m6 s12">
+            <div class="col s12">
                 <div id='TypeTip' class="FieldNameRequired">Input Type<span class="FieldNameError" data-bind="visible: DataTypeInvalid">*</span></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col l6 m6 s12">
                 <p-dropdown required name="datatype" [options]="lookups.DataTypes" [(ngModel)]="model.FieldType.Type" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadDataType($event.value)" #dataType="ngModel" ngDefaultControl></p-dropdown>
                 <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
             </div>
-            <div class="col l4 m6 s12 input-field">
-                <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
-                    <input name="isDisplayable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsDisplayable" />Show In Detail Tile?
+            <div class="col l3 m3 s12">
+                <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsDisplayable" label="Show In Detail Tile?" [ngModelOptions]="{standalone: true}"></p-checkbox>
+                    <!--<input name="isDisplayable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsDisplayable" />Show In Detail Tile?-->
                 </div>
-                <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
-                    <input name="isEditable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsEditable" [(disabled)]="model.IsEditableDisabled" />Is Editable?
+            </div>
+            <div class="col l3 m3 s12">
+                <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsEditable" label="Is Editable?" [ngModelOptions]="{standalone: true}"></p-checkbox>
+                    <!--<input name="isEditable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsEditable" [(disabled)]="model.IsEditableDisabled" />Is Editable?-->
                 </div>
-                <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
-                    <input name="isListable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsListable" [(disabled)]="model.IsListableDisabled" />Is Listable?
+            </div>
+        </div>
+        <div class="row">
+            <div class="col offset-l6 offset-m6 l3 m3 s12">
+                <div *ngIf="model.FieldType.Type != 'FusionLookup' && model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsListable" label="Is Listable?" [ngModelOptions]="{standalone: true}"></p-checkbox>
+                    <!--<input name="isListable" pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsListable" [(disabled)]="model.IsListableDisabled" />Is Listable?-->
                 </div>
-                <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup'">
-                    <input name="isRequired" #isRequired pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsRequired" (change)="model.FieldType.MinimumLength = (isRequired.checked) ? 1 : 0" [(disabled)]="model.IsRequiredDisabled" />Is Required?
+            </div>
+            <div class="col l3 m3 s12">
+                <div *ngIf="model.FieldType.Type != 'ComplexRelationLookup' && model.FieldType.Type != 'FilteredLookup' && model.FieldType.Type != 'OwnershipLookup'">
+                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.IsRequired" label="Is Required?" [ngModelOptions]="{standalone: true}"></p-checkbox>
+                    <!--<input name="isRequired" #isRequired pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsRequired" (change)="model.FieldType.MinimumLength = (isRequired.checked) ? 1 : 0" [(disabled)]="model.IsRequiredDisabled" />Is Required?-->
                 </div>
             </div>
         </div>
@@ -57,11 +73,11 @@
 
         <div class="row" *ngIf="model.FieldType.Type == 'Lookup'">
             <div class="col s6">
-                <div id='LookupDisplayFormatTip' class="FieldNameRequired">Type of List</div>
+                <div class="FieldNameRequired">Type of List</div>
                 <p-dropdown name="lookup" [options]="lookups.Lookups" [ngModel]="model.selectedLookup" (ngModelChange)="model.selectedLookup=$event;lookupTypeSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
             </div>
             <div class="col s3">
-                <div id='LookupDisplayFormatTip' class="FieldNameRequired">List Display Format</div>
+                <div class="FieldNameRequired">List Display Format</div>
                 <input name="lookupFormat" pInputText type="text" [(ngModel)]="model.FieldType.LookupDisplayFormat" style="width: 98%; display: block;" />
             </div>
             <div class="col s3">
@@ -105,10 +121,21 @@
         </div>
 
         <div class="row" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text'">
-             <div class="col s12">
-                <div id='LookupDisplayFormatTip' class="FieldName">Default Value (if any)</div>
+            <div class="col l6 m6 s12">
+                <div class="FieldName">Default Value (if any)</div>
+            </div>
+            <div class="col l6 m6 s12" *ngIf="model.FieldType.Type == 'Lookup'">
+                <div class="FieldName">Allow ALL Value Selection</div>
+            </div>
+            <div class="col l6 m6 s12">
                 <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                 <input *ngIf="model.FieldType.Type == 'Text'" pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+            </div>
+            <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
+                <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>
+            </div>
+            <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Lookup'">
+                <input pInputText type="text" [(ngModel)]="model.FieldType.AllowAllLabel" [ngModelOptions]="{standalone: true}" style="width: 100%" [disabled]="!model.FieldType.AllowAllValue" />
             </div>
         </div>
 

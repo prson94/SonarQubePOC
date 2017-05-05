@@ -144,6 +144,7 @@
   <ItemGroup>
     <Compile Include="BaseContext.cs" />
     <Compile Include="CommunityContext.cs" />
+    <Compile Include="CompanyContext_Organization.cs" />
     <Compile Include="CompanyContext_Score.cs" />
     <Compile Include="CompanyContext_Analytics.cs" />
     <Compile Include="CompanyContext_Workflow.cs" />

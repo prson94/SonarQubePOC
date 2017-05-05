@@ -116,6 +116,11 @@
     <Compile Include="entities\Fusion\FusionSchedule.cs" />
     <Compile Include="entities\Issue.cs" />
     <Compile Include="entities\IssueType.cs" />
+    <Compile Include="entities\Organization\OrganizationInvitation.cs" />
+    <Compile Include="entities\Organization\OrganizationResource.cs" />
+    <Compile Include="entities\Organization\OrganizationDomain.cs" />
+    <Compile Include="entities\Organization\Contract.cs" />
+    <Compile Include="entities\Organization\Organization.cs" />
     <Compile Include="entities\Quality\RuleResultFusionAttribute.cs" />
     <Compile Include="entities\Quality\RuleType.cs" />
     <Compile Include="entities\Reference\ReferenceItemType.cs" />
@@ -304,6 +309,7 @@
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
     <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\State.cs" />
+    <Compile Include="enums\ContractType.cs" />
     <Compile Include="enums\Workflow\ActivityType.cs" />
     <Compile Include="enums\Workflow\CriteriaValueDataType.cs" />
     <Compile Include="enums\Workflow\ChangeType.cs" />
