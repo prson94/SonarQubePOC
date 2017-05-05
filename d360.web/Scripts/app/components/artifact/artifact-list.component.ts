@@ -74,7 +74,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
                     if (!this.hasNewWorkflow) this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus', ['fa-hourglass-start']));
 
-                    if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow Monitor', 'workflowmonitor', ['fa-heartbeat']));
+                    if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow Monitor', 'workflowmonitor', ['fa-television']));
 
                     this.isLoading = false;
                 });            
