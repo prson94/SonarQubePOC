@@ -29,9 +29,9 @@ import * as _ from 'lodash';
             </p-treeTable>
         </div>
         <div *ngIf="!readonly" class="col s6">
-            <header>
+            <div style="font-size: 1rem;">
                 <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
-            </header>   
+            </div>   
             
             <div [ngSwitch]="formMode">
                 <div *ngSwitchDefault>
