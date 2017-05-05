@@ -223,7 +223,7 @@ export class LinkModel {
     settings: any = {};
     formInputs: any = [];
 
-    valid: boolean = false;
+    valid: boolean = true;
     errors: string[] = [];
 }
 

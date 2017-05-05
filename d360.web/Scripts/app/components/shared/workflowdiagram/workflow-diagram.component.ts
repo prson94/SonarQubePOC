@@ -95,6 +95,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private formFields: any[] = [];
     private fieldsSub: any;
 
+    private isValid = true;
+    private errors: string[]  = [];
+
     constructor(
         private myElement: ElementRef,
         protected permissionsService: PermissionsService,
@@ -162,6 +165,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.myDiagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
+        this.myDiagram.addDiagramListener('ExternalObjectsDropped', e => this.ExternalObjectsDropped(e));
 
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
@@ -468,6 +472,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
             this.setTransitionIcon(n);
 
+            n.valid = this.validateLink(n);
+
             return n;
 
         } else if (type == DiagramObjectType.Node) {
@@ -585,8 +591,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.myDiagram.model.nodeDataArray.forEach(n => {
             let count = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).to == (<any>n).key).length;
             (<any>n).hasMultipleInputs = (count > 1);
+            (<any>n).valid = this.validateNode(<NodeModel>n);
         });
 
+        this.validateDiagram();
     }
 
     private validateNode(n: NodeModel): boolean {
@@ -654,6 +662,97 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         return true;
     }
 
+    private validateLink(l: LinkModel): boolean {
+        console.log('validate link', l, l.condition == null, l.condition.length < 1);
+        switch (+l.transitionType) {
+            case TransitionType.Condition:
+                if (l.condition == null || l.condition.length < 1)
+                    return false;
+                break;
+            case TransitionType.Timer:
+                if (l.settings == null || l.settings.TimerInterval == null || l.settings.TimerInterval < 1)
+                    return false;
+                break;
+        }
+        return true;
+    }
+
+    private validateDiagram(): boolean {
+        this.isValid = true;
+        this.errors = [];
+        console.log('validateDiagram');
+
+        let model = <go.GraphLinksModel>this.myDiagram.model;
+        let invalidNodeCount = 0;
+        let invalidLinkCount = 0;
+        let disconnectedNodeCount = 0;
+        let startNodes = 0;
+        let finishNodes = 0;
+
+        let startKey = "";
+        let finishKey = "";
+        let startToFinish = false;
+
+        model.nodeDataArray.forEach(n => {
+            let node = <NodeModel>n;
+
+            if (node.valid == false) {
+                //console.log('invalid node: ', node);
+                invalidNodeCount++;
+            }
+            if (+node.stepType == StepType.Start) {
+                startNodes++;
+                startKey = node.key;
+            }
+            if (+node.stepType == StepType.Finish) {
+                finishNodes++;
+                finishKey = node.key;
+            }
+
+            let from = model.linkDataArray.find(l => (<any>l).from == node.key);
+            let to = model.linkDataArray.find(l => (<any>l).to == node.key);
+
+            if (to == null && from == null)
+                disconnectedNodeCount++;
+
+        });
+
+        model.linkDataArray.forEach(l => {
+            let link = <LinkModel>l;
+
+            if (link.valid == false)
+                invalidLinkCount++;
+            if (startNodes == 1 && finishNodes == 1 && link.from == startKey && link.to == finishKey)
+                startToFinish = true;
+        });
+
+
+        if (invalidNodeCount > 0)
+            this.errors.push('There are one or more invalid steps on the diagram (highlighted in red)');
+
+        if (invalidLinkCount > 0)
+            this.errors.push('There are one or more invalid transitions on the digram (highlighted in red)');
+
+        if (startNodes != 1)
+            this.errors.push('There must be exactly 1 start step on the diagram');
+
+        if (finishNodes != 1)
+            this.errors.push('There must be exactly 1 finish step on the diagram');
+
+        if (disconnectedNodeCount > 0)
+            this.errors.push('There are steps on the diagram which are not connected');
+
+        if (startToFinish)
+            this.errors.push('The start step cannot be connected directly to the finish step');
+
+        if (this.errors.length > 0)
+            this.isValid = false;
+
+        return this.isValid;
+
+
+    }
+
     //#endregion
 
     //#region events
@@ -717,6 +816,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         //n.valid = this.validateNode(n);
 
         this.myDiagram.model.setDataProperty(n, 'valid', this.validateNode(n));
+        this.validateDiagram();
 
         this.myDiagram.commitTransaction('changeStep');
 
@@ -744,6 +844,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             }
 
             this.setTransitionIcon(l);
+            (<go.GraphLinksModel>this.myDiagram.model).setDataProperty(l, 'valid', this.validateLink(l));
+            this.validateDiagram();
             //console.log('transition change: ', e, l);
         }
 
@@ -923,12 +1025,21 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             }
         });
 
-        console.log(nodes, links, coll, this.workflowFieldsService.getFields(), this.workflowFieldsService.getUsedFields());
+        //console.log(nodes, links, coll, this.workflowFieldsService.getFields(), this.workflowFieldsService.getUsedFields());
         this.myDiagram.removeParts(coll, false);
         this.myDiagram.clearSelection();
         this.selectedStepId = null;
         this.selectedStepIdChange.emit(null);
         this.selectedData = null;
+        this.validateDiagram();
+    }
+
+    private ExternalObjectsDropped(e: any) {
+        this.myDiagram.model.nodeDataArray.forEach(n => {
+            this.myDiagram.model.setDataProperty(n, 'valid', this.validateNode(<NodeModel>n));
+        });
+
+        this.validateDiagram();
     }
 
     //#endregion
@@ -1013,30 +1124,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private createDiagram(): go.Diagram {
 
-        //let offset = this.diagramRef.nativeElement.offsetTop;
-        //let height = window.innerHeight;
-
-        //if (this.diagramRef.nativeElement.offsetParent) {
-        //    offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
-        //}
-
-        //let offsetLeft = this.diagramRef.nativeElement.offsetLeft;
-        //if (this.diagramRef.nativeElement.offsetParent) {
-        //    offsetLeft += this.diagramRef.nativeElement.offsetParent.offsetLeft;
-        //}
-        //let width = window.innerWidth;
-
         let dg = this.g(go.Diagram, 'WorkflowDiagram', {
-            //fixedBounds: new go.Rect(offset, offsetLeft, (height - offset - 50), (width - offsetLeft - 50)),
             initialContentAlignment: go.Spot.TopLeft,
             allowDrop: true,
-            //allowHorizontalScroll: false,  // disallow scrolling or panning
-            //allowVerticalScroll: false,
-            //allowZoom: false,   
-            //initialAutoScale: go.Diagram.UniformToFill,
-            //scrollMode: go.Diagram.DocumentScroll,
-            //initialPosition: new go.Point(125, 125),
-            //layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
             "undoManager.isEnabled": !this.isReadOnly
         });
 
@@ -1047,8 +1137,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         dg.model.nodeDataArray = [];
         dg.model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
-        //dg.toolManager.linkingTool.isEnabled = !this.isReadOnly;
-        //dg.model.isReadOnly = this.readonly;
 
         return dg;
     }
@@ -1078,7 +1166,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     name: "NodeShape",
                 },
                     new go.Binding("fill", "back").makeTwoWay(),
-                    new go.Binding("stroke", "valid", v => { return v ? nodeBorderColor : '#f00' }).makeTwoWay()
+                    new go.Binding("stroke", "valid", v => { return v ? nodeBorderColor : '#f00' })
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomLeft,
@@ -1169,9 +1257,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.g(go.Shape, {
                 stroke: "gray", strokeWidth: 2
             },
-                new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
-                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
-            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+                new go.Binding("stroke", "valid", v => { return v ? "gray" : "red" })),
+            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
+                new go.Binding("fill", "valid", v => { return v ? "gray" : "red" }),
+                new go.Binding("stroke", "valid", v => { return v ? "gray" : "red" })
+            ), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, "Circle", {
                     visible: false,
@@ -1182,6 +1272,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     //strokeDashArray: [2, 2]
                 },
                     //only visible if there's a label
+                    new go.Binding("stroke", "valid", v => { return v ? "gray" : "red" }),
+                    new go.Binding("fill", "valid", v => { return v ? "gray" : "red" }),
                     new go.Binding("visible", "icon", function (a) { return (a ? true : false) })
                 ), // the link shape
                 this.g(go.TextBlock, {

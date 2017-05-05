@@ -26,12 +26,17 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col s12">
+            <div *ngFor="let e of errors" class="errorMessage">{{e}}</div>
+        </div>
+    </div>
     <div class="row" *ngIf="!isReadOnly" style="padding-top:8px">
         <div class="col s12">
             <div>
                 <button pButton type="button" label="Back" (click)="onBackClick.emit()"></button>
-                <button pButton type="button" label="Save" (click)="save()"></button>
-                <button pButton type="button" label="Publish" (click)="save(true)"></button>
+                <button pButton type="button" label="Save" (click)="save()" [disabled]="!isValid"></button>
+                <button pButton type="button" label="Publish" (click)="save(true)" [disabled]="!isValid"></button>
             </div>
         </div>
     </div>

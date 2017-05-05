@@ -36,7 +36,7 @@ export class WorkflowFieldsService {
     }
 
     getFields() {
-        console.log(this.formFields);
+        //console.log(this.formFields);
         return this.formFields;
     }
 

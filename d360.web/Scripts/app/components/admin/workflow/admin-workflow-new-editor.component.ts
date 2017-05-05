@@ -48,6 +48,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
 
     private arbitraryScheduleObjectLimit = 2000;
     private isValid = false;
+    private errorMessage = "";
 
     WorkflowChangeType = WorkflowChangeType;
     EmailTaskRecipientType = EmailTaskRecipientType;
@@ -268,7 +269,57 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     }
 
     validate() {
+        this.errorMessage = "";
+
         if (this.model == null) return;
+
+        if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
+            if (this.conditions.length < 1) {
+                this.errorMessage = "At least 1 condition is required when using change type Schedule.";
+                this.isValid = false;
+                return;
+            }
+
+            let t = this.workflowObjectTypes.find(t => t.value == this.selectedObjectType);
+
+            if (t != null && t.count > this.arbitraryScheduleObjectLimit) {
+                this.errorMessage = `The chosen object type has more than ${this.arbitraryScheduleObjectLimit} items, which exceeds the limit for change type Schedule.`;
+                this.isValid = false;
+                return;
+            }
+        }
+
+        if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null
+            && this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString() == 'true') {
+
+            if (this.model.Event.SettingsObject.Settings.MessageSubjectTemplate == null ||
+                this.model.Event.SettingsObject.Settings.MessageSubjectTemplate == '') {
+                this.isValid = false;
+                return;
+            }
+
+            if (this.model.Event.SettingsObject.Settings.MessageRecipientType == null ||
+                this.model.Event.SettingsObject.Settings.MessageRecipientType == '') {
+                this.isValid = false;
+                return;
+            } else {
+                if (this.model.Event.SettingsObject.Settings.MessageRecipientType == 'Responsibility') {
+                    if (this.model.Event.SettingsObject.Settings.ResponsibilityTypeID == null ||
+                        this.model.Event.SettingsObject.Settings.ResponsibilityTypeID < 1) {
+                        this.isValid = false;
+                        return;
+                    }
+                } else if (this.model.Event.SettingsObject.Settings.MessageRecipientType == 'SpecificUser') {
+                    if (this.model.Event.SettingsObject.Settings.MessageToUser == null ||
+                        this.model.Event.SettingsObject.Settings.MessageToUser == '') {
+                        this.isValid = false;
+                        return;
+                    }
+                }
+
+            }
+
+        }
 
         if (this.model.Type.Name == null || this.model.Type.Name == '') {
             this.isValid = false;
@@ -279,18 +330,10 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
             this.isValid = false;
             return;
         }
-        if (this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
-            if (this.conditions.length < 1) {
-                this.isValid = false;
-                return;
-            }
 
-            let t = this.workflowObjectTypes.find(t => t.value == this.selectedObjectType);
-
-            if (t != null && t.count > this.arbitraryScheduleObjectLimit) {
-                this.isValid = false;
-                return;
-            }
+        if (this.selectedObjectType == null || this.selectedObjectType == '') {
+            this.isValid = false;
+            return;
         }
 
         this.isValid = true;

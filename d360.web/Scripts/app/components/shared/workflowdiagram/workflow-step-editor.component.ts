@@ -75,7 +75,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.responsibilityService.getResponsibilityTypes()
                 .then(r => {
                     this.responsibilities = r;
-                    console.log(r);
+                    //console.log(r);
                 });
         } else if (this.step.activityType == WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
