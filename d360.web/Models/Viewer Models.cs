@@ -266,7 +266,7 @@ namespace d360.web.Models
                 {
                     string value = "";
 
-                    if (form.AllKeys.Contains(ft.Name))
+                    if (form.AllKeys.Contains(ft.Name) || form.AllKeys.Contains(ft.Name + "_Name") || form.AllKeys.Contains(ft.Name + "_Url"))
                     {
                         switch (ft.Type)
                         {
