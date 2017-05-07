@@ -32,13 +32,17 @@ namespace d360.web.Controllers
             var joins = "";
             var columns = "";
 
-            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, true, false, listableOnly);
+            var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly);
+
+            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, true, false, listableOnly, fields);
 
             var dbArgs = new Dapper.DynamicParameters();
 
             dbArgs.Add("id", id);
 
             joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
+
+            #region Sql
 
             var sql = string.Format(@"
 select	A.ID,
@@ -56,6 +60,8 @@ from	Artifact A inner join TaxonomyType V on (V.ID = A.TaxonomyTypeID)
         {1}
 where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
+            #endregion
+
             //if simple filter specified add that citeria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
@@ -69,20 +75,10 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             sql = string.Format(@"select * from ({0}) A", sql);
 
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: fields);
             sql = applySortSuffix(sql, sortDataField, sortOrder);
                         
             var results = Company.Query<dynamic>(sql, dbArgs);
-
-            List<FieldType> fields = null;
-
-            if(listableOnly) fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.SortOrder).ToList();
-            else fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id && 
-                                        i.Type != "Attribute" &&
-                                        i.Type != "FilteredLookup" &&
-                                        i.Type != "FusionLookup" &&
-                                        i.Type != "ComplexRelationLookup").OrderBy(i => i.SortOrder).ToList();
-
             var settings = Community.GetCompanySettings();
 
             #region Create the list sheet
@@ -157,7 +153,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", string.Format("Filtered {0} List for {1}.xlsx", type.Name, DateTime.Now.ToShortDateString()));
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Filtered {type.Name} List for {DateTime.Now.ToShortDateString()}.xlsx");
         }
 
         #endregion
@@ -173,13 +169,10 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
         [HttpPost, Route("byparent"), NonNullableParameters]
         public JsonNetResult ByParent(int parentID, string sortDataField, string sortOrder, string filter, int pagenum = 0, int pagesize = 20, int childArtifactTypeID = 0)
         {
-            Trace.TraceInformation("Calling ArtifactsController.ByParent : {0}, {1}", parentID, childArtifactTypeID);
+            var d = new Dictionary<string, object>();
+            d.Add("p", parentID);
 
-            var joins = "";
-            var columns = "";
-            getDynamicFieldJoinStatements(childArtifactTypeID, "Artifact", out joins, out columns);
-
-            var querySql = string.Format(@"select	A.ID,
+            var sql = @"select	A.ID,
 		A.Name,
 		A.Description,
         A.ParentID,
@@ -194,35 +187,15 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 from	Artifact A 
         inner join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
         left join Artifact P on P.ID = A.ParentID 
-        where A.ArtifactTypeID = @id and A.ParentID = @p and A.[Visible] = 1", columns, joins);
-
-            var dbArgs = new Dapper.DynamicParameters();
-
-            //if simple filter specified add that citeria to the sql
-            if (!string.IsNullOrEmpty(filter) && childArtifactTypeID > 0)
-            {
-                querySql = $"{querySql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" }, "Artifact", childArtifactTypeID, filter, dbArgs)}";
-            }
-
-            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
-
-            var sql = string.Format(@"select * from ({0}) A", querySql);
-
-            
-
-            dbArgs.Add("id", childArtifactTypeID);
-            dbArgs.Add("p", parentID);
-
-            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
-            int total = Company.Query<int>(countSql, dbArgs).First();
-
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
-            sql = applySortSuffix(sql, sortDataField, sortOrder);
-            sql = applyPagingSuffix(sql, pagenum, pagesize);
-
-            var query = Company.Query<dynamic>(sql, dbArgs);
-
-            return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };        
+        where A.ArtifactTypeID = @id and A.ParentID = @p and A.[Visible] = 1";
+            var model = processDynamicResults(
+                sql, Request,
+                "ArtifactType", childArtifactTypeID,
+                true,
+                sortDataField, sortOrder, pagenum, pagesize,
+                new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" },
+                filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false);
+            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [HttpGet, Route("artifactsbytype"), NonNullableParameters]
@@ -235,64 +208,31 @@ from	Artifact A
         public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
         {
             try
-            {
-                Trace.TraceInformation("Calling ArtifactsController.ByType : {0}", id);
-
-                var dbArgs = new Dapper.DynamicParameters();
-
-                dbArgs.Add("id", id);
-
-            var joins = "";
-            var columns = "";            
-            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
-
-            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
-
-            var querySql = string.Format(@"select	A.ID,
-		A.Name,
-		A.Description,
-        A.ParentID,
-		P.TextPath as Parent,
-        dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
-		A.Status,
-        A.DateLastCertified,
-        {0}
-		T.Name as TaxonomyType,
-        A.TaxonomyTypeID,
-        dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
-from	Artifact A 
-        left join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
-        left join Artifact P on P.ID = A.ParentID 
-where    A.ArtifactTypeID = @id and A.[Visible] = 1", columns, joins);
-
-            //if simple filter specified add that citeria to the sql
-            if(!string.IsNullOrEmpty(filter))
-            {                
-                querySql = $"{querySql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name","A.Status","T.Name", "P.TextPath" }, "Artifact", id, filter, dbArgs)}";
-            }
-                        
-
-            
-            querySql = applyRelationFilteringExists(querySql, Request,dbArgs);
-            
-                var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
-                var sql = string.Format(@"select * from ({0}) A", querySql);
-
-            
-                countSql = applyFilteringSuffixBind(countSql, Request, dbArgs,true);
-                sql = applyFilteringSuffixBind(sql, Request, dbArgs, true);
-                        
-
-                sql = applySortSuffix(sql, sortDataField, sortOrder);
-                sql = applyPagingSuffix(sql, pagenum, pagesize);
-
-                countSql += " OPTION (RECOMPILE)";
-                sql += " OPTION (RECOMPILE)";
-
-                int total = Company.Query<int>(countSql, dbArgs).First();
-                var query = Company.Query<dynamic>(sql, dbArgs);
-
-                return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
+            {               
+                var sql = @"select	A.ID,
+		    A.Name,
+		    A.Description,
+            A.ParentID,
+		    P.TextPath as Parent,
+            dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
+		    A.Status,
+            A.DateLastCertified,
+            {0}
+		    T.Name as TaxonomyType,
+            A.TaxonomyTypeID,
+            dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+    from	Artifact A 
+            left join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
+            left join Artifact P on P.ID = A.ParentID 
+    where    A.ArtifactTypeID = @id and A.[Visible] = 1";
+                var model = processDynamicResults(
+                    sql, Request, 
+                    "ArtifactType", id, 
+                    true, 
+                    sortDataField, sortOrder, pagenum, pagesize, 
+                    new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" }, 
+                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false);
+                return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
             }
             catch (Exception ex)
             {

@@ -708,9 +708,132 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             telemetry = null;
         }
 
+        #region Dynamic Query Processing
+
+        public class DynamicPagedResults
+        {
+            public int total { get; set; }
+            public IEnumerable<dynamic> results { get; set; }
+        }
+
+        internal string addOwnershipJoinCriteria(string joins, string ownerUsers, string ownerGroups)
+        {
+            int index = 0;
+            if (!string.IsNullOrEmpty(ownerUsers))
+            {
+                foreach (var user in ownerUsers.Split(','))
+                {
+                    var ids = user.Split('|');
+                    if (ids.Length == 2)
+                    {
+                        joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'resource' and RD{index}.ResponsibleObjectID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
+                        index++;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(ownerGroups))
+            {
+                foreach (var group in ownerGroups.Split(','))
+                {
+                    var ids = group.Split('|');
+                    if (ids.Length == 2)
+                    {
+                        joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'group' and RD{index}.ResponsibleObjectID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
+                        index++;
+                    }
+                }
+            }
+
+            return joins;
+        }
+
+        internal List<FieldType> getFieldTypesByObjectType(string objectType, int objectTypeID, bool listableOnly)
+        {
+            return (listableOnly) ?
+                Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID && i.IsListable).OrderBy(i => i.SortOrder).ToList() :
+                Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID).OrderBy(i => i.SortOrder).ToList();
+        }
+
+        internal DynamicPagedResults processDynamicResults(
+            string sql,
+            HttpRequestBase Request,
+            string objectType, int objectTypeID,
+            bool listableOnly, string sortDataField, string sortOrder, int pagenum, int pagesize,
+            string[] staticFields,
+            string filter = "", string ownerUsers = "", string ownerGroups = "",
+            string sortDefaultField = "Name", string sortDefaultDirection = "asc",
+            Dictionary<string, object> extraParams = null,
+            bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false)
+        {
+            var requestParams = Request.Params;
+            var dbArgs = new Dapper.DynamicParameters();
+            var obj = objectType.Replace("Type", "");
+
+            var fields = getFieldTypesByObjectType(objectType, objectTypeID, listableOnly);
+
+            dbArgs.Add("id", objectTypeID);
+
+            if (extraParams != null)
+            {
+                foreach (var k in extraParams.Keys)
+                {
+                    dbArgs.Add(k, extraParams[k]);
+                }
+            }
+
+            #region Field Joins
+
+            var joins = "";
+            var columns = "";
+            getDynamicFieldJoinStatements(objectTypeID, obj, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields);
+            sql = string.Format(sql, columns, joins);
+
+            #endregion
+
+            // Ownership Joins
+            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
+
+            // If simple filter specified add that criteria to the sql
+            if (!string.IsNullOrEmpty(filter))
+            {
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" }, obj, objectTypeID, filter, dbArgs)}";
+            }
+
+            var querySql = $@"select * from ({sql}) A";
+            var countSql = $@"select count(1) from ({sql}) A";
+
+            #region Relation filtering
+
+            var filters = applyRelationFilteringExistsRawSuffix(Request, dbArgs, fields);
+
+            countSql += filters;
+            querySql += filters;
+
+            #endregion
+
+            filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields);  // Filtering
+
+            countSql += filters;
+            querySql += filters;
+
+            querySql = applySortSuffix(querySql, sortDataField, sortOrder);         // Sorting
+            querySql = applyPagingSuffix(querySql, pagenum, pagesize);              // Paging
+
+            countSql += " OPTION (RECOMPILE)";
+            querySql += " OPTION (RECOMPILE)";
+
+            int total = Company.Query<int>(countSql, dbArgs).First();
+            var query = Company.Query<dynamic>(querySql, dbArgs);
+
+            return new DynamicPagedResults { results = query, total = total };
+        }
+
+        #endregion
+
         #region Private Methods
 
-         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true)
+        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null)
         {
             columns = "";
             joins = "";
@@ -726,12 +849,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     break;
             }
 
-            List<FieldType> fields = null;
-
-            if(listableOnly)
-                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
-            else
-                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.SortOrder).ToList();
+            if (fields == null)
+            {
+                if(listableOnly)
+                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+                else
+                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.SortOrder).ToList();
+            }
 
             foreach (var f in fields)
             {
@@ -751,7 +875,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             fields = null;
         }
 
-        internal string addDynamicFieldSimpleFilter(string[] fixedColumns, string type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs)
+        internal string addDynamicFieldSimpleFilter(string[] fixedColumns, string type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs, List<FieldType> fields = null)
         {            
             if (string.IsNullOrEmpty(filterExp)) return "";
 
@@ -767,7 +891,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
 
             //loop through visible fields for this item 
-            var fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+            if (fields == null)
+            {
+                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+            }
 
             StringBuilder sb = new StringBuilder();
 
@@ -794,7 +921,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return $"({sb.ToString()})";
         }
 
-        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false)
+        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null)
         {
             columns = "";
             joins = "";
@@ -813,7 +940,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     break;
             }
 
-            var fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+            if (fields == null)
+            {
+                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+            }
 
             foreach (var f in fields)
             {
@@ -846,61 +976,95 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             //fields = null;
         }
 
-        internal string getFilteringConditionBind(string field, string condition, int filterNumber, Dapper.DynamicParameters dbParams, string value, string prefix, bool skipFieldValidation = false)
+        internal string getFilteringConditionBind(string field, string condition, int filterNumber, Dapper.DynamicParameters dbParams, string value, string prefix, bool skipFieldValidation = false, FieldType ft = null)
         {
             var bind = $"{prefix}{filterNumber}val";
-
+            var allItemsBind = "";
+            var allValueBind = "";
             if (!skipFieldValidation)
             {
                 if (!isValidFieldName(field)) return string.Empty; // sql injection check on field name
             }
-            
+
+            if (ft != null)
+            {
+                if (ft.AllowAllValue)
+                {
+                    allItemsBind = $"{prefix}{filterNumber}val_all";
+                    allValueBind = $"{ft.AllowAllLabel.Replace("'", "''")}";
+                }
+            }
+
+            var querySyntax = "";
             switch (condition)
             {
                 case "CONTAINS":
                     var val = (value ?? "").Replace('*', '%').Replace('?', '_');
                     dbParams.Add(bind, $"%{val}%");
-                    return $"{field} LIKE @{bind}";
+                    querySyntax = $"{field} LIKE @{bind}";
+                    break;
                 case "DOES_NOT_CONTAIN":
                     dbParams.Add(bind, $"%{value}%");
-                    return $"{field} NOT LIKE @{bind}";                    
+                    querySyntax = $"{field} NOT LIKE @{bind}";
+                    break;
                 case "EQUAL":
                     dbParams.Add(bind, $"{value}");
-                    return $"{field} = @{bind}";                    
+                    querySyntax = $"{field} = @{bind}";
+                    break;
                 case "NOT_EQUAL":
                     dbParams.Add(bind, $"{value}");
-                    return $"{field} <> @{bind}";                    
+                    querySyntax = $"{field} <> @{bind}";
+                    break;
                 case "STARTS_WITH":
                     dbParams.Add(bind, $"{value}%");
-                    return $"{field} LIKE @{bind}";                    
+                    querySyntax = $"{field} LIKE @{bind}";
+                    break;
                 case "ENDS_WITH":
                     dbParams.Add(bind, $"%{value}");
-                    return $"{field} LIKE @{bind}";     
+                    querySyntax = $"{field} LIKE @{bind}";
+                    break;
                 //greater / less than cause issues with dates when casting...               
                 /*case "GREATER_THAN":
                     dbParams.Add(bind, $"{value}");                    
-                    return $"CAST({field} as numeric) > CAST(@{bind} as numeric)";
+                    querySyntax =  $"CAST({field} as numeric) > CAST(@{bind} as numeric)";
+                    break;
                 case "GREATER_THAN_OR_EQUAL":
                     dbParams.Add(bind, $"{value}");
-                    return $"CAST({field} as numeric) >= CAST(@{bind} as numeric)";                    
+                    querySyntax =  $"CAST({field} as numeric) >= CAST(@{bind} as numeric)";  
+                    break;                  
                 case "LESS_THAN":
                     dbParams.Add(bind, $"{value}");
-                    return $"CAST({field} as numeric) < CAST(@{bind} as numeric)";                    
+                    querySyntax =  $"CAST({field} as numeric) < CAST(@{bind} as numeric)";  
+                    break;                  
                 case "LESS_THAN_OR_EQUAL":
                     dbParams.Add(bind, $"{value}");
-                    return $"CAST({field} as numeric) <= CAST(@{bind} as numeric)";                    */
+                    querySyntax =  $"CAST({field} as numeric) <= CAST(@{bind} as numeric)"; 
+                    break;                   */
                 case "NULL":
-                    return field + " is null";
+                    querySyntax = $"{field} is null";
+                    break;
                 case "NOT_NULL":
-                    return field + " is not null";
+                    querySyntax = $"{field} is not null";
+                    break;
                 case "EMPTY":
-                    return field + " = ''";
+                    querySyntax = $"{field} = ''";
+                    break;
                 case "NOT_EMPTY":
-                    return field + " <> ''";
+                    querySyntax = $"{field} <> ''";
+                    break;
                 default:
                     dbParams.Add(bind, $"{value}");
-                    return $"{field} = @{bind}";
+                    querySyntax = $"{field} = @{bind}";
+                    break;
             }
+
+            if (!string.IsNullOrEmpty(allItemsBind) && !string.IsNullOrEmpty(allValueBind))
+            {
+                dbParams.Add(allItemsBind, $"{allValueBind}");
+                querySyntax = $"({querySyntax} or {field} = @{allItemsBind})";
+            }
+
+            return querySyntax;
         }
         
         internal bool isValidFieldName(string field)
@@ -909,21 +1073,33 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return nameRegex.IsMatch(field);
         }
 
-        internal string applyRelationFilteringExists(string sql, System.Web.HttpRequestBase Request, Dapper.DynamicParameters dbParams)
+        internal string applyRelationFilteringExists(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null)
+        {
+            return sql + applyRelationFilteringExistsRawSuffix(Request, dbParams, fields);                
+        }
+
+        internal string applyRelationFilteringExistsRawSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null)
         {
             var query = Request.Params;
-            int filterscount = 0;            
+            int filterscount = 0;
+
+            var sb = new StringBuilder();
 
             if (int.TryParse(query["relfilterscount"], out filterscount) && filterscount > 0)
-            {
-                StringBuilder sb = new StringBuilder();
+            {    
                 for (var i = 0; i < filterscount; i++)
-                {                    
+                {
                     var fFieldId = int.Parse(query["relfilterdatafield" + i]);
                     var fCondition = query["relfiltercondition" + i];
                     var fValue = query["relfiltervalue" + i];
 
-                    var filtersql = getFilteringConditionBind("relField.FormattedValue", fCondition, i, dbParams,fValue,"relflt",true);
+                    FieldType filterFieldType = null;
+                    if (fields != null)
+                    {
+                        filterFieldType = fields.FirstOrDefault(f => f.ID == fFieldId);
+                    }
+
+                    var filtersql = getFilteringConditionBind("relField.FormattedValue", fCondition, i, dbParams, fValue, "relflt", true, ft: filterFieldType);
 
                     if (string.IsNullOrEmpty(filtersql)) continue;
 
@@ -938,16 +1114,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                         where " + filtersql + ")";
 
                     existsql = string.Format(existsql, fFieldId);
-                                        
+
                     sb.Append(existsql);
                 }
-
-                return sql + sb.ToString();                
             }
-            return sql;            
+
+            return sb.ToString();
         }
-        
-        internal string applyHiddenFilteringSuffix(System.Web.HttpRequestBase Request, Dapper.DynamicParameters dbParams)
+
+        internal string applyHiddenFilteringSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams)
         {
             var query = Request.Params;
 
@@ -986,7 +1161,12 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return filters;
         }
 
-        internal string applyFilteringSuffixBind(string sql, System.Web.HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false)
+        internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null)
+        {
+            return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields);
+        }
+
+        internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null)
         {
             var query = Request.Params;
 
@@ -1006,8 +1186,21 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                     if (fValue.EndsWith(".000")) fValue = fValue.Replace(".000", "");
 
-                    filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "");// "flt");
-                    
+                    int fieldTypeID = 0;
+                    FieldType filterFieldType = null;
+                    if (fields != null)
+                    {
+                        if (fField.StartsWith("Field"))
+                        {
+                            string fieldTypeIDRaw = fField.Replace("Field", "");
+                            if (int.TryParse(fieldTypeIDRaw, out fieldTypeID))
+                            {
+                                filterFieldType = fields.FirstOrDefault(f => f.ID == fieldTypeID);
+                            }
+                        }
+                    }
+                    filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
+
                     if (!string.IsNullOrEmpty(filter))
                     {
                         filters += (string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ";
@@ -1147,11 +1340,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             #endregion
 
-            sql += filters;
-
-            return sql;
+            return filters;
         }
-                
+
+
         internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc")
         {
             if (string.IsNullOrEmpty(sortDataField))

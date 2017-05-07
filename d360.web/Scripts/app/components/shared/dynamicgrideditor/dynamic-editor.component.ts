@@ -153,7 +153,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 category.name = currentCategory;
                 category.rows = rows;
                 this.categories.push(category);
-                console.log(this.categories);
+                //console.log(this.categories);
                                 
                 this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
                 this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');

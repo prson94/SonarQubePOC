@@ -32,7 +32,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.1</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -805,8 +805,12 @@
     <Content Include="fonts\fontawesome-webfont.woff" />
     <Content Include="fonts\fontawesome-webfont.ttf" />
     <Content Include="fonts\fontawesome-webfont.eot" />
+    <None Include="Properties\PublishProfiles\d3s-ui-london-development - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-pune-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - North Central.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Client Development - Central.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Client Development - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Client Development - EU North.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - Central.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Nightly.pubxml" />
