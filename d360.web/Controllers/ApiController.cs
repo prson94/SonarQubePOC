@@ -6236,6 +6236,8 @@ where    A.RuleID = @id", new { id });
         {
             if(obj == SystemObjects.FusionAttribute)
                 return Company.Query<dynamic>(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, new { objid });
+            else if(obj == SystemObjects.FusionQueryAttribute)
+                return Company.Query<dynamic>(QueryConstants.FusionQueryAttributeRelationshipAllCountsWithZero, new { objid });
             return Company.Query<dynamic>(QueryConstants.ObjectRelationshipAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
         }
 

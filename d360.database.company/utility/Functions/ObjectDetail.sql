@@ -82,22 +82,6 @@ BEGIN
 			WHERE	ID = @id
 	end
 
-	if @type = 'Event'
-	begin
-		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
-			SELECT			O.ID,	T.Name + ' event',	T.Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, T.RuleID, O.ID),	T.RuleID,	'Rule',	T.Name
-			FROM	[Event] O
-					INNER JOIN EventGroup T ON O.EventGroupID = T.ID AND O.ID = @id
-	end
-
-	if @type = 'EventGroup'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID,			[Type], TypeName)
-			SELECT			ID,		Name,	Name,		'',				NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, ID),	RuleID,	'Rule',	'Rule'
-			FROM	EventGroup O
-			WHERE	ID = @id
-	end
-
 	if @type = 'Lookup'
 	begin
 		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
@@ -145,15 +129,39 @@ BEGIN
 		insert into @tbl (	ID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
 			SELECT			ID,	O.Name,	O.TextPath,	'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Fusion Attribute Type'
 			FROM	FusionAttributeType O
-			WHERE	ID = @id
+			WHERE	ID = @id	
 	end
 
+	if @type = 'FusionQueryAttribute'
+	begin
+		insert into @tbl (	ID,		Name,		TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,						[Type],					TypeName)
+			SELECT			O.ID,	O.DisplayValue,	O.DisplayValue,	'',				NULL,	@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),
+																											O.FusionQueryAttributeTypeID,	'FusionQueryAttributeType',	T.Name
+			FROM	FusionQueryAttribute O
+					INNER JOIN FusionQueryAttributeType T ON O.FusionQueryAttributeTypeID = T.ID and O.ID = @id					
+	end
+	
 	if @type = 'FusionQueryAttributeType'
 	begin
 		insert into @tbl (	ID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
 			SELECT			ID,	O.Name,	O.Name,	'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Fusion Query Attribute Type'
 			FROM	FusionQueryAttributeType O
 			WHERE	ID = @id
+	end
+
+	if @type = 'Map'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	O.Name,	O.Name,	NULL,	NULL,	NULL,		dbo.GenerateObjectUrl(@type, O.MapTypeID, O.ID),	O.MapTypeID,	'MapType',	T.Name, NULL
+			FROM	Map O
+					INNER JOIN MapType T ON O.MapTypeID = T.ID and O.ID = @id
+	end
+
+	if @type = 'MapType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,	NULL,		dbo.GenerateObjectUrl(@type, O.ID, O.ID),	O.ID,	'MapType',	Name, NULL
+			FROM	MapType O
 	end
 
 	if @type = 'Policy'
@@ -171,6 +179,22 @@ BEGIN
 			FROM	PolicyType O
 					inner join PolicyTypeClass C on C.ID = O.PolicyTypeClassID
 			WHERE	O.ID = @id
+	end
+
+	if @type = 'ReferenceItem'
+	begin
+		insert into @tbl (	ID,	
+							Name, TextPath, [Description],	
+							ParentID, ParentType, 
+							Url, 
+							TypeID, [Type], TypeName)
+			SELECT			O.ID,		
+							O.DisplayValue, O.DisplayValue, NULL,
+							NULL, NULL, 
+							dbo.GenerateObjectUrl(@type, T.ID, O.ID),
+							T.ID, 'ReferenceItemType', T.Name
+			FROM	ReferenceItem O
+					inner join ReferenceItemType T on T.ID = O.ReferenceItemTypeID and O.ID = @id
 	end
 
 	if @type = 'ReferenceItemType'
@@ -197,7 +221,7 @@ BEGIN
 			where	ResourceID = @id
 	end
 
-		if @type = 'ResponsibilityType'
+	if @type = 'ResponsibilityType'
 	begin
 		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
 			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Responsibility Type'
@@ -214,8 +238,17 @@ BEGIN
 	if @type = 'Rule'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
-			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	O.RuleType,	'RuleType',	'Rule', case O.Status when 1 then 'Draft' when 2 then 'Active' else 'Inactive' end
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	O.RuleTypeID,	'RuleType',	T.Name, case O.Status when 1 then 'Draft' when 2 then 'Active' else 'Inactive' end
 			FROM	[Rule] O
+					inner join RuleType T on T.ID = O.RuleTypeID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'RuleType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID,	[Type],	TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, O.ID, O.ID),	O.ID,	@type,	O.Name
+			FROM	RuleType O
 			WHERE	O.ID = @id
 	end
 

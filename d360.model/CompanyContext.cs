@@ -1388,6 +1388,12 @@ where	R.SourceObject = 'FusionAttribute'
 				FROM	FusionAttributeType A
 						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
 				UNION
+                SELECT	A.ID,
+						'Fusion Query Attributes :: ' +T.Name + '::' + A.Name,
+						'FusionQueryAttributeType' AS Type
+				FROM	FusionQueryAttributeType A
+						INNER JOIN Fusion T ON A.FusionID = T.ID
+                UNION
 				SELECT	1 as ID,
 						'Group' as Name,
 						'GroupType' as Type

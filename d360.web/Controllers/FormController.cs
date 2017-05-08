@@ -11718,6 +11718,23 @@ order by F.Name, FA.TextPath";
                     }
                     break;
                 #endregion
+                case "FusionQueryAttributeType":
+                    #region                    
+                        sql = $@"
+select	'FusionQueryAttribute' as [Object], 
+        FA.ID as ObjectID, 
+        F.Name + '.' + FA.DisplayValue as Name
+from	FusionQueryAttribute FA with(nolock)
+        inner join FusionQueryAttributeType FAT on (FA.FusionQueryAttributeTypeID = FAT.ID)
+		inner join Fusion F with(nolock) on F.ID = FAT.FusionID and FA.FusionQueryAttributeTypeID = @targetTypeID and FA.Deleted = 0
+where	FA.ID not in (
+					select	1 
+					from	[IntersectDetail]
+					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
+					)
+order by F.Name, FA.DisplayValue";                 
+                    break;
+                #endregion
                 case "Group":
                 case "GroupType":
                     #region
