@@ -54,6 +54,7 @@ namespace d360.fusion
 
         //private static int MAX_FIELD_VALUE_LENGTH = 4000;
         private static int MAX_SOURCEID_LENGTH = 250;
+        private static int MAX_FIELD_NAME_LENGTH = 250;
         private static string FUSION_ATTRIBUTE_MISSING_NAME_NAME = "Name not resolved";
         private static string FUSION_PROCESSOR_AI_NAME_TOTAL = "FusionProcessor - Total";
         private static string FUSION_PROCESSOR_AI_NAME_DOWNLOAD = "FusionProcessor - Download JSON";
@@ -1546,14 +1547,16 @@ when not matched then
 
                     if (string.IsNullOrEmpty(name)) name = FUSION_ATTRIBUTE_MISSING_NAME_NAME;
 
-                    FusionAttributeTempTableValue val = new FusionAttributeTempTableValue
-                    {
-                        SourceID = sourceID,
-                        FusionAttributeTypeID = fusionTypeID,
-                        Name = name,
-                        DeletedBit = false,
-                        ParentSourceID = parentSourceID
-                    };
+                    if (name.Length > MAX_FIELD_NAME_LENGTH) name = name.Substring(0, MAX_FIELD_NAME_LENGTH);
+
+                        FusionAttributeTempTableValue val = new FusionAttributeTempTableValue
+                        {
+                            SourceID = sourceID,
+                            FusionAttributeTypeID = fusionTypeID,
+                            Name = name,
+                            DeletedBit = false,
+                            ParentSourceID = parentSourceID
+                        };
 
                     val.Action = FusionAttributeTempTableValue.ActionFromString(actionString);
 
