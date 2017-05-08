@@ -4099,16 +4099,32 @@ where    A.RuleID = @id", new { id });
         #region Comment Tag Suggestions
 
         [HttpGet, Route("tagsuggestions")]
-        public List<TagSuggestionModel> TagSuggestions(string phrase)
+        public IEnumerable<TagSuggestionModel> TagSuggestions(string phrase)
         {
             if (string.IsNullOrWhiteSpace(phrase))
                 return new List<TagSuggestionModel>();
 
-            var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName, IconForeColor, IconBackColor from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and (lower(Name) like lower('{0}%') or (len('{0}') > 2 and lower(Name) like lower('%{0}%')))", phrase.Replace("'", "''").Replace("--", ""));
+            Dapper.DynamicParameters dbParams = new DynamicParameters();
+                        
+            var sql = @"select 
+	                                c.[Object], 
+	                                c.ObjectID, 
+	                                c.TextPath, 
+	                                c.Url, 
+	                                c.ObjectTypeName, 
+	                                c.IconForeColor, 
+	                                c.IconBackColor,
+	                                T.Name as GoverningDomain
+                                from cache.ObjectDetails c
+                                 left join Artifact A with(nolock) on c.[Object] = 'Artifact' and A.ID = c.ObjectID
+                                 left join TaxonomyType T with(nolock) on c.[Object] = 'Artifact' and A.TaxonomyTypeID = T.ID
+                                where c.[Object] not in ('Intersect') and (c.Name like @beginsWith or (len(@val) > 2 and c.Name like @contains))";
 
-            var list = Company.Query<TagSuggestionModel>(sql).ToList();
+            dbParams.Add("beginsWith", $"{phrase}%");
+            dbParams.Add("val", $"{phrase}%");
+            dbParams.Add("contains", $"%{phrase}%");
 
-            return list;
+            return Company.Query<TagSuggestionModel>(sql,dbParams);            
         }
 
         #endregion

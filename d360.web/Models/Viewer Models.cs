@@ -861,6 +861,9 @@ namespace d360.web.Models
 
         [DataMember]
         public string IconBackColor { get; set; }
+
+        [DataMember]
+        public string GoverningDomain { get; set; }
     }
 
     public class PowerBIReportViewModel

@@ -43,7 +43,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                                                 field="TextPath" 
                                                 (onSelect)="selectItem()">     
                                             <template let-item>
-                                                <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}}
+                                                <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
                                             </template>                  
                                         </p-autoComplete></div>                                        
                                     </div>
