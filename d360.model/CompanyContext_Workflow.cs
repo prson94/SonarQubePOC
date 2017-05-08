@@ -697,6 +697,8 @@ namespace d360.model
 
             foreach (var user in users)
             {
+                Console.WriteLine($"DEBUG : FORM STEP EMAIL IS EMAILING [{user.Email}].");
+
                 await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true);
             }
 
@@ -729,6 +731,8 @@ namespace d360.model
 
                     return;
                 }
+
+                Console.WriteLine($"DEBUG : WORKFLOW AGGREGATE EMAIL IS EMAILING [{settings.SpecificUser}].");
 
                 await extensions.mail.SimpleMessage.SendMessage(settings.EmailHeader, settings.SpecificUser, "", settings.EmailMessageTemplate, true);
             }
@@ -821,6 +825,8 @@ namespace d360.model
                     return;
                 }
 
+                Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{res.Email}].");
+
                 await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate, true);
             }
             else if(emailSettings.RecipientType == EmailTaskRecipientType.Responsibility)
@@ -829,6 +835,8 @@ namespace d360.model
 
                 foreach (var user in users)
                 {
+                    Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
+
                     await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate, true);
                 }
             }
@@ -840,6 +848,8 @@ namespace d360.model
 
                     return;
                 }
+
+                Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{emailSettings.SpecificUser}].");
 
                 await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, emailSettings.SpecificUser, "", emailSettings.BodyTemplate, true);
             }
