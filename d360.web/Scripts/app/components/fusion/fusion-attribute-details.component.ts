@@ -6,6 +6,8 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-fusion-attribute-details',
@@ -20,7 +22,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
                 <div class="row"  *ngIf="!isLoading && isRelationshipsVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="type" [objectID]="id" [objectName]="name"></d3s-object-relationships>
+                            <d3s-object-relationships [objectPermissions]="permissions" [objectType]="type" [objectID]="id" [objectName]="name"></d3s-object-relationships>
                         </div>
                     </div>
                 </div>         
@@ -34,7 +36,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
                     </div>
                  </div>
                 `,
-    providers: [],
+    providers: [PermissionsService],
 })
 
 export class FusionAttributeDetailsComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -49,7 +51,8 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         rightSidebarService: RightSidebarService,
         private titleService: Title,
         private headerBreadcrumbService: HeaderBreadcrumbService,
-        private location: Location
+        private location: Location,
+        private permissionsService: PermissionsService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -64,6 +67,8 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
 
             this.setBrowserTitle(this.titleService, this.name);        
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.name));
+
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectFusionAttribute, this.id);
         });
     }
 
