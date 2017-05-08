@@ -60,7 +60,11 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                                 <div class="tile tile-detail">
                                     <header>Items Details</header>
                                     <p-dataTable [value]="itemdetails" selectionMode="single" scrollable="true" scrollWidth="100%">                                        
-                                        <p-column field="Name" header="Step Name" [sortable]="true" [style]="{'width':'150px'}"></p-column>
+                                        <p-column field="Name" header="Step Name" [sortable]="true" [style]="{'width':'150px'}">
+                                            <template let-col let-data="rowData" pTemplate type="body">
+                                                <span [title]="data.Settings">{{data.Name}}</span>
+                                            </template>
+                                        </p-column>
                                         <p-column field="ActivityTypeString" header="Activity" [sortable]="true" [style]="{'width':'100px'}"></p-column>
                                         <p-column field="StepTypeString" header="Step" [sortable]="true" [style]="{'width':'100px'}"></p-column>
                                         <p-column field="UpdatedOn" header="Started" [sortable]="true" [style]="{'width':'100px'}">

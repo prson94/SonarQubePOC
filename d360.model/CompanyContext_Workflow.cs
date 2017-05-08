@@ -652,6 +652,7 @@ namespace d360.model
 
         private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo)
         {
+            List<string> emailedUsers = new List<string>();
             //send an email to the owners with a form link
             var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
                         
@@ -699,11 +700,14 @@ namespace d360.model
             {
                 Console.WriteLine($"DEBUG : FORM STEP EMAIL IS EMAILING [{user.Email}].");
 
+                emailedUsers.Add(user.Email);
+
                 await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true);
             }
 
             SaveItemAssignments(users, itemId);
 
+            SaveItemStepEmailedUsers(item, emailedUsers);
         }
 
         private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings)
@@ -739,7 +743,8 @@ namespace d360.model
         }
 
         private async Task SendWorkflowEmail(WorkflowItemStep item, EventObjectInfo objectInfo)
-        {            
+        {
+            List<string> emailedUsers = new List<string>();
 
             if (string.IsNullOrEmpty(item.Step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
 
@@ -826,6 +831,7 @@ namespace d360.model
                 }
 
                 Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{res.Email}].");
+                emailedUsers.Add(res.Email);
 
                 await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate, true);
             }
@@ -836,6 +842,8 @@ namespace d360.model
                 foreach (var user in users)
                 {
                     Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
+
+                    emailedUsers.Add(user.Email);
 
                     await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate, true);
                 }
@@ -851,7 +859,34 @@ namespace d360.model
 
                 Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{emailSettings.SpecificUser}].");
 
+                emailedUsers.Add(emailSettings.SpecificUser);
+
                 await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, emailSettings.SpecificUser, "", emailSettings.BodyTemplate, true);
+            }
+
+            SaveItemStepEmailedUsers(item, emailedUsers);
+        }
+
+        private void SaveItemStepEmailedUsers(WorkflowItemStep item, List<string> emailedUsers)
+        {
+
+            //save the emailed users to the settings
+            if (emailedUsers.Count > 0 && !string.IsNullOrEmpty(item.Settings))
+            {
+                var root = XElement.Parse(item.Settings);
+
+                var emailForm = new XElement("emails");
+
+                foreach (var email in emailedUsers)
+                {
+                    emailForm.Add(new XElement("email",
+                            new XAttribute("address", email)));
+                }
+
+                root.Add(emailForm);
+
+                item.Settings = root.ToString();
+                SaveChanges();
             }
         }
 

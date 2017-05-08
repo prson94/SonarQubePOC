@@ -372,7 +372,8 @@ export enum WorkflowChangeType {
     Schedule = 4,
     ScoreUpdate = 5,
     RuleResult = 6,
-    Loaded = 7
+    Loaded = 7,
+    RequestCertification = 8,
 }
 
 export enum WorkflowFormFieldType {

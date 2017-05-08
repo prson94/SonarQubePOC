@@ -1362,7 +1362,8 @@ namespace d360.web.Controllers.Services
                                     Rc.FirstName + ' ' + Rc.LastName as CompletedBy,
                                     vs.ActivityType as ActivityType,
                                     vs.StepType as StepType,
-									vsTo.name as ToStep
+									vsTo.name as ToStep,
+                                    istep.settings as 'Settings'
                                 from
 			                        [workflow].item i
 	                                inner join [workflow].itemstep istep on (i.id = istep.itemid)
