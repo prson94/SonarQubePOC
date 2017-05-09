@@ -404,11 +404,13 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    getAssignedWorkflowInstancesByTypeId(id: number): Promise<any> {
-        return this.http.get(`services/workflow/type/${id}/myinstances`)
-            .toPromise()
-            .then(response => <any>response.json())
-            .catch(err => this.handleError(err));
+    getAssignedWorkflowInstancesByTypeId(id: number, resourceId: number): Promise<any> {        
+        let url = `services/workflow/type/${id}/myinstances`;
+        if (resourceId && !isNaN(resourceId)) url += `?resourceId=${resourceId}`;
+        return this.http.get(url)
+                .toPromise()
+                .then(response => <any>response.json())
+                .catch(err => this.handleError(err));        
     }
 
     getWorkflowProcedures(): Promise<WorkflowTaskProcedure[]> {

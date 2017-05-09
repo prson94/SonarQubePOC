@@ -1933,7 +1933,7 @@ namespace d360.web.Controllers.Services
         }
 
         [Route("type/{typeId:int}/myinstances")]
-        public HttpResponseMessage GetAssignedWorkflowInstances(int typeId)
+        public HttpResponseMessage GetAssignedWorkflowInstances(int typeId, int resourceId = 0)
         {
             try
             {
@@ -1964,12 +1964,12 @@ namespace d360.web.Controllers.Services
 	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                                 where
-                                    wt.id = @typeId
+                                    wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
                            ";
 
                 var w = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
 
-                var res = Company.Query<dynamic>(sql, new { r = Company.CurrentResourceID, typeId = typeId });
+                var res = Company.Query<dynamic>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId });
 
                 return Request.CreateResponse(new { items = res, workflow = w });
             }

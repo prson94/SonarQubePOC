@@ -85,7 +85,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
     private load() {
         this.isLoading = true;
-        this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId)
+        this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId, this.resourceID)
             .then(res => {
                 this.isLoading = false;
                 this.items = res.items;

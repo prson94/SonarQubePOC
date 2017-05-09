@@ -7110,18 +7110,21 @@ SELECT (
         private IEnumerable<CountModel> LoadWorkflowAssignmentsCount(int resourceId)
         {
             var sql = @"select
-	                            t.name as Name
-                                ,t.id as Id
-                                ,count(1) as Total                                
-                            from
-	                            workflow.itemassignment ia
-	                            inner join workflow.item i on (ia.itemid = i.id)
-	                            inner join workflow.[version] v on (v.id = i.versionid)
-	                            inner join workflow.[type] t on (v.typeid = t.id)
-                                inner join [cache].[object] co on (i.[object] = co.[object] and i.[objectid] = co.[objectid])
-                            where
-	                            ia.resourceobject = 'Resource' and ia.resourceobjectid = @r
-                            group by t.name, t.id order by t.Name";
+	                             wt.name as Name
+                                ,wt.id as Id
+                                ,count(1) as Total 
+                                from
+	                                [workflow].[type] wt
+	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
+	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)
+	                                inner join [reporting].global_resource gr on (wi.startedby = gr.resourceid)
+	                                inner join [cache].objectdetails od on(od.[object] = wi.[object] and od.[objectid] = wi.[objectid])
+	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+                                where
+                                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
+									group by wt.name, wt.id order by wt.Name";
 
             return Company.Query<CountModel>(sql, new { r = resourceId });
         }
