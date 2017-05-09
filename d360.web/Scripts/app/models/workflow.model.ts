@@ -385,7 +385,7 @@ export enum WorkflowFormFieldType {
 }
 
 export enum WorkflowActivityType {
-    None = 1,
+    None = 0,
     EmailNotification = 1,
     StatusChange = 2,
     Form = 3,

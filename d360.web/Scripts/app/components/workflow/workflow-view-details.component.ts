@@ -107,7 +107,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                     var step = res.Steps.filter(x => x.ID == item.StepID);
 
                     if (!step || step.length == 0) {
-                        item.StepName = "";
+                        item.StepName = "(unresolved)";
                         continue;
                     }
                     item.StepName = step[0].Name;

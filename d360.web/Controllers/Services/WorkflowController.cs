@@ -1314,7 +1314,9 @@ namespace d360.web.Controllers.Services
             // get the itemsteps for this workflow instance
 
             var itemSteps = Company.WorkflowItemSteps.Where(x => x.ItemID == itemId);
-            var steps = Company.WorkflowVersionSteps.Where(x => x.VersionID == item.VersionID);
+
+            var stepIDs = itemSteps.Select(y => y.StepID).ToArray();
+            var steps = Company.WorkflowVersionSteps.Where(x => stepIDs.Contains(x.ID)).ToList();
             var workflow = Company.WorkflowTypes.Where(x => x.ID == item.Version.TypeID).FirstOrDefault();
 
             ObjectDetail objectDetails = null;
