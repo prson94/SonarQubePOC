@@ -7,6 +7,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
 import { StepType, WorkflowActivityType } from '../../models/workflow.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 
 @Component({
@@ -45,7 +46,12 @@ import { StepType, WorkflowActivityType } from '../../models/workflow.model';
                         <div class="col s12">
                             <p-dataTable #dt [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="details?.ItemSteps" selectionMode="single">                    
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                                <p-column field="StepName" header="Step Name" sortable="false"></p-column>
+                                <p-column field="StepName" header="Step Name" sortable="false">
+                                    <template let-itemStep="rowData" pTemplate type="body">
+                                        <span *ngIf="itemStep.CompletedOn">{{itemStep.StepName}}</span>
+                                        <span *ngIf="!itemStep.CompletedOn && itemStep.ActivityType =='Form'"><a (click)="showForm(itemStep)">{{itemStep.StepName}}</a></span>
+                                    </template>
+                                </p-column>
                                 <p-column field="StepType" header="Step Type" sortable="false"></p-column>
                                 <p-column field="ActivityType" header="Activity Type" sortable="false"></p-column>
                                 <p-column field="StartedOn" header="Date Started" sortable="true">
@@ -130,5 +136,10 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
         if (!step || step.length == 0) return "";
         return step[0].Name;
+    }
+
+    private showForm(item: any) {
+        console.log(item);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowId}/${item.ID}/${item.ItemID}`);
     }
 };

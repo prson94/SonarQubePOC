@@ -1178,7 +1178,28 @@ namespace d360.web.Controllers.Services
                                  ).ToList();
 
 
-            var details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
+            ObjectDetail details = null;
+
+            switch (itemStep.Item.Object)
+            {
+                case "Issue":
+                    var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+
+                    var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
+                    if (issue != null)
+                    {
+                        details = new ObjectDetail
+                        {
+                            Type = "Action",
+                            Name = comment != null ? comment.Body : "",
+                            TypeName = issue.IssueType.Name
+                        };
+                    }
+                    break;
+                default:
+                    details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
+                    break;
+            }
 
             var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(itemStep.Step.Settings));
 
