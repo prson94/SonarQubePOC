@@ -86,7 +86,7 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                         </div>                                
                     </div>
                     <div class="col s8" *ngIf="selected && selected.ID > 0">    
-                        <d3s-workflow-diagram [id]="selected.ID" readonly="true"></d3s-workflow-diagram>
+                        <d3s-workflow-diagram [id]="selected.ID" [version]="selected.Version" readonly="true"></d3s-workflow-diagram>
                     </div>
                 </div>                                            
                 `,

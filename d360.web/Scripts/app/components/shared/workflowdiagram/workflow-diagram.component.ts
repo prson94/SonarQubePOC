@@ -51,6 +51,7 @@ declare var window: any;
 
 export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() id: number = 0;
+    @Input() version: number = null;
     @Input() readonly: boolean = true;
     @Input() hasClose: boolean = false;
     @Input() hasBack: boolean = false;
@@ -276,7 +277,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
         this.isLoading = true;
 
-        return this.workflowService.getWorkflowDiagram(this.id)
+        return this.workflowService.getWorkflowDiagram(this.id, this.version)
             .then(r => {
                 this.model = r;
                 if (this.model.Nodes != null)

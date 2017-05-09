@@ -116,7 +116,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
 
         this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden'); 
 
-        console.log(this.data.Columns);
+        //console.log(this.data.Columns);
     }
 
     private formatAsNumber(val): string {

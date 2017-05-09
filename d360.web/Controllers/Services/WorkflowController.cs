@@ -976,10 +976,10 @@ namespace d360.web.Controllers.Services
         }
 
         [Route("diagram/{id:int}")]
-        public WorkflowDiagramModel GetWorkflowDiagram(int id)
+        public WorkflowDiagramModel GetWorkflowDiagram(int id, int? version = null)
         {
-            var nodes = Company.Query<WorkflowDiagramNode>(QueryConstants.WorkflowDiagramNodes, new { id }).ToList();
-            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id }).ToList();
+            var nodes = Company.Query<WorkflowDiagramNode>(QueryConstants.WorkflowDiagramNodes, new { id, version }).ToList();
+            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id, version }).ToList();
             var name = Company.Query<string>(@"select name from workflow.[type] where id = @id", new { id }).ToList().First().ToString();
             var type = Company.WorkflowTypes.Find(id);
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
@@ -1424,6 +1424,7 @@ namespace d360.web.Controllers.Services
         {
 
             int versionID = 0;
+            bool newVersion = false;
 
             try
             {
@@ -1495,11 +1496,13 @@ namespace d360.web.Controllers.Services
                             if (model.Type.PublishedVersionID == null)
                             {
                                 versionID = version.ID;
+                                newVersion = true;
                             } 
                             else
                             {
                                 versionID = version.ID;
                                 type.PublishedVersionID = version.ID;
+                                newVersion = true;
                             }
                         } 
                         //current version is not published
@@ -1553,45 +1556,16 @@ namespace d360.web.Controllers.Services
 
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
 
-                    var existingSteps = Company.WorkflowVersionSteps.Where(s => 
-                        s.State == core.enums.State.Active 
-                        && s.VersionID == versionID)
-                        .ToList();
-
-                    var existingLinks = new List<WorkflowVersionStepTransition>();
-
-                    existingSteps.ForEach(s =>
+                    //new version, ignore previous diagram and create new
+                    if (newVersion)
                     {
-                        var transition = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == s.ID && t.State == core.enums.State.Active);
-                        if (transition != null)
-                            existingLinks.AddRange(transition);
-                    });
-
-                    existingLinks.ForEach(l =>
-                    {
-                        if (existingSteps.Count(s => s.ID == l.ToVersionStepID) < 1)
+                        if (model?.Nodes?.Count > 0)
                         {
-                            l.State = core.enums.State.Deleted;
-                            var fromLinks = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == l.ToVersionStepID && t.State == core.enums.State.Active).ToList();
-
-                            fromLinks.ForEach(f => { f.State = core.enums.State.Deleted; });
-                        }
-
-                    });
-
-                    Company.SaveChanges();
-
-                    if (model?.Nodes?.Count > 0)
-                    {
-                        //TODO: parse nodes and add
-                        model.Nodes.ForEach(n =>
-                        {
-
-                            int id = 0;
-                            int.TryParse(n.Key, out id);
-
-                            if (id < 0)
+                            model.Nodes.ForEach(n =>
                             {
+                                int id = 0;
+                                int.TryParse(n.Key, out id);
+
                                 var step = new WorkflowVersionStep();
                                 step.ID = 0;
                                 step.Name = n.Name ?? "";
@@ -1611,73 +1585,30 @@ namespace d360.web.Controllers.Services
                                 Company.Add(step);
                                 Company.SaveChanges();
                                 keyMapping.Add(id, step.ID);
-                            }
-                            else if (id > 0)
-                            {
-                                //modify
+                            });
+                        }
 
-
-                                var node = Company.WorkflowVersionSteps.Find(id);
-
-                                var existing = existingSteps.Find(s => s.ID == id);
-                                if (existing != null) existingSteps.Remove(existing);
-
-                                if (node != null)
-                                {
-                                    node.ActivityType = n.ActivityType;
-                                    node.Name = n.Name ?? "";
-                                    node.StepType = n.StepType;
-                                    node.XPosition = n.XPosition;
-                                    node.YPosition = n.YPosition;
-                                    node.VersionID = versionID;
-                                    node.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
-
-                                    if (string.IsNullOrEmpty(n.Fields))
-                                        node.Fields = null;
-                                    else
-                                        node.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
-
-                                    keyMapping.Add(id, id);
-                                }
-                            }
-                        });
-                        Company.SaveChanges();
-                    }
-
-                    if (existingSteps.Count > 0 && model?.Nodes?.Count > 0)
-                    {
-                        //mark anything left as deleted
-                        existingSteps.ForEach(s => s.State = core.enums.State.Deleted);
-                        Company.SaveChanges();
-                    }
-
-                    if (model?.Links?.Count > 0)
-                    {
-                        //TODO: parse links and add
-                        model.Links.ForEach(l =>
+                        if (model?.Links?.Count > 0)
                         {
-                            int from = 0;
-                            int to = 0;
-
-                            int.TryParse(l.FromKey, out from);
-                            int.TryParse(l.ToKey, out to);
-
-                            bool fromNew = (from < 0);
-                            bool toNew = (to < 0);
-
-                            var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
-
-
-
-                            if (fromNew || toNew || link == null)
+                            model.Links.ForEach(l =>
                             {
-                                if (link == null)
-                                    link = new WorkflowVersionStepTransition();
+                                int from = 0;
+                                int to = 0;
 
+                                int.TryParse(l.FromKey, out from);
+                                int.TryParse(l.ToKey, out to);
+
+                                var link = new WorkflowVersionStepTransition();
+
+                                link.FromVersionStepID = keyMapping[from];
+                                link.ToVersionStepID = keyMapping[to];
+                                link.Name = l.Name;
                                 link.FromVersionStepID = keyMapping[from];
                                 link.ToVersionStepID = keyMapping[to];
                                 link.Name = l.Name ?? "";
                                 link.TransitionType = l.TransitionType;
+
+
 
                                 //need to map new form conditions to their appropriate step id's 
                                 if (!string.IsNullOrEmpty(l.Condition))
@@ -1715,20 +1646,138 @@ namespace d360.web.Controllers.Services
                                 link.State = core.enums.State.Active;
 
                                 Company.Add(link);
-                            }
-                            else
+
+                            });
+                        }
+                    }
+                    //not a new version - handle add/delete/modify
+                    else
+                    {
+                        var existingSteps = Company.WorkflowVersionSteps.Where(s =>
+                            s.State == core.enums.State.Active
+                            && s.VersionID == versionID)
+                            .ToList();
+
+                        var existingLinks = new List<WorkflowVersionStepTransition>();
+
+                        existingSteps.ForEach(s =>
+                        {
+                            var transition = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == s.ID && t.State == core.enums.State.Active);
+                            if (transition != null)
+                                existingLinks.AddRange(transition);
+                        });
+
+                        existingLinks.ForEach(l =>
+                        {
+                            if (existingSteps.Count(s => s.ID == l.ToVersionStepID) < 1)
                             {
-                                //var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
+                                l.State = core.enums.State.Deleted;
+                                var fromLinks = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == l.ToVersionStepID && t.State == core.enums.State.Active).ToList();
 
-                                var existing = existingLinks.Find(t => t.FromVersionStepID == link.FromVersionStepID && t.ToVersionStepID == link.ToVersionStepID);
-                                if (existing != null) existingLinks.Remove(existing);
+                                fromLinks.ForEach(f => { f.State = core.enums.State.Deleted; });
+                            }
 
-                                if (link != null)
+                        });
+
+                        Company.SaveChanges();
+
+                        if (model?.Nodes?.Count > 0)
+                        {
+                            //TODO: parse nodes and add
+                            model.Nodes.ForEach(n =>
+                            {
+
+                                int id = 0;
+                                int.TryParse(n.Key, out id);
+
+                                if (id < 0)
                                 {
+                                    var step = new WorkflowVersionStep();
+                                    step.ID = 0;
+                                    step.Name = n.Name ?? "";
+                                    step.StepType = n.StepType;
+                                    step.ActivityType = n.ActivityType;
+                                    step.XPosition = n.XPosition;
+                                    step.YPosition = n.YPosition;
+                                    step.VersionID = versionID;
+                                    step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                    step.State = core.enums.State.Active;
+
+                                    if (string.IsNullOrEmpty(n.Fields))
+                                        step.Fields = null;
+                                    else
+                                        step.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+
+                                    Company.Add(step);
+                                    Company.SaveChanges();
+                                    keyMapping.Add(id, step.ID);
+                                }
+                                else if (id > 0)
+                                {
+                                    //modify
+
+
+                                    var node = Company.WorkflowVersionSteps.Find(id);
+
+                                    var existing = existingSteps.Find(s => s.ID == id);
+                                    if (existing != null) existingSteps.Remove(existing);
+
+                                    if (node != null)
+                                    {
+                                        node.ActivityType = n.ActivityType;
+                                        node.Name = n.Name ?? "";
+                                        node.StepType = n.StepType;
+                                        node.XPosition = n.XPosition;
+                                        node.YPosition = n.YPosition;
+                                        node.VersionID = versionID;
+                                        node.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+
+                                        if (string.IsNullOrEmpty(n.Fields))
+                                            node.Fields = null;
+                                        else
+                                            node.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+
+                                        keyMapping.Add(id, id);
+                                    }
+                                }
+                            });
+                            Company.SaveChanges();
+                        }
+
+                        if (existingSteps.Count > 0 && model?.Nodes?.Count > 0)
+                        {
+                            //mark anything left as deleted
+                            existingSteps.ForEach(s => s.State = core.enums.State.Deleted);
+                            Company.SaveChanges();
+                        }
+
+                        if (model?.Links?.Count > 0)
+                        {
+                            //TODO: parse links and add
+                            model.Links.ForEach(l =>
+                            {
+                                int from = 0;
+                                int to = 0;
+
+                                int.TryParse(l.FromKey, out from);
+                                int.TryParse(l.ToKey, out to);
+
+                                bool fromNew = (from < 0);
+                                bool toNew = (to < 0);
+
+                                var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
+
+
+
+                                if (fromNew || toNew || link == null)
+                                {
+                                    if (link == null)
+                                        link = new WorkflowVersionStepTransition();
+
+                                    link.FromVersionStepID = keyMapping[from];
+                                    link.ToVersionStepID = keyMapping[to];
                                     link.Name = l.Name ?? "";
                                     link.TransitionType = l.TransitionType;
-                                    link.FromPortID = l.FromPortID;
-                                    link.ToPortID = l.ToPortID;
 
                                     //need to map new form conditions to their appropriate step id's 
                                     if (!string.IsNullOrEmpty(l.Condition))
@@ -1759,21 +1808,73 @@ namespace d360.web.Controllers.Services
                                         }
                                     }
 
-
-
                                     link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
                                     link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
+                                    link.FromPortID = l.FromPortID;
+                                    link.ToPortID = l.ToPortID;
+                                    link.State = core.enums.State.Active;
+
+                                    Company.Add(link);
                                 }
-                            }
-                        });
+                                else
+                                {
+                                    //var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
 
-                        Company.SaveChanges();
-                    }
+                                    var existing = existingLinks.Find(t => t.FromVersionStepID == link.FromVersionStepID && t.ToVersionStepID == link.ToVersionStepID);
+                                    if (existing != null) existingLinks.Remove(existing);
 
-                    if (existingLinks.Count > 0 && model?.Links?.Count > 0)
-                    {
-                        existingLinks.ForEach(l => l.State = core.enums.State.Deleted);
-                        Company.SaveChanges();
+                                    if (link != null)
+                                    {
+                                        link.Name = l.Name ?? "";
+                                        link.TransitionType = l.TransitionType;
+                                        link.FromPortID = l.FromPortID;
+                                        link.ToPortID = l.ToPortID;
+
+                                        //need to map new form conditions to their appropriate step id's 
+                                        if (!string.IsNullOrEmpty(l.Condition))
+                                        {
+                                            dynamic condition = JsonConvert.DeserializeObject(l.Condition);
+
+                                            if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count > 0)
+                                            {
+                                                for (int i = 0; i < condition.Conditions.Condition.Count; i++)
+                                                {
+                                                    var c = condition.Conditions.Condition[i];
+
+                                                    if (c["@VersionStepID"] != null && c["@VersionStepID"] < 0)
+                                                    {
+                                                        condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
+                                                    }
+                                                }
+                                                l.Condition = JsonConvert.SerializeObject(condition);
+                                            }
+                                            else if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count == 0)
+                                            {
+                                                condition.Conditions = null;
+                                                l.Condition = JsonConvert.SerializeObject(condition);
+                                            }
+                                            else
+                                            {
+                                                l.Condition = JsonConvert.SerializeObject(condition);
+                                            }
+                                        }
+
+
+
+                                        link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
+                                        link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
+                                    }
+                                }
+                            });
+
+                            Company.SaveChanges();
+                        }
+
+                        if (existingLinks.Count > 0 && model?.Links?.Count > 0)
+                        {
+                            existingLinks.ForEach(l => l.State = core.enums.State.Deleted);
+                            Company.SaveChanges();
+                        }
                     }
                 }
 

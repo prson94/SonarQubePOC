@@ -266,8 +266,8 @@ export class WorkflowService extends BaseService implements IWorkflowService {
 
     //#region diagram
 
-    public getWorkflowDiagram(id: number): Promise<WorkflowDiagramModel> {
-        return this.http.get(`services/workflow/diagram/${id}`)
+    public getWorkflowDiagram(id: number, version?: number): Promise<WorkflowDiagramModel> {
+        return this.http.get(`services/workflow/diagram/${id}${version != null ? '?version=' + version : ''}`)
             .toPromise()
             .then(response => <WorkflowDiagramModel>response.json())
             .catch(err => this.handleError(err));

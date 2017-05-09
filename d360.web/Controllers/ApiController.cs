@@ -2736,6 +2736,29 @@ from    [Intersect] I
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
                                 #endregion
                                 break;
+                            case "TaxonomyType":
+                                var tc = new ComplexColumnModel
+                                {
+                                    DisplayColumn = objectDisplayColumn,
+                                    text = objectFriendlyName,
+                                    datafield = $"{dataField}",
+                                    OutputColumn = true,
+                                    contextfield = $"{dataField}_Context",
+                                    objectfield = $"{dataField}_Object",
+                                    objectidfield = $"{dataField}_ObjectID",
+                                    SortColumn = objectSortColumn,
+                                    urlfield = $"{dataField}_Url"
+                                };
+                                setColumnTypeInfo(ft, i, tc);
+                                tc.datafieldtype = "lookup"; //must be done after function call above.
+                                columnModels.Add(tc);
+
+                                // Add the fields that you need to create link in Angular component.
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Taxonomy'", datafield = $"{dataField}_Object" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Taxonomy', A{pos}.TaxonomyTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                break;
                             default:
                                 if (i.Object == "ReferenceItemType" && i.ObjectID == 0)
                                 {
