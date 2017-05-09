@@ -25,7 +25,7 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                                             <div [ngSwitch]="field.FieldType" class="col s12">
                                                 <div class="FieldName" [innerHtml]="field.Label"></div>
                                                 <input *ngSwitchCase="fieldType.Text" [name]="'input_'+indx" style="width: 100%;" type="string" [(ngModel)]="field.Value" >  
-                                                <input *ngSwitchCase="fieldType.Boolean" type="checkbox" [(ngModel)]="field.Value" [name]="'input_'+indx"/> 
+                                                <p-toggleButton onLabel="Yes" offLabel="No" onIcon="fa-check-square" offIcon="fa-times" *ngSwitchCase="fieldType.Boolean" [(ngModel)]="field.Value" [name]="'input_'+indx"></p-toggleButton>
                                                 <input *ngSwitchCase="fieldType.Integer" [name]="'input_'+indx" style="width: 100%;" type="number" [(ngModel)]="field.Value" >  
                                                 <textarea *ngSwitchCase="fieldType.TextArea" [name]="'input_'+indx" style="width: 100%;" [(ngModel)]="field.Value" ></textarea>
                                                 <p-calendar *ngSwitchCase="fieldType.Date" [(ngModel)]="field.Value" [name]="'input_'+indx"></p-calendar>

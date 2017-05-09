@@ -33,6 +33,7 @@ import {
     GrowlModule,
     CalendarModule,
     InputTextModule,
+    ToggleButtonModule,
     DataTableModule,
     ButtonModule,
     DropdownModule,
@@ -54,7 +55,8 @@ import {
         //primeng  
         CalendarModule,
         GrowlModule,
-        InputTextModule,        
+        ToggleButtonModule,
+        InputTextModule,
         DataTableModule,
         ButtonModule,
         DropdownModule,
