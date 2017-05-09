@@ -107,10 +107,12 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
 
     private updateStatus() {
         if (this.objectType.toUpperCase() == "ARTIFACT") {
-            this.artifactService.getArtifact(this.objectID)
-                .then(res => {
-                    if (res) this.status = res.Status;
-                });            
+            window.setTimeout(x => {
+                this.artifactService.getArtifact(this.objectID)
+                    .then(res => {
+                        if (res) this.status = res.Status;
+                    });
+            }, 3000);
         }
     }
 

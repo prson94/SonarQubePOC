@@ -67,8 +67,7 @@ export class ArtifactService extends BaseService {
             for (let att of attributes) {
                 uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
                 count++;
-            }
-            //uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
+            }            
         }
 
         if (relationships != undefined) {
@@ -81,8 +80,6 @@ export class ArtifactService extends BaseService {
                 uri += `&rel_typeid_${count}=${rel.relationshipType.IntersectTypeID}&rel_includetype_${count}=${rel.includeType}&rel_object_${count}=${rel.relationshipType.TargetType.replace("Type", "")}&rel_objectids_${count}=${rel.objectIds.join(",")}`;
                 count++;
             }
-
-            //uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}&RelationshipIntersectTypeID=${relationships.relationshipType.IntersectTypeID}`;
         }        
 
         if (simpleFilter != undefined) {
@@ -152,8 +149,7 @@ export class ArtifactService extends BaseService {
             for (let att of attributes) {
                 uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
                 count++;
-            }
-            //uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
+            }            
         }
 
         if (relationships != undefined) {
@@ -162,9 +158,7 @@ export class ArtifactService extends BaseService {
             for (let rel of relationships) {
                 uri += `&rel_typeid_${count}=${rel.relationshipType.IntersectTypeID}&rel_includetype_${count}=${rel.includeType}&rel_object_${count}=${rel.relationshipType.TargetType.replace("Type", "")}&rel_objectids_${count}=${rel.objectIds.join(",")}`;
                 count++;
-            }
-
-            //uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}&RelationshipIntersectTypeID=${relationships.relationshipType.IntersectTypeID}`;
+            }            
         } 
 
         if (simpleFilter != undefined) {
