@@ -1,7 +1,7 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div class="tile tile-detail">
+<div class="tile tile-detail" style="max-height: 125px; height: 125px;">
     <div class="row">
-        <div class="col s12 m6">
+        <div class="col s12 m4">
             <div class="FieldName">
                 Published Version
             </div>
@@ -9,7 +9,7 @@
                 {{ (model?.PublishedVersion == null) ? 'Unpublished' : model?.PublishedVersion }}
             </div>
         </div>
-        <div class="col s12 m6">
+        <div class="col s12 m4">
             <div class="FieldName">
                 Current Version
             </div>
@@ -17,7 +17,7 @@
                 {{ (model?.CurrentVersion == null) ? '' : model?.CurrentVersion }}
             </div>
         </div>
-        <div class="col s12 m6">
+        <div class="col s12 m4">
             <div class="FieldName">
                 Change Type
             </div>
@@ -26,13 +26,13 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" *ngIf="!isReadOnly" style="max-height: 50px; overflow-y: auto">
         <div class="col s12">
-            <div *ngFor="let e of errors" class="errorMessage">{{e}}</div>
+            <div *ngFor="let e of errors" class="errorMessage">&bull; {{e}}</div>
         </div>
     </div>
-    <div class="row" *ngIf="!isReadOnly" style="padding-top:8px">
-        <div class="col s12">
+    <div class="row" *ngIf="!isReadOnly" style="padding-top:8px;">
+        <div class="col s6">
             <div>
                 <button pButton type="button" label="Back" (click)="onBackClick.emit()"></button>
                 <button pButton type="button" label="Save" (click)="save()" [disabled]="!isValid"></button>
@@ -47,8 +47,8 @@
         <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
     </header>
 
-    <div style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
-        <d3s-overlay-window width="500" padding="0" [(visible)]="isWindowVisible" [headerText]="overlayHeader" [overflowScroll]="false">
+    <div  *ngIf="!isLoading" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
+        <d3s-overlay-window width="500" padding="0" [(visible)]="isWindowVisible" [headerText]="overlayHeader" [overflowScroll]="true">
             <ul class="tab-menu">
                 <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'">
                     <i class="fa fa-info-circle fa-2x"></i>
@@ -60,7 +60,7 @@
                     <i class="fa fa-history fa-2x"></i>
                 </li>-->
             </ul>
-            <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px; overflow-y: auto; width:100%;">
+            <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px; overflow-y: auto; width:100%;" [style.max-height.px]="overlayMaxHeight">
                 <div *ngSwitchCase="'info'">
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
                         <div class="row">

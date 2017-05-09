@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, NgModule} from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, NgModule, OnChanges} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { XHRBackend } from '@angular/http';
 import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
@@ -11,7 +11,7 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
     [style.left]="(width >= 0) ? '-' + width + 'px' : null" 
     [style.width]="width + 'px'" 
     [style.height]="(height >= 0) ? height + 'px' : null" 
-    [style.max-height]="maxHeight + 'px'" 
+    [style.max-height.px]="maxHeight" 
     [style.max-width]="maxWidth + 'px'" 
     [style.padding]="padding + 'px'"
     [style.overflow-y]="overflowScroll ? 'auto' : 'hidden'">
@@ -39,7 +39,7 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
     ]
 })
 
-export class OverlayWindowComponent {
+export class OverlayWindowComponent implements OnChanges {
     @Input() maxWidth: number = Infinity;
     @Input() maxHeight: number = Infinity;
     @Input() width: number = -1;
@@ -53,6 +53,10 @@ export class OverlayWindowComponent {
     @Output() visibleChange = new EventEmitter();
 
     constructor() { }
+
+    ngOnChanges() {
+
+    }
 
     onDrag(e: any) {
         console.log(e);

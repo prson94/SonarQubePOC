@@ -89,6 +89,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private showNodeTabs = false;
     private showLinkTabs = false;
     private overlayHeader = 'Info';
+    private overlayMaxHeight = 500;
+
+    private overlayOffset = 391;
+    private diagramOffset = 291;
 
     private hasType = false;
 
@@ -118,6 +122,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         this.initializeDiagram();
         this.initializeMenuItems();
 
+        this.resizeDiagram();
+
         this.load();
 
     }
@@ -137,8 +143,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     public ngAfterViewInit() {
-        this.resizeDiagram();
-        //this.resizePalette();
+        //this.resizeDiagram();
     }
 
     public ngOnDestroy() {
@@ -181,7 +186,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
 
         this.myDiagram.validCycle = go.Diagram.CycleNotDirected; //disallow cycles
-        this.myDiagram.maxSelectionCount = 1; //only select 1 item at a time, this simplifies a lot of things
+        this.myDiagram.maxSelectionCount = 1; //only select 1 item at a time, this makes handling selections a lot easier
     }
 
     private initializePalette() {
@@ -282,7 +287,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
             .then(r => this.fieldTypes = r)
             .then(() => this.parseData(this.model))
-            .then(() => { this.isLoading = false; this.hasType = true; console.log('model: ', this.model); });
+            .then(() => { this.isLoading = false; this.hasType = true; });
 
 
     }
@@ -598,6 +603,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private validateNode(n: NodeModel): boolean {
+        if (this.isReadOnly)
+            return true;
+
         switch (n.activityType) {
             case WorkflowActivityType.EmailNotification:
 
@@ -663,7 +671,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private validateLink(l: LinkModel): boolean {
-        console.log('validate link', l, l.condition == null, l.condition.length < 1);
+        if (this.isReadOnly)
+            return true;
+
         switch (+l.transitionType) {
             case TransitionType.Condition:
                 if (l.condition == null || l.condition.length < 1)
@@ -680,7 +690,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private validateDiagram(): boolean {
         this.isValid = true;
         this.errors = [];
-        console.log('validateDiagram');
+        //console.log('validateDiagram');
 
         let model = <go.GraphLinksModel>this.myDiagram.model;
         let invalidNodeCount = 0;
@@ -870,19 +880,18 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         this.resizeDiagram();
-        //this.resizePalette();
     }
 
     private resizeDiagram() {
         //set the diagram div to a specific height
         //required for GoJS
 
-        let offset = this.diagramRef.nativeElement.offsetTop;
-        let height = window.innerHeight;
+        //let offset = this.diagramRef.nativeElement.offsetTop;
+        //let height = window.innerHeight;
 
-        if (this.diagramRef.nativeElement.offsetParent) {
-            offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
-        }
+        //if (this.diagramRef.nativeElement.offsetParent) {
+        //    offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
+        //}
 
         //debugging
         //console.log('resizeDiagram :: innerHeight', window.innerHeight);
@@ -890,8 +899,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         //console.log('resizeDiagram :: offsetParent', (this.diagramRef.nativeElement.offsetParent) ? this.diagramRef.nativeElement.offsetParent.offsetTop : 0);
         //console.log('resizeDiagram :: height', height - offset - 35);
 
-        this.diagramRef.nativeElement.style.height = (height - offset - 35) + 'px';
-        this.paletteRef.nativeElement.style.height = (height - offset - 35) + 'px';
+        //this.diagramRef.nativeElement.style.height = (height - offset - 35) + 'px';
+        //this.paletteRef.nativeElement.style.height = (height - offset - 35) + 'px';
+
+        this.diagramRef.nativeElement.style.height = (window.innerHeight - this.diagramOffset) + 'px';
+        this.paletteRef.nativeElement.style.height = (window.innerHeight - this.diagramOffset) + 'px';
+        this.overlayMaxHeight = window.innerHeight - this.overlayOffset;
+
+        //this.overlayMaxHeight = height - offset - 35;
+        //console.log(this.overlayMaxHeight);
     }
 
     private reOrderLayout() {
@@ -957,6 +973,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
 
     private deleteSelection() {
 
+        if (this.isReadOnly)
+            return;
+
         let links: LinkModel[] = [];
         let nodes: NodeModel[] = [];
         let coll: go.Part[] = [];
@@ -996,28 +1015,32 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
         nodes.forEach(n => {
             if (n.activityType == WorkflowActivityType.Form) {
                 let canDelete = true;
-                n.fields.form.field.forEach(f => {
-                    if (this.workflowFieldsService.getUsedFields().findIndex(u => u.stepId == n.key) > -1) {
-                        canDelete = false;
+                if (n.fields.form != null) {
+                    n.fields.form.field.forEach(f => {
+                        if (this.workflowFieldsService.getUsedFields().findIndex(u => u.stepId == n.key) > -1) {
+                            canDelete = false;
 
-                        //need to remove pending delete on link
-                        let parts = coll.filter(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == n.key);
-                        parts.forEach(p => {
-                            let i = coll.findIndex(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == p.data.from);
-                            let l = this.myDiagram.findPartForData(p);
-                            if (i > -1) {
-                                coll = coll.splice(i, 1);
-                            }
-                            if (l != null && l.data.condition != null)
-                                l.data.condition.forEach(c => {
-                                    this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], l.data.key, l.data.name);
-                                });
-                        });
+                            //need to remove pending delete on link
+                            let parts = coll.filter(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == n.key);
+                            parts.forEach(p => {
+                                let i = coll.findIndex(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == p.data.from);
+                                let l = this.myDiagram.findPartForData(p);
+                                if (i > -1) {
+                                    coll = coll.splice(i, 1);
+                                }
+                                if (l != null && l.data.condition != null)
+                                    l.data.condition.forEach(c => {
+                                        this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], l.data.key, l.data.name);
+                                    });
+                            });
+                        }
+                    });
+                    if (canDelete) {
+                        //remove form fields from global list
+                        n.fields.form.field.forEach(f => this.workflowFieldsService.deleteFormField(f));
+                        coll.push(this.myDiagram.findPartForData(n));
                     }
-                });
-                if (canDelete) {
-                    //remove form fields from global list
-                    n.fields.form.field.forEach(f => this.workflowFieldsService.deleteFormField(f));
+                } else {
                     coll.push(this.myDiagram.findPartForData(n));
                 }
             } else {
@@ -1166,7 +1189,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     name: "NodeShape",
                 },
                     new go.Binding("fill", "back").makeTwoWay(),
-                    new go.Binding("stroke", "valid", v => { return v ? nodeBorderColor : '#f00' })
+                    new go.Binding("stroke", "valid", v => { return (v || this.isReadOnly) ? nodeBorderColor : '#f00' })
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomLeft,
@@ -1257,10 +1280,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.g(go.Shape, {
                 stroke: "gray", strokeWidth: 2
             },
-                new go.Binding("stroke", "valid", v => { return v ? "gray" : "red" })),
+                new go.Binding("stroke", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" })),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
-                new go.Binding("fill", "valid", v => { return v ? "gray" : "red" }),
-                new go.Binding("stroke", "valid", v => { return v ? "gray" : "red" })
+                new go.Binding("fill", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" }),
+                new go.Binding("stroke", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" })
             ), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, "Circle", {
@@ -1272,8 +1295,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
                     //strokeDashArray: [2, 2]
                 },
                     //only visible if there's a label
-                    new go.Binding("stroke", "valid", v => { return v ? "gray" : "red" }),
-                    new go.Binding("fill", "valid", v => { return v ? "gray" : "red" }),
+                    new go.Binding("stroke", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" }),
+                    new go.Binding("fill", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" }),
                     new go.Binding("visible", "icon", function (a) { return (a ? true : false) })
                 ), // the link shape
                 this.g(go.TextBlock, {

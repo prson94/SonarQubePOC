@@ -1423,7 +1423,6 @@ namespace d360.web.Controllers.Services
         public HttpResponseMessage PostWorkflowDiagramModel(WorkflowDiagramModel model)
         {
 
-            bool newVersion = false; //TODO: logic to determine if new version is needed
             int versionID = 0;
 
             try
@@ -1459,7 +1458,6 @@ namespace d360.web.Controllers.Services
                         Company.Add(version);
                         Company.SaveChanges();
                         versionID = version.ID;
-                        newVersion = true;
 
                         if (model.Type.PublishedVersionID != null)
                         {
@@ -1492,7 +1490,6 @@ namespace d360.web.Controllers.Services
 
                             Company.WorkflowVersions.Add(version);
                             Company.SaveChanges();
-                            newVersion = true;
 
                             //create a new version
                             if (model.Type.PublishedVersionID == null)
