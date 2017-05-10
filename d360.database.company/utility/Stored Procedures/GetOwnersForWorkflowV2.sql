@@ -7,7 +7,7 @@ begin
 			@objectType varchar(50),
 			@responsibilityTypeID int;
 
-	declare @tbl table (ID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, ResourceTypeID int, Status nvarchar(25))
+	declare @tbl table (ResourceID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, ResourceTypeID int, Status nvarchar(25))
 
 	select @objectType = object, @objectId = objectid from [workflow].[eventregistration] where typeid = @workflowID;
 	
@@ -37,7 +37,7 @@ begin
 				select 
 					R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
 				from 
-					reporting.Global_Resource R where isadministrator = 1 and status = 'Active' and resourceid = 3087
+					reporting.Global_Resource R where isadministrator = 1 and status = 'Active'
 		end
 	
 

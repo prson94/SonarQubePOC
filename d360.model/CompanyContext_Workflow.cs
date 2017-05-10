@@ -437,13 +437,12 @@ namespace d360.model
                 switch (itemStep.Step.ActivityType)
                 {
                     case WorkflowActivityType.EmailNotification:
-                        await SendWorkflowEmail(itemStep, objectInfo);
+                        await SendWorkflowEmail(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.Form:
                         // send form notification to owners
-                        if(stepSettings.FormShouldSendEmail)
-                            await SendFormWorkflowEmail(itemStep, itemStepID, itemID, objectInfo);
+                        await SendFormWorkflowEmail(itemStep, itemStepID, itemID, objectInfo, stepSettings);
                         break;
                     case WorkflowActivityType.StatusChange:
                         // change the status of this item
@@ -513,7 +512,7 @@ namespace d360.model
             }
         }
 
-        private void SaveItemAssignments(IEnumerable<dynamic> users, long itemId)
+        private void SaveItemAssignments(IEnumerable<core.entities.GlobalReportingResource> users, long itemId)
         {
             foreach (var user in users)
             {
@@ -523,7 +522,7 @@ namespace d360.model
                     CreatedOn = DateTime.UtcNow,
                     ItemID = itemId,
                     ResourceObject = "Resource",
-                    ResourceObjectID = user.ID,
+                    ResourceObjectID = user.ResourceID,
                     UpdatedBy = 0,
                     UpdatedOn = DateTime.UtcNow
                 };
@@ -650,11 +649,63 @@ namespace d360.model
                 StartTransitions(transitions, itemID, objectInfo);
         }
 
-        private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo)
+        private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
             List<string> emailedUsers = new List<string>();
-            //send an email to the owners with a form link
-            var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
+            List<core.entities.GlobalReportingResource> users = new List<core.entities.GlobalReportingResource>();
+            //based on the step settings get the users
+
+            if (settings.RecipientType == EmailTaskRecipientType.Initiator)
+            {
+                if (item.Item.StartedBy <= 0)
+                {
+                    Console.WriteLine("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
+
+                    return;
+                }
+
+                var res = GlobalReportingResources.Where(x => x.ResourceID == item.Item.StartedBy).FirstOrDefault();
+
+                if (res == null)
+                {
+                    Console.WriteLine("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.");
+
+                    return;
+                }
+
+                users.Add(res);
+
+                Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{res.Email}].");
+                emailedUsers.Add(res.Email);
+            }
+            else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
+            {
+                users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID }).ToList();
+            }
+            else if(settings.RecipientType == EmailTaskRecipientType.SpecificUser)
+            {
+                if (string.IsNullOrEmpty(settings.SpecificUser))
+                {
+                    Console.Write("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER FORM TASK.");
+
+                    return;
+                }
+
+                Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{settings.SpecificUser}].");
+
+                emailedUsers.Add(settings.SpecificUser);
+
+                var res = GlobalReportingResources.Where(x => string.Compare(x.Email,settings.SpecificUser, true) == 0).FirstOrDefault();
+
+                if(res == null)
+                {
+                    Console.WriteLine("FORM EMAIL SPECIFIC USER SET HOWEVER THE USER EMAIL IS NOT A VALID D3S EMAIL ACCOUNT.  WONT BE ABLE TO ASSIGN FORM TO USER..");
+
+                    return;
+                }
+
+                users.Add(res);
+            }
                         
             var url = "";
             var prefix = "";
@@ -688,26 +739,29 @@ namespace d360.model
             item.Fields = xml.ToString();
             SaveChanges();
 
-            var obj = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
-
-            var itemName = (obj == null) ? "(unknown)" : obj.Name;
-            var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
-            var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
-
-            var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailBody}</body></html>";
-
-            foreach (var user in users)
+            if (settings.FormShouldSendEmail)
             {
-                Console.WriteLine($"DEBUG : FORM STEP EMAIL IS EMAILING [{user.Email}].");
+                var obj = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
 
-                emailedUsers.Add(user.Email);
+                var itemName = (obj == null) ? "(unknown)" : obj.Name;
+                var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
+                var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
-                await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true);
+                var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailBody}</body></html>";
+
+                foreach (var user in users)
+                {
+                    Console.WriteLine($"DEBUG : FORM STEP EMAIL IS EMAILING [{user.Email}].");
+
+                    emailedUsers.Add(user.Email);
+
+                    await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true);
+                }
+
+                SaveItemStepEmailedUsers(item, emailedUsers);
             }
 
             SaveItemAssignments(users, itemId);
-
-            SaveItemStepEmailedUsers(item, emailedUsers);
         }
 
         private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings)
@@ -742,16 +796,12 @@ namespace d360.model
             }
         }
 
-        private async Task SendWorkflowEmail(WorkflowItemStep item, EventObjectInfo objectInfo)
+        private async Task SendWorkflowEmail(WorkflowItemStep item, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
             List<string> emailedUsers = new List<string>();
 
             if (string.IsNullOrEmpty(item.Step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
-
-            // build email from step settings.
-            var emailSettings = WorkflowEmailModel.ParseFromXml(XElement.Parse(item.Step.Settings));
             
-
             var url = "";
             var prefix = "";
             using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
@@ -765,12 +815,12 @@ namespace d360.model
 
             url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
 
-            emailSettings.BodyTemplate = ProcessMessageBody(emailSettings.BodyTemplate, objectInfo, prefix, item);
+            settings.BodyTemplate = ProcessMessageBody(settings.BodyTemplate, objectInfo, prefix, item);
 
-            emailSettings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{emailSettings.BodyTemplate}<p>Item Workflow Details {url}</p>";
+            settings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{settings.BodyTemplate}<p>Item Workflow Details {url}</p>";
 
             //if the setting to include responses from froms is enabled then get previous form responses and put in xml
-            if (emailSettings.ShouldIncludeFormResponses)
+            if (settings.ShouldIncludeFormResponses)
             {
                 var formResponses = WorkflowItemSteps.Where(x => x.ItemID == item.ItemID && x.Step.ActivityType == WorkflowActivityType.Form);
 
@@ -806,13 +856,13 @@ namespace d360.model
                         }
                     }
 
-                    emailSettings.BodyTemplate += sb.ToString();
+                    settings.BodyTemplate += sb.ToString();
 	            }
             }
 
-            emailSettings.BodyTemplate += "</body></html>";
+            settings.BodyTemplate += "</body></html>";
 
-            if (emailSettings.RecipientType == EmailTaskRecipientType.Initiator)
+            if (settings.RecipientType == EmailTaskRecipientType.Initiator)
             {
                 if (item.Item.StartedBy <= 0)
                 {
@@ -833,9 +883,9 @@ namespace d360.model
                 Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{res.Email}].");
                 emailedUsers.Add(res.Email);
 
-                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, emailSettings.BodyTemplate, true);
+                await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true);
             }
-            else if(emailSettings.RecipientType == EmailTaskRecipientType.Responsibility)
+            else if(settings.RecipientType == EmailTaskRecipientType.Responsibility)
             {
                 var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
 
@@ -845,23 +895,23 @@ namespace d360.model
 
                     emailedUsers.Add(user.Email);
 
-                    await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailSettings.BodyTemplate, true);
+                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true);
                 }
             }
-            else if(emailSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
+            else if(settings.RecipientType == EmailTaskRecipientType.SpecificUser)
             {
-                if(string.IsNullOrEmpty(emailSettings.SpecificUser))
+                if(string.IsNullOrEmpty(settings.SpecificUser))
                 {
                     Console.Write("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER EMAIL TASK.");
 
                     return;
                 }
 
-                Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{emailSettings.SpecificUser}].");
+                Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{settings.SpecificUser}].");
 
-                emailedUsers.Add(emailSettings.SpecificUser);
+                emailedUsers.Add(settings.SpecificUser);
 
-                await extensions.mail.SimpleMessage.SendMessage(emailSettings.SubjectTemplate, emailSettings.SpecificUser, "", emailSettings.BodyTemplate, true);
+                await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, settings.SpecificUser, "", settings.BodyTemplate, true);
             }
 
             SaveItemStepEmailedUsers(item, emailedUsers);

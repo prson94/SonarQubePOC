@@ -11,6 +11,18 @@ namespace d360.model.workflow
         private static string WAIT_FOR_ALL = "WaitForAllTransitions";
         private static string FORM_SHOULD_EMAIL_USERS = "SendFormEmail";
         private static string STORED_PROC_ID = "ProcedureID";
+        private static string EMAIL_MESSAGE_USER = "MessageToUser";
+        private static string EMAIL_RECIPIENT_TYPE = "MessageRecipientType";
+        private static string EMAIL_MESSAGE_BODY = "MessageBodyTemplate";
+        private static string EMAIL_MESSAGE_SUBJECT = "MessageSubjectTemplate";
+        private static string EMAIL_INCLUDE_RESPONSES = "IncludePreviousFormResponses";
+        private static string MISSING_SUBJECT_VALUE = "Data3Sixty - Workflow Email notification (missing subject)";
+        private static string MISSING_BODY_VALUE = "Data3Sixty - Workflow Email (missing body).  You are receiving this email due to a Data3Sixty workflow with an email task.  The task has been improperly configured so it doesnt have any email content";
+
+        public string SubjectTemplate { get; set; }
+        public string BodyTemplate { get; set; }
+
+        public bool ShouldIncludeFormResponses { get; set; }
 
         public bool FormShouldSendEmail { get; set; }
 
@@ -20,6 +32,10 @@ namespace d360.model.workflow
         public bool WaitForAllTransitions { get; set; }
 
         public int StoredProcedureID { get; set; }
+
+        public EmailTaskRecipientType RecipientType { get; set; }
+
+        public string SpecificUser { get; set; }
 
         public static WorkflowItemStepSettingModel ParseXml(string root)
         {
@@ -39,6 +55,11 @@ namespace d360.model.workflow
             bool waitForAll = false;
             bool formShouldEmailUsers = true;
             int storedProcedureID = -1;
+            var messageRecipientType = EmailTaskRecipientType.Initiator;
+            var specificUser = "";
+            var includeFormResponses = false;
+            var messageSubject = "";
+            var messageBody = "";
 
             if (root != null)
             {
@@ -66,6 +87,31 @@ namespace d360.model.workflow
                 {
                     int.TryParse(root.Element(STORED_PROC_ID).Value, out storedProcedureID);
                 }
+
+                if (root.Element(EMAIL_MESSAGE_USER) != null)
+                {
+                    specificUser = root.Element(EMAIL_MESSAGE_USER).Value;
+                }
+                
+                if (root.Element(EMAIL_RECIPIENT_TYPE) != null)
+                {
+                    messageRecipientType = (EmailTaskRecipientType)Enum.Parse(typeof(EmailTaskRecipientType), root.Element(EMAIL_RECIPIENT_TYPE).Value);
+                }
+
+                if(root.Element(EMAIL_MESSAGE_SUBJECT) != null)
+                {
+                    messageSubject = root.Element(EMAIL_MESSAGE_SUBJECT).Value;
+                }
+
+                if (root.Element(EMAIL_MESSAGE_BODY) != null)
+                {
+                    messageBody = root.Element(EMAIL_MESSAGE_BODY).Value;
+                }                
+                
+                if (root.Element(EMAIL_INCLUDE_RESPONSES) != null)
+                {
+                    includeFormResponses = (root.Element(EMAIL_INCLUDE_RESPONSES).Value ?? "").ToUpper() == "TRUE";
+                }
             }
 
             return new WorkflowItemStepSettingModel
@@ -74,7 +120,12 @@ namespace d360.model.workflow
                 ResponsibilityTypeID = responsibilityTypeID,
                 WaitForAllTransitions = waitForAll,
                 FormShouldSendEmail = formShouldEmailUsers,
-                StoredProcedureID = storedProcedureID
+                StoredProcedureID = storedProcedureID,
+                SpecificUser = specificUser,
+                RecipientType = messageRecipientType,
+                ShouldIncludeFormResponses = includeFormResponses,
+                SubjectTemplate = messageSubject ?? MISSING_SUBJECT_VALUE,
+                BodyTemplate = messageBody ?? MISSING_BODY_VALUE,
             };
         }
     }

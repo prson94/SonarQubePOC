@@ -16,7 +16,7 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="row" *ngIf="!isLoading">
                         <div class="col s12">
-                            <div class="tile tile-detail" *ngIf="!isCompleted">                        
+                            <div class="tile tile-detail" *ngIf="!isCompleted && isUserAllowedToComplete">                        
                                 <header>{{title}}</header>
                                 <div class="form-instructions">The following form is for the [{{objectType}}] named [<d3s-tooltip objectType="Artifact" [objectId]="objectID" tooltipType="preview">{{objectName}}</d3s-tooltip>].  <span [innerHtml]="description"></span></div>                                            
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
@@ -48,7 +48,17 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                                         <button pButton *ngIf="hasCloseButton" type="button" (click)="close();" label="Close" style="width: 150px;"></button>
                                     </div>
                                 </div>
-                            </div>                              
+                            </div>                           
+                            <div *ngIf="!isUserAllowedToComplete" class="tile tile-detail">
+                                <header>{{title}}</header>
+                                <div class="row">
+                                    <div class="col s12">You currently do not have access to complete this form.</div>
+                                    <div class="col s12">&nbsp;</div>
+                                    <div class="col s12">
+                                        <button pButton *ngIf="hasCloseButton" type="button" (click)="close();" label="Close" style="width: 150px;"></button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>                                               
                 `,
@@ -68,6 +78,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private objectID: number;
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
+    private isUserAllowedToComplete: boolean = false;
 
     @Input() hasCloseButton: boolean = true;
 
@@ -118,6 +129,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.objectName = res.ObjectName;
                 this.objectType = res.ObjectType;    
                 this.objectID = res.ObjectID;    
+                this.isUserAllowedToComplete = res.IsUserAllowedToComplete;
             });
     }
 
