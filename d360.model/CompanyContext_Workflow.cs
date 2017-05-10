@@ -1,4 +1,5 @@
-﻿using d360.core.entities.Workflow;
+﻿using d360.core;
+using d360.core.entities.Workflow;
 using d360.core.enums.Workflow;
 using d360.core.queue;
 using d360.model.workflow;
@@ -81,6 +82,61 @@ namespace d360.model
             }
             
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
+
+            return true;
+        }
+
+        public bool ExecuteTimerSteps()
+        {
+            var sql = @"select
+                            i_s.id 'FromItemStepID'
+	                        ,i_s.stepid 'FromStepID'
+	                        ,vst.toversionstepid 'ToStepID'
+	                        ,vst.settings 'SettingXml'
+	                        ,vst.settings.value('(/settings/TimerInterval)[1]', 'int') 'Days'
+	                        ,DATEADD(day, vst.settings.value('(/settings/TimerInterval)[1]', 'int'), i_s.CompletedOn) as ShouldRunOn
+                            ,i_s.Itemid as ItemID
+                            ,vst.id as VersionStepTransitionID
+                            ,i.Object
+	                        ,i.ObjectID
+                        from
+                            workflow.itemstep i_s
+                            inner join workflow.item i on (i.id = i_s.itemId and i.completedon is null)
+	                        inner join workflow.versionsteptransition vst on(vst.fromversionstepid = i_s.stepid and vst.transitiontype = 3)
+                        where
+                            DATEADD(day, vst.settings.value('(/settings/TimerInterval)[1]', 'int'), i_s.CompletedOn) <= getutcdate()-- timers that need to be run
+                                and
+                            not exists(select * from workflow.itemsteptransition s_ist inner join workflow.itemstep s_isf on (s_isf.id = s_ist.fromitemstepid and s_isf.id = i_s.id) inner join workflow.itemstep s_isto on(s_isto.id = s_ist.toitemstepid and s_isto.itemid = i_s.itemid and s_isto.stepid = vst.toversionstepid))";
+
+            var res = Query<dynamic>(sql);
+
+            var events = new List<EventInfo>();
+
+            foreach (var transition in res)
+            {
+                SystemObjects objectType = SystemObjects.Artifact;
+                if (!Enum.TryParse<SystemObjects>(transition.Object, true, out objectType)) continue;
+
+                events.Add(new EventInfo
+                {
+                    CompanyID = CurrentCompanyID,
+                    DomainPrefix = CurrentCompanyDomain,
+                    ResourceID = CurrentResourceID,
+                    WorkflowItemID = transition.ItemID,
+                    VersionStepTransitionID = transition.VersionStepTransitionID,
+                    Action = ChangeType.Add, // irrelevant
+                    Object = new EventObjectInfo
+                    {
+                        Object = objectType,
+                        ObjectID = transition.ObjectID,
+                        ObjectType = SystemObjects.ArtifactType //doesnt matter needs value to serialize and there is no none in the enum                  
+                    }
+                });
+            }
+
+            //add topic messages for the transitions
+            QueueSource.CreateTopicMessages(events);
+            //
 
             return true;
         }
@@ -216,7 +272,7 @@ namespace d360.model
             Console.WriteLine("DEBUG - PROCESSING START ITEM STEP.");
 
             var transitions = WorkflowVersionStepTransitions
-                .Where(i => i.FromVersionStepID == firstVersionStep.ID)
+                .Where(i => i.FromVersionStepID == firstVersionStep.ID && i.TransitionType != TransitionType.Timer)
                 .ToList();
 
             //take any settings from the event registration and apply them in this start step
@@ -230,7 +286,8 @@ namespace d360.model
 
             Console.WriteLine("DEBUG - STARTING WORKFLOW TRANSITIONS.");
 
-            StartTransitions(transitions, item.ID, objectInfo);
+            if(transitions.Count > 0)
+                StartTransitions(transitions, item.ID, objectInfo);
 
             Console.WriteLine("DEBUG - WORKFLOW INSTANCE SUCESSFULLY CREATED.");
 
@@ -303,7 +360,24 @@ namespace d360.model
                     if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");
                     //evaluate the condition then determine if we move to next step
                     transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID);                    
-                    break;                                
+                    break;
+                case TransitionType.Timer:
+                    //check if this timer transtion has a condition if so evaluate it
+                    Console.WriteLine("DEBUG - EVALUATING TIMER TRANSITION");
+                    transitionPassed = true;
+                    if (!string.IsNullOrEmpty(transition.Condition))
+                    {
+                        var root = XElement.Parse(transition.Condition);
+
+                        if(root != null && root.Element("Condition") != null)
+                        {
+                            var transItem = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
+
+                            transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, transItem.Object, transItem.ObjectID, root.Element("Condition").Value, itemID);
+                        }
+                    }
+                    
+                    break;                              
             }
 
             if (transitionPassed)
@@ -642,7 +716,7 @@ namespace d360.model
 
             // get the transitions for this step and add events
             var transitions = WorkflowVersionStepTransitions
-            .Where(i => i.FromVersionStepID == itemStep.StepID)
+            .Where(i => i.FromVersionStepID == itemStep.StepID && i.TransitionType != TransitionType.Timer)
             .ToList();
 
             if(transitions.Count > 0)

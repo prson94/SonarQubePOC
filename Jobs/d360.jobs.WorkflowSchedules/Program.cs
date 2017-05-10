@@ -56,7 +56,11 @@ namespace d360.jobs.WorkflowSchedules
                             {
                                 return;
                             }
-                        }                        
+                        }
+
+                        Console.WriteLine("Executing timer transitions for company id: {0}", companyID);
+                        //evaluate any timer transitions and see if they need to be moved along    
+                        var res = company.ExecuteTimerSteps();                   
                     }
                     catch (Exception ex)
                     {
