@@ -568,6 +568,7 @@
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-relate.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-promote.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-find.component.html" />
+    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-update.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage-business-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage-technical-editor.component.html" />
     <Content Include="Scripts\app\components\shared\workflowdiagram\workflow-condition-editor.component.html" />
@@ -1008,6 +1009,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-mapping-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-mapping-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-update.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />

@@ -1454,8 +1454,11 @@ namespace d360.web.Controllers.Services
 
             try
             {
+
                 if (model.Type != null)
                 {
+                    #region Type
+
                     if (model.Type.ID < 1)
                     {
                         var type = new d360.core.entities.Workflow.Type();
@@ -1544,6 +1547,10 @@ namespace d360.web.Controllers.Services
                         Company.SaveChanges();
                     }
 
+                    #endregion
+
+                    #region Event
+
                     if (model.Event != null)
                     {
                         if (model.Event.ID < 1)
@@ -1579,12 +1586,14 @@ namespace d360.web.Controllers.Services
                         }
                     }
 
+                    #endregion
 
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
-
-                    //new version, ignore previous diagram and create new
+                    
                     if (newVersion)
                     {
+                        #region Create New Version
+
                         if (model?.Nodes?.Count > 0)
                         {
                             model.Nodes.ForEach(n =>
@@ -1675,10 +1684,13 @@ namespace d360.web.Controllers.Services
 
                             });
                         }
+
+                        #endregion
                     }
-                    //not a new version - handle add/delete/modify
                     else
                     {
+                        #region Modify Existing Version
+
                         var existingSteps = Company.WorkflowVersionSteps.Where(s =>
                             s.State == core.enums.State.Active
                             && s.VersionID == versionID)
@@ -1716,6 +1728,7 @@ namespace d360.web.Controllers.Services
                                 int id = 0;
                                 int.TryParse(n.Key, out id);
 
+                                //new step
                                 if (id < 0)
                                 {
                                     var step = new WorkflowVersionStep();
@@ -1738,11 +1751,9 @@ namespace d360.web.Controllers.Services
                                     Company.SaveChanges();
                                     keyMapping.Add(id, step.ID);
                                 }
+                                //modify exsiting step
                                 else if (id > 0)
                                 {
-                                    //modify
-
-
                                     var node = Company.WorkflowVersionSteps.Find(id);
 
                                     var existing = existingSteps.Find(s => s.ID == id);
@@ -1779,7 +1790,6 @@ namespace d360.web.Controllers.Services
 
                         if (model?.Links?.Count > 0)
                         {
-                            //TODO: parse links and add
                             model.Links.ForEach(l =>
                             {
                                 int from = 0;
@@ -1901,12 +1911,16 @@ namespace d360.web.Controllers.Services
                             existingLinks.ForEach(l => l.State = core.enums.State.Deleted);
                             Company.SaveChanges();
                         }
+                        
+                        #endregion
                     }
+
                 }
 
                 return Request.CreateResponse(HttpStatusCode.OK, model.Type.ID);
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex);
             }

@@ -43,6 +43,12 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
     lineage: LineageEditorRow[] = [];
     model: LineageEditorModel;
     queryResults: AutoCompleteItem[] = [];
+    sourceSubResults: AutoCompleteItem[] = [];
+    sourceObjResults: AutoCompleteItem[] = [];
+    targetSubResults: AutoCompleteItem[] = [];
+    targetObjResults: AutoCompleteItem[] = [];
+
+
     valid = false;
 
     intersectTypes: AutoCompleteItem[] = [];
@@ -157,7 +163,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
             case 'selectedSourceSubject':
                 this.diagramService.queryObjects(i.SourceSubjectType, i.SourceSubjectTypeID, e.query)
                     .then(r => {
-                        this.queryResults = [];
+                        this.sourceSubResults = [];
                         r.forEach(i => {
                             let a = new AutoCompleteItem();
                             a.label = i.TextPath;
@@ -169,16 +175,16 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.data = {
                                 Object: i.Object
                             }
-                            this.queryResults.push(a);
+                            this.sourceSubResults.push(a);
                         });
-                        if (this.queryResults.length == 1)
-                            this.setObjectValue(i, this.queryResults[0]);
+                        if (this.sourceSubResults.length == 1)
+                            this.setObjectValue(i, this.sourceSubResults[0]);
                     });
                 break;
             case 'selectedSourceObject':
                 this.diagramService.queryObjects(i.SourceObjectType, i.SourceObjectTypeID, e.query)
                     .then(r => {
-                        this.queryResults = [];
+                        this.sourceObjResults = [];
                         r.forEach(i => {
                             let a = new AutoCompleteItem();
                             a.label = i.TextPath;
@@ -190,10 +196,10 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.data = {
                                 Object: i.Object
                             }
-                            this.queryResults.push(a);
+                            this.sourceObjResults.push(a);
                         });
-                        if (this.queryResults.length == 1)
-                            this.setObjectValue(i, this.queryResults[0]);
+                        if (this.sourceObjResults.length == 1)
+                            this.setObjectValue(i, this.sourceObjResults[0]);
                     });
                 break;
 
@@ -225,7 +231,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
             case 'selectedTargetSubject':
                 this.diagramService.queryObjects(i.TargetSubjectType, i.TargetSubjectTypeID, e.query)
                     .then(r => {
-                        this.queryResults = [];
+                        this.targetSubResults = [];
                         r.forEach(i => {
                             let a = new AutoCompleteItem();
                             a.label = i.TextPath;
@@ -237,16 +243,16 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.data = {
                                 Object: i.Object
                             }
-                            this.queryResults.push(a);
+                            this.targetSubResults.push(a);
                         });
-                        if (this.queryResults.length == 1)
-                            this.setObjectValue(i, this.queryResults[0]);
+                        if (this.targetSubResults.length == 1)
+                            this.setObjectValue(i, this.targetSubResults[0]);
                     });
                 break;
             case 'selectedTargetObject':
                 this.diagramService.queryObjects(i.TargetObjectType, i.TargetObjectTypeID, e.query)
                     .then(r => {
-                        this.queryResults = [];
+                        this.targetObjResults = [];
                         if (r == null)
                             return;
                         r.forEach(i => {
@@ -260,10 +266,10 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             a.data = {
                                 Object: i.Object
                             }
-                            this.queryResults.push(a);
+                            this.targetObjResults.push(a);
                         });
-                        if (this.queryResults.length == 1)
-                            this.setObjectValue(i, this.queryResults[0]);
+                        if (this.targetObjResults.length == 1)
+                            this.setObjectValue(i, this.targetObjResults[0]);
                     });
                 break;
             default:
@@ -314,10 +320,10 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
 
     updateConnections() {
         this.lineage.filter(l => l.isNew).forEach(l => l.isConnected = this.checkConnected(l));
-        if (this.lineage.findIndex(l => l.isNew && !l.isConnected) >= 0)
-            this.valid = false;
-        else
-            this.valid = true;
+        //if (this.lineage.findIndex(l => l.isNew && !l.isConnected) >= 0)
+        //    this.valid = false;
+        //else
+        this.valid = true;
 
         this.lineage.filter(l => l.isNew).forEach(l => l.isDupe = false);
 

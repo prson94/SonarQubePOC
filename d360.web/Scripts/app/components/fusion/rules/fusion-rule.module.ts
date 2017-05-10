@@ -40,8 +40,7 @@ import { FusionRuleStepFindViaRelationComponent } from './fusion-rule-step-findv
 import { FusionRuleStepLineageComponent } from './fusion-rule-step-lineage.component';
 import { FusionRuleStepPromoteComponent } from './fusion-rule-step-promote.component';
 import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.component';
-
-
+import { FusionRuleStepUpdateComponent } from './fusion-rule-step-update.component';
 
 
 @NgModule({
@@ -62,6 +61,7 @@ import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.compone
         FusionRuleStepLineageComponent,
         FusionRuleStepPromoteComponent,
         FusionRuleStepRelateComponent,
+        FusionRuleStepUpdateComponent,
     ],
     exports: [
         FusionRuleStepMappingListComponent,
@@ -80,6 +80,7 @@ import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.compone
         FusionRuleStepLineageComponent,
         FusionRuleStepPromoteComponent,
         FusionRuleStepRelateComponent,
+        FusionRuleStepUpdateComponent,
     ],
     imports: [CommonModule,
         FormsModule,

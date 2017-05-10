@@ -109,6 +109,31 @@ export class FusioRuleStepBaseComponent extends BaseComponent {
                 delete settings.ParentObject;
                 delete settings.ParentObjectID;
                 break;
+            case "Update":
+                delete settings.FilterField;
+                delete settings.FilterField;
+                delete settings.FindParent;
+                delete settings.ID;
+                delete settings.IntersectType;
+                delete settings.Object;
+                delete settings.ObjectID;
+                delete settings.ObjectSearch;
+                delete settings.ParentObject;
+                delete settings.ParentObjectID;
+                delete settings.ParentObjectSearch;
+                delete settings.Role;
+                delete settings.Search;
+                delete settings.Subject;
+                //delete settings.SubjectID;
+                delete settings.SubjectSearch;
+                delete settings.TargetField;
+                delete settings.TechnicalObject;
+                delete settings.TechnicalObjectID;
+                delete settings.TechnicalObjectSearch;
+                delete settings.TechnicalSubject;
+                delete settings.TechnicalSubjectID;
+                delete settings.TechnicalSubjectSearch;
+                break;
                 //#endregion
         }
     }

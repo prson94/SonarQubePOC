@@ -6243,6 +6243,15 @@ namespace d360.web.Controllers
         {
             var targetFields = new List<SelectListItem>();
 
+            if (ruleStep.Action.ToLower() == "update")
+            {
+                //find the referenced step
+                int id = 0;
+                int.TryParse(ruleStep.GetSettingValueByName("SubjectID"), out id);
+                if (id > 0)
+                    ruleStep = Company.GetById<FusionRuleStep>(id);
+            }
+
             #region Process Target Field Logic
 
             var targetFieldIDs = ruleStep.FusionRuleStepMappings.Where(i => i.TargetFieldTypeID > 0).Select(i => i.TargetFieldTypeID).ToList();
@@ -6362,25 +6371,10 @@ namespace d360.web.Controllers
                     RuleStepID = map.RuleStepID
                 };
 
-                //var source = form["Source"].Split('|');
-                //var target = form["Target"].Split('|');
-                //var constantValue = form["ConstantValue"];
-                //var isConstantValue = form["isConstantValue"];
-
-                //if (source[1] == "0")
-                //{
                 model.SourceFieldName = map.SourceFieldName;
-                //}
-                //else
                 model.SourceFieldTypeID = map.SourceFieldTypeID;
-
-                //if (target[1] == "0")
-                //{
-                    model.TargetFieldName = map.TargetFieldName;
-                    model.TargetFieldTypeID = map.TargetFieldTypeID;
-                //}
-                //else
-                    //model.TargetFieldTypeID = int.Parse(target[1]);
+                model.TargetFieldName = map.TargetFieldName;
+                model.TargetFieldTypeID = map.TargetFieldTypeID;
 
 
                 if (map.IsConstantValue)
@@ -6604,25 +6598,9 @@ namespace d360.web.Controllers
                 var model = Company.GetById<FusionRuleStepMapping>(map.ID, i => i.FusionRuleStep.FusionRule);
                 if (model == null) throw new NotFoundException("field mapping");
 
-                //var source = form["Source"].Split('|');
-                //var target = form["Target"].Split('|');
-                //var constantValue = form["ConstantValue"];
-                //var isConstantValue = form["isConstantValue"];
-
-                //if (source[1] == "0")
-                //{
                 model.SourceFieldName = map.SourceFieldName;
-                //  model.SourceFieldTypeID = 0;
-                //}
-                //else
                 model.SourceFieldTypeID = map.SourceFieldTypeID;
-
-                //if (target[1] == "0")
-                //{
                 model.TargetFieldName = map.TargetFieldName;
-                //    model.TargetFieldTypeID = 0;
-                //}
-                //else
                 model.TargetFieldTypeID = map.TargetFieldTypeID;
 
                 if (map.IsConstantValue)

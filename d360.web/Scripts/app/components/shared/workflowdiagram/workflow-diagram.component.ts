@@ -2,8 +2,6 @@
     Component,
     Input,
     OnInit,
-    AfterViewInit,
-    AfterViewChecked,
     ElementRef,
     OnDestroy,
     ViewChild,
@@ -49,7 +47,7 @@ declare var window: any;
     providers: [PermissionsService, WorkflowService]
 })
 
-export class WorkflowDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, OnChanges {
+export class WorkflowDiagramComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
     @Input() version: number = null;
     @Input() readonly: boolean = true;
@@ -81,7 +79,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private initialLinks: go.Link[] = [];
     private initialNodes: go.Node[] = [];
     private selectedData = null;
-    private sel: any;
 
     private menuItems: MenuItem[] = [];
     private isWindowVisible = false;
@@ -92,6 +89,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     private overlayHeader = 'Info';
     private overlayMaxHeight = 500;
 
+    //hard-coded offsets for diagram and overlay. Avoids issues with rendering completing after ngAfterViewInit()
     private overlayOffset = 391;
     private diagramOffset = 291;
 
@@ -141,10 +139,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
             this.myDiagram.clearSelection();
             this.myDiagram.select(this.myDiagram.findPartForKey(changes['selectedStepId'].currentValue));
         }
-    }
-
-    public ngAfterViewInit() {
-        //this.resizeDiagram();
     }
 
     public ngOnDestroy() {
@@ -917,15 +911,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, A
     }
 
     private ChangedSelection(e: any) {
-        this.sel = e.diagram.selection;
-        if (this.sel.count == 0) {
+        let sel = e.diagram.selection;
+        if (sel.count == 0) {
             this.selectedData = null;
             this.showNodeTabs = false;
             this.showLinkTabs = false;
             this.selectedStepId = null;
             this.selectedStepIdChange.emit(null);
         } else {
-            var sel = _.cloneDeep(this.sel.toArray());
+            sel = _.cloneDeep(sel.toArray());
 
             if (sel != null && sel.length != 0) {
                 this.selectedData = sel[0].data;

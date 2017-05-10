@@ -42,6 +42,9 @@ import { TreeNode, Column } from 'primeng/primeng';
             <div *ngSwitchCase="'findrelation'"> 
                 <d3s-fusion-rule-step-findviarelation [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings" [showErrors]="showErrors" [(isValid)]="isValid"></d3s-fusion-rule-step-findviarelation>
             </div>
+            <div *ngSwitchCase="'update'"> 
+                <d3s-fusion-rule-step-update [ruleID]="ruleID" [ruleStepID]="ruleStepID" [fusionID]="model.FusionID" [(settings)]="model.RuleStep.Settings" [showErrors]="showErrors" [(isValid)]="isValid"></d3s-fusion-rule-step-update>
+            </div>
         </div> 
         <div class="row" style="margin-top: 20px">
             <div class="col s12">
@@ -70,6 +73,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
         { text: 'Find via Relationship', value: 'findrelation' },
         { text: 'Lineage', value: 'lineage' },
         { text: 'Relate', value: 'relate' },
+        { text: 'Update', value: 'update' },
     ];
 
     model: FusionRuleStepEditorModel; 
@@ -95,161 +99,10 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                     this.model = r;
                     this.model.RuleStep.Action = this.model.RuleStep.Action.toLowerCase();
                 })
-                //.then(() => this.loadSettings())
                 .then(() => this.isLoading = false);
         }
     }
     
-    //loadSettings(): Promise<any> {
-    //    let s = this.model.RuleStep.Settings;
-    //    switch (this.model.RuleStep.Action) {
-    //        case 'promote':
-    //            this.selectedPromotionItem = this.promotionItems.find(i => i.PromotionObjectType == s.Object && i.PromotionObjectID == s.ObjectID).id;
-    //            if (s.ParentObjectSearch && s.ParentObjectSearch != "") {
-    //                this.selectedPromotionSearchType = s.ParentObjectSearch.toLowerCase();
-    //            }
-    //            if (this.selectedPromotionSearchType == 'resultfromstep') {
-    //                this.selectedPromotionStep = s.ParentObjectID;
-    //                return this.changePromotionItem()
-    //                    .then(() => this.changePromotionSearchType());
-    //            } else if (this.selectedPromotionSearchType == 'direct') {
-    //                this.selectedPromotionParent = s.ParentObjectID;
-    //                return this.changePromotionItem()
-    //                    .then(() => this.changePromotionSearchType());
-    //            } else if (this.selectedPromotionSearchType == 'fusionowner') {
-    //                this.selectedPromotionFusionItem = s.ParentObjectID;
-    //                return this.changePromotionItem()
-    //                    .then(() => this.changePromotionSearchType());
-    //            }
-    //            break;
-    //        case 'relate':
-    //            this.selectedRelateIntersectType = s.IntersectType;
-
-    //            if (s.Subject == 'Step') {
-    //                this.selectedRelateSubjectSearchType = 'resultfromstep';
-    //                this.selectedRelateSubjectStep = s.SubjectID;
-    //            } else if (s.Subject == 'Owner') {
-    //                this.selectedRelateSubjectSearchType = 'fusionowner';
-    //                this.selectedRelateSubjectFusionOwnerItem = s.SubjectID;
-    //            } else {
-    //                this.selectedRelateSubjectSearchType = 'self';
-    //            }
-
-    //            if (s.Object == 'Step') {
-    //                this.selectedRelateObjectSearchType = 'resultfromstep';
-    //                this.selectedRelateObjectStep = s.ObjectID;
-    //            } else if (s.Object == 'Owner') {
-    //                this.selectedRelateObjectSearchType = 'fusionowner';
-    //                this.selectedRelateObjectFusionOwnerItem = s.ObjectID;
-    //            } else {
-    //                this.selectedRelateObjectSearchType = 'self';
-    //            }
-
-    //            return this.changeRelateSearchType(false)
-    //                .then(() => this.changeRelateSearchType(true));
-    //    }
-
-    //    return Promise.resolve();
-    //}
-
-
-    //saveSettings() {
-    //    let action = this.model.RuleStep.Action;
-    //    let s = this.model.RuleStep.Settings;
-    //    switch (action) {
-    //        case 'promote':
-    //            let promotionItem = this.promotionItems.find(i => i.id == this.selectedPromotionItem);
-    //            s.Object = promotionItem.PromotionObjectType;
-    //            s.ObjectID = promotionItem.PromotionObjectID;
-    //            s.ParentObjectTypeID = promotionItem.ParentObjectTypeID;
-
-    //            s.ParentObjectSearch = this.selectedPromotionSearchType;
-    //            if (this.selectedPromotionSearchType == 'resultfromstep') {
-    //                s.ParentObjectID = this.selectedPromotionStep;
-    //                s.FindObjectStep = this.selectedPromotionStep;
-    //            } else if (this.selectedPromotionSearchType == 'direct') {
-    //                s.ParentObjectID = this.selectedPromotionParent;
-    //            } else if (this.selectedPromotionSearchType == 'fusionowner') {
-    //                s.ParentObjectID = this.selectedPromotionFusionItem;
-    //            }
-    //            break;
-    //        case 'find':
-    //            s.FindSearchType = this.selectedFindSearchType.toString();
-
-    //            if (this.selectedFindSearchType == 'glossary') {
-    //                s.FilterField = this.selectedFindSourceField.toString();
-    //                s.Object = this.selectedFindObjectType;
-    //                s.ObjectID = this.selectedFindObject;
-    //                s.TargetField = this.selectedFindTargetField;
-    //            } else if (this.selectedFindSearchType == 'resultfromstep') {
-    //                s.Object = 'Step';
-    //                s.ObjectID = this.selectedFindStep;
-    //                s.FindParent = this.findByParent;
-    //                s.FindObjectStep = this.selectedFindStep;
-    //            } else if (this.selectedFindSearchType == 'fusion') {
-    //                s.FilterField = this.selectedFindSourceField.toString();
-    //                s.Object = 'FusionAttributeType';
-    //                s.ObjectID = this.selectedFindFusionItem;
-    //            } else if (this.selectedFindSearchType == 'fusionowner') {
-    //                s.Object = 'Owner';
-    //                s.ObjectID = this.selectedFindFusionItem;
-    //            }
-    //            break;
-    //        case 'relate':
-    //            s.IntersectType = this.selectedRelateIntersectType;
-    //            s.RelateSubjectSearchType = this.selectedRelateSubjectSearchType;
-    //            s.RelateObjectSearchType = this.selectedRelateObjectSearchType;
-
-    //            if (this.selectedRelateSubjectSearchType = 'resultfromstep') {
-    //                s.Subject = 'Step';
-    //                s.SubjectID = this.selectedRelateSubjectStep;
-    //                s.RelateSubjectStep = this.selectedRelateSubjectStep;
-    //            } else if (this.selectedRelateSubjectSearchType == 'fusionowner') {
-    //                s.Subject = 'Owner';
-    //                s.SubjectID = this.selectedRelateSubjectFusionOwnerItem;
-    //            } else if (this.selectedRelateSubjectSearchType == 'self') {
-    //                s.Subject = 'Self';
-    //                s.SubjectID = 0;
-    //            }
-
-    //            if (this.selectedRelateObjectSearchType = 'resultfromstep') {
-    //                s.Object = 'Step';
-    //                s.ObjectID = this.selectedRelateObjectStep;
-    //                s.RelateObjectStep = this.selectedRelateObjectStep;
-    //            } else if (this.selectedRelateObjectSearchType == 'fusionowner') {
-    //                s.Object = 'Owner';
-    //                s.ObjectID = this.selectedRelateObjectFusionOwnerItem;
-    //            } else if (this.selectedRelateObjectSearchType == 'self') {
-    //                s.Object = 'Self';
-    //                s.ObjectID = 0;
-    //            }
-                
-    //            break;
-    //        case 'lineage':
-    //            s.Role = this.selectedLineageRole;
-    //            s.SubjectID = this.selectedBusinessSource;
-    //            s.ObjectID = this.selectedBusinessTarget;
-    //            s.TechnicalSubjectID = this.selectedTechnicalSource;
-    //            s.TechnicalObjectID = this.selectedTechnicalTarget;
-    //            s.LineageSubjectStep = this.selectedBusinessSource;
-    //            s.LineageObjectStep = this.selectedBusinessTarget;
-    //            s.LineageTechnicalSubjectStep = this.selectedTechnicalSource;
-    //            s.LineageTechnicalObjectStep = this.selectedTechnicalTarget;
-    //            break;
-
-    //        case 'findrelation':
-    //            s.FindIntersectType = this.selectedFindRelationIntersectType;
-    //            s.FindSearchType = this.selectedFindRelationSearchType;
-    //            if (this.selectedFindRelationSearchType == 'resultfromstep') {
-    //                s.Object = 'Step';
-    //                s.ObjectID = this.selectedFindRelationStep;
-    //                s.FindObjectStep = this.selectedFindRelationStep;
-    //            }
-    //            break;
-    //    }
-
-    //    this.model.RuleStep.Settings = s;
-    //}
 
     save() {
         if (this.isLoading) return;

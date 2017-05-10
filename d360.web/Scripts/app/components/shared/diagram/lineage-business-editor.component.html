@@ -74,7 +74,7 @@
                             </td>
                             <td>
                                 <p-autoComplete [(ngModel)]="i.selectedSourceSubject"
-                                                [suggestions]="queryResults"
+                                                [suggestions]="sourceSubResults"
                                                 (completeMethod)="query('selectedSourceSubject', i, $event)"
                                                 (onSelect)="select('selectedSourceSubject', i, $event)"
                                                 field="label"
@@ -92,7 +92,7 @@
                             </td>
                             <td>
                                 <p-autoComplete [(ngModel)]="i.selectedSourceObject"
-                                                [suggestions]="queryResults"
+                                                [suggestions]="sourceObjResults"
                                                 (completeMethod)="query('selectedSourceObject', i, $event)"
                                                 (onSelect)="select('selectedSourceObject', i, $event)"
                                                 field="label"
@@ -128,7 +128,7 @@
                             </td>
                             <td>
                                 <p-autoComplete [(ngModel)]="i.selectedTargetSubject"
-                                                [suggestions]="queryResults"
+                                                [suggestions]="targetSubResults"
                                                 (completeMethod)="query('selectedTargetSubject', i, $event)"
                                                 (onSelect)="select('selectedTargetSubject', i, $event)"
                                                 field="label"
@@ -146,7 +146,7 @@
                             </td>
                             <td>
                                 <p-autoComplete [(ngModel)]="i.selectedTargetObject"
-                                                [suggestions]="queryResults"
+                                                [suggestions]="targetObjResults"
                                                 (completeMethod)="query('selectedTargetObject', i, $event)"
                                                 (onSelect)="select('selectedTargetObject', i, $event)"
                                                 field="label"
@@ -168,10 +168,10 @@
                             <td style="width: 10px"></td>
                             <td colspan="5" class="errorMessage">Record was not saved successfully: {{i.ErrorMessage}}</td>
                         </tr>
-                        <tr *ngIf="i.isNew && !i.isConnected">
+                        <!--<tr *ngIf="i.isNew && !i.isConnected">
                             <td style="width: 10px"></td>
                             <td colspan="8" class="errorMessage">This record is not connected to anything on the lineage</td>
-                        </tr>
+                        </tr>-->
                         <tr *ngIf="i.isNew && i.isDupe">
                             <td style="width: 10px"></td>
                             <td colspan="8" class="errorMessage">This record is a duplicate of an existing record on the lineage</td>
