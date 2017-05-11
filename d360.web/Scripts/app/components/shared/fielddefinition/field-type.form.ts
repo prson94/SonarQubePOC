@@ -344,6 +344,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.loadFilteredLookup();
                 break;
             case 'ownershiplookup':
+                if (!this.model.OwnershipLookupSettings) this.model.OwnershipLookupSettings = new OwnershipLookupSettings(); 
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
                 this.model.FieldType.IsRequired = false;                

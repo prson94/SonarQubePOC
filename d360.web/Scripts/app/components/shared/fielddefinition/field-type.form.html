@@ -355,7 +355,7 @@
             </div>
         </div>
         <!-- ownership lookup -->
-        <div class="row" *ngIf="model.FieldType.Type == 'OwnershipLookup'">
+        <div class="row" *ngIf="model.FieldType.Type == 'OwnershipLookup' && model.OwnershipLookupSettings">
             <div class="col l3 m3 s6" style="margin: 10px 0 10px 0">
                 <input name="expandGroupMembership" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.ExpandGroupMembership" />Expand Group Membership?
             </div>
