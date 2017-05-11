@@ -3238,13 +3238,16 @@ namespace d360.web.Controllers
                                 ObjectID = r.ObjectID
                             });
                         }
-                        foreach (var f in definition.Fields)
+                        if (definition.Fields != null)
                         {
-                            var r = relationItems.Where(i => i.Object == f.Object && i.ObjectID == f.ObjectID).FirstOrDefault();
-
-                            if (r != null)
+                            foreach (var f in definition.Fields)
                             {
-                                r.DisplayFields.Add(f);
+                                var r = relationItems.Where(i => i.Object == f.Object && i.ObjectID == f.ObjectID).FirstOrDefault();
+
+                                if (r != null)
+                                {
+                                    r.DisplayFields.Add(f);
+                                }
                             }
                         }
                     }

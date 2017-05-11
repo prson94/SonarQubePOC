@@ -2980,6 +2980,9 @@ from    [Intersect] I
                 if (lookup == null) throw new Exception("Invalid complex lookup field is specified.");
 
                 var def = lookup.ParseComplexLookupDefinition();
+
+                if (def.Fields == null || def.Fields.Count == 0) throw new Exception("Invalid complex lookup no fields specified in definition.  Please specify one or more fields in the complex lookup definition.");
+                
                 var fields = def.Fields.ToList();
 
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
