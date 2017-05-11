@@ -4748,14 +4748,23 @@ namespace d360.web.Controllers
                             case "Contains":
                                 queryFormat = "{0} like '%{1}%'";
                                 break;
-                            case "EndsWith":
+                            case "Does Not Contain":
+                                queryFormat = "{0} not like '%{1}%'";
+                                break;
+                            case "Ends With":
                                 queryFormat = "{0} like '%{1}'";
                                 break;
-                            case "NotEquals":
+                            case "Does Not End With":
+                                queryFormat = "{0} not like '%{1}'";
+                                break;
+                            case "Does Not Equal":
                                 queryFormat = "{0} <> '{1}'";
                                 break;
-                            case "StartsWith":
+                            case "Starts With":
                                 queryFormat = "{0} like '{1}%'";
+                                break;
+                            case "Does Not Start With":
+                                queryFormat = "{0} not like '{1}%'";
                                 break;
                             default: //Equals
                                 queryFormat = "{0} = '{1}'";

@@ -2421,8 +2421,10 @@ from    [Intersect] I
                         #region
 
                         var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
+                        var tbtPrefix = $"FT{pos}_{multiFieldReferencePosition}";
 
                         // Determine the join syntax for the eventual query.
+                        join.JoinStatement += $" inner join FieldType {tbtPrefix} on {tbtPrefix}.ID = {i.FieldTypeID} ";
                         if ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || i.FieldTypeName.StartsWith("Relation~"))
                             join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = 'Intersect' and {tbPrefix}.ObjectID = {intersectIDColumn}";
                         else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
@@ -2431,7 +2433,19 @@ from    [Intersect] I
                         //Create the column/field to display the visible column cell.
                         var fc = new ComplexColumnModel
                         {
-                            DisplayColumn = (ft.Type == "Boolean") ? $"lower({tbPrefix}.FormattedValue)" : $"{tbPrefix}.FormattedValue",
+                            DisplayColumn = (ft.Type == "Boolean") ? 
+$@"case 
+    when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then lower({tbtPrefix}.AllowAllLabel) 
+    when {tbPrefix}.Value is not null then lower({tbPrefix}.FormattedValue)
+    when {tbtPrefix}.DefaultValue is not null then lower({tbtPrefix}.DefaultFormattedValue) 
+    else '' 
+end" : 
+$@"case 
+    when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then {tbtPrefix}.AllowAllLabel 
+    when {tbPrefix}.Value is not null then {tbPrefix}.FormattedValue 
+    when {tbtPrefix}.DefaultValue is not null then {tbtPrefix}.DefaultFormattedValue 
+    else '' 
+end",
                             text = i.OverrideDisplayName ?? ft.FriendlyName,
                             datafield = $"{dataField}",
                             SortColumn = ft.SortOrder > 0 ? getFieldTypeColumnString(ft?.Type ?? "", $"{tbPrefix}.FormattedValue") : string.Empty,
@@ -2443,14 +2457,37 @@ from    [Intersect] I
                         if (ft.LookupObjectType == "Lookup" || ft.LookupObjectType == "ReferenceItem")
                         {
                             var context = "Preview";
-                            if (ft.LookupObjectType == "Lookup")
+                            if (ft.Type == "Lookup")
                                 context = "LookupPreview";
 
                             // Add the fields that you need to create link in Angular component.
                             columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{context}'", datafield = $"{dataField}_Context" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"{tbPrefix}.[LookupObjectType]", datafield = $"{dataField}_Object" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast({tbPrefix}.Value as varchar)", datafield = $"{dataField}_ObjectID" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"{tbPrefix}.LookupUrl", datafield = $"{dataField}_Url" });
+                            columnModels.Add(new ComplexColumnModel {
+                                DisplayColumn = $@"
+case 
+    when {tbPrefix}.Value is not null then {tbPrefix}.[LookupObjectType]
+    when {tbtPrefix}.DefaultValue is not null then replace({tbtPrefix}.[LookupObjectType], 'Type', '')
+    else '' 
+end
+",
+                                datafield = $"{dataField}_Object" });
+                            columnModels.Add(new ComplexColumnModel {
+                                DisplayColumn = $@"
+case 
+    when {tbPrefix}.Value is not null then cast({tbPrefix}.Value as varchar)
+    when {tbtPrefix}.DefaultValue is not null then cast({tbtPrefix}.DefaultValue as varchar)
+    else '' 
+end
+",
+                                datafield = $"{dataField}_ObjectID" });
+                            columnModels.Add(new ComplexColumnModel {
+                                DisplayColumn = $@"
+case 
+    when {tbPrefix}.Value is not null then {tbPrefix}.LookupUrl
+    when {tbtPrefix}.DefaultValue is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID) 
+    else '' 
+end",
+                                datafield = $"{dataField}_Url" });
 
                             // Now set the fields to reference to create the preview link in Angular component.
                             fc.datafieldtype = "lookup";
