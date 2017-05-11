@@ -893,7 +893,6 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("Name", a.Name);
             model.Add("Description", a.Description);
             model.Add("TypeName", a.ArtifactType.Name);
-            model.Add("AllowRelatedArtifacts", a.ArtifactType.AllowRelatedArtifacts);
             model.Add("Status", a.Status);
 
             //check if this object has dashboards             
@@ -953,8 +952,6 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("ID", artifactType.ID);
             model.Add("Name", artifactType.Name);
             model.Add("Description", artifactType.Description);
-            model.Add("AllowHierarchy", artifactType.AllowHierarchy);
-            model.Add("AllowRelatedArtifacts", artifactType.AllowRelatedArtifacts);
             model.Add("ParentID", artifactType.ParentID);
             model.Add("CanOwnFusion", artifactType.CanOwnFusion);
 
@@ -4451,14 +4448,6 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
                                 new ReadOnlyField { Name = artifactType.GetName(i => i.CanOwnFusion), FieldName = "ArtifactTypeCanOwnFusion", FieldDescription = artifactType.GetDescription(i => i.CanOwnFusion), Value = artifactType.CanOwnFusion.FormatBooleanReadOnlyValue() }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = artifactType.GetName(i => i.AllowRelatedArtifacts), FieldName = "ArtifactTypeAllowRelatedArtifacts", FieldDescription = artifactType.GetDescription(i => i.AllowRelatedArtifacts), Value = artifactType.AllowRelatedArtifacts.FormatBooleanReadOnlyValue() }
                             }
                         });
 

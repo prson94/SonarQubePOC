@@ -16,9 +16,15 @@ namespace d360.model
 
         public DbSet<OrganizationDomain> OrganizationDomains { get; set; }
 
+        public DbSet<OrganizationDomainDetail> OrganizationDomainDetails { get; set; }
+
         public DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
 
+        public DbSet<OrganizationInvitationDetail> OrganizationInvitationDetails { get; set; }
+
         public DbSet<OrganizationResource> OrganizationResources { get; set; }
+
+        public DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }
 
         #endregion
 

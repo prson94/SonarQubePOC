@@ -372,6 +372,7 @@
     <Compile Include="Controllers\Services\CommunityController.cs" />
     <Compile Include="Controllers\Services\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
+    <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\Services\ScoringController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\WorkflowController.cs" />
@@ -554,6 +555,7 @@
     <Content Include="Scripts\app\36.chunk.js" />
     <Content Include="Scripts\app\37.chunk.js" />
     <Content Include="Scripts\app\38.chunk.js" />
+    <Content Include="Scripts\app\39.chunk.js" />
     <Content Include="Scripts\app\4.chunk.js" />
     <Content Include="Scripts\app\5.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
@@ -969,6 +971,14 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-contracts.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contracts.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-resources.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-invitations.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organizations.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organizations.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organizations.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-domains.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.routes.ts" />
@@ -1127,6 +1137,7 @@
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\organization.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
     <TypeScriptCompile Include="Scripts\app\selective-preloading-strategy.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
@@ -1361,6 +1372,7 @@
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />

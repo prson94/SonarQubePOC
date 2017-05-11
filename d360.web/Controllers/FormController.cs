@@ -265,6 +265,11 @@ namespace d360.web.Controllers
             }
         }
 
+        T parseEnumField<T>(FormCollection form, string fieldName)
+        {
+            return form.AllKeys.Any(i => i == fieldName) ? (T)Enum.Parse(typeof(T), form[fieldName]) : default(T);
+        }
+
         int? parseNullableIntField(FormCollection form, string fieldName, int? defaultValue = null)
         {
             if (form.AllKeys.Any(i => i == fieldName))
@@ -321,61 +326,69 @@ namespace d360.web.Controllers
             throw new Exception("Invalid or non implemented editor type");
         }
 
-        [HttpGet, Route("dynamiceditor/edit/{objectType}/{ID:int}")]
-        public JsonResult DynamicEditorEditFields(string objectType, int ID)
+        [HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
+        public JsonResult DynamicEditorEditFields(string o, int oid)
         {
-            switch ((objectType ?? "").ToUpper())
+            switch ((o ?? "").ToUpper())
             {
-                case "LOOKUPTYPE":
-                    return Lookup_EditFields(ID);
-                case "RULEDIMENSION":
-                    return RuleDimension_EditFields(ID);
-                case "RULETYPE":
-                    return RuleType_EditFields(ID);
-                case "POLICYTYPE":
-                    return PolicyType_EditFields(ID);
-                case "PREDICATE":
-                    return Predicate_EditFields(ID);
-                case "RESOURCETYPE":
-                    return Resource_EditFields(ID);
-                case "FUSION":
-                    return Fusion_EditFields(ID);
-                case "FUSIONATTRIBUTE":
-                    return FusionAttribute_EditFields(ID);
                 case "ARTIFACT":
-                    return Artifact_EditFields(ID);
-                case "RULE":
-                    return Rule_EditFields(ID);
-                case "RULEIMPLEMENTATION":
-                    return RuleImplementation_EditFields(ID);
-                case "SURVEYTYPE":
-                    return SurveyType_EditFields(ID);
-                case "INTERSECTTYPE":
-                    return Relationship_EditFields(ID);
+                    return Artifact_EditFields(oid);
                 case "ATTRIBUTE":
-                    return Attribute_EditFields(ID);
+                    return Attribute_EditFields(oid);
+                case "CONTRACT":
+                    return Contract_EditFields(oid);
+                case "FUSION":
+                    return Fusion_EditFields(oid);
+                case "FUSIONATTRIBUTE":
+                    return FusionAttribute_EditFields(oid);
+                case "INTERSECTTYPE":
+                    return Relationship_EditFields(oid);
+                case "ISSUETYPE":
+                    return IssueType_EditFields(oid);
+                case "LOOKUPTYPE":
+                    return Lookup_EditFields(oid);
+                case "MAP":
+                    return Map_EditFields(oid);
+                case "MAPRULE":
+                    return MapRule_EditFields(oid);
+                case "MAPRULEITEM":
+                    return MapRuleItem_EditFields(oid);
+                case "ORGANIZATION":
+                    return Organization_EditFields(oid);
+                case "ORGANIZATIONDOMAIN":
+                    return OrganizationDomain_EditFields(oid);
+                case "ORGANIZATIONINVITATION":
+                    return OrganizationInvitation_EditFields(oid);
+                case "POLICY":
+                    return Policy_EditFields(oid);
+                case "POLICYTYPE":
+                    return PolicyType_EditFields(oid);
+                case "POLICYTYPECLASS":
+                    return PolicyTypeClass_EditFields(oid);
+                case "PREDICATE":
+                    return Predicate_EditFields(oid);
+                case "REFERENCEITEMTYPE":
+                    return ReferenceItem_EditFields(oid);
                 case "RESOURCESELF":
                     return Resource_EditMyInfoFields();
                 case "RESOURCESELFPASSWORD":
                     return Resource_ChangeMyPasswordFields();
+                case "RESOURCETYPE":
+                    return Resource_EditFields(oid);
+                case "RULE":
+                    return Rule_EditFields(oid);
+                case "RULEIMPLEMENTATION":
+                    return RuleImplementation_EditFields(oid);
+                case "RULEDIMENSION":
+                    return RuleDimension_EditFields(oid);
+                case "RULETYPE":
+                    return RuleType_EditFields(oid);
+                case "SURVEYTYPE":
+                    return SurveyType_EditFields(oid);
                 case "TAXONOMY":
-                    return Taxonomy_EditFields(ID);
+                    return Taxonomy_EditFields(oid);
                 case "TAXONOMYTYPECLASS":
-                    return TaxonomyTypeClass_EditFields(ID);
-                case "POLICYTYPECLASS":
-                    return PolicyTypeClass_EditFields(ID);
-                case "REFERENCEITEMTYPE":
-                    return ReferenceItem_EditFields(ID);                
-                case "POLICY":
-                    return Policy_EditFields(ID);
-                case "MAPRULE":
-                    return MapRule_EditFields(ID);
-                case "MAPRULEITEM":
-                    return MapRuleItem_EditFields(ID);
-                case "ISSUETYPE":
-                    return IssueType_EditFields(ID);
-                case "MAP":
-                    return Map_EditFields(ID);
+                    return TaxonomyTypeClass_EditFields(oid);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -385,52 +398,60 @@ namespace d360.web.Controllers
         {
             switch ((objectType ?? "").ToUpper())
             {
-                case "LOOKUPTYPE":
-                    return Lookup_AddFields(objectID.GetValueOrDefault());
-                case "RULEDIMENSION":
-                    return RuleDimension_AddFields();
-                case "RULETYPE":
-                    return RuleType_AddFields();
-                case "POLICYTYPE":
-                    return PolicyType_AddFields();
-                case "PREDICATE":
-                    return Predicate_AddFields();
-                case "RESOURCETYPE":
-                    return Resource_AddFields(objectID.GetValueOrDefault());
+                case "ARTIFACT":
+                    return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                case "ATTRIBUTEALLOCATION":
+                    return AttributeTypeRelation_AddFields(parentID.GetValueOrDefault());
+                case "CONTRACT":
+                    return Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
                 case "FUSION":
                     return Fusion_AddFields(objectID.GetValueOrDefault());
                 case "FUSIONATTRIBUTE":
                     return FusionAttribute_AddFields(objectID.GetValueOrDefault(), typeID.GetValueOrDefault());
-                case "ARTIFACT":
-                    return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
-                case "RULE":
-                    return Rule_AddFields(objectID.GetValueOrDefault());
-                case "RULEIMPLEMENTATION":
-                    return RuleImplementation_AddFields(objectID.GetValueOrDefault());
-                case "SURVEYTYPE":
-                    return SurveyType_AddFields();
-                case "TAXONOMYTYPECLASS":
-                    return TaxonomyTypeClass_AddFields();
-                case "POLICYTYPECLASS":
-                    return PolicyTypeClass_AddFields();
-                case "TAXONOMY":
-                    return Taxonomy_AddFields(objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
-                case "REFERENCEITEMTYPE":
-                    return ReferenceItem_AddFields(objectID.GetValueOrDefault());
-                case "POLICY":
-                    return Policy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                case "ISSUE":
+                    return Issue_AddFields(objectID.GetValueOrDefault());
+                case "ISSUETYPE":
+                    return IssueType_AddFields();
+                case "LOOKUPTYPE":
+                    return Lookup_AddFields(objectID.GetValueOrDefault());
+                case "MAP":
+                    return Map_AddFields();
                 case "MAPRULE":
                     return MapRule_AddFields();
                 case "MAPRULEITEM":
                     return MapRuleItem_AddFields(objectID.GetValueOrDefault());
-                case "ATTRIBUTEALLOCATION":
-                    return AttributeTypeRelation_AddFields(parentID.GetValueOrDefault());
-                case "ISSUETYPE":
-                    return IssueType_AddFields();
-                case "ISSUE":
-                    return Issue_AddFields(objectID.GetValueOrDefault());
-                case "MAP":
-                    return Map_AddFields();
+                case "ORGANIZATION":
+                    return Organization_AddFields();
+                case "ORGANIZATIONDOMAIN":
+                    return OrganizationDomain_AddFields(objectID.Value);
+                case "ORGANIZATIONINVITATION":
+                    return OrganizationInvitation_AddFields(objectID.Value);
+                case "POLICY":
+                    return Policy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                case "POLICYTYPE":
+                    return PolicyType_AddFields();
+                case "POLICYTYPECLASS":
+                    return PolicyTypeClass_AddFields();
+                case "PREDICATE":
+                    return Predicate_AddFields();
+                case "REFERENCEITEMTYPE":
+                    return ReferenceItem_AddFields(objectID.GetValueOrDefault());
+                case "RESOURCETYPE":
+                    return Resource_AddFields(objectID.GetValueOrDefault());
+                case "RULE":
+                    return Rule_AddFields(objectID.GetValueOrDefault());
+                case "RULEDIMENSION":
+                    return RuleDimension_AddFields();
+                case "RULEIMPLEMENTATION":
+                    return RuleImplementation_AddFields(objectID.GetValueOrDefault());
+                case "RULETYPE":
+                    return RuleType_AddFields();
+                case "SURVEYTYPE":
+                    return SurveyType_AddFields();
+                case "TAXONOMY":
+                    return Taxonomy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                case "TAXONOMYTYPECLASS":
+                    return TaxonomyTypeClass_AddFields();
 
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -466,6 +487,8 @@ namespace d360.web.Controllers
                     return EditAttribute(form);
                 case "ATTRIBUTETYPE":
                     return EditAttributeType(form);
+                case "CONTRACT":
+                    return PutContract(form);
                 case "FUSION":
                     return EditFusion(form);
                 case "FUSIONATTRIBUTE":
@@ -488,6 +511,12 @@ namespace d360.web.Controllers
                     return EditMapRule(form);
                 case "MAPRULEITEM":
                     return EditMapRuleItem(form);
+                case "ORGANIZATION":
+                    return PutOrganization(form);
+                case "ORGANIZATIONDOMAIN":
+                    return PutOrganizationDomain(form);
+                case "ORGANIZATIONINVITATION":
+                    return PutOrganizationInvitation(form);
                 case "POLICY":
                     return EditPolicy(form);
                 case "POLICYTYPE":
@@ -542,69 +571,77 @@ namespace d360.web.Controllers
             form.Add("ID", objectID.ToString());
 
             switch ((objectType ?? "").ToUpper())
-            {                
-                case "RULEDIMENSION":
-                    return DeleteRuleDimension(form);
-                case "POLICYTYPE":
-                    return DeletePolicyType(form);
-                case "PREDICATE":
-                    return DeletePredicate(form);
-                case "SCORETYPE":
-                    return DeleteScoreType(form);
-                case "INTERSECTTYPE":
-                    return DeleteIntersectType(form);
-                case "REPORT":
-                    return DeleteReport(form);
-                case "REPORTTILE":
-                    return DeleteReportTile(form);
-                case "SCORETYPEMETRIC":
-                    return DeleteScoreTypeMetric(form);
-                case "ATTRIBUTETYPE":
-                    return DeleteAttributeType(form);
+            {
                 case "ARTIFACT":
                     return DeleteArtifact(form);
-                case "RULE":
-                    return DeleteRule(form);
-                case "RULETYPE":
-                    return DeleteRuleType(form);
-                case "SURVEYTYPE":
-                    return DeleteSurveyType(form);
-                case "SURVEYQUESTIONTYPE":
-                    return DeleteQuestionType(form);
-                case "TAXONOMY":
-                    return DeleteTaxonomy(form);
-                case "REFERENCEITEMTYPE":
-                    return DeleteReferenceItemType(form);
-                case "REFERENCEITEM":
-                    return DeleteReferenceItem(form);
-                case "POLICY":
-                    return DeletePolicy(form);
+                case "ATTRIBUTETYPE":
+                    return DeleteAttributeType(form);
+                case "CONTRACT":
+                    return DeleteContract(objectID);
+                case "CUSTOMSYNONYM":
+                    return DeleteCustomSynonym(form);
+                case "FUSIONQUERYATTRIBUTE":
+                    return DeleteFusionQueryAttribute(form);
+                case "FUSIONSCHEDULE":
+                    return DeleteFusionSchedule(form);
+                case "INTERSECTTYPE":
+                    return DeleteIntersectType(form);
+                case "ISSUETYPE":
+                    return DeleteIssueType(form);
+                case "LINEAGEMAPPING":
+                    return DeleteLineageMapping(form);
                 case "MAPRULE":
                     return DeleteMapRule(form);
                 case "MAPRULEITEM":
                     return DeleteMapRuleItem(form);
-                case "TAXONOMYTYPECLASS":
-                    return DeleteTaxonomyTypeClass(form);
+                case "ORGANIZATION":
+                    return DeleteOrganization(objectID);
+                case "ORGANIZATIONDOMAIN":
+                    return DeleteOrganizationDomain(objectID);
+                case "ORGANIZATIONINVITATION":
+                    return DeleteOrganizationInvitation(objectID);
+                case "PREDICATE":
+                    return DeletePredicate(form);
+                case "REFERENCEITEM":
+                    return DeleteReferenceItem(form);
+                case "REFERENCEITEMTYPE":
+                    return DeleteReferenceItemType(form);
+                case "REPORT":
+                    return DeleteReport(form);
+                case "REPORTTILE":
+                    return DeleteReportTile(form);
+                case "RULE":
+                    return DeleteRule(form);
+                case "RULEDIMENSION":
+                    return DeleteRuleDimension(form);
+                case "RULETYPE":
+                    return DeleteRuleType(form);
+                case "POLICY":
+                    return DeletePolicy(form);
+                case "POLICYTYPE":
+                    return DeletePolicyType(form);
                 case "POLICYTYPECLASS":
                     return DeletePolicyTypeClass(form);
-                case "TAXONOMYTYPELEVEL":
-                    return DeleteTaxonomyTypeLevel(form);
-                case "TAXONOMYTYPE":
-                    return DeleteTaxonomyType(form);
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
-                case "FUSIONQUERYATTRIBUTE":
-                    return DeleteFusionQueryAttribute(form);
-                case "ISSUETYPE":
-                    return DeleteIssueType(form);
+                case "SCORETYPE":
+                    return DeleteScoreType(form);
+                case "SCORETYPEMETRIC":
+                    return DeleteScoreTypeMetric(form);
+                case "SURVEYTYPE":
+                    return DeleteSurveyType(form);
+                case "SURVEYQUESTIONTYPE":
+                    return DeleteQuestionType(form);
                 case "SYNONYM":
                     return DeleteSynonym(form);
-                case "CUSTOMSYNONYM":
-                    return DeleteCustomSynonym(form);
-                case "FUSIONSCHEDULE":
-                    return DeleteFusionSchedule(form);
-                case "LINEAGEMAPPING":
-                    return DeleteLineageMapping(form);
+                case "TAXONOMY":
+                    return DeleteTaxonomy(form);
+                case "TAXONOMYTYPE":
+                    return DeleteTaxonomyType(form);
+                case "TAXONOMYTYPECLASS":
+                    return DeleteTaxonomyTypeClass(form);
+                case "TAXONOMYTYPELEVEL":
+                    return DeleteTaxonomyTypeLevel(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -623,76 +660,84 @@ namespace d360.web.Controllers
 
             switch ((objectType ?? "").ToUpper())
             {
-                case "LOOKUP":
-                    return AddLookup(form);
-                case "RULEDIMENSION":
-                    return AddRuleDimension(form);
-                case "RULETYPE":
-                    return AddRuleType(form);
-                case "POLICYTYPE":
-                    return AddPolicyType(form);
-                case "PREDICATE":
-                    return AddPredicate(form);
-                case "RESOURCE":
-                    return AddResource(form);                             
-                case "SCORETYPE":
-                    return AddScoreType(form);
-                case "SCORETYPEMETRIC":
-                    return AddScoreTypeMetric(form);
-                case "FUSION":
-                    return AddFusion(form);
-                case "INTERSECTTYPE":
-                    return AddIntersectType(form);
-                case "REPORT":
-                    return await AddReport(form);
-                case "REPORTTILE":
-                    return AddReportTile(form,true);
-                case "ATTRIBUTETYPE":
-                    return AddAttributeType(form);
                 case "ARTIFACT":
                     return AddArtifact(form);
-                case "SUGGESTARTIFACT":
-                    return SuggestNewArtifact(form);
                 case "ATTRIBUTE":
                     return AddAttribute(form);
-                case "RULE":
-                    return AddRule(form);
-                case "SURVEYTYPE":
-                    return AddSurveyType(form);
+                case "ATTRIBUTETYPE":
+                    return AddAttributeType(form);
+                case "CONTRACT":
+                    return PostContract(form);
+                case "CUSTOMSYNONYM":
+                    return AddCustomSynonym(form);
+                case "FUSION":
+                    return AddFusion(form);
+                case "FUSIONQUERYATTRIBUTE":
+                    return AddFusionQueryAttribute(form);
+                case "FUSIONSCHEDULE":
+                    return AddFusionSchedule(form);
                 case "INTERSECT":
                     return AddRelationship(form);
-                case "TAXONOMY":
-                    return AddTaxonomy(form);
-                case "REFERENCEITEMTYPE":
-                    return AddReferenceItemType(form);
-                case "REFERENCEITEM":
-                    return AddReferenceItem(form);
-                case "POLICY":
-                    return AddPolicy(form);
+                case "INTERSECTTYPE":
+                    return AddIntersectType(form);
+                case "ISSUE":
+                    return AddIssue(form);
+                case "ISSUETYPE":
+                    return AddIssueType(form);
+                case "LOOKUP":
+                    return AddLookup(form);
+                case "MAP":
+                    return AddMap(form);
                 case "MAPRULE":
                     return AddMapRule(form);
                 case "MAPRULEITEM":
                     return AddMapRuleItem(form);
-                case "TAXONOMYTYPECLASS":
-                    return AddTaxonomyTypeClass(form);
+                case "ORGANIZATION":
+                    return PostOrganization(form);
+                case "ORGANIZATIONDOMAIN":
+                    return PostOrganizationDomain(form);
+                case "ORGANIZATIONINVITATION":
+                    return PostOrganizationInvitation(form);
+                case "POLICY":
+                    return AddPolicy(form);
+                case "POLICYTYPE":
+                    return AddPolicyType(form);
                 case "POLICYTYPECLASS":
                     return AddPolicyTypeClass(form);
-                case "TAXONOMYTYPELEVEL":
-                    return AddTaxonomyTypeLevel(form);
                 case "POLICYTYPELEVEL":
                     return AddPolicyTypeLevel(form);
-                case "FUSIONQUERYATTRIBUTE":
-                    return AddFusionQueryAttribute(form);
-                case "ISSUETYPE":
-                    return AddIssueType(form);
-                case "ISSUE":
-                    return AddIssue(form);
-                case "CUSTOMSYNONYM":
-                    return AddCustomSynonym(form);
-                case "FUSIONSCHEDULE":
-                    return AddFusionSchedule(form);
-                case "MAP":
-                    return AddMap(form);
+                case "PREDICATE":
+                    return AddPredicate(form);
+                case "REFERENCEITEM":
+                    return AddReferenceItem(form);
+                case "REFERENCEITEMTYPE":
+                    return AddReferenceItemType(form);
+                case "REPORT":
+                    return await AddReport(form);
+                case "REPORTTILE":
+                    return AddReportTile(form, true);
+                case "RESOURCE":
+                    return AddResource(form);
+                case "RULEDIMENSION":
+                    return AddRuleDimension(form);
+                case "RULETYPE":
+                    return AddRuleType(form);
+                case "SCORETYPE":
+                    return AddScoreType(form);
+                case "SCORETYPEMETRIC":
+                    return AddScoreTypeMetric(form);
+                case "RULE":
+                    return AddRule(form);
+                case "SUGGESTARTIFACT":
+                    return SuggestNewArtifact(form);
+                case "SURVEYTYPE":
+                    return AddSurveyType(form);
+                case "TAXONOMY":
+                    return AddTaxonomy(form);
+                case "TAXONOMYTYPECLASS":
+                    return AddTaxonomyTypeClass(form);
+                case "TAXONOMYTYPELEVEL":
+                    return AddTaxonomyTypeLevel(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -1304,7 +1349,7 @@ namespace d360.web.Controllers
                         FormDescription = Resources.FormInfo.Add_ArtifactType_Directions,
                         FormUri = "/form/AddArtifactType",
                         FormMethod = "POST",
-                        ArtifactType = new ArtifactType { ParentID = parentID, AllowHierarchy = false, AllowRelatedArtifacts = false, CanOwnFusion = false },
+                        ArtifactType = new ArtifactType { ParentID = parentID, CanOwnFusion = false },
                         IconBackColor = "#000",
                         IconForeColor = "#FFF"
                     };
@@ -1334,8 +1379,7 @@ namespace d360.web.Controllers
                 {
                     Name = model.ArtifactType.Name,
                     Description = model.ArtifactType.Description,
-                    CanOwnFusion = model.ArtifactType.CanOwnFusion,
-                    AllowRelatedArtifacts = model.ArtifactType.AllowRelatedArtifacts,
+                    CanOwnFusion = model.ArtifactType.CanOwnFusion
                 };
 
                 if (model.ArtifactType.ParentID != null)
@@ -1384,7 +1428,6 @@ namespace d360.web.Controllers
 
                 existing.Name = model.ArtifactType.Name;
                 existing.Description = model.ArtifactType.Description;
-                existing.AllowRelatedArtifacts = model.ArtifactType.AllowRelatedArtifacts;
                 existing.CanOwnFusion = model.ArtifactType.CanOwnFusion;
 
                 Company.Update(existing);
@@ -4704,6 +4747,9 @@ namespace d360.web.Controllers
                                 break;
                             case "EndsWith":
                                 queryFormat = "{0} like '%{1}'";
+                                break;
+                            case "NotEquals":
+                                queryFormat = "{0} <> '{1}'";
                                 break;
                             case "StartsWith":
                                 queryFormat = "{0} like '{1}%'";
@@ -10276,6 +10322,631 @@ from ArtifactType A
                 //}
 
                 return jsonSuccess("Successfully updated rule item.", model.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region Organization
+
+        #region Field Generation
+
+        [Route("Organization_AddFields"), NonNullableParameters]
+        public JsonResult Organization_AddFields()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">Organization ID</param>
+        [Route("Organization_EditFields"), NonNullableParameters]
+        public JsonResult Organization_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<Organization>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">ArtifactID</param>
+        [Route("Organization_DeleteFields"), NonNullableParameters]
+        public JsonResult Organization_DeleteFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("Organization"), Route("Organization")]
+        public JsonResult PostOrganization(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new Organization
+                {
+                    Name = parseTextField(form, "Name")
+                };
+
+                Company.Add(a);
+
+                dynamic custom = new
+                {
+                    Name = a.Name,
+                    action = "add"
+                };
+
+                return jsonSuccess("Organization successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("Organization"), Route("Organization")]
+        public JsonResult PutOrganization(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+                var existing = Company.GetById<Organization>(id);
+                if (existing == null) throw new NotFoundException("organization");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                existing.Name = parseTextField(form, "Name");
+
+                Company.Update(existing);
+
+                dynamic custom = new
+                {
+                    Name = existing.Name,
+                    action = "edit"
+                };
+
+                return jsonSuccess("Organization successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("Organization"), Route("Organization"), NonNullableParameters]
+        public JsonResult DeleteOrganization(int id)
+        {
+            try
+            {
+                var model = Company.GetById<Organization>(id);
+                if (model == null) throw new NotFoundException("organization");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "delete"
+                };
+
+                return jsonSuccess("Organization successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region Organization Contract
+
+        #region Field Generation
+
+        [Route("Contract_AddFields"), NonNullableParameters]
+        public JsonResult Contract_AddFields(int o = 0)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            var contractTypes = ContractType.OrganizationTermsOfUse.GetEnumList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+
+            list.Add(new EditableField { FieldName = "OrganizationID", FieldType = DataType.Hidden.ToString(), Value = o.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Title", Name = "Title", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Title", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ContractType", Name = "Contract Type", FieldType = DataType.Lookup.ToString(), Items = contractTypes });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Body", Name = "Body", FieldType = DataType.Html.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">Contract ID</param>
+        [Route("Contract_EditFields"), NonNullableParameters]
+        public JsonResult Contract_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<Contract>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            var contractTypes = ContractType.OrganizationTermsOfUse.GetEnumList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Title", Name = "Title", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Title), Validations = checkAndAddValidation("Text", "Title", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ContractType", Name = "Contract Type", FieldType = DataType.Lookup.ToString(), Value = a.ContractType.ToString(), Items = contractTypes });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Body", Name = "Body", FieldType = DataType.Html.ToString(), Value = a.Body });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+
+        /// <param name="id">ID</param>
+        [Route("Contract_DeleteFields"), NonNullableParameters]
+        public JsonResult Contract_DeleteFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("Contract"), Route("Contract")]
+        public JsonResult PostContract(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var o = new Contract
+                {
+                    OrganizationID = parseIntField(form, "OrganizationID"),
+                    Body = parseTextField(form, "Body"),
+                    ContractType = parseEnumField<ContractType>(form, "ContractType"),
+                    Title = parseTextField(form, "Title")
+                };
+
+                if (o.OrganizationID == 0) o.OrganizationID = null;
+
+                Company.Add(o);
+
+                dynamic custom = new
+                {
+                    title = o.Title,
+                    action = "add"
+                };
+
+                return jsonSuccess($"{o.ContractType.GetDisplayName()} contract successfully created.", o.ID.ToString(), "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("Contract"), Route("Contract")]
+        public JsonResult PutContract(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+                var o = Company.GetById<Contract>(id);
+                if (o == null) throw new NotFoundException("contract");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                o.Body = parseTextField(form, "Body");
+                o.ContractType = parseEnumField<ContractType>(form, "ContractType");
+                o.Title = parseTextField(form, "Title");
+
+                Company.Update(o);
+
+                dynamic custom = new
+                {
+                    title = o.Title,
+                    action = "edit"
+                };
+
+                return jsonSuccess($"{o.ContractType.GetDisplayName()} contract successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("Contract"), Route("Contract"), NonNullableParameters]
+        public JsonResult DeleteContract(int id)
+        {
+            try
+            {
+                var o = Company.GetById<Contract>(id);
+                if (o == null) throw new NotFoundException("contract");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(o);
+
+                dynamic custom = new
+                {
+                    title = o.Title,
+                    action = "delete"
+                };
+
+                return jsonSuccess($"{o.ContractType.GetDisplayName()} contract successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region Organization Domain
+
+        #region Field Generation
+
+        /// <param name="o">Organization ID</param>
+        [Route("OrganizationDomain_AddFields"), NonNullableParameters]
+        public JsonResult OrganizationDomain_AddFields(int o)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "OrganizationID", FieldType = DataType.Hidden.ToString(), Value = o.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Domain", Name = "Domain", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Domain", true, "", 5, 500) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">Organization Domain ID</param>
+        [Route("OrganizationDomain_EditFields"), NonNullableParameters]
+        public JsonResult OrganizationDomain_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<OrganizationDomain>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Domain", Name = "Domain", FieldType = DataType.Text.ToString(), Value = a.Domain, Validations = checkAndAddValidation("Text", "Domain", true, "", 5, 500) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">ID</param>
+        [Route("OrganizationDomain_DeleteFields"), NonNullableParameters]
+        public JsonResult OrganizationDomain_DeleteFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("OrganizationDomain"), Route("OrganizationDomain")]
+        public JsonResult PostOrganizationDomain(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var o = new OrganizationDomain
+                {
+                    OrganizationID = parseIntField(form, "OrganizationID"),
+                    Domain = parseTextField(form, "Domain")
+                };
+
+                Company.Add(o);
+
+                dynamic custom = new
+                {
+                    action = "add"
+                };
+
+                return jsonSuccess("Organization domain successfully created.", o.ID.ToString(), "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("OrganizationDomain"), Route("OrganizationDomain")]
+        public JsonResult PutOrganizationDomain(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+                var existing = Company.GetById<OrganizationDomain>(id);
+                if (existing == null) throw new NotFoundException("organization domain");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                existing.Domain = parseTextField(form, "Domain");
+
+                Company.Update(existing);
+
+                dynamic custom = new
+                {
+                    action = "edit"
+                };
+
+                return jsonSuccess("Organization domain successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("OrganizationDomain"), Route("OrganizationDomain"), NonNullableParameters]
+        public JsonResult DeleteOrganizationDomain(int id)
+        {
+            try
+            {
+                var model = Company.GetById<OrganizationDomain>(id);
+                if (model == null) throw new NotFoundException("organization domain");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                dynamic custom = new
+                {
+                    action = "delete"
+                };
+
+                return jsonSuccess("Organization domain successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region Organization Invitation
+
+        #region Field Generation
+
+        /// <param name="o">Organization ID</param>
+        [Route("OrganizationInvitation_AddFields"), NonNullableParameters]
+        public JsonResult OrganizationInvitation_AddFields(int o)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "OrganizationID", FieldType = DataType.Hidden.ToString(), Value = o.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Email", Name = "Email", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Email", true, "", 5, 500) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">Organization Invitation ID</param>
+        [Route("OrganizationInvitation_EditFields"), NonNullableParameters]
+        public JsonResult OrganizationInvitation_EditFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<OrganizationInvitation>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Email", Name = "Email", FieldType = DataType.Text.ToString(), Value = a.Email, Validations = checkAndAddValidation("Text", "Email", true, "", 5, 500) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">Organization Invitation ID</param>
+        [Route("OrganizationInvitation_DeleteFields"), NonNullableParameters]
+        public JsonResult OrganizationInvitation_DeleteFields(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("OrganizationInvitation"), Route("OrganizationInvitation")]
+        public JsonResult PostOrganizationInvitation(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new OrganizationInvitation
+                {
+                    OrganizationID = parseIntField(form, "OrganizationID"),
+                    Email = parseTextField(form, "Email")
+                };
+
+                Company.Add(a);
+
+                dynamic custom = new
+                {
+                    action = "add"
+                };
+
+                return jsonSuccess("Organization invitation successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("OrganizationInvitation"), Route("OrganizationInvitation")]
+        public JsonResult PutOrganizationInvitation(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+                var existing = Company.GetById<OrganizationInvitation>(id);
+                if (existing == null) throw new NotFoundException("organization invitation");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                existing.Email = parseTextField(form, "Email");
+
+                Company.Update(existing);
+
+                dynamic custom = new
+                {
+                    action = "edit"
+                };
+
+                return jsonSuccess("Organization invitation successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("OrganizationInvitation"), Route("OrganizationInvitation"), NonNullableParameters]
+        public JsonResult DeleteOrganizationInvitation(int id)
+        {
+            try
+            {
+                var model = Company.GetById<OrganizationInvitation>(id);
+                if (model == null) throw new NotFoundException("organization invitation");
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                dynamic custom = new
+                {
+                    action = "delete"
+                };
+
+                return jsonSuccess("Organization invitation successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {

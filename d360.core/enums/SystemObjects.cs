@@ -121,7 +121,15 @@ namespace d360.core
         [Description("Rule Implementation"), EnableAudit(true)]
         RuleImplementation,
         [Description("Score Type Metric"), EnableAudit(true)]
-        ScoreTypeMetric
+        ScoreTypeMetric,
+        [Description("Organization"), EnableAudit(false)]
+        Organization,
+        [Description("Organization Domain"), EnableAudit(false)]
+        OrganizationDomain,
+        [Description("Organization Invitation"), EnableAudit(false)]
+        OrganizationInvitation,
+        [Description("Contract"), EnableAudit(true)]
+        Contract
     }
 
     public class SystemObjectInfo

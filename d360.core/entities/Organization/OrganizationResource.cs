@@ -27,4 +27,38 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public virtual Organization Organization { get; set; }
     }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class OrganizationResourceDetail : BaseObject
+    {
+        [DataMember, Key, Column(Order = 1)]
+        public int OrganizationID { get; set; }
+
+        [DataMember, Key, Column(Order = 2)]
+        public int ResourceID { get; set; }
+
+        [DataMember]
+        public bool? Accepted { get; set; }
+
+        [DataMember]
+        public DateTime? DateAccepted { get; set; }
+
+        [DataMember]
+        public string OrganizationName { get; set; }
+
+        [DataMember]
+        public string FirstName { get; set; }
+
+        [DataMember]
+        public string LastName { get; set; }
+
+        [DataMember]
+        public string Email { get; set; }
+
+        [DataMember]
+        public string Status { get; set; }
+
+        [DataMember]
+        public DateTime? DateLastLoggedIn { get; set; }
+    }
 }

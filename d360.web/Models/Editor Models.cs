@@ -734,7 +734,7 @@ namespace d360.web.Models
         public FusionRuleFilterEditorModel()
         {
             Items = new List<FusionRuleFilterItem>();
-            TextOperators = new List<string>() { "StartsWith", "Contains", "EndsWith", "Equals" };
+            TextOperators = new List<string>() { "StartsWith", "Contains", "EndsWith", "Equals", "NotEquals" };
             BoolOperators = new List<string>() { "Equals" };
             FieldTypes = new List<FusionRuleFilterFieldEditorModel>();
         }

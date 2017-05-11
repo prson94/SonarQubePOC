@@ -11,7 +11,10 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
 @Component({
     selector: 'd3s-rule-results-grid',
     template: `                 
-                <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions></header>
+                <header>
+                    Results
+                    <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();" [hasRefresh]="true" (refreshClick)="getData();"></d3s-tile-actions>
+                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading">
                         <div *ngIf="showSimpleFilter">                                                
@@ -20,9 +23,14 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                         <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
                         <p-dataTable #dt [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onLazyLoad)="loadRuleResultsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                            <p-column field="RunDate" header="Run Date" [sortable]="true" [style]="{width:'150px'}">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <span>{{item.RunDate | date : 'short'}}</span>
+                                </template>
+                            </p-column>
                             <p-column field="EffectiveDate" header="Effective Date" [sortable]="true" [style]="{width:'120px'}">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
+                                    <span>{{item.EffectiveDate | date : 'short'}}</span>
                                 </template>
                             </p-column>
                             <p-column field="PassFraction" header="Pass Fraction" [sortable]="true" [style]="{width:'150px'}"></p-column>

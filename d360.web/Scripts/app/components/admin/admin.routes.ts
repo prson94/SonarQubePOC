@@ -32,6 +32,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, loadChildren: './artifacts/admin-artifacts.module#AdminArtifactsModule?chunkName=adminArtifactsChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES, loadChildren: './issuetypes/admin-issue-types.module#AdminIssueTypesModule?chunkName=adminIssueTypesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES, loadChildren: './predicates/admin-predicates.module#AdminPredicatesModule?chunkName=adminPredicatesChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS, loadChildren: './organizations/admin-organizations.module#AdminOrganizationsModule?chunkName=adminOrganizationsChunk' },
         ]
     }
 ];

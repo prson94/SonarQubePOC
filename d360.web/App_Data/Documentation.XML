@@ -1783,6 +1783,69 @@
             Retrieve report tile results.
             </summary>
         </member>
+        <member name="T:d360.web.Controllers.Services.OrganizationsController">
+            <summary>
+            Manage your organizations within Data3Sixty.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetOrganizations">
+            <summary>
+            Gets a list of all organizations.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetDefaultContracts">
+            <summary>
+            Gets a list of all default contracts.
+            </summary>
+            <returns>Reutnrs a list of all contracts that are not specifically tied to any one organization, instead acting as a default contract for all organizations.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetContractsByOrganization(System.Int32)">
+            <summary>
+            Gets a list of all contracts for a specified organization.
+            </summary>
+            <param name="id">The ID of the organization you want to retrieve contracts for.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetDomainsByOrganization(System.Int32)">
+            <summary>
+            Gets a list of all domains for a specified organization.
+            </summary>
+            <param name="id">The ID of the organization you want to retrieve domains for.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetInvitationsByOrganization(System.Int32)">
+            <summary>
+            Gets a list of all invitations for a specified organization.
+            </summary>
+            <param name="id">The ID of the organization you want to retrieve invitations for.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetResourcesByOrganization(System.Int32)">
+            <summary>
+            Gets a list of all users for a specified organization.
+            </summary>
+            <param name="id">The ID of the organization you want to retrieve users for.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetDomainsForAllOrganizations">
+            <summary>
+            Gets a list of all domains across all organizations.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetInvitationsForAllOrganizations">
+            <summary>
+            Gets a list of all invitations across all organizations.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetResourcesForAllOrganizations">
+            <summary>
+            Gets a list of all users across all organizations.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:d360.web.Controllers.Services.ScoringController">
             <summary>
             Search everything in Data3Sixty.
@@ -2457,6 +2520,36 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.LookupType_EditFields(System.Int32)">
             <param name="id">LookupTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Organization_EditFields(System.Int32)">
+            <param name="id">Organization ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Organization_DeleteFields(System.Int32)">
+            <param name="id">ArtifactID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Contract_EditFields(System.Int32)">
+            <param name="id">Contract ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Contract_DeleteFields(System.Int32)">
+            <param name="id">ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.OrganizationDomain_AddFields(System.Int32)">
+            <param name="o">Organization ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.OrganizationDomain_EditFields(System.Int32)">
+            <param name="id">Organization Domain ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.OrganizationDomain_DeleteFields(System.Int32)">
+            <param name="id">ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.OrganizationInvitation_AddFields(System.Int32)">
+            <param name="o">Organization ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.OrganizationInvitation_EditFields(System.Int32)">
+            <param name="id">Organization Invitation ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.OrganizationInvitation_DeleteFields(System.Int32)">
+            <param name="id">Organization Invitation ID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Policy_DeleteFields(System.Int32)">
             <param name="id">PolicyID</param>

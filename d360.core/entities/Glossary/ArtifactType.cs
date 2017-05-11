@@ -25,14 +25,6 @@ namespace d360.core.entities
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Description { get; set; }
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "AllowHierarchy_Name", Description = "AllowHierarchy_Description")]
-        public bool AllowHierarchy { get; set; }
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "AllowRelatedArtifacts_Name", Description = "AllowRelatedArtifacts_Description")]
-        public bool AllowRelatedArtifacts { get; set; }
         
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "CanOwnFusion_Name", Description = "CanOwnFusion_Description")]

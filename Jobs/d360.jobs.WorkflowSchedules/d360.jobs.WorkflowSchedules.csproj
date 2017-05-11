@@ -54,7 +54,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Nightly|AnyCPU'">
     <OutputPath>bin\Nightly\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NIGHTLY</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -64,7 +64,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Client Development|AnyCPU'">
     <OutputPath>bin\Client Development\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;CLIENTDEV</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -74,7 +74,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Production|AnyCPU'">
     <OutputPath>bin\Production\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;PROD</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -139,6 +139,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\d3s-us-processor-ClientDevelopment - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-us-processor-Nightly - Web Deploy.pubxml" />
+    <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.1">
@@ -166,6 +169,10 @@
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\d360.utils.company\d360.utils.company.csproj">
+      <Project>{88bba351-da2a-4551-af28-5f1568952f7e}</Project>
+      <Name>d360.utils.company</Name>
+    </ProjectReference>
     <ProjectReference Include="..\d360.jobs\d360.jobs.csproj">
       <Project>{46267409-f388-4058-a12e-49ec7e855c9d}</Project>
       <Name>d360.jobs</Name>
@@ -184,6 +191,8 @@
   <Import Project="..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.9\tools\webjobs.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.9\tools\webjobs.targets')" />
   <Import Project="..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.10\tools\webjobs.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.10\tools\webjobs.targets')" />
   <Import Project="..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.11\tools\webjobs.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.11\tools\webjobs.targets')" />
+  <Import Project="..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.12\tools\webjobs.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.12\tools\webjobs.targets')" />
+  <Import Project="..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.13\tools\webjobs.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.13\tools\webjobs.targets')" />
   <Import Project="..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.12\tools\webjobs.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.12\tools\webjobs.targets')" />
   <Import Project="..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.13\tools\webjobs.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebJobs.Publish.1.0.13\tools\webjobs.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
