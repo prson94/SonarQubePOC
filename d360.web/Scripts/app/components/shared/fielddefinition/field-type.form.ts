@@ -161,26 +161,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 .then(() => {
                     return this.loadDataType(this.model.FieldType.Type);
                 })
-                .then(() => {
-             /*       this.model.IsEditableDisabled = false;
-                    this.model.IsListableDisabled = false;
-                    this.model.IsRequiredDisabled = false;
-
-                    switch (this.model.FieldType.Type.toLowerCase()) {
-                        case 'complexrelationlookup':
-                        case 'filteredlookup':
-                        case 'ownershiplookup':
-                            this.model.IsEditableDisabled = true;
-                            this.model.IsListableDisabled = true;
-                            this.model.IsRequiredDisabled = true;
-                            break;
-                        case 'fusionlookup':
-                            this.model.IsEditableDisabled = false;
-                            this.model.IsListableDisabled = true;
-                            this.model.IsRequiredDisabled = false;
-                            break;
-                    }*/
-
+                .then(() => {           
                     this.isLoading = false;
                 });
         } else {
@@ -305,6 +286,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsListable = false;
                 this.model.FieldType.IsEditable = false;                
                 this.model.FieldType.IsRequired = false;
+                this.model.FieldType.LookupDisplayFormat = null;
                 this.lookups.ReferenceTypes = this.fieldsService.getFusionReferenceTypes();
                 if (this.model.FusionItems && this.model.FusionItems.length)
                     this.model.FusionItems.forEach(i => {
@@ -317,7 +299,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'complexrelationlookup':
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
-                this.model.FieldType.IsRequired = false;                
+                this.model.FieldType.IsRequired = false;
+                this.model.FieldType.LookupDisplayFormat = null;                
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
                     let r = new FieldTypeRelationItemEditorModel();
                     r.DisplayFields = [];
@@ -340,16 +323,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'filteredlookup':
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
-                this.model.FieldType.IsRequired = false;                
+                this.model.FieldType.IsRequired = false;
+                this.model.FieldType.LookupDisplayFormat = null;                
                 this.loadFilteredLookup();
                 break;
             case 'ownershiplookup':
                 if (!this.model.OwnershipLookupSettings) this.model.OwnershipLookupSettings = new OwnershipLookupSettings(); 
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
-                this.model.FieldType.IsRequired = false;                
+                this.model.FieldType.IsRequired = false;        
+                this.model.FieldType.LookupDisplayFormat = null;        
                 break;
-            default:                
+            default:       
+                this.model.FieldType.LookupDisplayFormat = null;         
                 break;
         }
         return Promise.all(promises).then(() => { });
@@ -368,8 +354,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         this.model.FieldType.LookupObjectID = id;
         this.model.FieldType.LookupObjectType = type;
-
-
+        
         this.loadDefaultValueOptions(type, id);
         return this.loadTokens(type, id);
     }
@@ -381,8 +366,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (objectType != "DomainItem" && objectType != "ReferenceItemType") objectType += 'Type';
-
-
+        
         return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType)
             .then(r => {
                 this.lookupDefaultValueOptions = r;
@@ -400,8 +384,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         return this.fieldsService.getLookupTokens(objectId, objectType)
             .then(r => {
-                this.model.LookupTokens = r;
-                this.model.FieldType.LookupDisplayFormat = "";
+                this.model.LookupTokens = r;             
                 if (this.model.LookupTokens
                     && this.model.LookupTokens.length > 0
                     && (this.model.FieldType.LookupDisplayFormat == null 
@@ -849,4 +832,3 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.relationItemCount = this.model.RelationItems.length;
     }
 }
-
