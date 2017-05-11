@@ -1401,6 +1401,7 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 					(I.Subject = @type and I.SubjectID = @id) OR 
 					(I.Object = @type and I.ObjectID = @id)  
 				)
+                and D.[Object] != 'Map';
 	
 	insert into @links
 		select	@type + cast(@id as varchar),
