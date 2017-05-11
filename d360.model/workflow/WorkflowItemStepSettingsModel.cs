@@ -95,7 +95,8 @@ namespace d360.model.workflow
                 
                 if (root.Element(EMAIL_RECIPIENT_TYPE) != null)
                 {
-                    messageRecipientType = (EmailTaskRecipientType)Enum.Parse(typeof(EmailTaskRecipientType), root.Element(EMAIL_RECIPIENT_TYPE).Value);
+                    if (!Enum.TryParse<EmailTaskRecipientType>(root.Element(EMAIL_RECIPIENT_TYPE).Value, out messageRecipientType))
+                        messageRecipientType = EmailTaskRecipientType.None;                    
                 }
 
                 if(root.Element(EMAIL_MESSAGE_SUBJECT) != null)

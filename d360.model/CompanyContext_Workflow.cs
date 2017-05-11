@@ -137,8 +137,8 @@ namespace d360.model
             }
 
             //add topic messages for the transitions
-            QueueSource.CreateTopicMessages(events);
-            //
+            if(events.Count > 0) QueueSource.CreateTopicMessages(events);
+            
 
             return true;
         }
