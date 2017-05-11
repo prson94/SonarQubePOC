@@ -59,6 +59,7 @@ export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnI
 
     save(e: WorkflowDiagramModel) {
         this.workflow = e;
+        this.currentID = this.workflow.Type.ID;
         this.mode = PageMode.DiagramEditor;
     }
 }
