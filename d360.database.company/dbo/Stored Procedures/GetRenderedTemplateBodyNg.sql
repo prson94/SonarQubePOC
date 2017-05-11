@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
+﻿ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
 --declare
 	@TemplateType varchar(25),
 	@Type varchar(50),
@@ -515,7 +515,7 @@ BEGIN
 
 	if @Action = 'Preview'
 	begin
-		set @html = '<h3 style="positon: relative">{Name} <small style="background-color: #fff; position: absolute; right: 30px;">{Type}</small></h3><div>{Description}</div>'
+		set @html = '<h3 style="positon: relative">{Name} <small style="background-color: #fff; float:right;font-size:65%;">{Type}</small></h3><div>{Description}</div>'
 		set @showIcon = 0
 
 		if @Type = 'Artifact'

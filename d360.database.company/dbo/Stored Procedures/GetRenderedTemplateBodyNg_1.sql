@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
+﻿ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
 --declare
 	@TemplateType varchar(25),
 	@Type varchar(50),
@@ -65,7 +65,7 @@ BEGIN
 		select 
 			@typeID = fa.fusionattributetypeid,
 			@n = fa.name,
-			@t = fat.textpath,
+			@t = fat.Name,
 			@link = dbo.GenerateNgObjectUrl('FusionAttribute', fat.id, fa.id) 
 		from fusionattribute fa 
 			inner join fusionattributetype fat on (fa.fusionattributetypeid = fat.id) 
@@ -95,7 +95,7 @@ BEGIN
 	begin
 		set @html = '<h3>{Name}</h3>'
 
-		declare @workflowID uniqueidentifier,
+		declare @workflowID bigint,
 				@dateCertifiedOn varchar(10),
 				@certifiers nvarchar(2500),
 				@status varchar(50),
@@ -106,7 +106,7 @@ BEGIN
 		from	Artifact A
 		where	A.ID = @ID
 
-		SELECT	@workflowID = W.ID,
+		/*SELECT	@workflowID = W.ID,
 				@certifiers = COALESCE(@certifiers + ', ', '') + R.FirstName + ' ' + R.LastName 
 		from	(
 				select		top 1
@@ -119,7 +119,16 @@ BEGIN
 				order by	DateCompleted desc
 				) W
 				inner join WorkflowResource WR on WR.WorkflowID = W.ID
-				inner join reporting.Global_Resource R on R.ResourceID = WR.ResourceID
+				inner join reporting.Global_Resource R on R.ResourceID = WR.ResourceID*/
+		select 
+			@workflowID = wi.id
+		from 
+			workflow.eventregistration we
+			inner join workflow.type wt on we.typeid = wt.id
+			inner join workflow.version wv on wt.id = wv.typeid
+			inner join workflow.item wi on wi.versionid = wv.id and (wi.[object] = 'Artifact' and wi.objectid = @ID )
+		where
+			we.changetype = 8;
 
 		if @dateCertifiedOn is null and @status != 'Certified'
 			begin
@@ -132,7 +141,7 @@ BEGIN
 				end
 				if @workflowID is not null
 				begin
-					set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/status/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
+					set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/details/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
 				end
 			end
 		else
@@ -166,10 +175,10 @@ BEGIN
 				else 
 					begin
 						set @html = @html + '<div>Currently Under Certification Review</div>'
-						set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
+						--set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
 						if @workflowID is not null
 						begin
-							set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/status/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
+							set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/details/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
 						end
 					end
 			end
@@ -322,15 +331,16 @@ BEGIN
 				end
 
 			insert into @refs 
-				select top 50 ID from [ReferenceItem] where ReferenceItemTypeID = @MyRefTypeID order by ID desc
+				select top 50 ID from [ReferenceItem] where ReferenceItemTypeID = @MyRefTypeID order by DisplayValue desc
 		
 			declare @refFieldTypes table (ID int identity, Name nvarchar(250))
+			insert into @refFieldTypes values ('Code')
 			insert into @refFieldTypes
 				select FriendlyName from FieldType where [Object] = 'ReferenceItemType' and ObjectID = @MyRefTypeID order by SortOrder asc
 
 			declare @refHtml nvarchar(max)
 
-			set @refHtml = '<table class="hoverable bordered striped" style="width:100%">'
+			set @refHtml = '<table class="hoverable bordered striped" style="width:100%; min-width: 400px">'
 
 			-- Loop through field name list ---------
 			set @refHtml = @refHtml + '<thead>'
@@ -364,6 +374,9 @@ BEGIN
 				declare @refID int
 
 				select	@refID = ID from @refs where RowID = @current
+
+				insert into @refFields
+					select	'Code', Code from ReferenceItem where ID = @refID
 
 				insert into @refFields
 					select		FriendlyName,
@@ -502,20 +515,50 @@ BEGIN
 
 	if @Action = 'Preview'
 	begin
-		set @html = '<h3>{Name} <small style="right: 5px;">{Type}</small></h3><div>{Description}</div>'
+		set @html = '<h3 style="positon: relative">{Name} <small style="background-color: #fff; float:right;font-size:65%;">{Type}</small></h3><div>{Description}</div>'
 		set @showIcon = 0
 
 		if @Type = 'Artifact'
 		begin
+			declare @artifactPathHtml nvarchar(2500) = '<table>';
+			declare @artLevelResult table(ID int identity, LevelName nvarchar(250), Name nvarchar(250), Url varchar(1000));
+
+			with ap as (
+				select	O.ID,
+						O.ParentID,
+						O.Name,
+						L.Name as LevelName,
+						dbo.GenerateNgObjectUrl('Artifact', L.ID, O.ID) as Url,
+						1 as [Level]
+				from	Artifact O
+						inner join ArtifactType L on L.ID = O.ArtifactTypeID
+				where	O.ID = @ID
+				union all
+				select	O.ID,
+						O.ParentID,
+						O.Name,
+						L.Name as LevelName,
+						dbo.GenerateNgObjectUrl('Artifact', L.ID, O.ID) as Url,
+						C.[Level] + 1 as [Level]
+				from	Artifact O
+						inner join ArtifactType L on L.ID = O.ArtifactTypeID
+						inner join ap as C on C.ParentID = O.ID
+			)
+
+			insert into @artLevelResult
+				select LevelName, Name, Url from ap order by [Level] desc
+
+			select		@artifactPathHtml = coalesce(@artifactPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast([ID] as varchar) + '</td><td>' +  LevelName + '</td><td><b><a href="' + Url + '">' + Name + '</a></b>' + '</td></tr>'
+			from		@artLevelResult
+			
+			set @artifactPathHtml =  @artifactPathHtml + '</table>'
+
 			insert into @tbl
 			select	'Status', [Status]
 			from	Artifact
 			where	ID = @ID
 
-			insert into @tbl
-			select	'Path', TextPath
-			from	Artifact
-			where	ID = @ID
+			set @html = @html + '<div><b>Path:</b></div><div>' + coalesce(@artifactPathHtml,'') + '</div>'
 
 			insert into @tbl 
 				select 'GoverningDomain', tt.name
@@ -525,138 +568,57 @@ BEGIN
 
 			set @html = @html + '<div><b>' + @SubjectName + ':</b> {GoverningDomain}</div>'
 			set @html = @html + '<div><b>Status:</b> {Status}</div>'
-			set @html = @html + '<div><b>Path:</b> {Path}</div>'
+			--set @html = @html + '<div><b>Path:</b> {Path}</div>'
 
 			set @hasDynamicFields = 1
 		end;
 
-		if @Type = 'Event'
+		if @Type = 'FusionAttribute'
 		begin
-			declare @so nvarchar(250)
-			select	@so = SourceID, 
-					@s = [Status]
-			from	[Event]
-			where	ID = @ID
+			declare @faPathHtml nvarchar(2500) = '<table>';
+			declare @faLevelResult table(ID int identity, LevelName nvarchar(250), Name nvarchar(250));
 
-			insert into @tbl values ('Status', @s)
-			insert into @tbl values ('SourceID', @so)
+			with fap as (
+				select	O.ID,
+						O.ParentID,
+						O.Name,
+						L.Name as LevelName,
+						1 as [Level]
+				from	FusionAttribute O
+						inner join FusionAttributeType L on L.ID = O.FusionAttributeTypeID
+				where	O.ID = @ID
+				union all
+				select	O.ID,
+						O.ParentID,
+						O.Name,
+						L.Name as LevelName,
+						C.[Level] + 1 as [Level]
+				from	FusionAttribute O
+						inner join FusionAttributeType L on L.ID = O.FusionAttributeTypeID
+						inner join fap as C on C.ParentID = O.ID
+			)
 
-			set @html = @html + '<div><b>Status:</b> {Status}</div>'
-			set @html = @html + '<div><b>SourceID:</b> {SourceID}</div>'
+			insert into @faLevelResult
+				select LevelName, Name from fap order by [Level] desc
+
+			select		@faPathHtml = @faPathHtml + 
+						'<tr><td colspan="2">Configuration</td><td><b><a href="/fusion/' + cast(F.ID as nvarchar) + '">' + coalesce(F.Name,'') + '</a></b></td></tr>' 
+			from		Fusion F 
+						inner join FusionAttribute A on A.FusionID = F.ID and A.ID = @ID
+
+			select		@faPathHtml = coalesce(@faPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast(ID as varchar) + '</td><td>' +  LevelName + '</td><td><b>' + Name + '</b>' + '</td></tr>'
+			from		@faLevelResult
+
+			set @faPathHtml =  @faPathHtml + '</table>'
+
+			set @html = @html + '<div><b>Path:</b></div><div>' + coalesce(@faPathHtml,'') + '</div>'
 
 			set @hasDynamicFields = 1
-		end;
-
-		if @Type = 'EventGroup'
-		begin
-			insert into @tbl
-				select	'Key', PublicID
-				from	EventGroup
-				where	ID = @ID
-
-			-- BUILD EVENT LIST HTML -----------------------------------------
-			declare @events table (ID int, SourceID nvarchar(250), Status varchar(25))
-			insert into @events 
-				select top 10 ID, SourceID, Status from [Event] where EventGroupID = @ID order by ID desc
-		
-			declare @eventFieldTypes table (ID int identity, Name nvarchar(250))
-			insert into @eventFieldTypes
-				select FriendlyName from FieldType where [Object] = 'Rule' and ObjectID = @typeID order by SortOrder asc
-			insert into @eventFieldTypes values ('Source ID')
-			insert into @eventFieldTypes values ('Status')
-
-			declare @eventHtml nvarchar(max)
-
-			set @eventHtml = '<table class="hoverable bordered striped" style="width:100%">'
-
-			-- Loop through field name list ---------
-			set @eventHtml = @eventHtml + '<thead>'
-			set		@current = 1
-			select	@max = max(ID) from @eventFieldTypes
-			while @current <= @max
-			begin
-				select	@name = Name
-				from	@eventFieldTypes
-				where	ID = @current
-
-				set @eventHtml = @eventHtml + '<th>' + @name  + '</th>'
-
-				set @current = @current + 1
-			end
-			set @eventHtml = @eventHtml + '</thead>'
-			-----------------------------------------
-
-			set @eventHtml = @eventHtml + '<tbody>'
-
-			-- Loop through event list --------------
-			select	@current = min(ID) from @events
-			select	@max = max(ID) from @events
-
-			while @current <= @max
-			begin
-				set @eventHtml = @eventHtml + '<tr>'	-- Open row for selected event.
-
-				declare @eventFields table (Name nvarchar(250), Value nvarchar(4000))
-			
-				insert into @eventFields
-					select		FriendlyName,
-								FormattedValue
-					from		FieldWithRelation
-					where		ObjectType = 'Event' 
-								and ObjectID = @current
-
-					-- Loop through each field for this selected event --
-					declare @fCurrent int,
-							@fMax int
-					set		@fCurrent = 1
-					select	@fMax = max(ID) from @eventFieldTypes
-					while @fCurrent <= @fMax
-					begin
-						select	@name = Name from @eventFieldTypes where ID = @fCurrent
-
-						select @eventHtml = @eventHtml + '<td>' + coalesce(Value, '') + '</td>' from @eventFields where Name = @name
-
-						set @fCurrent = @fCurrent + 1
-					end
-					-----------------------------------------------------
-
-					select @eventHtml = @eventHtml	+ 
-										'<td>' + [SourceID] + '</td>' + 
-										'<td>' + [Status] + '</td>' 
-					from	@events 
-					where	ID = @current
-
-				delete @eventFields
-
-				set @eventHtml = @eventHtml + '</tr>'	-- Close off row for selected event.
-
-				set @current = @current + 1
-			end
-			-----------------------------------------
-
-			set @eventHtml = @eventHtml + '</tbody>'
-
-			set @eventHtml = @eventHtml + '</table>'
-
-			insert into @tbl values ('Items', @eventHtml)
-
-			set @html = @html + '<div><b>Key:</b> {Key}</div>'
-			set @html = @html + '<div>Items: {Items}</div>'
-			------------------------------------------------------------------
-		end;
+		end
 
 		if @Type = 'Intersect'
 		begin
-			insert into @tbl
-				select	'Classification',
-						case Classification
-							when 1 then 'Critical'
-							else 'Normal'
-						end
-				from	[Intersect]
-				where	ID = @ID
-
-			set @html = @html + '<div><b>Classification:</b> {Classification}</div>'
+			set @hasDynamicFields = 1
 		end;
 
 		
@@ -792,7 +754,7 @@ BEGIN
 						inner join tp as C on C.ParentID = O.ID
 			)
 
-			select		@taxonomyPathHtml = coalesce(@taxonomyPathHtml + '', '') + '<tr><td>' +  cast([Level] as varchar) + '</td><td>' +  LevelName + '</td><td><b>' + Name + '</b>' + '</td></tr>'
+			select		@taxonomyPathHtml = coalesce(@taxonomyPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast([Level] as varchar) + '</td><td>' +  LevelName + '</td><td><b>' + Name + '</b>' + '</td></tr>'
 			from		tp
 			order by	[Level]
 			
@@ -926,8 +888,9 @@ BEGIN
 	--	set @html = @icon + '<br/>' + @html
 	--end
 
+	set @html = '<div style="max-height: 500px; min-width: 400px; overflow-y: auto">' + @html + '</div>'
+
 	-- Return the properly formatted values.
 	select	'' as Title,
 			@html as Body;
 END
-GO
