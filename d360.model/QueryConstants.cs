@@ -1616,6 +1616,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 ";
 
         public static string WorkflowObjectTypes = @"
+
             select 'ArtifactType|' + cast(t.id as varchar) as value, t.id, 'ArtifactType' as [type], 'Artifact Type :: ' +  t.Name as [name], count(*) as [count] 
             from artifacttype t
             join artifact a on a.artifacttypeid = t.id
@@ -1639,6 +1640,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], 'Action Type :: ' + t.Name as [name], count(*) as [count] 
             from issuetype t
             join issue a on a.issuetypeid = t.id
+            group by t.id, t.name
+			union all
+            select 'Fusion|' + cast(t.id as varchar) as value, t.id, 'Fusion' as [type], 'Fusion :: ' + t.Name as [name], 1 as [count] 
+            from fusion t
             group by t.id, t.name
 ";
 

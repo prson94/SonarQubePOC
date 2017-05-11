@@ -1411,9 +1411,14 @@ namespace d360.web.Controllers.Services
         }
 
         [Route("objecttypes"), HttpGet]
-        public HttpResponseMessage GetObjectTypes()
+        public HttpResponseMessage GetObjectTypes(ChangeType changeType)
         {
-            var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes).OrderBy(t => t.name);
+            var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes).ToList();
+            if (changeType == ChangeType.Loaded)
+                types = types.Where(t => t.type == "Fusion").OrderBy(t => t.name).ToList();
+            else
+                types = types.Where(t => t.type != "Fusion").OrderBy(t => t.name).ToList();
+
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
 

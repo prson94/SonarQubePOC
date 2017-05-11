@@ -23,6 +23,7 @@ import {
     TransitionTypeInfo,
     WorkflowTaskProcedure,   
     EmailTaskRecipientTypeInfo,
+    WorkflowChangeType,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -332,8 +333,11 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
-    getWorkflowObjectTypes(): Promise<WorkflowObjectType[]> {
-        return this.http.get('services/workflow/objecttypes')
+    getWorkflowObjectTypes(changeType: WorkflowChangeType): Promise<WorkflowObjectType[]> {
+        if (changeType == null || <any>changeType == '')
+            return Promise.resolve([]);
+
+        return this.http.get(`services/workflow/objecttypes?changeType=${changeType}`)
             .toPromise()
             .then(response => <WorkflowObjectType[]>response.json())
             .catch(err => this.handleError(err));

@@ -103,9 +103,7 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     load(): Promise<any> {
         this.isLoading = true;
 
-        return this.workflowService.getWorkflowObjectTypes()
-            .then(r => { this.workflowObjectTypes = r; })
-            .then(() => this.workflowService.getChangeTypes())
+        return this.workflowService.getChangeTypes()
             .then(r => { this.changesTypes = r; })
             .then(() => this.responsibilityService.getResponsibilityTypes())
             .then(r => { this.responsibilities = r; })
@@ -163,11 +161,18 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
                                 if (cx != null)
                                     c['@FieldName'] = cx.label;
                             });
-                        });
+                        })
+                        .then(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType))
+                        .then(r => this.workflowObjectTypes = r);
                 }
             })
             .then(() => { this.validate(); });
 
+    }
+
+    loadObjects() {
+        return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
+            .then(r => { this.workflowObjectTypes = r; });
     }
 
     selectObjectType(e: any) {
