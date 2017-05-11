@@ -162,7 +162,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     return this.loadDataType(this.model.FieldType.Type);
                 })
                 .then(() => {
-                    this.model.IsEditableDisabled = false;
+             /*       this.model.IsEditableDisabled = false;
                     this.model.IsListableDisabled = false;
                     this.model.IsRequiredDisabled = false;
 
@@ -179,7 +179,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             this.model.IsListableDisabled = true;
                             this.model.IsRequiredDisabled = false;
                             break;
-                    }
+                    }*/
 
                     this.isLoading = false;
                 });
@@ -192,11 +192,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.IsDisplayable = true;
             this.model.FieldType.IsEditable = true;
             this.model.FieldType.IsListable = false;
-
-            this.model.IsEditableDisabled = false;
-            this.model.IsListableDisabled = false;
-            this.model.IsRequiredDisabled = false;
-
+                        
             this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
             this.model.OwnershipLookupSettings.DisplayAssignmentSource = false;
             this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
@@ -304,11 +300,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         switch (value.toLowerCase()) {
             case 'lookup':
                 promises.push(this.lookupTypeSelected(this.model.selectedLookup || this.lookups.Lookups[0].value));
+                break;
             case 'fusionlookup':
                 this.model.FieldType.IsListable = false;
-                this.model.IsEditableDisabled = false;
-                this.model.IsListableDisabled = true;
-                this.model.IsRequiredDisabled = false;
+                this.model.FieldType.IsEditable = false;                
+                this.model.FieldType.IsRequired = false;
                 this.lookups.ReferenceTypes = this.fieldsService.getFusionReferenceTypes();
                 if (this.model.FusionItems && this.model.FusionItems.length)
                     this.model.FusionItems.forEach(i => {
@@ -321,10 +317,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'complexrelationlookup':
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
-                this.model.FieldType.IsRequired = false;
-                this.model.IsEditableDisabled = true;
-                this.model.IsListableDisabled = true;
-                this.model.IsRequiredDisabled = true;
+                this.model.FieldType.IsRequired = false;                
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
                     let r = new FieldTypeRelationItemEditorModel();
                     r.DisplayFields = [];
@@ -347,24 +340,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'filteredlookup':
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
-                this.model.FieldType.IsRequired = false;
-                this.model.IsEditableDisabled = true;
-                this.model.IsListableDisabled = true;
-                this.model.IsRequiredDisabled = true;
+                this.model.FieldType.IsRequired = false;                
                 this.loadFilteredLookup();
                 break;
             case 'ownershiplookup':
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
-                this.model.FieldType.IsRequired = false;
-                this.model.IsEditableDisabled = true;
-                this.model.IsListableDisabled = true;
-                this.model.IsRequiredDisabled = true;
+                this.model.FieldType.IsRequired = false;                
                 break;
-            default:
-                this.model.IsEditableDisabled = false;
-                this.model.IsListableDisabled = false;
-                this.model.IsRequiredDisabled = false;
+            default:                
                 break;
         }
         return Promise.all(promises).then(() => { });

@@ -40,10 +40,7 @@ export class FieldTypeEditorModel {
     LookupTokens: SelectItem[] = new Array<SelectItem>();
     FilteredLookupItems: FilteredLookupItem[] = [];
     FilteredLookupItem: FilteredLookupItem;
-    OwnershipLookupSettings: OwnershipLookupSettings;
-    IsEditableDisabled: boolean;
-    IsListableDisabled: boolean;
-    IsRequiredDisabled: boolean;
+    OwnershipLookupSettings: OwnershipLookupSettings;    
     IsPrimaryFilter: boolean;
 }
 
