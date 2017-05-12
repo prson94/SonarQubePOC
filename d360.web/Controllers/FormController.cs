@@ -769,7 +769,7 @@ namespace d360.web.Controllers
             if (p == 0 && type.ParentID.HasValue)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = false }).ToList();
+                var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.TextPath).Select(i => new SelectListItem { Text = i.TextPath, Value = i.ID.ToString(), Selected = false }).ToList();
                 list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "ParentID", FieldType = DataType.Lookup.ToString(), Items = parents, Name = $"Parent {pluralize.Singularize(type.Parent.Name)}" });
                 pluralize = null;
                 row++;
@@ -842,7 +842,7 @@ namespace d360.web.Controllers
             if (type.ParentID.HasValue)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);                
-                var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+                var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.TextPath).ToList().Select(i => new SelectListItem { Text = i.TextPath, Value = i.ID.ToString() }).ToList();
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(type.Parent.Name)}", FieldType = DataType.Lookup.ToString(), Value = (a.ParentID.HasValue ? a.ParentID.ToString() : ""), Items = parents });                
             }
 
