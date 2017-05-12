@@ -52,6 +52,9 @@
                     <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)"></p-editor>
                 </div>
             </div>
+            <div class="col s12">
+                <p>Use the following templates to represent values in the email body: <b>[OBJECT_NAME]</b> Object Name, <b>[OBJECT_TAXONOMY]</b> Object Governing Domain, <b>[WORKFLOW_INITIATOR]</b> Initiator of the workflow, <b>[SCORE]</b> score value for score change event, and <b>[FIELD&lt;ID&gt;]</b> for a given field ID.</p>
+            </div>
             <div class="col s12" style="padding-top:8px;">
                 <div>
                     <input type="checkbox" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)" /> Include previous form responses

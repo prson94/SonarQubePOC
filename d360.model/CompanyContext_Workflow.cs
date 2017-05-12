@@ -1045,7 +1045,7 @@ namespace d360.model
                 result = result.Replace("[OBJECT_TAXONOMY]", taxonomy);
             }
 
-            if (result.Contains("[OBJECT_TAXONOMY]"))
+            if (result.Contains("[WORKFLOW_INITIATOR]"))
             {
                 var initiator = "unknown user";
 
