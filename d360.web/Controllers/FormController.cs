@@ -545,6 +545,8 @@ namespace d360.web.Controllers
                     return EditRule(form);
                 case "RULEDIMENSION":
                     return EditRuleDimension(form);
+                case "RULEIMPLEMENTATION":
+                    return EditRuleImplementation(form);
                 case "RULETYPE":
                     return EditRuleType(form);
                 case "SCORETYPE":
@@ -624,6 +626,8 @@ namespace d360.web.Controllers
                     return DeletePolicyTypeClass(form);
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
+                case "RULEIMPLEMENTATION":
+                    return DeleteRuleImplementation(form);
                 case "SCORETYPE":
                     return DeleteScoreType(form);
                 case "SCORETYPEMETRIC":
@@ -720,6 +724,8 @@ namespace d360.web.Controllers
                     return AddResource(form);
                 case "RULEDIMENSION":
                     return AddRuleDimension(form);
+                case "RULEIMPLEMENTATION":
+                    return AddRuleImplementation(form);
                 case "RULETYPE":
                     return AddRuleType(form);
                 case "SCORETYPE":
@@ -2953,6 +2959,10 @@ namespace d360.web.Controllers
                 list.Add("LastName", 0);
                 list.Add("Email", 0);
                 list.Add("DateLastLoggedIn", 0);
+            }
+            else if (type == SystemObjects.FusionQueryAttributeType)
+            {
+                list.Add("DisplayValue", 0);
             }
             else
             {
@@ -6258,7 +6268,25 @@ namespace d360.web.Controllers
                     Value = string.Format("{0}|{1}", i.Name, i.ID)
                 })
                 .ToList();
-            
+
+            if (ruleStep.FusionRule.ObjectType == "FusionAttributeType")
+            {
+                var thisFusionAttributeType = Company.GetById<FusionAttributeType>(ruleStep.FusionRule.ObjectID);
+                if (thisFusionAttributeType != null)
+                {
+                    sourceFields.AddRange(
+                        Company
+                        .Filter<FieldType>(i => i.Object == ruleStep.FusionRule.ObjectType && i.ObjectID == thisFusionAttributeType.ParentID)
+                        .OrderBy(i => i.FriendlyName)
+                        .ToList()
+                        .Select(i => new SelectListItem {
+                            Text = string.Format("Parent.{0} ({1})", i.FriendlyName, i.Name),
+                            Value = string.Format("{0}|{1}", i.Name, i.ID)
+                        })
+                    );
+                }
+            }
+
             //These fields do not exists, by default, for fusion query attributes.
             if (ruleStep.FusionRule.ObjectType != SystemObjects.FusionQueryAttributeType.ToString())
             {

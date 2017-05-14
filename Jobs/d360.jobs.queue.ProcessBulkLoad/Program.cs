@@ -604,7 +604,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 #endregion
             }
-            else if (load.Action == "T")    // Technical Lineage
+            else if (load.Action == "T" || load.Action == "TL")    // Technical Lineage
             {
                 #region Technical Lineage
 

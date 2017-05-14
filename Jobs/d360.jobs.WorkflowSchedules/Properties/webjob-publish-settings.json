@@ -3,7 +3,7 @@
   "webJobName": "Execute-Workflow-Schedules",
   "startTime": "2017-05-08T00:00:00-05:00",
   "endTime": null,
-  "jobRecurrenceFrequency": "Hour",
-  "interval": 24,
+  "jobRecurrenceFrequency": "Minute",
+  "interval": 15,
   "runMode": "Scheduled"
 }

@@ -28,14 +28,14 @@ namespace d360.jobs.CalculateAnalytics
                     companyConnection = GetCompanyConnection(company.CompanyID);
                     companyConnection.Open();
 
-                    if (company.IsDevelopment)
-                    {
+                   // if (company.IsDevelopment)
+                    //{
                         companyConnection.Execute("exec utility.CalculateScores", commandTimeout: 1400);
-                    }
-                    else
-                    {
-                        companyConnection.Execute("exec utility.CalculateStatistics", commandTimeout: 1400);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    companyConnection.Execute("exec utility.CalculateStatistics", commandTimeout: 1400);
+                    //}
                 }
                 catch (Exception ex)
                 {

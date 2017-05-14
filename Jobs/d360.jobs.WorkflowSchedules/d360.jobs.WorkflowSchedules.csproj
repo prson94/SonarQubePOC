@@ -139,6 +139,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\d3s-us-processor - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-us-processor-ClientDevelopment - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-us-processor-Nightly - Web Deploy.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
