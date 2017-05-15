@@ -1023,6 +1023,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     dbParams.Add(bind, $"%{value}");
                     querySyntax = $"{field} LIKE @{bind}";
                     break;
+                case "IN":                    
+                    dbParams.Add(bind, value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries));
+                    querySyntax = $"{field} IN @{bind}";
+                    break;
                 //greater / less than cause issues with dates when casting...               
                 /*case "GREATER_THAN":
                     dbParams.Add(bind, $"{value}");                    

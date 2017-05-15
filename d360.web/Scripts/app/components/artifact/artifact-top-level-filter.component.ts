@@ -12,11 +12,8 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../
                                 <div class="row">
                                     <div class="col s12 FieldName">{{field.text}}</div>
                                     <div class="col s12">
-                                        <span *ngSwitchCase="'dropdownlist'">
-                                            <select [name]="'FilterValue_' + index" [ngModel]="field.value" (ngModelChange)="field.value = $event" style="width:100%;" placeholder="Choose a field">                                            
-                                                <option value=""></option>
-                                                <option *ngFor="let p of field.filteritems" [value]="p">{{p}}</option>
-                                            </select>
+                                        <span *ngSwitchCase="'dropdownlist'">                                            
+                                            <p-multiSelect [name]="'FilterValue_' + index" [options]="field.filteritems | arraySelectItemPipe" [(ngModel)]="field.value" [style]="{width:'100%'}"></p-multiSelect>
                                         </span>                                
                                         <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" [ngModel]="field.value" (ngModelChange)="field.value = $event" placeholder="Enter a value" style="width:100%;">                                 
                                     </div>
@@ -65,16 +62,26 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
             if (!field.value || field.value === '') continue;
             let filter = new GridFilterExpression();
             filter.field = field.datafield;
-            filter.value = field.value;
-
-            if (field.columntype == "dropdownlist")
-                filter.condition = "EQUAL";
-            else
-                filter.condition = "CONTAINS";
-
-            filter.fieldtype = (field.hiddenfield) ? GridFilterFieldType.Hidden : GridFilterFieldType.Normal;
             
-            this.filters.push(filter);
+            if (field.columntype == "dropdownlist") {
+                let newVal = '';
+                if (field.value.length > 0) {                    
+                    for (let item of field.value) {
+                        if (newVal.length > 0) newVal += '!~!';
+                        newVal += item;
+                    }                    
+                    filter.value = newVal;
+                    filter.condition = "IN";
+                    filter.fieldtype = (field.hiddenfield) ? GridFilterFieldType.Hidden : GridFilterFieldType.Normal;
+                    this.filters.push(filter);
+                }                
+            }
+            else {
+                filter.condition = "CONTAINS";
+                filter.value = field.value;
+                filter.fieldtype = (field.hiddenfield) ? GridFilterFieldType.Hidden : GridFilterFieldType.Normal;
+                this.filters.push(filter);
+            }            
         }
         
         this.filtersChange.emit(this.filters);

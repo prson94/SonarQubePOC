@@ -1139,6 +1139,7 @@
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\organization.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\selective-preloading-strategy.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dynamic-type-builder.ts" />

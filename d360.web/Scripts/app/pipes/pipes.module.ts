@@ -6,10 +6,12 @@ import { ModelTypePipe } from './model-type.pipe';
 import { ScoreDisplayPipe } from './score-display.pipe';
 import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
 import { TreeSearchPipe } from './tree-search.pipe';
+import { ArrayToSelectItemPipe } from './array-to-selectitem.pipe';
 
 @NgModule({
     imports: [CommonModule],
     declarations: [
+        ArrayToSelectItemPipe,
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
         ModelTypePipe,
@@ -17,6 +19,7 @@ import { TreeSearchPipe } from './tree-search.pipe';
         TechnicalNameToDisplayValuePipe,
     ],
     exports: [
+        ArrayToSelectItemPipe,
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
         ModelTypePipe,
