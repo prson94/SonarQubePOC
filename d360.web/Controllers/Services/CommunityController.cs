@@ -126,18 +126,7 @@ namespace d360.web.Controllers.Services
             {
                 dtl.ParseVoteXml();
             }
-
-            if (dtl.CommentTypeID == core.enums.CommentType.Issue)
-            {
-                var processor = new Processor();
-                var dictionary = new Dictionary<string, object>();
-                dictionary.Add("CompanyID", Company.CurrentCompanyID);
-                dictionary.Add("CommentID", dtl.ID);
-                processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
-            }
-
-            //if (comment.ParentID.HasValue) Clients.Others.newComment(dtl, comment.ParentID);
-
+            
             return dtl;
         }
 

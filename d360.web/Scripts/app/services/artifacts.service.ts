@@ -197,9 +197,9 @@ export class ArtifactService extends BaseService {
         return this.deleteDynamicWithResult(this.http, 'artifact', id);
     }
 
-    saveArtifact(artifact: any, hasSuggest: boolean): Promise<JsonResult> {
+    saveArtifact(artifact: any): Promise<JsonResult> {
         if (artifact.ID == undefined || !artifact.ID) {
-            return this.postDynamic(this.http, hasSuggest ? 'suggestartifact': 'artifact', artifact);
+            return this.postDynamic(this.http, 'artifact', artifact);
         }
         return this.putDynamic(this.http, 'artifact', artifact);
     }

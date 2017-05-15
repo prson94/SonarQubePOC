@@ -217,7 +217,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true; 
         this.showEditor = false;              
-        this.artifactService.saveArtifact(event.item, false)
+        this.artifactService.saveArtifact(event.item)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);                
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
