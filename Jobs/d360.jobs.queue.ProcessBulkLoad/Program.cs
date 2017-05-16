@@ -15,9 +15,6 @@ using Newtonsoft.Json;
 using d360.core.queue;
 using System.Threading;
 using d360.core.exceptions;
-using d360.workflow.models;
-using d360.workflow;
-using d360.workflow.entities;
 using System.Data.SqlClient;
 
 namespace d360.jobs.queue.ProcessBulkLoad

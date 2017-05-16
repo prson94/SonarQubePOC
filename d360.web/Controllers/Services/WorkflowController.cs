@@ -2,7 +2,6 @@
 using d360.model;
 using System.Net.Http;
 using System.Web.Http;
-using d360.workflow;
 using System.Linq;
 using System.Runtime.Serialization;
 using d360.core;
@@ -10,9 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using d360.core.entities;
-using d360.workflow.models;
 using System.Net;
-using d360.workflow.entities;
 using d360.web.Models;
 using System.Web.Http.OData;
 using System.IO;
@@ -41,177 +38,7 @@ namespace d360.web.Controllers.Services
         }
 
         #endregion
-
-        void hydrateTasks(List<WorkflowTask> tasks)
-        {
-            var Artifacts = new List<int>();
-            List<Artifact> artifacts = null;
-
-            var ArtifactTypes = new List<int>();
-            List<ArtifactType> artifactTypes = null;
-
-            var Resources = new List<int>();
-            List<GlobalReportingResource> resources = null;
-
-            var TaxonomyTypes = new List<int>();
-            List<TaxonomyType> taxonomyTypes = null;
-
-            #region Get all the IDs we need to look up
-
-            tasks.ForEach(t => {
-                var properties = (
-                                 from s in XElement.Parse(t.Data).Elements()
-                                 select new { Name = s.Name.LocalName, Value = s.Value }
-                                 ).ToList();
-
-                int id = 0;
-
-                properties.ForEach(p => {
-                    switch (p.Name)
-                    { 
-                        case "ArtifactID":
-                            id = int.Parse(p.Value);
-                            if (!Artifacts.Contains(id)) Artifacts.Add(id);
-                            break;
-                        case "ArtifactTypeID":
-                            id = int.Parse(p.Value);
-                            if (!ArtifactTypes.Contains(id)) ArtifactTypes.Add(id);
-                            break;
-                        case "ResourceID":
-                        case "RequestingResourceID":
-                            id = int.Parse(p.Value);
-                            if (!Resources.Contains(id)) Resources.Add(id);
-                            break;
-                        case "StartDate":
-                            var sd = DateTime.Parse(p.Value);
-                            t.Properties.Add("Start Date", sd.ToShortDateString());
-                            break;
-                        case "EndDate":
-                            var ed = DateTime.Parse(p.Value);
-                            t.Properties.Add("End Date", ed.ToShortDateString());
-                            break;
-                        case "DueDate":
-                            var dd = DateTime.Parse(p.Value);
-                            t.Properties.Add("Due Date", dd.ToShortDateString());
-                            break;
-                        case "TaxonomyTypeID":
-                            id = int.Parse(p.Value);
-                            if (!TaxonomyTypes.Contains(id)) TaxonomyTypes.Add(id);
-                            break;
-                        default:
-                            if (!p.Name.StartsWith("FieldType_"))
-                            {
-                                t.Properties.Add(p.Name, p.Value);
-                            }
-                            break;
-                    }
-                });
-            });
-
-            #endregion
-
-            #region Look up the data based on the ID lists we got above
-            
-            if (Artifacts.Count > 0)
-                artifacts = Company.Filter<Artifact>(i => Artifacts.Contains(i.ID)).ToList();
-            
-            if (ArtifactTypes.Count > 0)
-                artifactTypes = Company.Filter<ArtifactType>(i => ArtifactTypes.Contains(i.ID)).ToList();
-            
-            if (Resources.Count > 0)
-                resources = Company.Filter<GlobalReportingResource>(i => Resources.Contains(i.ResourceID)).ToList();
-
-            if (TaxonomyTypes.Count > 0)
-                taxonomyTypes = Company.Filter<TaxonomyType>(i => TaxonomyTypes.Contains(i.ID)).ToList();
-
-            #endregion
-
-            #region Now hydrate the tasks with the data we got back from DB
-
-            tasks.ForEach(t =>
-            {
-                t.WorkflowName = t.Workflow.GetWorkflowTypeDisplayName();
-                t.WorkflowDescription = t.Workflow.GetWorkflowTypeDescription();
-                t.ActivityName = t.Activity.GetActivityTypeDisplayName();
-                t.ActivityDescription = t.Activity.GetReportTileTypeDescription();
-
-                var properties = (
-                                 from s in XElement.Parse(t.Data).Elements()
-                                 select new { Name = s.Name.LocalName, Value = s.Value }
-                                 ).ToList();
-
-                properties.ForEach(p =>
-                {
-                    switch (p.Name)
-                    {
-                        case "ArtifactID":
-                            var a = artifacts.SingleOrDefault(i => i.ID == int.Parse(p.Value));
-                            if (a != null)
-                            {
-                                t.Properties.Add("Artifact", string.Format("<a href='/#/artifacts/{0}/{1}' data-type='Artifact' data-id='{1}' data-context='Preview'>{2}<a>", a.ArtifactTypeID, a.ID, a.Name));
-                            }
-                            a = null;
-                            break;
-                        case "ArtifactTypeID":
-                            var at = artifactTypes.SingleOrDefault(i => i.ID == int.Parse(p.Value));
-                            if (at != null)
-                            {
-                                t.Properties.Add("Type", string.Format("<a href='/#/artifacts/{0}' data-type='ArtifactType' data-id='{0}' data-context='Preview'>{1}<a>", at.ID, at.Name));
-                            }
-                            at = null;
-                            break;
-                        case "ResourceID":
-                        case "RequestingResourceID":
-                            var r = resources.SingleOrDefault(i => i.ResourceID == int.Parse(p.Value));
-                            if (r != null)
-                            {
-                                var fieldName = (p.Name == "RequestingResourceID") ? "Requestor" : "Resource";
-                                t.Properties.Add(fieldName, string.Format("<a href='/#/resources/{0}' data-type='Resource' data-id='{0}' data-context='Preview'>{1} {2}<a>", r.ResourceID, r.FirstName, r.LastName));
-                            }
-                            r = null;
-                            break;
-                        case "TaxonomyTypeID":
-                            var tt = taxonomyTypes.SingleOrDefault(i => i.ID == int.Parse(p.Value));
-                            if (tt != null)
-                            {
-                                t.Properties.Add("Subject Area", string.Format("<a href='/#/catalogs/{0}' data-type='TaxonomyType' data-id='{0}' data-context='Preview'>{1}<a>", tt.ID, tt.Name));
-                            }
-                            tt = null;
-                            break;
-                    }
-                });
-            });
-
-            #endregion
-
-            #region Destroy
-
-            Artifacts = null;
-            artifacts = null;
-            ArtifactTypes = null;
-            artifactTypes = null;
-            Resources = null;
-            resources = null;
-            TaxonomyTypes = null;
-            taxonomyTypes = null;
-
-            #endregion
-        }
-
-        /// <summary>
-        /// Gets a list of open workflow tasks for the current user.
-        /// </summary>
-        /// <returns>A list of workflow tasks.</returns>
-        [Route("tasks/types/breakdown"), HttpGet]
-        public List<WorkflowBreakdown> GetTaskBreakdownForCurrentUser()
-        {
-            var items = Company.Query<WorkflowBreakdown>(QueryConstants.CurrentUserWorkflowCount, new { r = Company.CurrentResourceID }).ToList();
-            items.ForEach(i => { 
-                i.WorkflowTypeID = (int)i.Workflow;
-                i.WorkflowTypeName = i.Workflow.GetWorkflowTypeDisplayName();
-            });
-            return items;
-        }
+               
         
         [Route("all/issues"), HttpGet]
         public HttpResponseMessage GetIssuesForAllUsers()

@@ -183,10 +183,6 @@
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\d360.workflow\d360.workflow.csproj">
-      <Project>{368f2ceb-23c4-4904-812b-f4fab72bb12e}</Project>
-      <Name>d360.workflow</Name>
-    </ProjectReference>
     <ProjectReference Include="..\d360.jobs\d360.jobs.csproj">
       <Project>{46267409-f388-4058-a12e-49ec7e855c9d}</Project>
       <Name>d360.jobs</Name>

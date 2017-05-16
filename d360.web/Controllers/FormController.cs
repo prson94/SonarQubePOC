@@ -11,9 +11,6 @@ using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using d360.web.Repositories;
-using d360.workflow;
-using d360.workflow.entities;
-using d360.workflow.models;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using Resources;
@@ -860,35 +857,7 @@ namespace d360.web.Controllers
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        /// <param name="id">ID</param>
-        [Route("Artifact_RequestCertification"), NonNullableParameters]
-        public JsonResult Artifact_RequestCertification(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            if (!Company.GetResponsibleResourcesByArtifactAndWorkflowType(WorkflowType.CertifyArtifact, id).Any())
-            {
-                return jsonException(FormInfo.Workflow_Certification_Request_Error, HttpStatusCode.Forbidden);
-            }
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ID</param>
-        [Route("Artifact_Challenge"), NonNullableParameters]
-        public JsonResult Artifact_Challenge(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Reason", Name = "Reason", FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
+        
         /// <param name="id">ID</param>
         [Route("Artifact_RaiseIssue"), NonNullableParameters]
         public JsonResult Artifact_RaiseIssue(int id)
@@ -900,41 +869,7 @@ namespace d360.web.Controllers
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        /// <param name="at">ArtifactTypeID</param>
-        /// <param name="p">ParentID</param>
-        [Route("Artifact_SuggestFields"), NonNullableParameters]
-        public JsonResult Artifact_SuggestFields(int at, int p)
-        {
-            var list = new List<EditableField>();
-
-            var type = Company.GetById<ArtifactType>(at, i => i.Parent);
-
-            list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
-
-            var row = 1;
-
-            if (p == 0 && type.ParentID.HasValue)
-            {
-                var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = false }).ToList();
-                list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "ParentID", FieldType = DataType.Lookup.ToString(), Items = parents, Name = string.Format("Parent {0}", type.Parent.Name) });
-                row++;
-            }
-            else
-            {
-                list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
-            }
-
-            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"/form/Aritfact_SimilarItems?typeID={at}&query=" });
-            list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "TaxonomyTypeID", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
-            row++;
-            list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-            row++;
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), row + 1);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
+                
         [HttpGet, Route("Aritfact_SimilarItems"), NonNullableParameters]
         public JsonNetResult Aritfact_SimilarItems(int typeID, string query)
         {

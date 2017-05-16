@@ -375,7 +375,6 @@
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\Services\ScoringController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
-    <Compile Include="Controllers\WorkflowController.cs" />
     <Compile Include="Controllers\Services\AgentController.cs" />
     <Compile Include="Controllers\Services\DomainsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />

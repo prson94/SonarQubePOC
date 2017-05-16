@@ -9,9 +9,6 @@ using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.workflow;
-using d360.workflow.entities;
-using d360.workflow.models;
 using Dapper;
 using gudusoft.gsqlparser;
 using System;
@@ -2022,40 +2019,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
         #endregion
 
-        #region Workflow
-
-        public IEnumerable<Resource> GetResponsibleResourcesByArtifactAndWorkflowType(WorkflowType workflowType, int id)
-        {
-            return Query<Resource>(
-@"
-select	R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status
-from	ResponsibilityDetail RD 
-		inner join Artifact A on RD.ObjectType = 'Artifact' and RD.ObjectID = A.ID and A.ID = @id
-		inner join WorkflowTypeRelation WTR on WTR.[Object] = 'ArtifactType' and WTR.ObjectID = A.ArtifactTypeID and WTR.WorkflowType = @wt and WTR.ResponsibilityTypeID = RD.ResponsibilityTypeID
-		inner join reporting.Global_Resource R 
-			on	(
-					(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
-					(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
-				)", new { wt = (int)workflowType, id = id });
-        }
-
         
-
-        public IEnumerable<FieldTypeLookupValue> GetWorkflowObjectTypeOptions()
-        {
-            return Query<FieldTypeLookupValue>(
-@"
-select	*
-from	(
-		SELECT	'ArtifactType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Artifact : ' + Name as Name
-		FROM	ArtifactType
-) O
-order by Name");
-        }
-        
-        #endregion
 
         #endregion
 

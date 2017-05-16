@@ -1,8 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.workflow;
-using d360.workflow.entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -957,30 +955,7 @@ namespace d360.web.Models
 
         public List<SelectListItem> RollupCheckItems { get; set; }
     }
-
-    public class WorkflowAllocationEditorModel
-    {
-        public WorkflowAllocationEditorModel()
-        {
-            Properties = new Dictionary<string, string>();
-            Responsibilities = new List<SelectListItem>();
-        }
-
-        public WorkflowType WorkflowType { get; set; }
-
-        public string ObjectType { get; set; }
-
-        public int ObjectID { get; set; }
-
-        public bool Enabled { get; set; }
-
-        public bool Required { get; set; }
-
-        public List<SelectListItem> Responsibilities { get; set; }
-
-        public Dictionary<string, string> Properties { get; set; }
-    }
-        
+            
     public class LineageEditorModel
     {
         public SystemObjects Focal { get; set; }
