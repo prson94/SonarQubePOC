@@ -562,8 +562,8 @@
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
     <Content Include="Scripts\app\9.chunk.js" />
-    <Content Include="Scripts\app\components\admin\workflow\admin-workflow-new-editor.component.html" />
-    <Content Include="Scripts\app\components\admin\workflow\admin-workflow-new.component.html" />
+    <Content Include="Scripts\app\components\admin\workflow\admin-workflow-editor.component.html" />
+    <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-findviarelation.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-lineage.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rules.component.html" />
@@ -997,10 +997,10 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-new-delete.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-new-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-new-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-new.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-delete.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-filter.component.ts" />
@@ -1028,6 +1028,7 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementations-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\editor-header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-editor-preview.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-business-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage-technical-editor.component.ts" />
@@ -1122,6 +1123,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-diagram.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-step-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-step-form-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-template-tool.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-transition-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowdiagram\workflow-condition-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflowmonitor\workflow-monitor.module.ts" />

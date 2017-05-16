@@ -127,7 +127,12 @@
                 Body
             </div>
             <div style="width: 100%">
-                <p-editor [(ngModel)]="model.Event.SettingsObject.Settings.MessageBodyTemplate" [style]="{'height':'150px'}"></p-editor>
+                <p-editor [(ngModel)]="model.Event.SettingsObject.Settings.MessageBodyTemplate" [style]="{'height':'150px'}" >
+                    <header>
+                        <d3s-editor-header></d3s-editor-header>
+                        <d3s-workflow-template-tool (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
+                    </header>
+                </p-editor>
             </div>
         </div>
     </div>

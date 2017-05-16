@@ -12,12 +12,13 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { WorkflowDiagramModule } from '../../shared/workflowdiagram/workflow-diagram.module';
+import { D3SEditorHeaderModule } from '../../shared/editor-header.component';
 
 
-import { AdminWorkflowNewComponent } from './admin-workflow-new.component';
-import { AdminWorkflowNewListComponent } from './admin-workflow-new-list.component';
-import { AdminWorkflowNewEditorComponent } from './admin-workflow-new-editor.component';
-import { AdminWorkflowNewDeleteComponent } from './admin-workflow-new-delete.component';
+import { AdminWorkflowComponent } from './admin-workflow.component';
+import { AdminWorkflowListComponent } from './admin-workflow-list.component';
+import { AdminWorkflowEditorComponent } from './admin-workflow-editor.component';
+import { AdminWorkflowDeleteComponent } from './admin-workflow-delete.component';
 
 import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
 
@@ -56,12 +57,14 @@ import {
         SharedGridPagingInfoModule,
         TilesModule,
         WorkflowDiagramModule,
+        D3SEditorHeaderModule,
+
     ],
     declarations: [        
-        AdminWorkflowNewComponent,
-        AdminWorkflowNewListComponent,
-        AdminWorkflowNewEditorComponent,
-        AdminWorkflowNewDeleteComponent,        
+        AdminWorkflowComponent,
+        AdminWorkflowListComponent,
+        AdminWorkflowEditorComponent,
+        AdminWorkflowDeleteComponent,        
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

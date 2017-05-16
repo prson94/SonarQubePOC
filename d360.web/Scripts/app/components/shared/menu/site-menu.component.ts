@@ -203,12 +203,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         workflowMenu.Name = "Workflow";
         workflowMenu.Items = [];
 
-        //TODO: remove after conversion to new workflow
-        if (CompanySettings.UseNewWorkflow != null && CompanySettings.UseNewWorkflow.toLowerCase() == 'true')
-            workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}/new`, IsLink: false });
-        ///////////////////////////////////////////////
-        else
-            workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false });
+        workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false });
         workflowMenu.Items.push({ Name: 'Action Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false });
 
         this.adminMenu.NavigationItems.push(workflowMenu);

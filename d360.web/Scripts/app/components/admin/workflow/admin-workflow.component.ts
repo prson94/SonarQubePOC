@@ -9,12 +9,12 @@ import { WorkflowDiagramModel } from '../../../models/workflow.model';
 
 
 @Component({
-    selector: 'admin-workflow-new',
+    selector: 'admin-workflow',
     providers: [],
-    templateUrl: './admin-workflow-new.component.html'
+    templateUrl: './admin-workflow.component.html'
 })
 
-export class AdminWorkflowNewComponent extends AdminBaseComponent implements OnInit {
+export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit {
     private mode: PageMode = PageMode.Default;
     PageMode = PageMode;
     private currentID: number = 1;

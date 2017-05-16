@@ -6,7 +6,7 @@ import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 
 @Component({
-    selector: 'd3s-admin-workflow-new-list',
+    selector: 'd3s-admin-workflow-list',
     providers: [WorkflowService],
     template: `
 
@@ -39,7 +39,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 `
 })
 
-export class AdminWorkflowNewListComponent extends BaseComponent implements OnInit {
+export class AdminWorkflowListComponent extends BaseComponent implements OnInit {
     @Output() onViewClick = new EventEmitter();
     @Output() onDeleteClick = new EventEmitter();
     @Output() onEditClick = new EventEmitter();

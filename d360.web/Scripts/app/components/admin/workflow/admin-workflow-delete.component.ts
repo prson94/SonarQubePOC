@@ -5,7 +5,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 import * as _ from 'lodash';
 
 @Component({
-    selector: 'd3s-admin-workflow-new-delete',
+    selector: 'd3s-admin-workflow-delete',
     providers: [WorkflowService],
     template: `
 <div class="row">
@@ -22,7 +22,7 @@ import * as _ from 'lodash';
 `
 })
 
-export class AdminWorkflowNewDeleteComponent extends BaseComponent implements OnInit {
+export class AdminWorkflowDeleteComponent extends BaseComponent implements OnInit {
     @Input() id: number;
     @Output() onCancel = new EventEmitter();
     @Output() onSuccess = new EventEmitter();

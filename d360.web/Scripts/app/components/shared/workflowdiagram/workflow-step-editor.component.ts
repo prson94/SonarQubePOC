@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -15,7 +15,7 @@ import {
     EmailTaskRecipientType
 } from '../../../models/workflow.model';
 import { FieldType } from '../../../models/fields.model';
-import { Column, Header } from 'primeng/primeng';
+import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
@@ -27,11 +27,12 @@ import * as _ from 'lodash';
     templateUrl: './workflow-step-editor.component.html'
 })
 
-export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges {
+export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges, AfterViewInit {
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() step: NodeModel;
     @Output() stepChange = new EventEmitter();
+    @ViewChild('ed') ed: Editor;
 
     WorkflowActivityType = WorkflowActivityType;
     EmailTaskRecipientType = EmailTaskRecipientType;
@@ -43,6 +44,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         'Certified'
     ];
 
+    private quill;
     private destination = [];
 
     private responsibilities = [];
@@ -83,6 +85,33 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                     this.procedures = r;
                 });
         }
+
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+        else
+            this.quill = null;
     }
 
+    ngAfterViewInit() {
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+        else
+            this.quill = null;
+    }
+
+    appendField(e: string) {
+        //console.log(this.step.settings.MessageBodyTemplate, this.quill);
+
+        if (this.quill != null) {
+            let len = this.quill.getLength();
+            this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
+             
+        } else {
+            this.step.settings.MessageBodyTemplate =
+                ((this.step.settings.MessageBodyTemplate == null) ? '' :
+                    this.step.settings.MessageBodyTemplate)
+                    + e;
+        }
+        
+    }
 }

@@ -1,9 +1,9 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { AdminWorkflowNewComponent } from './admin-workflow-new.component';
+import { AdminWorkflowComponent } from './admin-workflow.component';
 
 const routes: Routes = [    
-    { path: 'new', component: AdminWorkflowNewComponent },
+    { path: '', component: AdminWorkflowComponent },
 ];
 
 @NgModule({

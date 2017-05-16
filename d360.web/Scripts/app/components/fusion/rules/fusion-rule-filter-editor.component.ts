@@ -81,7 +81,7 @@ import { TreeNode } from 'primeng/primeng';
 
         <div class="row" style="margin-top: 20px">
             <div class="col s12">
-                <button type="button" label="Save" (click)="save()" [disabled]="isLoading" pButton></button>
+                <button type="button" label="Save" (click)="save()" [disabled]="isLoading || model?.Name?.length < 1" pButton></button>
                 <button type="button" label="Close" (click)="onClose.emit()" pButton></button>
             </div>
         </div>

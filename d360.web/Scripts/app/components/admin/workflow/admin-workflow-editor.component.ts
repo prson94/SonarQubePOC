@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input  } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -12,7 +12,7 @@ import {
 } from '../../../models/workflow.model';
 import { Taxonomy } from '../../../models/taxonomy.model';
 import { FieldType } from '../../../models/fields.model';
-import { Column, Header } from 'primeng/primeng';
+import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 import { TaxonomiesService } from '../../../services/taxonomies.service';
@@ -21,12 +21,12 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 declare var CompanySettings;
 
 @Component({
-    selector: 'd3s-admin-workflow-new-editor',
+    selector: 'd3s-admin-workflow-editor',
     providers: [WorkflowService, TaxonomiesService, ResponsibilityTypeService],
-    templateUrl: './admin-workflow-new-editor.component.html'
+    templateUrl: './admin-workflow-editor.component.html'
 })
 
-export class AdminWorkflowNewEditorComponent extends BaseComponent implements OnInit {
+export class AdminWorkflowEditorComponent extends BaseComponent implements OnInit {
     @Input() id: number = 0;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
@@ -54,7 +54,6 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
     EmailTaskRecipientType = EmailTaskRecipientType;
 
     private destination = [];
-
     private responsibilities = [];
 
     constructor(
@@ -342,5 +341,12 @@ export class AdminWorkflowNewEditorComponent extends BaseComponent implements On
         }
 
         this.isValid = true;
+    }
+
+    appendField(e: string) {
+        this.model.Event.SettingsObject.Settings.MessageBodyTemplate =
+            ((this.model.Event.SettingsObject.Settings.MessageBodyTemplate == null) ? ' '
+                : this.model.Event.SettingsObject.Settings.MessageBodyTemplate)
+            + e;
     }
 }
