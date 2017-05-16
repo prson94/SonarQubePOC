@@ -13,6 +13,7 @@ import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { AuthenticationService } from '../../services/authentication.service';
 
 @Component({
     selector: 'd3s-fusion-item',
@@ -92,7 +93,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             private fusionService: FusionService,
             protected rightSidebarService: RightSidebarService,
             protected titleService: Title,
-            protected permissionsService: PermissionsService
+            protected permissionsService: PermissionsService,
+            private authenticationService: AuthenticationService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -141,7 +143,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.setCommonRightSideBar(false, true, hasDashboard);
 
         this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive']));
-        this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork']));
+        if (this.authenticationService.isAdmin) this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork']));
 
         if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o']));           
     }
