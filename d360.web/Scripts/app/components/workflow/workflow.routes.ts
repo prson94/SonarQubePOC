@@ -3,7 +3,6 @@ import { Routes, RouterModule } from '@angular/router';
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowFormComponent } from './workflow-form.component';
 import { WorkflowRaiseIssueComponent} from './workflow-raise-issue.component';
-import { WorkflowViewStatusComponent } from './workflow-view-status.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -15,10 +14,7 @@ const routes: Routes = [
         children: [
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE, component: WorkflowRaiseIssueComponent
-            },            
-            {
-                path: SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_STATUS + '/:workflowId', component: WorkflowViewStatusComponent
-            },            
+            },                                
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2 + '/:workflowTypeId', component: WorkflowNewDetailComponent
             },            

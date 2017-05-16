@@ -12,12 +12,10 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 import { WorkflowComponent } from './workflow.component';
-import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 import { WorkflowFormComponent } from './workflow-form.component';
 import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
-import { WorkflowViewStatusComponent } from './workflow-view-status.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 
@@ -69,20 +67,17 @@ import {
         SharedDynamicGridEditorModule,
     ],
     declarations: [                        
-        WorkflowComponent,        
-        WorkflowDetailedViewComponent,        
+        WorkflowComponent,                
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
         WorkflowFormComponent,        
         WorkflowRaiseIssueComponent,
-        WorkflowViewDetailsComponent,
-        WorkflowViewStatusComponent,        
+        WorkflowViewDetailsComponent,        
         WorkflowNewDetailComponent,
     ],
     exports: [                        
         WorkflowRaiseIssueComponent,           
-        WorkflowComponent,
-        WorkflowDetailedViewComponent,
+        WorkflowComponent,        
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
         WorkflowNewDetailComponent,

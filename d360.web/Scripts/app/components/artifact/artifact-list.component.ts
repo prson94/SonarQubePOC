@@ -16,13 +16,12 @@ declare var CompanySettings;
     selector: 'd3s-artifact-list',
     template: ` 
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-dashboard-tab>
-                <d3s-artifact-type-metrics *ngIf="!isLoading && isMetricsVisible" [artifactType]="artifactType"></d3s-artifact-type-metrics>
-                <d3s-artifact-type-workflow-status [artifactType]="artifactType" *ngIf="!isLoading && isWorkflowStatusVisible"></d3s-artifact-type-workflow-status>
+                <d3s-artifact-type-metrics *ngIf="!isLoading && isMetricsVisible" [artifactType]="artifactType"></d3s-artifact-type-metrics>                
                 <d3s-workflow-monitor *ngIf="!isLoading && isWorkflowMonitorVisible" [objectType]="'ArtifactType'" [objectID]="artifactType?.ID"></d3s-workflow-monitor>
                 <div class="row">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible && !isWorkflowStatusVisible && !isWorkflowMonitorVisible">
+                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible && !isWorkflowMonitorVisible">
                             <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>                                                                       
                         </div>
                     </div>
@@ -34,8 +33,7 @@ declare var CompanySettings;
 export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifactType: ArtifactType;
     private sub: any;
-    private isMetricsVisible: boolean = false;
-    private isWorkflowStatusVisible: boolean = false;
+    private isMetricsVisible: boolean = false;    
     private isWorkflowMonitorVisible: boolean = false;    
     private hasNewWorkflow: boolean = false;
 
@@ -53,13 +51,11 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
             this.isLoading = true;
-            this.isMetricsVisible = false;
-            this.isWorkflowStatusVisible = false;
+            this.isMetricsVisible = false;            
             this.isWorkflowMonitorVisible = false;
             this.hideSidebarItems();
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
-            this.logAction('open', 'ArtifactType', artifactTypeId);
-            this.hasNewWorkflow = CompanySettings.UseNewWorkflow;
+            this.logAction('open', 'ArtifactType', artifactTypeId);            
             this.artifactTypeService.getArtifactTypeDetails(artifactTypeId)
                 .then(artifactType => {
                     this.artifactType = artifactType;
@@ -71,8 +67,6 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
 
                     this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o']));
-
-                    if (!this.hasNewWorkflow) this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus', ['fa-hourglass-start']));
 
                     if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow Monitor', 'workflowmonitor', ['fa-television']));
 
@@ -87,8 +81,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     }
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        if (activatedItem.tag == 'metrics') this.isMetricsVisible = !this.isMetricsVisible;
-        else if (activatedItem.tag == 'workflowstatus') this.isWorkflowStatusVisible = !this.isWorkflowStatusVisible;
+        if (activatedItem.tag == 'metrics') this.isMetricsVisible = !this.isMetricsVisible;        
         else if (activatedItem.tag == 'workflowmonitor') this.isWorkflowMonitorVisible = !this.isWorkflowMonitorVisible;
     }
 };

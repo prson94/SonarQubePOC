@@ -44,8 +44,6 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    
-
     exportAllIssueDetails(all?: boolean) {
         window.location.assign(`services/workflow/all/issues/excel/excel.xls?all=${(all === undefined || all) ? 'true':'false'}`);        
     }
@@ -89,55 +87,11 @@ export class WorkflowService extends BaseService {
             .then(res => <JsonResult>res.json())
             .catch(err=>this.handleError(err));
     }
-
-    updateSuggestion(suggestion: SuggestedItem, approve: boolean, comments: string): Promise<JsonResult> {
-        let headers = new Headers({
-            'Content-Type': 'application/json'
-        });
-        return this.http
-            .post(`/services/workflow/tasks/${suggestion.WorkflowID}`, JSON.stringify({
-                WorkflowAction: 'ApprovalFromOwner', Approved: approve, Notes: comments }), { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-    }
-
-    certifyArtifact(certify: CertifyItem): Promise<JsonResult> {
-        let headers = new Headers({
-            'Content-Type': 'application/json'
-        });
-        return this.http
-            .post(`/services/workflow/tasks/${certify.WorkflowID}`, JSON.stringify({ WorkflowAction: 'CertificationFromOwner' }), { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-    }
-
+  
     raiseIssue(issue: any): Promise<JsonResult> {
         return this.postDynamic(this.http, 'issue', issue);
     }
-
-    getWorkflowStepBreakdownByArtifactType(artifactTypeId: number): Promise<ArtifactTypeWorkflowBreakdown[]> {
-        return this.http.get(`workflow/WorkflowStepBreakdownByArtifactType?id=${artifactTypeId}`)
-            .toPromise()
-            .then(response => <ArtifactTypeWorkflowBreakdown[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    getWorkflowsByArtifactTypeAndStep(artifactTypeId: number, workflowTypeId: number, stepId: number): Promise<DynamicGridResultsInData>{
-        return this.http.get(`workflow/WorkflowsByArtifactTypeAndWorkflowTypeAndStep?id=${artifactTypeId}&type=${workflowTypeId}&step=${stepId}&isNg=true`)
-            .toPromise()
-            .then(response => <DynamicGridResultsInData>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    getWorkflowStatus(workflowId: string): Promise<WorkflowStatusDetails> {
-        return this.http.get(`services/workflow/${workflowId}/status`)
-            .toPromise()
-            .then(response => <WorkflowStatusDetails>response.json())
-            .catch(err => this.handleError(err));
-    }
-
+   
     getWorkflowIssueTypes(): Promise<WorkflowIssueType[]> {
         return this.http.get('api/issuetypes')
             .toPromise()
