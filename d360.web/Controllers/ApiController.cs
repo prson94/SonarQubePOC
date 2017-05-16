@@ -18,8 +18,6 @@ using d360.model;
 using d360.core.entities.Transitive;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Web.Http.Description;
-using d360.workflow.entities;
-using d360.workflow;
 using System.Runtime.Serialization;
 using System.Dynamic;
 using System.Web;
@@ -6006,72 +6004,7 @@ where    A.RuleID = @id", new { id });
                     }
                     taxonomyType = null;
                     break;
-                #endregion
-                case SystemObjects.WorkflowTypeRelation:
-                    #region Fields
-                    var wtr = Company.GetWorkflowRelations().SingleOrDefault(i => i.ID == id);
-                    if (wtr != null)
-                    {
-                        var rowNumber = 1;
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Type", FieldName = "WtrType", FieldDescription = "", Value = wtr.ObjectName }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Row = rowNumber, Column = 2, Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "WtrOwner", FieldDescription = "", Value = wtr.ParentName ?? "None" }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Responsibility", FieldName = "WtrResponsibility", FieldDescription = "", Value = wtr.ResponsibilityType }
-                            }
-                        });
-
-                        foreach (var p in wtr.Properties)
-                        {
-                            if (p.Key == "ResponsibilityFinalApproval")
-                            {
-                                // look up the name for the role its value is in p.Value
-
-                                var responsibilityId = System.Convert.ToInt32(p.Value);
-                                var responsibility = Company.ResponsibilityTypes.FirstOrDefault(x => x.ID == responsibilityId);
-
-                                if (responsibility != null)
-                                {
-                                    model.rows.Add(new DetailReadOnlyRowModel
-                                    {
-                                        columns = 1,
-                                        FirstColumnFields = new List<ReadOnlyField>
-                                        {
-                                            new ReadOnlyField { Name = System.Text.RegularExpressions.Regex.Replace(p.Key, "(\\B[A-Z])", " $1"), FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = responsibility.Name }
-                                        }
-                                    });
-                                }
-                            }
-                            else
-                            {
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = System.Text.RegularExpressions.Regex.Replace(p.Key, "(\\B[A-Z])", " $1"), FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = p.Value }
-                                }
-                                });
-                            }
-                        }
-                    }
-                    wtr = null;
-                    break;
-                    #endregion
+                #endregion                
 
             }
 
@@ -6790,13 +6723,7 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
                 model
             );
         }
-
-        [Route("workflows/relations")]
-        public HttpResponseMessage GetWorkflowRelations()
-        {
-            var models = Company.GetWorkflowRelations();
-            return Request.CreateResponse(HttpStatusCode.OK, models);
-        }
+           
 
         #endregion
 

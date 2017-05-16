@@ -14,12 +14,10 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { WorkflowDiagramModule } from '../../shared/workflowdiagram/workflow-diagram.module';
 
 
-import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminWorkflowNewComponent } from './admin-workflow-new.component';
 import { AdminWorkflowNewListComponent } from './admin-workflow-new-list.component';
 import { AdminWorkflowNewEditorComponent } from './admin-workflow-new-editor.component';
 import { AdminWorkflowNewDeleteComponent } from './admin-workflow-new-delete.component';
-import { WorkflowItemForm } from './workflow-item.form';
 
 import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
 
@@ -59,13 +57,11 @@ import {
         TilesModule,
         WorkflowDiagramModule,
     ],
-    declarations: [
-        AdminWorkflowComponent,    
+    declarations: [        
         AdminWorkflowNewComponent,
         AdminWorkflowNewListComponent,
         AdminWorkflowNewEditorComponent,
-        AdminWorkflowNewDeleteComponent,
-        WorkflowItemForm,
+        AdminWorkflowNewDeleteComponent,        
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

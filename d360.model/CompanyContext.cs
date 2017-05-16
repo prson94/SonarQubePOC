@@ -2053,25 +2053,6 @@ where		WorkflowType = 2
 order by	DateStarted desc", new { id = id }).FirstOrDefault();
         }
 
-        public List<WorkflowRelationResponsibilityModel> GetWorkflowRelations()
-        {
-            return Query<WorkflowRelationResponsibilityModel>(@"select	W.ID,
-		W.WorkflowType,
-		W.[Object],
-		W.ObjectID, 
-		OD.Name as ObjectName,
-		W.Parent,
-		W.ParentID,
-		PD.Name as ParentName,
-		W.Fields,
-        W.[Enabled],
-		W.ResponsibilityTypeID,
-		RT.Name as ResponsibilityType
-from	WorkflowTypeRelation W
-        inner join cache.ObjectDetails OD on OD.[Object] = W.[Object] and OD.ObjectID = W.ObjectID
-		left join cache.ObjectDetails PD on PD.[Object] = W.[Parent] and PD.ObjectID = W.ParentID
-		inner join ResponsibilityType RT on RT.ID = W.ResponsibilityTypeID").ToList();
-        }
 
         public IEnumerable<FieldTypeLookupValue> GetWorkflowObjectTypeOptions()
         {
@@ -2086,54 +2067,7 @@ from	(
 ) O
 order by Name");
         }
-
-        public IEnumerable<FieldTypeLookupValue> GetWorkflowParentTypeOptions(int workflowType, string type, int id, bool includeAlreadyAssignedItem = false)
-        {
-            if (includeAlreadyAssignedItem)
-            {
-                return Query<FieldTypeLookupValue>(
-    @"
-select	*
-from	(
-		SELECT	'TaxonomyType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Model : ' + Name as Name
-		FROM	TaxonomyType
-) O
-order by Name", new { workflowType, type, id });  
-            }
-            else 
-            {
-                return Query<FieldTypeLookupValue>(
-    @"
-select	*
-from	(
-		SELECT	'TaxonomyType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Model : ' + Name as Name
-		FROM	TaxonomyType
-        WHERE   ID not in   (
-                            SELECT  ParentID 
-                            FROM    WorkflowTypeRelation
-                            WHERE   Parent = 'TaxonomyType'
-                                    AND WorkflowType = @workflowType
-                                    AND [Object] = @type 
-                                    AND ObjectID = @id
-                            )
-) O
-order by Name", new { workflowType, type, id });          
-            }
-        }
-
-        public List<ResponsibilityType> GetWorkflowResponsibilityTypeOptions(string type, int id)
-        {
-            return Filter<ResponsibilityTypeRelation>(i => i.ObjectType == type && i.ObjectID == id, i => i.ResponsibilityType)
-                    .OrderBy(i => i.ResponsibilityType.Name)
-                    .ToList().Where(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People)
-                    .Select(i => i.ResponsibilityType)
-                    .ToList();
-        }
-
+        
         #endregion
 
         #endregion

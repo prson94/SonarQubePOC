@@ -469,25 +469,7 @@ namespace d360.web.Controllers.Services
             var workflowType = (d360.workflow.WorkflowType)Enum.Parse(typeof(d360.workflow.WorkflowType), id.ToString());
 
             switch (workflowType)
-            {
-                case d360.workflow.WorkflowType.SuggestNewArtifact:
-                    var list1 = Company.Query<WorkflowTask1Model>(string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, ""), new { r = userId }).ToList();
-                    list1.ForEach(i => {
-                        i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
-                        i.ActivityName = i.Activity.GetActivityTypeDisplayName();
-                        i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
-                    });
-                    return Request.CreateResponse(HttpStatusCode.OK, list1);
-                case d360.workflow.WorkflowType.CertifyArtifact:
-                    var list2 = Company.Query<WorkflowTask2Model>(string.Format(QueryConstants.CurrentUserWorkflow2TaskItem, ""), new { r = userId }).ToList();
-                    list2.ForEach(i => {
-                        i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
-                        i.ActivityName = i.Activity.GetActivityTypeDisplayName();
-                        i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
-                    });
-                    return Request.CreateResponse(HttpStatusCode.OK, list2);
+            {             
                 case d360.workflow.WorkflowType.WorkIssue:
                     var list3 = Company.Query<WorkflowTask3Model>(string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, ""), new { r = userId }).ToList();
                     list3.ForEach(i => {
@@ -497,16 +479,7 @@ namespace d360.web.Controllers.Services
                         i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
                         i.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), i.Criticality);                    
                     });
-                    return Request.CreateResponse(HttpStatusCode.OK, list3);
-                case d360.workflow.WorkflowType.ChallengeArtifact:
-                    var list4 = Company.Query<WorkflowTask4Model>(string.Format(QueryConstants.CurrentUserWorkflow4TaskItem, ""), new { r = userId }).ToList();
-                    list4.ForEach(i => {
-                        i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
-                        i.ActivityName = i.Activity.GetActivityTypeDisplayName();
-                        i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
-                    });
-                    return Request.CreateResponse(HttpStatusCode.OK, list4);
+                    return Request.CreateResponse(HttpStatusCode.OK, list3);                
             }
 
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "The Workflow Type you provided is not valid.  No workflows can be found of this type.");
@@ -552,33 +525,7 @@ namespace d360.web.Controllers.Services
             var whereSuffix = string.Format("where W.ID = '{0}'", id.ToString());
             var sql = "";
             switch (workflow.WorkflowType)
-            {
-                case d360.workflow.WorkflowType.SuggestNewArtifact:
-                    sql = string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, whereSuffix);
-                    var model1 = Company.Query<WorkflowTask1Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
-                    if (model1 != null)
-                    {
-                        model1.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
-                        model1.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
-                        model1.ActivityName = model1.Activity.GetActivityTypeDisplayName();
-                        model1.ActivityDescription = model1.Activity.GetReportTileTypeDescription();
-
-                        return Request.CreateResponse(HttpStatusCode.OK, model1);
-                    }
-                    break;
-                case d360.workflow.WorkflowType.CertifyArtifact:
-                    sql = string.Format(QueryConstants.CurrentUserWorkflow2TaskItem, whereSuffix);
-                    var model2 = Company.Query<WorkflowTask2Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
-                    if (model2 != null)
-                    {
-                        model2.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
-                        model2.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
-                        model2.ActivityName = model2.Activity.GetActivityTypeDisplayName();
-                        model2.ActivityDescription = model2.Activity.GetReportTileTypeDescription();
-
-                        return Request.CreateResponse(HttpStatusCode.OK, model2);
-                    }
-                    break;
+            {                
                 case d360.workflow.WorkflowType.WorkIssue:
                     sql = string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, whereSuffix);
                     var model3 = Company.Query<WorkflowTask3Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
@@ -592,246 +539,12 @@ namespace d360.web.Controllers.Services
 
                         return Request.CreateResponse(HttpStatusCode.OK, model3);
                     }
-                    break;
-                case d360.workflow.WorkflowType.ChallengeArtifact:
-                    sql = string.Format(QueryConstants.CurrentUserWorkflow4TaskItem, whereSuffix);
-                    var model4 = Company.Query<WorkflowTask4Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
-                    if (model4 != null)
-                    {
-                        model4.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
-                        model4.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
-                        model4.ActivityName = model4.Activity.GetActivityTypeDisplayName();
-                        model4.ActivityDescription = model4.Activity.GetReportTileTypeDescription();
-
-                        return Request.CreateResponse(HttpStatusCode.OK, model4);
-                    }
-                    break;
-                case d360.workflow.WorkflowType.SuggestNewArtifactMulti:
-                    sql = string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, whereSuffix);
-                    var model5 = Company.Query<WorkflowTask5Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
-                    if (model5 != null)
-                    {
-                        model5.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
-                        model5.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
-                        model5.ActivityName = model5.Activity.GetActivityTypeDisplayName();
-                        model5.ActivityDescription = model5.Activity.GetReportTileTypeDescription();
-
-                        return Request.CreateResponse(HttpStatusCode.OK, model5);
-                    }
-                    break;
+                    break;             
             }
 
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow not found");
         }
-
-        /// <summary>
-        /// Approve or reject the current workflow task for the current user.
-        /// </summary>
-        /// <returns>A status code.</returns>
-        [Route("tasks/{id}"), HttpPost]
-        public HttpResponseMessage ActOnTaskForCurrentUser(Guid id, WorkflowRequestModel model)//ApprovalFormModel model)
-        {
-            HttpResponseMessage response = null;
-            var task = Company.Query<WorkflowTask>(QueryConstants.CurrentWorkflowTaskItem, new { r = Company.CurrentResourceID, w = id }).SingleOrDefault();
-
-            string bookmarkName = "";
-            Object obj = null;
-            if (task != null)
-            {
-                var processor = new Processor();
-
-                switch (task.Activity)
-                {
-                    case d360.workflow.ActivityType.OwnerApproval:
-                        bookmarkName = "ApprovalFromOwner";
-                        //var appModel = model as WorkflowApprovalRequestModel;
-                        obj = new RequestApproval
-                        {
-                            Approved = bool.Parse(model["Approved"]),
-                            Note = model["Notes"],
-                            ResourceID = Company.CurrentResourceID
-                        };
-                        try
-                        {
-                            processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                            response = Request.CreateResponse<dynamic>(HttpStatusCode.Accepted, new {
-                                context = "OwnerApprovalWorkflow", action = "edit", id = id.ToString(), type = "confirm", title = "Workflow Task", text =  "Workflow task successfully completed."
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            response = Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest, new
-                            {
-                                context = "OwnerApprovalWorkflow",
-                                action = "edit",
-                                id = id.ToString(),
-                                type = "error",
-                                title = "Workflow Task",
-                                text = ex.GetFullExceptionData()
-                            });
-                        }
-                        break;
-                    case d360.workflow.ActivityType.OwnerCertification:
-                        bookmarkName = "CertificationFromOwner";
-                        obj = new CertificationApproval
-                        {
-                            ResourceID = Company.CurrentResourceID
-                        };
-                        try
-                        {
-                            processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                            response = Request.CreateResponse<dynamic>(HttpStatusCode.Accepted, new
-                            {
-                                context = "OwnerCertificationWorkflow",
-                                action = "edit",
-                                id = id.ToString(),
-                                type = "confirm",
-                                title = "Workflow Task",
-                                text = "Workflow task successfully completed."
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            response = Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest, new
-                            {
-                                context = "OwnerCertificationWorkflow",
-                                action = "edit",
-                                id = id.ToString(),
-                                type = "error",
-                                title = "Workflow Task",
-                                text = ex.GetFullExceptionData()
-                            });
-                        }
-                        break;
-                    case d360.workflow.ActivityType.AssignIssueToPool:
-                    case d360.workflow.ActivityType.AssignIssueToSelf:
-                        var action = model["WorkflowAction"];
-
-                        obj = new IssueBookmarkModel
-                        {
-                            ResourceID = Company.CurrentResourceID,
-                            Action = action,
-                            Comment = model["Comment"],
-                            ReAssignToResourceObject = "Resource",
-                            ReAssignToResourceObjectID = Company.CurrentResourceID
-                        };
-
-                        bool okToProceed = false;
-                        switch (action) {
-                            case "assign":
-                                bookmarkName = "Open";
-                                okToProceed = true;
-                                break;
-                            case "reassign":
-                                bookmarkName = "Assigned";
-                                if (model.ContainsKey("AssignTo"))
-                                {
-                                    (obj as IssueBookmarkModel).ReAssignToResourceObjectID = int.Parse(model["AssignTo"]);
-                                    okToProceed = true;
-                                }
-                                break;
-                            default://case "close":
-                                bookmarkName = "Assigned";
-                                okToProceed = true;
-                                break;
-                        }
-
-                        try
-                        {
-                            if (okToProceed)
-                            {
-                                processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                                response = Request.CreateResponse<dynamic>(HttpStatusCode.Accepted, new
-                                {
-                                    context = "IssueWorkflow",
-                                    action = "edit",
-                                    id = id.ToString(),
-                                    type = "confirm",
-                                    title = "Workflow Task",
-                                    text = "Workflow task successfully completed."
-                                });
-                            }
-                            else
-                            {
-                                response = Request.CreateResponse<dynamic>(HttpStatusCode.NoContent, new
-                                {
-                                    context = "IssueWorkflow",
-                                    action = "edit",
-                                    id = id.ToString(),
-                                    type = "error",
-                                    title = "Workflow Task",
-                                    text = "Workflow task not processed as there was no data available to work with.  Please check your request."
-                                });
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            response = Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest, new
-                            {
-                                context = "IssueWorkflow",
-                                action = "edit",
-                                id = id.ToString(),
-                                type = "error",
-                                title = "Workflow Task",
-                                text = ex.GetFullExceptionData()
-                            });
-                        }
-
-                        break;
-
-                    case d360.workflow.ActivityType.FinalApproval:
-                        bookmarkName = "ApprovalFromOwner";
-                        //var appModel = model as WorkflowApprovalRequestModel;
-                        obj = new RequestApproval
-                        {
-                            Approved = bool.Parse(model["Approved"]),
-                            Note = " " + (model["Notes"] ?? ""),
-                            ResourceID = Company.CurrentResourceID
-                        };
-                        try
-                        {
-                            processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                            response = Request.CreateResponse<dynamic>(HttpStatusCode.Accepted, new
-                            {
-                                context = "OwnerApprovalWorkflow",
-                                action = "edit",
-                                id = id.ToString(),
-                                type = "confirm",
-                                title = "Workflow Task",
-                                text = "Workflow task successfully completed."
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            response = Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest, new
-                            {
-                                context = "OwnerApprovalWorkflow",
-                                action = "edit",
-                                id = id.ToString(),
-                                type = "error",
-                                title = "Workflow Task",
-                                text = ex.GetFullExceptionData()
-                            });
-                        }
-                        break;
-                }
-            }
-            else 
-            {
-                response = Request.CreateResponse<dynamic>(HttpStatusCode.NotFound, new
-                {
-                    context = "IssueWorkflow",
-                    action = "edit",
-                    id = id.ToString(),
-                    type = "error",
-                    title = "Workflow Task",
-                    text = "You either do not have permissions to this work item or have already completed it."
-                });
-            }
-
-            return response;
-        }
-
+        
         /// <summary>
         /// Gets the status of a given workflow, containing all steps executed as well as assignments.
         /// </summary>

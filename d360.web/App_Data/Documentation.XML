@@ -1935,12 +1935,6 @@
             </summary>
             <returns>A list of workflow tasks.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.WorkflowController.ActOnTaskForCurrentUser(System.Guid,d360.web.Models.WorkflowRequestModel)">
-            <summary>
-            Approve or reject the current workflow task for the current user.
-            </summary>
-            <returns>A status code.</returns>
-        </member>
         <member name="M:d360.web.Controllers.Services.WorkflowController.GetWorkflowStatus(System.Guid)">
             <summary>
             Gets the status of a given workflow, containing all steps executed as well as assignments.

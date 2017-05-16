@@ -375,18 +375,7 @@ where   W.Data.value('(/fields/ArtifactTypeID)[1]', 'int') = @id
                 };            
             }
         }
-
-        [Route("WorkflowResponsibilityTypeOptions"), NonNullableParameters]
-        public JsonNetResult WorkflowResponsibilityTypeOptions(string type, int id)
-        {
-            return new JsonNetResult { Data = Company.GetWorkflowResponsibilityTypeOptions(type, id).Select(i => new { Text = i.Name, Value = i.ID.ToString() }), Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [Route("WorkflowParentTypeOptions"), NonNullableParameters]
-        public JsonNetResult WorkflowParentTypeOptions(WorkflowType workflowType, string type, int id)
-        {
-            return new JsonNetResult { Data = Company.GetWorkflowParentTypeOptions((int)workflowType, type, id).Select(i => new { Text = i.Name, Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) }), Formatting = Newtonsoft.Json.Formatting.None };
-        }
+        
 
         #endregion
     }

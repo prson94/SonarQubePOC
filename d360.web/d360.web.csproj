@@ -32,7 +32,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>2.1</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.2</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -824,13 +824,11 @@
     <Content Include="Scripts\app\components\admin\responsibilities\admin-governance.component.html" />
     <Content Include="Scripts\app\components\shared\delete.form.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.html" />
-    <Content Include="Scripts\app\components\admin\workflow\workflow-item.form.html" />
     <Content Include="Scripts\app\components\admin\claims.tile.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-definition.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\groups\admin-groups.component.html" />
-    <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
     <Content Include="Scripts\app\components\admin\settings\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
@@ -1065,7 +1063,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-template-editor.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.routes.ts" />
@@ -1154,7 +1151,6 @@
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-following-grid.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-following.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-work-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\admin-user.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
@@ -1266,8 +1262,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\core.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detailed-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-certify-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-certify-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dashboard\powerbi-viewer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-editor.component.ts" />
@@ -1289,7 +1283,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\assignments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
@@ -1310,13 +1303,10 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-raise-issue.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.aot.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />

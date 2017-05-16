@@ -374,30 +374,7 @@ from	    Workflow W
 order by    W.DateStarted desc";
 
 
-        public static string CurrentUserWorkflow4TaskItem = @"
-select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			R.ResourceID,
-			R.FirstName + ' ' + R.LastName as ResourceName,
-			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
-			W.DateStarted,
-		    WR.Activity,
-            A.Name as Name,
-			A.Url as Url,
-            A.ObjectTypeName as TypeName,
-            A.ObjectID as ArtifactID
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/RequestingResourceID)[1]', 'int')
-            left outer join cache.ObjectDetails A on A.[Object] = 'Artifact' and A.ObjectID = W.Data.value('(fields/ArtifactID)[1]', 'int')
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											    and W.DateCompleted is null
-											    and WR.ResourceID = @r
-												and W.WorkflowType = 4
-                                                and WR.IsComplete = 0 
-{0} 
-order by    W.DateStarted desc";
-
+       
         public static string DomainSettingsItem = @"
 select	*
 from	(

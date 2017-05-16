@@ -11,19 +11,13 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 
-import { WorkflowCertifyDetailsComponent } from './workflow-certify-details.component';
-import { WorkflowCertifyEditorComponent } from './workflow-certify-editor.component';
 import { WorkflowComponent } from './workflow.component';
-import { WorkflowDetailComponent } from './workflow-detail.component';
 import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 import { WorkflowFormComponent } from './workflow-form.component';
 import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
-import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
-import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.component';
 import { WorkflowViewStatusComponent } from './workflow-view-status.component';
-import { WorkflowWorkItemComponent } from './workflow-work-item.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 
@@ -74,31 +68,19 @@ import {
         SharedGridPagingInfoModule,
         SharedDynamicGridEditorModule,
     ],
-    declarations: [        
-        WorkflowCertifyDetailsComponent,
-        WorkflowCertifyEditorComponent,
-        WorkflowComponent,
-        WorkflowDetailComponent,
+    declarations: [                        
+        WorkflowComponent,        
         WorkflowDetailedViewComponent,        
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
         WorkflowFormComponent,        
         WorkflowRaiseIssueComponent,
-        WorkflowSuggestDetailsComponent,
-        WorkflowSuggestEditorComponent,
         WorkflowViewDetailsComponent,
-        WorkflowViewStatusComponent,
-        WorkflowWorkItemComponent,        
+        WorkflowViewStatusComponent,        
         WorkflowNewDetailComponent,
     ],
-    exports: [        
-        WorkflowCertifyDetailsComponent,
-        WorkflowCertifyEditorComponent,         
-        WorkflowRaiseIssueComponent,
-        WorkflowSuggestDetailsComponent,
-        WorkflowSuggestEditorComponent,
-        WorkflowWorkItemComponent,
-        WorkflowDetailComponent,
+    exports: [                        
+        WorkflowRaiseIssueComponent,           
         WorkflowComponent,
         WorkflowDetailedViewComponent,
         WorkflowIssueDetailsComponent,
