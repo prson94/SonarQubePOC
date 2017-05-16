@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { AuthenticationConnectionBackend } from '../../../../authentication-connection-backend';
 
 import {
     DataTableModule,
@@ -15,10 +15,10 @@ import {
 
 } from 'primeng/primeng';
 
-import { CoreModule } from '../core.module';
-import { TilesModule } from '../tiles/tiles.module';
-import { D3SOverlayWindowModule } from '../overlay-window.component';
-import { D3SEditorHeaderModule } from '../editor-header.component';
+import { CoreModule } from '../../core.module';
+import { TilesModule } from '../../tiles/tiles.module';
+import { D3SOverlayWindowModule } from '../../overlay-window.component';
+import { D3SEditorHeaderModule } from '../../editor-header.component';
 
 import { WorkflowDiagramComponent } from './workflow-diagram.component';
 import { WorkflowStepEditorComponent } from './workflow-step-editor.component';
@@ -28,7 +28,7 @@ import { WorkflowStepFormEditorComponent } from './workflow-step-form-editor.com
 import { WorkflowConditionListComponent } from './workflow-condition-list.component';
 import { WorkflowTemplateToolComponent } from './workflow-template-tool.component';
 
-import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
 
 @NgModule({

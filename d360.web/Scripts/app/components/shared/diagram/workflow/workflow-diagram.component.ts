@@ -12,10 +12,10 @@
     OnChanges,
     SimpleChanges
 } from '@angular/core';
-import { PermissionsService } from '../../../services/permissions.service';
-import { BaseComponent } from '../base.component';
-import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
+import { PermissionsService } from '../../../../services/permissions.service';
+import { BaseComponent } from '../../base.component';
+import { WorkflowService } from '../../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import {
     WorkflowDiagramModel,
     WorkflowDiagramNode,
@@ -31,8 +31,8 @@ import {
     WorkflowChangeType,
     FormResponseType,
     WorkflowActivityType,
-} from '../../../models/workflow.model';
-import { FieldType } from '../../../models/fields.model';
+} from '../../../../models/workflow.model';
+import { FieldType } from '../../../../models/fields.model';
 
 import { MenuItem } from 'primeng/primeng';
 

@@ -1,15 +1,15 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { BaseComponent } from '../../shared/base.component';
+import { BaseComponent } from '../../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import {
     WorkflowEventRegistration,
     EventCondition,
     WorkflowChangeType,
-} from '../../../models/workflow.model';
-import { FieldType } from '../../../models/fields.model';
+} from '../../../../models/workflow.model';
+import { FieldType } from '../../../../models/fields.model';
 import { Column, Header } from 'primeng/primeng';
-import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
+import { WorkflowService } from '../../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
 @Component({
     selector: 'd3s-workflow-condition-editor',

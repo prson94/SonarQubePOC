@@ -1,5 +1,5 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { BaseComponent } from '../../shared/base.component';
+import { BaseComponent } from '../../../shared/base.component';
 import {
     WorkflowEventRegistration,
     WorkflowObjectType,
@@ -13,11 +13,11 @@ import {
     WorkflowActivityType,
     WorkflowTaskProcedure,
     EmailTaskRecipientType
-} from '../../../models/workflow.model';
-import { FieldType } from '../../../models/fields.model';
+} from '../../../../models/workflow.model';
+import { FieldType } from '../../../../models/fields.model';
 import { Column, Header, Editor } from 'primeng/primeng';
-import { WorkflowService } from '../../../services/workflow.service';
-import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
+import { WorkflowService } from '../../../../services/workflow.service';
+import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
 
@@ -100,7 +100,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     appendField(e: string) {
-        //console.log(this.step.settings.MessageBodyTemplate, this.quill);
+        console.log(this.step.settings.MessageBodyTemplate, this.quill);
 
         if (this.quill != null) {
             let len = this.quill.getLength();

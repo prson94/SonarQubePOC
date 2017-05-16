@@ -14,7 +14,7 @@ import {
 
 import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';
-import { WorkflowDiagramModule } from '../workflowdiagram/workflow-diagram.module';
+import { WorkflowDiagramModule } from '../diagram/workflow/workflow-diagram.module';
 
 import { WorkflowMonitorComponent } from './workflow-monitor.component';
 

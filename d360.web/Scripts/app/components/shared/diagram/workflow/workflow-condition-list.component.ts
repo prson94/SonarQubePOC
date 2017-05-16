@@ -1,5 +1,5 @@
 ﻿import { Component, NgZone, Output, EventEmitter, Input} from '@angular/core';
-import { BaseComponent } from '../../shared/base.component';
+import { BaseComponent } from '../../../shared/base.component';
 import { Column, Header, MenuItem } from 'primeng/primeng';
 
 @Component({

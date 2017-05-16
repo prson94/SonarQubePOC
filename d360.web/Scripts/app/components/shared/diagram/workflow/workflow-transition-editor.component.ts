@@ -1,5 +1,5 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { BaseComponent } from '../../shared/base.component';
+import { BaseComponent } from '../../../shared/base.component';
 import {
     WorkflowEventRegistration,
     WorkflowObjectType,
@@ -12,12 +12,12 @@ import {
     LinkModel,
     TransitionType,
     TransitionTypeInfo,
-} from '../../../models/workflow.model';
-import { FieldType } from '../../../models/fields.model';
-import { FormMode } from '../../../models/form.model';
+} from '../../../../models/workflow.model';
+import { FieldType } from '../../../../models/fields.model';
+import { FormMode } from '../../../../models/form.model';
 import { Column, Header } from 'primeng/primeng';
-import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
+import { WorkflowService } from '../../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
 import * as _ from 'lodash';
 

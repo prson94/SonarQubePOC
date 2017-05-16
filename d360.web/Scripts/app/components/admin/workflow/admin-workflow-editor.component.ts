@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input  } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, AfterViewInit, ViewChild  } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -26,10 +26,11 @@ declare var CompanySettings;
     templateUrl: './admin-workflow-editor.component.html'
 })
 
-export class AdminWorkflowEditorComponent extends BaseComponent implements OnInit {
+export class AdminWorkflowEditorComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() id: number = 0;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
+    @ViewChild('ed') ed: Editor;
 
     private model: WorkflowDiagramModel;
     private workflowObjectTypes: WorkflowObjectType[] = [];
@@ -55,6 +56,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     private destination = [];
     private responsibilities = [];
+
+    private quill: any;
 
     constructor(
         private workflowService: WorkflowService,
@@ -97,6 +100,18 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
 
 
+    }
+
+    ngAfterViewInit() {
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+        else
+            this.quill = null;
+    }
+
+    ngOnDestroy() {
+        this.quill = null;
+        this.ed = null;
     }
 
     load(): Promise<any> {
@@ -344,9 +359,17 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     appendField(e: string) {
-        this.model.Event.SettingsObject.Settings.MessageBodyTemplate =
-            ((this.model.Event.SettingsObject.Settings.MessageBodyTemplate == null) ? ' '
-                : this.model.Event.SettingsObject.Settings.MessageBodyTemplate)
-            + e;
+        console.log(this.quill, this.model.Event.SettingsObject.Settings.MessageBodyTemplate);
+
+        if (this.quill != null) {
+            let len = this.quill.getLength();
+            this.quill.insertText(len < 1 ? 0 : len - 1, e, 'api');
+        } else {
+            this.model.Event.SettingsObject.Settings.MessageBodyTemplate =
+                ((this.model.Event.SettingsObject.Settings.MessageBodyTemplate == null) ? ' '
+                    : this.model.Event.SettingsObject.Settings.MessageBodyTemplate)
+                + e;
+        }
+        
     }
 }

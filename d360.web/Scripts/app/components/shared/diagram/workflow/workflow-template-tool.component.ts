@@ -1,6 +1,6 @@
 ﻿import { Component, NgZone, OnInit, Output, EventEmitter, Input, OnChanges, AfterViewChecked, ElementRef, ViewChild } from '@angular/core';
-import { FieldType } from '../../../models/fields.model';
-import { WorkflowService } from '../../../services/workflow.service';
+import { FieldType } from '../../../../models/fields.model';
+import { WorkflowService } from '../../../../services/workflow.service';
 
 import * as _ from 'lodash';
 

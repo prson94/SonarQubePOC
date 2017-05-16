@@ -11,7 +11,7 @@ import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
-import { WorkflowDiagramModule } from '../../shared/workflowdiagram/workflow-diagram.module';
+import { WorkflowDiagramModule } from '../../shared/diagram/workflow/workflow-diagram.module';
 import { D3SEditorHeaderModule } from '../../shared/editor-header.component';
 
 

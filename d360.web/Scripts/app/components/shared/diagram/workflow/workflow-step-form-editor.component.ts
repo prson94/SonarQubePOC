@@ -1,5 +1,5 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
-import { BaseComponent } from '../../shared/base.component';
+import { BaseComponent } from '../../../shared/base.component';
 import {
     NodeModel,
     WorkflowForm,
@@ -8,13 +8,13 @@ import {
     FormResponseType,
     EmailTaskRecipientType,
     EmailTaskRecipientTypeInfo,
-} from '../../../models/workflow.model';
-import { FieldType } from '../../../models/fields.model';
+} from '../../../../models/workflow.model';
+import { FieldType } from '../../../../models/fields.model';
 import { Column, Header, MenuItem } from 'primeng/primeng';
-import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
-import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { FormMode } from '../../../models/form.model';
+import { WorkflowService } from '../../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
+import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
+import { FormMode } from '../../../../models/form.model';
 
 import * as _ from 'lodash';
 
