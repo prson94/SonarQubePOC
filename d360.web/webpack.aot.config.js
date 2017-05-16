@@ -50,8 +50,7 @@ var webpackConfig = {
 
 
 // Our Webpack Defaults
-var defaultConfig = {
-    devtool: 'cheap-module-source-map',
+var defaultConfig = {    
     cache: true,
     //debug: true,
     output: {

@@ -33,6 +33,12 @@ var webpackConfig = {
     new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
     new webpack.DefinePlugin({
         __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),        
+    }),
+    new webpack.SourceMapDevToolPlugin({
+        filename: '[file].map',
+        noSources: true,
+        moduleFilenameTemplate: '[absolute-resource-path]',
+        fallbackModuleFilenameTemplate: '[absolute-resource-path]'
     })
   ],
 
@@ -47,10 +53,9 @@ var webpackConfig = {
 
 };
 
-
 // Our Webpack Defaults
 var defaultConfig = {
-   devtool: 'cheap-module-source-map',
+  // devtool: 'cheap-module-source-map',
   cache: true,  
   output: {
     filename: '[name].bundle.js',
