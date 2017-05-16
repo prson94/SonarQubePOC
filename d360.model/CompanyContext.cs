@@ -1057,25 +1057,21 @@ order by	ColumnIndex", new { id });
                 switch (i.Group)
                 {
                     case "Comments":
-                        model.CommentCount = i.Value;
-                        model.CommentUrl = i.Url;
+                        model.CommentCount = i.Value;                        
                         model.CommentLast = i.MostRecent;
                         break;
                     case "Followers":
-                        model.FollowerCount = i.Value;
-                        model.FollowerUrl = i.Url;
+                        model.FollowerCount = i.Value;                        
                         break;
                     case "Score":
-                        model.Score = i.Value;
-                        model.ScoreUrl = i.Url;
+                        model.Score = i.Value;                        
                         break;
                     case "Issues":
-                        model.IssueCount = i.Value;
-                        model.IssueUrl = i.Url;
+                        model.IssueCount = i.Value;                        
                         model.IssueLast = i.MostRecent;
                         break;
                     default:
-                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name ?? ""), Url = i.Url, TypeID = i.TypeID });
+                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name ?? ""), TypeID = i.TypeID });
                         break;
                 }
             });

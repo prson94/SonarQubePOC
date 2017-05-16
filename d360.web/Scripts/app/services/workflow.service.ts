@@ -58,7 +58,7 @@ export class WorkflowService extends BaseService {
     }
 
     getIssues(objectID: number, objectType: string): Promise<Issue[]> {
-        let url = 'services/workflow/tasks/types/3/';
+        let url = 'services/workflow/issue/type/';
 
         if (objectID > 0 && objectType != undefined) {
             url += `${objectID}/${objectType}`;
@@ -69,14 +69,7 @@ export class WorkflowService extends BaseService {
             .then(response => <Issue[]>response.json())
             .catch(err => this.handleError(err));
     }
-
-    getIssuesForUser(resourceID: number): Promise<Issue[]> {
-        return this.http.get(`services/workflow/tasks/types/3?resourceID=${resourceID}`)
-            .toPromise()
-            .then(response => <Issue[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
+    
     updateIssue(issue: Issue, action: string, comment: string, assignTo?: string): Promise<JsonResult> {
         let headers = new Headers({
             'Content-Type': 'application/json'

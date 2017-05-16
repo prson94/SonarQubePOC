@@ -932,10 +932,6 @@
       <Project>{9775b4df-0ac8-4524-ba10-4a43bf9cb61e}</Project>
       <Name>d360.utils</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.workflow\d360.workflow.csproj">
-      <Project>{368f2ceb-23c4-4904-812b-f4fab72bb12e}</Project>
-      <Name>d360.workflow</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />

@@ -17,8 +17,7 @@ declare var CurrentResourceID;
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
-                                <d3s-tooltip *ngIf="data.Activity <= 0 || !isMe" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview">{{data.ActivityName}}</d3s-tooltip>
-                                <d3s-tooltip *ngIf="data.Activity > 0 && isMe" objectType="WorkflowTypeRelation" [objectId]="data.WorkflowID" tooltipType="preview"><a (click)="openIssue(data)">{{data.ActivityName}}</a></d3s-tooltip>
+                                {{data.ActivityName}}
                             </template>
                         </p-column>
                         <p-column field="CriticalityName" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
@@ -42,7 +41,7 @@ declare var CurrentResourceID;
                         <p-column field="EllapsedDays" header="Days Open" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-issue="rowData" pTemplate type="body">
-                                <div class="RowTools" *ngIf="issue.Activity > 0 && isMe">                                
+                                <div class="RowTools" *ngIf="issue.Activity > 0">                                
                                     <a style="cursor:pointer;" (click)="openIssue(issue)"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>
                             </template>
@@ -72,13 +71,12 @@ declare var CurrentResourceID;
 export class WorkflowIssueDetailsComponent extends BaseComponent implements OnInit {
     private issues: any[] = [];
     private selected: any;
-    private loaded: boolean = false; 
-    private isMe: boolean = false;   
+    private loaded: boolean = false;    
 
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
-    @Input() resourceID: number = null;
+    
     @Input() hasCloseButton: boolean = false;
     @Input() hasCertifyButton: boolean = false;
 
@@ -97,32 +95,17 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
     private loadIssues() {
         this.isLoading = true;
-        
-        if (this.resourceID != null && !isNaN(this.resourceID)) {
-            this.isMe = (this.resourceID == (CurrentResourceID || 0));
 
-            this.workflowService.getIssuesForUser(this.resourceID)
+        this.workflowService.getIssues(this.objectID, this.objectType)
                 .then(result => {
                     this.issues = result;
                     if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
                     this.isLoading = false;
                     this.loaded = true;
-                });
-        } else {
-            this.isMe = true;
-
-            this.workflowService.getIssues(this.objectID, this.objectType)
-                .then(result => {
-                    this.issues = result;
-                    if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
-                    this.isLoading = false;
-                    this.loaded = true;
-                });
-        }
+                });        
     }
     
     private openIssue(issue) {
-        if (this.isMe)
-            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
     }
 }

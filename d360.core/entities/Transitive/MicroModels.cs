@@ -213,30 +213,17 @@ namespace d360.core.entities
         public int FollowerCount { get; set; }
         
         [DataMember]
-        public string FollowerUrl { get; set; }
-        
-        [DataMember]
         public int CommentCount { get; set; }
         
-        [DataMember]
-        public string CommentUrl { get; set; }
-
         [DataMember]
         public DateTime? CommentLast { get; set; }
 
         [DataMember]
         public int Score { get; set; }
-
-        [DataMember]
-        public string ScoreUrl { get; set; }
-
+        
         [DataMember]
         public int IssueCount { get; set; }
-
-        [DataMember]
-        public string IssueUrl { get; set; }
-
-
+        
         [DataMember]
         public DateTime? IssueLast { get; set; }
 

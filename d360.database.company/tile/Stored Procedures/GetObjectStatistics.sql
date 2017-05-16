@@ -1,10 +1,12 @@
-﻿CREATE procedure [tile].[GetObjectStatistics]
+﻿create procedure [tile].[GetObjectStatistics]
 	@type varchar(50),
 	@id int
 AS
 BEGIN
-declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25), Url varchar(250), MostRecent datetime, TypeID int)
+	declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25), Url varchar(250), MostRecent datetime, TypeID int)
 	
+	declare @ObjectScore varchar(250)
+
 	insert into @table
 		select NULL, count(1), 'Followers', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/followers', max(datecreated),null
 		from	Follow F
@@ -18,17 +20,21 @@ declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25
 												and R.ObjectType = @type and R.ObjectID = @id
                                                 and C.ParentID is null
 												and C.IsDeleted = 0
-	insert into @table
-		select NULL, count(1), 'Events', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/events', max([date]),null
-			FROM	    [Event] E
-					    INNER JOIN EventGroup G ON E.EventGroupID = G.ID and E.Status in ('Active', 'Open')
-					    INNER JOIN [Rule] R on R.ID = G.RuleID
-					    inner join [Intersect] CR on (
-														(CR.Subject = @type and CR.SubjectID = @id and CR.Object = 'Rule' and CR.ObjectID = R.ID) OR
-														(CR.Object = @type and CR.ObjectID = @id and CR.Subject = 'Rule' and CR.SubjectID = R.ID)
-													 )
 
-	insert into @table values (null, dbo.[GetObjectStatisticScore](@type, @id) * 100, 'Score', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/score', null, null)
+	select	@ObjectScore = cast(round(avg(S.Value), 0) as int)	
+	FROM	[Score] S
+			inner join (
+				select	max(ID) as ScoreID,
+						Object,
+						ObjectID,
+						ScoreTypeID
+				from	Score
+				where		Object = @type and ObjectID = @id
+				group by Object, ObjectID, ScoreTypeID
+			) MS on MS.ScoreID = S.ID
+	where	S.Object = @type and S.ObjectID = @id
+
+	insert into @table values (null, @ObjectScore, 'Score', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/score', null, null)
 
 	if @type = 'Artifact'
 	begin
@@ -44,28 +50,24 @@ declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25
 			group by	T.Name,
 						T.ID
 			order by	T.Name
-
-
+						
 		insert into @table
-			select	
+			select 
 				'Issue',
 				count(1),
-				'Issues',
-				'/overlays/Artifact/' + cast(@id as varchar(10)) + '/Issues',
-				max(w.datestarted),
+				'Issues',	
+				'',
+				max(datestarted),
 				null
-			from	
-					workflow w
-					inner join Comment C on C.ID = w.data.value('(fields/CommentID)[1]', 'int')
-					inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType = 'Artifact'
-					inner join Artifact A on w.workflowtype = 3 and w.datecompleted is null and A.ID = cr.objectid
-			where 
-				a.id = @id			
+			from
+				WorkflowIssue wi                
+				inner join Artifact A on A.ID = wi.objectid
+			where
+				wi.objectid = @id and wi.[object] = 'Artifact' and wi.iscompleted = 0;
+				
 	end
 
 
 	select * from @table
 
 END
-
-

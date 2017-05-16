@@ -20,7 +20,6 @@ using d360.core.enums.Workflow;
 using System.Text;
 using Newtonsoft.Json;
 using System.Web;
-using d360.workflow;
 using d360.model.workflow;
 using System.Data.Entity;
 using System.Collections;
@@ -295,63 +294,52 @@ namespace d360.web.Controllers.Services
             };
             return result;
         }
+        
 
-
-        /// <summary>
-        /// Gets a list of open workflow tasks for the current user, based on the workflow type.
-        /// </summary>
-        /// <returns>A list of workflow tasks.</returns>
-        [Route("tasks/types/{id:int}"), HttpGet]
-        public HttpResponseMessage GetTasksForUser(int id, int resourceID = -1)
+        [Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
+        public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype) 
         {
-            var userId = resourceID > 0 ? resourceID : Company.CurrentResourceID;
+            var sql = @"
+              select distinct
+                wi.WorkflowID
+                ,wi.WorkflowItemID
+	            ,c.Body as Issue
+	            ,wi.DateStarted	            	            
+	            ,wi.Name	as ObjectName            
+	            ,wi.CreatingResourceID as ResourceID
+				,wi.RaisedBy as ResourceName
+	            ,dbo.GenerateObjectUrl('Resource', 0, wi.CreatingResourceID) as ResourceUrl           
+	            ,wi.IssueType
+	            ,wi.IssueTypeName
+	            ,wi.IssueID
+	            ,wi.CriticalityName
+	            ,wi.EllapsedDays
+				,wi.[Object]
+				,wi.[ObjectID]
+                ,wr.Activity
+				,case wi.IsCompleted
+                            when 1 then 'Closed'
+		                    else
+			                    case cast(coalesce(wr.ResourceID, 0) as bit)
 
-            var workflowType = (d360.workflow.WorkflowType)Enum.Parse(typeof(d360.workflow.WorkflowType), id.ToString());
+                                    when 1 then 'Pending'
+				                    else 'Waiting on user(s)'
 
-            switch (workflowType)
-            {             
-                case d360.workflow.WorkflowType.WorkIssue:
-                    var list3 = Company.Query<WorkflowTask3Model>(string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, ""), new { r = userId }).ToList();
-                    list3.ForEach(i => {
-                        i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
-                        i.ActivityName = i.Activity.GetActivityTypeDisplayName();
-                        i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
-                        i.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), i.Criticality);                    
-                    });
-                    return Request.CreateResponse(HttpStatusCode.OK, list3);                
-            }
+                                end
 
-            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "The Workflow Type you provided is not valid.  No workflows can be found of this type.");
-        }
+                        end as ActivityName
+            from
 
-        [Route("tasks/types/{workflowType:int}/{objectid:int}/{objecttype}"), HttpGet]
-        public HttpResponseMessage GetTaskByIDForObjectAndType(d360.workflow.WorkflowType workflowType, int objectid, string objecttype) 
-        {
-            switch (workflowType)
-            {
-                case d360.workflow.WorkflowType.WorkIssue:                    
-                    var list = Company.Query<WorkflowTask3Model>(QueryConstants.CurrentUserWorkflow3SpecificObjectTaskItem, new { r = Company.CurrentResourceID, type = objecttype, id = objectid });
+                WorkflowIssue wi				
+                left outer join Comment c on wi.CommentID = c.ID                
+				left outer join WorkflowResource wr on (wr.WorkflowID = wi.WorkflowID and wr.ResourceID = @r and wr.IsComplete = 0)
+			where 
+				wi.[object] = @obj and wi.[objectid] = @id and wi.iscompleted = 0
+            order by DateStarted desc";
 
-                    foreach (var item in list)
-                    {
-                        if ((int)item.Activity != 0)
-                        {
-                            item.ActivityDescription = item.Activity.GetReportTileTypeDescription();
-                            item.ActivityName = item.Activity.GetActivityTypeDisplayName();                            
-                        }
-                        else
-                        {
-                            item.ActivityName = "Waiting on user(s)...";
-                        }
-                        item.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
-                        item.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
-                        item.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), item.Criticality);
-                    }
-                    return Request.CreateResponse(HttpStatusCode.OK, list);             
-            }
+            var list = Company.Query<dynamic>(sql, new { r = Company.CurrentResourceID, id = objectid, obj = objecttype });
 
-            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow not found");
+            return Request.CreateResponse(HttpStatusCode.OK, list);
         }
         
         /// <summary>
