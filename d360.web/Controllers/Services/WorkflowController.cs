@@ -265,38 +265,50 @@ namespace d360.web.Controllers.Services
 
 
         [Route("my/issues"), HttpGet]
-        public IQueryable GetIssuesForMyUser()
+        public HttpResponseMessage GetIssuesForMyUser()
         {
-            var res = from workflows in Company.WorkflowIssues
-                      join comments in Company.Comments on workflows.CommentID equals comments.ID
-                      from resources in Company.WorkflowResources
-                       .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
-                       .DefaultIfEmpty()
-                      where(workflows.CreatingResourceID == Company.CurrentResourceID || resources.ResourceID == Company.CurrentResourceID)
-                      select new
-                      {
-                          WorkflowID = workflows.WorkflowID,
-                          Issue = comments.Body,
-                          DateStarted = workflows.DateStarted,
-                          DateCompleted = workflows.DateCompleted,
-                          IsCompleted = workflows.IsCompleted,
-                          Name = workflows.Name,
-                          Object = workflows.Object,
-                          AllowAction = resources != null,
-                          RaisedBy = workflows.RaisedBy,
-                          ObjectID = workflows.ObjectID,
-                          RaisedByResourceID = workflows.CreatingResourceID,
-                          Url = workflows.Url,
-                          ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
-                          Notes = workflows.Comments,
-                          IssueType = workflows.IssueType,
-                          IssueTypeName = workflows.IssueTypeName,
-                          IssueID = workflows.IssueID,
-                          Criticality = workflows.CriticalityName,
-                          EllapsedDays = workflows.EllapsedDays
-                      };
+            var sql = @"
+              select distinct
+                wi.WorkflowID
+                ,wi.WorkflowItemID
+	            ,c.Body
+	            ,wi.DateStarted
+	            ,wi.DateCompleted
+	            ,wi.IsCompleted
+	            ,wi.Name
+	            ,wi.Object
+	            ,cast(coalesce(wr.ResourceID, 0) as bit) as AllowAction
+	            ,wi.RaisedBy
+	            ,wi.ObjectID
+	            ,wi.CreatingResourceID as RaisedByResourceID
+	            ,wi.Url
+	            ,case wi.IsCompleted
+                    when 1 then 'Closed'
+		            else
+			            case cast(coalesce(wr.ResourceID, 0) as bit)
 
-            return res.Distinct();
+                            when 1 then 'Pending'
+				            else 'Waiting on user(s)'
+
+                        end
+
+                end as ActivityName
+	            ,wi.Notes
+	            ,wi.Comments
+	            ,wi.IssueType
+	            ,wi.IssueTypeName
+	            ,wi.IssueID
+	            ,wi.CriticalityName as Criticality
+	            ,wi.EllapsedDays
+            from
+                WorkflowIssue wi
+                left outer join Comment c on wi.CommentID = c.ID
+                inner join WorkflowResource wr on (wr.WorkflowID = wi.WorkflowID and wr.ResourceID = @r and wr.IsComplete = 0)
+            order by DateStarted desc";
+
+            var list = Company.Query<dynamic>(sql, new { r = Company.CurrentResourceID });
+
+            return Request.CreateResponse(HttpStatusCode.OK, list);
         }
 
         [Route("all/issues/excel/excel.xls"), HttpGet]
@@ -509,37 +521,6 @@ namespace d360.web.Controllers.Services
                         item.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), item.Criticality);
                     }
                     return Request.CreateResponse(HttpStatusCode.OK, list);             
-            }
-
-            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow not found");
-        }
-
-        /// <summary>
-        /// Gets a list of open workflow tasks for the current user.
-        /// </summary>
-        /// <returns>A list of workflow tasks.</returns>
-        [Route("tasks/{id}"), HttpGet]
-        public HttpResponseMessage GetTaskByIDForCurrentUser(Guid id) //WorkflowTask 
-        {
-            var workflow = Company.GetById<Workflow>(id);
-            var whereSuffix = string.Format("where W.ID = '{0}'", id.ToString());
-            var sql = "";
-            switch (workflow.WorkflowType)
-            {                
-                case d360.workflow.WorkflowType.WorkIssue:
-                    sql = string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, whereSuffix);
-                    var model3 = Company.Query<WorkflowTask3Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
-                    if (model3 != null)
-                    {
-                        model3.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
-                        model3.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
-                        model3.ActivityName = model3.Activity.GetActivityTypeDisplayName();
-                        model3.ActivityDescription = model3.Activity.GetReportTileTypeDescription();
-                        model3.CriticalityName = Enum.GetName(typeof(core.enums.IssueCriticality), model3.Criticality);
-
-                        return Request.CreateResponse(HttpStatusCode.OK, model3);
-                    }
-                    break;             
             }
 
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow not found");

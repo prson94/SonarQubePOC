@@ -313,14 +313,11 @@ namespace d360.model
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
         public DbSet<TooltipTemplate> TooltipTemplates { get; set; }
-
-        public DbSet<d360.workflow.entities.Workflow> Workflows { get; set; }
-                
+        
         public DbSet<d360.workflow.entities.WorkflowIssue> WorkflowIssues { get; set; }
         public DbSet<d360.workflow.entities.WorkflowResource> WorkflowResources { get; set; }
-        public DbSet<d360.workflow.entities.WorkflowStatus> WorkflowStatuses { get; set; }
-        public DbSet<d360.workflow.entities.WorkflowTypeRelation> WorkflowTypeRelations { get; set; }
-
+        
+        
         public DbSet<AuditField> AuditFields { get; set; }
         public DbSet<Audit> Audits { get; set; }
 
@@ -2042,17 +2039,7 @@ from	ResponsibilityDetail RD
 				)", new { wt = (int)workflowType, id = id });
         }
 
-        public Workflow GetMostRecentCertificationWorkflowByArtifact(int id)
-        {
-            return Query<Workflow>(
-@"select    top 1
-			*
-from		Workflow
-where		WorkflowType = 2
-			and Data.exist('/fields/ArtifactID[text() = sql:variable(""@id"")]') = 1
-order by	DateStarted desc", new { id = id }).FirstOrDefault();
-        }
-
+        
 
         public IEnumerable<FieldTypeLookupValue> GetWorkflowObjectTypeOptions()
         {

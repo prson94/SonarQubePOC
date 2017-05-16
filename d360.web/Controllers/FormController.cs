@@ -965,9 +965,7 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (type == null) throw new NotFoundException("artifact type");
-
-                var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == typeID && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).Any();
-
+                                
                 int taxonomyTypeID = parseIntField(form, "TaxonomyTypeID");
 
                 var model = new Artifact();
@@ -976,7 +974,7 @@ namespace d360.web.Controllers
                 model.TaxonomyTypeID = taxonomyTypeID;
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
-                model.Status = (workflowEnabled) ? "Draft" : form["Status"];
+                model.Status = form["Status"];
 
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {

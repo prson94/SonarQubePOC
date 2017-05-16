@@ -58,16 +58,7 @@ namespace d360.web.Controllers
         #endregion
 
         #region Partials
-
-        [Route("{id}/overlay/{full?}")]
-        public ActionResult WorkflowActionOverlay(Guid id, bool full = false)
-        {
-            var workflow = Company.GetById<Workflow>(id);
-            ViewBag.WorkflowID = id;
-            ViewBag.IsFullOverlay = full;
-            return PartialView(string.Format("WorkflowActionOverlay_{0}", (int)workflow.WorkflowType));
-        }
-
+        
         [Route("ArtifactTypeWorkflowStatusOverlay"), NonNullableParameters]
         public ActionResult ArtifactTypeWorkflowStatusOverlay(int id)
         {

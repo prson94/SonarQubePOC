@@ -1929,13 +1929,7 @@
             </summary>
             <returns>A list of workflow tasks.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.WorkflowController.GetTaskByIDForCurrentUser(System.Guid)">
-            <summary>
-            Gets a list of open workflow tasks for the current user.
-            </summary>
-            <returns>A list of workflow tasks.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.WorkflowController.GetWorkflowStatus(System.Guid)">
+        <member name="M:d360.web.Controllers.Services.WorkflowController.GetWorkflowDiagram(System.Int32,System.Nullable{System.Int32})">
             <summary>
             Gets the status of a given workflow, containing all steps executed as well as assignments.
             </summary>

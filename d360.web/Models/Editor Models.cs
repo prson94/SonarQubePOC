@@ -980,30 +980,7 @@ namespace d360.web.Models
 
         public Dictionary<string, string> Properties { get; set; }
     }
-
-    public class WorkflowTypeRelationEditorModel : BaseEditorModel
-    {
-        public WorkflowTypeRelationEditorModel()
-        {
-            Enabled = true;
-            ObjectTypes = new List<SelectListItem>();
-            ParentTypes = new List<SelectListItem>();
-            ResponsibilityTypes = new List<SelectListItem>();
-        }
-
-        public bool Enabled { get; set; }
-
-        public WorkflowType WorkflowType { get; set; }
-
-        public WorkflowTypeRelation WorkflowTypeRelation { get; set; }
-
-        public List<SelectListItem> ObjectTypes { get; set; }
-
-        public List<SelectListItem> ParentTypes { get; set; }
-
-        public List<SelectListItem> ResponsibilityTypes { get; set; }
-    }    
-
+        
     public class LineageEditorModel
     {
         public SystemObjects Focal { get; set; }

@@ -866,7 +866,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 #endregion
             }
-            else if (load.Action == "W")    // Promotion Propose via Workflow
+           /* else if (load.Action == "W")    // Promotion Propose via Workflow
             {
                 #region Propose
 
@@ -1042,7 +1042,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 company.Update(load);
 
                 #endregion
-            }
+            }*/
         }
 
         static void executeWithTry(SqlConnection companyConnection, TextWriter logger, string lineageSql, int timeout = 1200)
