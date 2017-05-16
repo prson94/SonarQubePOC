@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnChanges, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef } from '@angular/core';
-import { DiagramService } from '../../../services/diagram.service';
-import { DynamicTypeBuilder, IHaveDynamicData } from '../../../services/dynamic-type-builder';
+import { DiagramService } from '../../../../services/diagram.service';
+import { DynamicTypeBuilder, IHaveDynamicData } from '../../../../services/dynamic-type-builder';
 
 @Component({
     selector: 'd3s-lineage-object-detail',

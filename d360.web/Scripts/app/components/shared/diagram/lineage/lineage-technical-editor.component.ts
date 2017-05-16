@@ -1,9 +1,9 @@
 ﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
-import { DiagramService } from '../../../services/diagram.service';
-import { MessagesService } from '../../../services/messages.service';
-import { PermissionsService } from '../../../services/permissions.service';
-import { BaseComponent } from '../base.component';
-import { Permission } from '../../../models/permission.model';
+import { DiagramService } from '../../../../services/diagram.service';
+import { MessagesService } from '../../../../services/messages.service';
+import { PermissionsService } from '../../../../services/permissions.service';
+import { BaseComponent } from '../../base.component';
+import { Permission } from '../../../../models/permission.model';
 import {
     LineageEditorTechnicalRow,
     LineageEditorRow,
@@ -11,7 +11,7 @@ import {
     LineageEditorTechnicalModel,
     LineageView,
     LineageEditorMode,
-} from '../../../models/lineage.model';
+} from '../../../../models/lineage.model';
 
 import * as _ from 'lodash';
 

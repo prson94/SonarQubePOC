@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { DiagramService } from '../../../services/diagram.service';
-import { TechnicalRelation } from '../../../models/lineage.model';
-import { BaseComponent } from '../base.component';
+import { DiagramService } from '../../../../services/diagram.service';
+import { TechnicalRelation } from '../../../../models/lineage.model';
+import { BaseComponent } from '../../base.component';
 
 @Component({
     selector: 'd3s-lineage-technical',

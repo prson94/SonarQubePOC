@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
-import { DiagramService } from '../../../services/diagram.service';
-import { BaseComponent } from '../base.component';
-import { MapItem } from '../../../models/lineage.model';
+import { DiagramService } from '../../../../services/diagram.service';
+import { BaseComponent } from '../../base.component';
+import { MapItem } from '../../../../models/lineage.model';
 
 @Component({
     selector: 'd3s-lineage-mapping-rules',

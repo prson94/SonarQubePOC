@@ -1,10 +1,8 @@
-﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter, ViewChild, AfterViewInit } from '@angular/core';
-import { DiagramService } from '../../../services/diagram.service';
-import { MessagesService } from '../../../services/messages.service';
-import { BaseComponent } from '../base.component';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
+import { PermissionsService } from '../../../../services/permissions.service';
+import { DiagramService } from '../../../../services/diagram.service';
+import { BaseComponent } from '../../base.component';
 import {
-    LineageEditorRow,
-    LineageEditorModel,
     DiagramObjectType,
     LinkModel,
     NodeModel,
@@ -12,63 +10,117 @@ import {
     Responsibility,
     TechnicalRelation,
     LineageView,
-    LineageEditorTechnicalModel,
-    LineagePreviewModel,
-} from '../../../models/lineage.model';
+} from '../../../../models/lineage.model';
 
 import { MenuItem } from 'primeng/primeng';
 
-import * as _ from 'lodash';
 import * as go from 'gojs';
+import * as _ from 'lodash';
+
+declare var window: any;
 
 @Component({
-    selector: 'd3s-lineage-editor-preview',
-    template: `
-<header>
-    <span>{{header}}</span>
-    <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
-    <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
-</header>
-<div id="LineagePreviewDiagram" #diagram></div>
-`,
-    providers: [DiagramService]
+    selector: 'd3s-lineage',
+    templateUrl: './lineage.component.html',
+    providers: [ PermissionsService, DiagramService ]
 })
 
-export class LineageEditorPreviewComponent extends BaseComponent implements OnInit, AfterViewInit {
-    @Input() businessModel: LineageEditorModel = new LineageEditorModel();
-    @Input() technicalModel: LineageEditorTechnicalModel = new LineageEditorTechnicalModel();
-    @Input() type: string;
-    @Input() id: number;
-    @Input() view: LineageView = LineageView.SystemFlow;
-    @Input() height: number = 300;
-    @Input() header: string = "Preview Lineage Changes"
-    @Output() viewChange = new EventEmitter();
+export class LineageComponent extends BaseComponent implements OnInit, AfterViewInit  {
+    @Input() objectID: number = 0;
+    @Input() objectType: string;
+    @Input() objectName: string;
+    @Input() readonly: boolean = true;
+    @Input() usageOnly: boolean = true;
+    @Input() nameOnly: boolean = true;
     @ViewChild('diagram') diagramRef;
 
-    private g = go.GraphObject.make;
-    private myDiagram: go.Diagram;
+    DiagramObjectType = DiagramObjectType;
+
+    private originalObject: string;
+    private originalObjectID: number;
+    private view: LineageView = LineageView.SystemFlow;
+    private fullscreen: boolean = false;
+    private selectedData = null;
 
     private initialLinks: go.Link[] = [];
     private initialNodes: go.Node[] = [];
+    private newLink: go.Link = null;
+    private overlayEditLinkKey = null;
+    private selection = null;
 
+    private source: string;
+    private sourceId: number;
+    private target: string;
+    private targetId: string;
+
+    private diagramMode: DiagramMode = DiagramMode.Diagram;
+    DiagramMode = DiagramMode;
+
+    //control properties
+    private isWindowVisible = true;
+    private showNodeTabs = false;
+    private showLinkTabs = false;
     private menuItems: MenuItem[] = [];
+    private tab: string = 'info';
+    private headerText = 'Info';
+    private zoomLevel: number = 50;
 
-    constructor(private diagramService: DiagramService, protected messagesService: MessagesService) {
+    //diagram properties
+    private g = go.GraphObject.make;
+    private myDiagram: go.Diagram;
+
+    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService, private renderer: Renderer) {
         super();
     }
 
-    ngOnInit() {
-        this.initializeMenuItems();
+    public ngOnInit() {
+
+        this.originalObject = this.objectType;
+        this.originalObjectID = this.objectID;
+
+        if (this.objectType == 'FusionAttribute') {
+            this.view = LineageView.Technical;//start fusion at the technical view.
+            this.nameOnly = false; //dont start with name only true in tech view it is very confusing
+        }
+
+        this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
+
         this.initializeDiagram();
+        
     }
 
-    ngAfterViewInit() {
+    public ngAfterViewInit() {
         this.resizeDiagram();
     }
 
-    private initializeDiagram() {
-        
+    public ngOnDestroy() {
+        //garbage collection
+        this.myDiagram.div = null;
+    }
 
+    //#region helper methods
+
+    private sizePanel() {
+        //var windowHeight = $(window).innerHeight();
+        //var tileTopOffset = $(w).offset();
+        //var height = windowHeight - tileTopOffset.top - 75; //height();
+        //$('#LineageDiagram').height(height);
+    }
+
+    private unsubscribe() {
+        
+    }
+
+    changeNameOnly() {
+        for (var i = 0; i < this.myDiagram.model.nodeDataArray.length; i++) {
+            let model: NodeModel = this.myDiagram.model.nodeDataArray[i] as NodeModel;
+            model.name = this.nameOnly ? model.shortname : model.textpath;
+            //console.log(model.name);
+        }
+        this.myDiagram.rebuildParts();
+    }
+
+    private initializeDiagram() {
         this.myDiagram = this.createDiagram();
 
         this.myDiagram.nodeTemplateMap.add("Focal", this.createFocalNode());
@@ -80,6 +132,10 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         this.myDiagram.linkTemplateMap.add("", this.createDefaultLink());
         this.myDiagram.linkTemplateMap.add("Support", this.createSupportLink());
 
+        this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
+        this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
+        this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
@@ -88,73 +144,23 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         this.populateDiagram();
     }
 
-    private initializeMenuItems() {
-        this.menuItems = [];
-
-        let eye: MenuItem = {
-            icon: 'fa-eye',
-            items: []
-        }
-
-        eye.items.push({
-            label: 'Business System Flow'
-        });
-        eye.items.push({
-            label: 'Business Data Flow'
-        });
-        eye.items.push({
-            label: 'Technical Lineage'
-        });
-
-        this.menuItems.push(eye);
-
-        this.menuItems.push({
-            icon: 'fa-search-minus'
-        });
-
-        this.menuItems.push({
-            icon: 'fa-search-plus'
-        });
-    }
-
-    private menuClick(e: MenuItem) {
-        if (e.icon == 'fa-search-plus') {
-            this.myDiagram.scale += .1;
-            if (this.myDiagram.scale > 2.5)
-                this.myDiagram.scale = 2.5;
-        } else if (e.icon == 'fa-search-minus') {
-            this.myDiagram.scale -= .1;
-            if (this.myDiagram.scale < .1)
-                this.myDiagram.scale = .1;
-        } else if (e.label == 'Business System Flow') {
-            this.view = LineageView.SystemFlow;
-            this.viewChange.emit(LineageView.SystemFlow);
-            this.populateDiagram();
-        } else if (e.label == 'Business Data Flow') {
-            this.view = LineageView.DataFlow;
-            this.viewChange.emit(LineageView.DataFlow);
-            this.populateDiagram();
-        } else if (e.label == 'Technical Lineage') {
-            this.view = LineageView.Technical;
-            this.viewChange.emit(LineageView.Technical);
-            this.populateDiagram();
-        }
-    }
-
-
     private populateDiagram(): Promise<any> {
         this.isLoading = true;
-        this.businessModel.Existing = [];
-        this.technicalModel.Existing = [];
+        let windowVisible = this.isWindowVisible;
 
+        this.isWindowVisible = false;
 
-        return this.diagramService.previewLineage(this.type, this.id, this.view, this.businessModel, this.technicalModel)
+        return this.diagramService.getLineageDiagram(this.objectType, this.objectID, this.view, this.usageOnly)
             .then(data => {
+                //console.log(data);
                 this.parseData(data);
             })
             .then(() => {
+                this.reOrderLayout();
                 this.myDiagram.zoomToFit();
+                this.zoomLevel = _.clamp(this.myDiagram.scale * 75, 0, 100);
                 this.isLoading = false;
+                this.isWindowVisible = windowVisible;
             });
     }
 
@@ -174,14 +180,24 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                 var d = data.nodes[i];
                 var model = new NodeModel();
 
-                var isFocalPoint = (d.obj == this.businessModel.Focal && d.objid == this.businessModel.FocalID);
+                var isFocalPoint = (d.obj == this.objectType && d.objid == this.objectID);
 
                 model.template = d.template;
                 model.key = d.key;
                 model.obj = d.obj;
                 model.objid = d.objid;
                 model.type = d.obj;
-                model.name = this.htmlDecode(d.name);
+                model.textpath = this.htmlDecode(d.name);
+                model.shortname = this.htmlDecode(d.shortname);
+
+                if (this.nameOnly) {
+                    model.name = model.shortname;
+                }
+                else {
+                    model.name = model.textpath;
+                }
+                
+
                 model.typeName = d.typeName;
                 model.fore = d.fore;
                 model.back = d.back;
@@ -193,7 +209,7 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                 model.hasSourceRules = d.HasSourceRules;
                 model.hasMappingRules = (d.mappingRuleCount > 0);
                 model.actionCount = d.actions;
-                model.hasActions = (d.actions> 0);
+                model.hasActions = (d.actions > 0);
                 model.hasTransformations = (d.transformationCount > 0);
 
                 model.mapItems = d.mapItems;
@@ -237,7 +253,10 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         this.initialLinks = _.cloneDeep(linkList);
         this.initialNodes = _.cloneDeep(modelList);
 
+        this.refreshControls(null);  //set buttons/expanders to defaults
+
         this.myDiagram.commitTransaction("load_all_data");
+        this.reOrderLayout();
     }
 
     private htmlDecode(val: string): string {
@@ -250,10 +269,168 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         return val;
     }
 
+    private refreshControls(data: any) {
+        this.setSourceValues(data);
+        this.toggleTabs(data);
+        this.loadMenuItems();
+    }
+
+    private toggleTabs(data: NodeModel | LinkModel) {
+        if (data) {
+            this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
+            this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
+
+            if (this.showLinkTabs) this.selectTab('exchange');
+            else if (this.showNodeTabs) this.selectTab('info');
+        } else {
+            this.showNodeTabs = false;
+            this.showLinkTabs = false;
+            this.tab = '';
+        }
+    }
+
+    private loadMenuItems() {
+        this.menuItems = [];
+
+        let edit: MenuItem = {
+            icon: 'fa-pencil',
+            items: []
+        }
+
+        edit.items.push({
+            label: 'Edit Source Rules'
+        });
+        edit.items.push({
+            label: 'Edit Business Lineage'
+        });
+        edit.items.push({
+            label: 'Edit Technical Lineage'
+        });
+
+        let view: MenuItem = {
+            icon: 'fa-eye',
+            items: []
+        }
+
+        view.items.push({
+            label: 'Business System Flow'
+        });
+        view.items.push({
+            label: 'Business Data Flow'
+        });
+        view.items.push({
+            label: 'Technical Lineage'
+        });
+
+        let settings: MenuItem = {
+            icon: 'fa-gears',
+            items: []
+        };
+
+        settings.items.push({
+            icon: this.usageOnly ? 'fa-check-square-o' : 'fa-square-o',
+            label: 'Usage only?'
+        });
+
+        settings.items.push({
+            icon: this.nameOnly ? 'fa-check-square-o' : 'fa-square-o',
+            label: 'Name only?'
+        });
+
+        this.menuItems.push(edit);
+        this.menuItems.push(view); 
+        this.menuItems.push(settings);
+
+        this.menuItems.push({
+            icon: 'fa-search-minus'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-search-plus'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-refresh'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-info-circle'
+        });
+
+
+    }
+
+    private setSourceValues(data: any) {
+        if (!data || data == null) {
+            this.source = null;
+            this.sourceId = null;
+            this.target = null;
+            this.targetId = null;
+        } else {
+            if (data.diagramObjectType == DiagramObjectType.Node) {
+                this.source = this.objectType;
+                this.sourceId = this.objectID;
+
+                if (data.obj && data.objid) {                   
+                    this.target = data.obj;
+                    this.targetId = data.objid;
+                }
+
+            } else if (data.diagramObjectType == DiagramObjectType.Link) {
+
+                var from = this.myDiagram.model.findNodeDataForKey(data.from);
+                var to = this.myDiagram.model.findNodeDataForKey(data.to);
+
+                if (from.obj && from.objid) {
+                    this.source = from.obj;
+                    this.sourceId = from.objid;
+                }
+                if (to.obj && to.objid) {
+                    this.target = to.obj;
+                    this.targetId = to.objid;
+                }
+            }
+        }
+    }
+
+    private reOrderLayout() {
+        this.myDiagram.layout.invalidateLayout();
+        this.myDiagram.requestUpdate();
+    }
+    
+    private selectTab(val: string) {
+        switch (val) {
+            case 'info': this.headerText = 'Info'; break;
+            case 'code': this.headerText = 'Source Rules'; break;
+            case 'user': this.headerText = 'Responsibilities'; break;
+            case 'database': this.headerText = 'Fusion Relationships'; break;
+            case 'exchange': this.headerText = 'Mapping Rules'; break;
+            default: this.headerText = ''; break;
+        }
+        this.tab = val;
+    }
+
+    //#endregion
+
     //#region events
 
+    @HostListener('window:resize', ['$event'])
+    private onResize(event) {
+        this.resizeDiagram();
+    }
+
     private resizeDiagram() {
-        this.diagramRef.nativeElement.style.height = this.height + 'px';
+        //set the diagram div to a specific height
+        //required for GoJS
+
+        let offset = this.diagramRef.nativeElement.offsetTop;
+        let height = window.innerHeight;
+
+        if (this.diagramRef.nativeElement.offsetParent) {
+            offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
+        }
+
+        this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
     }
 
     private onMouseEnterNode(e: any, node: go.Node) {
@@ -264,22 +441,115 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         node.isShadowed = false;
     }
 
+    private zoomDiagram(v: number) {
+        this.myDiagram.scale = v;
+        //console.log('zoomDiagram', v, this.myDiagram);
+    }
 
+    private ViewPortBoundsChanged() {
+        //var s = this.myDiagram.scale;
+        //var h = 500;
+        //if (s > 1) {
+        //    h = h * s;
+        //}
+        //this.zoomLevel = this.myDiagram.scale;
+    }
+
+    private ChangedSelection(e: any) {
+        this.selection = e.diagram.selection;
+
+        if (this.selection.count == 0) {
+            this.selectedData = null;
+        } else {
+            //get a deep copy of the selection as an array
+            var sel = _.cloneDeep(this.selection.toArray());
+
+            if (sel != null && sel.length != 0) {
+                this.selectedData = sel[0].data;
+            }
+        }
+
+        this.refreshControls(this.selectedData);
+    }
+
+    private ObjectDoubleClicked(e: any) {
+        var obj = e.diagram.selection.first().data;
+        if (obj != null) {
+            if (obj.diagramObjectType == DiagramObjectType.Node) {
+                this.objectType = obj.obj;
+                this.objectID = obj.objid;
+
+                this.populateDiagram();
+            }
+        }
+    }
+
+    private menuClick(e: MenuItem) {
+        //TODO: this is a hack, need a better way to handle these clicks
+        if (e.icon == 'fa-refresh') {
+            this.objectType = this.originalObject;
+            this.objectID = this.originalObjectID;
+            this.populateDiagram();
+        } else if (e.icon == 'fa-search-plus') {
+            this.myDiagram.scale += .1;
+            if (this.myDiagram.scale > 2.5)
+                this.myDiagram.scale = 2.5;
+        } else if (e.icon == 'fa-search-minus') {
+            this.myDiagram.scale -= .1;
+            if (this.myDiagram.scale < .1)
+                this.myDiagram.scale = .1;
+        } else if (e.icon == 'fa-info-circle') {
+            this.isWindowVisible = !this.isWindowVisible;
+        } else if (e.label == 'Business System Flow') {
+            this.view = LineageView.SystemFlow;
+            this.populateDiagram();
+        } else if (e.label == 'Business Data Flow') {
+            this.view = LineageView.DataFlow;
+            this.populateDiagram();
+        } else if (e.label == 'Technical Lineage') {
+            this.view = LineageView.Technical;
+            this.populateDiagram();
+        } else if (e.label == 'Edit Source Rules') {
+            this.headerText = 'Manage Source Rules';
+            this.diagramMode = DiagramMode.SourceRuleEditor;
+        } else if (e.label == 'Edit Business Lineage') {
+            this.headerText = 'Edit Business Lineage';
+            this.diagramMode = DiagramMode.BusinessLineageEditor;
+        } else if (e.label == 'Edit Technical Lineage') {
+            this.headerText = 'Edit Technical Lineage';
+            this.diagramMode = DiagramMode.TechnicalLineageEditor;
+        } else if (e.label == 'Usage only?') {
+            this.usageOnly = !this.usageOnly;
+            e.icon = this.usageOnly ? 'fa-check-square-o' : 'fa-square-o';
+            this.populateDiagram();
+        } else if (e.label == 'Name only?') {
+            this.nameOnly = !this.nameOnly;
+            e.icon = this.nameOnly ? 'fa-check-square-o' : 'fa-square-o';
+            this.changeNameOnly();
+        }
+    }
+
+    private closeEditor() {
+        this.headerText = 'Lineage';
+        this.diagramMode = DiagramMode.Diagram;
+        this.loadMenuItems();
+    }
 
     //#endregion
-  
 
     //#region templates
 
     private createDiagram(): go.Diagram {
-        let dg = this.g(go.Diagram, 'LineagePreviewDiagram', {
+
+
+        let dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Left,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
             initialPosition: new go.Point(125, 125),
             layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
-            "undoManager.isEnabled": false
+            "undoManager.isEnabled": true
         });
 
         dg.model.class = go.GraphLinksModel;
@@ -289,12 +559,11 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
         dg.model.nodeDataArray = [];
         dg.model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
-        dg.toolManager.linkingTool.isEnabled = false;
-        dg.model.isReadOnly = true;
+        dg.toolManager.linkingTool.isEnabled = !this.readonly;
+        dg.model.isReadOnly = this.readonly;
 
         return dg;
     }
-
 
     private createFocalNode(): go.Node {
         let nodeWidth = 200;
@@ -329,6 +598,7 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
                     this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
+                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
                     //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
                     //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
@@ -545,9 +815,9 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
                     this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
-                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+                    ///this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+                    ///this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+                    ///this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -781,6 +1051,11 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
     }
 
     //#endregion
+}
 
-
+enum DiagramMode {
+    Diagram,
+    SourceRuleEditor,
+    BusinessLineageEditor,
+    TechnicalLineageEditor
 }

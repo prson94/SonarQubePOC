@@ -16,18 +16,18 @@ import {
 } from 'primeng/primeng';
 
 import { ImpactComponent } from './impact.component';
-import { LineageComponent } from './lineage.component';
-import { LineageBusinessEditorComponent } from './lineage-business-editor.component';
-import { LineageTechnicalEditorComponent } from './lineage-technical-editor.component';
-import { LineageEditorPreviewComponent } from './lineage-editor-preview.component';
-import { LineageFusionComponent } from './lineage-fusion.component';
-import { LineageMappingRulesComponent } from './lineage-mapping-rules.component';
-import { LineageObjectDetailComponent } from './lineage-object-detail.component';
-import { LineageRelationshipsComponent } from './lineage-relationships.component';
-import { LineageResponsibilitiesComponent } from './lineage-responsibilities.component';
-import { LineageSourceRuleEditorComponent } from './lineage-source-rule-editor.component';
-import { LineageSourceRulesComponent } from './lineage-source-rules.component';
-import { LineageTechnicalRelationshipsComponent } from './lineage-technical-relationships.component';
+import { LineageComponent } from './lineage/lineage.component';
+import { LineageBusinessEditorComponent } from './lineage/lineage-business-editor.component';
+import { LineageTechnicalEditorComponent } from './lineage/lineage-technical-editor.component';
+import { LineageEditorPreviewComponent } from './lineage/lineage-editor-preview.component';
+import { LineageFusionComponent } from './lineage/lineage-fusion.component';
+import { LineageMappingRulesComponent } from './lineage/lineage-mapping-rules.component';
+import { LineageObjectDetailComponent } from './lineage/lineage-object-detail.component';
+import { LineageRelationshipsComponent } from './lineage/lineage-relationships.component';
+import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibilities.component';
+import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
+import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
+import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
 import { ModelDiagramComponent } from './model-diagram.component';
 import { D3SOverlayWindowModule } from '../overlay-window.component';
 
@@ -77,7 +77,7 @@ import { SharedFormMessageModule } from '../form-message.part'
         ModelDiagramComponent,
     ],
     exports: [
-        LineageComponent,   
+        LineageComponent,
         ImpactComponent,  
         ModelDiagramComponent,      
     ],

@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { DiagramService } from '../../../services/diagram.service';
-import { SourceRule } from '../../../models/lineage.model';
+import { DiagramService } from '../../../../services/diagram.service';
+import { SourceRule } from '../../../../models/lineage.model';
 
 @Component({
     selector: 'd3s-lineage-source-rules',
