@@ -25,9 +25,7 @@ namespace d360.core.enums.Workflow
         [Description("Loaded")]
         Loaded = 7,
         [Description("Request Certification")]
-        RequestCertification = 8,
-        [Description("Action Raised")]
-        ActionRaised = 9
+        RequestCertification = 8        
     }
 
     public class ChangeTypeInfo
