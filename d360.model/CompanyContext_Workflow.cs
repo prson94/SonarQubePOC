@@ -1045,6 +1045,36 @@ namespace d360.model
                 result = result.Replace("[OBJECT_TAXONOMY]", taxonomy);
             }
 
+            if (result.Contains("[ACTION_DETAILS]"))
+            {
+                //get the details of the issue and add them in
+                var issue = Issues.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+
+                var issueInfo = "(unknown)";
+
+                if (issue != null)
+                {
+                    var item = GetObjectDetail(issue.Object, issue.ObjectID);
+
+                    if(item != null)
+                        issueInfo = $"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.  <br>Criticality Level: {issue.Criticality}";
+
+                    var creator = GlobalReportingResources.Where(x => x.ResourceID == issue.CreatedBy).FirstOrDefault();
+
+                    if (creator != null)
+                        issueInfo += $"<br>Created By <b>{creator.FullName}</b>";
+
+                    if (issue.CommentID.HasValue) {
+                        var comment = Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
+
+                        if(comment != null)
+                            issueInfo += $"<br><br>{comment.Body}";
+                    }
+                }
+
+                result = result.Replace("[ACTION_DETAILS]", issueInfo);
+            }
+
             if (result.Contains("[WORKFLOW_INITIATOR]"))
             {
                 var initiator = "unknown user";
