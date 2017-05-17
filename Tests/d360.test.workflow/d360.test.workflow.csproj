@@ -152,10 +152,6 @@
       <Project>{88bba351-da2a-4551-af28-5f1568952f7e}</Project>
       <Name>d360.utils.company</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\d360.workflow\d360.workflow.csproj">
-      <Project>{368f2ceb-23c4-4904-812b-f4fab72bb12e}</Project>
-      <Name>d360.workflow</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

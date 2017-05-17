@@ -179,212 +179,7 @@ from		ArtifactType T
 						) BC
 order by	T.ParentID,
 			T.Name";
-
-        public static string CurrentWorkflowTaskItem = @"
-select  W.ID as WorkflowID,
-        W.WorkflowType as Workflow,
-        W.Data,
-        W.DateStarted,
-        WR.Activity
-from    Workflow W
-		inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-			and W.DateCompleted is null
-			and WR.ResourceID = @r
-            and WR.IsComplete = 0
-where   W.ID = @w";
-
-        public static string CurrentUserWorkflowCount = @"
-select	W.WorkflowType as Workflow,
-        count(1) as [Count]
-from    Workflow W
-		inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-		    and W.DateCompleted is null
-		    and WR.ResourceID = @r
-		    and WR.IsComplete = 0
-group by	W.WorkflowType";
-
-        public static string CurrentUserWorkflow1TaskItem =
-@"select    W.ID as WorkflowID,
-		    W.Data.value('(fields/ArtifactTypeID)[1]', 'int') as ID,
-			A.Name as Name,
-			A.Url as Url,
-            W.DateStarted as StartDate,
-			W.Data.value('(fields/Name)[1]', 'nvarchar(250)') as ProposedName,
-			W.Data.value('(fields/Description)[1]', 'nvarchar(max)') as ProposedDescription,
-			W.Data.value('(fields/RequestingResourceID)[1]', 'int') as RequestingResourceID,
-			R.FirstName + ' ' + R.LastName as RequestingResourceName,
-			W.Data.value('(fields/TaxonomyTypeID)[1]', 'int') as TaxonomyTypeID,
-			TT.Name as TaxonomyTypeName,
-		    WR.Activity
-from	    Workflow W
-		    inner join cache.ObjectDetails A on A.[Object] = 'ArtifactType' and A.ObjectID = W.Data.value('(fields/ArtifactTypeID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/RequestingResourceID)[1]', 'int')
-			inner join TaxonomyType TT on TT.ID = W.Data.value('(fields/TaxonomyTypeID)[1]', 'int')
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											    and W.DateCompleted is null
-											    and WR.ResourceID = @r
-												and W.WorkflowType in(1,5)
-                                                and WR.IsComplete = 0 
-{0} 
-order by    A.Name, W.Data.value('(fields/Name)[1]', 'nvarchar(250)')";
-
-        public static string CurrentUserWorkflow2TaskItem = @"
-select  W.ID as WorkflowID,
-		W.Data.value('(fields/ArtifactID)[1]', 'int') as ID,
-		A.Name as Name,
-		A.Url as Url,
-        A.ObjectTypeName as TypeName,
-		W.Data.value('(fields/StartDate)[1]', 'datetime') as StartDate,
-		W.Data.value('(fields/DueDate)[1]', 'datetime') as DueDate,
-		WR.Activity
-from    Workflow W
-		inner join cache.ObjectDetails A on A.[Object] = 'Artifact' and A.ObjectID = W.Data.value('(fields/ArtifactID)[1]', 'int')
-		inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-			and W.DateCompleted is null
-			and WR.ResourceID = @r
-			and W.WorkflowType = 2
-            and WR.IsComplete = 0 
-        {0} 
-order by    A.ObjectTypeName, A.Name";
-
-        public static string CurrentUserWorkflow3TaskAllUsersItem = @"
-select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			W.DateStarted,
-			W.DateCompleted        
-			,A.Name
-			,A.ObjectType
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')			
-			inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
-			left outer join cache.ObjectDetails A on A.[Object] = CR.ObjectType and A.ObjectID = CR.ObjectID
-            where  W.WorkflowType = 3
-order by    W.DateStarted desc
-";
-
-        public static string CurrentUserWorkflow3TaskItem = @"
-(select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			R.ResourceID,
-			R.FirstName + ' ' + R.LastName as ResourceName,
-			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
-			W.DateStarted,
-		    WR.Activity,
-			W.Data.value('(fields/IssueType)[1]', 'int') as IssueType,
-            case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName,
-			0 as IssueID,
-            2 as Criticality,
-            case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays,
-            CR.ObjectType as 'Object',
-			CR.ObjectID as ObjectID,
-            A.Name as ObjectName
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-            left outer join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-				and W.DateCompleted is null
-				and WR.ResourceID = @r
-				and W.WorkflowType = 3
-                and WR.IsComplete = 0 
-                and W.Data.value('(fields/IssueID)[1]', 'int') is null 
-            left outer join cache.ObjectDetails A on A.[Object] = CR.ObjectType and A.ObjectID = CR.ObjectID            		
-            {0}
-)			
-union
-(select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			R.ResourceID,
-			R.FirstName + ' ' + R.LastName as ResourceName,
-			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
-			W.DateStarted,
-		    WR.Activity,
-			IT.ID as IssueType,
-            IT.Name as IssueTypeName,
-			I.ID as IssueID,
-            I.Criticality as Criticality,
-            case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays,
-            I.[Object] as 'Object',
-			I.[ObjectID] as ObjectID,
-            A.Name as ObjectName
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-				and W.DateCompleted is null
-				and WR.ResourceID = @r
-				and W.WorkflowType = 3
-                and WR.IsComplete = 0 
-                and W.Data.value('(fields/IssueID)[1]', 'int') is not null 
-			left outer join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
-			left outer join IssueType IT on (I.IssueTypeID = IT.ID)			
-            left outer join cache.ObjectDetails A on A.[Object] = I.[Object] and A.ObjectID = I.ObjectID            		
-            {0}
-)
-order by    W.DateStarted desc";
-        
-
-        public static string CurrentUserWorkflow3SpecificObjectTaskItem = @"
-(select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			R.ResourceID,
-			R.FirstName + ' ' + R.LastName as ResourceName,
-			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
-			W.DateStarted,
-		    WR.Activity,
-            W.Data.value('(fields/IssueType)[1]', 'int') as IssueType,
-			case when W.Data.value('(fields/IssueType)[1]', 'int') = 0 then 'Business Data Incorrect' else 'Governance Information Incorrect' end as IssueTypeName,
-			0 as IssueID,
-            2 as Criticality,
-            case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
-            inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
-			left outer join WorkflowResource WR on	WR.WorkflowID = W.ID 											    
-                and WR.ResourceID = @r												
-                and WR.IsComplete = 0 												                        
-            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3 and W.Data.value('(fields/IssueID)[1]', 'int') is null 
-)
-union 
-(
-select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			R.ResourceID,
-			R.FirstName + ' ' + R.LastName as ResourceName,
-			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
-			W.DateStarted,
-		    WR.Activity,
-            IT.ID as IssueType,
-            IT.Name as IssueTypeName,
-			I.ID as IssueID,
-            I.Criticality as Criticality,
-            case when W.DateCompleted is null then datediff(day,W.DateStarted,GetUtcDate()) else datediff(day, W.DateStarted, W.DateCompleted) end as EllapsedDays
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
-            inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
-			inner join Issue I on (I.ID = W.Data.value('(fields/IssueID)[1]', 'int'))
-			inner join IssueType IT on (I.IssueTypeID = IT.ID)			
-			left outer join WorkflowResource WR on	WR.WorkflowID = W.ID 											    
-                and WR.ResourceID = @r												
-                and WR.IsComplete = 0 												                        
-            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3
-)
-order by    W.DateStarted desc";
-
-
-       
-        public static string DomainSettingsItem = @"
-select	*
-from	(
-		select	case 
-					when count(1) > 0 then cast(1 as bit)
-					else cast(0 as bit)
-				end as AllowAttributes
-		from	AttributeTypeRelation
-		where	ObjectType = 'ReferenceItemType' and ObjectID = @id
-		) A";
+             
 
         public static string ExecutionErrorList = @"
 select  ER.Date,
@@ -746,19 +541,6 @@ from	h
                     where   ([Subject] = 'Taxonomy' and [SubjectID] = h.ID) OR ([Object] = 'Taxonomy' and [ObjectID] = h.ID)
                     ) R";
 
-        public static string LineageSearchQuery = @"
-select  top 50
-        objectid as id, 
-        c.textpath as name, 
-        iconbackcolor as backColor, 
-        iconforecolor as foreColor, 
-        c.objecttypename as typeName, 
-        c.url, 
-        c.object,
-        c.objecttype,
-        c.objecttypeid 
-from    cache.objectdetails c 
-where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@search)";
 
         public static string LookupAllocations = @"
 	SELECT	FT.Name as FieldTypeName,
@@ -962,31 +744,7 @@ order by case
 			else IT.SubjectName
 		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')";
 
-
-        public static string ObjectInjectableRelationships = @"
-select	I.ID,
-		case 
-			when Subject = @obj and SubjectID = @objid then Object
-			else Subject
-		end as Object,
-		case 
-			when Subject = @obj and SubjectID = @objid then ObjectID
-			else SubjectID
-		end as ObjectID, 
-		case 
-			when Subject = @obj and SubjectID = @objid then ObjectName
-			else SubjectName
-		end as Name,
-		case 
-			when Subject = @obj and SubjectID = @objid then ObjectUrl
-			else SubjectUrl
-		end as Url
-        {0}
-from	[IntersectDetail] I
-        {1}
-where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and I.ObjectTypeID = @objtypeid) OR
-		(I.Object = @obj and I.ObjectID = @objid and I.SubjectType = @objtype and I.SubjectTypeID = @objtypeid)";
-
+        
         public static string ObjectRelationshipTypeIDs = @"
 select	distinct
         I.IntersectTypeID
@@ -1041,38 +799,7 @@ select	ID,
 from    fusion.RuleLog
 order by    DateStarted desc";
 
-        public static string RelationshipAttributesFieldList = @"
-select	atr.AttributeTypeID as attributeID,
-		at.Name as label,
-		atr.AllowMultipleEntries as allowMultiple,
-		at.description,
-		c.*,
-		case 
-			when ch.fieldCount > 0 then cast(1 as bit)
-			else cast(0 as bit)
-		end as isComplex
-from	AttributeTypeRelation atr
-		inner join AttributeType at on at.ID = atr.AttributeTypeID and atr.ObjectType = 'IntersectType' and atr.ObjectID = @intersectTypeID
-		cross apply (select count(1) as fieldCount from FieldType where [Object] = 'AttributeType' and ObjectID = atr.AttributeTypeID) c
-		cross apply (select count(1) as fieldCount from AttributeType where ParentID = atr.AttributeTypeID) ch
-order by	at.Name";
-
-//        public static string RelationshipTypeList = @"
-//select  R.ID,
-//		R.Subject,
-//		R.SubjectID,
-//		SD.TextPath as SubjectName,
-//		R.Object,
-//		R.ObjectID,
-//		TD.TextPath as ObjectName,
-//        R.PredicateType
-//from	RelationType R
-//		left join cache.ObjectDetails SD on SD.[Object] = R.Subject and SD.ObjectID = R.SubjectID
-//		left join cache.ObjectDetails TD on TD.[Object] = R.Object and TD.ObjectID = R.ObjectID
-//--where R.IsSystem = 0
-//order by    SD.Name,
-//			TD.Name";
-
+        
         public static string ResponsibilityList = @"
 select distinct  
         r.responsibilityid as [ID],
@@ -1139,12 +866,6 @@ from	ScoreTypeMetric S
 where   S.ScoreTypeID = @id and S.Deleted = 0
 order by D.Name, S.Name";
 
-        public static string StatisticTypeDetailList = @"
-select	S.*,
-		D.Name as ObjectName
-from	StatisticType S
-		inner join cache.ObjectDetails D on D.Object = S.Object and D.ObjectID = S.ObjectID 
-order by D.Name, S.Name";
 
         public static string SynonymTypes = @"
         declare	@ot varchar(50),
