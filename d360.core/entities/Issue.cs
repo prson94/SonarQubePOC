@@ -38,7 +38,7 @@ namespace d360.core.entities
         public virtual IssueType IssueType { get; set; }
 
         [DataMember]
-        public int CommentID { get; set; }
+        public int? CommentID { get; set; }
 
         [DataMember]
         public IssueCriticality Criticality { get; set; }

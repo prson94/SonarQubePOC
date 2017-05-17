@@ -4,8 +4,6 @@ import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-workflow-issue-details',
     template: `          
@@ -17,7 +15,8 @@ declare var CurrentResourceID;
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
-                                {{data.ActivityName}}
+                                <a (click)="openIssue(data)" *ngIf="data.WorkflowItemID > 0">{{data.ActivityName}}</a>
+                                <span *ngIf="!data.WorkflowItemID || data.WorkflowItemID <= 0">{{data.ActivityName}}</span>
                             </template>
                         </p-column>
                         <p-column field="CriticalityName" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
@@ -62,16 +61,14 @@ declare var CurrentResourceID;
             </div>
             <div style="padding:10px">
                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>
-            </div>  
-            
+            </div>
         `,
     providers: [WorkflowService]
 })
 
 export class WorkflowIssueDetailsComponent extends BaseComponent implements OnInit {
     private issues: any[] = [];
-    private selected: any;
-    private loaded: boolean = false;    
+    private selected: any;    
 
     @Input() objectID: number = 0;
     @Input() objectType: string;
@@ -82,15 +79,13 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
     @Output() close = new EventEmitter();
     @Output() countsChanged = new EventEmitter();
-
-
+    
     constructor(private workflowService: WorkflowService, protected router: Router) {
         super();
     }
 
     ngOnInit() {
-        if (!this.loaded)
-            this.loadIssues();
+        this.loadIssues();
     }
 
     private loadIssues() {
@@ -100,12 +95,14 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
                 .then(result => {
                     this.issues = result;
                     if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
-                    this.isLoading = false;
-                    this.loaded = true;
+                    this.isLoading = false;                    
                 });        
     }
     
-    private openIssue(issue) {
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
+    private openIssue(issue) {        
+        if (issue.WorkflowItemID > 0)
+            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS}/${issue.WorkflowItemID}`);
+        else
+            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
     }
 }
