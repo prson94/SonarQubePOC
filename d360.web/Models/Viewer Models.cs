@@ -306,7 +306,7 @@ namespace d360.web.Models
                                 }
                                 break;
                             default:
-                                value = Server.HtmlEncode(form[ft.Name]);
+                                value = form[ft.Name];
                                 break;
                         }
 
