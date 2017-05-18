@@ -30,7 +30,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     @Input() id: number = 0;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
-    @ViewChild('ed') ed: Editor;
+    @ViewChild('ed2') ed2: Editor;
 
     private model: WorkflowDiagramModel;
     private workflowObjectTypes: WorkflowObjectType[] = [];
@@ -103,15 +103,16 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     ngAfterViewInit() {
-        if (this.ed != null && this.ed.quill != null)
-            this.quill = this.ed.quill;
+        //console.log('afterviewinit', this.ed2);
+        if (this.ed2 != null && this.ed2.quill != null)
+            this.quill = this.ed2.quill;
         else
             this.quill = null;
     }
 
     ngOnDestroy() {
         this.quill = null;
-        this.ed = null;
+        this.ed2 = null;
     }
 
     load(): Promise<any> {
@@ -119,8 +120,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         return this.workflowService.getChangeTypes()
             .then(r => { this.changesTypes = r; })
-            .then(() => this.responsibilityService.getResponsibilityTypes())
-            .then(r => { this.responsibilities = r; })
             .then(() => {
                 if (this.id < 1) {
                     this.saveButtonText = 'Next';
@@ -146,7 +145,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             if (this.objectType == 'ArtifactType')
                                 this.loadTaxonomies();
 
-                            console.log(r);
+                            //console.log(r);
 
                             if (this.model.Event.ConditionObject != null) {
                                 this.conditions = [];
@@ -180,6 +179,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         .then(r => this.workflowObjectTypes = r);
                 }
             })
+            .then(() => this.loadResponsibilities())
             .then(() => { this.validate(); });
 
     }
@@ -216,13 +216,22 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             if (this.model.Event.ChangeType == WorkflowChangeType.Schedule)
                 this.model.Event.ChangeType = null;
         }
-        this.validate();
 
+        this.loadResponsibilities().then(() => this.validate());
     }
 
     loadTaxonomies(): Promise<any> {
         return this.taxonomyService.getTaxonomies()
             .then(r => this.taxonomies = r);
+    }
+
+    loadResponsibilities(): Promise<any> {
+        if (this.objectType == null || this.objectId == null) {
+            this.responsibilities = [];
+            return Promise.resolve();
+        }
+        return this.responsibilityService.getResponsibilityTypesByObject(this.objectType, this.objectId)
+            .then(r => this.responsibilities = r);
     }
 
     showCondition() {

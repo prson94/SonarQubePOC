@@ -32,7 +32,7 @@
                 <div>
                     <select [ngModel]="step.settings.ResponsibilityTypeID" (ngModelChange)="step.settings.ResponsibilityTypeID = $event; stepChange.emit(step)" style="width: 95%">
                         <option></option>
-                        <option *ngFor="let r of responsibilities" [value]="r.ID">{{r.Name}}</option>
+                        <option *ngFor="let r of responsibilities" [value]="r.ResponsibilityTypeID">{{r.Name}}</option>
                     </select>
                 </div>
             </div>

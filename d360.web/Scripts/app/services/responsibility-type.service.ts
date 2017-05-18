@@ -66,5 +66,12 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
             .then(response => <ResourceResponsibilityTypeCount[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getResponsibilityTypesByObject(type: string, id: number): Promise<any> {
+        return this.http.get(`api/ownership/${type}/${id}/responsibilitytypes`)
+            .toPromise()
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
 }
 

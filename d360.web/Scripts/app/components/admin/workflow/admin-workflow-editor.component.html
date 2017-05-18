@@ -107,7 +107,7 @@
                 <div>
                     <select [(ngModel)]="model.Event.SettingsObject.Settings.ResponsibilityTypeID" style="width: 100%">
                         <option></option>
-                        <option *ngFor="let r of responsibilities" [value]="r.ID">{{r.Name}}</option>
+                        <option *ngFor="let r of responsibilities" [value]="r.ResponsibilityTypeID">{{r.Name}}</option>
                     </select>
                 </div>
             </div>
@@ -127,7 +127,7 @@
                 Body
             </div>
             <div style="width: 100%">
-                <p-editor [(ngModel)]="model.Event.SettingsObject.Settings.MessageBodyTemplate" [style]="{'height':'150px'}" #ed >
+                <p-editor [(ngModel)]="model.Event.SettingsObject.Settings.MessageBodyTemplate" [style]="{'height':'150px'}" #ed2 >
                     <header>
                         <d3s-editor-header></d3s-editor-header>
                         <d3s-workflow-template-tool (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
