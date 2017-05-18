@@ -43,10 +43,15 @@ namespace d360.jobs.subscriber.Workflow
 
                 #endregion
 
+                if (message.Properties.ContainsKey("topic"))
+                {
+                    Console.WriteLine($"RECEIVED MESSAGE SENT TO TOPIC [{message.Properties["topic"]}]");
+                }
+
                 //check if this event already has a open workflow instance
                 if (info.WorkflowItemID <= 0)
                 {
-                    Console.WriteLine($"Debug - New {info.Action} event received.");
+                    Console.WriteLine($"Debug - New [{info.Action}] event received.");
 
                     var sObject = info.Object.ObjectType.ToString();
                     var registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID && i.Type.State == core.enums.State.Active && i.Type.PublishedVersionID != null).OrderBy(x=>x.ID).Include(x=>x.Type);
@@ -54,7 +59,7 @@ namespace d360.jobs.subscriber.Workflow
                     foreach (var registration in registrations)
                     {
                         // if the registration applies fire of the workflow and break if not go to the next one.
-                        if (company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID))
+                        if (await company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID))
                         {                            
                             return;
                         }
@@ -64,7 +69,7 @@ namespace d360.jobs.subscriber.Workflow
                 else {
                     //load the workflow instance and check how many events have been generated.  if greater than threashold then stop.  Do not raise more events
                     // throw an error this section prevents workflows that go on forever and flood the bus with data...
-                    Console.WriteLine($"Debug - New {info.Action} event received.  With an open workflow instance.");
+                    Console.WriteLine($"Debug - New [{info.Action}] event received.  With an open workflow instance.");
 
                     var workflowInstance = company.WorkflowItems.Where(x => x.ID == info.WorkflowItemID).FirstOrDefault();
 

@@ -62,7 +62,7 @@ namespace d360.jobs.WorkflowSchedules
                         foreach (var registration in scheduledWorkflows)
                         {
                             // if the registration applies fire of the workflow and break if not go to the next one.
-                            if (company.ExecuteScheduledWorkflow(registration))
+                            if (company.ExecuteScheduledWorkflow(registration).Result)
                             {
                                 break;
                             }

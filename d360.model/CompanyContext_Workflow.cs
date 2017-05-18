@@ -143,7 +143,7 @@ namespace d360.model
             return true;
         }
 
-        public bool ExecuteScheduledWorkflow(WorkflowEventRegistration registration)
+        public async Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration)
         {
             Console.WriteLine($"DEBUG - CHECKING IF SCHEDULED WORKFLOW SHOULD RUN TYPE ID {registration.TypeID}");
 
@@ -173,7 +173,7 @@ namespace d360.model
                         var artifacts = Artifacts.Where(x => x.ArtifactTypeID == registration.ObjectID);
                         foreach (var artifact in artifacts)
                         {
-                            CreateWorkflowItem(registration.TypeID,
+                            await CreateWorkflowItem(registration.TypeID,
                                     new EventObjectInfo
                                     {
                                         Object = core.SystemObjects.Artifact,
@@ -189,7 +189,7 @@ namespace d360.model
                         var taxonomies = Taxonomies.Where(x => x.TaxonomyTypeID == registration.ObjectID);
                         foreach (var taxonomy in taxonomies)
                         {
-                            CreateWorkflowItem(registration.TypeID,
+                            await CreateWorkflowItem(registration.TypeID,
                                     new EventObjectInfo
                                     {
                                         Object = core.SystemObjects.Taxonomy,
@@ -221,7 +221,7 @@ namespace d360.model
         }
 
 
-        public bool CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false)
+        public async Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false)
         {            
             //check if the current item meets the criteria if any for this workflow.
             if (!DoesWorkflowApply(objectInfo, registration))
@@ -289,7 +289,7 @@ namespace d360.model
             Console.WriteLine("DEBUG - STARTING WORKFLOW TRANSITIONS.");
 
             if(transitions.Count > 0)
-                StartTransitions(transitions, item.ID, objectInfo);
+                await StartTransitions(transitions, item.ID, objectInfo);
 
             Console.WriteLine("DEBUG - WORKFLOW INSTANCE SUCESSFULLY CREATED.");
 
@@ -310,7 +310,7 @@ namespace d360.model
             }
         }
 
-        private void StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID, EventObjectInfo objectInfo)
+        private async Task StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID, EventObjectInfo objectInfo)
         {
             var events = new List<EventInfo>();
 
@@ -329,7 +329,7 @@ namespace d360.model
             }
             
             //add topic messages for the transitions
-            QueueSource.CreateTopicMessages(events);
+            await QueueSource.CreateTopicMessagesAsync(events);
         }
 
         /// <summary>
@@ -437,10 +437,8 @@ namespace d360.model
                 WorkflowItemStepTransitions.Add(trans);
                 SaveChanges();
 
-                // add event queue item for the step
-                var events = new List<EventInfo>();
-
-                events.Add(new EventInfo
+                
+                var startEvent = new EventInfo
                 {
                     CompanyID = CurrentCompanyID,
                     DomainPrefix = CurrentCompanyDomain,
@@ -449,10 +447,10 @@ namespace d360.model
                     ItemStepID = toItemStepID,                    
                     Action = ChangeType.Add, // irrelevant
                     Object = objectInfo
-                });
+                };
                 
                 //add topic messages for the transitions
-                QueueSource.CreateTopicMessages(events);
+                await QueueSource.CreateTopicMessageAsync(startEvent);
             }
         }
 
@@ -558,7 +556,7 @@ namespace d360.model
                         
             if (isStepCompleted)
             {
-                MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
+                await MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
             }
         }
 
@@ -709,7 +707,7 @@ namespace d360.model
             QueueSource.CreateTopicMessages(events);
         }
 
-        public void MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo)
+        public async Task MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo)
         {
             // mark step as completed
             itemStep.CompletedOn = DateTime.UtcNow;
@@ -722,7 +720,7 @@ namespace d360.model
             .ToList();
 
             if(transitions.Count > 0)
-                StartTransitions(transitions, itemID, objectInfo);
+                await StartTransitions(transitions, itemID, objectInfo);
         }
 
         private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)

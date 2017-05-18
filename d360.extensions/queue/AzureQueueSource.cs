@@ -31,8 +31,7 @@ namespace d360.extensions.queue
         }
 
         public void CreateMessages(QueueType type, List<QueueObject> items)
-        {
-            //var connectionString = constants.SERVICE_BUS_ACTIONS;
+        {            
             var queueName = "";
 
             switch (type)
@@ -79,13 +78,7 @@ namespace d360.extensions.queue
                 });
 
                 queue = null;
-                queueClient = null;
-
-                //var queueClient = QueueClient.CreateFromConnectionString(connectionString, queueName);
-                //var m = new BrokeredMessage(item);
-                //m.To = item.To.ToString();
-                //queueClient.Send(m);
-                //queueClient = null;
+                queueClient = null;                
             }
             catch (Exception ex)
             {
@@ -102,7 +95,7 @@ namespace d360.extensions.queue
         public void CreateTopicMessage(string topicName, EventInfo e)
         {
             var bm = new BrokeredMessage(e);
-
+            bm.Properties["topic"] = topicName;
             var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             client.Send(bm);
             client = null;
@@ -117,6 +110,7 @@ namespace d360.extensions.queue
         public Task CreateTopicMessageAsync(string topicName, EventInfo e)
         {
             var bm = new BrokeredMessage(e);
+            bm.Properties["topic"] = topicName;
             var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
             return client.SendAsync(bm);
         }
@@ -136,7 +130,7 @@ namespace d360.extensions.queue
                 var messageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
 
                 if (e.Object != null) messageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
-
+                bm.Properties["topic"] = topicName;
                 bm.MessageId = messageId;
                 list.Add(bm);
             }
@@ -157,17 +151,18 @@ namespace d360.extensions.queue
             return CreateTopicMessagesAsync(topicName, events);
         }
 
-        public Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
+        public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
         {
             var list = new List<BrokeredMessage>();
             foreach (var e in events)
             {
                 var bm = new BrokeredMessage(e);
+                bm.Properties["topic"] = topicName;
                 list.Add(bm);
             }
 
             var client = TopicClient.CreateFromConnectionString(core.constants.EVENTS_SERVICE_BUS, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
-            return client.SendBatchAsync(list);
+            await client.SendBatchAsync(list);
         }
     }
 }
