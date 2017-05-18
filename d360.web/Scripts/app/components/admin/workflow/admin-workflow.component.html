@@ -21,6 +21,7 @@
             <div *ngSwitchCase="PageMode.DiagramEditor">
                 <d3s-workflow-diagram 
                                       [id]="workflow.Type.ID" 
+                                      [model]="workflow"
                                       readonly="false" 
                                       hasClose="true" 
                                       hasBack="true"

@@ -27,7 +27,7 @@ import * as _ from 'lodash';
     templateUrl: './workflow-step-editor.component.html'
 })
 
-export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges, AfterViewInit {
+export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() step: NodeModel;
@@ -97,6 +97,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.quill = this.ed.quill;
         else
             this.quill = null;
+    }
+
+    ngOnDestroy() {
+        this.quill = null;
+        this.ed = null;
+
     }
 
     appendField(e: string) {

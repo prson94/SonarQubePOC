@@ -22,7 +22,7 @@
                     Recipient
                 </div>
                 <div>
-                    <input type="text" [ngModel]="step.settings.MessageToUser" (ngModelChange)="step.settings.MessageToUser = $event; stepChange.emit(step)" style="width: 95%" />
+                    <input type="text" [ngModel]="step.settings.MessageToUser" (ngModelChange)="step.settings.MessageToUser = $event; stepChange.emit(step)" style="width: 95%"/>
                 </div>
             </div>
             <div *ngIf="step.settings.MessageRecipientType == 'Responsibility'" class="col s12">
@@ -52,7 +52,7 @@
                     <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
                         <header>
                             <d3s-editor-header></d3s-editor-header>
-                            <d3s-workflow-template-tool [objectType]="objectType" [objectId]="objectId"  (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
+                            <d3s-workflow-template-tool [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
                         </header>
                     </p-editor>
                 </div>

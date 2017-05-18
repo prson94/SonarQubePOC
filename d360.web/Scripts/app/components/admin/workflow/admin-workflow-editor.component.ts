@@ -276,15 +276,20 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
         this.model.Event.Settings = JSON.stringify( this.model.Event.SettingsObject );
 
-        console.log('save: ', this.model.Event);
+        //console.log('save: ', this.model.Event);
 
-        this.isLoading = true;
-        this.workflowService.saveWorkflowDiagramModel(this.model)
-            .then(r => {
-                this.isLoading = false;
-                this.model.Type.ID = r;
-                this.onSave.emit(this.model);
-            });
+        if (this.id < 1)
+            this.onSave.emit(this.model);
+        else {
+            this.isLoading = true;
+            this.workflowService.saveWorkflowDiagramModel(this.model)
+                .then(r => {
+                    this.isLoading = false;
+                    this.model.Type.ID = r;
+                    this.onSave.emit(this.model);
+                });
+        }
+
     }
 
     validate() {

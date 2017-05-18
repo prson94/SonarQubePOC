@@ -49,6 +49,7 @@ declare var window: any;
 
 export class WorkflowDiagramComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
+    @Input() model: WorkflowDiagramModel;
     @Input() version: number = null;
     @Input() readonly: boolean = true;
     @Input() hasClose: boolean = false;
@@ -69,7 +70,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     WorkflowChangeType = WorkflowChangeType;
     WorkflowActivityType = WorkflowActivityType;
     FormResponseType = FormResponseType;
-    model: WorkflowDiagramModel;
+    
     fieldTypes: FieldType[] = [];
 
     //diagram properties
@@ -133,6 +134,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             this.myDiagram.div = null;
             this.initializeDiagram();
             this.initializeMenuItems();
+            this.resizeDiagram();
+
+            this.load();
         }
 
         if (changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue) {
@@ -263,9 +267,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     //#region save/load
 
     private populateDiagram(): Promise<any> {
-        if (this.id < 1) {
-            this.model = new WorkflowDiagramModel();
+        if (this.id < 1 || this.id == null) {
+            //this.model = new WorkflowDiagramModel();
             this.parseData(this.model);
+            //console.log('populateDiagram', this.id);
             return Promise.resolve();
         }
 
@@ -342,7 +347,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
         this.model.Type.PublishedVersionID = publish ? -1 : null;
         m.Type = this.model.Type;
-        m.Event = null; //this.model.Event;
+        m.Event = this.id > 0 ? null : this.model.Event;
         m.Nodes = nodes;
         m.Links = links;
 

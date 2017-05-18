@@ -35,6 +35,9 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     }
 
     itemClick() {
+        if (this.item.Url == null)
+            return;
+
         if (this.item.IsLink)
             window.location.href = this.item.Url;
         else

@@ -65,7 +65,9 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
+          <Private>False</Private>
+        </Reference>
       </ItemGroup>
     </Otherwise>
   </Choose>
@@ -76,6 +78,7 @@
     <Compile Include="Tests\Controllers\ApiController\BaseApiTest.cs" />
     <Compile Include="Tests\Controllers\ApiController\FusionTests.cs" />
     <Compile Include="Tests\Controllers\ApiController\ObjectTests.cs" />
+    <Compile Include="Tests\Controllers\ApiController\ComplexLookupTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">

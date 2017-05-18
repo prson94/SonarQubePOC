@@ -4,6 +4,8 @@ import { WorkflowService } from '../../../../services/workflow.service';
 
 import * as _ from 'lodash';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-workflow-template-tool',
     providers: [WorkflowService],
@@ -31,6 +33,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
         { value: '[OBJECT_TAXONOMY]', label: 'Object Subject Area' },
         { value: '[SCORE]', label: 'Object Score' },
         { value: '[WORKFLOW_INITIATOR]', label: 'Workflow Initiator Name' },
+        { value: '[ACTION_DETAILS]', label: 'Action Details' },
     ];
 
     private selected = "none";
@@ -39,6 +42,12 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     }
 
     ngOnInit() {
+        if (CompanySettings != null && CompanySettings.ArtifactType_TaxonomyTypeID != null) {
+            let field = this.defaultFields.find(d => d.value == '[OBJECT_TAXONOMY]');
+            if (field != null)
+                field.label = 'Object ' + CompanySettings.ArtifactType_TaxonomyTypeID;
+        }
+
         this.fields = _.cloneDeep(this.defaultFields);
     }
 
@@ -59,7 +68,9 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     }
 
     ngAfterViewChecked() {
-        //quill sets display: none on select
+        //Workaround for quill until primeng supports better quill API access
+
+        //quill generates 'display: none' on <select> nodes
         //update it here
         this.select.nativeElement.style.display = 'inline-block';
 
