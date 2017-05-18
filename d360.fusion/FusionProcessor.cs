@@ -236,7 +236,7 @@ namespace d360.fusion
 
             var eventBus = new AzureQueueSource();
             
-            eventBus.CreateTopicMessage(new core.queue.EventInfo
+            eventBus.CreateTopicMessage(topicName, new core.queue.EventInfo
             {
                 CompanyID = CompanyID,
                 Action = core.enums.Workflow.ChangeType.Loaded,
