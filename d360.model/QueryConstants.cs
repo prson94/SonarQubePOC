@@ -1318,27 +1318,27 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
             select 'ArtifactType|' + cast(t.id as varchar) as value, t.id, 'ArtifactType' as [type], 'Artifact Type :: ' +  t.Name as [name], count(*) as [count] 
             from artifacttype t
-            join artifact a on a.artifacttypeid = t.id
+            left join artifact a on a.artifacttypeid = t.id
             group by t.ID, t.Name
             union all
             select 'RuleType|' + cast(t.id as varchar) as value, t.id, 'RuleType' as [type], 'Rule Type :: ' + t.Name as [name], count(*) as [count] 
             from ruletype t
-            join [rule] a on a.ruletypeid = t.id
+            left join [rule] a on a.ruletypeid = t.id
             group by t.id, t.name
             union all
             select 'PolicyType|' + cast(t.id as varchar) as value, t.id, 'PolicyType' as [type], 'Policy Type :: ' + t.Name as [name], count(*) as [count] 
             from policytype t
-            join [policy] a on a.policytypeid = t.id
+            left join [policy] a on a.policytypeid = t.id
             group by t.id, t.name
             union all
             select 'TaxonomyType|' + cast(t.id as varchar) as value, t.id, 'TaxonomyType' as [type], 'Model Type :: ' + t.Name as [name], count(*) as [count] 
             from taxonomytype t
-            join taxonomy a on a.taxonomytypeid = t.id
+            left join taxonomy a on a.taxonomytypeid = t.id
             group by t.id, t.name
             union all
             select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], 'Action Type :: ' + t.Name as [name], count(*) as [count] 
             from issuetype t
-            join issue a on a.issuetypeid = t.id
+            left join issue a on a.issuetypeid = t.id
             group by t.id, t.name
 			union all
             select 'Fusion|' + cast(t.id as varchar) as value, t.id, 'Fusion' as [type], 'Fusion :: ' + t.Name as [name], 1 as [count] 

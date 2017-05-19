@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -27,7 +27,7 @@ import * as _ from 'lodash';
     templateUrl: './workflow-step-editor.component.html'
 })
 
-export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() step: NodeModel;
@@ -92,11 +92,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.quill = null;
     }
 
-    ngAfterViewInit() {
+    ngAfterViewChecked() {
         if (this.ed != null && this.ed.quill != null)
             this.quill = this.ed.quill;
-        else
-            this.quill = null;
     }
 
     ngOnDestroy() {

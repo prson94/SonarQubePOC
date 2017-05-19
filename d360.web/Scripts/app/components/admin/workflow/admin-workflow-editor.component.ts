@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, AfterViewInit, ViewChild  } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, ViewChild, AfterViewChecked  } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -26,11 +26,11 @@ declare var CompanySettings;
     templateUrl: './admin-workflow-editor.component.html'
 })
 
-export class AdminWorkflowEditorComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class AdminWorkflowEditorComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewChecked {
     @Input() id: number = 0;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
-    @ViewChild('ed2') ed2: Editor;
+    @ViewChild('ed2') ed: Editor;
 
     private model: WorkflowDiagramModel;
     private workflowObjectTypes: WorkflowObjectType[] = [];
@@ -98,21 +98,18 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             this.isLoading = false;
         });
 
-
-
     }
 
-    ngAfterViewInit() {
-        //console.log('afterviewinit', this.ed2);
-        if (this.ed2 != null && this.ed2.quill != null)
-            this.quill = this.ed2.quill;
-        else
-            this.quill = null;
+    ngAfterViewChecked() {
+        //always try to use the quill API if possible. Avoids inserting extra <p> tags and inserting on a newline
+        //console.log('ngAfterViewChecked', this.ed);
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
     }
 
     ngOnDestroy() {
         this.quill = null;
-        this.ed2 = null;
+        this.ed = null;
     }
 
     load(): Promise<any> {
@@ -373,7 +370,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     appendField(e: string) {
-        console.log(this.quill, this.model.Event.SettingsObject.Settings.MessageBodyTemplate);
+        //console.log(this.quill, this.model.Event.SettingsObject.Settings.MessageBodyTemplate);
 
         if (this.quill != null) {
             let len = this.quill.getLength();

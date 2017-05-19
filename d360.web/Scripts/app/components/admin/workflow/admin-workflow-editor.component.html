@@ -78,7 +78,7 @@
     <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule" style="padding-top: 8px;">
         <div class="col s12">
             <div>
-                <input type="checkbox" [(ngModel)]="model.Event.SettingsObject.Settings.SendAggregateEmail"/> Send aggregated email?
+                <input type="checkbox" [(ngModel)]="model.Event.SettingsObject.Settings.SendAggregateEmail" /> Send aggregated email?
             </div>
         </div>
     </div>
@@ -127,7 +127,7 @@
                 Body
             </div>
             <div style="width: 100%">
-                <p-editor [(ngModel)]="model.Event.SettingsObject.Settings.MessageBodyTemplate" [style]="{'height':'150px'}" #ed2 >
+                <p-editor [(ngModel)]="model.Event.SettingsObject.Settings.MessageBodyTemplate" [style]="{'height':'150px'}" #ed2>
                     <header>
                         <d3s-editor-header></d3s-editor-header>
                         <d3s-workflow-template-tool (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
