@@ -1,24 +1,21 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-//using Arango.Client;
 using System.Collections.Generic;
 using Dapper;
 using System.Linq;
-using ArangoDB.Client;
-using System.Net;
 using System.Xml.Linq;
-//using Neo4jClient;
+using Microsoft.Azure.Documents.Client;
+using System;
+using Microsoft.Azure.Documents;
+using Microsoft.Azure.Graphs;
+using Newtonsoft.Json;
 
 namespace d360.test.jobs
 {
     [TestClass]
-    public class ArangoTests : BaseTest
+    public class GraphTests : BaseTest
     {
         public int CompanyID { get { return 4; } }
 
-        private ArangoDatabase getDatabase()
-        {
-            return new ArangoDatabase(new DatabaseSharedSetting { Url = "http://graph.eastus.cloudapp.azure.com", Database = $"D3S_{CompanyID}", Credential = new NetworkCredential("root", "fhgyt!htGHT!YR65234!") });
-        }
 
         [TestMethod]
         public void GetGlossaryObject()
@@ -31,7 +28,7 @@ namespace d360.test.jobs
         [TestMethod]
         public void GlossarySearchResults_Success()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
 
             //var items = db.Query<Item>().Where(i => i.ObjectID > 1000 && i.ObjectID <= 2500).ToList();
 
@@ -140,16 +137,13 @@ namespace d360.test.jobs
             public string Value { get; set; }
         }
 
-        //var client = new GraphClient(new Uri("http://hobby-noligehmoeaggbkeildcicol.dbs.graphenedb.com:24789/db/data/"), username: "d3s-4", password: "b.dBm937tv6CPH.nQ2C4howmLywp9co");
-        //client.Connect();
-
         [TestMethod]
         public void CreateArtifacts()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
-            var rawItems = company.Query<ItemRaw>(@"select	cast(ID as varchar) as [_key], 
+            var rawItems = company.Query<ItemRaw>(@"select	top 20 cast(ID as varchar) as [_key], 
 		ID as ObjectID, 
 		ArtifactTypeID as ObjectTypeID, 
         Name,
@@ -160,32 +154,61 @@ namespace d360.test.jobs
 					inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = 'Artifact' and F.ObjectID = A.ID
 			for xml path('field'), elements, root('fields')
 		) as Fields
-from	Artifact A
+from	Artifact A where ArtifactTypeID = 1
 ").ToList(); // where ArtifactTypeID <> 2
 
-            var items = new List<Artifact>();
+            var dc = new DocumentClient(
+                new Uri("https://d3s-graph.graphs.azure.com"), 
+                "mYhaK0v43dhEhPod02Jpz8qVRAXW04DNcyXDvp1GysEfPzgfir7dfkUMxN6CzvrJvqr05XZ4maMeldfxZtnVnA==", 
+                new ConnectionPolicy { ConnectionMode = ConnectionMode.Direct, ConnectionProtocol = Protocol.Https }
+            );
+            var db = dc.CreateDatabaseIfNotExistsAsync(new Database { Id = "4" }).Result;
+
+           var graph = dc.CreateDocumentCollectionIfNotExistsAsync(
+               UriFactory.CreateDatabaseUri("4"), 
+               new DocumentCollection { Id = "graph" }, 
+               new RequestOptions { OfferThroughput = 100 }).Result;
+
+            //db.Advanced.BulkImport<Artifact>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //int rowNum = 1;
+            //var qry = "";
 
             rawItems.ForEach(ir => {
-                var i = new Artifact();// { Name = ir.Name, Object = ir.Object, ObjectID = ir.ObjectID, _id = ir._id, _key = ir._key };
-                var d = ir.GetAsXml();
-                i.Add("Name", ir.Name);
-                i.Add("ObjectID", ir.ObjectID);
-                i.Add("ObjectTypeID", ir.ObjectTypeID);
-                i.Add("_key", ir._key);
-                foreach (var k in d.Keys)
-                {
-                    i.Add(k, d[k]);
-                }
-                items.Add(i);
-            });
 
-            db.Advanced.BulkImport<Artifact>(items, onDuplicate: ImportDuplicatePolicy.Update);
+                var doc = dc.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("4", "graph"), new { objectId = ir.ObjectID, label = ir.Object, name = ir.Name }, disableAutomaticIdGeneration: true).Result;
+
+                //if (rowNum % 10 == 1)
+                //    qry = $@"g.V().addV(""{ir.Object}"").addProperty(""id"", {ir.ObjectID}).addProperty(""Name"", ""{ir.Name}"")";
+
+                //var d = ir.GetAsXml();
+                //foreach (var k in d.Keys)
+                //{
+                //    qry += $".addProperty('{k}', '{d[k]}')";
+                //}
+
+                //if (rowNum % 10 == 0)
+                //    dc.CreateGremlinQuery(graph, "qry").ExecuteNextAsync();
+
+                //rowNum++;
+
+            });
+            
+
+            // The CreateGremlinQuery method extensions allow you to execute Gremlin queries and iterate results asychronously
+            //var query = dc.CreateGremlinQuery<dynamic>(graph, "g.V().count()");
+            //while (query.HasMoreResults)
+            //{
+            //    foreach (dynamic result in await query.ExecuteNextAsync())
+            //    {
+            //        Console.WriteLine($"\t {JsonConvert.SerializeObject(result)}");
+            //    }
+            //}
         }
 
         [TestMethod]
         public void CreateFusionAttributes()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var rawItems = company.Query<ItemRaw>(@"select cast(ID as varchar) as [_key], 
@@ -218,13 +241,13 @@ from	FusionAttribute A
                 items.Add(i);
             });
 
-            db.Advanced.BulkImport<FusionAttribute>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<FusionAttribute>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         [TestMethod]
         public void CreateMaps()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var rawItems = company.Query<ItemRaw>(@"select	cast(ID as varchar) as [_key], 
@@ -250,13 +273,13 @@ from	Map A
                 items.Add(i);
             });
 
-            db.Advanced.BulkImport<Map>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<Map>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         [TestMethod]
         public void CreateModels()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var rawItems = company.Query<ItemRaw>(@"
@@ -283,13 +306,13 @@ from    Taxonomy").ToList(); // where ArtifactTypeID <> 2
                 items.Add(i);
             });
 
-            db.Advanced.BulkImport<Taxonomy>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<Taxonomy>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         [TestMethod]
         public void CreatePolicies()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var rawItems = company.Query<ItemRaw>(@"select	cast(ID as varchar) as [_key], 
@@ -322,13 +345,13 @@ from	[Policy] A
                 items.Add(i);
             });
 
-            db.Advanced.BulkImport<Policy>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<Policy>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         [TestMethod]
         public void CreateRules()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var rawItems = company.Query<ItemRaw>(@"select	cast(ID as varchar) as [_key], 
@@ -361,7 +384,7 @@ from	[Rule] A
                 items.Add(i);
             });
 
-            db.Advanced.BulkImport<Rule>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<Rule>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         //        [TestMethod]
@@ -392,7 +415,7 @@ from	[Rule] A
         [TestMethod]
         public void CreateRelationships()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var items = company.Query<Relationship>(@"
@@ -413,13 +436,13 @@ from    [Intersect] I
                     or (I.Subject = 'Taxonomy' and I.Object = 'Artifact') 
                     or (I.Subject = 'Artifact' and I.Object = 'Taxonomy')
                          */
-            db.Advanced.BulkImport<Relationship>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<Relationship>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         [TestMethod]
         public void CreateArtifactParentChildRelationships()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var items = company.Query<Relationship>(@"
@@ -451,13 +474,13 @@ from	P
 where	_to <> ''
 "
 ).ToList();
-            db.Advanced.BulkImport<Relationship>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<Relationship>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         [TestMethod]
         public void CreateFusionAttributeParentChildRelationships()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var items = company.Query<Relationship>(@"
@@ -488,13 +511,13 @@ select	cast(ParentID as varchar) + '.' + cast(ID as varchar) as [_key],
 from	P 
 where	_to <> ''").ToList();
 
-            db.Advanced.BulkImport<Relationship>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<Relationship>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         [TestMethod]
         public void CreateTaxonomyParentChildRelationships()
         {
-            var db = getDatabase();
+            //var db = getDatabase();
             var company = getCompanyConnection(CompanyID);
 
             var items = company.Query<Relationship>(@"
@@ -525,7 +548,7 @@ select	cast(ParentID as varchar) + '.' + cast(ID as varchar) as [_key],
 from	P 
 where	_to <> ''").ToList();
 
-            db.Advanced.BulkImport<Relationship>(items, onDuplicate: ImportDuplicatePolicy.Update);
+            //db.Advanced.BulkImport<Relationship>(items, onDuplicate: ImportDuplicatePolicy.Update);
         }
 
         [TestMethod]

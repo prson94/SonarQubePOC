@@ -307,30 +307,12 @@ namespace d360.jobs.ReIndex
         {
             string sql = "";
 
-            if (isDevEnvironment)
-            {
-                sql = @"SELECT R.[ID]
-                                  ,R.[Name]
-                                  ,R.[Description]      
-                                  ,T.Name as [RuleType]
-								  ,[dbo].GenerateNgObjectUrl('Rule',R.RuleTypeID,R.ID) as [Url]
-                              FROM [dbo].[Rule] R inner join RuleType T on T.ID = R.RuleTypeID";
-            }
-            else
-            {
-                sql = @"SELECT [ID]
-                                  ,[Name]
-                                  ,[Description]      
-                                  ,case [RuleType]
-                                    when 1 then 'Informational'
-                                    when 2 then 'Quality Check'
-                                    when 3 then 'Metric'
-                                    when 4 then 'Profile'
-                                    else ''
-                                end as RuleType
-                                   ,[dbo].GenerateNgObjectUrl('Rule',0,ID) as [Url]
-                              FROM [dbo].[Rule]";
-            }
+            sql = @"SELECT R.[ID]
+                                ,R.[Name]
+                                ,R.[Description]      
+                                ,T.Name as [RuleType]
+								,[dbo].GenerateNgObjectUrl('Rule',R.RuleTypeID,R.ID) as [Url]
+                            FROM [dbo].[Rule] R inner join RuleType T on T.ID = R.RuleTypeID";
 
 
             foreach (var a in context.Query(sql))

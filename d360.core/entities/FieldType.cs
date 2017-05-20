@@ -36,8 +36,11 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupObjectID_Name", Description = "LookupObjectID_Description")]
         public int? LookupObjectID { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupDisplayFormat_Name", Description = "LookupDisplayFormat_Description"), StringLength(250)]
+        [DataMember, StringLength(250)]
         public string LookupDisplayFormat { get; set; }
+
+        [DataMember, StringLength(250)]
+        public string LookupEditFormat { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Length_Name", Description = "Length_Description")]
         public int? Length { get; set; }
@@ -68,6 +71,9 @@ namespace d360.core.entities
 
         [DataMember]
         public bool IsEditable { get; set; }
+
+        [DataMember]
+        public bool IsPartOfKey { get; set; }
 
         [DataMember]
         public int SortOrder { get; set; }

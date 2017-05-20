@@ -212,49 +212,49 @@ namespace d360.web.Models
 
         //    return fields;
         //}
-        public List<Field> GetFormDynamicFieldValues(ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server, bool ignoreFieldIfNull = true)
-        {
-            var fields = new List<Field>();
+        //public List<Field> GetFormDynamicFieldValues(ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server, bool ignoreFieldIfNull = true)
+        //{
+        //    var fields = new List<Field>();
 
-            foreach (var ft in fieldTypes)
-            {
-                if (ft.Type != DataType.RelationLookup.ToString())
-                {
-                    string value = "";
+        //    foreach (var ft in fieldTypes)
+        //    {
+        //        if (ft.Type != DataType.RelationLookup.ToString())
+        //        {
+        //            string value = "";
 
-                    switch (ft.Type)
-                    {
-                        case "Html":
-                            value = Server.HtmlDecode(form[ft.Name]);
-                            break;
-                        case "Link":
-                            var rawLinkName = form[ft.Name + ".Name"];
-                            var rawLinkUrl = form[ft.Name + ".Url"];
-                            value = string.Format("{0}|{1}", rawLinkName, rawLinkUrl);
-                            break;
-                        case "UncLink":
-                            var rawUncLinkName = form[ft.Name + "_Name"];
-                            var rawUncLinkUrl = form[ft.Name + "_Url"];
-                            value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
-                            break;
-                        default:
-                            value = form[ft.Name];
-                            break;
-                    }
+        //            switch (ft.Type)
+        //            {
+        //                case "Html":
+        //                    value = Server.HtmlDecode(form[ft.Name]);
+        //                    break;
+        //                case "Link":
+        //                    var rawLinkName = form[ft.Name + ".Name"];
+        //                    var rawLinkUrl = form[ft.Name + ".Url"];
+        //                    value = string.Format("{0}|{1}", rawLinkName, rawLinkUrl);
+        //                    break;
+        //                case "UncLink":
+        //                    var rawUncLinkName = form[ft.Name + "_Name"];
+        //                    var rawUncLinkUrl = form[ft.Name + "_Url"];
+        //                    value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
+        //                    break;
+        //                default:
+        //                    value = form[ft.Name];
+        //                    break;
+        //            }
 
-                    if (ignoreFieldIfNull)
-                    {
-                        if (!string.IsNullOrEmpty(value))
-                            fields.Add(new Field { FieldTypeID = ft.ID, Value = value });
-                    }
-                    else
-                    {
-                        fields.Add(new Field { FieldTypeID = ft.ID, Value = value });
-                    }
-                }
-            }
-            return fields;
-        }
+        //            if (ignoreFieldIfNull)
+        //            {
+        //                if (!string.IsNullOrEmpty(value))
+        //                    fields.Add(new Field { FieldTypeID = ft.ID, Value = value });
+        //            }
+        //            else
+        //            {
+        //                fields.Add(new Field { FieldTypeID = ft.ID, Value = value });
+        //            }
+        //        }
+        //    }
+        //    return fields;
+        //}
 
         public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server, bool ignoreFieldIfNull = true)
         {
@@ -262,7 +262,7 @@ namespace d360.web.Models
 
             foreach (var ft in fieldTypes)
             {
-                if (ft.Type != DataType.ComplexRelationLookup.ToString() && ft.Type != DataType.FilteredLookup.ToString() && ft.Type != DataType.RelationLookup.ToString())
+                if (ft.Type != DataType.ComplexRelationLookup.ToString() && ft.Type != DataType.FilteredLookup.ToString())
                 {
                     string value = "";
 
@@ -335,6 +335,13 @@ namespace d360.web.Models
         public string Type { get; set; }
         [DataMember]
         public int ID { get; set; }
+    }
+
+    public class FusionQueryAttributeTypeKeyField
+    {
+        public int ID { get; set; }
+
+        public string Name { get; set; }
     }
 
     [DataContract]

@@ -1665,6 +1665,16 @@
               Looks up a localized string similar to Please provide a password at least seven (7) characters long..
             </summary>
         </member>
+        <member name="P:Resources.Validation.Password_Regex">
+            <summary>
+              Looks up a localized string similar to (?=^.{7,25}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*.
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Password_Requirements">
+            <summary>
+              Looks up a localized string similar to be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number; at least 1 special character.
+            </summary>
+        </member>
         <member name="P:Resources.Validation.Pattern_Tokenized">
             <summary>
               Looks up a localized string similar to {0} must adhere to the following requirements: {1}..
@@ -2166,7 +2176,16 @@
             The Name of the particular Fusion instance's type that this task references.
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:d360.web.Controllers.Services.FusionController.GetAgentHistory" -->
+        <member name="M:d360.web.Controllers.Services.FusionController.GetAgentHistory">
+            <summary>
+            You may optionally perform OData queries on this URI, such as:
+             - $filter
+             - $orderby
+             - $skip
+             - $take
+            </summary>
+            <returns>Returns a list of history records.</returns>
+        </member>
         <member name="M:d360.web.Controllers.Services.FusionController.AssignOrCompleteAvailableConfigurationSchedule(d360.core.entities.api.FusionConfigurationScheduleRequestModel)">
             <summary>
             Allows authorized fusion agents to take an open item from the schedule to work on, thereby reserving that item so no other agent can work on it.

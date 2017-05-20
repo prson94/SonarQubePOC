@@ -34,6 +34,11 @@
                     <input type="checkbox" [(ngModel)]="item.IsListable" disabled />
                 </template>
             </p-column>
+            <p-column field="IsPartOfKey" header="Key?" sortable="true" [style]="{ 'width': '12%' }">
+                <template let-item="rowData" pTemplate type="body">
+                    <input type="checkbox" [(ngModel)]="item.IsPartOfKey" disabled />
+                </template>
+            </p-column>
             <p-column [style]="{ 'width': '30px' }">
                 <template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">

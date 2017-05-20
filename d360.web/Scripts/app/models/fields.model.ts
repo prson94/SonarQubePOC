@@ -23,6 +23,7 @@ export class FieldDefinition {
     SortOrder: string;
     IsListable: boolean;
     IsRequired: boolean;
+    IsPartOfKey: boolean;
     DisplayDescription: string;
     FormDescription: string;
     Name: string;
@@ -86,6 +87,7 @@ export class FieldType {
     LookupObjectType: string;
     LookupObjectID: number;
     LookupDisplayFormat: string;
+    LookupEditFormat: string;
     Length: number;
     MinimumLength: number;
     MaximumLength: number;
@@ -95,6 +97,7 @@ export class FieldType {
     IsDisplayable: boolean;
     IsEditable: boolean;
     IsListable: boolean;
+    IsPartOfKey: boolean;
     IsRequired: boolean;
     AllowAllValue: boolean;
     AllowAllLabel: string;

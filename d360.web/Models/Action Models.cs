@@ -7,18 +7,6 @@ using System.Web;
 
 namespace d360.web.Models
 {
-    public class ContextToolbar
-    {
-        public ContextToolbar()
-        {
-            Items = new List<ContextToolbarItem>();
-        }
-
-        public string ToolbarSuffix { get; set; }
-
-        public List<ContextToolbarItem> Items { get; set; }
-    }
-
     public class ContextToolbarItem
     {
         public ContextToolbarItem()

@@ -18,7 +18,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                     <p-dataTable #dt [globalFilter]="gb" [value]="resources" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                        <p-column [style]="{width:'40px'}">
+                        <p-column header="Name" [style]="{width:'140px'}">
                             <template let-item="rowData" pTemplate type="body">
                                 <a (click)="openResource(item)">{{item.FirstName}} {{item.LastName}}</a>
                             </template>
@@ -26,7 +26,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         <p-column field="Email" header="Email" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="Status" header="Status" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'100px'}"></p-column>
                         <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'100px'}"></p-column>
-                        <p-column field="DateAccepted" header="Accepted On" [sortable]="true" [style]="{width:'120px'}">
+                        <p-column field="DateAccepted" header="Accepted On" [sortable]="true" [style]="{width:'150px'}">
                             <template let-col let-item="rowData" pTemplate type="body">
                                 <span>{{item.DateAccepted | date : 'short'}}</span>
                             </template>

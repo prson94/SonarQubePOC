@@ -61,6 +61,7 @@ namespace d360.web.Controllers
                     i.FormDescription,
                     i.ID,
                     i.IsListable,
+                    i.IsPartOfKey,
                     i.IsRequired,
                     i.SortOrder,
                     ObjectType = i.Object,

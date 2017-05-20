@@ -473,7 +473,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     #region Is Editable
 
-                    if (f.Type != DataType.Attribute.ToString() && f.Type != DataType.FilteredLookup.ToString() && f.Type != DataType.RelationLookup.ToString() && f.Type != DataType.ComplexRelationLookup.ToString())
+                    if (f.Type != DataType.Attribute.ToString() && f.Type != DataType.FilteredLookup.ToString() && f.Type != DataType.ComplexRelationLookup.ToString())
                     {
                         var patternMessage = "";
 
@@ -589,7 +589,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     #region Is Editable
 
-                    if (ft.Type != DataType.FilteredLookup.ToString() && ft.Type != DataType.RelationLookup.ToString() && ft.Type != DataType.Attribute.ToString() && ft.Type != DataType.ComplexRelationLookup.ToString())
+                    if (ft.Type != DataType.FilteredLookup.ToString() && ft.Type != DataType.Attribute.ToString() && ft.Type != DataType.ComplexRelationLookup.ToString())
                     {
                         var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
 

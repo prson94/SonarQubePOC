@@ -32,4 +32,21 @@ namespace d360.core.entities
         [IgnoreDataMember, ForeignKey("FusionQueryAttributeTypeID")]
         public virtual ICollection<FusionQueryAttribute> FusionQueryAttributes { get; set; }
     }
+
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class FusionQueryAttributeTypeApiModel: BaseObject
+    {
+        [DataMember]
+        public int ID { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Query { get; set; }
+
+        [DataMember]
+        public List<string> KeyColumns { get; set; }
+    }
 }

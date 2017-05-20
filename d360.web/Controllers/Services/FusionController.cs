@@ -21,6 +21,7 @@ using d360.fusion;
 using SpreadsheetLight;
 using System.IO;
 using System.Data.SqlClient;
+using d360.web.Models;
 
 namespace d360.web.Controllers.Services
 {
@@ -207,9 +208,27 @@ where A.FusionTypeID = @id", columns, joins);
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration details.");
 
-            var models = Company.Filter<FusionQueryAttributeType>(i => i.FusionID == id);
-            if (models == null) return Request.CreateResponse(HttpStatusCode.NotFound);
-            return Request.CreateResponse<IQueryable<FusionQueryAttributeType>>(HttpStatusCode.OK, models);
+            try
+            {
+                var keyFields = Company.Query<FusionQueryAttributeTypeKeyField>("select Q.ID, F.Name from FusionQueryAttributeType Q inner join FieldType F on F.Object = 'FusionQueryAttributeType' and F.ObjectID = Q.ID and F.IsPartOfKey = 1 and Q.FusionID = @id", new { id });
+
+                var models = Company.Filter<FusionQueryAttributeType>(i => i.FusionID == id)
+                    .ToList()
+                    .Select(i => new FusionQueryAttributeTypeApiModel
+                    {
+                        ID = i.ID,
+                        KeyColumns = keyFields.Where(f => f.ID == i.ID).Select(f => f.Name).ToList(),
+                        Name = i.Name,
+                        Query = i.Query
+                    });
+
+                if (models == null) return Request.CreateResponse(HttpStatusCode.NotFound);
+                return Request.CreateResponse(HttpStatusCode.OK, models);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
         }
 
         /// <summary>
@@ -361,7 +380,6 @@ where A.FusionTypeID = @id", columns, joins);
         ///  - $orderby
         ///  - $skip
         ///  - $take
-        ///  For example, [URI]?$filter=FusionID%20eq%201&$orderby=DateStarted&$skip=10&$take=10
         /// </summary>
         /// <returns>Returns a list of history records.</returns>
         [Route("agenthistory")]

@@ -12,4 +12,5 @@ export class CurrentCompanySettings {
     static artifactType_TaxonomyTypeIDNodes = CurrentCompanySettings.settings.ArtifactType_TaxonomyTypeIDNodes;
     static companyIcon = CurrentCompanySettings.settings.CompanyIcon;
     static companyLogo = CurrentCompanySettings.settings.CompanyLogo;
+    static enableOrganizations = CurrentCompanySettings.settings.EnableOrganizations;
 }

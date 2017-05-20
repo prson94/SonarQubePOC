@@ -1,10 +1,10 @@
-﻿using ComponentSpace.SAML2;
-using ComponentSpace.SAML2.Assertions;
+﻿using ComponentSpace.SAML2.Assertions;
 using ComponentSpace.SAML2.Bindings;
 using ComponentSpace.SAML2.Profiles.SSOBrowser;
 using ComponentSpace.SAML2.Protocols;
 using d360.core.entities;
 using d360.core.enums;
+using d360.extensions.mail;
 using d360.model;
 using d360.web.Models;
 using Microsoft.ApplicationInsights;
@@ -15,6 +15,8 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
@@ -494,6 +496,359 @@ namespace d360.web.Controllers
                     return View("Logout");
             }
         }
+
+        bool setTermsOfUseText(OrganizationRegistration registration, RegisterModel model)
+        {
+            var success = true;
+
+            var termsOfUses = Company.Filter<Contract>(i => i.ContractType == ContractType.ResourceTermsOfUse && (!i.OrganizationID.HasValue || i.OrganizationID == registration.OrganizationID)).ToList();
+
+            var termsOfUseToDisplay = termsOfUses.FirstOrDefault(i => i.OrganizationID.HasValue);
+
+            if (termsOfUseToDisplay == null)
+            {
+                termsOfUseToDisplay = termsOfUses.FirstOrDefault(i => !i.OrganizationID.HasValue);
+            }
+
+            if (termsOfUseToDisplay == null)
+            {
+                ModelState.AddModelError("Invalid", "No terms of use agreement found.");
+                success = false;
+            }
+
+            model.Message = $"{termsOfUseToDisplay.Body}";
+            model.Step = RegisterStep.TermsOfUse;
+
+            return success;
+        }
+
+        [AllowAnonymous, Route("register")]
+        public ActionResult Register(Guid? registrationId = null)
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+
+            var model = new RegisterModel { Step = RegisterStep.Initial, RegistrationID = registrationId, Accept = false };
+
+            if (registrationId.HasValue)
+            {
+                var registration = Company.GetById<OrganizationRegistration>(registrationId.Value);
+                if (registration != null)
+                {
+                    model.Step = registration.Step;
+                    if (registration.RegisteredCompletedOn.HasValue)
+                    {
+                        model.Message = "You have already registered.";
+                    }
+                    model.Email = registration.Email;
+
+                    switch (registration.Step)
+                    {
+                        case RegisterStep.TermsOfUse:
+                            setTermsOfUseText(registration, model);
+                            break;
+                        case RegisterStep.TermsOfUseValidated:
+                            model.Message = "Thank you for accepting the terms of use. You may now <a href='/login'>sign into Data3Sixty</a>.";
+                            break;
+                    }
+
+                }
+                else
+                {
+                    model.Message = "No registration found.";
+                }
+            }
+
+            return View("Register", model);
+        }
+
+        [AllowAnonymous, Route("register"), HttpPost]
+        public async Task<ActionResult> Register(RegisterModel model)
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+
+            if (ModelState.IsValid)
+            {
+                model.Email = model.Email.Trim();
+
+                switch (model.Step)
+                {
+                    case RegisterStep.Initial:
+                        #region
+                        System.Net.Mail.MailAddress address = null;
+                        try
+                        {
+                            address = new System.Net.Mail.MailAddress(model.Email);
+
+                            var emailDomain = address.Host;
+
+                            if (string.IsNullOrEmpty(emailDomain))
+                            {
+                                ModelState.AddModelError("Invalid", "No email domain could be resolved.");
+                                return View(model);
+                            }
+
+                            emailDomain = emailDomain.Trim();
+
+                            var domain = Company.OrganizationDomainDetails.FirstOrDefault(d => d.Domain == emailDomain);
+
+                            if (domain != null)
+                            {
+                                if (domain.Accepted.HasValue)
+                                {
+                                    if (!domain.Accepted.Value)
+                                    {
+                                        ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organizational terms of use.");
+                                        return View(model);
+                                    }
+
+                                    //GOOD TO GO
+                                    var registration = new OrganizationRegistration {
+                                        Email = model.Email,
+                                        ID = Guid.NewGuid(),
+                                        OrganizationID = domain.OrganizationID,
+                                        RegisteredStartedOn = DateTime.UtcNow,
+                                        Step = RegisterStep.Registration
+                                    };
+                                    Company.Add(registration);
+
+                                    var content = $@"Please complete registration to {domain.OrganizationName} by clicking on the following link: <a href='http://demo.dev.data3sixty.local/register?registrationId={registration.ID}'>Complete registration</a>.";
+                                    SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true).Wait();
+
+                                    model.Step = RegisterStep.Email;
+                                    model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                    return View(model);
+                                }
+                                else
+                                {
+                                    ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organizational terms of use.");
+                                    return View(model);
+                                }
+                            }
+                            else
+                            {
+                                var invite = Company.OrganizationInvitationDetails.FirstOrDefault(i => i.Email == model.Email);
+
+                                if (invite != null)
+                                {
+                                    //GOOD TO GO
+                                    var registration = new OrganizationRegistration
+                                    {
+                                        Email = model.Email,
+                                        ID = Guid.NewGuid(),
+                                        OrganizationID = invite.OrganizationID,
+                                        RegisteredStartedOn = DateTime.UtcNow,
+                                        Step = RegisterStep.Registration
+                                    };
+                                    Company.Add(registration);
+
+                                    var content = $@"Please complete registration to {invite.OrganizationName} by clicking on the following link: <a href='http://demo.dev.data3sixty.local/register?registrationId={registration.ID}'>Complete registration</a>.";
+                                    await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+
+                                    model.Step = RegisterStep.Email;
+                                    model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                    return View(model);
+                                }
+                                else
+                                {
+                                    ModelState.AddModelError("Unauthorized", "The user name or password provided is incorrect.");
+                                    return View(model);
+                                }
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            return View(model);
+                        }
+                        break;
+                        #endregion
+                    case RegisterStep.Registration:
+                        #region
+                        try
+                        {
+                            #region Validation
+
+                            if (!model.RegistrationID.HasValue)
+                            {
+                                ModelState.AddModelError("Invalid", "No registration found.");
+                                return View(model);
+                            }
+
+                            if (!model.Password.Equals(model.ConfirmPassword))
+                            {
+                                ModelState.AddModelError("Invalid", "Passwords do not match.");
+                                return View(model);
+                            }
+
+                            if (!Regex.Match(model.Password, Resources.Validation.Password_Regex).Success)
+                            {
+                                ModelState.AddModelError("Invalid", $"Your password does not meet the following complexity requirements: {Resources.Validation.Password_Requirements}.");
+                                return View(model);
+                            }
+
+                            #endregion
+
+                            var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
+                            if (registration != null)
+                            {
+                                if (!setTermsOfUseText(registration, model))
+                                {
+                                    return View(model);
+                                }
+
+                                #region Check/Create resource account in community
+
+                                var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
+
+                                if (resource == null)
+                                {
+                                    resource = new Resource
+                                    {
+                                        Email = model.Email,
+                                        FirstName = model.FirstName,
+                                        LastName = model.LastName,
+                                        Password = Community.HashPassword(model.Password),
+                                        ResourceTypeID = 1,
+                                        Status = "Active",
+                                        Username = model.Email
+                                    };
+                                    Community.Add(resource);
+
+                                    Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                }
+                                else
+                                {
+                                    if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
+                                    {
+                                        Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                    }
+                                }
+
+                                #endregion
+
+                                #region Check/create organization resource
+
+                                var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
+
+                                if (orgResource == null)
+                                {
+                                    orgResource = new OrganizationResource { Accepted = false, OrganizationID = registration.OrganizationID, ResourceID = resource.ID };
+                                    Company.Add(orgResource);
+                                }
+
+                                #endregion
+
+                                // Save current place in the process.
+                                registration.Step = RegisterStep.TermsOfUse;
+                                Company.Update(registration);
+
+                                return View(model);
+                            }
+                            else
+                            {
+                                ModelState.AddModelError("Invalid", "No registration found.");
+                                return View(model);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            return View(model);
+                        }
+                        break;
+                        #endregion
+                    case RegisterStep.TermsOfUse:
+                        #region
+                        try
+                        {
+                            #region Validation
+
+                            if (!model.RegistrationID.HasValue)
+                            {
+                                ModelState.AddModelError("Invalid", "No registration found.");
+                                return View(model);
+                            }
+
+                            #endregion
+
+                            var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
+                            if (registration != null)
+                            {
+                                #region Validation
+
+                                if (model.Accept != true)
+                                {
+                                    ModelState.AddModelError("Invalid", "You must accept the terms of use.");
+                                    return View(model);
+                                }
+
+                                var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
+                                if (resource == null)
+                                {
+                                    ModelState.AddModelError("Invalid", "No resource account could be located for you.");
+                                    return View(model);
+                                }
+                                else
+                                {
+                                    if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
+                                    {
+                                        ModelState.AddModelError("Invalid", "Resource account not yet allocated to this company.");
+                                        return View(model);
+                                    }
+                                }
+
+                                #endregion
+
+                                #region Check if organization resource account exists
+
+                                var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
+
+                                if (orgResource == null)
+                                {
+                                    ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                    return View(model);
+                                }
+
+                                orgResource.Accepted = true;
+                                orgResource.DateAccepted = DateTime.UtcNow;
+                                Company.Update(orgResource);
+
+                                #endregion
+
+                                // Save current place in the process.
+                                registration.Step = RegisterStep.TermsOfUseValidated;
+                                Company.Update(registration);
+
+                                model.Step = registration.Step;
+                                model.Message = "Thank you for accepting the terms of use. You may now <a href='/login'>sign into Data3Sixty</a>.";
+                                return View(model);
+                            }
+                            else
+                            {
+                                ModelState.AddModelError("Invalid", "No registration found.");
+                                return View(model);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            return View(model);
+                        }
+                        break;
+                        #endregion
+                    case RegisterStep.TermsOfUseValidated:
+                        #region
+
+                        break;
+                        #endregion
+                }
+            }
+
+            ModelState.AddModelError("UnknownError", "An unknown error occurred.");
+            return View(model);
+        }
+
 
         [AllowAnonymous, Route("reset"), HttpPost]
         public ActionResult Reset(LoginModel model)

@@ -327,7 +327,7 @@ namespace d360.model
             return new string(chars);
         }
 
-        string hashPassword(string value)
+        public string HashPassword(string value)
         {
             SHA1 algorithm = SHA1.Create();
             byte[] data = algorithm.ComputeHash(Encoding.UTF8.GetBytes(value));
@@ -350,7 +350,7 @@ namespace d360.model
                     var r = GetById<Resource>(resourceID); //Repo.GetById(resourceID);
                     if (r != null)
                     {
-                        r.Password = hashPassword(newPassword);
+                        r.Password = HashPassword(newPassword);
                         Update<Resource>(r); //Repo.SaveOrUpdate(resource);
                         success = true;
                     }
@@ -400,7 +400,7 @@ namespace d360.model
         {
             Resource r = null;
 
-            password = hashPassword(password);
+            password = HashPassword(password);
             r = Filter<Resource>(i => i.Username == username && i.Password == password).SingleOrDefault();
 
             // Check that resource has access to this company.

@@ -2644,7 +2644,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
         {
             var list = Company.GetFieldTypesByObject(SystemObjects.LookupType, listID)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .OrderBy(i => i.Name)
                 .Select(i => new { i.ID, i.Name, i.FriendlyName, i.LookupObjectType, i.LookupObjectID })
                 .ToList()
@@ -2670,7 +2670,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
         {
             var list = Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);
@@ -2750,7 +2750,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypesByObject(type, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
 
@@ -2790,7 +2790,7 @@ namespace d360.web.Controllers
             }
 
             var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString())
                 .Select(i => new { i.ID, i.Name }).ToList();
             relList.ForEach(r =>
             {
@@ -2822,7 +2822,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_Lookup_Tokens(SystemObjects type, int id)
         {
             var list = Company.GetFieldTypesByObject(type, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.Name);
 
@@ -3230,6 +3230,7 @@ namespace d360.web.Controllers
                                 }
                             }
 
+                            model.FieldType.IsPartOfKey = false;
                             model.FieldType.IsDisplayable = true;
                             model.FieldType.IsEditable = false;
                             model.FieldType.IsListable = false;
@@ -3348,6 +3349,7 @@ namespace d360.web.Controllers
                                 Company.FieldTypeLookups.Remove(existing);
                             }
 
+                            model.FieldType.IsPartOfKey = false;
                             model.FieldType.IsDisplayable = true;
                             model.FieldType.IsEditable = false;
                             model.FieldType.IsListable = false;
@@ -3390,6 +3392,7 @@ namespace d360.web.Controllers
                                 Company.FieldTypeLookups.Remove(existing);
                             }
 
+                            model.FieldType.IsPartOfKey = false;
                             model.FieldType.IsDisplayable = true;
                             model.FieldType.IsEditable = false;
                             model.FieldType.IsListable = false;
@@ -3522,18 +3525,20 @@ namespace d360.web.Controllers
                     (model.FieldType.Type == DataType.ComplexRelationLookup.ToString()) ||
                     (model.FieldType.Type == DataType.FilteredLookup.ToString()) ||
                     (model.FieldType.Type == DataType.FusionLookup.ToString()) ||
-                    (model.FieldType.Type == DataType.RelationLookup.ToString())
+                    (model.FieldType.Type == DataType.OwnershipLookup.ToString())
                     )
                 {
                     ft.IsDisplayable = true;
                     ft.IsEditable = false;
                     ft.IsListable = false;
+                    ft.IsPartOfKey = false;
                 }
                 else
                 {
                     ft.IsDisplayable = model.FieldType.IsDisplayable;
                     ft.IsEditable = model.FieldType.IsEditable;
                     ft.IsListable = model.FieldType.IsListable;
+                    ft.IsPartOfKey = model.FieldType.IsPartOfKey;
                     ft.IsPrimaryFilter = model.FieldType.IsPrimaryFilter;
                 }
 
@@ -3625,8 +3630,6 @@ namespace d360.web.Controllers
                     }
 
                 }
-
-
 
                 switch (ft.Type)
                 {
@@ -3868,6 +3871,7 @@ namespace d360.web.Controllers
                         ft.LookupObjectType = model.FieldType.LookupObjectType;
                         ft.LookupObjectID = model.FieldType.LookupObjectID;
                         ft.LookupDisplayFormat = model.FieldType.LookupDisplayFormat;
+                        ft.LookupEditFormat = model.FieldType.LookupEditFormat;
                         if (string.IsNullOrEmpty(model.FieldType.LookupDisplayFormat))
                         {
                             throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
@@ -3973,6 +3977,7 @@ namespace d360.web.Controllers
                             model.FieldType.IsDisplayable = true;
                             model.FieldType.IsEditable = false;
                             model.FieldType.IsListable = false;
+                            model.FieldType.IsPartOfKey = false;
                             model.FieldType.IsRequired = false;
 
                             ownershipLookupRow.FieldTypeID = model.FieldType.ID;
@@ -8836,7 +8841,8 @@ for json path");
                                         i.Type != "Attribute" &&
                                         i.Type != "FilteredLookup" &&
                                         i.Type != "FusionLookup" &&
-                                        i.Type != "ComplexRelationLookup"
+                                        i.Type != "ComplexRelationLookup" &&
+                                        i.Type != "OwnershipLookup"
                                     )
                                     .OrderBy(i => i.SortOrder)
                                     .Select(i => i.Name)
@@ -9155,7 +9161,7 @@ from ArtifactType A
                 {
                     var items = Company.Table<Group>().OrderBy(x => x.Name).Select(x => "Group:"+ x.Name).ToList();
                     items.AddRange(
-                        Company.Table<GlobalReportingResource>().ToList().Select(x => "User:" + x.FullName)
+                        Company.Table<GlobalReportingResource>().ToList().OrderBy(r => r.LastName).ThenBy(r => r.FirstName).Select(x => "User:" + x.FullName)
                      );
 
                     if (items.Any())
@@ -13923,8 +13929,8 @@ order by	T.Name, I.DisplayValue";
 
         #region Resource
 
-        string passwordRegex = @"(?=^.{7,25}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*";
-        string passwordRegexMessage = "be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number; at least 1 special character";
+        string passwordRegex = Resources.Validation.Password_Regex;
+        string passwordRegexMessage = Resources.Validation.Password_Requirements;
 
         #region Field Generation
 

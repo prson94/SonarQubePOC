@@ -10,6 +10,7 @@ import {
     DataTableModule,
     DropdownModule,
     InputTextModule,
+    InputTextareaModule,
     EditorModule,
     MultiSelectModule,    
     SharedModule,
@@ -21,7 +22,7 @@ import { TilesModule  } from '../tiles/tiles.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
-
+import { SimpleAccordionModule } from '../simple-accordion.part';
 
 import { FieldTypeForm } from './field-type.form';
 import { FieldDefinitionComponent } from './field-definition.component';
@@ -36,6 +37,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
         SharedFormMessageModule,
         SharedGridPagingInfoModule,
         TilesModule,
+        SimpleAccordionModule,   
 
         //prime
         ButtonModule,
@@ -43,6 +45,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
         DataTableModule,
         DropdownModule,
         InputTextModule,
+        InputTextareaModule,
         EditorModule,
         MultiSelectModule,
         SharedModule,

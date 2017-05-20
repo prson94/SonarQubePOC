@@ -22,6 +22,8 @@ namespace d360.model
 
         public DbSet<OrganizationInvitationDetail> OrganizationInvitationDetails { get; set; }
 
+        public DbSet<OrganizationRegistration> OrganizationRegistrations { get; set; }
+
         public DbSet<OrganizationResource> OrganizationResources { get; set; }
 
         public DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }

@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
-  "webJobName": "Subscriber-Workflow-ClientDev",
+  "webJobName": "Subscriber-Workflow",
   "startTime": null,
   "endTime": null,
   "jobRecurrenceFrequency": null,

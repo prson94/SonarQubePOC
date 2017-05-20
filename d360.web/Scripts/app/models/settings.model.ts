@@ -21,6 +21,7 @@ export class CompanySettings {
     CurrentLogoPath: string;
     CurrentIconPath: string;
     DefaultSearchTypes: string;
+    EnableOrganizations: boolean;
 }
 
 export class IpRestriction {

@@ -37,13 +37,11 @@ namespace d360.core
         Color,
         [Description("Fusion Lookup")]
         FusionLookup,
-        [Description("Relation Lookup"), ReadOnly(true)]
-        RelationLookup,
         [Description("Attribute Hierarchy"), ReadOnly(true)]
         Attribute,
         [Description("Filtered Lookup")]//, ReadOnly(true)]
         FilteredLookup,
-        [Description("Complex Relation Lookup")]//, ReadOnly(true)]
+        [Description("Relation Lookup")]//, ReadOnly(true)]
         ComplexRelationLookup,
         [Description("Percentage"), ReadOnly(true)]
         Percentage, // used for range of > 0 and < 1

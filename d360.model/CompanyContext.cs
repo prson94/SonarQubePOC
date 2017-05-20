@@ -2320,11 +2320,11 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name))
+                            if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.ParentID == o.ParentID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ID != o.ID))
+                            if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ParentID == o.ParentID && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }

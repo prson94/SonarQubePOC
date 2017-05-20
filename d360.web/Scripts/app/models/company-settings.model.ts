@@ -11,4 +11,5 @@
     HeaderProfileLinkColor: string;
     HideData3SixtyUsers: boolean;
     UseNewRelationships: boolean;
+    EnableOrganizations: boolean;
 }

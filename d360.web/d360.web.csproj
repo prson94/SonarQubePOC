@@ -849,6 +849,8 @@
     <Content Include="Views\Authentication\Logout.cshtml" />
     <Content Include="Views\Authentication\Reset.cshtml" />
     <Content Include="Views\Authentication\ResetMessage.cshtml" />
+    <Content Include="Views\Shared\Anonymous.cshtml" />
+    <Content Include="Views\Authentication\Register.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

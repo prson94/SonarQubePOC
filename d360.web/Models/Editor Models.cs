@@ -657,15 +657,6 @@ namespace d360.web.Models
                 }
             }
 
-            if (FieldType.Type == core.DataType.RelationLookup.ToString())
-            {
-                if (RelationItem == null)
-                {
-                    valid.Valid = false;
-                    valid.Message = "You are missing a relation items.";
-                }
-            }
-
             return valid;
         }
     }
@@ -820,6 +811,32 @@ namespace d360.web.Models
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
+    }
+
+    public class RegisterModel
+    {
+        public RegisterStep Step { get; set; }
+
+        [Required, RegularExpression(@"^$|\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"), Display(Name = "Email address")]
+        public string Email { get; set; }
+
+        [Display(Name = "First name")]
+        public string FirstName { get; set; }
+
+        [Display(Name = "Last name")]
+        public string LastName { get; set; }
+
+        [Display(Name = "Password")]
+        public string Password { get; set; }
+
+        [Display(Name = "Confirm password")]
+        public string ConfirmPassword { get; set; }
+
+        public bool? Accept { get; set; }
+
+        public Guid? RegistrationID { get; set; }
+
+        public string Message { get; set; }
     }
 
     public class PeopleResponsibilityEditorModel : BaseResponsibilityEditorModel

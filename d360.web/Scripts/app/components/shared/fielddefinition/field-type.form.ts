@@ -299,6 +299,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'complexrelationlookup':
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
+                this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;                
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
@@ -323,6 +324,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'filteredlookup':
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
+                this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;                
                 this.loadFilteredLookup();
@@ -331,6 +333,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (!this.model.OwnershipLookupSettings) this.model.OwnershipLookupSettings = new OwnershipLookupSettings(); 
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
+                this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;        
                 this.model.FieldType.LookupDisplayFormat = null;        
                 break;
@@ -494,7 +497,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     FieldTypeName: i.value.split('|')[1]
                 });
             });
-            this.model.FilteredLookupItem = item;            
+            this.model.FilteredLookupItem = item;
         }
 
         this.isLoading = true;
@@ -775,11 +778,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     //#endregion
 
-    private selectToken(value: string) {
+    private selectDisplayToken(value: string) {
         if (this.model.FieldType.LookupDisplayFormat == null) {
             this.model.FieldType.LookupDisplayFormat = '';
         }
         this.model.FieldType.LookupDisplayFormat += value;
+    }
+
+    private selectEditToken(value: string) {
+        if (this.model.FieldType.LookupEditFormat == null) {
+            this.model.FieldType.LookupEditFormat = '';
+        }
+        this.model.FieldType.LookupEditFormat += value;
     }
 
     private validatePattern() {
