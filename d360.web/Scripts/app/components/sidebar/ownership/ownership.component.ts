@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-ownership',
@@ -12,7 +13,8 @@ import { BaseComponent } from '../../shared/base.component';
                         </div>
                     </div>
                 </div>
-        `
+        `,
+    providers: [ObjectDetailService]
 })
 
 export class OwnershipComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -20,7 +22,8 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
     
     constructor(
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private objectDetailService: ObjectDetailService
     ) {
         super();
     }
@@ -28,7 +31,11 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];            
+            this.objectType = params['objectType'];      
+
+            this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
+                this.objectName = res.Name;
+            });
         });
     }
 

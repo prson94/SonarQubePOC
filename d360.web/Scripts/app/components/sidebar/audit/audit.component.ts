@@ -8,10 +8,11 @@ import { LazyLoadEvent } from 'primeng/primeng';
 import { SortOrder } from '../../../models/enums.model';
 import { GridFilterExpression } from '../../../models/grid-definition.model';
 import { BaseComponent } from '../../shared/base.component';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-audit',
-    providers: [AuditService],
+    providers: [AuditService, ObjectDetailService],
     template: `                
                 <div class="row">
                     <div class="col s12">
@@ -69,7 +70,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     constructor(
         private route: ActivatedRoute,        
         private router: Router,
-        private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
+        private auditService: AuditService,
+        private headerBreadcrumbService: HeaderBreadcrumbService,
+        private objectDetailService: ObjectDetailService
+    ) {
         super();
     }
 
@@ -79,6 +83,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             this.objectType = params['objectType'];
 
             this.getData();
+
+            this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
+                this.objectName = res.Name;
+            });
         });
     }
 

@@ -4,6 +4,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { FollowerService } from '../../../services/follower.service';
 import { FollowDetail } from '../../../models/follower.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-followers',
@@ -34,7 +35,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     </div>
                 </div>
         `,
-    providers: [FollowerService],
+    providers: [FollowerService, ObjectDetailService],
 })
 
 export class FollowersComponent extends BaseComponent implements OnInit, OnDestroy {        
@@ -44,6 +45,7 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     constructor(
         private followerService: FollowerService,
+        private objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
         private router: Router
     ) {
@@ -65,6 +67,10 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
     
     load() {
         this.isLoading = true;
+        this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
+            this.objectName = res.Name;
+        });
+
         this.followerService.getFollowers(this.objectType, this.objectID)
             .then(r => {
                 this.items = r;
