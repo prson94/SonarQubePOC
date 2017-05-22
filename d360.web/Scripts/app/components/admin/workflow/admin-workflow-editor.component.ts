@@ -221,11 +221,11 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     loadResponsibilities(): Promise<any> {
-        if (this.objectType == null || this.objectId == null) {
+        if (this.objectType == null || this.objectID == null) {
             this.responsibilities = [];
             return Promise.resolve();
         }
-        return this.responsibilityService.getResponsibilityTypesByObject(this.objectType, this.objectId)
+        return this.responsibilityService.getResponsibilityTypesByObject(this.objectType, this.objectID)
             .then(r => this.responsibilities = r);
     }
 
