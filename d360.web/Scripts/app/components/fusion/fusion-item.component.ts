@@ -17,24 +17,13 @@ import { AuthenticationService } from '../../services/authentication.service';
 
 @Component({
     selector: 'd3s-fusion-item',
-    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                
-                <div class="row" *ngIf="!isLoading && isHistoryVisible">
-                    <div class="col s12">
-                        <d3s-fusion-execution-history [fusion]="fusion"></d3s-fusion-execution-history>
-                        <d3s-fusion-agent-history [fusion]="fusion"></d3s-fusion-agent-history>
-                    </div>
-                </div>      
-                <div class="row" *ngIf="!isLoading && isManualLoadVisible">
-                    <div class="col s12">
-                        <d3s-fusion-manual-load [fusion]="fusion"></d3s-fusion-manual-load>
-                    </div>
-                </div>                
+    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                          
                 <div class="row" *ngIf="!isLoading && showFusionRules">
                     <div class="col s12">
                         <d3s-fusion-rules [fusionID]="fusionId" [fusionTypeID]="fusion.FusionTypeID"></d3s-fusion-rules>
                     </div>
                 </div>   
-                <div class="row" *ngIf="!isLoading && !isHistoryVisible && !isManualLoadVisible && !showFusionRules">
+                <div class="row" *ngIf="!isLoading && !showFusionRules">
                     <div class="col l3 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
@@ -72,9 +61,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private initialFusionQueryAttributeId: number;
 
 
-    private showFusionRules: boolean = false;
-    private isHistoryVisible: boolean = false;
-    private isManualLoadVisible: boolean = false;
+    private showFusionRules: boolean = false;    
     private isQueryConfigVisible: boolean = false;
 
     @ViewChild(FusionStructureTreeComponent) private fusionTreeComponent: FusionStructureTreeComponent;
@@ -134,10 +121,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.rightSidebarService.clearItems();
         this.setCommonRightSideBar(false, true, hasDashboard);
 
-        this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive']));
+        this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive'], `/fusion/history/${this.fusionId}`));
         if (this.authenticationService.isAdmin) this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork']));
 
-        if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o']));           
+        if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o'], `/fusion/manual/load/${this.fusionId}`));           
     }
     
     private buildBreadcrumb() {        
@@ -188,10 +175,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionQueryAttributeTypeId=${event}`);
     }  
 
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
-        if (activatedItem.tag == 'fusionhistory') this.isHistoryVisible = !this.isHistoryVisible;
-        else if (activatedItem.tag == 'fusionload') this.isManualLoadVisible = !this.isManualLoadVisible;
-        else if (activatedItem.tag == 'fusionrules') this.showFusionRules = !this.showFusionRules;  
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {                
+        if (activatedItem.tag == 'fusionrules') this.showFusionRules = !this.showFusionRules;  
     }
 
     protected updateTree(tree) {

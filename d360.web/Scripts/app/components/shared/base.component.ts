@@ -116,7 +116,7 @@ export class BaseComponent {
         this.objectID = objectID;
         if (objectName != undefined) this.objectName = objectName;
     }
-
+    
     objectContextUrl(): string {
         let url = '';
         if (!this.objectType || !this.objectID) return url;

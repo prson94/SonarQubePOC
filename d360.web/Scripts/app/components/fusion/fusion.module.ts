@@ -46,8 +46,7 @@ import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summa
 import { FusionRulesComponent } from './fusion-rules.component';
 import { FusionQueryListComponent } from './fusion-query-list.component';
 import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-editor.component';
-
-
+import { FusionHistoryComponent } from './fusion-history.component'
 
 import {
     GrowlModule,
@@ -118,6 +117,7 @@ import {
         FusionExecutionErrorsComponent,
         FusionExecutionHistoryComponent,
         FusionExecutionResultsComponent,
+        FusionHistoryComponent,
         FusionItemComponent,
         FusionListComponent,
         FusionManualLoadComponent,
