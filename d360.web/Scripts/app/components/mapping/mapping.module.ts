@@ -8,10 +8,8 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
-import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 
 import { MappingRoutingModule } from './mapping.routes';
@@ -34,11 +32,10 @@ import {
 
         //d3s        
         CoreModule,        
-        SharedAuditModule,
+        
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,
-        SharedRelationshipModule,
         TilesModule,
 
         //prime

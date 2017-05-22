@@ -1,4 +1,5 @@
-﻿import { Input, Component, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { StateService } from '../../services/state.service';
 import { BaseComponent} from '../shared/base.component';
@@ -38,8 +39,8 @@ import { ArtifactGridComponent} from './artifact-grid.component';
     providers: [ArtifactTypeService],
 })
 
-export class ArtifactTypeMetricsComponent extends BaseComponent implements OnInit {    
-    @Input() artifactType: ArtifactType;
+export class ArtifactTypeMetricsComponent extends BaseComponent implements OnInit, OnDestroy {    
+    artifactType: ArtifactType;
 
     @ViewChild(ArtifactGridComponent) artifactTypeGrid: ArtifactGridComponent;
 
@@ -51,20 +52,37 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
 
     private showArtifactStatusGrid: boolean = false;
     private statusHeader: string;
-    
-    constructor(private stateService: StateService, private artifactTypeService: ArtifactTypeService) {
+    private sub: any;
+
+    constructor(
+        private stateService: StateService,
+        private artifactTypeService: ArtifactTypeService,
+        private route: ActivatedRoute,
+        private router: Router
+    ) {
         super();
     }
 
-    ngOnInit() {        
-        this.loadStatusPie();
-        this.loadResponsibilityBar();
+    ngOnInit() {
+        this.sub = this.route.params.subscribe(params => {
+            let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
+            this.isLoading = true;
+            this.artifactTypeService.getArtifactTypeDetails(artifactTypeId)
+                .then(artifactType => {
+                    this.artifactType = artifactType;
+                    this.loadStatusPie(artifactTypeId);
+                    this.loadResponsibilityBar(artifactTypeId);
+                });
+        });
     }
-    
 
-    private loadResponsibilityBar() {
+    ngOnDestroy() {
+        this.sub.unsubscribe();
+    }
+
+    private loadResponsibilityBar(artifactTypeId : number) {
         this.isLoading = true;
-        this.artifactTypeService.getArtifactTypeUsedVsUnusedResponsibilities(this.artifactType.ID)
+        this.artifactTypeService.getArtifactTypeUsedVsUnusedResponsibilities(artifactTypeId)
             .then(result => {
                 this.responsibilities = result;
                 this.isLoading = false;
@@ -131,9 +149,9 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
             });
     }
 
-    private loadStatusPie() {
+    private loadStatusPie(artifactTypeId: number) {
         this.isLoading = true;
-        this.artifactTypeService.getArtifactTypeStatus(this.artifactType.ID)
+        this.artifactTypeService.getArtifactTypeStatus(artifactTypeId)
             .then(result => {
                 this.status = result;
 

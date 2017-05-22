@@ -38,9 +38,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private selectedObjectType: any = null;
     private conditions: any[] = [];
 
-    private showAddCondition: boolean = false;
-    private objectType: string;
-    private objectId: number;
+    private showAddCondition: boolean = false;    
     private saveButtonText: string = 'Next';
     private hideObject: boolean = false;
 
@@ -136,7 +134,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             }
 
                             this.selectedObjectType = this.model.Event.Object + '|' + this.model.Event.ObjectID.toString();
-                            this.objectId = this.model.Event.ObjectID;
+                            this.objectID = this.model.Event.ObjectID;
                             this.objectType = this.model.Event.Object;
 
                             if (this.objectType == 'ArtifactType')
@@ -153,7 +151,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                                     this.conditions = this.model.Event.ConditionObject.Condition;
                             }
                         })
-                        .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType))
+                        .then(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType))
                         .then(r => {
                             //need to apply names to loaded conditions
                             r.forEach(t => {
@@ -195,7 +193,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             return;
 
         this.objectType = e.split('|')[0];
-        this.objectId = +e.split('|')[1];
+        this.objectID = +e.split('|')[1];
 
         if (this.objectType == 'ArtifactType')
             this.loadTaxonomies();
@@ -255,7 +253,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         this.model.Event.conditions = this.conditions;
         this.model.Event.Object = this.objectType;
-        this.model.Event.ObjectID = this.objectId;
+        this.model.Event.ObjectID = this.objectID;
 
         this.model.Type.PublishedVersionID = null;
 

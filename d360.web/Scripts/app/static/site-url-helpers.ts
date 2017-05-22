@@ -19,6 +19,14 @@
     static SITE_URL_ADMIN_ROOT = 'admin';
     static SITE_URL_HOME_ROOT = 'home';
     static SITE_URL_MAPPING_ROOT = 'mapping';
+    static SITE_URL_AUDIT_ROOT = 'sidebar/audit';
+    static SITE_URL_DASHBOARD_ROOT = 'sidebar/dashboard';
+    static SITE_URL_FOLLOWERS_ROOT = 'sidebar/followers';
+    static SITE_URL_OWNERSHIP_ROOT = 'sidebar/ownership';
+    static SITE_URL_VISUALIZATION_ROOT = 'sidebar/visualization';
+    static SITE_URL_RELATIONSHIP_ROOT = 'sidebar/relationships'
+    static SITE_URL_CHILDREN_ROOT = 'sidebar/children';
+    static SITE_URL_WORKFLOW_MONITOR_ROOT = 'sidebar/workflowmonitor';
 
     //model child routes
     static SITE_URL_MODEL_CLASSIFICATION = 'classification';

@@ -1,12 +1,13 @@
-﻿import { Component, Input} from '@angular/core';
+﻿import { Component, Input, OnInit, OnDestroy} from '@angular/core';
+import { Router, ActivatedRoute }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { HeaderBreadcrumbService  } from '../../../services/header-breadcrumb.service';
-import { AuditService  } from '../../../services/audit.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { AuditService } from '../../../services/audit.service';
 import { Audit } from '../../../models/audit.model';
 import { LazyLoadEvent } from 'primeng/primeng';
 import { SortOrder } from '../../../models/enums.model';
 import { GridFilterExpression } from '../../../models/grid-definition.model';
-import { BaseComponent } from '../base.component';
+import { BaseComponent } from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-audit',
@@ -46,10 +47,10 @@ import { BaseComponent } from '../base.component';
                         </div>
                     </div>
                 </div>
-        `    
+        `
 })
 
-export class AuditComponent extends BaseComponent {
+export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -57,28 +58,44 @@ export class AuditComponent extends BaseComponent {
     totalRecords: number;
     rowsPerPage: number = 10;
     audits: Audit[] = [];
-    
+    private sub: any;
+
     selected: Audit;
     currentPageNumber: number = 0;
     sortField: string = undefined;
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
-    
-    constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
+
+    constructor(
+        private route: ActivatedRoute,        
+        private router: Router,
+        private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
     }
-    
+
+    ngOnInit() {
+        this.sub = this.route.params.subscribe(params => {
+            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
+            this.objectType = params['objectType'];
+
+            this.getData();
+        });
+    }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
+    }
 
     private getData() {
-        this.isLoading = true;       
+        this.isLoading = true;
         this.auditService.getAuditData(this.objectID, this.objectType, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.filters)
-            .then(result => {         
+            .then(result => {
                 this.isLoading = false;
                 this.audits = result.results;
                 this.totalRecords = result.total;
             });
-    }   
-    
+    }
+
     private loadAuditsLazy(event: LazyLoadEvent) {
         //event.first = First row offset
         //event.rows = Number of rows per page
@@ -96,12 +113,12 @@ export class AuditComponent extends BaseComponent {
             gridFilter.value = filter.value;
             this.filters.push(gridFilter);
         }
-        
+
 
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
-        this.currentPageNumber = event.first / event.rows;        
+        this.currentPageNumber = event.first / event.rows;
         this.getData();
     }
 

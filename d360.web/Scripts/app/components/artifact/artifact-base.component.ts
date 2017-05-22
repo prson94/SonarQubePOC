@@ -17,9 +17,7 @@ export class ArtifactBaseComponent extends BaseComponent {
 
     //sidebar
     sidebarSubscription: Subscription;
-
-    isAuditVisible: boolean = false;
-
+    
     constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, rightSidebarService?: RightSidebarService, webAnalyticsService?: WebAnalyticsService) {
         super();
         this.rightSidebarService = rightSidebarService;

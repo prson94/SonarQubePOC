@@ -1,6 +1,6 @@
-﻿import { Input, Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -94,9 +94,7 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
 })
 
 export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
-    @Input() objectID: number;
-    @Input() objectType: string;
-
+    
     private workflows: WorkflowListItem[] = [];
     private selected: WorkflowListItem = null;
 
@@ -104,13 +102,27 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
     private selectedItem: any = null;
 
     private itemdetails: any[] = [];
-        
-    constructor(protected workflowService: WorkflowService, private router: Router) {
+    private sub: any;
+
+    constructor(
+        protected workflowService: WorkflowService,
+        private router: Router,
+        private route: ActivatedRoute,        
+    ) {
         super();
     }
-
+    
     ngOnInit() {
-        this.load();
+        this.sub = this.route.params.subscribe(params => {
+            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
+            this.objectType = params['objectType'];
+
+            this.load();
+        });
+    }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
     }
     
     private load() {
@@ -126,7 +138,7 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private loadWorkflowItems(selected: WorkflowListItem) {    
+    private loadWorkflowItems(selected: WorkflowListItem) {
         this.itemdetails = [];
         this.workflowService.getWorkflowItems(selected.VersionID)
             .then(res => {
@@ -140,14 +152,14 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit {
     }
 
     private loadItemsDetails(selectedItem: any) {
-        
+
         this.workflowService.getWorkflowItemDetails(this.selected.ID, selectedItem.ItemID)
             .then(res => {
                 for (let i of res) {
                     i.ActivityTypeString = WorkflowActivityType[i.ActivityType];
                     i.StepTypeString = StepType[i.StepType];
                 }
-                this.itemdetails = res;                
+                this.itemdetails = res;
             });
     }
 

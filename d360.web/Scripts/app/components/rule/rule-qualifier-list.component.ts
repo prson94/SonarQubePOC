@@ -1,4 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy} from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { QualifierService } from '../../services/qualifier.service';
 import { MessagesService } from '../../services/messages.service';
@@ -8,65 +9,85 @@ import { FormMode } from '../../models/form.model';
 @Component({
     selector: 'd3s-rule-qualifier-list',
     template: ` 
-                <div class="row" [ngSwitch]="formMode">
-                    <div class="col s12" *ngSwitchDefault>
-                        <header>
-                            Rule Qualifiers
-                            <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
-                        </header>
-                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <p-dataTable *ngIf="!isLoading" [value]="qualifierTypes" selectionMode="single"  rows="25" paginator="true" [(selection)]="selectedQualifierType" [rowsPerPageOptions]="defaultPagingOptions" >                            
-                            <p-column field="Name" header="Name"></p-column>
-                            <p-column field="ResolutionObjectName" header="Resolution Object"></p-column>
-                            <p-column field="ResolutionFieldTypeName" header="Resolution Field"></p-column>
-                            <p-column>
-                                <template let-i="rowIndex" let-item="rowData" pTemplate="body">
-                                    <div class="RowTools">
-                                        <a *ngIf="i > 0" (click)="moveUp(item)"><i class="fa fa-caret-up"></i></a>
-                                        <a *ngIf="i < (qualifierTypes.length - 1)" (click)="moveDown(item)"><i class="fa fa-caret-down"></i></a>
-                                        <a (click)="edit(item)"><i class="fa fa-pencil"></i></a>
-                                        <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
-                                    </div>
-                                </template>
-                            </p-column>
-                        </p-dataTable>     
-                    </div>
-                    <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-rule-qualifier-editor [implementationId]="implementationId" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
-                    </div>
-                    <div *ngSwitchCase="FormMode.Editing">
-                        <d3s-rule-qualifier-editor [qualifier]="selectedQualifierType" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
-                    </div>
-                    <div *ngSwitchCase="FormMode.Deleting">
-                        <header>Delete Qualifier</header>
-                        <d3s-delete-form
-                            [uri]="'form/DeleteQualifierType?id=' + selectedQualifierType.ID"
-                            (onDeleteSuccess)="load()"
-                            (onDeleteComplete)="formMode = FormMode.Default"
-                            (onCancel)="formMode = FormMode.Default"
-                            method="delete"
-                            prompt="Are you sure you want to delete this qualifier type?" >
-                        </d3s-delete-form>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail">    
+                            <div class="row" [ngSwitch]="formMode">
+                                <div class="col s12" *ngSwitchDefault>
+                                    <header>
+                                        Rule Qualifiers
+                                        <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
+                                    </header>
+                                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                                    <p-dataTable *ngIf="!isLoading" [value]="qualifierTypes" selectionMode="single"  rows="25" paginator="true" [(selection)]="selectedQualifierType" [rowsPerPageOptions]="defaultPagingOptions" >                            
+                                        <p-column field="Name" header="Name"></p-column>
+                                        <p-column field="ResolutionObjectName" header="Resolution Object"></p-column>
+                                        <p-column field="ResolutionFieldTypeName" header="Resolution Field"></p-column>
+                                        <p-column>
+                                            <template let-i="rowIndex" let-item="rowData" pTemplate="body">
+                                                <div class="RowTools">
+                                                    <a *ngIf="i > 0" (click)="moveUp(item)"><i class="fa fa-caret-up"></i></a>
+                                                    <a *ngIf="i < (qualifierTypes.length - 1)" (click)="moveDown(item)"><i class="fa fa-caret-down"></i></a>
+                                                    <a (click)="edit(item)"><i class="fa fa-pencil"></i></a>
+                                                    <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
+                                                </div>
+                                            </template>
+                                        </p-column>
+                                    </p-dataTable>     
+                                </div>
+                                <div *ngSwitchCase="FormMode.Adding">
+                                    <d3s-rule-qualifier-editor [implementationId]="implementationId" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
+                                </div>
+                                <div *ngSwitchCase="FormMode.Editing">
+                                    <d3s-rule-qualifier-editor [qualifier]="selectedQualifierType" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
+                                </div>
+                                <div *ngSwitchCase="FormMode.Deleting">
+                                    <header>Delete Qualifier</header>
+                                    <d3s-delete-form
+                                        [uri]="'form/DeleteQualifierType?id=' + selectedQualifierType.ID"
+                                        (onDeleteSuccess)="load()"
+                                        (onDeleteComplete)="formMode = FormMode.Default"
+                                        (onCancel)="formMode = FormMode.Default"
+                                        method="delete"
+                                        prompt="Are you sure you want to delete this qualifier type?" >
+                                    </d3s-delete-form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
           `,
     providers: [QualifierService],
 })
 
-export class RuleQualifierListComponent extends BaseComponent implements OnChanges {
-    @Input() implementationId: number;
+export class RuleQualifierListComponent extends BaseComponent implements OnInit, OnDestroy {
+    implementationId: number;
 
+    private sub: any;
     private qualifierTypes: QualifierType[] = [];
     private selectedQualifierType;
     private formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
 
-    constructor(private qualifierService: QualifierService, private messagesService: MessagesService) {
+    constructor(
+        private qualifierService: QualifierService,
+        private messagesService: MessagesService,
+        private route: ActivatedRoute,
+        private router: Router,
+    ) {
         super();
     }
+    
+    ngOnInit() {
+        this.sub = this.route.params.subscribe(params => {
+            this.implementationId = +params['implementationId']; // (+) converts string 'id' to a number
+            
+            this.load();
+        });
+    }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['implementationId'] && this.implementationId != null) this.load();
+    ngOnDestroy() {
+        this.sub.unsubscribe();
     }
 
     private load() {

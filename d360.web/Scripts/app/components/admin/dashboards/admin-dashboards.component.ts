@@ -12,8 +12,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'd3s-admin-dashboards-component',
     providers: [ReportsService],
-    template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Report'"></d3s-audit>
-                <div *ngIf="!isAuditVisible" class="row">
+    template: `<div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Dashboards

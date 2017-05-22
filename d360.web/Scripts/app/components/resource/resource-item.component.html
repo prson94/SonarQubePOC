@@ -8,24 +8,7 @@
                     </header>
                     <div class="col l3 m3 s12">
                         <img [src]="'/resources/image/' + resourceId + '?size=200'" style="margin-top:5px;width:100%" />
-                    </div>
-                    <!--<div class="col l9 m9 s12">
-                        <div class="row">
-                            <div class="col s12">
-                                <d3s-object-followers [followerCount]="statistics?.FollowerCount" (click)="pageMode = PageMode.Followers"></d3s-object-followers>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <d3s-object-board [commentCount]="statistics?.CommentCount" [lastCommentDate]="CommentLast" (click)="pageMode = PageMode.Board"></d3s-object-board>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <d3s-object-health [objectType]="'Resource'" [objectID]="resourceId" [score]="statistics?.Score" (click)="pageMode = PageMode.Governance"></d3s-object-health>
-                            </div>
-                        </div>
-                    </div>-->
+                    </div>                    
                     <div class="col l2 m2 s12">
                         <d3s-object-followers [followerCount]="statistics?.FollowerCount" (click)="pageMode = PageMode.Followers"></d3s-object-followers>
                     </div>
@@ -107,13 +90,7 @@
             <div style="text-align:right;cursor:pointer;font-size:1.6rem;" (click)="pageMode = PageMode.Default"><i class="fa fa-remove"></i></div>
             <d3s-social-board [hasNewInput]="false" [hasCloseButton]="'true'" [objectType]="'Resource'" [objectID]="resourceId" [objectName]="'Current User'" (countsChanged)="updateStatistics()" (close)="pageMode = pageMode.Default"></d3s-social-board>
         </div>
-    </div>
-    <div *ngSwitchCase="PageMode.Followers" class="col s12">
-        <div class="tile tile-detail">
-            <div style="text-align:right;cursor:pointer;font-size:1.6rem;" (click)="pageMode = PageMode.Default"><i class="fa fa-remove"></i></div>
-            <d3s-follower-grid [objectType]="'Resource'" [objectID]="resourceId"></d3s-follower-grid>
-        </div>
-    </div>
+    </div>    
     <div *ngSwitchCase="PageMode.Governance" class="col s12">
         <div class="tile tile-detail">
             <div style="text-align:right;cursor:pointer;font-size:1.6rem;" (click)="pageMode = PageMode.Default"><i class="fa fa-remove"></i></div>

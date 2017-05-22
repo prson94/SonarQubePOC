@@ -1,14 +1,14 @@
 ﻿import { Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
-import { BaseComponent} from '../shared/base.component';
-import { ArtifactService } from '../../services/artifacts.service';
-import { GridDefinitionService } from '../../services/grid-definition.service';
-import { GridColumn, GridField } from '../../models/grid-definition.model';
-import { SortOrder } from '../../models/enums.model';
-import { Artifacts } from '../../models/artifacts.model';
+import { BaseComponent} from '../../shared/base.component';
+import { ArtifactService } from '../../../services/artifacts.service';
+import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
+import { SortOrder } from '../../../models/enums.model';
+import { Artifacts } from '../../../models/artifacts.model';
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-artifact-item-child-grid',

@@ -11,15 +11,11 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
-import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
-import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 
 import { ModelRoutingModule } from './model.routes';
 
@@ -72,15 +68,12 @@ import {
         CoreModule,
         D3SSharedModule,
         PipesModule,  
-        SharedAuditModule,      
-        SharedGridPagingInfoModule,
-        SharedDashboardModule,
+              
+        SharedGridPagingInfoModule,        
         SharedDeleteFormModule,
         SharedDiagramModule,
         SharedDynamicGridEditorModule,
-        SharedObjectGovernanceModule,
-        SharedRelationshipModule,
-        SharedResponsibilitiesModule,
+        SharedObjectGovernanceModule,        
         TilesModule,
     ],
     declarations: [

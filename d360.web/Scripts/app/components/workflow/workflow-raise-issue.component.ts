@@ -29,7 +29,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                             <div class="row">
                                 <div class="col s12">
                                     <div class="FieldName">What item would you like to report a problem with?</div>
-                                    <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectId;selectedObjectType=objectType;" value="current">{{objectDetail.Name}}</label></div>
+                                    <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectID;selectedObjectType=objectType;" value="current">{{objectDetail.Name}}</label></div>
                                     <div>
                                         <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption">Other item</label>
                                         <div *ngIf="selectedOption=='other'" style="padding-left:40px"><p-autoComplete size="100"                                                
@@ -69,9 +69,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 })
 
 export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit {
-    private issue: string;
-    private objectType: string;
-    private objectId: number;
+    private issue: string;        
     private selectedObjectType: string;
     private selectedObjectId: number;    
     private objectDetail: ObjectDetail;
@@ -99,12 +97,12 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.setBrowserTitle(this.titleService, 'Take Action');
 
         if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.id)
-            this.objectId = this.headerBreadcrumbService.currentObject.id;
+            this.objectID = this.headerBreadcrumbService.currentObject.id;
 
         if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.type)
             this.objectType = this.headerBreadcrumbService.currentObject.type;
 
-        this.loadDetails(this.objectId, this.objectType);
+        this.loadDetails(this.objectID, this.objectType);
 
         this.loadIssueTypes();
 
@@ -125,7 +123,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
             res => {
                 this.objectDetail = res;
                 this.selectedOption = 'current';
-                this.selectedObjectId = this.objectId;
+                this.selectedObjectId = this.objectID;
                 this.selectedObjectType = this.objectType;
                 this.isLoading = false;
             });

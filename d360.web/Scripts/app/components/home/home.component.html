@@ -1,5 +1,4 @@
-﻿<d3s-dashboard-tab *ngIf="isDashboardVisible" [objectID]="'0'" [objectName]="'Home'" [objectType]="'Home'"></d3s-dashboard-tab>
-<div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && !isDashboardVisible">
+﻿<div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails">
     <div class="col l4 s12">
         <d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
     </div>
@@ -11,13 +10,13 @@
     </div>
 </div>
 
-<div class="row" *ngIf="showActivityDetails && !isDashboardVisible">
+<div class="row" *ngIf="showActivityDetails">
     <div class="col s12">
         <d3s-activity-details-tile [objectId]="selectedArtifactTypeId" [objectName]="selectedArtifactTypeName" (close)="showActivityDetails = false;" [daysToLookBack]="activityDaysToLookBack"></d3s-activity-details-tile>
     </div>
 </div>
 
-<div class="row" *ngIf="showBoardDetails && !isDashboardVisible">
+<div class="row" *ngIf="showBoardDetails">
     <div class="col s12">
         <div class="tile tile-detail">
             <d3s-social-board [limitToType]="selectedSocialType" [daysToLookBack]="boardDaysToLookBack" [hasNewInput]="false" [hasCloseButton]="true" (close)="showBoardDetails=false"></d3s-social-board>
@@ -25,4 +24,4 @@
     </div>
 </div>
 
-<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails && !isDashboardVisible"></d3s-home-search>    
+<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails"></d3s-home-search>    

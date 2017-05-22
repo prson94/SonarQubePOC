@@ -12,9 +12,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 @Component({
     selector: 'd3s-admin-policies-component',
     providers: [PoliciesService],
-    template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'PolicyType'"></d3s-audit>
-                <d3s-admin-classifications objectType="PolicyTypeClass" *ngIf="isClassificationsVisible" ></d3s-admin-classifications>
-                <div *ngIf="!isAuditVisible && !isClassificationsVisible" class="row">
+    template: ` <div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Policy Types
@@ -108,8 +106,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-    isClassificationsVisible: boolean = false;
-
+    
     constructor(private stateService: StateService, rightSidebarService: RightSidebarService, private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Policy Types";
@@ -117,7 +114,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
         this.theDeleteCallback = this.deletePolicyType.bind(this);
         this.setCommonRightSideBar(true);
 
-        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag']));
+        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag'], 'admin/classification/PolicyTypeClass'));
     }
 
     ngOnInit() {
@@ -174,10 +171,5 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     add() {
         this.showEditor = true;
         this.selected = null;
-    }
-
-
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        if (activatedItem.tag == 'classifications') this.isClassificationsVisible = !this.isClassificationsVisible;
-    }
+    }    
 }

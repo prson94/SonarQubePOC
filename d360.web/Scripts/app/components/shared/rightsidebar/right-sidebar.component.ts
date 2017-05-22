@@ -1,4 +1,5 @@
 ﻿import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { RightSidebarService  } from '../../../services/right-sidebar.service';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 import { Subscription }   from 'rxjs/Subscription';
@@ -19,8 +20,13 @@ export class RightSidebarComponent {
     subscription: Subscription;
     subscriptionClear: Subscription;
     items: RightSidebarItem[];  
+    hostUrl: string;
   
-    constructor(private rightSidebarService: RightSidebarService, ref: ChangeDetectorRef) {        
+    constructor(
+        private rightSidebarService: RightSidebarService,
+        ref: ChangeDetectorRef,
+        private router: Router
+    ) {        
         this.items = [];
         this.subscription = rightSidebarService.rightSidebar$.subscribe(
             item => {                                
@@ -41,16 +47,31 @@ export class RightSidebarComponent {
         this.subscriptionClear.unsubscribe();
     }
     
-    itemClicked(item) {   
+    itemClicked(item: RightSidebarItem) {   
         if (item.active) {
             //look for any other already active items and fire click for them
-            for (let ritem of this.items) {
+            let isFirstItemOpen = true;
+            for (let ritem of this.items) {                
                 if (ritem.active && ritem.title != item.title) {
                     this.rightSidebarService.itemClicked(ritem);
                     ritem.active = false;
+                    isFirstItemOpen = false;
+                    // if this item is a url and the new one is not go back to host url
+                    if (this.hostUrl && ritem.url && !item.url) {
+                        this.router.navigateByUrl(this.hostUrl);                        
+                    }                        
                 }
-            }
-        }
-        this.rightSidebarService.itemClicked(item);
+            }            
+            if (isFirstItemOpen) this.hostUrl = this.router.url;            
+            this.rightSidebarService.itemClicked(item);
+            if (item.url) this.router.navigateByUrl(item.url);
+        }        
+        else {
+            //return to previous url if the item is a url otherwise fire click event            
+            if (item.url)
+                this.router.navigateByUrl(this.hostUrl);
+            else
+                this.rightSidebarService.itemClicked(item);
+        }        
     }     
 };

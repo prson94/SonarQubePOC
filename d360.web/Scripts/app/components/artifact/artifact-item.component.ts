@@ -18,40 +18,8 @@ import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-artifact-item',
-    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="artifact?.ID" [objectType]="'Artifact'" [title]="'Ownership of ' + artifact?.Name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                </div>    
-                <div class="row"  *ngIf="!isLoading && isRelationshipsVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
-                        </div>
-                    </div>
-                </div>      
-                <div class="row" *ngIf="!isLoading && isFollowersVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">       
-                            <d3s-follower-grid [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-follower-grid> 
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading && isChildrenVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">       
-                            <d3s-artifact-item-children [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-artifact-item-children> 
-                        </div>
-                    </div>
-                </div>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'" [usageOnly]="false"></d3s-lineage>
-                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-impact>
-                <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>
-                <div *ngIf="!isLoading && !isTabVisible()">                                    
+    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                
+                <div *ngIf="!isLoading">                                    
                     <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true" (messageClose)="showSurvey=false"></d3s-messages-bar>
                     <div class="row" *ngIf="showSurvey && surveyType">
                         <div class="col s12">
@@ -86,8 +54,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     private messages: MessageBarItem[]=[];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;
-    private isChildrenVisible: boolean = false;
-
+    
     constructor(private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
         private router: Router,
@@ -98,8 +65,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         private surveysService: SurveysService,
         protected permissionsService: PermissionsService            
     ) {
-        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);
-
+        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);        
     }
 
     ngOnInit() {
@@ -111,15 +77,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
             this.messages = [];
-
-            this.hideSidebarItems(); // this is needed if we changed artifacts.
-            this.isChildrenVisible = false;
-
+            
             this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId);
 
             this.load(artifactId).then(() => this.isLoading = false);
-
-           
         });
     }
 
@@ -145,12 +106,12 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));
                 }
                 this.setBrowserTitle(this.titleService, this.artifact.Name);
-
-                this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true);
-                if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap']));
                                 
-                this.loadItemSurvey(id);
+                this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.Name);
+                this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true);
+                if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap'], `/sidebar/children${this.objectContextUrl()}`));
+                                
+                this.loadItemSurvey(id);                
             });
     }
 
@@ -167,10 +128,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
             });
     }
-
-    protected isTabVisible() {
-        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible || this.isRelationshipsVisible || this.isFollowersVisible || this.isChildrenVisible || this.isImpactVisible;
-    }
+    
 
     private completeSurvey() {
         this.showSurvey = false;
@@ -178,11 +136,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         if (index >= 0 && index < this.messages.length)
             this.messages.splice(index, 1);
     }
-
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        if (activatedItem.tag == 'children') this.isChildrenVisible = !this.isChildrenVisible;        
-    }
-
+    
     private editArtifact(e: any) {
         this.isLoading = true;
         this.load(e.ID).then(() => this.isLoading = false);

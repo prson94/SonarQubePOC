@@ -12,14 +12,10 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
-import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 
 import { PolicyRoutingModule } from './policy.routes';
 
@@ -76,14 +72,11 @@ import {
         D3SSharedModule,
         CoreModule,        
         PipesModule,  
-        SharedAuditModule,      
+              
         SharedDeleteFormModule,
-        SharedGridPagingInfoModule,
-        SharedDiagramModule,
+        SharedGridPagingInfoModule,        
         SharedDynamicGridEditorModule,        
-        SharedObjectGovernanceModule,
-        SharedResponsibilitiesModule,
-        SharedRelationshipModule,
+        SharedObjectGovernanceModule,        
         TilesModule,
     ],
     declarations: [

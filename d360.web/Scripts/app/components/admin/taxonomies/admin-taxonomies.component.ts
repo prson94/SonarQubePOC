@@ -14,9 +14,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 @Component({
     selector: 'd3s-admin-models-component',    
     providers: [TaxonomiesService, FieldsService],
-    template:   `<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedTaxonomy?.ID" [objectName]="selectedTaxonomy?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
-                <d3s-admin-classifications objectType="TaxonomyTypeClass" *ngIf="isClassificationsVisible" ></d3s-admin-classifications>
-                <div *ngIf="showEditor || showDelete && !isAuditVisible && !isLoading && !isClassificationsVisible" class="row">
+    template:   `<div *ngIf="showEditor || showDelete && !isLoading" class="row">
                     <div class="tile tile-detail">                            
                             <d3s-admin-model-editor *ngIf="showEditor" [taxonomy]="selectedTaxonomy" (saveClick)="saveModel($event)" (closeClick)="closeEditor()"></d3s-admin-model-editor>
                             <d3s-delete-form *ngIf="showDelete"
@@ -28,7 +26,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                             ></d3s-delete-form>
                     </div>
                 </div>
-                <div *ngIf="!showEditor && !showDelete && !isAuditVisible && !isClassificationsVisible" class="row">
+                <div *ngIf="!showEditor && !showDelete" class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor">Models
@@ -74,15 +72,14 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-    isClassificationsVisible: boolean = false;
-
+    
     constructor(private stateService: StateService, rightSidebarService: RightSidebarService,  private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Models";
         this.setCommonItems();
         this.setCommonRightSideBar(true);
 
-        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag']));
+        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag'], 'admin/classification/TaxonomyTypeClass'));
     }
 
     ngOnInit() {
@@ -159,9 +156,5 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
                 }
                 this.showDelete = false;
             });
-    }
-        
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        if (activatedItem.tag == 'classifications') this.isClassificationsVisible = !this.isClassificationsVisible;
-    }
+    }     
 }

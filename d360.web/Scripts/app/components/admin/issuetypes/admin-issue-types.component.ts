@@ -10,9 +10,8 @@ import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-issue-types',
-    template: `                 
-               <d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'IssueType'"></d3s-audit>
-                <div *ngIf="!isAuditVisible" class="row">
+    template: `
+                <div class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Action Types

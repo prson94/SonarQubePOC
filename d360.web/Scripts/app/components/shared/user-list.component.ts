@@ -81,8 +81,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 })
 
 export class UserListComponent extends BaseComponent{    
-    private objectID: number = 1;
-    private objectType: string = 'ResourceType';
+    
     error: any;
     items: any[] = [];
     columns: GridColumn[] = [];
@@ -109,6 +108,7 @@ export class UserListComponent extends BaseComponent{
         private companySettingsService: CompanySettingsService,
         protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
+        this.setObjectInfo('ResourceType', 1);
     }    
 
     ngOnInit() {

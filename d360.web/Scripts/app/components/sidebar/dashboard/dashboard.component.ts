@@ -1,12 +1,12 @@
-﻿import { Component, Input, OnInit} from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesService } from '../../../services/messages.service';
 import { DashboardService } from '../../../services/dashboard.service';
 import { Dashboard } from '../../../models/dashboard.model'
 
-
 @Component({
-    selector: 'd3s-dashboard-tab',
+    selector: 'd3s-dashboard',
     template: `
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
@@ -38,21 +38,29 @@ import { Dashboard } from '../../../models/dashboard.model'
     providers: [DashboardService],
 })
 
-export class DashboardTabComponent extends BaseComponent implements OnInit {
-    @Input() objectID: number = 0;
-    @Input() objectType: string;
-    @Input() objectName: string;
-
+export class DashboardComponent extends BaseComponent implements OnInit, OnDestroy {
+    private sub: any;
     dashboards: Dashboard[] = [];
     dashboard: Dashboard;
     selected: Dashboard;
 
-    constructor(protected dashboardService: DashboardService) {
+    constructor(protected dashboardService: DashboardService,
+        private route: ActivatedRoute,
+        private router: Router) {
         super();
-    }    
+    }
 
     ngOnInit() {
-        this.loadAvailableDashboards();
+        this.sub = this.route.params.subscribe(params => {
+            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
+            this.objectType = params['objectType'];
+
+            this.loadAvailableDashboards();
+        });        
+    }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
     }
 
     private loadAvailableDashboards() {
@@ -62,7 +70,5 @@ export class DashboardTabComponent extends BaseComponent implements OnInit {
                 this.dashboards = result;
                 this.isLoading = false;
             });
-    }  
-
-   
+    }
 }

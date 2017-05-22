@@ -1,4 +1,5 @@
-﻿import { Component, Input } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Classification } from '../../models/object-detail.model';
 import { MessagesService } from '../../services/messages.service';
 import { ObjectDetailService } from '../../services/object-detail.service';
@@ -46,22 +47,35 @@ import { BaseComponent } from '../shared/base.component';
                 `
 })
 
-export class AdminClassificationsComponent extends BaseComponent {
-    @Input() objectType: string;
-    
+export class AdminClassificationsComponent extends BaseComponent implements OnInit, OnDestroy {    
+    private sub: any;
+
     classifications: Classification[] = [];
     showEditor: boolean = false;
     showDelete: boolean = false;    
     selected: Classification = null;
     theDeleteCallback: Function;
 
-    constructor(private objectDetailService: ObjectDetailService, private messagesService: MessagesService) {
+    constructor(
+        private objectDetailService: ObjectDetailService,
+        private messagesService: MessagesService,
+        private route: ActivatedRoute,
+        private router: Router,
+    ) {
         super();
         this.theDeleteCallback = this.deleteClassification.bind(this);
     }
-
+    
     ngOnInit() {
-        this.load();
+        this.sub = this.route.params.subscribe(params => {            
+            this.objectType = params['objectType'];
+
+            this.load();
+        });
+    }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
     }
 
     private load() {

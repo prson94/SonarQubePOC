@@ -12,14 +12,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-item',
-    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="fusion?.ID" [objectType]="'Fusion'" [title]="'Ownership of ' + fusion?.Name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                </div>  
+    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                
                 <div class="row" *ngIf="!isLoading && isHistoryVisible">
                     <div class="col s12">
                         <d3s-fusion-execution-history [fusion]="fusion"></d3s-fusion-execution-history>
@@ -36,7 +29,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <d3s-fusion-rules [fusionID]="fusionId" [fusionTypeID]="fusion.FusionTypeID"></d3s-fusion-rules>
                     </div>
                 </div>   
-                <div class="row" *ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible && !isManualLoadVisible && !showFusionRules">
+                <div class="row" *ngIf="!isLoading && !isHistoryVisible && !isManualLoadVisible && !showFusionRules">
                     <div class="col l2 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>

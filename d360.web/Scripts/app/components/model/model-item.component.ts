@@ -18,33 +18,9 @@ import { StringConstants } from '../../static/string-constants';
 @Component({
     selector: 'd3s-model-item',
     providers: [ModelsService, SurveysService, PermissionsService],
-    template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'" [usageOnly]="true"></d3s-lineage>
-                <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-dashboard-tab>
-                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-impact>
-                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="selected?.ID" [objectType]="'Taxonomy'" [title]="'Ownership of ' + selected?.Name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading && isFollowersVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">       
-                            <d3s-follower-grid [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-follower-grid> 
-                        </div>
-                    </div>
-                </div>
+    template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible && !isFollowersVisible && !isImpactVisible" class="row">                    
+                <div *ngIf="!isLoading" class="row">                    
                     <div class="col s12">
                         <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
                         <div class="row" *ngIf="showSurvey && surveyType">
@@ -96,6 +72,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
+        this.lineageShowUsageOnly = true;
     }
 
     ngOnInit() {        
@@ -104,8 +81,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.showHierarchy(id);  
             });
         
-        this.sub = this.route.params.subscribe(params => {            
-            this.hideSidebarItems();
+        this.sub = this.route.params.subscribe(params => {                        
             let newModelId = +params['modelId'];
             let hierarchyId = +params['id'];// if hierarchyId is passed via alternative route to workaround bug with router escaping ; = and other chars.
 

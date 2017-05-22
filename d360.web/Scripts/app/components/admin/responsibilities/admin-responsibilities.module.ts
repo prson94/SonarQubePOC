@@ -14,7 +14,7 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { AdminModule } from '../admin.module';
-import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
+
 
 import { AdminGovernanceComponent } from './admin-governance.component';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
@@ -54,7 +54,7 @@ import {
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
         SharedResponsibilitiesModule,
-        SharedAuditModule,
+        
         TilesModule,
         AdminModule,
     ],

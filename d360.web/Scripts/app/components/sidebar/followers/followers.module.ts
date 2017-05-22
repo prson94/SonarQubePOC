@@ -1,48 +1,47 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { HttpModule, XHRBackend } from '@angular/http';
+import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
-    DataTableModule,    
-    SharedModule,    
-    ButtonModule,
+    DataTableModule,
+    SharedModule,
 } from 'primeng/primeng';
 
-import { CoreModule } from '../core.module';
-import { TilesModule } from '../tiles/tiles.module';
-import { WorkflowDiagramModule } from '../diagram/workflow/workflow-diagram.module';
+import { CoreModule } from '../../shared/core.module';
+import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
+import { TilesModule } from '../../shared/tiles/tiles.module';
 
-import { WorkflowMonitorComponent } from './workflow-monitor.component';
+import { FollowersRoutingModule } from './followers.routes';
 
+import { FollowersComponent } from './followers.component';
 
 @NgModule({
     imports: [CommonModule,
         FormsModule,
         HttpModule,
         RouterModule,
-        //d3s
+
+        //routing 
+        FollowersRoutingModule,
+
+        //d3s        
         CoreModule,
-        WorkflowDiagramModule,
+        SharedGridPagingInfoModule,
         TilesModule,
-        
 
         //prime        
-        DataTableModule,        
+        DataTableModule,
         SharedModule,
-        ButtonModule,
     ],
     declarations: [
-        WorkflowMonitorComponent,
-    ],
-    exports: [
-        WorkflowMonitorComponent,
+        FollowersComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
-export class WorkflowMonitorModule { }
+export class FollowersModule { }

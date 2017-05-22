@@ -9,15 +9,14 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-relationships-component',
-    template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="[selected?.SourceName] + ' / ' + [selected?.TargetName]" [objectType]="'IntersectType'"></d3s-audit>                
-                <div *ngIf="isRolesVisible" class="row">
+    template: `<div *ngIf="isRolesVisible" class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-admin-relationship-roles></d3s-admin-relationship-roles>
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!isAuditVisible && !isRolesVisible" class="row">
+                <div *ngIf="!isRolesVisible" class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
                             <d3s-admin-relationships-list [(selected)]="selected"></d3s-admin-relationships-list>

@@ -11,8 +11,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'd3s-admin-attributes-component',  
     providers: [AttributeTypeService],
-    template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.data?.ID" [objectName]="selected?.data?.Name" [objectType]="'AttributeType'"></d3s-audit>
-                <div class="row" *ngIf="!isAuditVisible">
+    template: ` <div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!isLoading && !showDelete && !showEditor">Attribute Types

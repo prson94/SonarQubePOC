@@ -73,9 +73,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private fields: WorkflowFormField[] = [];
     private description: string;
     private title: string;
-    private objectName: string;
-    private objectType: string;
-    private objectID: number;
+    
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
     private isUserAllowedToComplete: boolean = false;

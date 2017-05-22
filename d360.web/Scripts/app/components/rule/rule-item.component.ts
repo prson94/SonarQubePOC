@@ -19,32 +19,8 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
     selector: 'd3s-rule-item',
     providers: [RulesService, PermissionsService, SurveysService],    
     template: ` 
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'" [usageOnly]="false"></d3s-lineage>
-                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-impact>
-                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="rule?.ID" [objectType]="'Rule'" [title]="'Ownership of ' + rule?.Name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading && isFollowersVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">       
-                            <d3s-follower-grid [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name"></d3s-follower-grid> 
-                        </div>
-                    </div>
-                </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
+                <div class="row" *ngIf="!isLoading && !isQualifiersVisible">
                     <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
                     <div class="col s12" *ngIf="showSurvey && surveyType">
                                 <div class="tile tile-detail">
@@ -57,14 +33,14 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                         </div>
                     </div>
                 </div>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
+                <div class="row" *ngIf="!isLoading && !isQualifiersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
                 </div>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
+                <div class="row" *ngIf="!isLoading && !isQualifiersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-rule-implementations-grid [ruleId]="rule?.ID"></d3s-rule-implementations-grid> 

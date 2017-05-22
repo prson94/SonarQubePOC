@@ -18,31 +18,16 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 @Component({
     selector: 'd3s-rule-implementation',
     providers: [RulesService, PermissionsService],    
-    template: ` 
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="implementation?.ID" [objectName]="implementation?.Name" [objectType]="'RuleImplementation'"></d3s-audit>                
-                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'RuleImplementation'" [objectID]="implementation?.ID" [objectName]="implementation?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading && isQualifiersVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">       
-                            <d3s-rule-qualifier-list [implementationId]="implementation?.ID"></d3s-rule-qualifier-list>
-                        </div>
-                    </div>
-                </div>
+    template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
+                <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-object-definition-tile [objectType]="'RuleImplementation'" [objectID]="implementation?.ID" [objectPermissions]="permissions" [hasAttributes]="false" (onEditComplete)="editRuleImplementation($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
                 </div>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible && !isQualifiersVisible">
+                <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-rule-results-grid [implementationId]="implementation?.ID"></d3s-rule-results-grid> 
@@ -52,12 +37,10 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 })
 
 export class RuleImplementationComponent extends BaseComponent implements OnInit, OnDestroy {
-    private sub: any;
-    private rightSub: any;
+    private sub: any;    
     private implementation: RuleImplementationDetail;
     private messages: MessageBarItem[] = [];
-    private isQualifiersVisible = false;
-
+    
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
             private router: Router,
@@ -67,19 +50,10 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
             protected permissionsService: PermissionsService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
-        this.setCommonRightSideBar(false, false, false, false, false, false, false);
-        this.rightSidebarService.showItem(<RightSidebarItem>{
-            active: false,
-            icons: ['fa-tags'],
-            tag: 'qualifiers',
-            title: 'Qualifiers'
-        });
+        this.rightSidebarService = rightSidebarService;        
     }
 
-    ngOnInit() {
-        
-                
+    ngOnInit() {                
         this.sub = this.route.params.subscribe(params => {
             let ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number
@@ -87,24 +61,16 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
             this.isLoading = true;
 
             this.headerBreadcrumbService.setCurrentObjectInfo('RuleImplementation', implementationId);
-
+                        
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
 
             this.load(implementationId).then(() => this.isLoading = false);
-        });
-
-        this.rightSub = this.rightSidebarService.rightSidebarClicked$.subscribe(c => {
-            if (c.tag == 'qualifiers')
-                this.isQualifiersVisible = !this.isQualifiersVisible;
-            else
-                this.isQualifiersVisible = false;
-        });
+        });        
 
     }
 
     ngOnDestroy() {        
-        this.sub.unsubscribe();
-        this.rightSub.unsubscribe();
+        this.sub.unsubscribe();        
         this.clearSidebar();
     }
 
@@ -112,6 +78,16 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
         return this.rulesService.getRuleImplementation(implementationId)
             .then(result => {
                 this.implementation = result;
+
+                this.setObjectInfo('RuleImplementation', this.implementation.ID, this.implementation.Name);
+                this.setCommonRightSideBar(true, false, false, false, false, false, false);
+                this.rightSidebarService.showItem(<RightSidebarItem>{
+                    active: false,
+                    icons: ['fa-tags'],
+                    tag: 'qualifiers',
+                    title: 'Qualifiers',
+                    url: `/quality/rule/implementation/qualifiers/detail/${this.objectID}`
+                });
 
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules', undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT

@@ -10,7 +10,6 @@ import { SocialModule } from '../shared/social/social.module';
 import { SearchModule } from '../search/search.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
 
 import { HomeComponent} from './home.component';
@@ -56,8 +55,7 @@ import {
         SocialModule,
         SharedAssignmentsModule,
         TilesModule,
-        SharedGridPagingInfoModule,
-        SharedDashboardModule,
+        SharedGridPagingInfoModule,        
     ],
     declarations: [
         ActivityDetailsTile,

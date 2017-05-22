@@ -48,12 +48,8 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     }
 
     edit(id: number): void {
-        this.formMode = FormMode.Editing;
-        //console.log(id);
+        this.formMode = FormMode.Editing;        
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
-        //console.log(this.selectedRow);
-        //console.log(this.responsibilityTypeItems);
-
     }
      
     delete(id: number): void {

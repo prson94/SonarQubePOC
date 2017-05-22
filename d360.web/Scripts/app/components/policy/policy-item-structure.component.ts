@@ -18,17 +18,9 @@ import { LevelsService } from '../../services/levels.service';
 
 @Component({
     selector: 'd3s-policy-item-structure',
-    template: `
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="policyType.ID" [objectName]="policyType.Name" [objectType]="'PolicyType'"></d3s-audit>                
-                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="policyType.ID" [objectType]="'PolicyType'" [title]="'Ownership of ' + policyType.Name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                </div>
+    template: `                
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
+                <div class="tile tile-detail" *ngIf="!isLoading">                            
                     <header *ngIf="!showDelete && !showEditor">{{policyType.Name}}
                         <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="add()"></d3s-tile-actions>                            
                     </header>                              

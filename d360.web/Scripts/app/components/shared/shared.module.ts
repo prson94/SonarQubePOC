@@ -34,7 +34,6 @@ import { SimpleAccordionModule } from './simple-accordion.part';
 import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
 
 import { AttributesTile } from './attributes.tile';
-import { FollowerGridComponent } from './follower-grid.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
 import { MessagesBarComponent } from './messages-bar.component';
@@ -50,8 +49,7 @@ import { UserListComponent } from './user-list.component';
 
 @NgModule({
     declarations: [     
-        AttributesTile,                                                                            
-        FollowerGridComponent,                 
+        AttributesTile,        
         FusionFiltersComponent,        
         GroupMembersComponent,                            
         MessagesBarComponent,                                        
@@ -64,8 +62,7 @@ import { UserListComponent } from './user-list.component';
         TakeSurveyComponent,                 
         UserListComponent,        
     ],
-    exports: [                                                                                                               
-        FollowerGridComponent,          
+    exports: [                                                                                                                       
         FusionFiltersComponent,         
         GroupMembersComponent,                             
         MessagesBarComponent,                                                  

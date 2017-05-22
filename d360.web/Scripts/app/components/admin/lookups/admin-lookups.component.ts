@@ -12,8 +12,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'd3s-admin-lookups-component',
     providers: [LookupService],
-    template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selectedLookup?.ID" [objectName]="selectedLookup?.Name" [objectType]="'LookupType'"></d3s-audit>
-                <div class="row" *ngIf="!isAuditVisible">
+    template: ` <div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Lookup Types

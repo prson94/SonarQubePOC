@@ -15,33 +15,9 @@ import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-policy-item',
-    template: `
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'"></d3s-audit>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'" [usageOnly]="false"></d3s-lineage>
-                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'"></d3s-impact>
-                <div *ngIf="!isLoading && isRelationshipsVisible" class="row">
-                    <div class="col s12">
-                        <div class="tile tile-detail">                
-                            <d3s-object-relationships [objectPermissions]="permissions" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'"></d3s-object-relationships>
-                        </div>
-                    </div>
-                </div>
-              <div *ngIf="!isLoading && isOwnershipVisible" class="row">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-people-responsibilities-tile objectType="Policy" [objectID]="selected?.ID" [title]="'Ownership of ' + selected?.Name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading && isFollowersVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">       
-                            <d3s-follower-grid [objectType]="'Policy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-follower-grid> 
-                        </div>
-                    </div>
-                </div>
+    template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible && !isFollowersVisible && !isImpactVisible" class="row">                    
+                <div *ngIf="!isLoading" class="row">                    
                     <div class="col s12">
                         <div class="row">
                             <div class="col s12">
@@ -106,9 +82,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
             if (!hierarchyId)
                 hierarchyId = +params['hierarchyId'] || 0;
-
-            this.hideSidebarItems();
-
+            
             if (hierarchyId != 0)
                 this.headerBreadcrumbService.setCurrentObjectInfo('Policy', hierarchyId);
             else

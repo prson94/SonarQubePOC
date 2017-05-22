@@ -1,0 +1,70 @@
+﻿import { Input, Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent} from '../../shared/base.component';
+import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+import { ObjectStatistics, ObjectStatisticChildItem } from '../../../models/object-statistics.model';
+
+@Component({
+    selector: 'd3s-children',    
+    template: `    
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <header>Children of {{objectName}}</header>
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                            <div *ngIf="!isLoading" class="row">
+                                <div class="col l3 s12 child-container"><!--left nav-->
+                                    <div class="row child" *ngFor="let child of children" [ngClass]="{'active' : selected==child}" (click)="selected=child;">
+                                            <div class="col s10 name">{{child.Name}}</div>
+                                            <div class="col s2 count center">{{child.Count}}</div>
+                                    </div>                                                
+                                </div>
+                                <div class="col l9 s12">     
+                                    <d3s-artifact-item-child-grid [parentId]="objectID" [artifactTypeId]="selected?.TypeID"></d3s-artifact-item-child-grid>
+                                </div>                    
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `,
+    providers: [ObjectStatisticsService],
+})
+
+export class ChildrenComponent extends BaseComponent implements OnInit, OnDestroy {
+    
+    private children: ObjectStatisticChildItem[] = [];
+    private selected: ObjectStatisticChildItem;
+    private sub: any;
+
+    constructor(
+        protected objectStatisticsService: ObjectStatisticsService,
+        private route: ActivatedRoute,
+        private router: Router,
+    ) {
+        super();
+    }
+
+    ngOnInit() {
+        this.sub = this.route.params.subscribe(params => {
+            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
+            this.objectType = params['objectType'];
+
+            this.load();
+        });
+    }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
+    }
+
+
+    private load() {
+        this.isLoading = true;
+        this.objectStatisticsService.getObjectStatistics(this.objectID, this.objectType)
+            .then(res => {
+                this.children = res.Items;                
+                this.selected = this.children.length > 0 ? this.children[0] : null;
+                this.isLoading = false;
+            });
+    }    
+};

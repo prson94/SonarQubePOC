@@ -11,26 +11,9 @@ import { ReferenceItemType } from '../../models/reference.model';
 @Component({
     selector: 'd3s-reference-list',   
    
-    template: ` 
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selectedReferenceItemType?.ID" [objectName]="selectedReferenceItemType?.Name" [objectType]="'ReferenceItemType'"></d3s-audit>                
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selectedReferenceItemType?.ID" [objectName]="selectedReferenceItemType?.Name" [objectType]="'ReferenceItemType'"></d3s-lineage>
-                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="selectedReferenceItemType?.ID" [objectName]="selectedReferenceItemType?.Name" [objectType]="'ReferenceItemType'"></d3s-impact>
-                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="selectedReferenceItemType?.ID" [objectType]="'ReferenceItemType'" [title]="'Ownership of ' + selectedReferenceItemType?.Name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [objectName]="selectedReferenceItemType?.Name"></d3s-object-relationships>
-                        </div>
-                    </div>
-                </div>
+    template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible">                                      
+                <div class="row" *ngIf="!isLoading">
                     <div class="col s12 l3">
                         <d3s-reference-item-type-list [initialSelectedListId]="selectedReferenceListId" [(selected)]="selectedReferenceItemType"></d3s-reference-item-type-list>
                     </div>

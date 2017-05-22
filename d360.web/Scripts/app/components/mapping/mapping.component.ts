@@ -13,16 +13,8 @@ import { PermissionsService } from '../../services/permissions.service';
     template: `
         <div class="row">
             <div class="col s12">
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Map'"></d3s-audit>
-                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Map'" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
-                        </div>
-                    </div>
-                </div>    
-                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isRelationshipsVisible">                            
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>                                 
+                <div class="tile tile-detail" *ngIf="!isLoading">                            
                     <header *ngIf="!showDelete && !showEditor">Mappings
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                     </header>  

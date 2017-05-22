@@ -12,7 +12,7 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
-import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
+
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
 import { AdminDashboardsComponent } from './admin-dashboards.component';
@@ -53,7 +53,7 @@ import {
         CoreModule,
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
-        SharedAuditModule,
+        
         SharedObjectDetailsModule,
         TilesModule,
     ],

@@ -10,7 +10,6 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
-import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
 import { AdminStatisticsComponent } from './admin-statistics.component';
@@ -49,8 +48,7 @@ import {
         //d3s        
         CoreModule,
         SharedGridPagingInfoModule,
-        SharedDeleteFormModule,
-        SharedAuditModule,
+        SharedDeleteFormModule,        
         SharedObjectDetailsModule,
         TilesModule,
     ],

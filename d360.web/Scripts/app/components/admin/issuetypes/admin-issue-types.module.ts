@@ -16,7 +16,7 @@ import {
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
-import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
+
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
@@ -44,7 +44,7 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
 
         //d3s                
         CoreModule,
-        SharedAuditModule,
+        
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,     
         SharedFieldDefinitionModule,   

@@ -18,17 +18,9 @@ import { LevelsService } from '../../services/levels.service';
 @Component({
     selector: 'd3s-model-item-structure',
     providers: [ModelsService, PermissionsService, LevelsService],
-    template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="model?.ID" [objectName]="model?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
-                <d3s-model-diagram *ngIf="!isLoading && isModelDiagramVisible" [id]="modelId"></d3s-model-diagram>                
-                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="model?.ID" [objectType]="'TaxonomyType'" [title]="'Ownership of ' + model?.Name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                </div>
+    template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isModelDiagramVisible">                            
+                <div class="tile tile-detail" *ngIf="!isLoading">                            
                     <header *ngIf="!showDelete && !showEditor">{{model.Name}}
                         <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                                                
@@ -95,8 +87,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     searchValue: string;
     showEditor: boolean;
-    showDelete: boolean;
-    isModelDiagramVisible = false;
+    showDelete: boolean;    
     selectedLevel: number = 0;
 
     theDeleteCallback: Function;
@@ -115,15 +106,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
-
-        this.setCommonRightSideBar(true, true);
-        this.rightSidebarService.showItem({
-            icons: ['fa-sitemap'],
-            tag: 'modeldiagram',
-            title: 'Hierarchy Diagram',
-            active: false
-        });
-
+        
         this.theDeleteCallback = this.deleteModelHierarchy.bind(this);
     }
 
@@ -132,6 +115,17 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         this.sub = this.route.params.subscribe(params => {
 
             this.modelId = +params['modelId'];
+
+            this.setObjectInfo('TaxonomyType', this.modelId);
+            this.setCommonRightSideBar(true, true);
+
+            this.rightSidebarService.showItem({
+                icons: ['fa-sitemap'],
+                tag: 'modeldiagram',
+                title: 'Hierarchy Diagram',
+                active: false,
+                url: `/sidebar/visualization/diagram/${this.objectID}`
+            });
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
 
@@ -157,21 +151,12 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 .then(result => {
                     this.levels = result;
                 });
-
-            this.rightSub = this.rightSidebarService.rightSidebarClicked$.subscribe(r => {
-                if (r.tag == 'modeldiagram') {
-                    this.isModelDiagramVisible = !this.isModelDiagramVisible;
-                } else {
-                    this.isModelDiagramVisible = false;
-                }
-            });
         });
     }
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
-        this.rightSub.unsubscribe();        
+        this.sub.unsubscribe();          
     }
 
     private loadModelHierarchy(modelId: number) {

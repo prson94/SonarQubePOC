@@ -14,18 +14,19 @@ import { JsonResult } from '../../models/jsonresult.model';
 export class BaseComponent {    
     protected isLoading = false;
 
+    //current object info
+    objectID: number;
+    objectType: string;
+    objectName: string;
+
     //sidebar
     sidebarSubscription: Subscription;
+    isVisitingSidebar: boolean = false;
 
     //tabs
-    isAuditVisible: boolean = false;
-    isOwnershipVisible: boolean = false;
-    isDashboardVisible: boolean = false;
-    isLineageVisible: boolean = false;
-    isImpactVisible: boolean = false;
-    isRelationshipsVisible: boolean = false;
-    isFollowersVisible: boolean = false;
 
+    lineageShowUsageOnly: boolean = false;
+    
     //filter mode
     showSimpleFilter: boolean = true;
 
@@ -93,47 +94,35 @@ export class BaseComponent {
 
     setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean, hasFollowers?: boolean) {
         if (this.rightSidebarService) {
-            if (hasLineage) this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage', ['fa-random']));
-            if (hasAudit || hasAudit === undefined) this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit', ['fa-eye']));
-            if (hasOwnership) this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership', ['fa-user']));
-            if (hasDashboard) this.rightSidebarService.showItem(new RightSidebarItem('Dashboards', 'dashboards', ['fa-tachometer']));
-            if (hasImpact) this.rightSidebarService.showItem(new RightSidebarItem('Impact', 'impact', ['fa-exchange']));
-            if (hasRelationships) this.rightSidebarService.showItem(new RightSidebarItem('Relations', 'relationship', ['fa-retweet']));
-            if (hasFollowers) this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers', ['fa-bookmark-o']));
+            this.clearSidebar();
+            if (hasLineage) this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage', ['fa-random'], `/sidebar/visualization/lineage${this.objectContextUrl()}${this.lineageShowUsageOnly ? '/1':''}`));
+            if (hasAudit || hasAudit === undefined) this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit', ['fa-eye'], `/sidebar/audit${this.objectContextUrl()}`));
+            if (hasOwnership) this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership', ['fa-user'], `/sidebar/ownership${this.objectContextUrl()}`));
+            if (hasDashboard) this.rightSidebarService.showItem(new RightSidebarItem('Dashboards', 'dashboards', ['fa-tachometer'], `/sidebar/dashboard${this.objectContextUrl()}`));
+            if (hasImpact) this.rightSidebarService.showItem(new RightSidebarItem('Impact', 'impact', ['fa-exchange'], `/sidebar/visualization/impact${this.objectContextUrl()}`));
+            if (hasRelationships) this.rightSidebarService.showItem(new RightSidebarItem('Relations', 'relationship', ['fa-retweet'], `/sidebar/relationships${this.objectContextUrl()}`));
+            if (hasFollowers) this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers', ['fa-bookmark-o'], `/sidebar/followers${this.objectContextUrl()}`));
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {
-                    if (item.tag == 'audit')
-                        this.isAuditVisible = !this.isAuditVisible;
-                    else if (item.tag == 'ownership')
-                        this.isOwnershipVisible = !this.isOwnershipVisible;
-                    else if (item.tag == 'dashboards')
-                        this.isDashboardVisible = !this.isDashboardVisible;
-                    else if (item.tag == 'lineage')
-                        this.isLineageVisible = !this.isLineageVisible;
-                    else if (item.tag == 'impact')
-                        this.isImpactVisible = !this.isImpactVisible;
-                    else if (item.tag == 'relationship')
-                        this.isRelationshipsVisible = !this.isRelationshipsVisible;
-                    else if (item.tag == 'followers')
-                        this.isFollowersVisible = !this.isFollowersVisible;                            
-                    else
-                        this.showHideBreadcrumbItem(item);
+                    this.isVisitingSidebar = true;              
+                    this.showHideBreadcrumbItem(item);
                 });
         }
     }
 
-    hideSidebarItems() {
-        this.isAuditVisible = false;
-        this.isOwnershipVisible = false;
-        this.isDashboardVisible = false;
-        this.isFollowersVisible = false;
-        this.isImpactVisible = false;
-        this.isLineageVisible = false;
-        this.isRelationshipsVisible = false;
+    setObjectInfo(objectType: string, objectID: number, objectName?: string) {
+        this.objectType = objectType;
+        this.objectID = objectID;
+        if (objectName != undefined) this.objectName = objectName;
     }
 
-
+    objectContextUrl(): string {
+        let url = '';
+        if (!this.objectType || !this.objectID) return url;
+        return `/${this.objectType}/${this.objectID}`;
+    }
+        
     //This is generally overloaded to show hide in your own class.
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         //console.log('show/hide :');
@@ -142,9 +131,8 @@ export class BaseComponent {
 
     clearSidebar(unsubscribe?: boolean) {
         if (this.rightSidebarService) {
-            this.rightSidebarService.clearItems();
-            if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {
-                //console.log("DEV INFO - UNSUBSCRIBING FROM RIGHT SIDE BAR SUBSCRIPTION");
+            if (!this.isVisitingSidebar) this.rightSidebarService.clearItems();
+            if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {                
                 this.sidebarSubscription.unsubscribe();
             }
         }

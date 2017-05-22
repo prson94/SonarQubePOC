@@ -64,7 +64,7 @@
                                                  [conditions]="conditions"></d3s-workflow-condition-list>
 
                     <div *ngIf="showAddCondition">
-                        <d3s-workflow-condition-editor [objectId]="objectId"
+                        <d3s-workflow-condition-editor [objectId]="objectID"
                                                        [objectType]="objectType"
                                                        [changeType]="model.Event.ChangeType"
                                                        (onSave)="addCondition($event)"

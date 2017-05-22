@@ -11,24 +11,8 @@ import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-fusion-attribute-details',
-    template: `  <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="id" [objectType]="type" [title]="'Ownership of ' + name"></d3s-people-responsibilities-tile>
-                        </div>
-                    </div>
-                 </div> 
-                <div class="row"  *ngIf="!isLoading && isRelationshipsVisible">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-relationships [objectPermissions]="permissions" [objectType]="type" [objectID]="id" [objectName]="name"></d3s-object-relationships>
-                        </div>
-                    </div>
-                </div>         
-                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="id" [objectName]="name" [objectType]="type" [usageOnly]="false"></d3s-lineage>                
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="id" [objectName]="name" [objectType]="type"></d3s-audit>              
-                 <div class="row" *ngIf="!isLoading && !isOwnershipVisible && !isAuditVisible && !isLineageVisible && !isRelationshipsVisible">    
+    template: `  <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                  
+                 <div class="row" *ngIf="!isLoading">    
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-fusion-attribute-item-details [fusionAttributeId]="id" [name]="name" [objectType]="type" (close)="close()" [hasClose]="true"></d3s-fusion-attribute-item-details>                            

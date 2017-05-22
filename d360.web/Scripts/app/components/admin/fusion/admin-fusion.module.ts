@@ -10,7 +10,7 @@ import { ColorPickerModule } from 'angular2-color-picker';
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
-import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
+
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
@@ -63,7 +63,7 @@ import {
         //d3s                
         CoreModule,
         D3SSharedModule,
-        SharedAuditModule,
+        
         SharedDeleteFormModule,
         SharedObjectDetailsModule,
         SharedGridPagingInfoModule,

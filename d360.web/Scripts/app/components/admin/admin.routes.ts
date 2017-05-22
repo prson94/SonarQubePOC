@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AdminComponent } from './admin.component';
-
+import { AdminClassificationsComponent } from './admin-classifications.component'
 
 const routes: Routes = [
     {
@@ -33,6 +33,9 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES, loadChildren: './issuetypes/admin-issue-types.module#AdminIssueTypesModule?chunkName=adminIssueTypesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES, loadChildren: './predicates/admin-predicates.module#AdminPredicatesModule?chunkName=adminPredicatesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS, loadChildren: './organizations/admin-organizations.module#AdminOrganizationsModule?chunkName=adminOrganizationsChunk' },
+
+            //static load
+            { path: 'classification/:objectType', component: AdminClassificationsComponent }
         ]
     }
 ];

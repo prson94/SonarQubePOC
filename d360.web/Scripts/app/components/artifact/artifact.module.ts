@@ -13,16 +13,10 @@ import { WorkflowModule } from '../workflow/workflow.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
-import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
 import { SharedDeleteFormModule } from '../shared/delete.form';
-import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
-import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
-import { WorkflowMonitorModule } from '../shared/workflowmonitor/workflow-monitor.module';
 
 import { ArtifactRoutingModule } from './artifact.routes';
 
@@ -34,8 +28,6 @@ import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
 import { ArtifactTopLevelListComponent } from './artifact-top-level-list.component';
 import { ArtifactTypeMetricsComponent } from './artifact-type-metrics.component';
-import { ArtifactItemChildrenComponent } from './artifact-item-children.component';
-import { ArtifactItemChildGridComponent } from './artifact-item-child-grid.component';
 import { ArtifactTopLevelFilterComponent } from './artifact-top-level-filter.component';
 
 import {    
@@ -76,18 +68,13 @@ import {
         D3SSharedModule,
         CoreModule,        
         PipesModule,
-        SharedAuditModule,
-        SharedDashboardModule,
+        
         SharedDeleteFormModule,
-        SharedGridPagingInfoModule,
-        SharedDiagramModule,
+        SharedGridPagingInfoModule,        
         SharedDynamicGridEditorModule,
-        SharedObjectGovernanceModule,
-        SharedResponsibilitiesModule,
-        SharedRelationshipModule,
+        SharedObjectGovernanceModule,        
         TilesModule,
-        WorkflowModule,
-        WorkflowMonitorModule,
+        WorkflowModule,        
     ],
     declarations: [        
         ArtifactColumnFilterComponent,
@@ -98,8 +85,6 @@ import {
         ArtifactListComponent,
         ArtifactTopLevelListComponent,
         ArtifactTypeMetricsComponent,        
-        ArtifactItemChildrenComponent,
-        ArtifactItemChildGridComponent,
         ArtifactTopLevelFilterComponent,
     ],
     providers: [

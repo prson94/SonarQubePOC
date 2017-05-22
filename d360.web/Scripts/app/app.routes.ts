@@ -23,6 +23,14 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_SEARCH_ROOT, loadChildren: './components/search/search.module#SearchModule?chunkName=searchChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT, loadChildren: './components/workflow/workflow.module#WorkflowModule?chunkName=workflowChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_MAPPING_ROOT, loadChildren: './components/mapping/mapping.module#MappingModule?chunkName=mappingChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_AUDIT_ROOT, loadChildren: './components/sidebar/audit/audit.module#AuditModule?chunkName=auditChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT, loadChildren: './components/sidebar/dashboard/dashboard.module#DashboardModule?chunkName=dashboardChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_FOLLOWERS_ROOT, loadChildren: './components/sidebar/followers/followers.module#FollowersModule?chunkName=followersChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_OWNERSHIP_ROOT, loadChildren: './components/sidebar/ownership/ownership.module#OwnershipModule?chunkName=ownershipChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, loadChildren: './components/sidebar/visualization/visualization.module#VisualizationModule?chunkName=visualizationChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_RELATIONSHIP_ROOT, loadChildren: './components/sidebar/relationships/relationships.module#RelationshipsModule?chunkName=relationshipsChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_CHILDREN_ROOT, loadChildren: './components/sidebar/children/children.module#ChildrenModule?chunkName=childrenChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_WORKFLOW_MONITOR_ROOT, loadChildren: './components/sidebar/workflowmonitor/workflow-monitor.module#WorkflowMonitorModule?chunkName=workflowMonitorChunk' }, 
 ];
 
 @NgModule({

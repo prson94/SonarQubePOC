@@ -16,16 +16,8 @@ import * as _ from 'lodash';
     template: `                 
                 <div class="row">
                     <div class="col s12">
-                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" objectType="PolicyTypeClass"></d3s-audit>                
-                        <div class="row" *ngIf="!isLoading && isOwnershipVisible">
-                            <div class="col s12">
-                                <div class="tile tile-detail">   
-                                    <d3s-people-responsibilities-tile [objectID]="selected?.ID" objectType="PolicyTypeClass" [title]="'Ownership of ' + selected?.Name"></d3s-people-responsibilities-tile>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                
+                        <div class="tile tile-detail" *ngIf="!isLoading">                            
                             <header>{{policyClassName}} Policies
                                 <d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>         

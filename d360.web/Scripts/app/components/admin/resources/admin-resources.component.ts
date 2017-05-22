@@ -11,20 +11,14 @@ import { Title } from '@angular/platform-browser';
     templateUrl: './admin-resources.component.html'
 })
 
-export class AdminResourcesComponent extends AdminBaseComponent {
-
-    private objectType = 'ResourceType';
-    private objectID = 1;
-
+export class AdminResourcesComponent extends AdminBaseComponent {    
     constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService);        
         this.areaName = "Resources";
         this.setCommonItems();
+        this.setObjectInfo('ResourceType', 1);        
     }
-
-    ngOnInit() {
-    }
-
+        
     resourceUri(): string {
         return `/api/resources/${this.objectID}?$orderby=LastName,FirstName`;
     }

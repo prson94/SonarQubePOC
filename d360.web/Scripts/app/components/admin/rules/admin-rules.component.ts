@@ -13,14 +13,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
     selector: 'd3s-admin-rules-component',
     providers: [RulesService],
     template: `
-                <div *ngIf="isDimensionsVisible" class="row">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-admin-rule-dimensions></d3s-admin-rule-dimensions>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isDimensionsVisible">
+                <div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Rule Types
@@ -111,7 +104,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);
         this.setCommonRightSideBar(false, false, false);
-        this.rightSidebarService.showItem(new RightSidebarItem('Dimensions', 'dimensions', ['fa-tag']));
+        this.rightSidebarService.showItem(new RightSidebarItem('Dimensions', 'dimensions', ['fa-tag'], '/admin/rules/dimensions'));
     }
 
     ngOnInit() {

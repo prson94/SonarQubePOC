@@ -24,4 +24,6 @@ export class RightSidebarItemComponent {
     @Input() title: string;    
 
     @Input() activeIcons: string[] = ["fa-share-alt"];
+
+    @Input() url: string;
 };

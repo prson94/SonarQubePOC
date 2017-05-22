@@ -15,7 +15,7 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
+
 import { AdminModule } from '../admin.module';
 
 
@@ -49,7 +49,7 @@ import {
         AdminModule,
         CoreModule,
         PipesModule,
-        SharedAuditModule,
+        
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
