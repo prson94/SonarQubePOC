@@ -20,15 +20,12 @@ import { BoardTile} from './board-tile.component';
 import { HomeRoutingModule } from './home.routes';
 
 import {
-    GrowlModule,
-    InputTextModule,
+    GrowlModule,    
     DataTableModule,
-    ButtonModule,
-    DropdownModule,
-    CheckboxModule,        
-    MultiSelectModule,
+    ButtonModule,    
     TooltipModule,    
     SharedModule,
+    InputTextModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -39,13 +36,10 @@ import {
         HomeRoutingModule,
 
         //primeng  
-        GrowlModule,
-        InputTextModule,        
+        InputTextModule,
+        GrowlModule,       
         DataTableModule,
-        ButtonModule,
-        DropdownModule,
-        CheckboxModule,                
-        MultiSelectModule,        
+        ButtonModule,     
         TooltipModule,                     
         SharedModule,
 
