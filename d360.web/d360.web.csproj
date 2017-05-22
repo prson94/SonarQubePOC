@@ -565,7 +565,7 @@
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-findviarelation.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-lineage.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-rules.component.html" />
+    <Content Include="Scripts\app\components\fusion\rules\fusion-rules.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-relate.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-promote.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-find.component.html" />
@@ -1003,6 +1003,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.routes.ts" />
@@ -1200,7 +1201,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-manual-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-process-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-rules.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-responsibility.component.ts" />

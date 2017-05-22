@@ -1,8 +1,9 @@
-﻿import { Input, Component } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { FusionService } from '../../services/fusion.service';
-import { MessagesService } from '../../services/messages.service';
-import { FusionRule, FusionRuleStep, FusionRuleFilter, FusionRuleItem, FusionRuleMapping } from '../../models/fusion.model';
+﻿import { Component } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../../shared/base.component';
+import { FusionService } from '../../../services/fusion.service';
+import { MessagesService } from '../../../services/messages.service';
+import { FusionRule, FusionRuleStep, FusionRuleFilter, FusionRuleItem, FusionRuleMapping } from '../../../models/fusion.model';
 
 
 @Component({
@@ -12,8 +13,9 @@ import { FusionRule, FusionRuleStep, FusionRuleFilter, FusionRuleItem, FusionRul
 })
 
 export class FusionRulesComponent extends BaseComponent {
-    @Input() fusionID: number;
-    @Input() fusionTypeID: number;    
+    fusionID: number;
+    fusionTypeID: number;    
+    sub: any;
     formMode = FormMode.Default;
     FormMode = FormMode;
 
@@ -25,8 +27,24 @@ export class FusionRulesComponent extends BaseComponent {
     showRulePromotionHistory: boolean;
     showFilterAdd: boolean = true;
 
-    constructor(private fusionService: FusionService, private messagesService: MessagesService) {
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        private fusionService: FusionService,
+        private messagesService: MessagesService
+    ) {
         super();
+    }
+
+    ngOnInit() {
+        this.sub = this.route.params.subscribe(params => {
+            this.fusionID = +params['fusionId']; // (+) converts string 'id' to a number
+            this.fusionTypeID = params['fusionTypeId'];            
+        });
+    }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
     }
 
     showMessage(e: any) {

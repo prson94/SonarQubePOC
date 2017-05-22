@@ -32,6 +32,7 @@ import { FusionRuleFilterListComponent } from './fusion-rule-filter-list.compone
 import { FusionRuleFilterEditorComponent } from './fusion-rule-filter-editor.component';
 import { FusionRuleItemListComponent } from './fusion-rule-item-list.component';
 import { FusionRuleItemEditorComponent } from './fusion-rule-item-editor.component';
+import { FusionRulesComponent } from './fusion-rules.component';
 import { FusionRuleStepListComponent } from './fusion-rule-step-list.component';
 import { FusionRuleStepHistoryComponent } from './fusion-rule-step-history.component';
 import { FusionRuleStepComponent } from './fusion-rule-step.component';
@@ -42,11 +43,13 @@ import { FusionRuleStepPromoteComponent } from './fusion-rule-step-promote.compo
 import { FusionRuleStepRelateComponent } from './fusion-rule-step-relate.component';
 import { FusionRuleStepUpdateComponent } from './fusion-rule-step-update.component';
 
+import { FusionRuleRoutingModule } from './fusion-rule.routes';
 
 @NgModule({
     declarations: [
         FusionRuleStepMappingListComponent,
         FusionRuleStepMappingEditorComponent,
+        FusionRulesComponent,
         FusionRuleListComponent,
         FusionRuleEditorComponent,
         FusionRuleFilterListComponent,
@@ -62,30 +65,13 @@ import { FusionRuleStepUpdateComponent } from './fusion-rule-step-update.compone
         FusionRuleStepPromoteComponent,
         FusionRuleStepRelateComponent,
         FusionRuleStepUpdateComponent,
-    ],
-    exports: [
-        FusionRuleStepMappingListComponent,
-        FusionRuleStepMappingEditorComponent,
-        FusionRuleListComponent,
-        FusionRuleEditorComponent,
-        FusionRuleFilterListComponent,
-        FusionRuleFilterEditorComponent,
-        FusionRuleItemListComponent,
-        FusionRuleItemEditorComponent,
-        FusionRuleStepListComponent,
-        FusionRuleStepHistoryComponent,
-        FusionRuleStepComponent,
-        FusionRuleStepFindComponent,
-        FusionRuleStepFindViaRelationComponent,
-        FusionRuleStepLineageComponent,
-        FusionRuleStepPromoteComponent,
-        FusionRuleStepRelateComponent,
-        FusionRuleStepUpdateComponent,
-    ],
+    ],    
     imports: [CommonModule,
         FormsModule,
         HttpModule,
         RouterModule,
+
+        FusionRuleRoutingModule,
 
         //primeng                
         InputTextModule,

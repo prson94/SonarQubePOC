@@ -22,7 +22,6 @@ import { SharedRelationshipModule } from '../shared/relationship/shared-relation
 import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-field-definition.module';
 
 import { FusionRoutingModule } from './fusion.routes';
-import { FusionRuleModule } from './rules/fusion-rule.module';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
 import { FusionAgentErrorsComponent } from './fusion-agent-errors.component';
@@ -43,7 +42,6 @@ import { FusionStatisticsComponent } from './fusion-statistics.component';
 import { FusionTechnicalMappingsComponent } from './fusion-technical-mappings.component';
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
 import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summary-filters.component';
-import { FusionRulesComponent } from './fusion-rules.component';
 import { FusionQueryListComponent } from './fusion-query-list.component';
 import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-editor.component';
 import { FusionHistoryComponent } from './fusion-history.component'
@@ -71,8 +69,7 @@ import {
         RouterModule,
 
         FusionRoutingModule,
-        FusionRuleModule,
-
+        
         //primeng
         GrowlModule,
         InputTextModule,
@@ -125,11 +122,9 @@ import {
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,
         FusionTechnicalMappingsComponent,
-        FusionStructureTreeComponent,
-        FusionRulesComponent,
+        FusionStructureTreeComponent,        
         FusionQueryListComponent,
-        FusionQueryAttributeEditorComponent,
-        
+        FusionQueryAttributeEditorComponent,        
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

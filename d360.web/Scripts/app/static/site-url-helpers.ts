@@ -47,6 +47,7 @@
     static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute';
     static SITE_URL_FUSION_LIST = '';
     static SITE_URL_FUSION_ATTRIBUTE_DETAILS = 'details';
+    static SITE_URL_FUSION_RULES = 'rules';
 
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;

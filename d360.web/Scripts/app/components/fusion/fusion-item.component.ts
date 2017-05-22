@@ -17,13 +17,8 @@ import { AuthenticationService } from '../../services/authentication.service';
 
 @Component({
     selector: 'd3s-fusion-item',
-    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                          
-                <div class="row" *ngIf="!isLoading && showFusionRules">
-                    <div class="col s12">
-                        <d3s-fusion-rules [fusionID]="fusionId" [fusionTypeID]="fusion.FusionTypeID"></d3s-fusion-rules>
-                    </div>
-                </div>   
-                <div class="row" *ngIf="!isLoading && !showFusionRules">
+    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                                          
+                <div class="row" *ngIf="!isLoading">
                     <div class="col l3 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
@@ -60,8 +55,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private selectedFusionQueryAttribute: any;
     private initialFusionQueryAttributeId: number;
 
-
-    private showFusionRules: boolean = false;    
     private isQueryConfigVisible: boolean = false;
 
     @ViewChild(FusionStructureTreeComponent) private fusionTreeComponent: FusionStructureTreeComponent;
@@ -122,7 +115,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.setCommonRightSideBar(false, true, hasDashboard);
 
         this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive'], `/fusion/history/${this.fusionId}`));
-        if (this.authenticationService.isAdmin) this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork']));
+        if (this.authenticationService.isAdmin) this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork'], `/fusion/rules/${this.fusionId}/${this.fusion.FusionTypeID}`));
 
         if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o'], `/fusion/manual/load/${this.fusionId}`));           
     }
@@ -174,11 +167,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.selectedFusionQueryAttribute = null;
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionQueryAttributeTypeId=${event}`);
     }  
-
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {                
-        if (activatedItem.tag == 'fusionrules') this.showFusionRules = !this.showFusionRules;  
-    }
-
+    
     protected updateTree(tree) {
         tree.load();
     }
