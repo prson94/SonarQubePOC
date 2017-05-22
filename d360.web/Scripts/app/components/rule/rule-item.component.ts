@@ -20,7 +20,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
     providers: [RulesService, PermissionsService, SurveysService],    
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && !isQualifiersVisible">
+                <div class="row" *ngIf="!isLoading">
                     <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
                     <div class="col s12" *ngIf="showSurvey && surveyType">
                                 <div class="tile tile-detail">
@@ -33,14 +33,14 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                         </div>
                     </div>
                 </div>
-                <div class="row" *ngIf="!isLoading && !isQualifiersVisible">
+                <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
                 </div>
-                <div class="row" *ngIf="!isLoading && !isQualifiersVisible">
+                <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-rule-implementations-grid [ruleId]="rule?.ID"></d3s-rule-implementations-grid> 
@@ -55,8 +55,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private rule: RuleDetail;
     private messages: MessageBarItem[] = [];
     private surveyType: SurveyType;
-    private showSurvey: boolean = false;
-    private isQualifiersVisible = false;
+    private showSurvey: boolean = false;    
 
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
@@ -68,8 +67,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             protected surveysService: SurveysService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
-        this.setCommonRightSideBar(true, true, false, true, true, true, true);
+        this.rightSidebarService = rightSidebarService;        
     }
 
     ngOnInit() {
@@ -81,7 +79,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             this.isLoading = true;
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
-
+            this.setObjectInfo('Rule', ruleId);
+            this.setCommonRightSideBar(true, true, false, true, true, true, true);
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
 
             this.load(ruleId).then(() => this.isLoading = false);

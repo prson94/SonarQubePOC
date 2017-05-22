@@ -11,4 +11,6 @@
     active: boolean;
     icons: string[];
     url: string;
+    hasDynamicUrl: boolean;
+    dynamicUrlCallback: Function;
 }

@@ -14,6 +14,7 @@ import { TreeNode } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { LevelsService } from '../../services/levels.service';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-model-item-structure',
@@ -119,14 +120,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.setObjectInfo('TaxonomyType', this.modelId);
             
             this.setCommonRightSideBar(true, true);
-
-            this.rightSidebarService.showItem({
-                icons: ['fa-sitemap'],
-                tag: 'modeldiagram',
-                title: 'Hierarchy Diagram',
-                active: false,
-                url: `/sidebar/visualization/diagram/${this.objectID}`
-            });
+            
+            this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
             this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);

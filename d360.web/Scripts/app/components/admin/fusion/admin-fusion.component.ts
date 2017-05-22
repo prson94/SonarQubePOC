@@ -38,6 +38,10 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         this.areaName = "Fusion Types";
         this.setCommonItems();
         this.setCommonRightSideBar();
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/FusionType/${this.selectedRow.ID}`
+        });
         this.load();
     }
 

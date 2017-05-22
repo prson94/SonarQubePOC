@@ -78,7 +78,10 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
         this.areaName = "Models";
         this.setCommonItems();
         this.setCommonRightSideBar(true);
-
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/TaxonomyType/${this.selectedTaxonomy.ID}`
+        });
         this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag'], 'admin/classification/TaxonomyTypeClass'));
     }
 

@@ -27,6 +27,10 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.areaName = "Responsibility Types";
         this.setCommonItems();
         this.setCommonRightSideBar();
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/ResponsibilityType/${this.selectedRow.ID}`
+        });
         this.load();
     }
     

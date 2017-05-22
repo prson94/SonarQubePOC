@@ -55,16 +55,13 @@ export class RightSidebarComponent {
                 if (ritem.active && ritem.title != item.title) {
                     this.rightSidebarService.itemClicked(ritem);
                     ritem.active = false;
-                    isFirstItemOpen = false;
-                    // if this item is a url and the new one is not go back to host url
-                    if (this.hostUrl && ritem.url && !item.url) {
-                        this.router.navigateByUrl(this.hostUrl);                        
-                    }                        
+                    isFirstItemOpen = false;                     
                 }
             }            
             if (isFirstItemOpen) this.hostUrl = this.router.url;            
             this.rightSidebarService.itemClicked(item);
-            if (item.url) this.router.navigateByUrl(item.url);
+            if (item.hasDynamicUrl) this.router.navigateByUrl(item.dynamicUrlCallback());
+            else if (item.url) this.router.navigateByUrl(item.url);
         }        
         else {
             //return to previous url if the item is a url otherwise fire click event            

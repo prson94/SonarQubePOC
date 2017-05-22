@@ -60,6 +60,26 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         super();
         this.rightSidebarService = rightSidebarService;
         this.setCommonRightSideBar(true, true, false, true, true, true);
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+        });
+        this.ownershipSidebar.hasDynamicUrl = true;
+        this.ownershipSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/ownership/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+        });
+        this.impactSidebar.hasDynamicUrl = true;
+        this.impactSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+        });
+        this.lineageSidebar.hasDynamicUrl = true;
+        this.lineageSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/visualization/lineage/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+        });
+        this.relationsSidebar.hasDynamicUrl = true;
+        this.relationsSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+        });
     }
 
     ngOnInit() {

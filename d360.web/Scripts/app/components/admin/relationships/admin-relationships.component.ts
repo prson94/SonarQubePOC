@@ -45,7 +45,10 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         this.setCommonItems();
         this.setCommonRightSideBar(true);    
                 
-        //this.rightSidebarService.showItem(new RightSidebarItem('Relationship Roles', 'roles', ['fa-user']));
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/IntersectType/${this.selected.ID}`
+        });
     }
     
     ngOnDestroy() {

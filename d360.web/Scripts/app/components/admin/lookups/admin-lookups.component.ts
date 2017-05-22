@@ -91,6 +91,10 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
         this.areaName = "Lookup Types";
         this.setCommonItems();
         this.setCommonRightSideBar(true);
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/LookupType/${this.selectedLookup.ID}`
+        });
     }
 
     ngOnInit() {

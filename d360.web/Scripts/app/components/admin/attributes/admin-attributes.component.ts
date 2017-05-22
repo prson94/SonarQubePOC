@@ -76,12 +76,14 @@ export class AdminAttributesComponent extends AdminBaseComponent {
 
     constructor(rightSidebarService: RightSidebarService, private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
-        this.areaName = "Attribute Groups";        
-        //this.areaLink = window.location.pathname;
+        this.areaName = "Attribute Groups";                
         this.setCommonItems();
         this.setCommonRightSideBar(true);
-        this.theDeleteCallback = this.deleteAttributeType.bind(this);
-        
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/AttributeType/${this.selected.data.ID}`
+        });
+        this.theDeleteCallback = this.deleteAttributeType.bind(this);        
     }
 
     ngOnInit() {

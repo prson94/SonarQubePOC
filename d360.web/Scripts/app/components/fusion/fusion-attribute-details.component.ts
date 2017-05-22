@@ -42,8 +42,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         this.rightSidebarService = rightSidebarService;
     }
 
-    ngOnInit() {        
-        this.setCommonRightSideBar(true, true, false, true, false, true, false);
+    ngOnInit() {                
         this.sub = this.route.params.subscribe(params => {
             this.type = params['type'];
             this.id = +params['id'];
@@ -51,6 +50,8 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
 
             this.setBrowserTitle(this.titleService, this.name);        
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.name));
+            this.setObjectInfo(this.type, this.id);
+            this.setCommonRightSideBar(true, true, false, true, false, true, false);
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectFusionAttribute, this.id);
         });

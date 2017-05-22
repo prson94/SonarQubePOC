@@ -81,6 +81,10 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);
         this.setCommonRightSideBar(true);
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/IssueType/${this.selected.ID}`
+        });
     }
 
     ngOnInit() {

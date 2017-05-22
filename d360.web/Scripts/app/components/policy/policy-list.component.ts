@@ -63,6 +63,14 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
         super();
         this.rightSidebarService = rightSidebarService;
         this.setCommonRightSideBar(true, true);
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/PolicyType/${this.selected.ID}`
+        });
+        this.ownershipSidebar.hasDynamicUrl = true;
+        this.ownershipSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/ownership/PolicyType/${this.selected.ID}`
+        });
     }
 
     ngOnInit() {

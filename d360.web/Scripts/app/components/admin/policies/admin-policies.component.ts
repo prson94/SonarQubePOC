@@ -115,6 +115,10 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
         this.setCommonRightSideBar(true);
 
         this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag'], 'admin/classification/PolicyTypeClass'));
+        this.auditSidebar.hasDynamicUrl = true;
+        this.auditSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/audit/PolicyType/${this.selected.ID}`
+        });
     }
 
     ngOnInit() {
