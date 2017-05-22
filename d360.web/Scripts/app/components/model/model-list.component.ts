@@ -22,7 +22,7 @@ import * as _ from 'lodash';
                                 <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>         
                             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                   
-                            <p-dataTable #dt sortField="TaxonomyTypeClass" sortOrder="1" [globalFilter]="gb"  [value]="models | modelType: modelGroup" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showModel(selected);" >
+                            <p-dataTable #dt sortField="TaxonomyTypeClass" sortOrder="1" [globalFilter]="gb"  [value]="models | modelType: modelGroup" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [selection]="selected" (selectionChange)="selected=$event;objectID=selected.ID"  (onRowDblclick)="selected=$event.data;showModel(selected);" >
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                 <p-column field="TaxonomyTypeClass" [hidden]="modelGroup" header="Classification" [sortable]="true" [style]="{width:'200px'}"  [filter]="!showSimpleFilter">
                                     <template let-item="rowData" pTemplate type="body">
@@ -61,6 +61,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
                 protected modelsService: ModelsService) {
         super();
         this.rightSidebarService = rightSidebarService;
+        this.setObjectInfo('TaxonomyType', -1);
         this.setCommonRightSideBar(true, true);
     }
 

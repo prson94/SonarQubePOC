@@ -92,7 +92,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.headerBreadcrumbService.setCurrentObjectInfo('Taxonomy', hierarchyId);
             else
                 this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', newModelId);
-
+            this.setObjectInfo('Taxonomy', hierarchyId);
             if (this.modelId != newModelId) {                
                 this.modelId = newModelId;
                 this.isLoading = true;

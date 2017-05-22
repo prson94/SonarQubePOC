@@ -13,7 +13,6 @@ import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
-import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
@@ -70,8 +69,7 @@ import {
         PipesModule,  
               
         SharedGridPagingInfoModule,        
-        SharedDeleteFormModule,
-        SharedDiagramModule,
+        SharedDeleteFormModule,        
         SharedDynamicGridEditorModule,
         SharedObjectGovernanceModule,        
         TilesModule,

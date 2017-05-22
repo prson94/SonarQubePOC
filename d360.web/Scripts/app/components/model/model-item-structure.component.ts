@@ -117,6 +117,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.modelId = +params['modelId'];
 
             this.setObjectInfo('TaxonomyType', this.modelId);
+            
             this.setCommonRightSideBar(true, true);
 
             this.rightSidebarService.showItem({
@@ -128,6 +129,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             });
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
+            this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
 
             this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
             this.isLoading = true;
