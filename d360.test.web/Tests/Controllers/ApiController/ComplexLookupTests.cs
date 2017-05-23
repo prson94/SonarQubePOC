@@ -9,7 +9,8 @@ namespace d360.test.web.Tests.Controllers.ApiController
         [TestMethod, TestCategory("ApiController"), TestCategory("ComplexLookup")]
         public void GetResults()
         {
-            var response = controller.GetComplexLookupGridField("Artifact", 4651, 52811);
+            //var response = controller.GetComplexLookupGridField("Artifact", 4651, 52811);
+            var response = controller.GetComplexLookupGridField("Artifact", 4651, 53057);
             dynamic value = response.Content;
         }
     }

@@ -2745,6 +2745,7 @@ end",
                             case "RuleType":
                                 #region RuleType
                                 //Create the column/field to display the visible column cell.
+                                
                                 var rc = new ComplexColumnModel
                                 {
                                     DisplayColumn = objectDisplayColumn,
@@ -2757,15 +2758,41 @@ end",
                                     SortColumn = objectSortColumn,
                                     urlfield = $"{dataField}_Url"
                                 };
-                                setColumnTypeInfo(ft, i, rc);
-                                rc.datafieldtype = "lookup"; //must be done after function call above.
-                                columnModels.Add(rc);
 
-                                // Add the fields that you need to create link in Angular component.
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Rule'", datafield = $"{dataField}_Object" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                if (i.FieldTypeName == "Dimension")
+                                {
+                                    rc.DisplayColumn = $"D{pos}.Name";
+
+
+                                    setColumnTypeInfo(ft, i, rc);
+                                    rc.datafieldtype = "lookup"; //must be done after function call above.
+                                    columnModels.Add(rc);
+                                    // Add the fields that you need to create link in Angular component.
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'RuleDimension'", datafield = $"{dataField}_Object" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(D{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                    join.JoinStatement += $" left join RuleDimension D{pos} on D{pos}.ID = A{pos}.RuleDimensionID";
+                                }
+                                else if (i.FieldTypeName == "Threshold")
+                                {
+                                    setColumnTypeInfo(ft, i, rc);
+                                    columnModels.Add(rc);
+                                }
+                                else
+                                {
+                                  
+                                    setColumnTypeInfo(ft, i, rc);
+                                    rc.datafieldtype = "lookup"; //must be done after function call above.
+                                    columnModels.Add(rc);
+
+
+                                    // Add the fields that you need to create link in Angular component.
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Rule'", datafield = $"{dataField}_Object" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                }
                                 #endregion
                                 break;
                             case "TaxonomyType":

@@ -38,5 +38,9 @@
 
         //azure queue names
         public const string AZURE_FUSION_QUEUE = "fusion-queue";
+
+        //azure media service constants
+        public const string AZURE_MEDIA_SERVICES_ACCOUNT_NAME = "d3s";
+        public const string AZURE_MEDIA_SERVICES_KEY = "MGSgtrabw6+HiphKwKgQp+gNvfrX0DJ1ecY2Ql60bOk=";
     }
 }

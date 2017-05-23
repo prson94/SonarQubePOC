@@ -7,7 +7,7 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
     template: `
     <header>
         &nbsp;
-        <d3s-tile-actions hasAdd="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
+        <d3s-tile-actions [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
     </header>
     <p-dataTable [value]="conditions" selectionMode="single" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit(selection)">
         <p-column field="@FieldName" header="Field Name"></p-column>

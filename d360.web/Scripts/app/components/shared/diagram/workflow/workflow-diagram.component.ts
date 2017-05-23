@@ -46,7 +46,6 @@ declare var window: any;
     templateUrl: './workflow-diagram.component.html',
     providers: [PermissionsService, WorkflowService]
 })
-
 export class WorkflowDiagramComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
     @Input() model: WorkflowDiagramModel;

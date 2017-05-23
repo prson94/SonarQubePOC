@@ -79,6 +79,7 @@
     <Compile Include="Tests\Controllers\ApiController\FusionTests.cs" />
     <Compile Include="Tests\Controllers\ApiController\ObjectTests.cs" />
     <Compile Include="Tests\Controllers\ApiController\ComplexLookupTests.cs" />
+    <Compile Include="Tests\Extensions\AzureMediaServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">
@@ -116,6 +117,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

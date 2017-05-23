@@ -2778,6 +2778,14 @@ namespace d360.web.Controllers
             {
                 list.Add("DisplayValue", 0);
             }
+            else if (type == SystemObjects.RuleType)
+            {
+                list.Add("Name", 0);
+                if (!list.ContainsKey("Description"))
+                    list.Add("Description", 0);
+                list.Add("Dimension", 0);
+                list.Add("Threshold", 0);
+            }
             else
             {
                 list.Add("Name", 0);
