@@ -1731,6 +1731,7 @@ when not matched then
         private void CleanModelData(List<Dictionary<string, string>> models)
         {            
             HashSet<string> existingSourceIDs = new HashSet<string>();
+            HashSet<string> parentSourceIDs = new HashSet<string>();
             
             for (int i = models.Count - 1; i >= 0; i--)
             {                
@@ -1776,8 +1777,15 @@ when not matched then
                     existingSourceIDs.Add(sourceID);
 
                     _workArea.InSourceIDList.Add(sourceID);
+
+                    if (!string.IsNullOrEmpty(parentSourceID))
+                        parentSourceIDs.Add(parentSourceID);
                 }
-            }            
+            }
+
+            //add unique list of parent source ids to source id list
+            if (parentSourceIDs.Count > 0)
+                _workArea.InSourceIDList.AddRange(parentSourceIDs);
         }
     }
 }
