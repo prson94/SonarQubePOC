@@ -1344,6 +1344,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             select 'Fusion|' + cast(t.id as varchar) as value, t.id, 'Fusion' as [type], 'Fusion :: ' + t.Name as [name], 1 as [count] 
             from fusion t
             group by t.id, t.name
+            union all
+            select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t.Name as [name], 1 as [count] 
+            from intersecttype t
+            group by t.id, t.name
 ";
 
         public static string WorkflowList = @"
@@ -1370,6 +1374,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 						'Model'
 					when d.[Object] = 'IssueType' then
 						'Action'
+                    when d.[Object] = 'IntersectType' then
+						'Relationship'
 					else
 						''
 					end as [Type] 
