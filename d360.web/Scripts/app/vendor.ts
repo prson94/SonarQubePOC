@@ -17,3 +17,5 @@ import 'brace';
 import 'brace/mode/sql';
 import 'brace/theme/eclipse';
 import 'ng2-ace-editor';
+import 'jquery';
+import 'qtip2';

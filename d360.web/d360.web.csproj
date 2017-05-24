@@ -844,7 +844,6 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Service References\Application Insights\ConnectedService.json" />
-    <Content Include="typings.json" />
     <Content Include="Views\Shared\App.cshtml" />
     <Content Include="Views\Authentication\Logout.cshtml" />
     <Content Include="Views\Authentication\Reset.cshtml" />
@@ -1453,7 +1452,6 @@
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <None Include="Scripts\app\tsconfig.aot.json" />
     <TypeScriptCompile Include="Scripts\app\vendor.ts" />
-    <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\Core.resx">

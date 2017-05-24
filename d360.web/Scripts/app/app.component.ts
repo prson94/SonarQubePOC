@@ -1,4 +1,3 @@
-///<reference path="../../node_modules/typings/index.d.ts"/>  
 import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessagesService } from './services/messages.service';
@@ -11,7 +10,8 @@ import { DynamicTypeBuilder, IHaveDynamicData } from './services/dynamic-type-bu
 import { SiteMessage } from './models/site-message.model';
 import { Subscription }   from 'rxjs/Subscription';
 import { Message } from 'primeng/primeng';
-declare var $: JQueryStatic;
+import * as $ from 'jquery';
+import 'qtip2';
 
 
 @Component({
@@ -64,43 +64,54 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     
     private initializeQtipTooltips() {
         var me = this;
-        $('body').on('mouseenter', '*[data-type]', function (event) {
+        $('body').on('mouseenter', '*[data-type]', function (event) {          
             $(this).qtip({
                 content: {
                     title: $(this).data('title'),
                     // Set the text to an image HTML string with the correct src URL to the loading image you want to use
-                    text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
-                    ajax: {
-                        url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context") + "?isNg=true",
-                        once: false,// ($(this).attr('data-cache') ? $(this).data('cache') : true),  // do we want to fetch the tooltip just once or recall each time?                            
-                        success: function (data) {
-                            if (!data || !data.length) {
-                                this.destroy();
-                            }
-                            else {                                
-                                if (me.componentRef) {
-                                    me.componentRef.destroy();
+                   // text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
+                    text: function (event, api) {                        
+                        //api.set('content.text','<i class="fa fa-spinner fa-spin fa-4x"></i>');
+                        // This time, we return the deferred object, not a 'Loading...' message.
+                        $.ajax({
+                            url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context") + "?isNg=true" // Use data-url attribute for the URL
+                        })
+                            .then(function (data) {
+                                // Return the content instead of using .set(). If you're wanting to select
+                                // specific elements, see ther above section and adapt the `api.set` call
+                                // into a `return elements` statement!
+                                //return content
+                                if (!data || !data.length) {
+                                    this.destroy();
                                 }
-                                
-                                // wrap with a div with id we know
-                                data = `<div id='qTipContentCnt' style='display:none'>${data}</div>`;                                
-                                // here we get Factory (just compiled or from cache)
-                                me.typeBuilder
-                                    .createComponentFactory(data)
-                                    .then((factory: ComponentFactory<IHaveDynamicData>) => {
-                                        
-                                        // Target will instantiate and inject component (we'll keep reference to it)                                        
-                                        me.componentRef = me
-                                            .dynamicComponentTarget
-                                            .createComponent(factory);
-                                    });
-                                var qtipScope = this;
-                                setTimeout(() => {                                  
-                                    qtipScope.set('content.text', $('#qTipContentCnt'));
-                                }, 100);                           
-                            }
-                        }
-                    }
+                                else {
+                                    if (me.componentRef) {
+                                        me.componentRef.destroy();
+                                    }
+
+                                    // wrap with a div with id we know
+                                    data = `<div id='qTipContentCnt' style='display:none'>${data}</div>`;
+                                    // here we get Factory (just compiled or from cache)
+                                    me.typeBuilder
+                                        .createComponentFactory(data)
+                                        .then((factory: ComponentFactory<IHaveDynamicData>) => {
+
+                                            // Target will instantiate and inject component (we'll keep reference to it)                                        
+                                            me.componentRef = me
+                                                .dynamicComponentTarget
+                                                .createComponent(factory);
+                                        });
+                                    setTimeout(() => {
+                                        api.set('content.text', $('#qTipContentCnt'));
+                                    }, 100);
+                                }
+                            }, function (xhr, status, error) {
+                                // Errors aren't handled by the library automatically, so
+                                // you'll need to call .set() upon failure, just as before.
+                                api.set('content.text', status + ': ' + error);
+                            });
+                        return '<i class="fa fa-spinner fa-spin fa-4x"></i>';
+                    }                    
                 },
                 position: {
                     at: 'bottom center', // Position the tooltip above the link
@@ -120,7 +131,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 },                
                 style: {
                     classes: 'qtip-light qtip-shadow'
-                }             
+                },
             });
         });
     }    
