@@ -1325,7 +1325,7 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\main.aot.ts" />
+    <Content Include="Scripts\app\main.aot.txt" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
