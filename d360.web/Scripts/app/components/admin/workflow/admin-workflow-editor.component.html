@@ -27,10 +27,19 @@
                 Object Type
             </div>
             <div>
-                <select style="width:95%;" placeholder="Choose a value" [ngModel]="selectedObjectType" (ngModelChange)="selectObjectType($event)" [disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0">
+                <p-dropdown 
+                            [options]="workflowObjectTypes" 
+                            [ngModel]="selectedObjectType" 
+                            (ngModelChange)="selectObjectType($event)" 
+                            [disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0"
+                            [style]="{'width': '95%'}"
+                            filterPlaceholder="Choose a value"
+                            [filter]="true">
+                </p-dropdown>
+                <!--<select style="width:95%;" placeholder="Choose a value" [ngModel]="selectedObjectType" (ngModelChange)="selectObjectType($event)" [disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0">
                     <option></option>
-                    <option *ngFor="let i of workflowObjectTypes" [value]="i.value">{{i.name}}</option>
-                </select>
+                    <option *ngFor="let i of workflowObjectTypes" [value]="i.value">{{i.label}}</option>
+                </select>-->
             </div>
             <div *ngIf="objectType == 'ArtifactType'">
                 <div class="FieldName">

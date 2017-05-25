@@ -1315,37 +1315,36 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 ";
 
         public static string WorkflowObjectTypes = @"
-
-            select 'ArtifactType|' + cast(t.id as varchar) as value, t.id, 'ArtifactType' as [type], 'Artifact Type :: ' +  t.Name as [name], count(*) as [count] 
+            select 'ArtifactType|' + cast(t.id as varchar) as value, t.id, 'ArtifactType' as [type], 'Artifact Type :: ' +  t.Name as [label], count(*) as [count] 
             from artifacttype t
             left join artifact a on a.artifacttypeid = t.id
             group by t.ID, t.Name
             union all
-            select 'RuleType|' + cast(t.id as varchar) as value, t.id, 'RuleType' as [type], 'Rule Type :: ' + t.Name as [name], count(*) as [count] 
+            select 'RuleType|' + cast(t.id as varchar) as value, t.id, 'RuleType' as [type], 'Rule Type :: ' + t.Name as [label], count(*) as [count] 
             from ruletype t
             left join [rule] a on a.ruletypeid = t.id
             group by t.id, t.name
             union all
-            select 'PolicyType|' + cast(t.id as varchar) as value, t.id, 'PolicyType' as [type], 'Policy Type :: ' + t.Name as [name], count(*) as [count] 
+            select 'PolicyType|' + cast(t.id as varchar) as value, t.id, 'PolicyType' as [type], 'Policy Type :: ' + t.Name as [label], count(*) as [count] 
             from policytype t
             left join [policy] a on a.policytypeid = t.id
             group by t.id, t.name
             union all
-            select 'TaxonomyType|' + cast(t.id as varchar) as value, t.id, 'TaxonomyType' as [type], 'Model Type :: ' + t.Name as [name], count(*) as [count] 
+            select 'TaxonomyType|' + cast(t.id as varchar) as value, t.id, 'TaxonomyType' as [type], 'Model Type :: ' + t.Name as [label], count(*) as [count] 
             from taxonomytype t
             left join taxonomy a on a.taxonomytypeid = t.id
             group by t.id, t.name
             union all
-            select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], 'Action Type :: ' + t.Name as [name], count(*) as [count] 
+            select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], 'Action Type :: ' + t.Name as [label], count(*) as [count] 
             from issuetype t
             left join issue a on a.issuetypeid = t.id
             group by t.id, t.name
 			union all
-            select 'Fusion|' + cast(t.id as varchar) as value, t.id, 'Fusion' as [type], 'Fusion :: ' + t.Name as [name], 1 as [count] 
+            select 'Fusion|' + cast(t.id as varchar) as value, t.id, 'Fusion' as [type], 'Fusion :: ' + t.Name as [label], 1 as [count] 
             from fusion t
             group by t.id, t.name
             union all
-            select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t.Name as [name], 1 as [count] 
+            select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t.Name as [label], 1 as [count] 
             from intersecttype t
             group by t.id, t.name
 ";

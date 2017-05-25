@@ -45,7 +45,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private subjectAreaName: string;
     private taxonomies: Taxonomy[] = [];
 
-    private arbitraryScheduleObjectLimit = 2000;
+    private SCHEDULE_OBJECT_LIMIT = 2000;
     private isValid = false;
     private errorMessage = "";
 
@@ -206,12 +206,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
         }
 
-        let type = this.workflowObjectTypes.find(f => f.value == e);
-        if (type != null && type.count > this.arbitraryScheduleObjectLimit) {
-            if (this.model.Event.ChangeType == WorkflowChangeType.Schedule)
-                this.model.Event.ChangeType = null;
-        }
-
         this.loadResponsibilities().then(() => this.validate());
     }
 
@@ -310,8 +304,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
             let t = this.workflowObjectTypes.find(t => t.value == this.selectedObjectType);
 
-            if (t != null && t.count > this.arbitraryScheduleObjectLimit) {
-                this.errorMessage = `The chosen object type has more than ${this.arbitraryScheduleObjectLimit} items, which exceeds the limit for change type Schedule.`;
+            if (t != null && t.count > this.SCHEDULE_OBJECT_LIMIT) {
+                this.errorMessage = `The chosen object type has more than ${this.SCHEDULE_OBJECT_LIMIT} items, which exceeds the limit for change type Schedule.`;
                 this.isValid = false;
                 return;
             }
@@ -368,12 +362,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     appendField(e: string) {
-        //console.log(this.quill, this.model.Event.SettingsObject.Settings.MessageBodyTemplate);
-
         if (this.quill != null) {
             let len = this.quill.getLength();
             this.quill.insertText(len < 1 ? 0 : len - 1, e, 'api');
-        } else {
+        } else { //fallback in case quill API is null for whatever reason
             this.model.Event.SettingsObject.Settings.MessageBodyTemplate =
                 ((this.model.Event.SettingsObject.Settings.MessageBodyTemplate == null) ? ' '
                     : this.model.Event.SettingsObject.Settings.MessageBodyTemplate)

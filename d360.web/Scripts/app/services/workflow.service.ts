@@ -180,7 +180,7 @@ export class WorkflowService extends BaseService {
 
     getWorkflowObjectTypes(changeType: WorkflowChangeType): Promise<WorkflowObjectType[]> {
         if (changeType == null || <any>changeType == '')
-            return Promise.resolve([]);
+            return Promise.resolve([]); 
 
         return this.http.get(`services/workflow/objecttypes?changeType=${changeType}`)
             .toPromise()

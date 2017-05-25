@@ -896,7 +896,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\themes\base\images\" />
-    <Folder Include="Scripts\app\components\shared\dashboard\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">

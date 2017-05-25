@@ -32,6 +32,7 @@ import {
     InputTextModule,
     SharedModule,
     DataTableModule,
+    DropdownModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -49,6 +50,7 @@ import {
         SharedModule,
         DataTableModule,
         EditorModule,
+        DropdownModule,
 
         //d3s                
         CoreModule,
