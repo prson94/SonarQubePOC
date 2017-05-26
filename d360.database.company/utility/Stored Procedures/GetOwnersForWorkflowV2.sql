@@ -23,10 +23,20 @@ begin
 						and RD.ObjectID = @objectId
 						and RD.ResponsibilityTypeID = @responsibilityTypeID
 						and	(
-								(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
+								--(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
 								(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
 							)
-						and R.Email not like '%?subject=%' and R.Status = 'Active';
+						and R.Email not like '%?subject=%' and R.Status = 'Active'
+		union all		
+		select	R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
+		from	ResponsibilityDetail RD 					
+					inner join resourcegroup Rg on (RD.ResponsibleObjectID = Rg.GroupID 
+						and RD.ObjectType = @objectType
+						and RD.ObjectID = @objectId
+						and RD.ResponsibilityTypeID = @responsibilityTypeID
+						and	RD.ResponsibleObjectType = 'Group')
+					inner join reporting.Global_Resource R 
+						on (Rg.ResourceID = R.ResourceID and R.Email not like '%?subject=%' and R.Status = 'Active');
 
 	
 	
