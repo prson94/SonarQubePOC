@@ -254,7 +254,7 @@ namespace d360.fusion
 
         private async Task UpdateQueue(SqlConnection companyConnection)
         {
-            if (_workArea.Changes.AddCount > 0 || _workArea.Changes.UpdateCount > 0 || _workArea.Changes.DeleteCount > 0)
+            if (_workArea.Changes.AddCount > 0 || _workArea.Changes.UpdateCount > 0 || _workArea.Changes.DeleteCount > 0 || IsFirstRun)
             {
                 await companyConnection.ExecuteAsync(@"
                     insert into [queue].[task] ([Action], [Object], [ObjectID]) values ('Notify','FusionExecution',@id)                    
