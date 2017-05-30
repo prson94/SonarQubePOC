@@ -12028,7 +12028,7 @@ order by D.TextPath";
                 var relationshipType = Company.GetById<IntersectType>(typeID);
                 var sourceObject = Company.GetObjectDetail(source, sourceID);
 
-                if (!Company.HasPermission(SystemObjects.IntersectType, typeID, Claim.Create, ClaimObject.Root))
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), sourceObject.Type), sourceObject.TypeID, Claim.Create, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (relationshipType == null) throw new NotFoundException("relationship");
