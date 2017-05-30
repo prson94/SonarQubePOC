@@ -6,8 +6,6 @@ import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
-import { ChartModule } from 'angular2-highcharts';
-
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
@@ -36,8 +34,7 @@ import {
     SelectButtonModule,    
     MultiSelectModule,    
     TooltipModule,        
-    TreeModule,
-    FileUploadModule,
+    TreeModule,    
     SharedModule,
 } from 'primeng/primeng';
 
@@ -61,13 +58,9 @@ import {
         SelectButtonModule,        
         MultiSelectModule,        
         TooltipModule,
-        TreeModule,                
-        FileUploadModule,
+        TreeModule,                        
         SharedModule,
-
-        //highcharts
-        ChartModule,
-
+        
         //d3s
         D3SSharedModule,
         CoreModule,        

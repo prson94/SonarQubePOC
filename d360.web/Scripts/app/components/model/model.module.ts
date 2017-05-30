@@ -34,8 +34,7 @@ import {
     SelectButtonModule,    
     MultiSelectModule,    
     TooltipModule,    
-    TreeModule,
-    FileUploadModule,
+    TreeModule,    
     SharedModule,
 } from 'primeng/primeng';
 
@@ -59,7 +58,6 @@ import {
         MultiSelectModule,        
         TooltipModule,
         TreeModule,        
-        FileUploadModule,
         SharedModule,
 
         
