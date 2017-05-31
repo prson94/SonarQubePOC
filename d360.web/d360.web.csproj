@@ -52,9 +52,8 @@
       <HintPath>..\packages\Autofac.WebApi2.4.0.1\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ComponentSpace.SAML2, Version=2.5.0.20, Culture=neutral, PublicKeyToken=7c51d97b3a0a8ff9, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Users\Ken\Box Sync\Engineering\Software\ComponentSpace.SAML2.dll</HintPath>
+    <Reference Include="ComponentSpace.SAML2">
+      <HintPath>.\ComponentSpace.SAML2.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
@@ -577,6 +576,7 @@
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-form-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-editor.component.html" />
+    <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
     <Content Include="Scripts\app\vendor.bundle.js" />
@@ -1002,6 +1002,10 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.routes.ts" />

@@ -23,6 +23,7 @@ import { HeaderFavoritesComponent } from './header-favorites.component';
 import { HeaderFollowComponent } from './header-follow.component';
 import { HeaderComponent } from './header.component';
 import { RaiseIssueButtonComponent } from './raise-issue-button.component';
+import { HeaderShoppingCartComponent } from './header-shopping-cart.component';
 
 
 @NgModule({
@@ -49,6 +50,7 @@ import { RaiseIssueButtonComponent } from './raise-issue-button.component';
         HeaderFollowComponent,
         HeaderComponent,
         RaiseIssueButtonComponent,
+        HeaderShoppingCartComponent,
     ],
     exports: [
         HeaderComponent

@@ -12,6 +12,7 @@ declare var CompanySettings;
     template: `
                 <ul class="right hide-on-med-and-down">
                     <li *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
+                    <li *ngIf="showShoppingCart" style="cursor: pointer"><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
                     <li *ngIf="headerActionsService.showFavorite && !isAdminUrl" style="cursor: pointer"><d3s-header-favorites [uri]="uri"></d3s-header-favorites></li>
                     <li *ngIf="headerActionsService.showFollow  && !isAdminUrl" style="cursor: pointer"><d3s-header-follow></d3s-header-follow></li>                    
                     <li *ngIf="headerActionsService.showHelp"><a routerLink="help" class="help" title="Get help!"><i class="fa fa-question-circle"></i></a></li>
@@ -29,6 +30,7 @@ export class HeaderActionsComponent {
     private isAdminUrl = false;
     private uri = "";
     private hasRaiseIssueButton: boolean = true;
+    private showShoppingCart: boolean = false;
 
     constructor(private headerActionsService: HeaderActionsService, private router: Router) { }
 
@@ -41,6 +43,10 @@ export class HeaderActionsComponent {
             //dont show raise issue button on raise issue screen or any admin screens            
             this.hasRaiseIssueButton = (!e.url.toLowerCase().endsWith('workflow/raiseissue') && (e.url.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');            
         });
+
+        if (CompanySettings != null && CompanySettings.EnableShoppingCart.toString() === 'true') {
+            this.showShoppingCart = true;
+        }
     }
 
     private resourceUrl() {

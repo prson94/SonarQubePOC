@@ -10,6 +10,7 @@ export class HeaderActionsService {
     showSearch: boolean = true;
     showRaiseIssue: boolean = false;  
     showFollow: boolean = true;
+    showShoppingCart: boolean = false;
 
     // Observable sources
     private onFavoritesChangeSource = new Subject();

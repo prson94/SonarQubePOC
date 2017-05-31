@@ -1,0 +1,24 @@
+﻿<div class="tile tile-detail">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div *ngIf="cartIsEmpty && !isLoading">
+        <div class="row">
+            <div class="col s12">
+                <div style="font-size:1.5em; text-align: center; padding: 25px;">
+                    Your shopping cart is empty
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <button pButton label="Back" (click)="back()" type="button"></button>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="!cartIsEmpty && !isLoading">
+        <div class="row">
+            <div class="col s12">
+
+            </div>
+        </div>
+    </div>
+</div>
