@@ -7172,6 +7172,78 @@ SELECT (
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
+
+        [HttpGet, Route("referenceItems/{typeID:int}/items.xls")]
+        public async Task<HttpResponseMessage> GetReferenceItemsExcel(int typeID)
+        {
+            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}");
+
+
+            var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.SortOrder);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            var colIndex = 0;
+
+            document.SetCellValue(1, ++colIndex, "Code");
+            
+            //add fields for this relation
+            foreach (var field in fields)
+            {
+                document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
+            }
+
+
+            #endregion
+
+            int rowIndex = 1;
+            foreach (var row in models)
+            {
+                var dataColIndex = 0;
+                rowIndex++;
+
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Code ?? "");
+                
+
+                var rowDict = ((IDictionary<string, object>)row);
+                foreach (var field in fields)
+                {
+                    var fieldKey = $"Field{field.ID}";
+
+                    if (rowDict.ContainsKey(fieldKey))
+                    {
+                        if (rowDict[fieldKey] != null)
+                            document.SetCellValue(rowIndex, ++dataColIndex, rowDict[fieldKey].ToString());
+                    }
+                }
+
+            }
+
+            #endregion
+                        
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage result = null;
+            // serve the file to the client      
+            result = Request.CreateResponse(HttpStatusCode.OK);
+            //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Reference Items.xlsx"
+            };
+            return result;
+        }
+
         #endregion
 
         #region Issue Types

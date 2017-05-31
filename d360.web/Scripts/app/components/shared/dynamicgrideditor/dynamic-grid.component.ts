@@ -12,7 +12,7 @@ import { BaseComponent } from '../../shared/base.component';
     providers: [GridDefinitionService, UriBasedService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{title}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter" [hasExport]="showExportButton" (exportClick)="exportClick.emit()"></d3s-tile-actions>                            
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
@@ -55,7 +55,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() rowID: string = 'ID';
     @Input() objectID: number;
-    @Input() dataUri: string;
+    @Input() dataUri: string;    
     @Input() deleteUri: string;
     @Input() createUri: string;
     @Input() editUri: string;
@@ -65,8 +65,10 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
     @Input() showAddButton: boolean = true;
+    @Input() showExportButton: boolean = false;
 
     @Output() editItemClick = new EventEmitter();
+    @Output() exportClick = new EventEmitter();
     
     error: any;
     items: any[] = [];
@@ -122,6 +124,10 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
                 if (this.items.length > 0) this.selected = this.items[0];                
             });
     }  
+
+    doExport() {
+
+    }
 
     closeEditor() {
         this.showEditor = false;

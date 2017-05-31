@@ -7,6 +7,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
+import { ReferenceService } from '../../services/reference.service';
 
 @Component({
     selector: 'd3s-reference-list',   
@@ -35,14 +36,14 @@ import { ReferenceItemType } from '../../models/reference.model';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid #itemsGrid [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
+                                    <d3s-dynamic-grid #itemsGrid [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                `,
-    providers: [PermissionsService],
+    providers: [PermissionsService, ReferenceService],
 })
 
 export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {    
@@ -55,7 +56,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         private permissionsService: PermissionsService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        protected referenceService: ReferenceService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -105,6 +107,12 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
         return `api/referenceItems/${this.selectedReferenceItemType.ID}/items.json`;
     }  
+
+    exportDataToExcel(): void{
+        if (!this.selectedReferenceItemType) return;
+
+        this.referenceService.exportReferenceItems(this.selectedReferenceItemType.ID, this.selectedReferenceItemType.Name);
+    }
 
     private refreshItems(itemsGrid) {
         itemsGrid.load();

@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, Response, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { ReferenceItemType, ReferenceItem } from '../models/reference.model';
@@ -26,5 +26,23 @@ export class ReferenceService extends BaseService {
 
     deleteReferenceItemType(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'referenceItemType', id);
+    }
+
+    exportReferenceItems(id: number, name: string) {
+        this.http.get(`api/referenceItems/${id}/items.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));  
+    }
+
+    downloadFile(data: Response, name: string) {
+        var filename = `${name} List ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data.blob());
+            var anchor = document.createElement("a");
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 }
