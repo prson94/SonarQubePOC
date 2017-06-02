@@ -1,4 +1,9 @@
-﻿CREATE TABLE [workflow].[ItemAssignment](
+﻿--shopping cart type
+insert into ShoppingCartType values ('Shopping Cart');
+
+
+
+CREATE TABLE [workflow].[ItemAssignment](
 	ID [bigint] IDENTITY(1,1),
 	ItemID [bigint] NOT NULL,
 	ResourceObject varchar(50) NOT NULL,

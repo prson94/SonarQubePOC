@@ -244,11 +244,29 @@ BEGIN
 			WHERE	O.ID = @id
 	end
 
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		dbo.GenerateObjectUrl(@type, T.ID, O.ID),	T.RuleTypeID,	'RuleType',	T.Name, 'Active'
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
 	if @type = 'RuleType'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID,	[Type],	TypeName)
 			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, O.ID, O.ID),	O.ID,	@type,	O.Name
 			FROM	RuleType O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateObjectUrl('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
 			WHERE	O.ID = @id
 	end
 

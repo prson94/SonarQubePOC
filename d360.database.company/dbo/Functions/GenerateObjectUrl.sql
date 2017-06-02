@@ -31,6 +31,8 @@ BEGIN
 		WHEN 'Rule' THEN 'quality/rule/' + CAST(@ObjectID as varchar)
 		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)
 		WHEN 'TaxonomyType' THEN 'model/' + CAST(@ObjectID as varchar) + '/structure'		
+		WHEN 'ShoppingCartType' THEN 'cart/' + CAST(@ObjectID as varchar)	
+
 	END
 
 	SET @Url = @Prefix + @Url

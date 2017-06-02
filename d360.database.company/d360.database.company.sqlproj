@@ -557,6 +557,9 @@
     <None Include="workflow\Tables\TaskProcedure.sql" />
     <None Include="dbo\Tables\ReportResponsibility.sql" />
     <None Include="dbo\Tables\ResourcePasswordReset.sql" />
+    <None Include="dbo\Tables\ShoppingCartType.sql" />
+    <None Include="dbo\Tables\ShoppingCart.sql" />
+    <None Include="dbo\Tables\ShoppingCartItem.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />
