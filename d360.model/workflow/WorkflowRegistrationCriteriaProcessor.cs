@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -62,9 +63,14 @@ namespace d360.model.workflow
 
                     if (!item.IsValueMatch(value.FormattedValue)) return false;
                 }
-                else if((item.ContextualFieldID ?? "").ToLower() == "score")
+                else if ((item.ContextualFieldID ?? "").ToLower() == "score")
                 {
                     if (!item.IsValueMatch(score.ToString())) return false;
+                }
+                else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
+                {
+                    var requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
+                    if (!item.IsValueMatch(requestedOn.ToString())) return false;
                 }
                 else if(item.VersionStepId > 0)
                 {

@@ -1347,6 +1347,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t.Name as [label], 1 as [count] 
             from intersecttype t
             group by t.id, t.name
+            union all
+			select 'ShoppingCartType|' + cast(t.id as varchar) as value, t.id, 'ShoppingCartType' as [type], 'Shopping Cart :: ' + t.Name as [label], 1 as [count]
+			from shoppingcarttype t
+			group by t.id, t.name
 ";
 
         public static string WorkflowList = @"
@@ -1357,7 +1361,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     ,t.UpdatedOn
 					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
                     ,e.ChangeType
-                    ,d.Name as TypeName,
+                    ,coalesce(d.Name, st.Name) as TypeName,
 					case when t.PublishedVersionID is not null then
 						'Version ' + cast(v.Version as varchar) + ' Published'
 					else
@@ -1375,16 +1379,33 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 						'Action'
                     when d.[Object] = 'IntersectType' then
 						'Relationship'
+                    when e.[Object] = 'ShoppingCartType' then
+                        'Shopping Cart'
 					else
 						''
 					end as [Type] 
                 from workflow.type t
                 inner join workflow.eventregistration e on e.typeid = t.id
-                inner join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid 
+                left join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid 
+                left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
 				where t.State = 1  ";
+
+        public static string ShoppingCartItemList = @"
+                select 
+	                i.Object, 
+	                i.ObjectID, 
+	                coalesce(d.[Name],fa.[Name]) as [Name],
+	                coalesce(d.ObjectTypeName, fat.[Name], case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName  
+                from
+	                Shoppingcartitem i
+                left join cache.ObjectDetails d on d.ObjectID = i.ObjectID and d.[Object] = i.[Object]
+                left join fusionattribute fa on fa.ID = i.ObjectID and i.[Object] = 'FusionAttribute'
+                left join fusionattributetype fat on fat.id = fa.FusionAttributeTypeID
+                where 
+	                i.ShoppingCartID = @id";
 
     }
 }

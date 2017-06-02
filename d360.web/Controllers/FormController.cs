@@ -2022,6 +2022,7 @@ namespace d360.web.Controllers
             model.DisableIssuePosting = (settings.Any(i => i.SettingID == 5) ? bool.Parse(settings.Single(i => i.SettingID == 5).Value) : false);
             model.DisableIssueManagement = (settings.Any(i => i.SettingID == 17) ? bool.Parse(settings.Single(i => i.SettingID == 17).Value) : false);
             model.UseNewWorkflow = (settings.Any(i => i.SettingID == 18) ? bool.Parse(settings.Single(i => i.SettingID == 18).Value) : false);
+            model.EnableShoppingCart = (settings.Any(i => i.SettingID == 20) ? bool.Parse(settings.Single(i => i.SettingID == 20).Value) : false);
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2245,6 +2246,18 @@ namespace d360.web.Controllers
                 else
                 {
                     issueManagamentSetting.Value = formModel.DisableIssueManagement.ToString().ToLower();
+                    Community.SaveChanges();
+                }
+
+                var shoppingCartSetting = settings.FirstOrDefault(i => i.SettingID == 20);
+                if (shoppingCartSetting == null)
+                {
+                    shoppingCartSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 20, Value = formModel.EnableShoppingCart.ToString().ToLower() };
+                    Community.Add<CompanySetting>(shoppingCartSetting);
+                }
+                else
+                {
+                    shoppingCartSetting.Value = formModel.EnableShoppingCart.ToString().ToLower();
                     Community.SaveChanges();
                 }
 
@@ -16036,6 +16049,181 @@ from    [IntersectType] RT
             }
         }
 
+        #endregion
+
+        #region ShoppingCart
+        
+        [HttpPut, Route("shoppingcart/add")]
+        public JsonResult AddShoppingCartItem(string type, int id, int cartTypeID)
+        {
+            var carts = Company.ShoppingCarts.Where(s => s.ResourceID == Company.CurrentResourceID && s.ShoppingCartTypeID == cartTypeID && s.RequestedOn == null).ToList();
+            ShoppingCart myCart = new ShoppingCart();
+
+            if (carts.Count == 0)
+            {
+                myCart = new ShoppingCart();
+                myCart.ResourceID = Company.CurrentResourceID;
+                myCart.ShoppingCartTypeID = cartTypeID;
+                myCart.RequestedOn = null;
+                myCart.CreatedOn = DateTime.UtcNow;
+
+                try
+                {
+                    Company.ShoppingCarts.Add(myCart);
+                    Company.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    return jsonException(ex, HttpStatusCode.InternalServerError);
+                }
+                
+            }
+            else if (carts.Count == 1)
+            {
+                myCart = carts[0];
+            }
+            else if (carts.Count > 1)
+            {
+                return jsonException("An error occurred - there are more than 1 open carts for this user", HttpStatusCode.InternalServerError);
+            }
+
+            var existingItem = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == myCart.ID && i.Object == type && i.ObjectID == id).FirstOrDefault();
+
+            if (existingItem == null)
+            {
+                ShoppingCartItem item = new ShoppingCartItem();
+                item.ShoppingCartID = myCart.ID;
+                item.Object = type;
+                item.ObjectID = id;
+                item.AddedOn = DateTime.UtcNow;
+
+                try
+                {
+                    Company.ShoppingCartItems.Add(item);
+                    Company.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    return jsonException(ex, HttpStatusCode.InternalServerError);
+                }
+
+            }
+            else
+            {
+                return jsonException("This item is already in your cart", HttpStatusCode.OK);
+            }
+
+            return jsonSuccess("The item has been added to your cart", id.ToString(), "add", HttpStatusCode.OK);
+
+        }
+        
+        [HttpDelete, Route("shoppingcart/remove")]
+        public JsonResult RemoveShoppingCartItem(string type, int id, int shoppingCartID)
+        {
+            var item = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == shoppingCartID && i.Object == type && i.ObjectID == id).FirstOrDefault();
+            if (item == null)
+                return jsonException("Shopping cart item could not be found", HttpStatusCode.NotFound);
+
+            try
+            {
+                Company.ShoppingCartItems.Remove(item);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+            return jsonSuccess("Shopping cart item removed successfully", id.ToString(), "delete", HttpStatusCode.OK);
+        }
+
+        [HttpGet, Route("shoppingcart/list/{typeID:int}")]
+        public JsonNetResult GetMyShoppingCart(int typeID)
+        {
+            var cart = Company.ShoppingCarts.Where(s => s.ResourceID == Company.CurrentResourceID && s.ShoppingCartTypeID == typeID && s.RequestedOn == null).FirstOrDefault();
+            if (cart == null)
+                return new JsonNetResult
+                {
+                    Data =
+                    new {
+                        Cart = (ShoppingCart)null,
+                        Items = (dynamic)null
+                    },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+
+            var items = Company.Query<dynamic>(QueryConstants.ShoppingCartItemList, new { id = cart.ID }).ToList();
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    Cart = cart,
+                    Items = items
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+
+        }
+
+        [HttpGet, Route("shoppingcart/list/{typeID:int}/{cartID:int}")]
+        public JsonNetResult GetShoppingCart(int typeID, int cartID)
+        {
+            var cart = Company.GetById<ShoppingCart>(cartID);
+            var items = Company.Query<dynamic>(QueryConstants.ShoppingCartItemList, new { id = cart.ID }).ToList();
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    Cart = cart,
+                    Items = items
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        
+        [HttpPost, Route("shoppingcart/request")]
+        public JsonResult RequestShoppingCart(ShoppingCart cart)
+        {
+            var myCart = Company.GetById<ShoppingCart>(cart.ID);
+            if (myCart == null)
+                return jsonException("Could not find shopping cart", HttpStatusCode.NotFound);
+
+            try
+            {
+                myCart.RequestedOn = DateTime.UtcNow;
+                myCart.Request = cart.Request;
+
+                Company.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Your request has been submitted", cart.ID.ToString(), "update", HttpStatusCode.OK);
+
+        }
+        
+        [HttpPost, Route("shoppingcart/clear")]
+        public JsonResult EmptyShoppingCart(int cartID)
+        {
+            try
+            {
+                var items = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == cartID).ToList();
+                Company.ShoppingCartItems.RemoveRange(items);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Shopping cart cleared successfully", cartID.ToString(), "update", HttpStatusCode.OK);
+
+        }
         #endregion
 
         #region SurveyType

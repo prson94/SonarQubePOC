@@ -130,6 +130,9 @@
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
     <Compile Include="entities\Score\ScoreTypeMetricVersion.cs" />
+    <Compile Include="entities\ShoppingCart.cs" />
+    <Compile Include="entities\ShoppingCartItem.cs" />
+    <Compile Include="entities\ShoppingCartType.cs" />
     <Compile Include="entities\Social\Favorite.cs" />
     <Compile Include="entities\FieldTypeLookup.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDefinition.cs" />

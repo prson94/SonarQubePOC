@@ -22,6 +22,7 @@ export class CompanySettings {
     CurrentIconPath: string;
     DefaultSearchTypes: string;
     EnableOrganizations: boolean;
+    EnableShoppingCart: boolean;
 }
 
 export class IpRestriction {

@@ -129,7 +129,11 @@ namespace d360.core
         [Description("Organization Invitation"), EnableAudit(false)]
         OrganizationInvitation,
         [Description("Contract"), EnableAudit(true)]
-        Contract
+        Contract,
+        [Description("Shopping Cart Type"), EnableAudit(true)]
+        ShoppingCartType,
+        [Description("Shopping Cart"), EnableAudit(true)]
+        ShoppingCart
     }
 
     public class SystemObjectInfo

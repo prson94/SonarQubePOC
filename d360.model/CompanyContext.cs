@@ -291,6 +291,12 @@ namespace d360.model
 
         public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
+        public DbSet<ShoppingCartType> ShoppingCartTypes { get; set; }
+
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+
+        public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
+
         public DbSet<SiteNav> SiteNav { get; set; }
 
         public DbSet<Nym> Nyms { get; set; }

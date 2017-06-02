@@ -1,0 +1,32 @@
+﻿<div class="tile tile-detail">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div *ngIf="!isLoading">
+        <div class="row">
+            <div class="col m9 s12" style="padding:20px;">
+                <p-dataTable scrollable="true" scrollWidth="100%" [value]="items">
+                    <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>
+                    <p-column field="Name" header="Name" sortable="true"></p-column>
+                </p-dataTable>
+            </div>
+            <div class="col m3 s12" style="padding:20px;">
+                <div class="FieldName">
+                    Requested On
+                </div>
+                <div>
+                    {{cart.RequestedOn | date:short}}
+                </div>
+                <div class="FieldName">
+                    Request
+                </div>
+                <div>
+                    {{cart.Request}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <button pButton label="Back" type="button" (click)="back()"></button>
+            </div>
+        </div>
+    </div>
+</div>

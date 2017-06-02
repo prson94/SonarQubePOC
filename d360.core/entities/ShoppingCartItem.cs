@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using d360.core.entities.Contracts;
+using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace d360.core.entities
+{
+    [DataContract(Namespace = NAMESPACE)]
+    public class ShoppingCartItem : BaseObject
+    {
+        [DataMember, Key, Column(Order = 1)]
+        public int ShoppingCartID { get; set; }
+        [DataMember, Key, Column(Order = 2)]
+        public string Object { get; set; }
+        [DataMember, Key, Column(Order = 3)]
+        public int ObjectID { get; set; }
+        [DataMember]
+        public DateTime AddedOn { get; set; }
+
+        [IgnoreDataMember]
+        public ShoppingCart ShoppingCart { get; set; }
+    }
+}

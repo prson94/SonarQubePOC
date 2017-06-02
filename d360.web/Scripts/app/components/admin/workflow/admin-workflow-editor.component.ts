@@ -48,6 +48,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private SCHEDULE_OBJECT_LIMIT = 2000;
     private isValid = false;
     private errorMessage = "";
+    private hideShoppingCart = true;
 
     WorkflowChangeType = WorkflowChangeType;
     EmailTaskRecipientType = EmailTaskRecipientType;
@@ -71,6 +72,9 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             this.subjectAreaName = CompanySettings.ArtifactType_TaxonomyTypeID;
         } else {
             this.subjectAreaName = 'Subject Area';
+        }
+        if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true') {
+            this.hideShoppingCart = false;
         }
 
         this.load()
@@ -164,14 +168,19 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             //apply names to contextual fields
                             this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
                                 let cx = this.workflowFieldsService
-                                    .getContextualFieldsForType(this.model.Event.ChangeType)
+                                    .getContextualFieldsForType(this.model.Event.ChangeType, this.model.Event.Object)
                                     .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
                                 if (cx != null)
                                     c['@FieldName'] = cx.label;
                             });
                         })
                         .then(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType))
-                        .then(r => this.workflowObjectTypes = r);
+                        .then(r => this.workflowObjectTypes = r)
+                        .then(() => {
+                            if (this.hideShoppingCart) {
+                                this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
+                            }
+                        });
                 }
             })
             .then(() => this.loadResponsibilities())
@@ -181,7 +190,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
-            .then(r => { this.workflowObjectTypes = r; });
+            .then(r => { this.workflowObjectTypes = r; })
+            .then(() => {
+                if (this.hideShoppingCart) {
+                    this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
+                }
+            });
     }
 
     selectObjectType(e: any) {

@@ -576,6 +576,7 @@
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-form-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-editor.component.html" />
+    <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
@@ -1003,6 +1004,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.routes.ts" />
@@ -1160,6 +1162,7 @@
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\organization.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\shopping-cart.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\selective-preloading-strategy.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
@@ -1385,6 +1388,7 @@
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />

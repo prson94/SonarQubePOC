@@ -70,7 +70,7 @@ export class WorkflowFieldsService {
         }
     }
 
-    getContextualFieldsForType(changeType: WorkflowChangeType) {
+    getContextualFieldsForType(changeType: WorkflowChangeType, objectType: string) {
         let fields = [];
         switch (+changeType) {
             case WorkflowChangeType.ScoreUpdate:
@@ -80,8 +80,16 @@ export class WorkflowFieldsService {
                     type: 'number'
                 });
                 break;
-            default:
-                fields = [];
+        }
+
+        switch (objectType) {
+            case 'ShoppingCartType':
+                fields.push({
+                    value: 'Contextual|RequestedOn',
+                    label: 'Requested On',
+                    type: 'date'
+                });
+                break;
         }
 
         return fields;

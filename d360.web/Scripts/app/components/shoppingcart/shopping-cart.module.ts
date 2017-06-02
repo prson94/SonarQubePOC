@@ -9,15 +9,18 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 import {
     SharedModule,
     ButtonModule,
+    DataTableModule,
 } from 'primeng/primeng';
 
 import { CoreModule } from '../shared/core.module';
 import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { ShoppingCartRoutingModule } from './shopping-cart.routes';
 
 import { ShoppingCartComponent } from './shopping-cart.component';
+import { ShoppingCartRequestComponent } from './shopping-cart-request.component';
 
 
 @NgModule({
@@ -33,13 +36,16 @@ import { ShoppingCartComponent } from './shopping-cart.component';
         CoreModule,
         SharedDiagramModule,
         TilesModule,
+        SharedGridPagingInfoModule,
 
         //prime                
         SharedModule,
         ButtonModule,
+        DataTableModule,
     ],
     declarations: [
         ShoppingCartComponent,
+        ShoppingCartRequestComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
