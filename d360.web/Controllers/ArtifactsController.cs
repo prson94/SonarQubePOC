@@ -77,6 +77,8 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: fields);
             sql = applySortSuffix(sql, sortDataField, sortOrder);
+
+            fields = fields.Where(x => (x.Type != "FilteredLookup" && x.Type != "FusionLookup" && x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup")).ToList();
                         
             var results = Company.Query<dynamic>(sql, dbArgs);
             var settings = Community.GetCompanySettings();
