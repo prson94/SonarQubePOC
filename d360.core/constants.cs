@@ -42,5 +42,9 @@
         //azure media service constants
         public const string AZURE_MEDIA_SERVICES_ACCOUNT_NAME = "d3s";
         public const string AZURE_MEDIA_SERVICES_KEY = "MGSgtrabw6+HiphKwKgQp+gNvfrX0DJ1ecY2Ql60bOk=";
+
+        //cosmos db info
+        public const string COSMOS_AUTH_KEY = "mYhaK0v43dhEhPod02Jpz8qVRAXW04DNcyXDvp1GysEfPzgfir7dfkUMxN6CzvrJvqr05XZ4maMeldfxZtnVnA==";
+        public const string COSMOS_ENDPOINT = "https://d3s-graph.documents.azure.com:443/";
     }
 }

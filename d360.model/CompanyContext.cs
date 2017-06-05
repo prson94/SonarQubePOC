@@ -1322,7 +1322,26 @@ order by	ColumnIndex", new { id });
 
             var item = GetById<Intersect>(id);
             if (item == null) throw new NotFoundException("Relationship");
-            return Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
+            var res = Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
+
+            // add record to queue indication of delete relationship
+
+            QueueSource.CreateTopicMessage(new core.queue.EventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Action = core.enums.Workflow.ChangeType.Delete,
+                ResourceID = CurrentResourceID,
+                Object = new core.queue.EventObjectInfo
+                {
+                    Object = SystemObjects.Intersect,
+                    ObjectID = id,
+                    ObjectType = SystemObjects.IntersectType,
+                    ObjectTypeID = -1
+                },
+                DomainPrefix = CurrentCompanyDomain
+            });
+
+            return res;
         }
 
         public class DetailDisplayableRelationship
