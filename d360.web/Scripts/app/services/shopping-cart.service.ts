@@ -1,8 +1,5 @@
 ﻿import {
-    ShoppingCartType,
     ShoppingCart,
-    ShoppingCartItem,
-    ShoppingCartListItem,
     CartModel,
 } from '../models/shopping-cart.model';
 

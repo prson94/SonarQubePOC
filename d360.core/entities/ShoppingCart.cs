@@ -7,6 +7,7 @@ using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using d360.core.queue;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -27,6 +28,9 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public ShoppingCartType ShoppingCartType { get; set; }
+
+        [DataMember, NotMapped]
+        public string Requestor { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()
         {

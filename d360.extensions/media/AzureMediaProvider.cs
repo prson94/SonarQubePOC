@@ -1,9 +1,13 @@
 ﻿using d360.core;
 using Microsoft.WindowsAzure.MediaServices.Client;
+using Microsoft.WindowsAzure.MediaServices.Client.ContentKeyAuthorization;
 using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
 using System.Threading;
 
 namespace d360.extensions.storage
@@ -35,9 +39,30 @@ namespace d360.extensions.storage
 
             assetFile.Upload(path);
             inputAsset = EncodeToAdaptiveBitrateMP4Set(inputAsset, assetName + "-encoded");
-            ConfigureClearAssetDeliveryPolicy(inputAsset);
+            var key = CreateEnvelopeTypeContentKey(inputAsset);
+            CreateAssetDeliveryPolicy(inputAsset, key);
+
             BuildStreamingURLs(inputAsset);
+
+            var uri = key.GetKeyDeliveryUrl(ContentKeyDeliveryType.BaselineHttp);
+            var aesKey = GetDeliveryKey(uri, null);
+            //ConfigureClearAssetDeliveryPolicy(inputAsset);
+          
             //GetLatestMediaProcessorByName("Media Encoder Standard");
+
+            //var tokenTemplateString = AddTokenRestrictedAuthorizationPolicy(key);
+            //TokenRestrictionTemplate tokenTemplate =
+            //    TokenRestrictionTemplateSerializer.Deserialize(tokenTemplateString);
+            //Guid rawkey = EncryptionUtils.GetKeyIdAsGuid(key.Id);
+
+            //string testToken = TokenRestrictionTemplateSerializer.GenerateTestToken(tokenTemplate, null, rawkey);
+            ////Console.WriteLine("The authorization token is:\nBearer {0}", testToken);
+            //Console.WriteLine();
+
+          
+
+            
+
         }
 
         public IAsset EncodeToAdaptiveBitrateMP4Set(IAsset asset, string filename)
@@ -117,6 +142,47 @@ namespace d360.extensions.storage
             asset.DeliveryPolicies.Add(policy);
         }
 
+        private void CreateAssetDeliveryPolicy(IAsset asset, IContentKey key)
+        {
+
+            //  Get the Key Delivery Base Url by removing the Query parameter.  The Dynamic Encryption service will
+            //  automatically add the correct key identifier to the url when it generates the Envelope encrypted content
+            //  manifest.  Omitting the IV will also cause the Dynamice Encryption service to generate a deterministic
+            //  IV for the content automatically.  By using the EnvelopeBaseKeyAcquisitionUrl and omitting the IV, this
+            //  allows the AssetDelivery policy to be reused by more than one asset.
+            //
+            Uri keyAcquisitionUri = key.GetKeyDeliveryUrl(ContentKeyDeliveryType.BaselineHttp);
+            UriBuilder uriBuilder = new UriBuilder(keyAcquisitionUri);
+            uriBuilder.Query = string.Empty;
+            keyAcquisitionUri = uriBuilder.Uri;
+
+
+            // The following policy configuration specifies: 
+            //   key url that will have KID=<Guid> appended to the envelope and
+            //   the Initialization Vector (IV) to use for the envelope encryption.
+            Dictionary<AssetDeliveryPolicyConfigurationKey, string> assetDeliveryPolicyConfiguration =
+                new Dictionary<AssetDeliveryPolicyConfigurationKey, string>
+            {
+                    {
+                        AssetDeliveryPolicyConfigurationKey.EnvelopeBaseKeyAcquisitionUrl, keyAcquisitionUri.ToString()
+                    },
+            };
+
+            IAssetDeliveryPolicy assetDeliveryPolicy =
+                context.AssetDeliveryPolicies.Create(
+                            "AssetDeliveryPolicy",
+                            AssetDeliveryPolicyType.DynamicEnvelopeEncryption,
+                            AssetDeliveryProtocol.SmoothStreaming | AssetDeliveryProtocol.HLS | AssetDeliveryProtocol.Dash,
+                            assetDeliveryPolicyConfiguration);
+
+            // Add AssetDelivery Policy to the asset
+            asset.DeliveryPolicies.Add(assetDeliveryPolicy);
+
+            Console.WriteLine();
+            Console.WriteLine("Adding Asset Delivery Policy: " + assetDeliveryPolicy.AssetDeliveryPolicyType);
+        }
+
+
         private IMediaProcessor GetLatestMediaProcessorByName(string mediaProcessorName)
         {
 
@@ -131,5 +197,165 @@ namespace d360.extensions.storage
             return processor;
         }
 
+        public IContentKey CreateEnvelopeTypeContentKey(IAsset asset)
+        {
+            // Create envelope encryption content key
+            Guid keyId = Guid.NewGuid();
+            byte[] contentKey = GetRandomBuffer(16);
+
+            IContentKey key = context.ContentKeys.Create(
+                                    keyId,
+                                    contentKey,
+                                    "ContentKey",
+                                    ContentKeyType.EnvelopeEncryption);
+
+            asset.ContentKeys.Add(key);
+
+            return key;
+        }
+
+        private byte[] GetRandomBuffer(int size)
+        {
+            byte[] randomBytes = new byte[size];
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(randomBytes);
+            }
+
+            return randomBytes;
+        }
+
+
+
+         private string GenerateTokenRequirements()
+        {
+            TokenRestrictionTemplate template = new TokenRestrictionTemplate(TokenType.SWT);
+
+            template.PrimaryVerificationKey = new SymmetricVerificationKey();
+            template.AlternateVerificationKeys.Add(new SymmetricVerificationKey());
+            template.Audience = "foo".ToString();
+            template.Issuer = "bar".ToString();
+
+            template.RequiredClaims.Add(TokenClaim.ContentKeyIdentifierClaim);
+
+            return TokenRestrictionTemplateSerializer.Serialize(template);
+        }
+
+        private byte[] GetDeliveryKey(Uri keyDeliveryUri, string token)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(keyDeliveryUri);
+
+            request.Method = "POST";
+            request.ContentType = "text/xml";
+            if (!string.IsNullOrEmpty(token))
+            {
+                request.Headers[HttpRequestHeader.Authorization] = token;
+            }
+            request.ContentLength = 0;
+
+            var response = request.GetResponse();
+
+            var stream = response.GetResponseStream();
+            if (stream == null)
+            {
+                throw new NullReferenceException("Response stream is null");
+            }
+
+            var buffer = new byte[256];
+            var length = 0;
+            while (stream.CanRead && length <= buffer.Length)
+            {
+                var nexByte = stream.ReadByte();
+                if (nexByte == -1)
+                {
+                    break;
+                }
+                buffer[length] = (byte)nexByte;
+                length++;
+            }
+            response.Close();
+
+            // AES keys must be exactly 16 bytes (128 bits).
+            var key = new byte[length];
+            Array.Copy(buffer, key, length);
+            return key;
+        }
+
+        public void AddOpenAuthorizationPolicy(IContentKey contentKey)
+        {
+            // Create ContentKeyAuthorizationPolicy with Open restrictions
+            // and create authorization policy
+            IContentKeyAuthorizationPolicy policy = context.
+            ContentKeyAuthorizationPolicies.
+            CreateAsync("Open Authorization Policy").Result;
+
+            List<ContentKeyAuthorizationPolicyRestriction> restrictions =
+                new List<ContentKeyAuthorizationPolicyRestriction>();
+
+            ContentKeyAuthorizationPolicyRestriction restriction =
+                new ContentKeyAuthorizationPolicyRestriction
+                {
+                    Name = "Testing Open Auth Policy",
+                    KeyRestrictionType = (int)ContentKeyRestrictionType.Open,
+                    Requirements = null
+        };
+
+            restrictions.Add(restriction);
+
+            IContentKeyAuthorizationPolicyOption policyOption =
+                context.ContentKeyAuthorizationPolicyOptions.Create(
+                "policy",
+                ContentKeyDeliveryType.BaselineHttp,
+                restrictions,
+                "");
+
+            policy.Options.Add(policyOption);
+
+            // Add ContentKeyAutorizationPolicy to ContentKey
+            contentKey.AuthorizationPolicyId = policy.Id;
+            IContentKey updatedKey = contentKey.UpdateAsync().Result;
+            Console.WriteLine("Adding Key to Asset: Key ID is " + updatedKey.Id);
+        }
+
+
+        public string AddTokenRestrictedAuthorizationPolicy(IContentKey contentKey)
+        {
+            string tokenTemplateString = GenerateTokenRequirements();
+
+            IContentKeyAuthorizationPolicy policy = context.
+                                    ContentKeyAuthorizationPolicies.
+                                    CreateAsync("Token restricted authorization policy").Result;
+
+            List<ContentKeyAuthorizationPolicyRestriction> restrictions =
+                    new List<ContentKeyAuthorizationPolicyRestriction>();
+
+            ContentKeyAuthorizationPolicyRestriction restriction =
+                    new ContentKeyAuthorizationPolicyRestriction
+                    {
+                        Name = "Token Authorization Policy",
+                        KeyRestrictionType = (int)ContentKeyRestrictionType.TokenRestricted,
+                        Requirements = tokenTemplateString
+                    };
+
+            restrictions.Add(restriction);
+
+            //You could have multiple options 
+            IContentKeyAuthorizationPolicyOption policyOption =
+                context.ContentKeyAuthorizationPolicyOptions.Create(
+                    "Token Policy Option",
+                    ContentKeyDeliveryType.BaselineHttp,
+                    restrictions,
+                    null 
+                    );
+
+            policy.Options.Add(policyOption);
+
+            // Add ContentKeyAutorizationPolicy to ContentKey
+            contentKey.AuthorizationPolicyId = policy.Id;
+            IContentKey updatedKey = contentKey.UpdateAsync().Result;
+            Console.WriteLine("Adding Key to Asset: Key ID is " + updatedKey.Id);
+
+            return tokenTemplateString;
+        }
     }
 }

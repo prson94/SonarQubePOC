@@ -16087,6 +16087,12 @@ from    [IntersectType] RT
                 return jsonException("An error occurred - there are more than 1 open carts for this user", HttpStatusCode.InternalServerError);
             }
 
+            if (myCart == null)
+                return jsonException("The specified cart could not be found", HttpStatusCode.NotFound);
+
+            if (myCart.ResourceID != Company.CurrentResourceID)
+                return jsonException("You do not have permission to add items to this cart", HttpStatusCode.Forbidden);
+
             var existingItem = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == myCart.ID && i.Object == type && i.ObjectID == id).FirstOrDefault();
 
             if (existingItem == null)
@@ -16120,10 +16126,19 @@ from    [IntersectType] RT
         [HttpDelete, Route("shoppingcart/remove")]
         public JsonResult RemoveShoppingCartItem(string type, int id, int shoppingCartID)
         {
+
+            var cart = Company.GetById<ShoppingCart>(shoppingCartID);
+
+            if (cart == null)
+                return jsonException("Could not find the shopping cart specified.", HttpStatusCode.NotFound);
+
+            if (cart.ResourceID != Company.CurrentResourceID)
+                return jsonException("You do not have permission to remove this item", HttpStatusCode.Forbidden);
+
             var item = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == shoppingCartID && i.Object == type && i.ObjectID == id).FirstOrDefault();
             if (item == null)
                 return jsonException("Shopping cart item could not be found", HttpStatusCode.NotFound);
-
+            
             try
             {
                 Company.ShoppingCartItems.Remove(item);
@@ -16151,6 +16166,9 @@ from    [IntersectType] RT
                     Formatting = Newtonsoft.Json.Formatting.None
                 };
 
+            if (cart.ResourceID > 0)
+                cart.Requestor = Company.Query<string>("select FirstName + ' ' + LastName as Requestor from reporting.Global_Resource where ResourceID = @id", new { id = cart.ResourceID }).SingleOrDefault();
+
             var items = Company.Query<dynamic>(QueryConstants.ShoppingCartItemList, new { id = cart.ID }).ToList();
 
             return new JsonNetResult
@@ -16172,6 +16190,10 @@ from    [IntersectType] RT
             var cart = Company.GetById<ShoppingCart>(cartID);
             var items = Company.Query<dynamic>(QueryConstants.ShoppingCartItemList, new { id = cart.ID }).ToList();
 
+            if (cart != null && cart.ResourceID > 0)
+                cart.Requestor = Company.Query<string>("select FirstName + ' ' + LastName as Requestor from reporting.Global_Resource where ResourceID = @id", new { id = cart.ResourceID }).SingleOrDefault();
+
+
             return new JsonNetResult
             {
                 Data = new
@@ -16190,6 +16212,9 @@ from    [IntersectType] RT
             var myCart = Company.GetById<ShoppingCart>(cart.ID);
             if (myCart == null)
                 return jsonException("Could not find shopping cart", HttpStatusCode.NotFound);
+
+            if (myCart.ResourceID != Company.CurrentResourceID)
+                return jsonException("You do not have permission to request this shopping cart.", HttpStatusCode.Forbidden);
 
             try
             {
@@ -16212,6 +16237,13 @@ from    [IntersectType] RT
         {
             try
             {
+                var cart = Company.GetById<ShoppingCart>(cartID);
+                if (cart == null)
+                    return jsonException("Could not find the specified cart.", HttpStatusCode.NotFound);
+
+                if (cart.ResourceID != Company.CurrentResourceID)
+                    return jsonException("You do not have permission to clear this cart.", HttpStatusCode.Forbidden);
+
                 var items = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == cartID).ToList();
                 Company.ShoppingCartItems.RemoveRange(items);
                 Company.SaveChanges();
@@ -16224,6 +16256,7 @@ from    [IntersectType] RT
             return jsonSuccess("Shopping cart cleared successfully", cartID.ToString(), "update", HttpStatusCode.OK);
 
         }
+
         #endregion
 
         #region SurveyType

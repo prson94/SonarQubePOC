@@ -1,14 +1,15 @@
 ﻿import { Component, Input, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { Location } from '@angular/common';
-import { ShoppingCart, ShoppingCartItem, ShoppingCartListItem } from '../../models/shopping-cart.model';
+import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.model';
 import { Header, Column } from 'primeng/primeng';
 import { MessagesService } from '../../services/messages.service';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-shopping-cart',
@@ -29,7 +30,8 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
         private titleService: Title,
         private locationService: Location,
         private shoppingCartService: ShoppingCartService,
-        private messagesService: MessagesService)
+        private messagesService: MessagesService,
+        private router: Router)
     {
         super();
     }
@@ -86,7 +88,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
     }
 
     navigate(item: ShoppingCartListItem) {
-        
+        this.router.navigateByUrl(item.Url); 
     }
 }
 

@@ -22,6 +22,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime AddedOn { get; set; }
 
+        [DataMember, NotMapped]
+        public string Url { get; set; }
+
         [IgnoreDataMember]
         public ShoppingCart ShoppingCart { get; set; }
     }

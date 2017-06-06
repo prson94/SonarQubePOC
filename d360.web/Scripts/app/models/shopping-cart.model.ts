@@ -10,6 +10,7 @@ export class ShoppingCart {
     CreatedOn: string;
     RequestedOn: string;
     Request: string;
+    Requestor: string;
 }
 
 export class ShoppingCartItem {
@@ -24,6 +25,7 @@ export class ShoppingCartListItem {
     Name: string;
     Object: string;
     ObjectTypeName: string;
+    Url: string;
 }
 
 export class CartModel {

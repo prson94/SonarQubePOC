@@ -1398,7 +1398,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	                i.Object, 
 	                i.ObjectID, 
 	                coalesce(d.[Name],fa.[Name]) as [Name],
-	                coalesce(d.ObjectTypeName, fat.[Name], case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName  
+	                coalesce(d.ObjectTypeName, fat.[Name], case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName,
+					d.Url  
                 from
 	                Shoppingcartitem i
                 left join cache.ObjectDetails d on d.ObjectID = i.ObjectID and d.[Object] = i.[Object]

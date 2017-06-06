@@ -5,15 +5,27 @@
             <div class="col m9 s12" style="padding:20px;">
                 <p-dataTable scrollable="true" scrollWidth="100%" [value]="items">
                     <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>
-                    <p-column field="Name" header="Name" sortable="true"></p-column>
+                    <p-column field="Name" header="Name">
+                        <template let-item="rowData" pTemplate type="body">
+                            <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
+                                <a style="cursor:pointer;" (click)="navigate(item)">{{item.Name}}</a>
+                            </d3s-tooltip>
+                        </template>
+                    </p-column>
                 </p-dataTable>
             </div>
             <div class="col m3 s12" style="padding:20px;">
                 <div class="FieldName">
+                    Requested By
+                </div>
+                <div>
+                    {{cart.Requestor}}
+                </div>
+                <div class="FieldName">
                     Requested On
                 </div>
                 <div>
-                    {{cart.RequestedOn | date:short}}
+                    {{cart.RequestedOn | date:long}}
                 </div>
                 <div class="FieldName">
                     Request

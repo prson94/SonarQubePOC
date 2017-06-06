@@ -6,7 +6,7 @@ import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { Location } from '@angular/common';
-import { ShoppingCart, ShoppingCartItem, ShoppingCartListItem } from '../../models/shopping-cart.model';
+import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.model';
 import { Header, Column } from 'primeng/primeng';
 import { MessagesService } from '../../services/messages.service';
 
@@ -17,7 +17,6 @@ import { MessagesService } from '../../services/messages.service';
 })
 
 export class ShoppingCartRequestComponent extends BaseComponent implements OnInit, OnDestroy {
-    private cartIsEmpty = true;
     private title = 'Shopping Cart Request';
     private cart: ShoppingCart;
     private items: ShoppingCartListItem[] = [];
@@ -30,7 +29,8 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
         private locationService: Location,
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesService,
-        private route: ActivatedRoute) {
+        private route: ActivatedRoute,
+        private router: Router) {
         super();
     }
 
@@ -59,14 +59,16 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
             .then(r => {
                 this.cart = r.Cart;
                 this.items = r.Items;
-
-                this.cartIsEmpty = (this.items == null || this.items.length == 0);
                 this.isLoading = false;
             });
     }
 
     back() {
         this.locationService.back();
+    }
+
+    navigate(item: ShoppingCartListItem) {
+        this.router.navigateByUrl(item.Url); 
     }
 }
 
