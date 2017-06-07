@@ -217,6 +217,10 @@ namespace d360.model
 
         public DbSet<MapType> MapTypes { get; set; }
 
+        public DbSet<Nym> Nyms { get; set; }
+
+        public DbSet<NymRelation> NymRelations { get; set; }
+
         public DbSet<ObjectSecurity> ObjectSecurities { get; set; }                                         /* CACHED TABLE LOADED BY JOB */
 
         public DbSet<ObjectStyle> ObjectStyles { get; set; }
@@ -299,9 +303,7 @@ namespace d360.model
 
         public DbSet<SiteNav> SiteNav { get; set; }
 
-        public DbSet<Nym> Nyms { get; set; }
-
-        public DbSet<NymRelation> NymRelations { get; set; }
+        public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
 
         public DbSet<Survey> Surveys { get; set; }
 

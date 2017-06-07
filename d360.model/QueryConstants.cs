@@ -1408,5 +1408,11 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 where 
 	                i.ShoppingCartID = @id";
 
+        public static string SiteNavPermissions = @"
+            select p.SiteNavID, p.Object, p.ObjectID, p.Object + ' :: ' + coalesce(g.Name,r.FirstName + ' ' + r.Lastname) as Name from sitenavpermission p
+            left join [Group] g on g.ID = p.ObjectID and p.Object = 'Group'
+            left join reporting.Global_Resource r on r.ResourceID = p.ObjectID and p.Object = 'Resource'
+            where p.SiteNavID = @id";
+
     }
 }

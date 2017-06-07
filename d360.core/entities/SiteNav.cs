@@ -1,4 +1,7 @@
 ﻿using d360.core.entities.Contracts;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
@@ -29,5 +32,21 @@ namespace d360.core.entities
 
         [DataMember]
         public string Title{ get; set; }
+
+        [NotMapped, DataMember]
+        public List<SiteNavPermission> Permissions { get; set; }
+    }
+
+    public class SiteNavPermission : BaseObject
+    {
+        [Key, Column(Order = 1), DataMember]
+        public int SiteNavID { get; set; }
+        [Key, Column(Order = 2), DataMember]
+        public string Object { get; set; }
+        [Key, Column(Order = 3), DataMember]
+        public int ObjectID { get; set; }
+
+        [NotMapped, DataMember]
+        public string Name { get; set; }
     }
 }

@@ -560,6 +560,8 @@
     <None Include="dbo\Tables\ShoppingCartType.sql" />
     <None Include="dbo\Tables\ShoppingCart.sql" />
     <None Include="dbo\Tables\ShoppingCartItem.sql" />
+    <None Include="dbo\Functions\HasSiteNavPermission.sql" />
+    <None Include="dbo\Tables\SiteNavPermission.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

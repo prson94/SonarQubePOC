@@ -3,98 +3,13 @@
         <div class="row">
             <div class="col s12 m12 l7">
                 <div class="tile tile-detail">
-                    <header>
-                        Custom Images
-                        <div class="TileTools"></div>
-                    </header>
-                    <div class="row">
-                        <div class="col s6"><div class="FieldName">Company Logo</div></div>
-                        <div class="col s6"><div class="FieldName">Company Web Icon</div></div>
-                    </div>
-                    <div class="row">
-                        <div class="col s6">
-                            <div class="directions">
-                                You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.  The dimensions should be 200px (W) X 40px (H).
-                            </div>
-                        </div>
-                        <div class="col s6">
-                            <div class="directions">
-                                You may upload a custom web icon (.ICO file) for your company.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s6">
-                            <div *ngIf="companySettings.CurrentCompanyLogoPath">
-                                Current Logo: <br />
-                                <img [src]="companySettings.CurrentCompanyLogoPath" />
-                            </div>
-                            &nbsp;
-                        </div>
-                        <div class="col s6">
-                            <div *ngIf="companySettings.CurrentCompanyIconPath">
-                                Current Icon: <br />
-                                <img [src]="companySettings.CurrentCompanyIconPath" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row" *ngIf="companySettings.CurrentCompanyLogoPath || companySettings.CurrentCompanyIconPath">
-                        <div class="col s6">
-                            <input type="checkbox" [(ngModel)]="companySettings.SetLogoToDefault" /> Reset to default
-                        </div>
-                        <div class="col s6">
-                            <input type="checkbox" [(ngModel)]="companySettings.SetIconToDefault" /> Reset to default
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s6">
-                            <input #logoUpload type="file" (change)="onLogoFileChange($event)" accept="image/gif,image/jpeg,image/png" />
-                            <span *ngIf="companyLogo?.isLoading"><i class="fa fa-spinner fa-spin"></i></span>
-                            <a *ngIf="logoUpload.files.length > 0" (click)="logoUpload.value = null; onLogoFileChange(null);" class="remove"><i class="fa fa-remove"></i></a>
-                        </div>
-                        <div class="col s6">
-                            <input #iconUpload type="file" (change)="onIconFileChange($event)" accept="image/vnd.microsoft.icon,image/x-icon" />
-                            <span *ngIf="companyIcon?.isLoading"><i class="fa fa-spinner fa-spin"></i></span>
-                            <a *ngIf="iconUpload.files.length > 0" (click)="iconUpload.value = null; onIconFileChange(null);" class="remove"><i class="fa fa-remove"></i></a>
-                        </div>
-                    </div>
+                    <d3s-admin-image-upload [(companySettings)]="companySettings"
+                                            [(companyLogo)]="companyLogo"
+                                            [(companyIcon)]="companyIcon">
+                    </d3s-admin-image-upload>
                 </div>
                 <div class="tile tile-detail">
-                    <header>
-                        IP Restrictions
-                        <d3s-tile-actions [hasAdd]="true" (addClick)="addIpRestriction()"></d3s-tile-actions>
-                    </header>
-                    <div class="directions">
-                        Restrictions will only apply if there are entries present.  If no entries are present, then users will be allowed to access this environment from any IP.
-                    </div>
-                    <div>
-                        <table class="responsive-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Start Range</th>
-                                    <th>End Range</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let ipRestriction of companySettings.IpRestrictions;let i=index" style="margin-bottom: 10px" class="fadeIn">
-                                    <td style="vertical-align: middle">
-                                        <input [(ngModel)]="companySettings.IpRestrictions[i].Name" type="text" />
-                                    </td>
-                                    <td style="vertical-align: middle">
-                                        <input [(ngModel)]="companySettings.IpRestrictions[i].Start" type="text" />
-                                    </td>
-                                    <td style="vertical-align: middle">
-                                        <input [(ngModel)]="companySettings.IpRestrictions[i].End" type="text" />
-                                    </td>
-                                    <td style="width: 20px; text-align: right; vertical-align: top">
-                                        <a style="padding: 0 .5rem;" class="btn waves-effect waves-red btn-flat" title="Remove this restriction" (click)="removeIpRestriction(i)"><i class="fa fa-trash"></i></a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <d3s-admin-ip-restriction [(companySettings)]="companySettings"></d3s-admin-ip-restriction>
                 </div>
                 <div class="tile tile-detail">
                     <d3s-admin-site-menu [(companySettings)]="companySettings" (onSaveComplete)="load()"></d3s-admin-site-menu>
@@ -129,9 +44,9 @@
                     <input [(ngModel)]="companySettings.ArtifactType_TaxonomyTypeIDNodes" type="text" />
                 </div>
                 <div class="tile tile-detail">
-                    <header>Styles</header>                    
+                    <header>Styles</header>
                     <div class="FieldName">Header Background/Border Color</div>
-                    <input [(ngModel)]="companySettings.HeaderBackgroundColor" type="text" /><br/>                    
+                    <input [(ngModel)]="companySettings.HeaderBackgroundColor" type="text" /><br />
                     <div class="directions">Specify color for the header background color and border.  If left blank the system default value will be used.</div>
                 </div>
                 <div class="tile tile-detail">
@@ -147,8 +62,8 @@
                 </div>
             </div>
             <div class="col s12 m12 l2">
-                <button class="btn waves-effect waves-light" (click)="save()">Save Changes</button>
-                <div [hidden]="!isLoading" [class]="isLoading ? 'fadeIn spinner' : 'fadeOut spinner'"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
+                <button pButton type="button" (click)="save()" [disabled]="isLoading" label="Save Changes" style="padding: 10px 15px 10px 15px"></button>
+                <div style="display: inline-block; vertical-align: middle;"><d3s-loading [isLoading]="isLoading"></d3s-loading></div>
             </div>
         </div>
     </div>

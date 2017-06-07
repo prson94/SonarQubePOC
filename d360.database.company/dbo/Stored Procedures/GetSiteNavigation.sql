@@ -1,4 +1,7 @@
 ﻿CREATE PROCEDURE [dbo].[GetSiteNavigation]
+(
+	@ResourceID int = 0
+)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -10,7 +13,7 @@ SELECT	n.Name as MenuID,
 		n.Title as Title,
 		NULL AS Items	
 FROM SiteNav n
-WHERE n.Name = '#Monitor'
+WHERE n.Name = '#Monitor' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 UNION ALL
 
 SELECT	n.Name as MenuID,
@@ -20,7 +23,7 @@ SELECT	n.Name as MenuID,
 		n.Title as Title,
 		NULL AS Items		
 FROM SiteNav n
-WHERE n.Name = '#Home'
+WHERE n.Name = '#Home' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 UNION ALL
 
 SELECT	n.Name as MenuID,
@@ -41,12 +44,12 @@ SELECT	n.Name as MenuID,
 					FROM		ArtifactType a
 					left join SiteNav v on v.ObjectID = a.ID and v.Object = 'ArtifactType'
 					WHERE		a.ParentID IS NULL and v.ObjectID is null
-					ORDER BY	name
+					ORDER BY	a.name
 					) BG
 					FOR XML PATH('nav'), TYPE
 		) AS Items
 FROM SiteNav n
-WHERE n.Name = '#Glossary'
+WHERE n.Name = '#Glossary' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
 UNION ALL
 
@@ -77,7 +80,7 @@ SELECT	n.Name as MenuID,
 		FOR XML PATH('nav'), TYPE
 		) AS Items
 FROM SiteNav n
-WHERE n.Name = '#Models'
+WHERE n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
 UNION ALL
 
@@ -107,7 +110,7 @@ SELECT	n.Name as MenuID,
 		FOR XML PATH('nav'), TYPE
 		) AS Items
 		FROM SiteNav n
-WHERE n.Name = '#Policy'
+WHERE n.Name = '#Policy' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		
 UNION ALL
 
@@ -116,15 +119,9 @@ SELECT	n.Name as MenuID,
 		0 as Feature,
 		n.Icon as Icon,
 		n.Title as Title,
-		(
-		SELECT	name, 
-				dbo.GenerateNgObjectUrl('DomainType', ID, 0)  As url,
-				0 as feature
-		FROM	DomainType
-		FOR XML PATH('nav'), TYPE				
-		) AS Items
+		null AS Items
 FROM SiteNav n
-WHERE n.Name = '#Reference'
+WHERE n.Name = '#Reference' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
 UNION ALL
 
@@ -152,7 +149,7 @@ SELECT	n.Name as MenuID,
 		FOR XML PATH('nav'), TYPE
 		) AS Items	
 	FROM SiteNav n
-WHERE n.Name = '#Fusion'
+WHERE n.Name = '#Fusion' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		
 UNION ALL
 
@@ -169,7 +166,7 @@ SELECT	n.Name as MenuID,
         FOR XML PATH('nav'), TYPE
         ) AS Items
 FROM SiteNav n
-WHERE n.Name = '#Community'
+WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 UNION ALL
 
 SELECT	'#Admin' as MenuID,
@@ -260,7 +257,7 @@ SELECT	'#Admin' as MenuID,
 							(
 							select	*
 							from	(
-									SELECT	'Analytics' AS name, 
+									SELECT	'Scoring' AS name, 
 											'#/analytics/administration' AS url, 
 											5 as feature,
 											NULL AS items
@@ -351,14 +348,17 @@ SELECT	'#Admin' as MenuID,
 		n.Icon as Icon,
 		n.Title as Title,
 		(
-		SELECT	'Rules' AS name, 
-		'quality/rule' AS url, 
-		0 as feature,
-		NULL AS items
-		for xml path('nav'), type
+		SELECT	RT.name, 				
+				dbo.GenerateNgObjectUrl('RuleType', RT.ID, RT.ID) As url,
+				0 as feature,
+				null AS items	
+		FROM	RuleType RT
+				LEFT JOIN SiteNav v on v.ObjectID = RT.ID and v.Object ='RuleType'
+		WHERE	v.ObjectID IS NULL
+		FOR XML PATH('nav'), TYPE
 		) AS Items
 	FROM SiteNav n
-	WHERE n.Name = '#Data Quality'
+	WHERE n.Name = '#Data Quality' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
 	UNION ALL
 
@@ -370,7 +370,7 @@ SELECT	'#Admin' as MenuID,
 		s.Title as Title,
 		dbo.CustomSiteNavigation(ID) AS Items
 	from SiteNav s
-	where ParentID IS NULL and Name not like '#%'
+	where ParentID IS NULL and Name not like '#%' AND dbo.HasSiteNavPermission(s.ID, @ResourceID) = 1
 
 	order by sortorder
 END

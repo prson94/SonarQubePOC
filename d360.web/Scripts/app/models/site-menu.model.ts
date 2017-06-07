@@ -37,6 +37,15 @@ export class SiteNav {
     Icon: string;
     Title: string;
 
+    Permissions: SiteNavPermission[] = [];
     public static zindex: number = 1000;
+}
+
+export class SiteNavPermission {
+    SiteNavID: number;
+    Object: string;
+    ObjectID: number;
+
+    Name: string;
 }
 

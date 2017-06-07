@@ -1,0 +1,148 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div [ngSwitch]="formMode" *ngIf="!isLoading">
+    <div *ngSwitchDefault>
+        <header>
+            Site Nav
+            <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
+        </header>
+        <p-dataTable [value]="companySettings.SiteNav" selectionMode="single" [(selection)]="selection">
+            <p-column field="Title" header="Name">
+                <template let-item="rowData" pTemplate type="body">
+                    <i [class]="'fa '+ item.Icon"></i>&nbsp;&nbsp;{{item.Title}}
+                </template>
+            </p-column>
+            <p-column header="">
+                <template let-col let-item="rowData" pTemplate type="body">
+                    <div class="RowTools">
+                        <a *ngIf="item.IsCustom" (click)="delete(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        <a (click)="moveUp(item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
+                        <a (click)="moveDown(item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
+                    </div>
+                </template>
+            </p-column>
+        </p-dataTable>
+    </div>
+
+    <div *ngSwitchCase="FormMode.Editing">
+        <header>
+            Edit {{selection.Title}}
+        </header>
+        <div *ngIf="!formIsLoading">
+            <div class="row" style="margin-bottom:15px;">
+                <div class="col s12">
+                    <div class="FieldName" style="display:block;">Folder Name</div>
+                    <input type="text" maxlength="250" [(ngModel)]="selection.Title" style="width:100%" />
+                </div>
+                <div class="col s12">
+                    <div class="FieldName" style="display:block;">Folder Icon</div>
+                    <d3s-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl></d3s-icon-picker>
+                </div>
+            </div>
+            <div *ngIf="selection.IsCustom" class="row">
+                <div class="col s12 m6">
+                    <p-dataTable #dt [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
+                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-column field="Title" header="Available Folder Items"></p-column>
+                        <p-column>
+                            <template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools" style="height: initial;">
+                                    <a (click)="addFolderItem(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                                </div>
+                            </template>
+                        </p-column>
+                    </p-dataTable>
+                </div>
+                <div class="col s12 m6">
+                    <p-dataTable [value]="folderItems" [rows]="10" [paginator]="true" selectionMode="single">
+                        <p-column field="Name" header="Existing Folder Items"></p-column>
+                        <p-column>
+                            <template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools" style="height: initial;">
+                                    <a (click)="deleteFolderItem(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                </div>
+                            </template>
+                        </p-column>
+                    </p-dataTable>
+                </div>
+            </div>
+            <div class="row" style="padding-bottom:15px;">
+                <d3s-admin-site-menu-permissions [(siteNav)]="selection" (onModeChange)="permissionMode = $event">
+                </d3s-admin-site-menu-permissions>
+            </div>
+            <div class="row" style="margin-top:15px;">
+                <div class="col s12">
+                    <button pButton type="button" label="Save" (click)="save()" [disabled]="selection == null || selection.Title == null || selection.Title == '' || permissionMode != FormMode.Default && (selection.IsCustom && folderItems == null || folderItems.length < 1)"></button>
+                    <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngSwitchCase="FormMode.Deleting">
+        <header>
+            Delete Folder
+        </header>
+        <div clas="row">
+            <div class="col s12" style="padding-bottom:10px">
+                Are you sure you want to delete the {{selection.Name}} folder?
+            </div>
+        </div>
+        <button pButton type="button" label="Delete" (click)="save()"></button>
+        <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+    </div>
+
+    <div *ngSwitchCase="FormMode.Adding">
+        <header>
+            Add Navigation Folder
+        </header>
+        <div *ngIf="!formIsLoading">
+            <div class="row" style="margin-bottom:15px;">
+                <div class="col s12">
+                    <div class="FieldName" style="display:block;">Folder Name</div>
+                    <input maxlength="250" type="text" [(ngModel)]="newFolder.Name" style="width:100%" />
+                </div>
+                <div class="col s12">
+                    <div class="FieldName" style="display:block;">Folder Icon</div>
+                    <d3s-icon-picker [(ngModel)]="newFolder.Icon" ngDefaultControl></d3s-icon-picker>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m6">
+                    <p-dataTable [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
+                        <p-column field="Title" header="Available Folder Items"></p-column>
+                        <p-column>
+                            <template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools" style="height: initial;">
+                                    <a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                                </div>
+                            </template>
+                        </p-column>
+                    </p-dataTable>
+                </div>
+                <div class="col s12 m6">
+                    <p-dataTable [value]="newFolderItems" [rows]="10" [paginator]="true" selectionMode="single">
+                        <p-column field="Name" header="Folder Items"></p-column>
+                        <p-column>
+                            <template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools" style="height: initial;">
+                                    <a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                </div>
+                            </template>
+                        </p-column>
+                    </p-dataTable>
+                </div>
+            </div>
+            <div class="row"  style="padding-bottom:15px;">
+                <d3s-admin-site-menu-permissions [(siteNav)]="newFolder" (onModeChange)="permissionMode = $event">
+                </d3s-admin-site-menu-permissions>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <button pButton type="button" label="Save" (click)="save()" [disabled]="newFolder == null || newFolder.Name == null || newFolder.Name == '' || newFolderItems == null || newFolderItems.length < 1 || permissionMode != FormMode.Default"></button>
+                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

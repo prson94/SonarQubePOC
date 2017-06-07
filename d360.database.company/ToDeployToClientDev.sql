@@ -1,6 +1,10 @@
-﻿--shopping cart type
-insert into ShoppingCartType values ('Shopping Cart');
+﻿--add missing pk to sitenav. needed for fk on permission
+alter table SiteNav add constraint PK_SiteNav primary key (ID);
+go
 
+--shopping cart type
+insert into ShoppingCartType values ('Shopping Cart');
+go
 
 
 CREATE TABLE [workflow].[ItemAssignment](

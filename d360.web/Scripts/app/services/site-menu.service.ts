@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { SiteMenu, SiteMenuItem, SiteMenuModel, SiteNav } from '../models/site-menu.model';
+import { SiteMenu, SiteMenuItem, SiteMenuModel, SiteNav, SiteNavPermission } from '../models/site-menu.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -94,5 +94,41 @@ export class SiteMenuService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getSiteNavPermissions(id: number): Promise<SiteNavPermission[]> {
+        return this.http.get(`navigation/permissions/get/${id}`)
+            .toPromise()
+            .then(response => <SiteNavPermission[]>response.json())
+            .catch(err => this.handleError(err));
+
+    }
+
+    addSiteNavPermission(permission: SiteNavPermission) {
+        return this.http.post('navigation/permissions/add', permission)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+
+    removeSiteNavPermission(permission: SiteNavPermission) {
+        return this.http.delete('navigation/permissions/remove', permission)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    setSiteNavPermissions(nav: SiteNav) {
+        return this.http.post('navigation/permissions/set', nav)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getSiteNavPermissionsList(id: number = 0): Promise<any[]> {
+        return this.http.get(`navigation/permissions/get/list/${id}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
     
 }

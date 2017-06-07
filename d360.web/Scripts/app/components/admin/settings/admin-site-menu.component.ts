@@ -15,141 +15,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-admin-site-menu',
     providers: [CompanySettingsService, SiteMenuService],
-    template: `
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div [ngSwitch]="formMode" *ngIf="!isLoading">
-            <div *ngSwitchDefault>
-                <header>
-                    Site Nav
-                    <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
-                </header>
-                <p-dataTable [value]="companySettings.SiteNav" selectionMode="single" [(selection)]="selection">
-                    <p-column field="Title" header="Name"></p-column>
-                    <p-column header="">
-                        <template let-col let-item="rowData" pTemplate type="body">
-                            <div class="RowTools">
-                                <a *ngIf="item.IsCustom" (click)="delete(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                                <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                                <a (click)="moveUp(item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
-                                <a (click)="moveDown(item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
-                            </div>
-                        </template>
-                    </p-column>
-                </p-dataTable>
-            </div>
-            <div *ngSwitchCase="FormMode.Editing">
-                <header>
-                    Edit {{selection.Title}}
-                </header>
-                <div *ngIf="!formIsLoading">
-                    <div class="row" style="margin-bottom:15px;">
-                        <div class="col s12">
-                            <div class="FieldName" style="display:block;">Folder Name</div>
-                            <input type="text" maxlength="250" [(ngModel)]="selection.Title" style="width:100%" />
-                        </div>
-                        <div class="col s12">
-                            <div class="FieldName" style="display:block;">Folder Icon</div>
-                            <d3s-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl></d3s-icon-picker>
-                        </div>
-                    </div>
-                    <div *ngIf="selection.IsCustom" class="row">
-                        <div class="col s12 m6">
-                            <p-dataTable #dt [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
-                                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                                <p-column field="Title" header="Available Folder Items"></p-column>
-                                <p-column>
-                                    <template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools" style="height: initial;">
-                                            <a (click)="addFolderItem(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-                                        </div>
-                                    </template>
-                                </p-column>
-                            </p-dataTable>
-                        </div>
-                        <div class="col s12 m6">
-                            <p-dataTable [value]="folderItems" [rows]="10" [paginator]="true" selectionMode="single">
-                                <p-column field="Name" header="Existing Folder Items"></p-column>
-                                <p-column>
-                                    <template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools" style="height: initial;">
-                                            <a (click)="deleteFolderItem(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                                        </div>
-                                    </template>
-                                </p-column>
-                            </p-dataTable>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <button pButton type="button" label="Save" (click)="save()" [disabled]="selection == null || selection.Title == null || selection.Title == '' && (selection.IsCustom && folderItems == null || folderItems.length < 1)"></button>
-                            <button pButton type="button" label="Cancel" (click)="cancel()"></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div *ngSwitchCase="FormMode.Deleting">
-                <header>
-                    Delete Folder
-                </header>
-                <div clas="row">
-                    <div class="col s12" style="padding-bottom:10px">
-                        Are you sure you want to delete the {{selection.Name}} folder?
-                    </div>
-                </div>
-                <button pButton type="button" label="Delete" (click)="save()"></button>
-                <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
-            </div>
-            <div *ngSwitchCase="FormMode.Adding">
-                <header>
-                    Add Navigation Folder
-                </header>
-                <div *ngIf="!formIsLoading">
-                    <div class="row" style="margin-bottom:15px;">
-                        <div class="col s12">
-                            <div class="FieldName" style="display:block;">Folder Name</div>
-                            <input maxlength="250" type="text" [(ngModel)]="newFolder.Name" style="width:100%" />
-                        </div>
-                        <div class="col s12">
-                            <div class="FieldName" style="display:block;">Folder Icon</div>
-                            <d3s-icon-picker [(ngModel)]="newFolder.Icon" ngDefaultControl></d3s-icon-picker>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 m6">
-                            <p-dataTable [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
-                                <p-column field="Title" header="Available Folder Items"></p-column>
-                                <p-column>
-                                    <template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools" style="height: initial;">
-                                            <a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-                                        </div>
-                                    </template>
-                                </p-column>
-                            </p-dataTable>
-                        </div>
-                        <div class="col s12 m6">
-                            <p-dataTable [value]="newFolderItems" [rows]="10" [paginator]="true" selectionMode="single">
-                                <p-column field="Name" header="Folder Items"></p-column>
-                                <p-column>
-                                    <template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools" style="height: initial;">
-                                            <a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                                        </div>
-                                    </template>
-                                </p-column>
-                            </p-dataTable>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <button pButton type="button" label="Save" (click)="save()" [disabled]="newFolder == null || newFolder.Name == null || newFolder.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
-                            <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-`,
+    templateUrl: './admin-site-menu.component.html',
     styles: [`
         .remove {
             cursor: pointer; 
@@ -182,6 +48,9 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     oldFolderItems: SiteNav[] = [];
     oldFolderName;
 
+    permissionMode: FormMode = FormMode.Default;
+
+
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,
@@ -207,7 +76,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         this.newFolder = new SiteNav();
         this.newFolderItems = new Array<SiteNav>();
         this.loadFolderItems();
-        console.log(this.availableItems, this.folderItems);
         this.formMode = FormMode.Adding;
     }
 
@@ -278,10 +146,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         this.selection = item;
         this.formMode = FormMode.Editing;
         this.folderName = this.selection.Name;
-        this.loadFolderItems().then(() => {
-            this.oldFolderItems = _.cloneDeep(this.folderItems);
-            this.oldFolderName = this.folderName;
-        });
+        this.loadFolderItems()
+            .then(() => {
+                this.oldFolderItems = _.cloneDeep(this.folderItems);
+                this.oldFolderName = this.folderName;
+            })
+            .then(() => this.loadSiteNavPermissions(this.selection));
     }
 
     delete(item: SiteNav) {
@@ -318,6 +188,9 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                 this.siteMenuService.editFolder(this.selection)
                     .then(result => {
                         this.showMessageForResult(this.messagesService, result);
+                    })
+                    .then(() => this.siteMenuService.setSiteNavPermissions(this.selection))
+                    .then(() => {
                         this.stateService.reloadLeftNavMenu();
                         this.isLoading = false;
                         this.formMode = FormMode.Default;
@@ -337,7 +210,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                         this.isLoading = false;
                         this.stateService.reloadLeftNavMenu();
                         this.onSaveComplete.emit();
-                    });
+                    })
+                    .then(() => this.siteMenuService.setSiteNavPermissions(this.selection))
                 break;
             case FormMode.Deleting:
                 this.isLoading = true;
@@ -348,7 +222,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                         this.formMode = FormMode.Default;
                         this.isLoading = false;
                         this.onSaveComplete.emit();
-                    }); 
+                    });
                 break;
         }
     }
@@ -383,7 +257,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             });
     }
 
-
     loadFolderItems(): Promise<any> {
         this.isLoading = true;
 
@@ -407,4 +280,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         }
     }
 
+    loadSiteNavPermissions(item: SiteNav): Promise<any> {
+        this.isLoading = true;
+        return this.siteMenuService.getSiteNavPermissions(item.ID)
+            .then(r => {
+                item.Permissions = r;
+                this.isLoading = false;
+            });
+    }
 }

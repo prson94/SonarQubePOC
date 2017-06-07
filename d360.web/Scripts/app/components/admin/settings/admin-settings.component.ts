@@ -51,44 +51,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.load();
     }
 
-
-    addIpRestriction(): void {
-        this.companySettings.IpRestrictions.push(new IpRestriction());
-    }
-
-    removeIpRestriction(i: number): void {
-        this.companySettings.IpRestrictions.splice(i, 1);
-    }
-
-    onLogoFileChange(event): void {
-        if (this.companyLogo == null)
-            this.companyLogo = new CompanyImage();
-
-        if (!event) {
-            this.companyLogo.file = null;
-            this.companyLogo.setDataUrl();
-            return;
-        }
-
-        var files = event.srcElement.files;
-        this.companyLogo.file = files[0];
-        this.companyLogo.setDataUrl();
-    }
-
-    onIconFileChange(event): void {
-        if (this.companyIcon == null)
-            this.companyIcon = new CompanyImage();
-        if (!event) {
-            this.companyIcon.file = null;
-            this.companyIcon.setDataUrl();
-            return;
-        }
-
-        var files = event.srcElement.files;
-        this.companyIcon.file = files[0];
-        this.companyIcon.setDataUrl();
-    }
-
     load(): void {
         this.isLoading = true;
         this.companySettingsService.getSettings()

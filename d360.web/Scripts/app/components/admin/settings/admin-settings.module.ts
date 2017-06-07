@@ -13,6 +13,9 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 import { IconPickerComponent } from './icon-picker.component';
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
+import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
+import { AdminImageUploadComponent } from './admin-image-upload.component';
+import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions.component';
 
 import { AdminSettingsRoutingModule } from './admin-settings.routes';
 
@@ -47,6 +50,9 @@ import {
         IconPickerComponent,
         AdminSettingsComponent,
         AdminSiteMenuComponent,
+        AdminIpRestrictionComponent,
+        AdminImageUploadComponent,
+        AdminSiteMenuPermissionsComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

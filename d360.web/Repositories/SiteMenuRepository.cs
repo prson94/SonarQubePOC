@@ -56,7 +56,7 @@ namespace d360.web.Repositories
         {
             List<TopNavigationItem> nodes = null;
 
-            nodes = Company.Query<TopNavigationItem>(string.Format(@"GetSiteNavigation", (Company.CurrentResourceIsAdmin ? "1" : "0"))).ToList();
+            nodes = Company.Query<TopNavigationItem>(string.Format(@"GetSiteNavigation @ResourceID", (Company.CurrentResourceIsAdmin ? "1" : "0")), new { ResourceID = Company.CurrentResourceID }).ToList();
 
             if (nodes == null) return null;
 
