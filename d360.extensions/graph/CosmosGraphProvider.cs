@@ -2,6 +2,7 @@
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Graphs;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +11,70 @@ using System.Threading.Tasks;
 
 namespace d360.extensions.graph
 {
-    public class VertexModel
+    public class CosmosJsonConverter : JsonConverter
     {
-        public string ID { get { return $"{ObjectType}|{ObjectID}"; } }
-        public string Name { get; set; }
-        public string ObjectType { get; set; }
+    
+    public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(VertexModel) || objectType == typeof(EdgeModel);
+        }
 
-        public string ObjectID { get; set; }
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            var obj = value as VertexModel;
+
+            if (obj != null)
+            {
+                JObject o = new JObject();
+                o.Add(new JProperty("label", obj.Label));
+                o.Add(new JProperty("id", obj.ID));
+
+                foreach (var item in obj.Properties)
+                {
+                    var ar = new JArray();
+
+                    JObject props = new JObject();
+                    props.Add(new JProperty("_value", item.Value));
+                    props.Add(new JProperty("id", Guid.NewGuid()));
+
+                    ar.Add(props);
+
+                    o.Add(new JProperty(item.Key, ar));
+                }
+
+                o.WriteTo(writer);
+
+                return;
+            }
+
+            var edgeObj = value as EdgeModel;
+
+            if (edgeObj != null)
+            {
+                JObject o = new JObject();
+                o.Add(new JProperty("label", edgeObj.RelationshipType));
+                o.Add(new JProperty("id", Guid.NewGuid()));
+                o.Add(new JProperty("_isEdge", true));
+                o.Add(new JProperty("_sink", edgeObj.EndID));
+                o.Add(new JProperty("_sinkLabel", edgeObj.EndLabel));
+                o.Add(new JProperty("_vertexId", edgeObj.StartID));
+                o.Add(new JProperty("_vertexLabel", edgeObj.StartLabel));
+
+                o.WriteTo(writer);
+
+                return;
+            }
+        }
     }
+
     public class CosmosGraphProvider : IGraphProvider
     {
-        public async void AddVertices<T>(int companyId, IEnumerable<T> items)
+        public async Task AddObjects<T>(int companyId, IEnumerable<T> items)
         {
             using (DocumentClient client = new DocumentClient(
                 new Uri(d360.core.constants.COSMOS_ENDPOINT),
@@ -33,12 +87,51 @@ namespace d360.extensions.graph
                     UriFactory.CreateDatabaseUri("graphdb"),
                     new DocumentCollection { Id = $"D3S{companyId}" });
 
-                
-                //client.CreateDocumentAsync()
+                try
+                {
+                    int currentCount = 0;
+                    int documentCount = items.Count();
+                    int itemsPerInsert = 200;
+                    var delay = TimeSpan.Zero;
+
+                    while (currentCount < documentCount)
+                    {
+                        await Task.Delay(delay);
+                        delay = TimeSpan.Zero;
+
+                        string argsJson = JsonConvert.SerializeObject(items.Skip(currentCount).Take(itemsPerInsert).ToArray(), Formatting.Indented, new CosmosJsonConverter());
+
+                        var args = new dynamic[] { JsonConvert.DeserializeObject<dynamic[]>(argsJson) };
+
+                        try
+                        {
+                            var sprocResponse = await client.ExecuteStoredProcedureAsync<dynamic>($"/dbs/graphdb/colls/D3S{companyId}/sprocs/bulkImport/", args);
+
+                            int insertCount = (int)sprocResponse.Response;
+
+                            currentCount += itemsPerInsert;
+                        }
+                        catch(DocumentClientException e)
+                        {
+                            var statusCode = (int)e.StatusCode;
+                            if (statusCode == 429)
+                            {
+                                delay = e.RetryAfter;
+                            }
+                            else
+                                throw;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error: {0}", e.Message);
+                }
             }
         }
 
-        public async Task AddVertex(int companyId, string id, string objectType, IDictionary<string, string> properties)
+        
+        public async Task AddVertex(int companyId, string id, string label, IDictionary<string, string> properties)
         {
             using (DocumentClient client = new DocumentClient(
                 new Uri(d360.core.constants.COSMOS_ENDPOINT),
@@ -51,7 +144,7 @@ namespace d360.extensions.graph
                     UriFactory.CreateDatabaseUri("graphdb"),
                     new DocumentCollection { Id = $"D3S{companyId}" });
                                 
-                var gremlin = $"g.addV('{objectType}').property('id', '{id}')";
+                var gremlin = $"g.addV('{label}').property('id', '{id}')";
 
                 foreach (var item in properties)
                 {
@@ -132,7 +225,7 @@ namespace d360.extensions.graph
             }
         }
 
-        public async void ClearData(int companyId)
+        public async Task ClearData(int companyId)
         {
             using (DocumentClient client = new DocumentClient(
                 new Uri(d360.core.constants.COSMOS_ENDPOINT),

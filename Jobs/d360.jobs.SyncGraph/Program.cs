@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs;
 using d360.extensions.graph;
 using System.Data.SqlClient;
 using Dapper;
+using d360.extensions;
 
 namespace d360.jobs.SyncGraph
 {
@@ -48,24 +49,55 @@ namespace d360.jobs.SyncGraph
                                                         
                             Console.WriteLine("Starting to load intersects [company id: {0}]", companyID);
 
-                            var intersects = GetIntersects(context);
+                            var sql =
+                                    @"select
+	                                [utility].[GetObjectName] (I.Subject, I.SubjectID) as SubjectName
+	                                , I.Subject
+	                                , I.SubjectID
+	                                , [utility].[GetObjectName] (I.Object, I.ObjectID) as ObjectName
+	                                , I.Object
+	                                , I.ObjectID
+	                                , p.name as Predicate
+                                from
+	                                [intersect] i
+	                                left outer join intersecttype it on (i.intersecttypeid = it.id)
+	                                left outer join [predicate] p on (it.predicateid = p.id)
+                                ";
 
+                            var intersects = context.Query<dynamic>(sql);
+                            
                             Console.WriteLine("Starting clear graph [company id: {0}]", companyID);
 
                             // add them to the graph
                             var graphDatabase = new CosmosGraphProvider();
 
                             //clear the graph for this company
-                            graphDatabase.ClearData(companyID);
+                            var clearTask = graphDatabase.ClearData(companyID);
+
+                            clearTask.Wait();
 
                             Console.WriteLine("Starting populate graph with intersects [company id: {0}]", companyID);
 
-                            //graphDatabase.AddVertices<Intersect>
+                            var vertices = new HashSet<VertexModel>();
+                            var edges = new HashSet<EdgeModel>();
+                            
+                            foreach (var item in intersects)
+                            {
+                                var startId = $"{item.Object}|{item.ObjectID}";
+                                var endId = $"{item.Subject}|{item.SubjectID}";
+
+                                vertices.Add(new VertexModel { ID = startId, Label = item.Object, Properties = new Dictionary<string, string> { {"name", item.ObjectName } } } );
+                                vertices.Add(new VertexModel { ID = endId, Label = item.Subject, Properties = new Dictionary<string, string> { { "name", item.SubjectName } } });
+
+                                edges.Add(new EdgeModel { RelationshipType = item.Predicate, StartID = startId, EndID = endId, StartLabel = item.Object, EndLabel = item.Subject });
+                            }
+
+                            graphDatabase.AddObjects<VertexModel>(companyID, vertices).Wait();
+                            
+                            graphDatabase.AddObjects<EdgeModel>(companyID, edges).Wait();
                         }
-
-
                     }
-                    catch
+                    catch(Exception e)
                     {
 
                     }
