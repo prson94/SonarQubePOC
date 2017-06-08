@@ -57,13 +57,9 @@ import { FormMode } from '../../../models/form.model';
                     <select [(ngModel)]="selection" style="min-width: 200px;">
                         <option *ngFor="let p of permissionItems" [value]="p.value">{{p.label}}</option>
                     </select>
+                    <button pButton type="button" label="Cancel" (click)="selection = null; formMode = FormMode.Default; onModeChange.emit(this.formMode);"></button>
+                    <button pButton type="button" label="Add" (click)="add()" [disabled]="selection == null"></button>
                 </div>
-            </div>
-        </div>
-        <div class="row"  style="padding-top:10px;">
-            <div class="col s12">
-                <button pButton type="button" label="Cancel" (click)="selection = null; formMode = FormMode.Default; onModeChange.emit(this.formMode);"></button>
-                <button pButton type="button" label="Add" (click)="add()" [disabled]="selection == null"></button>
             </div>
         </div>
     </div>
@@ -80,6 +76,10 @@ import { FormMode } from '../../../models/form.model';
         input[type=text] {
             width: 90%;
             height:25px;
+        }
+        .mock-header {
+            padding: 3px 0 15px 5px;
+            position: relative;
         }
   `],
 })

@@ -322,7 +322,7 @@ namespace d360.web.Controllers
                 Company.SaveChanges();
                 SetSiteNavPermissions(folder);
                 menuRepository.ClearCachedMenu();
-                message = "Folder renamed successfully.";
+                message = "Folder updated successfully.";
 
             }
              catch (Exception ex)
@@ -354,7 +354,9 @@ namespace d360.web.Controllers
                     where a.[value] not in (select p.[Object] + '|' + cast(p.ObjectID as varchar) as [value] from SiteNavPermission p where p.SiteNavID = 191)
                     order by a.label
                     ";
+
             var results = Company.Query<dynamic>(sql, new { id }).ToList();
+
             return new JsonNetResult
             {
                 Data = results,
@@ -377,8 +379,12 @@ namespace d360.web.Controllers
         [Authorize, HttpPost, Route("permissions/set")]
         public JsonNetResult SetSiteNavPermissions(SiteNav nav)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(new Exception("You do not have permission to do this"));
+
             if (nav == null || nav.ID < 1)
                 return jsonNetException(new Exception("The model passed to the method was invalid"));
+
             var existing = Company.SiteNavPermissions.Where(p => p.SiteNavID == nav.ID).ToList();
 
             if (nav.Permissions == null)
@@ -413,8 +419,12 @@ namespace d360.web.Controllers
         {
             var nav = Company.GetById<SiteNav>(perm.SiteNavID);
 
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(new Exception("You do not have permission to do this"));
+
             if (nav == null)
                 return jsonNetException(new Exception("The site nav specified was not found"));
+
             if (string.IsNullOrEmpty(perm.Object) || perm.ObjectID == 0)
                 return jsonNetException(new Exception("Invalid object passed"));
 
@@ -440,6 +450,9 @@ namespace d360.web.Controllers
         [Authorize, HttpDelete, Route("permissions/remove")]
         public JsonNetResult RemoveSiteNavPermission(SiteNavPermission perm)
         {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonNetException(new Exception("You do not have permission to do this"));
+
             perm = Company.SiteNavPermissions.Where(p => p.SiteNavID == perm.SiteNavID && p.Object == perm.Object && p.ObjectID == perm.ObjectID).FirstOrDefault();
 
             if (perm != null)

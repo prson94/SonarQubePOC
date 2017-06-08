@@ -6,7 +6,6 @@
 RETURNS bit
 AS
 BEGIN
-	declare @result bit;
 
 	if not exists (select 1 from SiteNavPermission where SiteNavID = @SiteNavID)
 		return 1;
