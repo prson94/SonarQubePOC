@@ -11,6 +11,7 @@
     [PowerBIDatasetID] VARCHAR (50)    NULL,
     [PowerBIReportID]  VARCHAR (50)    NULL,
     [FileName] VARCHAR(260) NULL, 
+	[Url] NVARCHAR(500) NULL,
     CONSTRAINT [PK_Report] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 

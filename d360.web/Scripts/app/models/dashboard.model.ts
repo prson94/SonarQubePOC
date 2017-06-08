@@ -6,6 +6,7 @@
     ObjectType: string;
     PowerBIReportID: string;
     ReportType: string;
+    Url: string;
 }
 
 export class PowerBIReport {

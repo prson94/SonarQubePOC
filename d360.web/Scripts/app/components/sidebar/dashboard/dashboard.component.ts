@@ -27,7 +27,8 @@ import { Dashboard } from '../../../models/dashboard.model'
                         </div>                        
                     </div>
                     <div class="tile tile-detail" *ngIf="selected">
-                        <d3s-powerbi-viewer #viewer [dashboard]="selected"></d3s-powerbi-viewer>                        
+                        <d3s-powerbi-viewer *ngIf="selected.ReportType =='powerbi'" [dashboard]="selected"></d3s-powerbi-viewer>                        
+                        <d3s-sagacity-viewer *ngIf="selected.ReportType =='sagacity'" [dashboard]="selected"></d3s-sagacity-viewer>
                     </div>
                     <div class="tile tile-detail" *ngIf="!selected">
                         <h4 class="center" style="padding:30px;">Please choose a dashboard from the dropdown above and press render to view the specified dashboards content.</h4>

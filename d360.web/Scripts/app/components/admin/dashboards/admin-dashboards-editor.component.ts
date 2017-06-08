@@ -8,6 +8,8 @@ import { ClaimsService } from '../../../services/claims.service';
 
 import * as _ from 'lodash';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-admin-dashboards-editor',
     template: ` 
@@ -39,7 +41,13 @@ import * as _ from 'lodash';
                             </div>       
                             <div [hidden]="targetType.valid || targetType.pristine">A target type is required</div>                                                                        
                         </div>
-                        <div class="col s12" *ngIf="editedReport.ReportType != 'powerbi'">
+                        <div class="col s12" *ngIf="editedReport.ReportType == 'sagacity'">
+                            <div class="FieldName">Url</div>
+                            <div>
+                                <input required style="width: 100%;" name="url" type="string" [(ngModel)]="editedReport.Url" #name="ngModel" maxlength="500">
+                            </div>
+                        </div>
+                        <div class="col s12" *ngIf="editedReport.ReportType == 'legacy'">
                             <div class="FieldName">Report Layout</div>
                             <div>                                
                                 <select required [(ngModel)]="editedReport.ReportLayoutID" name="ReportLayout" #reportLayout="ngModel" style="width:100%;">
@@ -91,10 +99,11 @@ export class AdminDashboardsEditor {
         private claimsService: ClaimsService
     ) {        
         this.reportTypes.push({ value:"legacy", title:"Default" });
-        this.reportTypes.push({ value:"powerbi", title:"PowerBI" });
+        this.reportTypes.push({ value: "powerbi", title: "PowerBI" });        
     }
 
     ngOnInit() {
+        if (CompanySettings.EnableSagacity == "true") this.reportTypes.push({ value: "sagacity", title: "Sagacity" });
         if (this.report != undefined) {
             this.editedReport = _.cloneDeep(this.report);
             this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();            

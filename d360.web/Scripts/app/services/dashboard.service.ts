@@ -14,7 +14,7 @@ export class DashboardService extends BaseService {
         if (!objectType || objectType == '') objectType = 'Home';
         if (!objectID || objectID == 0) objectID = 0;
          
-        return this.http.get(`reports/bycontext/${objectType}/${objectID}/powerbi`)
+        return this.http.get(`reports/bycontext/${objectType}/${objectID}`)
             .toPromise()
             .then(response => <Dashboard[]>response.json())
             .catch(err => this.handleError(err));

@@ -12498,6 +12498,7 @@ where		D.ObjectType = @targetType and D.ObjectTypeID = @targetTypeID
                         ReportType = parseTextField(form, "ReportType"),
                         PowerBIReportID = string.IsNullOrEmpty(powerBIID) ? null : powerBIID,
                         PowerBIDatasetID = string.IsNullOrEmpty(datasetID) ? null : datasetID,
+                        Url = parseTextField(form, "Url"),
                         FileName = filename
                     };
 
@@ -12649,6 +12650,7 @@ where		D.ObjectType = @targetType and D.ObjectTypeID = @targetTypeID
                 string powerBIID = string.Empty;
                 string datasetID = string.Empty;
                 string filename = string.Empty;
+                string url = parseTextField(form, "Url");
 
                 if (fileCount > 0 && reportType == "powerbi")
                 {
@@ -12718,6 +12720,7 @@ where		D.ObjectType = @targetType and D.ObjectTypeID = @targetTypeID
                     model.ObjectID = int.Parse(objectType[1]);
                     model.ReportLayoutID = parseNullableIntField(form, "ReportLayoutID", -1).GetValueOrDefault(-1);
                     model.ReportType = reportType;
+                    model.Url = url;
 
                     if (!string.IsNullOrEmpty(datasetID))
                         model.PowerBIDatasetID = datasetID;

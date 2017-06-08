@@ -30,95 +30,7 @@ namespace d360.web.Controllers
         { }
 
         #endregion
-
-
-        [Route("Overlay"), NonNullableParameters]
-        public ActionResult Overlay(int reportID, string type, int id)
-        {
-            var report = Company.GetById<Report>(reportID, i => i.ReportLayout);
-            if (report == null) return HttpNotFound();
-
-            var model = new ReportOverlayModel { ReportID = reportID, ReportName = report.Name, ObjectType = type, ObjectID = id };
-            var objectName = "";
-
-            switch (report.ObjectType)
-            {
-                case "Artifact":
-                    var a = Company.GetById<Artifact>(id);
-                    if (a!= null) objectName = a.Name;
-                    a = null;
-                    break;
-                case "ArtifactType":
-                    var at = Company.GetById<ArtifactType>(id);
-                    if (at != null) objectName = at.Name;
-                    at = null;
-                    break;
-                case "Resource":
-                    var r = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).SingleOrDefault();
-                    if (r != null) objectName = string.Format("{0} {1}", r.FirstName, r.LastName);
-                    r = null;
-                    break;
-                case "TaxonomyType":
-                    var t = Company.GetById<Taxonomy>(id);
-                    if (t != null) objectName = t.Name;
-                    t = null;
-                    break;
-                case "Taxonomy":
-                    var tt = Company.GetById<TaxonomyType>(id);
-                    if (tt != null) objectName = tt.Name;
-                    tt = null;
-                    break;
-            }
-
-            if (!string.IsNullOrEmpty(objectName))
-                model.ReportName = string.Format("{0} : {1}", model.ReportName, objectName);
-
-
-            return PartialView(model);
-        }
-
-        [Route("PreviewOverlay"), NonNullableParameters]
-        public ActionResult PreviewOverlay(int id)
-        {
-            var report = Company.GetById<Report>(id, i => i.ReportLayout);
-            if (report == null) return HttpNotFound();
-
-            var model = new ReportOverlayModel { ReportID = id, ReportName = report.Name, ObjectTypes = new List<SelectListItem>() };
-
-            switch (report.ObjectType)
-            { 
-                case "Artifact":
-                    model.ObjectTypes = Company.Filter<Artifact>(i => i.ArtifactTypeID == report.ObjectID)
-                        .OrderBy(i => i.Name)
-                        .ToList()
-                        .Select(i => new SelectListItem { Text = i.Name, Value = string.Format("Artifact|{0}", i.ID) })
-                        .ToList();
-                    break;
-                case "ArtifactType":
-                case "Resource":
-                    model.ObjectTypes = Company.Table<GlobalReportingResource>()
-                        .OrderBy(i => i.LastName).ThenBy(i => i.FirstName)
-                        .ToList()
-                        .Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = string.Format("Resource|{0}", i.ResourceID) })
-                        .ToList();
-                    break;
-                case "TaxonomyType":
-                    model.ObjectType = report.ObjectType;
-                    model.ObjectID = report.ObjectID;
-                    break;
-                case "Taxonomy":
-                    model.ObjectTypes = Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == report.ObjectID)
-                        .OrderBy(i => i.TextPath)
-                        .ToList()
-                        .Select(i => new SelectListItem { Text = i.TextPath, Value = string.Format("Taxonomy|{0}", i.ID) })
-                        .ToList();
-                    break;
-            }
-
-            
-            return PartialView(model);
-        }
-
+                
         private IPowerBIClient CreatePowerBIClient(string accessKey)
         {
             var credentials = new TokenCredentials(accessKey, "AppKey");
@@ -182,95 +94,86 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("ByContext/{type}/{id:int}/{reportType?}")]
-        public JsonNetResult GetReportsByObject(string type, int id, string reportType)
+        [Route("ByContext/{type}/{id:int}")]
+        public JsonNetResult GetReportsByObject(string type, int id)
         {
-            if (!string.IsNullOrEmpty(reportType))
-            {
-                
-                if (id > 0)
-                {
-                    SystemObjects objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
-                    var objectId = id;
-                    if(objectType == SystemObjects.Artifact)
-                    {
-                        var artifact = Company.Artifacts.Where(x => x.ID == id).First();
-                        objectId = artifact.ArtifactTypeID;
-                    }
-
-                    var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType == reportType).Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
-
-                    var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == id && x.ObjectType == type && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
-
-                    var currentUserResponsibilityTypeID = 0;
-
-                    if (currentUserResponsibilityType != null)
-                        currentUserResponsibilityTypeID = currentUserResponsibilityType.ResponsibilityTypeID;
-
-                    //check that the current user has access to the current report
-                    for (int i = reports.Count - 1; i >= 0; i--)
-                    {
-                        var report = reports[i];
-
-                        if (report.Responsibilities != null && report.Responsibilities.Count > 0)
-                        {
-                            bool userHasAccess = false;
-
-                            foreach (var responsibility in report.Responsibilities)
-                            {
-                                if (responsibility.ResponsibilityTypeID == currentUserResponsibilityTypeID)
-                                {
-                                    userHasAccess = true;
-                                    break;
-                                }
-                            }
-                            if (!userHasAccess)
-                                reports.RemoveAt(i);
-                        }
-                    }
-
-                    return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
-                }
-                else
-                {
-                    var reports = Company.Filter<Report>(x => x.ReportType == reportType).OrderBy(i => i.Name).ToList();
-
-                    for (int i = reports.Count - 1; i >= 0; i--)
-                    {
-                        var report = reports[i];
-
-                        if (report.Responsibilities != null && report.Responsibilities.Count > 0)
-                        {
-                            var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == report.ObjectID && x.ObjectType == report.ObjectType && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
-
-                            var currentUserResponsibilityTypeID = 0;
-
-                            if (currentUserResponsibilityType != null)
-                                currentUserResponsibilityTypeID = currentUserResponsibilityType.ResponsibilityTypeID;
-
-                            bool userHasAccess = false;
-
-                            foreach (var responsibility in report.Responsibilities)
-                            {
-                                if (responsibility.ResponsibilityTypeID == currentUserResponsibilityTypeID)
-                                {
-                                    userHasAccess = true;
-                                    break;
-                                }
-                            }
-                            if (!userHasAccess)
-                                reports.RemoveAt(i);
-                        }
-                    }
-
-                    return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
-                }
-            }
-
             if (id > 0)
-                return new JsonNetResult { Data = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == id).OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };            
+            {
+                SystemObjects objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
+                var objectId = id;
+                if (objectType == SystemObjects.Artifact)
+                {
+                    var artifact = Company.Artifacts.Where(x => x.ID == id).First();
+                    objectId = artifact.ArtifactTypeID;
+                }
+
+                var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
+
+                var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == id && x.ObjectType == type && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
+
+                var currentUserResponsibilityTypeID = 0;
+
+                if (currentUserResponsibilityType != null)
+                    currentUserResponsibilityTypeID = currentUserResponsibilityType.ResponsibilityTypeID;
+
+                //check that the current user has access to the current report
+                for (int i = reports.Count - 1; i >= 0; i--)
+                {
+                    var report = reports[i];
+
+                    if (report.Responsibilities != null && report.Responsibilities.Count > 0)
+                    {
+                        bool userHasAccess = false;
+
+                        foreach (var responsibility in report.Responsibilities)
+                        {
+                            if (responsibility.ResponsibilityTypeID == currentUserResponsibilityTypeID)
+                            {
+                                userHasAccess = true;
+                                break;
+                            }
+                        }
+                        if (!userHasAccess)
+                            reports.RemoveAt(i);
+                    }
+                }
+
+                return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
+            }
             else
-                return new JsonNetResult { Data = Company.Table<Report>().OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };
+            {
+                var reports = Company.Filter<Report>(x => x.ReportType != "legacy").OrderBy(i => i.Name).ToList();
+
+                for (int i = reports.Count - 1; i >= 0; i--)
+                {
+                    var report = reports[i];
+
+                    if (report.Responsibilities != null && report.Responsibilities.Count > 0)
+                    {
+                        var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == report.ObjectID && x.ObjectType == report.ObjectType && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
+
+                        var currentUserResponsibilityTypeID = 0;
+
+                        if (currentUserResponsibilityType != null)
+                            currentUserResponsibilityTypeID = currentUserResponsibilityType.ResponsibilityTypeID;
+
+                        bool userHasAccess = false;
+
+                        foreach (var responsibility in report.Responsibilities)
+                        {
+                            if (responsibility.ResponsibilityTypeID == currentUserResponsibilityTypeID)
+                            {
+                                userHasAccess = true;
+                                break;
+                            }
+                        }
+                        if (!userHasAccess)
+                            reports.RemoveAt(i);
+                    }
+                }
+
+                return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
+            }            
         }
 
         [Route("tiles")]

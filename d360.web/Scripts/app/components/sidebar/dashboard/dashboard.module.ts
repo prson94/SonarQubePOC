@@ -17,6 +17,7 @@ import { DashboardRoutingModule } from './dashboard.routes';
 
 import { DashboardComponent } from './dashboard.component';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
+import { SagacityViewerComponent } from './sagacity-viewer.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -38,6 +39,7 @@ import { PowerBIViewerComponent } from './powerbi-viewer.component';
     declarations: [
         DashboardComponent,
         PowerBIViewerComponent,
+        SagacityViewerComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

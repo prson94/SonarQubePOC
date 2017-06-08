@@ -58,6 +58,10 @@ namespace d360.core.entities
         [Column(TypeName = "varchar"), StringLength(260)]
         public string FileName { get; set; }
 
+        [DataMember]
+        [Column(TypeName = "nvarchar"), StringLength(500)]
+        public string Url { get; set; }
+
         [NotMapped,DataMember]
         public string VisibleTo { get; set; }
 
