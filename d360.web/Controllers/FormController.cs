@@ -2126,7 +2126,7 @@ namespace d360.web.Controllers
                         var logoByteArray = Convert.FromBase64String(logoData);
                         using (var logoStream = new MemoryStream(logoByteArray))
                         {
-                            var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_LOGO_FOLDER, Company.CurrentCompanyID.ToString());
+                            var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_LOGO_FOLDER, $"{Company.CurrentCompanyID}.");
                             filesToDelete.ForEach(f =>
                             {
                                 Storage.DeleteFile(constants.COMPANY_LOGO_FOLDER, f);
