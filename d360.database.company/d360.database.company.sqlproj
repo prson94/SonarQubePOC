@@ -562,6 +562,14 @@
     <None Include="dbo\Tables\ShoppingCartItem.sql" />
     <None Include="dbo\Functions\HasSiteNavPermission.sql" />
     <None Include="dbo\Tables\SiteNavPermission.sql" />
+    <None Include="dbo\Views\OrganizationDetail.sql" />
+    <None Include="dbo\Views\OrganizationInvitationDetail.sql" />
+    <None Include="dbo\Views\OrganizationResourceDetail.sql" />
+    <None Include="dbo\Tables\Organization.sql" />
+    <None Include="dbo\Tables\OrganizationDomain.sql" />
+    <None Include="dbo\Tables\OrganizationInvitation.sql" />
+    <None Include="dbo\Tables\OrganizationRegistration.sql" />
+    <None Include="dbo\Tables\OrganizationResource.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

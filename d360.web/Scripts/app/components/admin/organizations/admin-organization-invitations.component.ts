@@ -19,8 +19,10 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     <p-dataTable #dt [globalFilter]="gb" [value]="invitations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Email" header="Email" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                        <!--
                         <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'100px'}"></p-column>
                         <p-column field="DateAccepted" header="Accepted On" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'120px'}"></p-column>
+                        -->
                         <p-column [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
                                 <a (click)="openResource(item)">{{item.AcceptedByFirstName}} {{item.AcceptedByLastName}}</a>
@@ -43,13 +45,15 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     </p-dataTable>  
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organization?.ID" [objectType]="'OrganizationInvitation'" [title]="'Organization Invitation'" [selection]="selected" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor> 
-                <d3s-delete-form *ngIf="showDelete"
-                    [callback]="theDeleteCallback"
-                    [itemId]="selected?.ID"
-                    [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the invitation [' + [selected?.Name] + ']?'"                                         
-                    (onCancel)="showDelete=false;"
-                ></d3s-delete-form>   
+                <div style="padding:10px">                
+                    <d3s-delete-form *ngIf="showDelete"
+                        [callback]="theDeleteCallback"
+                        [itemId]="selected?.ID"
+                        [method]="'callback'"
+                        [prompt]="'Are you sure you want to delete the invitation [' + selected?.Email + ']?'"                                         
+                        (onCancel)="showDelete=false;"
+                    ></d3s-delete-form> 
+                </div> 
 
                 `
 })
@@ -117,16 +121,19 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
     }
     
     save(event) {
-        this.showEditor = false;
         this.isLoading = true;
         this.organizationsService.saveInvitation(event.item)
             .then(result => {
+                console.log(result);
+                if (result.type != 'error') {
+                    this.showEditor = false;
+                    this.getInvitations();                
+                }
+
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);
-                this.getInvitations();                
             });        
-    }
-    
+    }    
 }
 
 

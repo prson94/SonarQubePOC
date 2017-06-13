@@ -27,12 +27,12 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <returns></returns>
         [HttpGet, Route("")]
-        public IQueryable<Organization> GetOrganizations()
+        public IQueryable<OrganizationDetail> GetOrganizations()
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
-            return Company.Table<Organization>();
+            return Company.Table<OrganizationDetail>();
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("default/contracts")]
         public IEnumerable<ContractModel> GetDefaultContracts()
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
             return (
                     from c in Company.Contracts.ToList()
@@ -71,8 +71,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{id:int}/contracts")]
         public IEnumerable<ContractModel> GetContractsByOrganization(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
             return (
                     from c in Company.Contracts.Include("Organization").ToList()
@@ -97,12 +97,12 @@ namespace d360.web.Controllers.Services
         /// <param name="id">The ID of the organization you want to retrieve domains for.</param>
         /// <returns></returns>
         [HttpGet, Route("{id:int}/domains")]
-        public IQueryable<OrganizationDomainDetail> GetDomainsByOrganization(int id)
+        public IQueryable<OrganizationDomain> GetDomainsByOrganization(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
-            return Company.Filter<OrganizationDomainDetail>(i => i.OrganizationID == id);
+            return Company.Filter<OrganizationDomain>(i => i.OrganizationID == id);
         }
 
         /// <summary>
@@ -113,8 +113,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{id:int}/invitations")]
         public IQueryable<OrganizationInvitationDetail> GetInvitationsByOrganization(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
             return Company.Filter<OrganizationInvitationDetail>(i => i.OrganizationID == id);
         }
@@ -127,8 +127,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{id:int}/users")]
         public IQueryable<OrganizationResourceDetail> GetResourcesByOrganization(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
             return Company.Filter<OrganizationResourceDetail>(i => i.OrganizationID == id);
         }
@@ -138,12 +138,12 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <returns></returns>
         [HttpGet, Route("domains")]
-        public IQueryable<OrganizationDomainDetail> GetDomainsForAllOrganizations()
+        public IQueryable<OrganizationDomain> GetDomainsForAllOrganizations()
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
-            return Company.Table<OrganizationDomainDetail>();
+            return Company.Table<OrganizationDomain>();
         }
 
         /// <summary>
@@ -153,8 +153,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("invitations")]
         public IQueryable<OrganizationInvitationDetail> GetInvitationsForAllOrganizations()
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
             return Company.Table<OrganizationInvitationDetail>();
         }
@@ -166,8 +166,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("users")]
         public IQueryable<OrganizationResourceDetail> GetResourcesForAllOrganizations()
         {
-            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
-                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
 
             return Company.Table<OrganizationResourceDetail>();
         }

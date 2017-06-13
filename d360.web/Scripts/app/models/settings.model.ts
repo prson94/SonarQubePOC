@@ -23,6 +23,7 @@ export class CompanySettings {
     DefaultSearchTypes: string;
     EnableOrganizations: boolean;
     EnableShoppingCart: boolean;
+    DefaultRoute: string;
 }
 
 export class IpRestriction {

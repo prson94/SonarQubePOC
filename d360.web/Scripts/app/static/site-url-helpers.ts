@@ -1,4 +1,6 @@
-﻿export class SiteUrlHelpers {
+﻿declare var CompanySettings;
+
+export class SiteUrlHelpers {
     
     //main site routes
     // WARNING!! - SOME URLS SUCH AS TOOLTIPS ARE BURNED IN THE DB DO NOT CHANGES THE BELOW WITHOUT 
@@ -72,6 +74,14 @@
     static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
+
+    static getDefaultRoute() {
+        if (CompanySettings != null && CompanySettings.DefaultRoute != null && CompanySettings.DefaultRoute != '' && CompanySettings.DefaultRoute != '/') {
+            return CompanySettings.DefaultRoute;
+        } else {
+            return this.SITE_URL_HOME_ROOT;
+        }
+    }
 
     // getObjectUrl - Generates the url for an object based on its type
     static getObjectUrl(objectType: string, objectId: number, parentId?: number, objectName?: string) : string {

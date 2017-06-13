@@ -1,6 +1,13 @@
 ﻿export class Organization {
     Name: string;
     ID: number;
+    Accepted: boolean;
+    AcceptedBy: number;
+    DateAccepted: string;
+    AdministratorEmail: string;
+
+    //part of view model
+    AcceptedByName: string;
 }
 
 export enum ContractType {
@@ -25,17 +32,6 @@ export class OrganizationDomain {
     ID: number;
     OrganizationID: number;
     Domain: string;
-    Accepted: boolean;
-    AcceptedBy: number;
-    DateAccepted: Date;
-
-    //part of view model
-    OrganizationName: string;
-    AcceptedByFirstName: string;
-    AcceptedByLastName: string;
-    AcceptedByEmail: string;
-    AcceptedByStatus: string;
-    AcceptedByDateLastLoggedIn: Date;
 }
 
 export class OrganizationInvitation {

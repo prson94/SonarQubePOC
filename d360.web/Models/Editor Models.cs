@@ -279,10 +279,9 @@ namespace d360.web.Models
         public string CompanyIcon { get; set; }
         public bool SetIconToDefault { get; set; }
         public string CurrentCompanyIconPath { get; set; }
-
         public bool UseNewWorkflow { get; set; }
-
         public bool EnableShoppingCart { get; set; }
+        public string DefaultRoute { get; set; }
 
         public string ArtifactType_TaxonomyTypeID { get; set; }
         public string ArtifactType_TaxonomyTypeIDNodes { get; set; }
@@ -839,7 +838,24 @@ namespace d360.web.Models
         public Guid? RegistrationID { get; set; }
 
         public string Message { get; set; }
+
+        public List<ContractRegisterModel> Contracts { get; set; }
     }
+
+    public class ContractRegisterModel
+    {
+        public ContractRegisterModel() { }
+
+        public ContractRegisterModel(Contract contract)
+        {
+            Contract = contract;
+            Accept = false;
+        }
+
+        public Contract Contract { get; set; }
+        public bool Accept { get; set; } = false;
+    }
+
 
     public class PeopleResponsibilityEditorModel : BaseResponsibilityEditorModel
     {

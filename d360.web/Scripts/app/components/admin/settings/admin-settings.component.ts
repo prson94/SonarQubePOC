@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute, NavigationStart } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
@@ -34,6 +35,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     searchTypes: SearchType[] = SettingsHelper.getSearchTypesList();
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
+    sub: any;
+    routeValidationMessage = "";
     
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -41,7 +44,9 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         titleService: Title,
         private siteMenuService: SiteMenuService,        
         private stateService: StateService,
-        private messagesService: MessagesService
+        private messagesService: MessagesService,
+        private router: Router,
+        private route: ActivatedRoute
     ) {
 
         super(headerBreadcrumbService, titleService);        
@@ -80,5 +85,17 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.isLoading = false;
                 window.location.reload();
             });
+    }
+
+    validateRoute() {
+        this.routeValidationMessage = "";
+
+        if (this.companySettings.DefaultRoute == '' || this.companySettings.DefaultRoute == '/')
+            return;
+
+        let r = new RegExp('^(?:[a-z]+:)?//', 'i');
+
+        if (r.test(this.companySettings.DefaultRoute))
+            this.routeValidationMessage = "The value entered must be a relative url (ex: /artifact/1)";
     }
 }

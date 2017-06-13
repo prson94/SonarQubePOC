@@ -41,6 +41,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+
         this.setBrowserTitle(this.titleService, 'Home');
 
         this.headerBreadcrumbService.clearBreadcrumbs();

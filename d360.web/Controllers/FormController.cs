@@ -2023,6 +2023,7 @@ namespace d360.web.Controllers
             model.DisableIssueManagement = (settings.Any(i => i.SettingID == 17) ? bool.Parse(settings.Single(i => i.SettingID == 17).Value) : false);
             model.UseNewWorkflow = (settings.Any(i => i.SettingID == 18) ? bool.Parse(settings.Single(i => i.SettingID == 18).Value) : false);
             model.EnableShoppingCart = (settings.Any(i => i.SettingID == 20) ? bool.Parse(settings.Single(i => i.SettingID == 20).Value) : false);
+            model.DefaultRoute = (settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2177,18 +2178,6 @@ namespace d360.web.Controllers
                     Community.SaveChanges();
                 }
 
-                //socialSetting = settings.FirstOrDefault(i => i.SettingID == 6);
-                //if (socialSetting == null)
-                //{
-                //    socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 6, Value = formModel.DisableQuestionPosting.ToString().ToLower() };
-                //    Community.Add<CompanySetting>(socialSetting);
-                //}
-                //else
-                //{
-                //    socialSetting.Value = formModel.DisableQuestionPosting.ToString().ToLower();
-                //    Community.SaveChanges();
-                //}
-
                 #endregion
 
                 #region global fields
@@ -2258,6 +2247,18 @@ namespace d360.web.Controllers
                 else
                 {
                     shoppingCartSetting.Value = formModel.EnableShoppingCart.ToString().ToLower();
+                    Community.SaveChanges();
+                }
+
+                var defaultRouteSetting = settings.FirstOrDefault(i => i.SettingID == 22);
+                if (defaultRouteSetting == null)
+                {
+                    defaultRouteSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 22, Value = formModel.DefaultRoute.Trim() };
+                    Community.Add<CompanySetting>(defaultRouteSetting);
+                }
+                else
+                {
+                    defaultRouteSetting.Value = formModel.DefaultRoute ?? "".Trim();
                     Community.SaveChanges();
                 }
 
@@ -10230,6 +10231,7 @@ from ArtifactType A
             var list = new List<EditableField>();
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "AdministratorEmail", Name = "Administrator Email", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true,"", 1, 250) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10247,6 +10249,7 @@ from ArtifactType A
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "AdministratorEmail", Name = "Administrator Email", FieldType = DataType.Text.ToString(), Value = a.AdministratorEmail, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10276,8 +10279,16 @@ from ArtifactType A
 
                 var a = new Organization
                 {
-                    Name = parseTextField(form, "Name")
+                    Name = parseTextField(form, "Name"),
+                    AdministratorEmail = parseTextField(form, "AdministratorEmail")
                 };
+
+                var emailRegex = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
+                var regex = new System.Text.RegularExpressions.Regex(emailRegex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+
+                if (!regex.IsMatch(a.AdministratorEmail))
+                    return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
 
                 Company.Add(a);
 
@@ -10313,6 +10324,15 @@ from ArtifactType A
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 existing.Name = parseTextField(form, "Name");
+                existing.AdministratorEmail = parseTextField(form, "AdministratorEmail");
+
+                var emailRegex = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
+                var regex = new System.Text.RegularExpressions.Regex(emailRegex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+
+                if (!regex.IsMatch(existing.AdministratorEmail))
+                    return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
+
 
                 Company.Update(existing);
 
@@ -10346,7 +10366,22 @@ from ArtifactType A
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete(model);
+
+                //get child records
+                var domains = Company.Filter<OrganizationDomain>(i => i.OrganizationID == model.ID);
+                var invitations = Company.Filter<OrganizationInvitation>(i => i.OrganizationID == model.ID);
+                var resources = Company.Filter<OrganizationResource>(i => i.OrganizationID == model.ID);
+                var registrations = Company.Filter<OrganizationRegistration>(i => i.OrganizationID == model.ID);
+
+
+                Company.OrganizationDomains.RemoveRange(domains);
+                Company.OrganizationInvitations.RemoveRange(invitations);
+                Company.OrganizationResources.RemoveRange(resources);
+                Company.OrganizationRegistrations.RemoveRange(registrations);
+
+                Company.Organizations.Remove(model);
+
+                Company.SaveChanges();
 
                 dynamic custom = new
                 {
@@ -10603,6 +10638,9 @@ from ArtifactType A
                     Domain = parseTextField(form, "Domain")
                 };
 
+                if (Company.Any<OrganizationDomain>(i => i.OrganizationID == o.OrganizationID && i.Domain == o.Domain))
+                    return jsonException("This domain is already part of this organization", HttpStatusCode.Forbidden);
+
                 Company.Add(o);
 
                 dynamic custom = new
@@ -10636,6 +10674,9 @@ from ArtifactType A
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 existing.Domain = parseTextField(form, "Domain");
+
+                if (Company.Any<OrganizationDomain>(i => i.OrganizationID == existing.OrganizationID && i.Domain == existing.Domain && i.ID != existing.ID))
+                    return jsonException("This domain is already part of this organization", HttpStatusCode.Forbidden);
 
                 Company.Update(existing);
 
@@ -10755,6 +10796,21 @@ from ArtifactType A
                     Email = parseTextField(form, "Email")
                 };
 
+                var emailRegex = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
+                var regex = new System.Text.RegularExpressions.Regex(emailRegex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                if (!regex.IsMatch(a.Email))
+                    return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
+
+                if (Company.Any<OrganizationInvitation>(i => i.OrganizationID == a.OrganizationID && i.Email == a.Email))
+                    return jsonException("This email has already been invited to this organization", HttpStatusCode.Forbidden);
+
+                var userIsAlreadyRegistered = Company.Query<dynamic>(@"select 1 from organizationresource g
+                    inner join reporting.Global_Resource r on r.ResourceID = g.ResourceID
+                    where r.Email = @Email and g.OrganizationID = @OrganizationID", new { a.Email, a.OrganizationID }).Count() > 0;
+                if (userIsAlreadyRegistered)
+                    return jsonException("A user with this email address is already registered to this organization", HttpStatusCode.Forbidden);
+
                 Company.Add(a);
 
                 dynamic custom = new
@@ -10788,6 +10844,23 @@ from ArtifactType A
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 existing.Email = parseTextField(form, "Email");
+
+                var emailRegex = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
+                var regex = new System.Text.RegularExpressions.Regex(emailRegex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                
+
+                if (!regex.IsMatch(existing.Email))
+                    return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
+
+                if (Company.Any<OrganizationInvitation>(i => i.OrganizationID == existing.OrganizationID && i.Email == existing.Email && i.ID != existing.ID))
+                    return jsonException("This email has already been invited to this organization", HttpStatusCode.Forbidden);
+
+                var userIsAlreadyRegistered = Company.Query<dynamic>(@"select 1 from organizationresource g
+                    inner join reporting.Global_Resource r on r.ResourceID = g.ResourceID
+                    where r.Email = @Email and g.OrganizationID = @OrganizationID", new { existing.Email, existing.OrganizationID }).Any();
+                if (userIsAlreadyRegistered)
+                    return jsonException("A user with this email address is already registered to this organization", HttpStatusCode.Forbidden);
+
 
                 Company.Update(existing);
 

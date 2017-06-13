@@ -25,6 +25,12 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
             <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;">
                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
+                <p-column field="AdministratorEmail" header="Administrator Email"></p-column>
+                <p-column field="DateAccepted" header="Accepted On">
+                    <template pTemplate type="body" let-item="rowData">
+                        {{ item.DateAccepted | date: 'short' }}
+                    </template>
+                </p-column>
                 <p-column [style]="{width:'40px'}">
                     <template let-item="rowData"  pTemplate type="body">
                         <div class="RowTools">
@@ -134,9 +140,10 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
+                    this.showEditor = false;
                     this.getOrganizations();
                 }
-                this.showEditor = false;
+
                 this.stateService.reloadLeftNavMenu();
             });
     }

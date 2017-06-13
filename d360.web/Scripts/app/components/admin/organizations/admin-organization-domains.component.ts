@@ -19,12 +19,6 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     <p-dataTable #dt [globalFilter]="gb" [value]="domains" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Domain" header="Domain" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Accepted" header="Accepted" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'100px'}"></p-column>
-                        <p-column field="DateAccepted" header="Accepted On" [sortable]="true" [style]="{width:'120px'}">
-                            <template let-col let-item="rowData" pTemplate type="body">
-                                <span>{{item.DateAccepted | date : 'short'}}</span>
-                            </template>
-                        </p-column>
                         <p-column [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
                                 <a (click)="openResource(item)">{{item.AcceptedByFirstName}} {{item.AcceptedByLastName}}</a>
@@ -47,13 +41,15 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     </p-dataTable>  
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organization?.ID" [objectType]="'OrganizationDomain'" [title]="'Organization Domain'" [rowID]="'ID'" [selection]="selected" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor> 
-                <d3s-delete-form *ngIf="showDelete"
-                    [callback]="theDeleteCallback"
-                    [itemId]="selected?.ID"
-                    [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the domain [' + [selected?.Name] + ']?'"                                         
-                    (onCancel)="showDelete=false;"
-                ></d3s-delete-form>   
+                <div style="padding: 10px">                
+                    <d3s-delete-form *ngIf="showDelete"
+                        [callback]="theDeleteCallback"
+                        [itemId]="selected?.ID"
+                        [method]="'callback'"
+                        [prompt]="'Are you sure you want to delete the domain [' + selected?.Domain + ']?'"                                         
+                        (onCancel)="showDelete=false;"
+                    ></d3s-delete-form>  
+                </div> 
                 `
 })
 

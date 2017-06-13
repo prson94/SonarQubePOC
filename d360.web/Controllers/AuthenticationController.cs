@@ -503,20 +503,45 @@ namespace d360.web.Controllers
 
             var termsOfUses = Company.Filter<Contract>(i => i.ContractType == ContractType.ResourceTermsOfUse && (!i.OrganizationID.HasValue || i.OrganizationID == registration.OrganizationID)).ToList();
 
-            var termsOfUseToDisplay = termsOfUses.FirstOrDefault(i => i.OrganizationID.HasValue);
+            var termsOfUseToDisplay = termsOfUses.Where(i => i.OrganizationID.HasValue).ToList();
 
-            if (termsOfUseToDisplay == null)
+            if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
             {
-                termsOfUseToDisplay = termsOfUses.FirstOrDefault(i => !i.OrganizationID.HasValue);
+                termsOfUseToDisplay = termsOfUses.Where(i => !i.OrganizationID.HasValue).ToList();
             }
 
-            if (termsOfUseToDisplay == null)
+            if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
             {
                 ModelState.AddModelError("Invalid", "No terms of use agreement found.");
                 success = false;
             }
 
-            model.Message = $"{termsOfUseToDisplay.Body}";
+            model.Contracts = termsOfUseToDisplay.Select(s => new ContractRegisterModel(s)).ToList();
+            model.Step = RegisterStep.TermsOfUse;
+
+            return success;
+        }
+
+        bool setOrgAndUserTermsOfUseText(OrganizationRegistration registration, RegisterModel model)
+        {
+            var success = true;
+
+            var termsOfUses = Company.Filter<Contract>(i => (!i.OrganizationID.HasValue || i.OrganizationID == registration.OrganizationID)).ToList();
+
+            var termsOfUseToDisplay = termsOfUses.Where(i => i.OrganizationID.HasValue).ToList();
+
+            if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
+            {
+                termsOfUseToDisplay = termsOfUses.Where(i => !i.OrganizationID.HasValue).ToList();
+            }
+
+            if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
+            {
+                ModelState.AddModelError("Invalid", "No terms of use agreement found.");
+                success = false;
+            }
+
+            model.Contracts = termsOfUseToDisplay.Select(s => new ContractRegisterModel(s)).ToList();
             model.Step = RegisterStep.TermsOfUse;
 
             return success;
@@ -528,6 +553,7 @@ namespace d360.web.Controllers
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
 
             var model = new RegisterModel { Step = RegisterStep.Initial, RegistrationID = registrationId, Accept = false };
+            var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
 
             if (registrationId.HasValue)
             {
@@ -535,6 +561,7 @@ namespace d360.web.Controllers
                 if (registration != null)
                 {
                     model.Step = registration.Step;
+
                     if (registration.RegisteredCompletedOn.HasValue)
                     {
                         model.Message = "You have already registered.";
@@ -544,9 +571,27 @@ namespace d360.web.Controllers
                     switch (registration.Step)
                     {
                         case RegisterStep.TermsOfUse:
-                            setTermsOfUseText(registration, model);
+                            if (orgs.Any())
+                            {
+                                setOrgAndUserTermsOfUseText(registration, model);
+                            }
+                            else
+                            {
+                                setTermsOfUseText(registration, model);
+                            }
                             break;
                         case RegisterStep.TermsOfUseValidated:
+                            if (orgs.Any())
+                            {
+                                foreach(var o in orgs)
+                                {
+                                    o.Accepted = true;
+                                    o.AcceptedBy = Company.CurrentResourceID;
+                                    o.DateAccepted = DateTime.UtcNow;
+                                }
+                                Company.SaveChanges();
+                            }
+
                             model.Message = "Thank you for accepting the terms of use. You may now <a href='/login'>sign into Data3Sixty</a>.";
                             break;
                     }
@@ -577,6 +622,7 @@ namespace d360.web.Controllers
                         System.Net.Mail.MailAddress address = null;
                         try
                         {
+
                             address = new System.Net.Mail.MailAddress(model.Email);
 
                             var emailDomain = address.Host;
@@ -589,20 +635,46 @@ namespace d360.web.Controllers
 
                             emailDomain = emailDomain.Trim();
 
-                            var domain = Company.OrganizationDomainDetails.FirstOrDefault(d => d.Domain == emailDomain);
+                            var domain = Company.OrganizationDomains.FirstOrDefault(d => d.Domain == emailDomain);
+                            var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
 
-                            if (domain != null)
+
+                            if (orgs.Any())
                             {
-                                if (domain.Accepted.HasValue)
+                                //GOOD TO GO
+                                var registration = new OrganizationRegistration
                                 {
-                                    if (!domain.Accepted.Value)
+                                    Email = model.Email,
+                                    ID = Guid.NewGuid(),
+                                    OrganizationID = orgs.First().ID,
+                                    RegisteredStartedOn = DateTime.UtcNow,
+                                    Step = RegisterStep.Registration
+                                };
+                                Company.Add(registration);
+
+                                var content = $@"Please complete registration to {orgs.First().Name} by clicking on the following link: <a href='http://demo.dev.data3sixty.local/register?registrationId={registration.ID}'>Complete registration</a>.";
+                                await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+
+                                model.Step = RegisterStep.Email;
+                                model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                return View(model);
+
+                            }
+                            else if (domain != null)
+                            {
+                                var org = Company.GetById<Organization>(domain.OrganizationID);
+
+                                if (org.Accepted.HasValue)
+                                {
+                                    if (!org.Accepted.Value)
                                     {
                                         ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organizational terms of use.");
                                         return View(model);
                                     }
 
                                     //GOOD TO GO
-                                    var registration = new OrganizationRegistration {
+                                    var registration = new OrganizationRegistration
+                                    {
                                         Email = model.Email,
                                         ID = Guid.NewGuid(),
                                         OrganizationID = domain.OrganizationID,
@@ -611,8 +683,8 @@ namespace d360.web.Controllers
                                     };
                                     Company.Add(registration);
 
-                                    var content = $@"Please complete registration to {domain.OrganizationName} by clicking on the following link: <a href='http://demo.dev.data3sixty.local/register?registrationId={registration.ID}'>Complete registration</a>.";
-                                    SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true).Wait();
+                                    var content = $@"Please complete registration to {org.Name} by clicking on the following link: <a href='http://demo.dev.data3sixty.local/register?registrationId={registration.ID}'>Complete registration</a>.";
+                                    await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                     model.Step = RegisterStep.Email;
                                     model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -627,9 +699,19 @@ namespace d360.web.Controllers
                             else
                             {
                                 var invite = Company.OrganizationInvitationDetails.FirstOrDefault(i => i.Email == model.Email);
+                                
 
                                 if (invite != null)
                                 {
+                                    //make sure org has been accepted
+                                    var org = Company.GetById<Organization>(invite.OrganizationID);
+                                    if (!org.Accepted ?? true)
+                                    {
+                                        ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organizational terms of use.");
+                                        return View(model);
+                                    }
+
+
                                     //GOOD TO GO
                                     var registration = new OrganizationRegistration
                                     {
@@ -662,7 +744,7 @@ namespace d360.web.Controllers
                             return View(model);
                         }
                         break;
-                        #endregion
+                    #endregion
                     case RegisterStep.Registration:
                         #region
                         try
@@ -692,7 +774,16 @@ namespace d360.web.Controllers
                             var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
                             if (registration != null)
                             {
-                                if (!setTermsOfUseText(registration, model))
+                                var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+
+                                if (orgs.Any())
+                                {
+                                    if (!setOrgAndUserTermsOfUseText(registration, model))
+                                    {
+                                        return View(model);
+                                    }
+                                }
+                                else if (!setTermsOfUseText(registration, model))
                                 {
                                     return View(model);
                                 }
@@ -757,7 +848,7 @@ namespace d360.web.Controllers
                             return View(model);
                         }
                         break;
-                        #endregion
+                    #endregion
                     case RegisterStep.TermsOfUse:
                         #region
                         try
@@ -777,7 +868,7 @@ namespace d360.web.Controllers
                             {
                                 #region Validation
 
-                                if (model.Accept != true)
+                                if (!model.Accept ?? false)
                                 {
                                     ModelState.AddModelError("Invalid", "You must accept the terms of use.");
                                     return View(model);
@@ -802,17 +893,34 @@ namespace d360.web.Controllers
 
                                 #region Check if organization resource account exists
 
-                                var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
+                                var org = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
 
-                                if (orgResource == null)
+                                if (org.Any())
                                 {
-                                    ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
-                                    return View(model);
+                                    foreach(var o in org)
+                                    {
+                                        o.Accepted = true;
+                                        o.AcceptedBy = Company.CurrentResourceID;
+                                        o.DateAccepted = DateTime.UtcNow;
+                                    }
+                                    Company.SaveChanges();
+                                }
+                                else
+                                {
+
+                                    var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
+
+                                    if (orgResource == null)
+                                    {
+                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                        return View(model);
+                                    }
+
+                                    orgResource.Accepted = true;
+                                    orgResource.DateAccepted = DateTime.UtcNow;
+                                    Company.Update(orgResource);
                                 }
 
-                                orgResource.Accepted = true;
-                                orgResource.DateAccepted = DateTime.UtcNow;
-                                Company.Update(orgResource);
 
                                 #endregion
 
@@ -836,7 +944,7 @@ namespace d360.web.Controllers
                             return View(model);
                         }
                         break;
-                        #endregion
+                    #endregion
                     case RegisterStep.TermsOfUseValidated:
                         #region
 
