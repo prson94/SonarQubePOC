@@ -60,7 +60,7 @@
                 <div class="tile tile-detail">
                     <header>Default Route</header>
                     <div class="directions">
-                        Specify the default route the user will be redirected to when logging into Data3Sixty (ex: /artifact/1). Leave blank to use the default value.
+                        Specify the default route users will be redirected to when logging into Data3Sixty (ex: /artifact/1). Leave blank to use the default value.
                     </div>
                     <div>
                         <input type="text" [ngModel]="companySettings.DefaultRoute" (ngModelChange)="companySettings.DefaultRoute = $event; validateRoute();" style="width: 95%" />
@@ -71,7 +71,7 @@
                 </div>
             </div>
             <div class="col s12 m12 l2">
-                <button pButton type="button" (click)="save()" [disabled]="isLoading || routeValidationMessage.length != ''" label="Save Changes" style="padding: 10px 15px 10px 15px"></button>
+                <button pButton type="button" (click)="save()" [disabled]="isLoading || routeValidationMessage != ''" label="Save Changes" style="padding: 10px 15px 10px 15px"></button>
                 <div style="display: inline-block; vertical-align: middle;"><d3s-loading [isLoading]="isLoading"></d3s-loading></div>
             </div>
         </div>

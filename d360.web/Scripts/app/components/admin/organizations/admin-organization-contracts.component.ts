@@ -1,5 +1,4 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
 import { Organization, Contract, ContractType } from '../../../models/organization.model';
 import { OrganizationsService } from '../../../services/organizations.service';
 import { MessagesService } from '../../../services/messages.service';
@@ -63,8 +62,6 @@ export class AdminOrganizationContractsComponent extends BaseComponent implement
     theDeleteCallback: Function;
 
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
         private organizationsService: OrganizationsService,
         private messagesService: MessagesService) {
         super();

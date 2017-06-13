@@ -1,11 +1,13 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { OrganizationsService } from '../../../services/organizations.service';
 import { MessagesService } from '../../../services/messages.service';
 import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
-import { Organization, OrganizationDomain, OrganizationInvitation, OrganizationResource, Contract, ContractType } from '../../../models/organization.model';
+import { Organization } from '../../../models/organization.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
@@ -13,7 +15,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
     selector: 'd3s-admin-organizations-component',
     providers: [OrganizationsService],
     template: `
-<div class="col l4 s12">          
+<div class="col l6 s12">          
     <div class="tile tile-detail">
         <header *ngIf="!showEditor && !showDelete">
             Organizations
@@ -29,6 +31,11 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                 <p-column field="DateAccepted" header="Accepted On">
                     <template pTemplate type="body" let-item="rowData">
                         {{ item.DateAccepted | date: 'short' }}
+                    </template>
+                </p-column>
+                <p-column field="AcceptedBy" header="Accepted By">
+                    <template let-item="rowData" pTemplate type="body">
+                        <a (click)="openResource(item)">{{item.AcceptedByName}}</a>
                     </template>
                 </p-column>
                 <p-column [style]="{width:'40px'}">
@@ -60,7 +67,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
         <d3s-admin-contracts></d3s-admin-contracts>
     </div>
 </div>
-<div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">
+<div class="col l6 s12" *ngIf="!showEditor && !showDelete && selected">
     <div class="row">
         <div class="col s12">
             <div class="tile tile-detail">  
@@ -95,14 +102,13 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
     theDeleteCallback: Function;
     isClassificationsVisible: boolean = false;
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, private organizationService: OrganizationsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(private router: Router, private stateService: StateService, rightSidebarService: RightSidebarService, private organizationService: OrganizationsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Organizations";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteOrganization.bind(this);
         this.setCommonRightSideBar(true);
 
-        //this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag']));
     }
 
     ngOnInit() {
@@ -158,5 +164,9 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
     add() {
         this.showEditor = true;
         this.selected = null;
+    }
+    
+    private openResource(event) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.AcceptedBy));
     }
 }

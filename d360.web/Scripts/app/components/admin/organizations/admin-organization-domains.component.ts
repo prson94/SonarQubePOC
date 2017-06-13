@@ -1,10 +1,8 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
 import { Organization, OrganizationDomain } from '../../../models/organization.model';
 import { OrganizationsService } from '../../../services/organizations.service';
 import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-admin-organization-domains',
@@ -19,11 +17,6 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     <p-dataTable #dt [globalFilter]="gb" [value]="domains" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Domain" header="Domain" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
-                                <a (click)="openResource(item)">{{item.AcceptedByFirstName}} {{item.AcceptedByLastName}}</a>
-                            </template>
-                        </p-column>
                         <p-column [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
@@ -68,8 +61,6 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
     theDeleteCallback: Function;
 
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
         private organizationsService: OrganizationsService,
         private messagesService: MessagesService) {
         super();
@@ -109,10 +100,6 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
         this.showEditor = false;
         if (this.selected == null && this.domains.length > 0)
             this.selected = this.domains[0];
-    }
-
-    private openResource(event) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.AcceptedBy));
     }
     
     save(event) {

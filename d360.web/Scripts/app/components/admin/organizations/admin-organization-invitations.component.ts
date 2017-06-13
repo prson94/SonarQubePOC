@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { Organization, OrganizationInvitation } from '../../../models/organization.model';
 import { OrganizationsService } from '../../../services/organizations.service';
 import { MessagesService } from '../../../services/messages.service';
@@ -73,7 +73,6 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
     theDeleteCallback: Function;
 
     constructor(
-        private route: ActivatedRoute,
         private router: Router,
         private organizationsService: OrganizationsService,
         private messagesService: MessagesService) {
@@ -124,7 +123,6 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
         this.isLoading = true;
         this.organizationsService.saveInvitation(event.item)
             .then(result => {
-                console.log(result);
                 if (result.type != 'error') {
                     this.showEditor = false;
                     this.getInvitations();                
