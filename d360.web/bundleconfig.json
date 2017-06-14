@@ -1,20 +1,12 @@
 [
   {
     "outputFileName": "content/styles/ang.css",
-    "inputFiles": [
-      "content/font-awesome.min.css",
+    "inputFiles": [      
       "Content/styles/materialize.css",
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
       "Content/styles/angular.css",
-      "Content/styles/typeahead.css",
-      "Content/quill/quill.snow.css"
-    ]
-  },
-  {
-    "outputFileName": "scripts/legacy.js",
-    "inputFiles": [      
-      "Scripts/quill.min.js"
+      "Content/styles/typeahead.css"      
     ]
   }
 ]

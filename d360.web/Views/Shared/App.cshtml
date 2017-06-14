@@ -15,6 +15,12 @@
     var companyLogo = settings["CompanyLogo"];
     var companyIcon = settings["CompanyIcon"];
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
+    var useCdn = System.Configuration.ConfigurationManager.AppSettings["UseCDN"];
+
+    var baseUrl = "";
+    if ((useCdn ?? "").ToLower() == "true") {
+        baseUrl = "https://cdn.data3sixty.com";
+    }
 }
 @functions{
     public string GetAntiForgeryToken()
@@ -40,8 +46,10 @@
         var CurrentResourceID = @(CurrentResourceID);
     </script>
     <link rel="stylesheet" type="text/css" href="/node_modules/primeng/resources/primeng.min.css"/>
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)"/>
-    <link rel="stylesheet" type="text/css" href="/Content/primeng/d3s/theme.css"/>
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/d3s/theme.css", baseUrl)"/>
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/quill.snow.css", baseUrl)" />
     <style type="text/css">
         nav.top .logo {
             background-color:@(settings["HeaderBackgroundColor"]);
@@ -55,9 +63,9 @@
         }
         .ng-loading{position:fixed;height:100%;width:100%;top:0;left:0;background:#54a4da;}
         .ng-loading-wrap{position:fixed;top:45%;left:50%;color:white;}
-        .ng-loading-image{background-image: url(/Content/images/logo.new.png);background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-80px;}
+        .ng-loading-image{background-image: url(@string.Format("{0}/content/images/logo.new.png", baseUrl));background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-80px;}
     </style>
-    <script src="/Scripts/legacy.min.js"></script>
+    <script src="@string.Format("{0}/scripts/quill.min.js", baseUrl)"></script>
 </head>
 <body>
     <d3s-app><div class="ng-loading"><div class="ng-loading-wrap"><div class="ng-loading-image">&nbsp;</div>Loading...</div></div></d3s-app>
