@@ -9,7 +9,7 @@ import { Dashboard, DashboardTokens } from '../../../models/dashboard.model'
                 <header>{{dashboard?.Name}}<d3s-tile-actions [hasFullScreen]="false"></d3s-tile-actions></header>
                 <div class="row">
                     <div class="col s12">
-                        <iframe style="width:100%;height:100%;border:0;" [src]="sagacityUrl" frameborder="0"></iframe>
+                        <iframe style="width:100%;height:700px;border:0;" [src]="sagacityUrl" frameborder="0"></iframe>
                     </div>
                 </div>
             `,    
