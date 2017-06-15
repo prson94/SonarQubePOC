@@ -12,35 +12,39 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 @Component({
     selector: 'd3s-rule-implementations-grid',
     template: `
-                <header>Implementations<d3s-tile-actions [hasAdd]="true" [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions></header>
+                <header>
+                    Implementations
+                    <d3s-tile-actions [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading">
-                        <div *ngIf="showSimpleFilter">                                                
-                            <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
-                        </div>
-                        <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                        <p-dataTable #dt [value]="results" [globalFilter]="gb" selectionMode="single" [(selection)]="selected" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked" (onRowDblclick)="selected=$event.data;showRuleImplementation(selected);">
-                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="CreatedOn" header="Create Date" [sortable]="true" [style]="{width:'120px'}">
-                                <template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.CreatedOn | date : 'shortDate'}}</span>
-                                </template>
-                            </p-column>
-                            <p-column field="UpdatedOn" header="Update Date" [sortable]="true" [style]="{width:'120px'}">
-                                <template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.UpdatedOn | date : 'shortDate'}}</span>
-                                </template>
-                            </p-column>
-                            <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'150px'}"></p-column>
-                            <p-column field="SourceID" header="Source Identifier" [sortable]="true" [style]="{width:'150px'}"></p-column>
-                            <p-column field="SourceUri" header="" [sortable]="true" [style]="{width:'35px'}">
-                                <template let-item="rowData" pTemplate type="body">
-                                    <a [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
-                                    <a *ngIf="item.SourceUri" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
-                                </template>
-                            </p-column>
-                        </p-dataTable>
-                </span>                
+                <div *ngIf="!isLoading">
+                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter"> 
+                    <p-dataTable #dt [value]="results" [globalFilter]="gb" selectionMode="single" [(selection)]="selected" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked" (onRowDblclick)="selected=$event.data;showRuleImplementation(selected);">
+                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-column field="CreatedOn" header="Create Date" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'120px'}">
+                            <template let-col let-item="rowData" pTemplate type="body">
+                                <span>{{item.CreatedOn | date : 'shortDate'}}</span>
+                            </template>
+                        </p-column>
+                        <p-column field="UpdatedOn" header="Update Date" [sortable]="true" [style]="{width:'120px'}" [filter]="!showSimpleFilter">
+                            <template let-col let-item="rowData" pTemplate type="body">
+                                <span>{{item.UpdatedOn | date : 'shortDate'}}</span>
+                            </template>
+                        </p-column>
+                        <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
+                            <template pTemplate type="body" let-item="rowData">
+                                <a (click)="showRuleImplementation(item);">{{item.Name}}</a>
+                            </template>
+                        </p-column>
+                        <p-column field="SourceID" header="Source Identifier" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="SourceUri" header="" [sortable]="true" [style]="{width:'35px'}" [filter]="!showSimpleFilter">
+                            <template let-item="rowData" pTemplate type="body">
+                                <a *ngIf="item.SourceUri == null"><i class="fa fa-info" title="Source Uri"></i></a>
+                                <a *ngIf="item.SourceUri != null" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
+                            </template>
+                        </p-column>
+                    </p-dataTable>
+                </div>                
                 `,
     providers: [RulesService],
 })
@@ -48,9 +52,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 export class RuleImplementationsGridComponent extends BaseComponent implements OnInit {
 
     @Input() ruleId: number;
-
-    simpleTextFilter: string;
-    showSimpleFilter: boolean = true;
+    
     private selected: RuleImplementation;
     private rowsPerPage: number = 10;
     private results: RuleImplementation[];//RuleImplementationPagedResults;
@@ -79,7 +81,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
     }
 
     ngOnInit() {
-
+       
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -117,20 +119,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
 
     }
 
-    private loadRuleResultsLazy(event: LazyLoadEvent) {
-        //event.first = First row offset
-        //event.rows = Number of rows per page
-        //event.sortField = Field name to sort with
-        //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
-        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
 
-        this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
-        this.rowsPerPage = event.rows;
-        this.currentPageNumber = event.first / event.rows;
-        
-        this.getData();
-    }
 
     private checkSimpleSearchEnter(event, dt: DataTable) {
         if (event.keyCode == 13) this.doSimpleSearch(dt);
@@ -155,7 +144,6 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
     }
 
     resetFilters() {
-        this.simpleTextFilter = '';
         this.filtersComponent.resetFilters();
     }
 

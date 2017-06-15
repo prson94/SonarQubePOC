@@ -198,7 +198,9 @@ order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityT
         public JsonNetResult GetPointBreakdownByObject(SystemObjects type, int id)
         {
             var query = Company.Query<dynamic>(@"
-select  V.Name,
+select  
+v.ID,
+V.Name,
 		V.MaximumScore as MaxScore, 
 		M.Value as Score
 FROM	(
@@ -211,8 +213,13 @@ FROM	(
 			group by Object, ObjectID, ScoreTypeID
 		) MS 
         inner join ScoreMetric M on M.ScoreID = MS.ScoreID
-		inner join ScoreTypeMetricVersion V on V.ID = M.ScoreTypeMetricVersionID
-order by	V.Name", new { type = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id });
+		inner join (
+			select  ScoreTypeMetricID, max(ID) as VersionID, max(UpdatedOn) as UpdatedOn from ScoreTypeMetricVersion
+			group by ScoreTypeMetricID
+		) C on C.VersionID = M.ScoreTypeMetricVersionID
+		inner join ScoreTypeMetricVersion V on V.ID = C.VersionID
+order by	V.Name
+", new { type = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }

@@ -19,7 +19,7 @@
                         </div>
                         <div>
                             <div id='TypeTip' class="FieldNameRequired">Input Type</div>
-                            <p-dropdown required name="datatype" [options]="lookups.DataTypes" [(ngModel)]="model.FieldType.Type" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadDataType($event.value)" #dataType="ngModel" ngDefaultControl></p-dropdown>
+                            <p-dropdown required name="datatype" [options]="lookups.DataTypes" [ngModel]="model.FieldType.Type" (ngModelChange)="model.FieldType.Type = $event; anyDisplayFieldsSelected(false);" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadDataType($event.value)" #dataType="ngModel" ngDefaultControl></p-dropdown>
                             <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
                         </div>
                     </div>
@@ -290,7 +290,7 @@
                                                     <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.OverrideDisplayName" />
                                                 </td>
                                                 <td style="width: 10%">
-                                                    <input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="d.Show" />
+                                                    <input [ngModelOptions]="{standalone: true}" type="checkbox" [ngModel]="d.Show" (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);" />
                                                 </td>
                                                 <td style="width: 10%">
                                                     <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.DisplayOrder" style="width:95%" (ngModelChange)="changeDisplayOrder(d, i)">
@@ -433,7 +433,7 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px">
-                    <button pButton type="submit" [disabled]="!fieldEditor.form.valid" label="Save"></button>
+                    <button pButton type="submit" [disabled]="!fieldEditor.form.valid || !displayFieldSelected" label="Save"></button>
                     <button pButton type="button" label="Cancel" (click)="cancel()"></button>
                 </div>
             </div>

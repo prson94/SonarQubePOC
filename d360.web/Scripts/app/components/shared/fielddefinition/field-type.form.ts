@@ -77,6 +77,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private filteredLookupHideFooter: boolean = false; 
 
     private supportsPrimaryFilterOption: boolean = false;
+    private displayFieldSelected: boolean = true;
 
     private errorMessage: string = "";
 
@@ -840,5 +841,25 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //only last item can be deleted
         this.model.RelationItems.pop();
         this.relationItemCount = this.model.RelationItems.length;
+    }
+
+    private anyDisplayFieldsSelected(e: any) {
+        if (this.model.FieldType.Type != 'ComplexRelationLookup') {
+            this.displayFieldSelected = true;
+            return;
+        }
+        if (e == true) {
+            this.displayFieldSelected = true;
+            return;
+        }
+        this.displayFieldSelected = false;
+        this.model.RelationItems.forEach(r => {
+            r.DisplayFields.forEach(d => {
+                if (d.Show) {
+                    this.displayFieldSelected = true;
+                    return;
+                }
+            });
+        });
     }
 }

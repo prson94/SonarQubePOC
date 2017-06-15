@@ -1,5 +1,6 @@
 ﻿using d360.core.entities.Contracts;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -49,10 +50,10 @@ namespace d360.core.entities
             Visible = true;
         }
 
-        [DataMember, StringLength(250)]
+        [DataMember, StringLength(250), DisplayName("Name")]
         public string Name { get; set; }
 
-        [DataMember]
+        [DataMember, DisplayName("Description")]
         public string Description { get; set; }
 
         [DataMember]
