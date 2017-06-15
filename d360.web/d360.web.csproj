@@ -466,6 +466,12 @@
     <Content Include="Content\primeng\d3s\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\primeng\d3s\images\ui-icons_ffffff_256x240.png" />
     <Content Include="Content\primeng\d3s\theme.css" />
+    <Content Include="Content\primeng\v1.0.1\images\line.gif" />
+    <Content Include="Content\primeng\v1.0.1\images\loading.gif" />
+    <Content Include="Content\primeng\v1.0.1\images\password-meter.png" />
+    <Content Include="Content\primeng\v1.0.1\images\rating.png" />
+    <Content Include="Content\primeng\v1.0.1\primeng.css" />
+    <Content Include="Content\primeng\v1.0.1\primeng.min.css" />
     <Content Include="Content\quill\quill.snow.css" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">

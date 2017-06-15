@@ -44,9 +44,10 @@
     <script type="text/javascript">
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
-    </script>
-    <link rel="stylesheet" type="text/css" href="/node_modules/primeng/resources/primeng.min.css"/>
+    </script>    
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v1.0.1/primeng.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.css", baseUrl)" />
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)"/>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/d3s/theme.css", baseUrl)"/>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/quill.snow.css", baseUrl)" />
