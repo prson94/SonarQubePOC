@@ -6923,9 +6923,16 @@ SELECT (
         #region Scoring
 
         [Route("scoring/types/{id:int}/metrics")]
-        public IEnumerable<dynamic> GetStatisticTypeMetricsByScoreType(int id)
+        public IEnumerable<dynamic> GetStatisticTypeMetricsByScoreType(int id, bool stripHtml = true)
         {
-            return Company.Query<dynamic>(QueryConstants.ScoreTypeMetricDetailList, new { id });
+            var results = Company.Query<dynamic>(QueryConstants.ScoreTypeMetricDetailList, new { id });
+
+            results.ToList().ForEach(i =>
+            {
+                i.Description = HttpUtility.HtmlDecode(stripHtml ? System.Text.RegularExpressions.Regex.Replace(i.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty) : i.Description ?? "");
+            });
+
+            return results.AsEnumerable();
         }
 
         [Route("scoring/types")]

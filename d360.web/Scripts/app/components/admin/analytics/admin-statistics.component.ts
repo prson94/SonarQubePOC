@@ -81,7 +81,11 @@ import { Title } from '@angular/platform-browser';
                                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="ObjectName" header="Object Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
+                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
+                                        <template pTemplate type="body" let-item="rowData">
+                                            <span class="truncate">{{item?.Description}}</span>
+                                        </template>
+                                    </p-column>
                                     <p-column [style]="{width:'40px'}">
                                         <template let-metric="rowData" pTemplate type="body">
                                             <div class="RowTools">
@@ -233,7 +237,8 @@ export class AdminStatisticsComponent extends AdminBaseComponent implements OnIn
                 }
                 this.selectedMetric = event.metric;
                 this.showMetricEditor = false;
-            });
+            })
+            .then(() => this.getScoreMetrics(this.selectedType.ID));
     }
 
     closeTypeEditor() {

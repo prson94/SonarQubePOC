@@ -153,10 +153,11 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             .then(result => {
                 this.isLoading = false;
                 for (let rule of result) {
-                    if (!rule.Dimension) rule.Dimension = new RuleDimension(); //prime grid has issues with null objects make sure we dont have any.
+                    if (!rule.Dimension) rule.Dimension = ""; //prime grid has issues with null objects make sure we dont have any.
                     rule.StatusName = RuleStatus[rule.Status];
                 }
-                this.rules = result;     
+                this.rules = result;   
+                console.log(this.rules);  
                                               
                 if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
             });
@@ -196,7 +197,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private columnDimSort(event) {
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
-        this.rules = _.sortBy(this.rules, 'Dimension.Name');
+        this.rules = _.sortBy(this.rules, 'Dimension');
         if (event.order == -1) this.rules.reverse();
     }    
 };

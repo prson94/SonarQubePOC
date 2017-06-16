@@ -1351,6 +1351,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 			select 'ShoppingCartType|' + cast(t.id as varchar) as value, t.id, 'ShoppingCartType' as [type], 'Shopping Cart :: ' + t.Name as [label], 1 as [count]
 			from shoppingcarttype t
 			group by t.id, t.name
+			union all
+			select 'ReferenceItemType|' + cast(t.id as varchar) as value, t.id, 'ReferenceItemType' as [type], 'Reference List :: ' + t.Name as [label], 1 as [count]
+			from referenceitemtype t
+			group by t.id, t.name
 ";
 
         public static string WorkflowList = @"
@@ -1381,12 +1385,14 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 						'Relationship'
                     when e.[Object] = 'ShoppingCartType' then
                         'Shopping Cart'
+					when d.[Object] = 'ReferenceItemType' then
+					'Reference List'
 					else
 						''
 					end as [Type] 
                 from workflow.type t
                 inner join workflow.eventregistration e on e.typeid = t.id
-                left join cache.objectdetails d on d.object = e.object and d.objectid= e.objectid 
+                left join cache.objectdetails d on d.object = e.object and d.objectid = e.objectid 
                 left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy

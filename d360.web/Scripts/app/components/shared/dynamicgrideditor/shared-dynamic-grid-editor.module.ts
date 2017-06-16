@@ -22,6 +22,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { TilesModule  } from '../tiles/tiles.module';
+import { SimilarItemsModule } from '../similar-items.component';
 
 import { DynamicEditorComponent } from './dynamic-editor.component';
 import { DynamicFieldComponent } from './dynamic-field.component';
@@ -42,6 +43,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
         SharedGridPagingInfoModule,
         TilesModule,
         SimpleAccordionModule,
+        SimilarItemsModule,
 
         //prime        
         CalendarModule,

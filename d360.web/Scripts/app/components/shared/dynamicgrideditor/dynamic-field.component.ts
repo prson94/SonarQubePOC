@@ -16,14 +16,8 @@ declare var CompanySettings;
                             <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
                             <span *ngIf="!fieldTooltip">{{currentFieldName}}</span>
                         </div>
-                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" type="string" (change)="getSimilarItems()" [(ngModel)]="field.Value" >  
-                        <div *ngIf="similarItems.length > 0">
-                            <div style="color: #FFB230">The following items with similar names already exist:</div>
-                            <span *ngFor="let s of similarItems; let i = index;">
-                                <d3s-tooltip objectType="Artifact" [objectId]="s.objectid" tooltipType="preview"><a [routerLink]="s.Url">{{s.Name}}</a></d3s-tooltip>
-                                <span *ngIf="i < (similarItems.length - 1)">,</span>&nbsp; 
-                            </span>
-                        </div>                  
+                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" type="string" [(ngModel)]="field.Value">  
+                        <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>                                  
                         <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl>
                             <header style="padding-bottom:0px !important">                                 
                                     <span class="ql-formats">

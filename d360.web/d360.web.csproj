@@ -1014,6 +1014,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
