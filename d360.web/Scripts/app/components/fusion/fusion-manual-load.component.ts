@@ -46,6 +46,7 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     fusionTypeID: number = 0;
     fusionName: string;
     uploadedFiles: any[] = [];
+    fusion: FusionConfigurationDetails;
     sub: any;
 
     private selectedFusionAttributeTypeId: number;
@@ -63,6 +64,7 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
             this.fusionID = +params['fusionId']; // (+) converts string 'id' to a number
 
             this.fusionService.getFusionConfiguration(this.fusionID).then(res => {
+                this.fusion = res;
                 this.fusionName = res.Name;
                 this.fusionTypeID = res.FusionTypeID;
             });
