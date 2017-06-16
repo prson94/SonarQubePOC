@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, ChangeDetectionStrategy, SimpleChanges, NgModule } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChanges, NgModule } from '@angular/core';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { UriBasedService } from '../../services/uri-based.service';
 import { CommonModule } from '@angular/common';

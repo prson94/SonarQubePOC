@@ -3,7 +3,6 @@ import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../../models/editor-field.model';
 import { SelectItem } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { UriBasedService } from '../../../services/uri-based.service';
 
 declare var CompanySettings;
 
@@ -115,14 +114,12 @@ declare var CompanySettings;
                   </div>                   
                 </div>
                 `,
-    providers: [UriBasedService], 
     changeDetection: ChangeDetectionStrategy.OnPush, 
 })
 export class DynamicFieldComponent implements OnInit {
     @Input() field: EditorField;
     @Input() form: FormGroup;
 
-    private similarItems = [];
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
 
@@ -131,7 +128,7 @@ export class DynamicFieldComponent implements OnInit {
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
 
-    constructor(private uriBasedService: UriBasedService) { }
+    constructor() { }
 
     ngOnInit() {        
         if (this.field && this.field.Validations) {
@@ -213,20 +210,6 @@ export class DynamicFieldComponent implements OnInit {
         }
 
         return message;
-    }
-
-    getSimilarItems() {
-        if (this.field.SimilarItemsUri == null || this.field.SimilarItemsUri == '' || this.field.Value.length < 2)
-            return;
-
-        this.similarItems = [];
-        this.uriBasedService.getItems(this.field.SimilarItemsUri + this.field.Value)
-            .then(r => {
-                r.forEach(i => {
-                    i.Url = '/' + SiteUrlHelpers.getObjectUrl('Artifact', i.objectid, i.objecttypeid);
-                });
-                this.similarItems = r;
-            });
     }
 
     setColorPickerValue(e: any) {
