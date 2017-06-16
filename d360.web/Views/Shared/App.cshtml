@@ -15,11 +15,11 @@
     var companyLogo = settings["CompanyLogo"];
     var companyIcon = settings["CompanyIcon"];
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
-    var useCdn = System.Configuration.ConfigurationManager.AppSettings["UseCDN"];
+    var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
 
     var baseUrl = "";
     if ((useCdn ?? "").ToLower() == "true") {
-        baseUrl = "https://cdn.data3sixty.com";
+        baseUrl = System.Configuration.ConfigurationManager.AppSettings["cdn:url"];
     }
 }
 @functions{
@@ -47,10 +47,10 @@
     </script>    
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v1.0.1/primeng.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)"/>
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/d3s/theme.css", baseUrl)"/>
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/quill.snow.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/d3s/theme.min.css", baseUrl)"/>
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/quill.snow.min.css", baseUrl)" />
     <style type="text/css">
         nav.top .logo {
             background-color:@(settings["HeaderBackgroundColor"]);

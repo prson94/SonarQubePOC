@@ -1,11 +1,29 @@
 [
   {
     "outputFileName": "content/styles/ang.css",
-    "inputFiles": [            
+    "inputFiles": [
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
       "Content/styles/angular.css",
-      "Content/styles/typeahead.css"      
+      "Content/styles/typeahead.css"
+    ]
+  },
+  {
+    "outputFileName": "content/styles/materialize.min.css",
+    "inputFiles": [
+      "Content/styles/materialize.css"
+    ]
+  },
+  {
+    "outputFileName": "content/primeng/d3s/theme.min.css",
+    "inputFiles": [
+      "Content/primeng/d3s/theme.css"
+    ]
+  },
+  {
+    "outputFileName": "content/quill/quill.snow.min.css",
+    "inputFiles": [
+      "Content/quill/quill.snow.css"
     ]
   }
 ]
