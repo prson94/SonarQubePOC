@@ -697,6 +697,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         let disconnectedNodeCount = 0;
         let startNodes = 0;
         let finishNodes = 0;
+        let missingInputCount = 0;
+        let missingOutputCount = 0;
 
         let startKey = "";
         let finishKey = "";
@@ -721,6 +723,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             let from = model.linkDataArray.find(l => (<any>l).from == node.key);
             let to = model.linkDataArray.find(l => (<any>l).to == node.key);
 
+            if (to == null && +node.stepType != StepType.Start)
+                missingInputCount++;
+            if (from == null && +node.stepType != StepType.Finish && +node.stepType != StepType.Terminate)
+                missingOutputCount++;
             if (to == null && from == null)
                 disconnectedNodeCount++;
 
@@ -750,6 +756,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
         if (disconnectedNodeCount > 0)
             this.errors.push('There are steps on the diagram which are not connected');
+
+        if (missingInputCount > 0 || missingOutputCount > 0)
+            this.errors.push('There are steps on the diagram which are missing an input or output');
 
         if (startToFinish)
             this.errors.push('The start step cannot be connected directly to the finish step');
