@@ -40,7 +40,7 @@ var webpackConfig = {
         loaders: [
           // .ts files for TypeScript
          // {test:/\.ts$/, loaders:["@ngtools/webpack"]},
-          { test: /\.ts$/, loaders: ['awesome-typescript-loader?tsconfig=./scripts/app/tsconfig.json', 'angular2-template-loader', 'angular2-router-loader'] },
+          { test: /\.ts$/, loaders: ['awesome-typescript-loader?configFileName=scripts/app/tsconfig.aot.json', 'angular2-template-loader', 'angular2-router-loader'] },
           { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
           { test: /\.html$/, loader: 'raw-loader' }
         ]

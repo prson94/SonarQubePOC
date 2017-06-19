@@ -15,7 +15,7 @@ import {
     TooltipModule,
 } from 'primeng/primeng';
 
-import { ColorPickerModule } from 'angular2-color-picker';
+import { ColorPickerModule } from 'ngx-color-picker';
 
 import { CoreModule } from '../core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
