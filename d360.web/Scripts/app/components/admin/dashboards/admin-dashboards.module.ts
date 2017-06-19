@@ -6,8 +6,6 @@ import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
-
-import { AceEditorModule } from '../../shared/ace-editor.module';
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
@@ -21,6 +19,8 @@ import { AdminReportItemsComponent } from './admin-report-items.component';
 import { AdminReportTileEditorComponent } from './admin-report-tile-editor.component';
 
 import { AdminDashboardsRoutingModule } from './admin-dashboards.routes';
+
+import { CodemirrorModule } from 'ng2-codemirror';
 
 import {
     ButtonModule,
@@ -48,8 +48,10 @@ import {
         SharedModule,
         DataTableModule,
 
-        //d3s   
-        AceEditorModule,
+        //editor
+        CodemirrorModule,
+
+        //d3s           
         CoreModule,
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,

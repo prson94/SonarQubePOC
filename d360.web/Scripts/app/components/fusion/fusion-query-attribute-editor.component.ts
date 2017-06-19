@@ -3,6 +3,7 @@ import { NgForm } from '@angular/forms';
 import { FusionService } from '../../services/fusion.service';
 import { FusionConfigurationDetails, FusionQueryAttributeType  } from '../../models/fusion.model';
 import { BaseComponent } from '../shared/base.component';
+import 'codemirror/mode/sql/sql.js';
 import * as _ from 'lodash';
 
 @Component({
@@ -23,12 +24,11 @@ import * as _ from 'lodash';
                         </div>
                         <div class="col s12">
                             <div class="FieldName">SQL</div>
-                            <div ace-editor
-                                    [(text)]="editedQuery.Query"                                     
-                                    [mode]="'sql'"                                    
-                                    theme="eclipse"  
-                                    style="height:400px;">
-                            </div>
+                            <codemirror [(ngModel)]="editedQuery.Query"
+                                name="query"
+                                [config]="baseConfig"
+                                style="height:400px;">
+                            </codemirror>                                                                                
                         </div>                                                                            
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
@@ -49,6 +49,12 @@ export class FusionQueryAttributeEditorComponent extends BaseComponent {
 
     @Input() query: FusionQueryAttributeType;
     editedQuery: FusionQueryAttributeType;
+
+    private baseConfig = {
+        lineNumbers: true,
+        theme: 'eclipse',
+        mode: 'sql'
+    };
     
     constructor(private fusionService: FusionService) { super();}
 

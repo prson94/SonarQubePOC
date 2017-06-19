@@ -25,5 +25,17 @@
     "inputFiles": [
       "Content/quill/quill.snow.css"
     ]
+  },
+  {
+    "outputFileName": "content/codemirror/codemirror.min.css",
+    "inputFiles": [
+      "Content/codemirror/codemirror.css"
+    ]
+  },
+  {
+    "outputFileName": "content/codemirror/eclipse.min.css",
+    "inputFiles": [
+      "Content/codemirror/eclipse.css"
+    ]
   }
 ]

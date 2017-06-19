@@ -445,6 +445,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\Documentation.XML" />
+    <Content Include="Content\codemirror\codemirror.css" />
+    <Content Include="Content\codemirror\codemirror.min.css">
+      <DependentUpon>codemirror.css</DependentUpon>
+    </Content>
+    <Content Include="Content\codemirror\eclipse.css" />
+    <Content Include="Content\codemirror\eclipse.min.css">
+      <DependentUpon>eclipse.css</DependentUpon>
+    </Content>
     <Content Include="Content\font-awesome.css" />
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\logo.new.png" />
@@ -1057,7 +1065,6 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementations-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\ace-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-list.component.ts" />

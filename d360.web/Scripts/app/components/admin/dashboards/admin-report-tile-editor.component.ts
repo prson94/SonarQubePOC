@@ -26,12 +26,12 @@ import * as _ from 'lodash';
                             </div>                                                    
                         </div>
                         <div class="col s12">
-                            <div class="FieldName">SQL</div>
-                            <div ace-editor
-                                    [(text)]="editedTile.CommandText" 
-                                    [mode]="'sql'"
-                                    theme="eclipse"
-                                    style="height:400px;"></div>                                                             
+                            <div class="FieldName">SQL</div>                            
+                            <codemirror [(ngModel)]="editedTile.CommandText"
+                                name="query"
+                                [config]="baseConfig"
+                                style="height:400px;">
+                            </codemirror>                                                    
                         </div>                        
                         <div class="col s12" *ngIf="editedTile.ID">
                             <div class="FieldName" pTooltip="You can use this URI within a JSON-compatible reporting system to pull this data directly.">Tile URI</div>
@@ -57,6 +57,12 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
     action: string = "Edit";
     urlPrefix: string;
     editedTile: ReportTile;
+
+    private baseConfig = {
+        lineNumbers: true,
+        theme: 'mdn-like',
+        mode: 'sql'
+    };
     
     
     constructor(private companySettingsService: CompanySettingsService) {

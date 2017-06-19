@@ -9,7 +9,6 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 
 import { ChartModule } from 'angular2-highcharts';
 
-import { AceEditorModule } from '../shared/ace-editor.module';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
@@ -62,6 +61,9 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
+import { CodemirrorModule } from 'ng2-codemirror';
+
+
 @NgModule({
     imports: [CommonModule,
         FormsModule,
@@ -85,11 +87,13 @@ import {
         FileUploadModule,
         SharedModule,
 
+        //editor
+        CodemirrorModule,
+
         //highcharts
         ChartModule,
 
-        //d3s
-        AceEditorModule,
+        //d3s        
         CoreModule,
         D3SSharedModule,        
         PipesModule,      
