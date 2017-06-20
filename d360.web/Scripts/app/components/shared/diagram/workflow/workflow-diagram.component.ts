@@ -936,6 +936,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
             if (sel != null && sel.length != 0) {
                 this.selectedData = sel[0].data;
+                
                 if (this.selectedData.diagramObjectType == DiagramObjectType.Node) {
                     this.showNodeTabs = true;
                     this.showLinkTabs = false;

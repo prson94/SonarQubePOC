@@ -778,3 +778,28 @@ chart {
 .artifact-context-menu-closed{
     display:none;
 }
+
+
+/* quill editor - workaround to show hyperlink tooltip even if calculated position is not "valid" */ 
+
+.ql-out-bottom {
+    visibility: visible !important;
+    z-index: 1000;
+} 
+.ql-out-top {
+    visibility: visible !important;
+    z-index: 1000;
+}
+.ql-tooltip {
+    z-index: 1000;   
+}
+
+/* end quill editor */
+
+/* p-dataTable */
+
+.hide-datatable-header>p-dataTable>div>.ui-datatable-tablewrapper>table>thead {
+    display: none !important;
+}
+
+/* end p-dataTable */

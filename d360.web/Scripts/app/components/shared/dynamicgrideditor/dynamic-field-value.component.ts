@@ -1,4 +1,6 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../../models/grid-definition.model';
 
@@ -13,8 +15,13 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                     <i *ngIf="fieldValue == 'TRUE'" class="fa fa-check enabled" title="True"></i>
                     <i *ngIf="fieldValue == 'FALSE'" class="fa fa-times disabled" title="False"></i>
                 </span>
+                <span *ngSwitchCase="'lookup'">
+                    <d3s-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]" [tooltipType]="item[column.contextfield]">
+                        <a (click)="navigate(item[column.urlfield])" [innerHtml]="fieldValue"></a>
+                    </d3s-tooltip>
+                </span>
                 <template ngSwitchDefault>
-                    <span *ngIf="fieldValue" [innerHtml]="fieldValue"></span>                                        
+                    <span *ngIf="fieldValue != null" [innerHtml]="fieldValue"></span>                                        
                 </template>
             </span>
         `,
@@ -25,11 +32,12 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     @Input() column: GridColumn;
     @Input() fields: GridField[] = [];
     @Input() item: any;
+    @Input() isComplex: boolean = false;
 
     private fieldType: string;
     private fieldValue: any;
 
-    constructor() {
+    constructor(private router: Router) {
         super();
     }
 
@@ -53,15 +61,25 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     }
 
     private formatAsNumber(): string {
+        console.log(this.fieldValue);
         return this.fieldValue != '' && this.fieldValue != null ? Number(this.fieldValue).toLocaleString() : "";
     }
 
     private columnDataType(column: GridColumn): string {      
         var fields = this.fields.filter(x => x.name == column.datafield);
 
+        if (column.type == 'preview')
+            return 'preview';
+        if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex)
+            return 'tooltip';
+
         if (fields.length > 0)
             return fields[0].type;
         return 'string';
+    }
+
+    private navigate(url: string) {
+        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }
 }
 

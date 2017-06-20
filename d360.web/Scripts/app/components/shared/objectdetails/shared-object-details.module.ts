@@ -17,6 +17,7 @@ import { CoreModule } from '../core.module';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { TilesModule  } from '../tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { ObjectDetailComponent } from './object-detail.component';
@@ -31,6 +32,7 @@ import { ObjectDetailField } from './object-detail-field.part';
         SharedGridPagingInfoModule,
         SimpleAccordionModule,
         TilesModule,
+        SharedDynamicGridEditorModule,
         //prime
         ButtonModule,
         DataTableModule,
