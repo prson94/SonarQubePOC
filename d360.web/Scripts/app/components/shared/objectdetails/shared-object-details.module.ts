@@ -21,7 +21,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { ObjectDetailComponent } from './object-detail.component';
-import { ObjectDetailField } from './object-detail-field.part';
+import { ObjectDetailFieldComponent } from './object-detail-field.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -43,7 +43,7 @@ import { ObjectDetailField } from './object-detail-field.part';
     declarations: [
         DynamicLookupGridComponent,
         ObjectDetailComponent,
-        ObjectDetailField,
+        ObjectDetailFieldComponent,
     ],
     exports: [
         ObjectDetailComponent

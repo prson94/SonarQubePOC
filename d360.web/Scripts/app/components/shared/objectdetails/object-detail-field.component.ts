@@ -21,7 +21,6 @@ import { Router } from '@angular/router';
                     <d3s-tooltip [tooltipType]="field.TooltipContext" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
                         <a (click)="navigate(field.TooltipUrl)" [innerHtml]="field.Value"></a>
                     </d3s-tooltip>
-
                 </div>
                 <div *ngIf="field.Type == DetailFieldType.Lookup">
                     <d3s-dynamic-lookup-grid *ngIf="field.Data && field.Data.Values && field.Data.Values.length > 0" [data]="field.Data" [hideHeader]="field.HideHeader" [hideFooter]="field.HideFooter" [hideFilter]="field.HideFilter"></d3s-dynamic-lookup-grid>
@@ -30,7 +29,7 @@ import { Router } from '@angular/router';
     `
 })
 
-export class ObjectDetailField {
+export class ObjectDetailFieldComponent {
     @Input() field: DetailField;
     DetailFieldType = DetailFieldType;
 

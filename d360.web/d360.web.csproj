@@ -1265,7 +1265,7 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims-matrix.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-field.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.component.ts" />
