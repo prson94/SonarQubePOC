@@ -168,21 +168,23 @@ export class ArtifactService extends BaseService {
         if (owner != undefined) {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
-
+        
         this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, artifactType.Name));              
     }
 
     downloadFile(data: Response, artifactTypeName: string) {        
-        var filename = `Filtered ${artifactTypeName} List ${new Date().toDateString()}.xlsx`;
-        if (window.navigator.msSaveOrOpenBlob) {
+        var filename = `Filtered ${artifactTypeName} List ${new Date().toDateString()}.xlsx`;        
+        if (window.navigator.msSaveOrOpenBlob) {            
             window.navigator.msSaveOrOpenBlob(data.blob(), filename );
         }
-        else {            
+        else {                        
             var url = window.URL.createObjectURL(data.blob());
             var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
             anchor.setAttribute("download", filename);
             anchor.href = url;
-            anchor.click();
+            anchor.click();            
         }
     }
 

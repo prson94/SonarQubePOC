@@ -151,6 +151,8 @@ export class RulesService extends BaseService {
         else {
             var url = window.URL.createObjectURL(data.blob());
             var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
             anchor.setAttribute("download", filename);
             anchor.href = url;
             anchor.click();
