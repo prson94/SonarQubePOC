@@ -21,12 +21,9 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        SiteMenuRepository menuRepository;
-
         public NavigationController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
-            menuRepository = new SiteMenuRepository(community, company);
         }
 
         #endregion
@@ -34,18 +31,30 @@ namespace d360.web.Controllers
         [Route("sitemenu")]
         public JsonNetResult SiteMenu()
         {
+            List<TopNavigationItem> nodes = null;
+
+            nodes = Company.Query<TopNavigationItem>(string.Format(@"GetSiteNavigation @ResourceID", (Company.CurrentResourceIsAdmin ? "1" : "0")), new { ResourceID = Company.CurrentResourceID }).ToList();
+
+            var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+
+            if (nodes != null)
+                nodes.ForEach(n => {
+                    n.ShouldDisplay = features.Any(f => f.Feature == n.Feature);
+                    n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
+                        new List<NavigationItem>() :
+                        parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)), features);
+                });
+
             return new JsonNetResult
             {
                 Data = new
                 {
-                    MenuItems = menuRepository.SiteMenu,
+                    MenuItems = nodes,
                     IsAdmin = Company.CurrentResourceIsAdmin
                 },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-        
-        
 
         [Route("GetAvailableSiteNavigation")]
         public JsonNetResult GetAvailableSiteNavigation()
@@ -118,7 +127,6 @@ namespace d360.web.Controllers
                 
                 Company.Add(item);
                 Company.SaveChanges();
-                menuRepository.ClearCachedMenu();
                 message = "Folder item added successfully.";
             } catch(Exception ex)
             {
@@ -146,7 +154,6 @@ namespace d360.web.Controllers
                     throw new Exception($"Folder Item Id ${id} not found");
                 Company.Delete(fi);
                 Company.SaveChanges();
-                menuRepository.ClearCachedMenu();
                 message = "Folder item removed successfully.";
             } catch (Exception ex)
             {
@@ -183,7 +190,6 @@ namespace d360.web.Controllers
                 Company.SiteNav.RemoveRange(subNavs);
                 Company.Delete(folder);
                 Company.SaveChanges();
-                menuRepository.ClearCachedMenu();
                 message = "Folder removed successfully.";
             } catch (Exception ex)
             {
@@ -220,7 +226,6 @@ namespace d360.web.Controllers
                 Company.SiteNav.AddRange(model.Items);
                 Company.SaveChanges();
                 SetSiteNavPermissions(model.Folder);
-                menuRepository.ClearCachedMenu();
                 message = "Folder added successfully";
             } catch (Exception ex)
             {
@@ -255,7 +260,6 @@ namespace d360.web.Controllers
                 siteNavAbove.SortOrder++;
                 siteNav.SortOrder--;
                 Company.SaveChanges();
-                menuRepository.ClearCachedMenu();
                 message = $"Folder ${siteNav.Name} moved up successfully.";
             }
             catch (Exception ex)
@@ -289,7 +293,6 @@ namespace d360.web.Controllers
                 siteNavBelow.SortOrder--;
                 siteNav.SortOrder++;
                 Company.SaveChanges();
-                menuRepository.ClearCachedMenu();
                 message = $"Folder ${siteNav.Name} moved down successfully.";
             }
             catch (Exception ex)
@@ -321,7 +324,6 @@ namespace d360.web.Controllers
                 siteNav.Title = folder.Title ?? folder.Name;
                 Company.SaveChanges();
                 SetSiteNavPermissions(folder);
-                menuRepository.ClearCachedMenu();
                 message = "Folder updated successfully.";
 
             }
@@ -432,7 +434,6 @@ namespace d360.web.Controllers
             {
                 Company.SiteNavPermissions.Add(perm);
                 Company.SaveChanges();
-                menuRepository.ClearCachedMenu();
             }
             catch(Exception ex)
             {
@@ -461,7 +462,6 @@ namespace d360.web.Controllers
                 {
                     Company.SiteNavPermissions.Remove(perm);
                     Company.SaveChanges();
-                    menuRepository.ClearCachedMenu();
                 }
                 catch (Exception ex)
                 {
@@ -646,9 +646,34 @@ namespace d360.web.Controllers
             };
 
         }
-        
-        #endregion  
 
-        
+        #endregion
+
+        List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)
+        {
+            var items = new List<NavigationItem>();
+
+            foreach (var el in xml.Elements("nav"))
+            {
+                bool shouldParse = (el.Element("feature").Value == "0");
+                if (!shouldParse)   //further check is required.
+                {
+                    var feature = (Feature)System.Enum.Parse(typeof(Feature), el.Element("feature").Value);
+                    shouldParse = features.Any(i => i.Feature == feature);
+                }
+                if (shouldParse)
+                {
+                    var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value };
+                    if (el.Element("items") != null)
+                    {
+                        item.Items = parseXmlNavigationDocument(el.Element("items"), features);
+                    }
+                    items.Add(item);
+                }
+            }
+
+            return items;
+        }
+
     }
 }

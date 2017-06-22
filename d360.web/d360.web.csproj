@@ -441,7 +441,6 @@
     <Compile Include="Models\Action Models.cs" />
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repositories\SiteMenuRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\Documentation.XML" />
@@ -912,6 +911,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\themes\base\images\" />
+    <Folder Include="Repositories\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
