@@ -13,12 +13,10 @@ import {
 } from 'primeng/primeng';
 
 import { CoreModule } from '../shared/core.module';
-import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { ShoppingCartRoutingModule } from './shopping-cart.routes';
-
 import { ShoppingCartComponent } from './shopping-cart.component';
 import { ShoppingCartRequestComponent } from './shopping-cart-request.component';
 
@@ -33,8 +31,7 @@ import { ShoppingCartRequestComponent } from './shopping-cart-request.component'
         ShoppingCartRoutingModule,
 
         //d3s        
-        CoreModule,
-        SharedDiagramModule,
+        CoreModule,        
         TilesModule,
         SharedGridPagingInfoModule,
 
