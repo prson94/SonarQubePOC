@@ -10,7 +10,6 @@ using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-using d360.web.Repositories;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using Resources;
@@ -35,7 +34,6 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
         IStorageProvider Storage;
-        SiteMenuRepository MenuRepository;
 
         public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
             : base(community, company)
@@ -45,8 +43,6 @@ namespace d360.web.Controllers
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
-
-            MenuRepository = new SiteMenuRepository(community, company);
         }
 
         #endregion
@@ -1219,7 +1215,7 @@ namespace d360.web.Controllers
                     action = "add"
                 };
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
@@ -1261,8 +1257,6 @@ namespace d360.web.Controllers
                     action = "edit"                    
                 };
 
-                MenuRepository.ClearCachedMenu();
-
                 return jsonSuccess(existing.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
@@ -1298,8 +1292,6 @@ namespace d360.web.Controllers
                     Name = model.Name,
                     action = "delete"              
                 };
-
-                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -11024,8 +11016,6 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
-                MenuRepository.ClearCachedMenu();
-
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
@@ -11061,8 +11051,6 @@ from ArtifactType A
                     action = "delete",
                     Context = form["_context"]
                 };
-
-                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -11114,8 +11102,6 @@ from ArtifactType A
                     action = "edit",
                     Context = form["_context"]
                 };
-
-                MenuRepository.ClearCachedMenu();
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
@@ -11228,8 +11214,6 @@ from ArtifactType A
 
                 upsertObjectStyle(SystemObjects.PolicyType, a.ID, form, a.Name);
 
-                MenuRepository.ClearCachedMenu();
-
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -11260,7 +11244,7 @@ from ArtifactType A
                 Company.Delete<PolicyType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.PolicyType, id);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -11319,7 +11303,7 @@ from ArtifactType A
 
                 upsertObjectStyle(SystemObjects.PolicyType, model.ID, form, model.Name);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -11407,7 +11391,7 @@ from ArtifactType A
 
                 Company.Add<PolicyTypeClass>(a);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -11438,7 +11422,7 @@ from ArtifactType A
 
                 Company.Delete<PolicyTypeClass>(i => i.ID == id);
                 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -11471,7 +11455,7 @@ from ArtifactType A
 
                 Company.Update<PolicyTypeClass>(model);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -15428,7 +15412,7 @@ order by	T.Name, I.DisplayValue";
 
                 upsertObjectStyle(SystemObjects.RuleType, a.ID, form, a.Name);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -15460,7 +15444,7 @@ order by	T.Name, I.DisplayValue";
                 Company.Delete<RuleType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.RuleType, id);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -15498,7 +15482,7 @@ order by	T.Name, I.DisplayValue";
 
                 upsertObjectStyle(SystemObjects.RuleType, model.ID, form, model.Name);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -16977,7 +16961,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
@@ -17016,7 +17000,7 @@ order by TextPath
 
                 Company.Delete(model);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
@@ -17063,7 +17047,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
@@ -17204,7 +17188,7 @@ order by TextPath
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, a.ID, form, a.Name);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -17236,7 +17220,7 @@ order by TextPath
                 Company.Delete<TaxonomyType>(i => i.ID == id);
                 deleteObjectStyle(SystemObjects.TaxonomyType, id);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -17309,7 +17293,7 @@ order by TextPath
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, model.ID, form, model.Name);
 
-                MenuRepository.ClearCachedMenu();
+                
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
