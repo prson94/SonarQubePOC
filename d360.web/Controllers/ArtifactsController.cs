@@ -150,6 +150,8 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                 document.SetCellValue(rowNumber, index++, (string)row.Status);                
                 document.SetCellValue(rowNumber, index++, (string)row.Url);
             }
+
+            document.AutoFitColumn(1, index);
             
             #endregion
 
