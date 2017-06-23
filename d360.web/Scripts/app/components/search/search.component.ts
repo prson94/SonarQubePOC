@@ -9,6 +9,8 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-search',
     template: `               
@@ -42,11 +44,11 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Search'));
-
+        
         this.sub = this.route.queryParams.subscribe(params => {
             this.showAdvanced = params['advanced'] == '1';
             this.searchText = params['query'] ? params['query'] : '';
-            this.isExactMatch = params['exactMatch'] ? params['exactMatch'] != '0' : true;
+            this.isExactMatch = params['exactMatch'] ? params['exactMatch'] != '0' : (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
             if (params['types']) {
                 this.searchTypes = params['types'].split(',');
             }

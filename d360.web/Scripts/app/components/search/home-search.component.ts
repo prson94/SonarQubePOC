@@ -5,6 +5,8 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-home-search',
     template: `               
@@ -27,6 +29,10 @@ export class HomeSearchComponent extends BaseComponent {
        
     constructor(private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
         super();        
+    }
+
+    ngOnInit() {
+        this.isExactMatch = (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
     }
     
     private doSearch(filterCategory?: SearchCategories) {        
