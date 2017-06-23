@@ -282,6 +282,7 @@ namespace d360.web.Models
         public bool UseNewWorkflow { get; set; }
         public bool EnableShoppingCart { get; set; }
         public string DefaultRoute { get; set; }
+        public bool EnableSearchExactMatch { get; set; }
 
         public string ArtifactType_TaxonomyTypeID { get; set; }
         public string ArtifactType_TaxonomyTypeIDNodes { get; set; }

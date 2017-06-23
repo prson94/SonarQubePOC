@@ -2016,6 +2016,7 @@ namespace d360.web.Controllers
             model.UseNewWorkflow = (settings.Any(i => i.SettingID == 18) ? bool.Parse(settings.Single(i => i.SettingID == 18).Value) : false);
             model.EnableShoppingCart = (settings.Any(i => i.SettingID == 20) ? bool.Parse(settings.Single(i => i.SettingID == 20).Value) : false);
             model.DefaultRoute = (settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
+            model.EnableSearchExactMatch = (settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2245,12 +2246,24 @@ namespace d360.web.Controllers
                 var defaultRouteSetting = settings.FirstOrDefault(i => i.SettingID == 22);
                 if (defaultRouteSetting == null)
                 {
-                    defaultRouteSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 22, Value = formModel.DefaultRoute.Trim() };
+                    defaultRouteSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 22, Value = (formModel.DefaultRoute??"").Trim() };
                     Community.Add<CompanySetting>(defaultRouteSetting);
                 }
                 else
                 {
                     defaultRouteSetting.Value = formModel.DefaultRoute ?? "".Trim();
+                    Community.SaveChanges();
+                }
+
+                var enableExactMatchSetting = settings.FirstOrDefault(i => i.SettingID == 23);
+                if (enableExactMatchSetting == null)
+                {
+                    enableExactMatchSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 23, Value = formModel.EnableSearchExactMatch.ToString().ToLower() };
+                    Community.Add<CompanySetting>(enableExactMatchSetting);
+                }
+                else
+                {
+                    enableExactMatchSetting.Value = formModel.EnableSearchExactMatch.ToString().ToLower();
                     Community.SaveChanges();
                 }
 

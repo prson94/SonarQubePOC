@@ -24,6 +24,7 @@ export class CompanySettings {
     EnableOrganizations: boolean;
     EnableShoppingCart: boolean;
     DefaultRoute: string;
+    EnableSearchExactMatch: boolean;
 }
 
 export class IpRestriction {

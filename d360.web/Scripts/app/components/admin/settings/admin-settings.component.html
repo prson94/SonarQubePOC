@@ -56,6 +56,10 @@
                             <input type="checkbox" [(ngModel)]="searchTypes[i].selected" />{{searchType.title}}
                         </li>
                     </ul>
+                    <div class="directions">
+                        Should exact match be enabled by default?  If checked the exact match option will be initially populated.  If unchecked exact match will be off unless the user checks it.
+                    </div>
+                    <input type="checkbox" [(ngModel)]="companySettings.EnableSearchExactMatch" />Enable Exact match by default
                 </div>
                 <div class="tile tile-detail">
                     <header>Default Route</header>
