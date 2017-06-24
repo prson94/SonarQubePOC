@@ -2424,9 +2424,9 @@ from    [Intersect] I
                         // Determine the join syntax for the eventual query.
                         join.JoinStatement += $" inner join FieldType {tbtPrefix} on {tbtPrefix}.ID = {i.FieldTypeID} ";
                         if ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || i.FieldTypeName.StartsWith("Relation~"))
-                            join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = 'Intersect' and {tbPrefix}.ObjectID = {intersectIDColumn}";
+                            join.JoinStatement += $" {joinType} join Field {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = 'Intersect' and {tbPrefix}.ObjectID = {intersectIDColumn}";
                         else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
-                            join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}";
+                            join.JoinStatement += $" {joinType} join Field {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}";
 
                         //Create the column/field to display the visible column cell.
                         var fc = new ComplexColumnModel
@@ -2463,7 +2463,7 @@ end",
                             columnModels.Add(new ComplexColumnModel {
                                 DisplayColumn = $@"
 case 
-    when {tbPrefix}.Value is not null then {tbPrefix}.[LookupObjectType]
+    when {tbPrefix}.Value is not null then {tbtPrefix}.[LookupObjectType]
     when {tbtPrefix}.DefaultValue is not null then replace({tbtPrefix}.[LookupObjectType], 'Type', '')
     else '' 
 end
@@ -2481,7 +2481,7 @@ end
                             columnModels.Add(new ComplexColumnModel {
                                 DisplayColumn = $@"
 case 
-    when {tbPrefix}.Value is not null then {tbPrefix}.LookupUrl
+    when {tbPrefix}.Value is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID)
     when {tbtPrefix}.DefaultValue is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID) 
     else '' 
 end",

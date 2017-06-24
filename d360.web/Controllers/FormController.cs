@@ -3159,7 +3159,8 @@ namespace d360.web.Controllers
         {
             var nameUpper = name.ToUpper();
 
-            if (nameUpper == "STATUS" || nameUpper == "NAME" || nameUpper == "DESCRIPTION" || nameUpper == "PARENTID" || nameUpper == "DATELASTCERTIFIED" || nameUpper == "TAXONOMYTYPEID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
+            if (nameUpper == "PARENTID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
+            //if (nameUpper == "STATUS" || nameUpper == "NAME" || nameUpper == "DESCRIPTION" || nameUpper == "PARENTID" || nameUpper == "DATELASTCERTIFIED" || nameUpper == "TAXONOMYTYPEID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFieldType")]

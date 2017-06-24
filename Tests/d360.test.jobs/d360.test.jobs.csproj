@@ -273,6 +273,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="acidev2017.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="adfs365.txt.cer">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

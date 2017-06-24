@@ -473,6 +473,7 @@
     <Content Include="Content\primeng\d3s\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\primeng\d3s\images\ui-icons_ffffff_256x240.png" />
     <Content Include="Content\primeng\d3s\theme.css" />
+    <Content Include="Content\primeng\d3s\theme.min.css" />
     <Content Include="Content\primeng\v1.0.1\images\line.gif" />
     <Content Include="Content\primeng\v1.0.1\images\loading.gif" />
     <Content Include="Content\primeng\v1.0.1\images\password-meter.png" />
@@ -480,6 +481,7 @@
     <Content Include="Content\primeng\v1.0.1\primeng.css" />
     <Content Include="Content\primeng\v1.0.1\primeng.min.css" />
     <Content Include="Content\quill\quill.snow.css" />
+    <Content Include="Content\quill\quill.snow.min.css" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -510,6 +512,7 @@
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\styles\materialize.min.css" />
     <Content Include="Content\styles\Root.css">
       <DependentUpon>Root.less</DependentUpon>
     </Content>
@@ -542,6 +545,7 @@
     <Content Include="Scripts\app\13.chunk.js" />
     <Content Include="Scripts\app\14.chunk.js" />
     <Content Include="Scripts\app\15.chunk.js" />
+    <Content Include="Scripts\app\16.chunk.js" />
     <Content Include="Scripts\app\17.chunk.js" />
     <Content Include="Scripts\app\18.chunk.js" />
     <Content Include="Scripts\app\19.chunk.js" />
@@ -568,6 +572,15 @@
     <Content Include="Scripts\app\38.chunk.js" />
     <Content Include="Scripts\app\39.chunk.js" />
     <Content Include="Scripts\app\4.chunk.js" />
+    <Content Include="Scripts\app\40.chunk.js" />
+    <Content Include="Scripts\app\41.chunk.js" />
+    <Content Include="Scripts\app\42.chunk.js" />
+    <Content Include="Scripts\app\43.chunk.js" />
+    <Content Include="Scripts\app\44.chunk.js" />
+    <Content Include="Scripts\app\45.chunk.js" />
+    <Content Include="Scripts\app\46.chunk.js" />
+    <Content Include="Scripts\app\47.chunk.js" />
+    <Content Include="Scripts\app\48.chunk.js" />
     <Content Include="Scripts\app\5.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
     <Content Include="Scripts\app\7.chunk.js" />

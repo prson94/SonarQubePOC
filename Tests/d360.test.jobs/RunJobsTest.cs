@@ -113,12 +113,12 @@ END",
         [TestMethod]
         public void SaveCertificate_Success()
         {
-            var companyID = 4;
+            var companyID = 6;
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("adfs365.txt.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Infogix - 2017 - Office 365", File = bytes };
+            var bytes = File.ReadAllBytes("acidev2017.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "ACI Dev - 2017", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 
