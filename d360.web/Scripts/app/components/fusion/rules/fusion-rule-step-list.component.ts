@@ -17,7 +17,7 @@ import { FusionRule, FusionRuleStep } from '../../../models/fusion.model';
             <p-column header="Action" field="Action" [style]="{width:'15%'}" [filter]="!showSimpleFilter"></p-column>
             <p-column header="Description" field="Description" [filter]="!showSimpleFilter"></p-column>
             <p-column header="" [style]="{width:'210px'}">
-                <template pTemplate type="body" let-row="rowData" let-i="rowIndex">
+                <ng-template pTemplate type="body" let-row="rowData" let-i="rowIndex">
                     <div class="RowTools">
                         <a (click)="history(row)"><i class="fa fa-history"></i></a>
                         <a (click)="edit(row);"><i class="fa fa-pencil"></i></a>
@@ -25,7 +25,7 @@ import { FusionRule, FusionRuleStep } from '../../../models/fusion.model';
                         <a *ngIf="i > 0" (click)="move(row, true);"><i class="fa fa-caret-up"></i></a>
                         <a *ngIf="i < (values.length - 1)" (click)="move(row, false);"><i class="fa fa-caret-down"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
     </div>

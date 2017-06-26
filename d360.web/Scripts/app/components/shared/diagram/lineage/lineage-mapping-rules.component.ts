@@ -28,38 +28,38 @@ import { MapItem } from '../../../../models/lineage.model';
                     </p-row>
                 </p-headerColumnGroup>
                 <p-column field="searchableSource" [filter]="!showSimpleFilter">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <span style="margin: 3px 0px 3px 0px">
                             <b>{{item.SourceName}}</b><br/>
                             {{item.SourceType}}
                         </span>
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column field="searchableSourceFusion" [filter]="!showSimpleFilter">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <span style="margin: 3px 0px 3px 0px">
                             {{item.SourceFusion}}<br/>
                             {{item.SourceFusionAttributeType}}<br/>
                             {{item.SourceFusionAttribute}}
                         </span>
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column field="searchableTarget" [filter]="!showSimpleFilter">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <span style="margin: 3px 0px 3px 0px">
                             <b>{{item.TargetName}}</b><br/>
                             {{item.TargetType}}
                         </span>
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column field="searchableTargetFusion" [filter]="!showSimpleFilter">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <span style="margin: 3px 0px 3px 0px">
                             {{item.TargetFusion}}<br/>
                             {{item.TargetFusionAttributeType}}<br/>
                             {{item.TargetFusionAttribute}}
                         </span>
-                    </template>
+                    </ng-template>
                 </p-column>
             </p-dataTable>
         </div>

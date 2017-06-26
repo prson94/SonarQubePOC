@@ -8,25 +8,25 @@
                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                     <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '100px' }"></p-column>
                     <p-column [style]="{ 'width': '20px' }">
-                        <template let-col let-item="rowData" pTemplate type="body">
+                        <ng-template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a (click)="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                             </div>
-                        </template>
+                        </ng-template>
                     </p-column>
                     <p-column [style]="{ 'width': '20px' }">
-                        <template let-col let-item="rowData" pTemplate type="body">
+                        <ng-template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                
                             </div>
-                        </template>
+                        </ng-template>
                     </p-column>
                     <p-column [style]="{ 'width': '20px' }">
-                        <template let-col let-item="rowData" pTemplate type="body">
+                        <ng-template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">                                
                                 <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
-                        </template>
+                        </ng-template>
                     </p-column>
                 </p-dataTable>
             </div>

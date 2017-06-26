@@ -15,14 +15,14 @@ import * as _ from 'lodash';
                         <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >                        
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="DateStarted" header="Started" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
-                                <template let-col let-data="rowData" pTemplate type="body">
+                                <ng-template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateStarted | date: 'short'}}</span>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column field="DateCompleted" header="Completed" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
-                                <template let-col let-data="rowData" pTemplate type="body">
+                                <ng-template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateCompleted | date: 'short'}}</span>
-                                </template>
+                                </ng-template>
                             </p-column>                        
                             <p-column field="TotalNewPromotions" header="# New Promotions" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="PromotedArtifacts" header="# New Artifacts" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter"></p-column>

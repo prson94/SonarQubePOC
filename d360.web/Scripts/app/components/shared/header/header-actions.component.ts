@@ -39,9 +39,10 @@ export class HeaderActionsComponent {
             if (e instanceof NavigationEnd) {
                 this.uri = _.trimStart(e.url,'/');
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
-            }
-            //dont show raise issue button on raise issue screen or any admin screens            
-            this.hasRaiseIssueButton = (!e.url.toLowerCase().endsWith('workflow/raiseissue') && (e.url.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');            
+
+                //dont show raise issue button on raise issue screen or any admin screens            
+                this.hasRaiseIssueButton = (!e.url.toLowerCase().endsWith('workflow/raiseissue') && (e.url.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');            
+            }            
         });
 
         if (CompanySettings != null && CompanySettings.EnableShoppingCart.toString() === 'true') {

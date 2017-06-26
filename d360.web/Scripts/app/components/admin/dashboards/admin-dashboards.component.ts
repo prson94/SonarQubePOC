@@ -26,18 +26,18 @@ import { Title } from '@angular/platform-browser';
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="ReportType" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column [style]="{width:'40px'}">
-                                        <template let-report="rowData" pTemplate type="body">
+                                        <ng-template let-report="rowData" pTemplate type="body">
                                             <div class="RowTools">
                                                 <a style="cursor:pointer;" (click)="selected=report;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                     <p-column  [style]="{width:'40px'}">
-                                        <template let-report="rowData" pTemplate type="body">
+                                        <ng-template let-report="rowData" pTemplate type="body">
                                             <div class="RowTools">                                
                                                 <a style="cursor:pointer;" (click)="selected=report;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>    
                                 </p-dataTable>  
                             </span>

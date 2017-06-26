@@ -22,24 +22,24 @@ import { StateService } from '../../services/state.service';
                         <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
                         <p-dataTable #dt resizableColumns="true" columnResizeMode="expand" [lazy]="true" [totalRecords]="results?.total" [value]="results?.results" selectionMode="single" [rows]="stateService.fusionFilters.rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                        
                            <p-column [style]="{width:'30px'}">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selectItem(item)" title="details"><i class="fa fa-info" aria-hidden="true"></i></a> 
                                         </div>
-                                    </template>
+                                    </ng-template>
                             </p-column>                                                        
                            <p-column [style]="{width:'30px'}">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" *ngIf="item.IsEditable">
                                             <a style="cursor:pointer;" (click)="fusionAttribute=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
                                         </div>
-                                    </template>
+                                    </ng-template>
                             </p-column>
                             <p-column *ngFor="let column of columns;let first = first" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
-                                <template let-col let-item="rowData" pTemplate type="body">
+                                <ng-template let-col let-item="rowData" pTemplate type="body">
                                     <a *ngIf="first && item[column.datafield]" (click)="selectItem(item)">{{item[column.datafield]}}</a>
                                     <span *ngIf="!first && item[column.datafield]" [innerHtml]="item[column.datafield]"></span>
-                                </template>
+                                </ng-template>
                             </p-column>                            
                         </p-dataTable>                   
                         <div class="center" style="font-weight:bold"><d3s-grid-paging-info *ngIf="dt && dt.totalRecords" [totalRecords]="dt?.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></div>

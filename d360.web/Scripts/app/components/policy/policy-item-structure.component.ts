@@ -27,36 +27,36 @@ import { LevelsService } from '../../services/levels.service';
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="Name" header="Name">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.Name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
-                            </template>
+                            </ng-template>
                         </p-column>                        
                          <p-column field="Description" header="Description">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                <div class="truncate" [title]="item.data.Description">{{item.data.Description}}</div>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column field="StatusName" header="Status" sortable="custom" [filter]="!showSimpleFilter" [style]="{width:'10%'}"></p-column>  
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" *ngIf="policyType.MaximumDepth > item.data.Level" (click)="selected=item;add()"><i class="fa fa-plus"></i></a>                                        
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>   
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>                            
                         <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a *ngIf="!item.children" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>       
                     </p-treeTable> 
                     <d3s-delete-form *ngIf="showDelete"

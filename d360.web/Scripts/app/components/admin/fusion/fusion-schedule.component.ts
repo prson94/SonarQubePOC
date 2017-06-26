@@ -17,26 +17,26 @@ import { MessagesService } from '../../../services/messages.service';
                 <p-column field="DayText" header="Day"></p-column>
                 <p-column field="Time" header="Time (UTC)"></p-column>
                 <p-column field="FullRefresh" header="Full Refresh?">
-                    <template let-data="rowData" pTemplate type="body">
+                    <ng-template let-data="rowData" pTemplate type="body">
                         <span>
                             <i *ngIf="data.ForceRefresh" class="fa fa-check enabled" title="True"></i>
                             <i *ngIf="!data.ForceRefresh" class="fa fa-times disabled" title="False"></i>
                         </span>
-                    </template>
+                    </ng-template>
                 </p-column> 
                 <p-column [style]="{width:'40px'}">
-                    <template let-dimension="rowData" pTemplate type="body">
+                    <ng-template let-dimension="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a style="cursor:pointer;" (click)="selected=dimension;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>                            
                 <p-column  [style]="{width:'40px'}">
-                    <template let-dimension="rowData" pTemplate type="body">
+                    <ng-template let-dimension="rowData" pTemplate type="body">
                         <div class="RowTools">                                
                             <a style="cursor:pointer;" (click)="selected=dimension;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>                          
             </p-dataTable>            
         </div>

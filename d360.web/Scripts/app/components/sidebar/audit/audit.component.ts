@@ -22,21 +22,21 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                 <p-column field="ResourceName" header="User" sortable="true" [style]="{'width':'150px'}" filter="true"></p-column>                                                                                    
                                 <p-column field="Date" header="Date" sortable="true" [style]="{'width':'200px'}" filter="true">
-                                    <template let-col let-data="rowData" pTemplate type="body">
+                                    <ng-template let-col let-data="rowData" pTemplate type="body">
                                         <span>{{data.Date | date: 'medium'}}</span>
-                                    </template>
+                                    </ng-template>
                                 </p-column>
                                 <p-column field="Action" header="Action" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>                                                            
                                 <p-column field="Field" header="Field" sortable="true" [style]="{'width':'200px'}" filter="true"></p-column>                                
                                 <p-column field="NewValue" header="New Value" sortable="true" [style]="{'width':'250px'}" filter="true">
-                                    <template let-col let-data="rowData" pTemplate type="body">
+                                    <ng-template let-col let-data="rowData" pTemplate type="body">
                                         <div *ngIf="data.NewValue" [innerHtml]="data.NewValue"></div>
-                                    </template>                                                        
+                                    </ng-template>                                                        
                                 </p-column>
                                 <p-column field="PreviousValue" header="Previous Value" sortable="true" [style]="{'width':'250px'}" filter="true">
-                                    <template let-col let-data="rowData" pTemplate type="body">
+                                    <ng-template let-col let-data="rowData" pTemplate type="body">
                                         <div *ngIf="data.PreviousValue" [innerHtml]="data.PreviousValue"></div>
-                                    </template>                                                        
+                                    </ng-template>                                                        
                                 </p-column>
                                 <p-column field="ActionObject" header="Object" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>
                                 <p-column field="ActionObjectTypeName" header="Type" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>

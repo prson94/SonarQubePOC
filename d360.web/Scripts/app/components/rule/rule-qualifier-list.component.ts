@@ -24,14 +24,14 @@ import { FormMode } from '../../models/form.model';
                                         <p-column field="ResolutionObjectName" header="Resolution Object"></p-column>
                                         <p-column field="ResolutionFieldTypeName" header="Resolution Field"></p-column>
                                         <p-column>
-                                            <template let-i="rowIndex" let-item="rowData" pTemplate="body">
+                                            <ng-template let-i="rowIndex" let-item="rowData" pTemplate="body">
                                                 <div class="RowTools">
                                                     <a *ngIf="i > 0" (click)="moveUp(item)"><i class="fa fa-caret-up"></i></a>
                                                     <a *ngIf="i < (qualifierTypes.length - 1)" (click)="moveDown(item)"><i class="fa fa-caret-down"></i></a>
                                                     <a (click)="edit(item)"><i class="fa fa-pencil"></i></a>
                                                     <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
                                                 </div>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                     </p-dataTable>     
                                 </div>

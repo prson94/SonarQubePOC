@@ -20,25 +20,25 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;">  
                         <p-treeTable [value]="treeNodeArray | treeSearch: searchValue : 'Name'" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                             <p-column field="Name" header="Name">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <a (click)="showItem(item)">{{item.data.Name}}</a>
-                                </template>
+                                </ng-template>
                             </p-column>                                                   
                             <p-column field="Description" header="Description">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <span [innerHtml]="item.data.Description"></span>
-                                </template>
+                                </ng-template>
                             </p-column>                            
                             <p-column field="Draft" header="Draft" [style]="{width:'100px'}"></p-column>
                             <p-column field="UnderReview" header="Under Review" [style]="{width:'100px'}"></p-column>
                             <p-column field="Certified" header="Certified" [style]="{width:'100px'}"></p-column>
                             <p-column field="Total" header="Total" [style]="{width:'100px'}"></p-column>
                             <p-column  [style]="{width:'40px'}">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <d3s-tooltip objectType="ArtifactType" [objectId]="item.data.ID" tooltipType="preview"><a style="cursor:pointer;" (click)="showItem(item)"><i class="fa fa-info"></i></a></d3s-tooltip>                                    
                                         </div>
-                                    </template>
+                                    </ng-template>
                             </p-column>       
                         </p-treeTable>                                   
                     </div>

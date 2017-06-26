@@ -19,23 +19,23 @@ import { BaseComponent } from '../shared/base.component';
                     <p-column field="Level" header="Level" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">
-                        <template let-col let-level="rowData" pTemplate type="body">
+                        <ng-template let-col let-level="rowData" pTemplate type="body">
                             <div [innerHtml]="level?.Description"></div>
-                        </template>                                                        
+                        </ng-template>                                                        
                     </p-column>    
                         <p-column [style]="{width:'40px'}">
-                            <template let-level="rowData" pTemplate type="body">
+                            <ng-template let-level="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selectedLevel=level;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>                            
                         <p-column  [style]="{width:'40px'}">
-                            <template let-level="rowData" pTemplate type="body">
+                            <ng-template let-level="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a style="cursor:pointer;" (click)="selectedLevel=level;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>                            
                     </p-dataTable>      
                 </span>

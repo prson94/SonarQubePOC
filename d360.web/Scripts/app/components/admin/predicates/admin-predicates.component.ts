@@ -26,18 +26,18 @@ import { Title } from '@angular/platform-browser';
                         <p-column field="Inverse" header="Inverse" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="Type" header="Functional Type" sortable="true" [filter]="!showSimpleFilter"></p-column>                
                         <p-column [style]="{width:'40px'}">
-                            <template let-predicate="rowData" pTemplate type="body">
+                            <ng-template let-predicate="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="!predicate.IsSystem">
                                     <a style="cursor:pointer;" (click)="selected=predicate;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>                            
                         <p-column  [style]="{width:'40px'}">
-                            <template let-predicate="rowData" pTemplate type="body">
+                            <ng-template let-predicate="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="!predicate.IsUsed && !predicate.IsSystem">                                
                                     <a style="cursor:pointer;" (click)="selected=predicate;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>                            
                     </p-dataTable> 
                 </span>

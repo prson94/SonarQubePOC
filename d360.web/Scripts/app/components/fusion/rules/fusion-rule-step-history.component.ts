@@ -15,22 +15,22 @@ import { Column } from 'primeng/primeng';
             <footer *ngIf="dtRuleStepsHistory.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleStepsHistory.totalRecords" [first]="dtRuleStepsHistory.first" [rows]="dtRuleStepsHistory.rows"></d3s-grid-paging-info></footer>
             <p-column header="Attribute" field="AttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
             <p-column header="Object" field="ObjectName" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
-                <template pTemplate type="body" let-row="rowData">
+                <ng-template pTemplate type="body" let-row="rowData">
                     <d3s-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" tooltipType="preview">
                         <a (click)="navigate(row.ObjectUrl)">{{row.ObjectName}}</a>
                     </d3s-tooltip>
-                </template>
+                </ng-template>
             </p-column>
 
             <p-column header="Created On" field="CreatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
-                <template pTemplate type="body" let-row="rowData">
+                <ng-template pTemplate type="body" let-row="rowData">
                     <span>{{row.CreatedOn | date: 'short'}}</span>
-                </template>
+                </ng-template>
             </p-column>
             <p-column header="Updated On" field="UpdatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
-                <template pTemplate type="body" let-row="rowData">
+                <ng-template pTemplate type="body" let-row="rowData">
                     <span>{{row.UpdatedOn | date: 'short'}}</span>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
 `,

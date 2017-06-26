@@ -20,7 +20,7 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                                             <span style="float:right">{{results?.Result?.Matches}}</span>
                                         </div>                                        
                                     </div>
-                                    <template let-category ngFor [ngForOf]="categories">
+                                    <ng-template let-category ngFor [ngForOf]="categories">
                                         <div class="row">
                                             <div class="col l10 m10 s11 entry">
                                                 <i class="search-category-type-group fa fa-angle-right" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>
@@ -38,7 +38,7 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                                                 <span style="float:right">{{subCategory?.ResultCount}}</span>
                                             </div>                                        
                                         </div>
-                                    </template>
+                                    </ng-template>
                                 </div>
                             </div>
                         </div>                        

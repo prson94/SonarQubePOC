@@ -19,23 +19,23 @@ import { FusionConfigurationDetails, FusionQueryAttributeType  } from '../../mod
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>                            
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Uri" header="Uri" [sortable]="false" [filter]="!showSimpleFilter">
-                                <template let-query="rowData" pTemplate type="body">
+                                <ng-template let-query="rowData" pTemplate type="body">
                                     <a target="_blank" href="/services/fusion/{{query.FusionID}}/{{query.ID}}/data?metadata=true">/services/fusion/{{query.FusionID}}/{{query.ID}}/data?metadata=true</a>                                        
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column [style]="{width:'40px'}">
-                                <template let-query="rowData" pTemplate type="body">
+                                <ng-template let-query="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=query;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>                            
                             <p-column  [style]="{width:'40px'}">
-                                <template let-query="rowData" pTemplate type="body">
+                                <ng-template let-query="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
                                         <a style="cursor:pointer;" (click)="selected=query;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>                            
                         </p-dataTable>      
                     </span>

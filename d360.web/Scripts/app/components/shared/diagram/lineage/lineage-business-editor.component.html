@@ -66,9 +66,9 @@
                                                 [tabindex]="(x * 6) + 1"
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }">
-                                    <template let-item pTemplate="item2">
+                                    <ng-template let-item pTemplate="item2">
                                         <div [innerHTML]="item.templateValue"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceIntersectTypeID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -84,9 +84,9 @@
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }"
                                                 [disabled]="i.SourceIntersectTypeID < 1">
-                                    <template let-item pTemplate="item2">
+                                    <ng-template let-item pTemplate="item2">
                                         <div [innerHTML]="item.templateValue"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceSubjectID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -102,9 +102,9 @@
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }"
                                                 [disabled]="i.SourceIntersectTypeID < 1">
-                                    <template let-item pTemplate="item2">
+                                    <ng-template let-item pTemplate="item2">
                                         <div [innerHTML]="item.templateValue"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceObjectID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -120,9 +120,9 @@
                                                 [tabindex]="(x * 6) + 4"
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }">
-                                    <template let-item pTemplate="item2">
+                                    <ng-template let-item pTemplate="item2">
                                         <div [innerHTML]="item.templateValue"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-autoComplete>
                                 <div *ngIf="i.TargetIntersectTypeID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -138,9 +138,9 @@
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }"
                                                 [disabled]="i.TargetIntersectTypeID < 1">
-                                    <template let-item pTemplate="item2">
+                                    <ng-template let-item pTemplate="item2">
                                         <div [innerHTML]="item.templateValue"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-autoComplete>
                                 <div *ngIf="i.TargetSubjectID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -156,9 +156,9 @@
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }"
                                                 [disabled]="i.TargetIntersectTypeID < 1">
-                                    <template let-item pTemplate="item2">
+                                    <ng-template let-item pTemplate="item2">
                                         <div [innerHTML]="item.templateValue"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-autoComplete>
                                 <div *ngIf="i.TargetObjectID < 1" class="errorMessage">* Required</div>
                             </td>

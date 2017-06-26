@@ -33,9 +33,9 @@ import { TreeNode } from 'primeng/primeng';
                         <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
                         <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
                             (onNodeSelect)="nodeSelect($event,treePanel)">
-                            <template let-node pTemplate type="default">
+                            <ng-template let-node pTemplate type="default">
                                 <span [ngStyle]="setTreeNodeStyles(node)">{{node.label}} <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
-                            </template>
+                            </ng-template>
                         </p-tree>
                 </p-overlayPanel>                
               `,

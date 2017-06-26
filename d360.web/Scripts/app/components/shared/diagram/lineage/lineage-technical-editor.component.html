@@ -66,9 +66,9 @@
                                                 [tabindex]="(x * 6) + 1"
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }">
-                                    <template let-item pTemplate="item2">
+                                    <ng-template let-item pTemplate="item2">
                                         <div [innerHTML]="item.templateValue"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-autoComplete>
                                 <div *ngIf="i.SourceFusionAttributeID < 1" class="errorMessage">* Required</div>
                             </td>
@@ -84,9 +84,9 @@
                                                 [tabindex]="(x * 6) + 1"
                                                 [style]="{ 'width':'95%' }"
                                                 [inputStyle]="{ 'width':'95%' }">
-                                    <template let-item pTemplate="item2">
+                                    <ng-template let-item pTemplate="item2">
                                         <div [innerHTML]="item.templateValue"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-autoComplete>
                                 <div *ngIf="i.TargetFusionAttributeID < 1" class="errorMessage">* Required</div>
                             </td>

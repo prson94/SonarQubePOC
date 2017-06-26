@@ -24,23 +24,23 @@ import { Title } from '@angular/platform-browser';
                                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                     <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="Description" header="Description" sortable="false"  [filter]="!showSimpleFilter">
-                                        <template let-issueType="rowData"  pTemplate type="body">
+                                        <ng-template let-issueType="rowData"  pTemplate type="body">
                                             <span [innerHtml]="issueType.Description"></span>
-                                        </template>
+                                        </ng-template>
                                     </p-column>
                                     <p-column [style]="{width:'40px'}">
-                                        <template let-issueType="rowData"  pTemplate type="body">
+                                        <ng-template let-issueType="rowData"  pTemplate type="body">
                                             <div class="RowTools" *ngIf="!issueType.IsSystem">
                                                 <a style="cursor:pointer;" (click)="selected=issueType;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                     <p-column  [style]="{width:'40px'}">
-                                        <template let-issueType="rowData" pTemplate type="body">
+                                        <ng-template let-issueType="rowData" pTemplate type="body">
                                             <div class="RowTools" *ngIf="!issueType.IsSystem">
                                                 <a style="cursor:pointer;" (click)="selected=issueType;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>    
                                 </p-dataTable>      
                             </span>

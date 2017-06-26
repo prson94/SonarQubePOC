@@ -18,9 +18,9 @@ declare var CompanySettings;
     template: ` 
                 <ul class="left-side-nav">
                     <d3s-site-menu-category *ngIf="favorites" [title]="'My Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
-                    <template ngFor let-menu [ngForOf]="siteMenu">
+                    <ng-template ngFor let-menu [ngForOf]="siteMenu">
                         <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [menu]="menu"></d3s-site-menu-category>
-                    </template>                  
+                    </ng-template>                  
                     <d3s-site-menu-category *ngIf="isAdmin" [title]="'Settings'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>                    
                 </ul>
                 `,    

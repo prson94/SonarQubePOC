@@ -29,34 +29,34 @@ declare var CompanySettings: any;
                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" [(selection)]="selectedItem">                
                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                     <p-column header="Name" field="Name" sortable="true">
-                        <template pTemplate type="body" let-item="rowData">                        
+                        <ng-template pTemplate type="body" let-item="rowData">                        
                             <d3s-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">
                                 <a (click)="navigate(item.Url)">{{item.Name}}</a>
                             </d3s-tooltip>
                             <span *ngIf="!item.Object">{{item.Name}}</span>
-                        </template>
+                        </ng-template>
                     </p-column>
                     <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>                    
                     <p-column header="Parent" field="ParentName" sortable="true">
-                        <template pTemplate type="body" let-item="rowData">                        
+                        <ng-template pTemplate type="body" let-item="rowData">                        
                             <d3s-tooltip [objectType]="item.Object" [objectId]="item.ParentID" [tooltipType]="'Preview'">
                                 <a (click)="navigate(item.ParentUrl)">{{item.ParentName}}</a>
                             </d3s-tooltip>
-                        </template>
+                        </ng-template>
                     </p-column>                
                     <p-column field="SubjectArea" [header]="subjectAreaName" sortable="true">
-                        <template pTemplate type="body" let-item="rowData">                        
+                        <ng-template pTemplate type="body" let-item="rowData">                        
                             <d3s-tooltip *ngIf="item.TaxonomyTypeID != null" [objectType]="'TaxonomyType'" [objectId]="item.TaxonomyTypeID" [tooltipType]="'Preview'">
                                 <a (click)="navigateTaxonomy(item)">{{item.SubjectArea}}</a>
                             </d3s-tooltip>
-                        </template>
+                        </ng-template>
                     </p-column>
                     <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '48px' }">
-                        <template let-col let-item="rowData" pTemplate type="body">
+                        <ng-template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
-                        </template> 
+                        </ng-template> 
                     </p-column>
                 </p-dataTable>
             </div>

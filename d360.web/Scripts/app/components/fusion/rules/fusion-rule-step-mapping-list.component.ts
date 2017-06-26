@@ -19,12 +19,12 @@ declare var CompanySettings;
             <p-column header="Source" field="SourceFieldName" [filter]="!showSimpleFilter"></p-column>
             <p-column header="Target" field="TargetFieldName" [filter]="!showSimpleFilter"></p-column>
             <p-column header="">
-                <template pTemplate type="body" let-row="rowData">
+                <ng-template pTemplate type="body" let-row="rowData">
                     <div class="RowTools">
                         <a (click)="edit(row);"><i class="fa fa-pencil"></i></a>
                         <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
     </div>

@@ -13,16 +13,16 @@ import { FusionProcessError } from '../../models/fusion.model';
                     <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="errors" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Error" header="Error" [sortable]="true" [style]="{width:'300px'}">
-                            <template let-col let-item="rowData" pTemplate type="body">
+                            <ng-template let-col let-item="rowData" pTemplate type="body">
                                     <div style="max-height:300px;overflow:auto;" [title]="item.Error">{{item.Error}}</div>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'150px'}"></p-column>                        
                         <p-column field="Fusion" header="Configuration" [sortable]="true" [style]="{width:'150px'}"></p-column>                        
                         <p-column field="Date" header="Date" [sortable]="true" [style]="{width:'150px'}">
-                            <template let-col let-data="rowData" pTemplate type="body">
+                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.Date | date: 'short'}}</span>
-                            </template>
+                            </ng-template>
                         </p-column>                                                
                     </p-dataTable>      
                 </span>

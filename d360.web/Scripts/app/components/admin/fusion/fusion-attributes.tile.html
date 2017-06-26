@@ -9,20 +9,20 @@
         <p-treeTable [value]="fusionAttributeTypes" selectionMode="single" [(selection)]="selectedRow">
             <p-column field="Name" header="Name"></p-column>
             <p-column field="ScanEnabled" header="Enabled" [style]="{width:'80px'}">
-                <template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate type="body">
                     <span><i *ngIf="item.data.ScanEnabled" class="fa fa-check enabled" title="True"></i></span>
                     <span><i *ngIf="!item.data.ScanEnabled" class="fa fa-times disabled" title="False"></i></span>
-                </template>
+                </ng-template>
             </p-column>
             <p-column field="ID" header="ID" [style]="{width:'60px'}"></p-column>
             <p-column>
-                <template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
                         <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         <a (click)="selectedRow = item; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         <a (click)="selectedRow = item; add(item.data.ID);" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
         </p-treeTable>
     </div>

@@ -20,35 +20,35 @@ declare var CompanySettings;
                     <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column  [style]="{width:'28px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="hasEdit">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>                                                                           
                                     </div>
-                                </template>
+                                </ng-template>
                         </p-column>                   
                         <p-column  [style]="{width:'28px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="hasDelete">                                                    
                                         <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
-                                </template>
+                                </ng-template>
                         </p-column>           
                         <p-column  [style]="{width:'28px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" [ngClass]="{'RowTools': item.HasTechnicalRelationships, 'InActiveRowTools': !item.HasTechnicalRelationships}">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showTechnical=true;" title="Technical Relationships"><i class="fa fa-bolt"></i></a>                                                                           
                                     </div>
-                                </template>
+                                </ng-template>
                         </p-column>   
                         <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}" [filter]="!simpleFilter" >
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview"><a (click)="selectObject(item)">{{item.Name}}</a></d3s-tooltip>
-                            </template> 
+                            </ng-template> 
                         </p-column>
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  [filter]="!simpleFilter">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
-                            </template>
+                            </ng-template>
                         </p-column>        
                         <p-column></p-column>
                     </p-dataTable>   

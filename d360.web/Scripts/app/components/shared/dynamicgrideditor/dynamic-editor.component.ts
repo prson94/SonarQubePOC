@@ -14,7 +14,7 @@ import * as _ from 'lodash';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">                                        
                     <form (ngSubmit)="onSubmit()" [formGroup]="form">        
-                        <template ngFor let-category [ngForOf]="categories">
+                        <ng-template ngFor let-category [ngForOf]="categories">
                             <simple-accordion *ngIf="category.name" [header]="category.name" [active]="true">                
                                 <div class="row" *ngFor="let row of category.rows">                          
                                     <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
@@ -29,7 +29,7 @@ import * as _ from 'lodash';
                                 </div>
                             </div>
                             </span>
-                        </template>
+                        </ng-template>
                         <div *ngIf="hasIconFields && fore.Value == back.Value" class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">

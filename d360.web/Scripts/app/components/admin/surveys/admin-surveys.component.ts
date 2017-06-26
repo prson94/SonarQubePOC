@@ -24,12 +24,12 @@ import { SurveyType } from '../../../models/survey.model';
                                     <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>                                                                                        
                                     <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'60px'}">
-                                        <template let-survey="rowData" pTemplate type="body">
+                                        <ng-template let-survey="rowData" pTemplate type="body">
                                             <div class="RowTools">
                                                 <a style="cursor:pointer;" (click)="selected=survey;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                                 <a style="cursor:pointer;" (click)="selected=survey;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                                                                                    
                                 </p-dataTable>  
                             </span>

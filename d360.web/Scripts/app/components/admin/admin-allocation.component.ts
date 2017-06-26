@@ -7,9 +7,9 @@ import { BaseComponent } from '../shared/base.component';
     template: `
                <header>Allocations</header>                
                 <p-dataTable #dt [value]="allocations" selectionMode="single" expandableRows="true" [expandedRows]="rows">                        
-                    <template let-item>
+                    <ng-template let-item>
                         <d3s-admin-nym-allocations [objectType]="objectType" [objectID]="objectID"></d3s-admin-nym-allocations>
-                    </template>
+                    </ng-template>
                     <p-column expander="true" [style]="{ 'width':'25px', 'padding-left': '2px', 'padding-right': '2px', 'text-align' : 'center' }"></p-column>
                     <p-column field="Name" header="Name" sortable="true"></p-column>                    
                 </p-dataTable>

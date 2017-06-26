@@ -24,23 +24,23 @@ import { Title } from '@angular/platform-browser';
                                 <p-column field="Name" header="Name" [sortable]="true" [style]="{width : '150px' }" [filter]="!showSimpleFilter"></p-column>
                                 <p-column field="Action" header="Action" [sortable]="true"  [style]="{width : '100px' }" [filter]="!showSimpleFilter"></p-column>                            
                                 <p-column header="Description" sortable="true" [filter]="!showSimpleFilter">
-                                    <template let-col let-template="rowData" pTemplate type="body">
+                                    <ng-template let-col let-template="rowData" pTemplate type="body">
                                         <div [innerHtml]="template?.Description"></div>
-                                    </template>
+                                    </ng-template>
                                 </p-column>                             
                                 <p-column [style]="{width:'40px'}">
-                                    <template let-template="rowData" pTemplate type="body">
+                                    <ng-template let-template="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a (click)="selectedTemplate=template;isEditing=true;isDeleting=false;isAdding=false;" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
-                                    </template>
+                                    </ng-template>
                                 </p-column>                            
                                 <p-column  [style]="{width:'40px'}">
-                                    <template let-template="rowData" pTemplate type="body">
+                                    <ng-template let-template="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a (click)="selectedTemplate=template;isEditing=false;isDeleting=true;isAdding=false;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
-                                    </template>
+                                    </ng-template>
                                 </p-column>                            
                             </p-dataTable>
                         </span>

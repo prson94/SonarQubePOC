@@ -18,29 +18,29 @@ import { BaseComponent } from '../../shared/base.component';
                         <p-dataTable #dt [globalFilter]="gb" [value]="relationships" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)" (onRowDblclick)="selected=$event.data;selectedChange.emit(selected);showEditor=true;" >                            
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="SubjectName" header="Subject" sortable="true" [filter]="!showSimpleFilter">
-                                <template let-col let-item="rowData" pTemplate type="body">
+                                <ng-template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></span>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column field="PredicateName" header="Predicate" sortable="true" [filter]="!showSimpleFilter"></p-column>                                
                             <p-column field="ObjectName" header="Object" sortable="true" [filter]="!showSimpleFilter">
-                                <template let-col let-item="rowData" pTemplate type="body">
+                                <ng-template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></span>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column [style]="{width:'40px'}">
-                                <template let-relationship="rowData" pTemplate type="body">
+                                <ng-template let-relationship="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=relationship;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>                            
                             <p-column  [style]="{width:'40px'}">
-                                <template let-relationship="rowData" pTemplate type="body">
+                                <ng-template let-relationship="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
                                         <a style="cursor:pointer;" (click)="selected=relationship;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
-                               </template>
+                               </ng-template>
                            </p-column>    
                         </p-dataTable>  
                     </div>

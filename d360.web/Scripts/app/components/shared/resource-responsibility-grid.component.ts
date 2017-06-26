@@ -14,15 +14,15 @@ import { Router } from '@angular/router';
     <p-dataTable #dt [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
         <p-column header="Name" field="ObjectName" [filter]="!simpleFilter" sortable="true">
-            <template let-row="rowData" pTemplate type="body">
+            <ng-template let-row="rowData" pTemplate type="body">
                 <d3s-tooltip [objectType]="row.ObjectType" [objectId]="row.ObjectID" tooltipType="preview">{{row.ObjectName}}</d3s-tooltip>
-            </template>
+            </ng-template>
         </p-column>
         <p-column field="Role" header="Role" [filter]="!simpleFilter" sortable="true"></p-column>
         <p-column header="Current Score" sortable="true" field="CurrentScore">
-            <template let-row="rowData" pTemplate type="body">
+            <ng-template let-row="rowData" pTemplate type="body">
                 <div>{{row.CurrentScore | scoreDisplay }}</div>
-            </template>
+            </ng-template>
         </p-column>
     </p-dataTable>
 </div>

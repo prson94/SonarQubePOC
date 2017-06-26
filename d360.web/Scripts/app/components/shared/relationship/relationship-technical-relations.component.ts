@@ -17,31 +17,31 @@ import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
                     <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;openFusionItem();">                                                                                                  
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}">
-                             <template let-item="rowData" pTemplate type="body">
+                             <ng-template let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview"><a (click)="openFusionItem()">{{item.Name}}</a></d3s-tooltip>
-                            </template> 
+                            </ng-template> 
                         </p-column>                         
                         <p-column field="TypeName" header="Type" sortable="true" [style]="{'width':'250px'}"></p-column>            
                         <p-column [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" (click)="selected=item;openFusionItem()">                                
                                     <i class="fa fa-info"></i>
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>  
                         <p-column  [style]="{width:'28px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="hasEdit">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>                                                                           
                                     </div>
-                                </template>
+                                </ng-template>
                         </p-column>                   
                         <p-column  [style]="{width:'28px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="hasDelete">                                                    
                                         <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
-                                </template>
+                                </ng-template>
                         </p-column>           
                     </p-dataTable>
                     <div style="margin:15px" *ngIf="selected && selected.Object == 'FusionAttribute'">

@@ -21,35 +21,35 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion(selected);" >
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name"  sortable="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <a (click)="showFusion(item)">{{item.Name}}</a>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column field="FusionType" header="Type"  sortable="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>                            
                             <p-column field="Description" header="Description" [sortable]="false" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
-                                                <template let-item="rowData" pTemplate type="body">
+                                                <ng-template let-item="rowData" pTemplate type="body">
                                                     <span [innerHtml]="item.Description"></span>
-                                                </template>
+                                                </ng-template>
                             </p-column>
                             <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}" [filter]="!showSimpleFilter">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
                                     <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column [style]="{width:'30px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
                                         <d3s-tooltip objectType="Fusion" [objectId]="item.ID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>                                    
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column [style]="{width:'30px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" (click)="showFusionFilter=true;">                                
                                         <i class="fa fa-filter"></i>
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>
                         </p-dataTable>      
                     </span>

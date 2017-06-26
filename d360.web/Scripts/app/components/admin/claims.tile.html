@@ -7,15 +7,15 @@
     </div>
     <div *ngIf="!isLoading">
         <p-dataTable #dt [value]="claimItems" selectionMode="single" [rows]="20" [paginator]="true" expandableRows="true">                        
-            <template let-item>
+            <ng-template let-item pTemplate="rowexpansion">
                 <d3s-claims-matrix [objectType]="item.ObjectType" [objectID]="item.ObjectID" [responsibilityTypeID]="item.ResponsibilityTypeID" [readonly]="readonly"></d3s-claims-matrix>
-            </template>
+            </ng-template>
             <p-column expander="true" [style]="{ 'width':'25px', 'padding-left': '2px', 'padding-right': '2px', 'text-align' : 'center' }"></p-column>
             <p-column field="Name" header="Name" sortable="true"></p-column>
             <p-column header="Description" sortable="true">
-                <template let-col let-item="rowData" pTemplate type="body">
+                <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div [innerHtml]="item?.Description"></div>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
     </div>

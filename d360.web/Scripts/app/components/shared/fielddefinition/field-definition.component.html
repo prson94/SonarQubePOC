@@ -25,47 +25,47 @@
             <p-column field="Type" header="Type" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="IsRequired" header="Required?" sortable="true" [style]="{ 'width': '12%' }">
-                <template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsRequired" disabled />
-                </template>
+                </ng-template>
             </p-column>
             <p-column field="IsListable" header="Listable?" sortable="true" [style]="{ 'width': '12%' }">
-                <template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsListable" disabled />
-                </template>
+                </ng-template>
             </p-column>
             <p-column field="IsPartOfKey" header="Key?" sortable="true" [style]="{ 'width': '12%' }">
-                <template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsPartOfKey" disabled />
-                </template>
+                </ng-template>
             </p-column>
             <p-column [style]="{ 'width': '30px' }">
-                <template let-col let-item="rowData" pTemplate type="body">
+                <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
                         <a (click)="moveUp(item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>    
                     </div>
-                </template>
+                </ng-template>
             </p-column>
             <p-column [style]="{ 'width': '30px' }">
-                <template let-col let-item="rowData" pTemplate type="body">
+                <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
                         <a (click)="moveDown(item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
             <p-column [style]="{ 'width': '30px' }" *ngIf="showEditButton">
-                <template let-col let-item="rowData" pTemplate type="body">
+                <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
                         <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                        
                     </div>
-                </template>
+                </ng-template>
             </p-column>
             <p-column [style]="{ 'width': '30px' }" *ngIf="showDeleteButton">
-                <template let-col let-item="rowData" pTemplate type="body">
+                <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">                        
                         <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
     </div>

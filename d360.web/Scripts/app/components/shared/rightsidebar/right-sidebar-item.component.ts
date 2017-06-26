@@ -5,13 +5,13 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
     selector: 'd3s-right-sidebar-item',    
     template: ` <div class="right-side-item row center-align" (click)="active=!active;activeChange.emit(active);" [ngClass]="{'right-side-active':active}" [title]="title">                    
                     <i *ngIf="active" class="fa fa-times fa-lg"></i>
-                    <template [ngIf]="!active">
+                    <ng-template [ngIf]="!active">
                         <i *ngIf="activeIcons.length==1" [class]="'fa fa-lg ' + activeIcons[0]"></i>    
                         <span *ngIf="activeIcons.length>1" class="fa-stack fa-lg">
                             <i [class]="'fa ' + activeIcons[0] + ' fa-stack-2x'"></i>
                             <i [class]="'fa ' +  activeIcons[1] + ' fa-stack-1x'"></i>
                         </span>
-                    </template>                    
+                    </ng-template>
                 </div>
               `,
     changeDetection: ChangeDetectionStrategy.OnPush    

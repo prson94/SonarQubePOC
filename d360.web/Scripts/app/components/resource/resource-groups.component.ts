@@ -17,16 +17,16 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <p-dataTable #dt sortField="Name" [sortOrder]="1"  [value]="groups" selectionMode="single" (onRowDblclick)="doSelect($event.data)" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3">                    
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" [sortable]="true">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <a (click)="doSelect(item)">{{item.Name}}</a>
-                                </template>
+                                </ng-template>
                             </p-column>                                   
                             <p-column [style]="{ 'width': '30px' }">
-                                <template let-col let-item="rowData" pTemplate type="body">
+                                <ng-template let-col let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <d3s-tooltip objectType="Group" [objectId]="item.ID" tooltipType="preview"><a [routerLink]="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a></d3s-tooltip>                                        
                                     </div>
-                               </template>
+                               </ng-template>
                             </p-column>
                         </p-dataTable>                                          
                     </span>

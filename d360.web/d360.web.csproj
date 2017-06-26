@@ -480,6 +480,15 @@
     <Content Include="Content\primeng\v1.0.1\images\rating.png" />
     <Content Include="Content\primeng\v1.0.1\primeng.css" />
     <Content Include="Content\primeng\v1.0.1\primeng.min.css" />
+    <Content Include="Content\primeng\v4.1.0-rc2\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\v4.1.0-rc2\images\color.png" />
+    <Content Include="Content\primeng\v4.1.0-rc2\images\hue.png" />
+    <Content Include="Content\primeng\v4.1.0-rc2\images\line.gif" />
+    <Content Include="Content\primeng\v4.1.0-rc2\images\loading.gif" />
+    <Content Include="Content\primeng\v4.1.0-rc2\images\password-meter.png" />
+    <Content Include="Content\primeng\v4.1.0-rc2\primeng.css" />
+    <Content Include="Content\primeng\v4.1.0-rc2\primeng.min.css" />
+    <Content Include="Content\primeng\v4.1.0-rc2\theme.css" />
     <Content Include="Content\quill\quill.snow.css" />
     <Content Include="Content\quill\quill.snow.min.css" />
     <Content Include="Content\styles\ang.css" />
@@ -746,6 +755,10 @@
     <None Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
     </None>
+    <Content Include="Content\primeng\v4.1.0-rc2\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\v4.1.0-rc2\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\v4.1.0-rc2\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\v4.1.0-rc2\fonts\roboto-v15-latin-regular.woff2" />
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>
@@ -782,29 +795,6 @@
     <Content Include="Content\styles\img\hue.png" />
     <Content Include="Content\styles\img\saturation.png" />
     <None Include="Content\styles\Tooltip.less" />
-    <Content Include="node_modules\primeng\resources\images\loading.gif" />
-    <Content Include="node_modules\primeng\resources\images\password-meter.png" />
-    <Content Include="node_modules\primeng\resources\images\rating.png" />
-    <Content Include="node_modules\primeng\resources\primeng.css" />
-    <Content Include="node_modules\primeng\resources\primeng.min.css" />
-    <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.svg" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\icons_16.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\slider_handles%402x.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\slider_handles.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-bg_flat_0_aaaaaa_40x100.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-bg_flat_75_ffffff_40x100.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-bg_glass_55_fbf9ee_1x400.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-bg_glass_65_ffffff_1x400.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-bg_glass_75_dadada_1x400.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-bg_glass_75_e6e6e6_1x400.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-bg_glass_95_fef1ec_1x400.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_222222_256x240.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_2e83ff_256x240.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_454545_256x240.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="node_modules\primeng\resources\themes\omega\theme.css" />
     <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
@@ -825,10 +815,6 @@
     </Content>
     <Content Include="package.json" />
     <Content Include="Content\styles\_Variables.less" />
-    <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.eot" />
-    <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.ttf" />
-    <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.woff" />
-    <Content Include="node_modules\primeng\resources\themes\omega\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Content\styles\typeahead.less" />
     <Content Include="fonts\FontAwesome.otf" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
@@ -864,6 +850,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\version.json" />
+    <Content Include="Scripts\quill.min.js.map" />
     <None Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>

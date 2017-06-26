@@ -20,12 +20,12 @@ import { Permission } from '../../../models/permission.model'
                 </div>
                 <div *ngIf="!isLoading && hasRelationships" class="row">
                     <div class="col l3 s12 relationship-container">
-                        <template ngFor let-rel [ngForOf]="relationshipItems">                        
+                        <ng-template ngFor let-rel [ngForOf]="relationshipItems">                        
                             <div class="row relationship" *ngIf="(rel.Count > 0 && !showEmptyRelationshipTypes) || showEmptyRelationshipTypes" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;">
                                 <div class="col s10 name"><i class="fa inactive-tool-icon" [ngClass]="{'fa-book':rel.Object=='ArtifactType','fa-sitemap':rel.Object=='TaxonomyType','fa-university':rel.Object=='PolicyType','fa-database':rel.Object=='FusionAttributeType','fa-pie-chart':rel.Object=='RuleType', 'fa-user':rel.Object=='ResourceType', 'fa-list':rel.Object=='ReferenceItemType'}" [pTooltip]="rel.Object | technicalNameToDisplayValue"></i> {{rel.Name}}</div>
                                 <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
                             </div>                        
-                        </template>
+                        </ng-template>
                     </div>
                     <div class="col l9 s12">                        
                         <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetName]="selected?.Name" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID" [hasEdit]="hasRelationshipUpdatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-dynamic-relationship-grid>                        

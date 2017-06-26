@@ -24,23 +24,23 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         <p-column field="DateAccepted" header="Accepted On" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'120px'}"></p-column>
                         -->
                         <p-column [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <a (click)="openResource(item)">{{item.AcceptedByFirstName}} {{item.AcceptedByLastName}}</a>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column  [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>  
                 </span>

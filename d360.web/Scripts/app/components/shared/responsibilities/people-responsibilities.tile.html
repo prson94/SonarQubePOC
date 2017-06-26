@@ -15,33 +15,33 @@
                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column field="Role" header="Role" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="ResponsibleObjectName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <d3s-tooltip [objectType]="item.ResponsibleObjectType" [objectId]="item.ResponsibleObjectID" [tooltipType]="'Preview'">
                             <a (click)="navigate(item.ResponsibleObjectUrl)">{{item.ResponsibleObjectName}}</a>
                         </d3s-tooltip>
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column field="PrimaryOwnerResourceName" header="Group Owner" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <d3s-tooltip objectType="Resource" [objectId]="item.PrimaryOwnerResourceID" [tooltipType]="'Preview'">
                             <a (click)="navigate(item.PrimaryOwnerResourceUrl)">{{item.PrimaryOwnerResourceName}}</a>
                         </d3s-tooltip>
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column field="ContextItems" header="Context" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column [style]="{'width':'28px'}">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <div *ngIf="item.AssigningItemID == item.ObjectID && item.AssigningItemType == item.ObjectType" class="RowTools">
                             <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column [style]="{'width':'28px'}">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <div *ngIf="item.AssigningItemID == item.ObjectID && item.AssigningItemType == item.ObjectType"  class="RowTools">                            
                             <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>
             </p-dataTable>
         </div>

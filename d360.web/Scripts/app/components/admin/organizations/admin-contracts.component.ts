@@ -20,18 +20,18 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         <p-column field="Title" header="Title" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="ContractTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'220px'}"></p-column>
                         <p-column [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column  [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>  
                 </span>

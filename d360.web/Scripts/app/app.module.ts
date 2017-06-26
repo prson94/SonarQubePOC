@@ -4,6 +4,7 @@ import { AppComponent }   from './app.component';
 import { AppRoutingModule }        from './app.routes';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { COMPILER_PROVIDERS } from '@angular/compiler';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import {
     GrowlModule,    
@@ -35,6 +36,7 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
         BrowserModule,        
         AppRoutingModule,
         HttpModule,
+        BrowserAnimationsModule,
 
         // prime 
         GrowlModule,

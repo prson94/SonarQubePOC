@@ -14,12 +14,12 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
         <p-column field="@Operator" header="Operator"></p-column>
         <p-column field="@Value" header="Value"></p-column>
         <p-column *ngIf="!readonly">
-            <template let-item="rowData" pTemplate type="body">
+            <ng-template let-item="rowData" pTemplate type="body">
                 <div class="RowTools">
                     <a style="cursor:pointer;" (click)="removeClick.emit(item)"><i class="fa fa-trash"></i></a>
                     <!--<a style="cursor:pointer;" (click)="editClick.emit(item)"><i class="fa fa-pencil"></i></a>-->
                 </div>
-            </template>
+            </ng-template>
         </p-column>
     </p-dataTable>
 `

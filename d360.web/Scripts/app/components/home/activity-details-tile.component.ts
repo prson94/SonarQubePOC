@@ -20,34 +20,34 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter">
-                                <template let-col let-item="rowData" pTemplate type="body">
+                                <ng-template let-col let-item="rowData" pTemplate type="body">
                                     <a (click)="artifactLink(item.ArtifactTypeID, item.ID)">{{item.Name}}</a>
-                                </template>
+                                </ng-template>
                             </p-column>                                                                                                   
                             <p-column field="CreatedOn" header="Created" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}">
-                                <template let-col let-data="rowData" pTemplate type="body">
+                                <ng-template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.CreatedOn | date: 'short'}}</span>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column field="UpdatedOn" header="Updated" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}">
-                                <template let-col let-data="rowData" pTemplate type="body">
+                                <ng-template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.UpdatedOn | date: 'short'}}</span>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column field="Status" header="Status" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}"></p-column>
                             <p-column [style]="{width:'40px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [class]="certificateColor(item)"></d3s-tooltip>                                            
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column [style]="{width:'40px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" (click)="selectArtifact(item)" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>                                            
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>
                         </p-dataTable>      
                     </span>

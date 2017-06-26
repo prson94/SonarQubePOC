@@ -20,9 +20,9 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                                     <p-dataTable sortField="Name" sortOrder="1" [value]="workflows" selectionMode="single" [selection]="selected" (selectionChange)="selected=null;loadWorkflowItems($event)">
                                         <p-column field="Name" header="Name" [sortable]="true"></p-column>
                                         <p-column field="ChangeType" header="Change Type" [sortable]="true">
-                                            <template let-col let-workflow="rowData" pTemplate type="body">
+                                            <ng-template let-col let-workflow="rowData" pTemplate type="body">
                                                 <span>{{changeTypeText(workflow.ChangeType)}}</span>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                         <p-column field="ConditionText" header="Condition" [sortable]="true"></p-column>
                                         <p-column field="Version" header="Version" [sortable]="true"></p-column>
@@ -36,20 +36,20 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                                     <header>Workflow Items</header>
                                     <p-dataTable [value]="details" [rows]="10" paginator="true" selectionMode="single" (selectionChange)="selectedItem=$event;loadItemsDetails(selectedItem)">
                                         <p-column field="Name" header="Item" [sortable]="true">
-                                            <template let-item="rowData" pTemplate type="body">
+                                            <ng-template let-item="rowData" pTemplate type="body">
                                                 <a (click)="openItem(item.Url)">{{item.Name}}</a>
-                                            </template>
+                                            </ng-template>
                                         </p-column>  
                                         <p-column field="NumberOfEvents" header="Total Events" [sortable]="true"></p-column>                                      
                                         <p-column field="UpdatedOn" header="Updated" [sortable]="true">
-                                            <template let-col let-data="rowData" pTemplate type="body">
+                                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.UpdatedOn | date: 'shortDate'}}</span>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                         <p-column field="CompletedOn" header="Completed" [sortable]="true">
-                                            <template let-col let-data="rowData" pTemplate type="body">
+                                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.CompletedOn | date: 'shortDate'}}</span>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                     </p-dataTable>
                                 </div>
@@ -61,22 +61,22 @@ import { WorkflowListItem, WorkflowChangeType, WorkflowActivityType, StepType } 
                                     <header>Items Details</header>
                                     <p-dataTable [value]="itemdetails" selectionMode="single" scrollable="true" scrollWidth="100%">                                        
                                         <p-column field="Name" header="Step Name" [sortable]="true" [style]="{'width':'150px'}">
-                                            <template let-col let-data="rowData" pTemplate type="body">
+                                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                                 <span [title]="data.Settings">{{data.Name}}</span>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                         <p-column field="ActivityTypeString" header="Activity" [sortable]="true" [style]="{'width':'100px'}"></p-column>
                                         <p-column field="StepTypeString" header="Step" [sortable]="true" [style]="{'width':'100px'}"></p-column>
                                         <p-column field="UpdatedOn" header="Started" [sortable]="true" [style]="{'width':'100px'}">
-                                            <template let-col let-data="rowData" pTemplate type="body">
+                                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.StartedOn | date: 'shortDate'}}</span>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                         <p-column field="StartedBy" header="Started By" [sortable]="true" [style]="{'width':'100px'}"></p-column>
                                         <p-column field="CompletedOn" header="Completed" [sortable]="true" [style]="{'width':'100px'}">
-                                            <template let-col let-data="rowData" pTemplate type="body">
+                                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.CompletedOn | date: 'shortDate'}}</span>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                         <p-column field="CompletedBy" header="Completed By" [sortable]="true" [style]="{'width':'100px'}"></p-column>                                   
                                         <p-column field="ToStep" header="Next" [sortable]="true" [style]="{'width':'150px'}"></p-column>                                   

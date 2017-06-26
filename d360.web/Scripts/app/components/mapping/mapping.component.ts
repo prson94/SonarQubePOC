@@ -28,18 +28,18 @@ import { PermissionsService } from '../../services/permissions.service';
                             <p-column field="MapType" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="MapTypeDescription" header="Type Description" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column [style]="{width:'28px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>                            
                             <p-column  [style]="{width:'28px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>    
                         </p-dataTable>      
                     </span>

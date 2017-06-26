@@ -13,9 +13,9 @@ import { Count } from '../../models/counts.model';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <p-dataTable *ngIf="!isLoading && counts.length > 0"  sortField="Name" [sortOrder]="1" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect(selected)">                    
                         <p-column field="Name" header="Name" [sortable]="true">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                     <a (click)="doSelect(item)">{{item.Name}}</a>
-                            </template>
+                            </ng-template>
                         </p-column>                                                                           
                         <p-column field="Total" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>
                     </p-dataTable>   

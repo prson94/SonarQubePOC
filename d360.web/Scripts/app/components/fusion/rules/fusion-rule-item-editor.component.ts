@@ -18,9 +18,9 @@ import { TreeNode } from 'primeng/primeng';
                     <p-treeTable [value]="values | treeSearch: addItemSearch:'Name'" (onNodeExpand)="loadSubItems($event)">
                         <p-column header="Name" field="Name"></p-column>
                         <p-column [style]="{ 'width' : '30px' }">
-                            <template pTemplate type="body" let-row="rowData">
+                            <ng-template pTemplate type="body" let-row="rowData">
                                 <input type="checkbox" [ngModel]="row?.data?.selected" (ngModelChange)="row.data.selected = $event;selectInOriginalTree(row.data.ID,$event);" [disabled]="selectAllItems" />
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-treeTable>
                 </div>
@@ -36,9 +36,9 @@ import { TreeNode } from 'primeng/primeng';
         <p-dataTable #dtItems [value]="queryValues" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
             <footer *ngIf="dtItems.totalRecords"><d3s-grid-paging-info [totalRecords]="dtItems.totalRecords" [first]="dtItems.first" [rows]="dtItems.rows"></d3s-grid-paging-info></footer>
             <p-column header="" field="selected" sortable="false" [style]="{width:'10%'}">
-                <template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.selected" [disabled]="selectAllItems" />
-                </template>
+                </ng-template>
             </p-column>
             <p-column header="Name" field="friendlyName" sortable="true" [style]="{width:'90%'}"></p-column>
         </p-dataTable>

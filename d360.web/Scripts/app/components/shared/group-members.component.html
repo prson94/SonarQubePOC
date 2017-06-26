@@ -14,12 +14,12 @@
                 <p-column field="FirstName" header="First Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="Owner" header="Owner" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column [style]="{ 'width': '20%' }">
-                    <template let-col let-item="rowData" pTemplate type="body">
+                    <ng-template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <d3s-tooltip [objectType]="'Resource'" [objectId]="item.ResourceID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>
                             <a (click)="delete(item.ResourceID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>
             </p-dataTable>
         </div>

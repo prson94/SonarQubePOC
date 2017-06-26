@@ -8,14 +8,14 @@
             <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selectedRow">
                 <p-column field="Name" header="Name" [style]="{ 'width': '60%' }"></p-column>
                 <p-column>
-                    <template let-col let-item="rowData" pTemplate type="body">
+                    <ng-template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a style="cursor:pointer;" (click)="add(item.data.ID)"><i class="fa fa-plus"></i></a>
                             <a style="cursor:pointer;" (click)="edit(item.data.ID)"><i class="fa fa-pencil"></i></a>
                             <a style="cursor:pointer;" (click)="delete(item.data.ID)"><i class="fa fa-trash-o"></i></a>
                             <d3s-tooltip objectType="ArtifactType" [objectId]="item.data.ID" tooltipType="preview"><a (click)="navigate(item.data)" style="cursor:pointer;"><i class="fa fa-info"></i></a></d3s-tooltip>
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>
             </p-treeTable>
         </div>        

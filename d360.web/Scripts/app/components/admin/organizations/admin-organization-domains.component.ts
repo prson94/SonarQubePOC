@@ -18,18 +18,18 @@ import { BaseComponent } from '../../shared/base.component';
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Domain" header="Domain" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column  [style]="{width:'40px'}">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>  
                 </span>

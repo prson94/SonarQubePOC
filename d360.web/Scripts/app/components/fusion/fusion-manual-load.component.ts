@@ -24,11 +24,11 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         <h4 style="margin-top:20px;margin-bottom:5px;">Upload Data from a spreadsheet</h4>
                                         <p-fileUpload name="file" [url]="fileUploadUrl()" (onUpload)="onUpload($event)" 
                                                 multiple="multiple" accept=".xls,.xlsx" maxFileSize="10000000">
-                                            <template pTemplate type="content">
+                                            <ng-template pTemplate type="content">
                                                 <ul *ngIf="uploadedFiles.length">
                                                     <li *ngFor="let file of uploadedFiles">{{file.name}} - {{file.size}} bytes</li>
                                                 </ul>
-                                            </template>        
+                                            </ng-template>        
                                         </p-fileUpload>
                                         <em>To see the progress of your upload view the <a (click)="goToFusion()" style="cursor:pointer">Execution Status</a> area of Fusion or click the History tab to the right.</em>
                                     </div>

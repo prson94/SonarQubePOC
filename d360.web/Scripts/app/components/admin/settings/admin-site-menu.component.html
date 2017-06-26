@@ -7,19 +7,19 @@
         </header>
         <p-dataTable [value]="companySettings.SiteNav" selectionMode="single" [(selection)]="selection">
             <p-column field="Title" header="Name">
-                <template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate type="body">
                     <i [class]="'fa '+ item.Icon"></i>&nbsp;&nbsp;{{item.Title}}
-                </template>
+                </ng-template>
             </p-column>
             <p-column header="">
-                <template let-col let-item="rowData" pTemplate type="body">
+                <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
                         <a *ngIf="item.IsCustom" (click)="delete(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         <a (click)="moveUp(item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
                         <a (click)="moveDown(item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
     </div>
@@ -45,11 +45,11 @@
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Title" header="Available Folder Items"></p-column>
                         <p-column>
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" style="height: initial;">
                                     <a (click)="addFolderItem(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>
                 </div>
@@ -57,11 +57,11 @@
                     <p-dataTable [value]="folderItems" [rows]="10" [paginator]="true" selectionMode="single">
                         <p-column field="Name" header="Existing Folder Items"></p-column>
                         <p-column>
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" style="height: initial;">
                                     <a (click)="deleteFolderItem(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>
                 </div>
@@ -112,11 +112,11 @@
                     <p-dataTable [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
                         <p-column field="Title" header="Available Folder Items"></p-column>
                         <p-column>
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" style="height: initial;">
                                     <a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>
                 </div>
@@ -124,11 +124,11 @@
                     <p-dataTable [value]="newFolderItems" [rows]="10" [paginator]="true" selectionMode="single">
                         <p-column field="Name" header="Folder Items"></p-column>
                         <p-column>
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" style="height: initial;">
                                     <a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>
                 </div>

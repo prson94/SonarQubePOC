@@ -25,19 +25,19 @@ import * as _ from 'lodash';
                             <p-dataTable #dt sortField="PolicyTypeClass" sortOrder="1" [globalFilter]="gb"  [value]="policies" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showPolicyType(selected);" >
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                 <p-column field="PolicyTypeClass" [hidden]="policyTypeClassificationId" header="Classification" sortable="true" [style]="{width:'200px'}"  [filter]="!showSimpleFilter">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                             <a (click)="showPolicyTypeClass(item)">{{item.PolicyTypeClass}}</a>
-                                    </template>
+                                    </ng-template>
                                 </p-column>
                                 <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'200px'}" [filter]="!showSimpleFilter">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                             <a (click)="showPolicyType(item)">{{item.Name}}</a>
-                                    </template>
+                                    </ng-template>
                                 </p-column>                                                                                                                                                        
                                 <p-column field="Description" header="Description" sortable="true" [style]="{width:'500px'}"  [filter]="!showSimpleFilter">
-                                    <template let-col let-data="rowData" pTemplate type="body">
+                                    <ng-template let-col let-data="rowData" pTemplate type="body">
                                         <span [innerHtml]="data?.Description"></span>
-                                    </template>                                                        
+                                    </ng-template>                                                        
                                 </p-column>                              
                             </p-dataTable>      
                         </div>

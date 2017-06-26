@@ -7,7 +7,7 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../
     template: ` 
                 <form (ngSubmit)="onSubmit()" #filterForm="ngForm">
                     <div class="row">
-                        <template ngFor let-field [ngForOf]="fields">                                                
+                        <ng-template ngFor let-field [ngForOf]="fields">                                                
                             <div [ngSwitch]="field.columntype" class="col s3">                                                
                                 <div class="row">
                                     <div class="col s12 FieldName">{{field.text}}</div>
@@ -19,7 +19,7 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../
                                     </div>
                                 </div>
                             </div>
-                        </template>
+                        </ng-template>
                         <div class="col s3 buttons">
                             <div class="row">
                                 <div class="col s12">&nbsp;</div>

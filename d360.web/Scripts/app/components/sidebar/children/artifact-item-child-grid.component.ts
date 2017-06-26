@@ -19,14 +19,14 @@ import { StringConstants } from '../../../static/string-constants';
                         <p-dataTable #dt lazy="true" [totalRecords]="artifacts?.total" [value]="artifacts?.results" selectionMode="single" [rows]="numberOfRows" paginator="true" pageLinks="3" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" sortable="true"  [style]="{'width':'250px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="preview"><a (click)="selectArtifact(item)">{{item.Name}}</a></d3s-tooltip>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
-                                </template>
+                                </ng-template>
                             </p-column>                        
                         </p-dataTable>                   
                     </span>

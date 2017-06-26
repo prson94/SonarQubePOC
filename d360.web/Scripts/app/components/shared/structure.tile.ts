@@ -28,11 +28,11 @@ import { FormHelper } from '../../models/form.model';
                         <div class="col s12 m6">
                             <p-treeTable [value]="items" selectionMode="single" [(selection)]="selectedRow" (onNodeSelect)="selectRow()">
                                 <p-column>
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                             <div class="row-item">
                                                 <span [style.color]="((item.data.Level > 0) ? (item.data.ObjectID == objectID && item.data.Object == objectType) : (item.data.SubjectID == objectID && item.data.Subject == objectType)) ? '#00C' : '#000'" >{{item.data.Name}}</span>&nbsp;&nbsp;<span class="item-type">{{item.data.ObjectTypeName}}</span>
                                             </div>
-                                    </template>
+                                    </ng-template>
                                 </p-column>
                             </p-treeTable>
                         </div>

@@ -26,10 +26,10 @@ import { Resource } from '../../models/resource.model';
                         <div>{{issue?.ResourceName}}</div>                        
                         <div class="FieldName">Date</div>
                         <div>{{issue?.DateStarted | date: 'fullDate'}}</div>
-                        <template ngFor let-field [ngForOf]="issueDetails?.Fields">
+                        <ng-template ngFor let-field [ngForOf]="issueDetails?.Fields">
                             <div class="FieldName">{{field.FieldName}}</div>
                             <div [innerHtml]="field.Value"></div>
-                        </template>
+                        </ng-template>
                     </div>
                     <div class="col s12 l6">      
                         <div id="PoolMessage">

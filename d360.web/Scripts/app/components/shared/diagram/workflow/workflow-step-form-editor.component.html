@@ -79,11 +79,11 @@
             <p-column field="@label" header="Label"></p-column>
             <p-column field="@type" header="Type"></p-column>
             <p-column>
-                <template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
                         <a style="cursor:pointer;" (click)="remove(item)"><i class="fa fa-trash"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
     </div>

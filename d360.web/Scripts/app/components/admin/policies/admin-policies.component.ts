@@ -27,18 +27,18 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                                     <p-column field="PolicyTypeClass" header="Classification" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                                               
                                     <p-column field="MaximumDepth" header="Max Depth" sortable="true"  [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column [style]="{width:'40px'}">
-                                        <template let-policy="rowData"  pTemplate type="body">
+                                        <ng-template let-policy="rowData"  pTemplate type="body">
                                             <div class="RowTools">
                                                 <a style="cursor:pointer;" (click)="selected=policy;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                     <p-column  [style]="{width:'40px'}">
-                                        <template let-policy="rowData" pTemplate type="body">
+                                        <ng-template let-policy="rowData" pTemplate type="body">
                                             <div class="RowTools">                                
                                                 <a style="cursor:pointer;" (click)="selected=policy;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>    
                                 </p-dataTable>      
                             </span>

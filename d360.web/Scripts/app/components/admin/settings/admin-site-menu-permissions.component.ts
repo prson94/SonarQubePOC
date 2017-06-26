@@ -27,11 +27,11 @@ import { FormMode } from '../../../models/form.model';
                     <p-dataTable [value]="siteNav.Permissions" selectionMode="single">
                         <p-column field="Name" header="Permissions"></p-column>
                         <p-column [style]="{'width': '35px'}">
-                            <template let-item="rowData" let-i="index" pTemplate type="body">
+                            <ng-template let-item="rowData" let-i="index" pTemplate type="body">
                                 <div class="RowTools">
                                     <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>
                 </div>

@@ -17,18 +17,18 @@
                         <p-dataTable scrollable="true" scrollWidth="100%" [value]="items">
                             <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>
                             <p-column field="Name" header="Name">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
                                         <a style="cursor:pointer;" (click)="navigate(item)">{{item.Name}}</a>
                                     </d3s-tooltip>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column [style]="{width:'35px'}">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>
                         </p-dataTable>
                     </div>

@@ -47,22 +47,22 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <p-dataTable #dt [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="details?.ItemSteps" selectionMode="single">                    
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                 <p-column field="StepName" header="Step Name" sortable="false">
-                                    <template let-itemStep="rowData" pTemplate type="body">
+                                    <ng-template let-itemStep="rowData" pTemplate type="body">
                                         <span *ngIf="itemStep.CompletedOn">{{itemStep.StepName}}</span>
                                         <span *ngIf="!itemStep.CompletedOn && itemStep.ActivityType =='Form'"><a (click)="showForm(itemStep)">{{itemStep.StepName}}</a></span>
-                                    </template>
+                                    </ng-template>
                                 </p-column>
                                 <p-column field="StepType" header="Step Type" sortable="false"></p-column>
                                 <p-column field="ActivityType" header="Activity Type" sortable="false"></p-column>
                                 <p-column field="StartedOn" header="Date Started" sortable="true">
-                                    <template let-itemStep="rowData" pTemplate type="body">
+                                    <ng-template let-itemStep="rowData" pTemplate type="body">
                                         <span>{{itemStep.StartedOn | date:'shortDate'}}</span>
-                                    </template>
+                                    </ng-template>
                                 </p-column>
                                 <p-column field="CompletedOn" header="Date Completed" sortable="true">
-                                    <template let-itemStep="rowData" pTemplate type="body">
+                                    <ng-template let-itemStep="rowData" pTemplate type="body">
                                         <span>{{itemStep.CompletedOn | date:'shortDate'}}</span>
-                                    </template>
+                                    </ng-template>
                                 </p-column>
                             </p-dataTable>       
                         </div>

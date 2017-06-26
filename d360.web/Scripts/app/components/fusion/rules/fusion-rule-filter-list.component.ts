@@ -14,12 +14,12 @@ import { FusionRule, FusionRuleFilter } from '../../../models/fusion.model';
             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
             <p-column header="Filter Name" field="Name"></p-column>
             <p-column header="">
-                <template pTemplate type="body" let-row="rowData">
+                <ng-template pTemplate type="body" let-row="rowData">
                     <div class="RowTools">
                         <a (click)="edit(row);"><i class="fa fa-pencil"></i></a>
                         <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
     </div>

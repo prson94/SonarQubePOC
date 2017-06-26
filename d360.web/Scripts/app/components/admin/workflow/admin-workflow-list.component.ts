@@ -19,20 +19,20 @@ import { WorkflowService } from '../../../services/workflow.service';
     <p-column field="Type" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
     <p-column field="ChangeTypeName" header="Change Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
     <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter">
-        <template let-item="rowData" pTemplate type="body">
+        <ng-template let-item="rowData" pTemplate type="body">
             <span>{{item.UpdatedOn | date:'shortDate'}}</span>
-        </template>
+        </ng-template>
     </p-column> 
     <p-column field="UpdatedBy" header="Updated By" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
   <p-column field="Published" header="Status" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
     <p-column [style]="{width:'150px'}">
-        <template let-item="rowData" pTemplate type="body">
+        <ng-template let-item="rowData" pTemplate type="body">
             <div class="RowTools">
                 <a style="cursor:pointer;" (click)="onEditClick.emit(item.ID)"><i class="fa fa-pencil"></i></a>    
                 <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.ID)"><i class="fa fa-trash-o"></i></a>    
                 <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>                                        
             </div>
-        </template>
+        </ng-template>
     </p-column>                                                      
     </p-dataTable>      
 </div>

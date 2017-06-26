@@ -41,18 +41,18 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                                     <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
                                     <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
                                     <p-column [style]="{width:'40px'}">
-                                        <template let-model="rowData" pTemplate type="body">
+                                        <ng-template let-model="rowData" pTemplate type="body">
                                             <div class="RowTools">
                                                 <a style="cursor:pointer;" (click)="selectedTaxonomy=model;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                     <p-column  [style]="{width:'40px'}">
-                                        <template let-model="rowData" pTemplate type="body">
+                                        <ng-template let-model="rowData" pTemplate type="body">
                                             <div class="RowTools">                                
                                                 <a style="cursor:pointer;" (click)="selectedTaxonomy=model;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                 </p-dataTable>
                             </span>                            

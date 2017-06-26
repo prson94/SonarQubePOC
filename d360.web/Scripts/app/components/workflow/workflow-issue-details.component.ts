@@ -14,43 +14,43 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="issues" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="openIssue($event.data);" >
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
-                            <template let-col let-data="rowData" pTemplate type="body">
+                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                 <a (click)="openIssue(data)" *ngIf="data.WorkflowItemID > 0">{{data.ActivityName}}</a>
                                 <span *ngIf="!data.WorkflowItemID || data.WorkflowItemID <= 0">{{data.ActivityName}}</span>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column field="CriticalityName" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'150px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="Issue" header="Description" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
-                            <template let-col let-issue="rowData" pTemplate type="body">
+                            <ng-template let-col let-issue="rowData" pTemplate type="body">
                                 <span [innerHtml]="issue?.Issue"></span>
-                            </template>
+                            </ng-template>
                         </p-column>             
                         <p-column field="ObjectName" header="Item Name">
-                            <template let-col let-issue="rowData" pTemplate type="body">
+                            <ng-template let-col let-issue="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID" tooltipType="preview">{{issue.ObjectName}}</d3s-tooltip>
-                            </template>
+                            </ng-template>
                         </p-column>           
                         <p-column field="ResourceName" header="Reported By" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="DateStarted" header="Created" sortable="true"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
-                            <template let-col let-data="rowData" pTemplate type="body">
+                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DateStarted | date: 'shortDate'}}</span>
-                            </template>
+                            </ng-template>
                         </p-column>                        
                         <p-column field="EllapsedDays" header="Days Open" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
-                            <template let-issue="rowData" pTemplate type="body">
+                            <ng-template let-issue="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="issue.Activity > 0">                                
                                     <a style="cursor:pointer;" (click)="openIssue(issue)"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>
-                            </template>
+                            </ng-template>
                         </p-column>    
                         <p-column [style]="{width:'28px'}">
-                                <template let-data="rowData" pTemplate type="body">
+                                <ng-template let-data="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <d3s-tooltip objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><i class="fa fa-info" aria-hidden="true"></i></d3s-tooltip>
                                     </div>
-                                </template>
+                                </ng-template>
                             </p-column>                        
                     </p-dataTable>   
                 </div>

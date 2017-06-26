@@ -29,28 +29,28 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                 <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
                 <p-column field="AdministratorEmail" header="Administrator Email"></p-column>
                 <p-column field="DateAccepted" header="Accepted On">
-                    <template pTemplate type="body" let-item="rowData">
+                    <ng-template pTemplate type="body" let-item="rowData">
                         {{ item.DateAccepted | date: 'short' }}
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column field="AcceptedBy" header="Accepted By">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <a (click)="openResource(item)">{{item.AcceptedByName}}</a>
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column [style]="{width:'40px'}">
-                    <template let-item="rowData"  pTemplate type="body">
+                    <ng-template let-item="rowData"  pTemplate type="body">
                         <div class="RowTools">
                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column  [style]="{width:'40px'}">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>
             </p-dataTable>
         </span>

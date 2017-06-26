@@ -9,9 +9,9 @@
                 <p-column field="Action" header="Action" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="ObjectName" header="Target" sortable="true" [style]="{ 'width': '40%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="DateCompleted" header="Date Completed" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         {{item.DateCompleted | date:'short'}}
-                    </template>
+                    </ng-template>
                 </p-column>
             </p-dataTable>
         </div>
@@ -23,14 +23,14 @@
             </div>
         </div>
         <div *ngSwitchDefault>
-            <template [ngIf]="selectedRow">
+            <ng-template [ngIf]="selectedRow">
                 <div class="tile tile-detail">
                     <object-detail #objectDetails [objectType]="objectType" [objectID]="selectedRow?.ID"></object-detail>
                 </div>
                 <div class="tile tile-detail">
                     <d3s-bulk-load-item [id]="selectedRow?.ID" (refreshClick)="objectDetails.load()"></d3s-bulk-load-item>
                 </div>
-            </template>
+            </ng-template>
         </div>
     </div>
 </div>

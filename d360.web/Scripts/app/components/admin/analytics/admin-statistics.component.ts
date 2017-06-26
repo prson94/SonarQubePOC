@@ -40,18 +40,18 @@ import { Title } from '@angular/platform-browser';
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'40px'}">
-                                        <template let-analytic="rowData" pTemplate type="body">
+                                        <ng-template let-analytic="rowData" pTemplate type="body">
                                             <div class="RowTools">
                                                 <a style="cursor:pointer;" (click)="selectedType=analytic;showTypeEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                     <p-column  [style]="{width:'40px'}">
-                                        <template let-analytic="rowData" pTemplate type="body">
+                                        <ng-template let-analytic="rowData" pTemplate type="body">
                                             <div class="RowTools">                                
                                                 <a style="cursor:pointer;" (click)="selectedType=analytic;showTypeDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>    
                                 </p-dataTable>      
                             </span>                            
@@ -82,23 +82,23 @@ import { Title } from '@angular/platform-browser';
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="ObjectName" header="Object Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
-                                        <template pTemplate type="body" let-item="rowData">
+                                        <ng-template pTemplate type="body" let-item="rowData">
                                             <span class="truncate">{{item?.Description}}</span>
-                                        </template>
+                                        </ng-template>
                                     </p-column>
                                     <p-column [style]="{width:'40px'}">
-                                        <template let-metric="rowData" pTemplate type="body">
+                                        <ng-template let-metric="rowData" pTemplate type="body">
                                             <div class="RowTools">
                                                 <a style="cursor:pointer;" (click)="selectedMetric=metric;showMetricEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                     <p-column  [style]="{width:'40px'}">
-                                        <template let-metric="rowData" pTemplate type="body">
+                                        <ng-template let-metric="rowData" pTemplate type="body">
                                             <div class="RowTools">                                
                                                 <a style="cursor:pointer;" (click)="selectedMetric=metric;showMetricDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>    
                                 </p-dataTable>      
                             </span> 

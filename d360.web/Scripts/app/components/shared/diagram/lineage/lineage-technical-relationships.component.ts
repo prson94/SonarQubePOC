@@ -11,10 +11,10 @@ import { BaseComponent } from '../../base.component';
             <p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column field="ObjectName" header="Name">
-                    <template let-item="rowData" pTemplate type="body">
+                    <ng-template let-item="rowData" pTemplate type="body">
                         <div class="cell-value-name">{{item.ObjectName}}</div>
                         <div class="cell-value-type">{{item.ObjectTypeName}}</div>
-                    </template>
+                    </ng-template>
                 </p-column>
             </p-dataTable>
         </div>

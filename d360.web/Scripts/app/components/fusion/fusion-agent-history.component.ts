@@ -18,25 +18,25 @@ import * as _ from 'lodash';
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="FusionType" header="Type" sortable="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Fusion" header="Configuration" sortable="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <a (click)="showFusion(item)">{{item.Fusion}}</a>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column field="DateStarted" header="Started" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                <template let-col let-data="rowData" pTemplate type="body">
+                                <ng-template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateStarted | date: 'short'}}</span>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column field="DateCompleted" header="Completed" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                <template let-col let-data="rowData" pTemplate type="body">
+                                <ng-template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateCompleted | date: 'short'}}</span>
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column field="Success" header="Success" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <i *ngIf="item.Success" class="fa fa-check enabled" title="Success"></i>
                                     <i *ngIf="!item.Success && item.DateCompleted" class="fa fa-times disabled" title="Failure"></i>
-                                </template>
+                                </ng-template>
                             </p-column>
                         </p-dataTable>      
                     </span>

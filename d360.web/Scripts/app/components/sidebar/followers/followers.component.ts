@@ -19,15 +19,15 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                                 <p-dataTable #dt sortField="FollowerLastName" sortOrder="1" [globalFilter]="gb" [value]="items" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" selectionMode="single">
                                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                     <p-column field="FollowerLastName" header="Last Name" sortable="true">
-                                        <template let-item="rowData" pTemplate type="body">
+                                        <ng-template let-item="rowData" pTemplate type="body">
                                                 <a (click)="doSelect(item)">{{item.FollowerLastName}}</a>
-                                            </template>
+                                            </ng-template>
                                     </p-column>
                                     <p-column field="FollowerFirstName" header="First Name" sortable="true"></p-column>
                                     <p-column [style]="{'width':'28px'}" >
-                                        <template let-item="rowData" pTemplate type="body">
+                                        <ng-template let-item="rowData" pTemplate type="body">
                                             <d3s-tooltip objectType="Resource" [objectId]="item.ResourceID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>
-                                        </template> 
+                                        </ng-template> 
                                     </p-column>     
                                 </p-dataTable>
                             </span>

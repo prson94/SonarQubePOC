@@ -18,11 +18,11 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 (completeMethod)="search($event)"                              
                                 placeholder="Search Data3Sixty"                                
                                 (onSelect)="selectItem()">                       
-                            <template let-result>
+                            <ng-template let-result>
                                 <div style="padding:5px 0;">                                
                                     <div class="tt-suggestion tt-selectable"><span style="color:#999;">{{result.Type}}:</span> {{result.DisplayName}}</div>
                                 </div>                            
-                            </template>
+                            </ng-template>
                         </p-autoComplete>
                     </div>
                 <span>`,

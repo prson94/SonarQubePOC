@@ -14,11 +14,11 @@ import { FusionRule, FusionRuleItem } from '../../../models/fusion.model';
             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
             <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
             <p-column header="">
-                <template pTemplate type="body" let-row="rowData">
+                <ng-template pTemplate type="body" let-row="rowData">
                     <div class="RowTools" *ngIf="hasAdd">
                         <a (click)="delete(row);"><i class="fa fa-trash-o"></i></a>
                     </div>
-                </template>
+                </ng-template>
             </p-column>
         </p-dataTable>
     </div>

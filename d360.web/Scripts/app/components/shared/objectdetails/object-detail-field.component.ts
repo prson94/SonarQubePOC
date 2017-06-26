@@ -13,7 +13,7 @@ import { Router } from '@angular/router';
                     </d3s-tooltip>
                 </div>
             </div>            
-            <template [ngIf]="!field.Values || field.Values.length == 0">
+            <ng-template [ngIf]="!field.Values || field.Values.length == 0">
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name == 'Email'" class="FieldDisplayContent"><a [href]="'mailto:' + field.Value">{{field.Value}}</a></div>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'date'" class="FieldDisplayContent" [innerHtml]="field.Value | date:'shortDate'"></div>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date'" class="FieldDisplayContent" [innerHtml]="field.Value"></div>
@@ -25,7 +25,7 @@ import { Router } from '@angular/router';
                 <div *ngIf="field.Type == DetailFieldType.Lookup">
                     <d3s-dynamic-lookup-grid *ngIf="field.Data && field.Data.Values && field.Data.Values.length > 0" [data]="field.Data" [hideHeader]="field.HideHeader" [hideFooter]="field.HideFooter" [hideFilter]="field.HideFilter"></d3s-dynamic-lookup-grid>
                 </div>
-            </template>
+            </ng-template>
     `
 })
 

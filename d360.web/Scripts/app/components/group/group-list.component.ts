@@ -25,18 +25,18 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     <p-dataTable  #dt sortField="Name" sortOrder="1" [globalFilter]="gb" [value]="groups" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showGroup(selected);" >
                                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                         <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'60%'}" [filter]="!showSimpleFilter">
-                                            <template let-item="rowData" pTemplate type="body">
+                                            <ng-template let-item="rowData" pTemplate type="body">
                                                 <a (click)="showGroup(item)">{{item.Name}}</a>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                         <p-column field="ID" header="ID" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                
                                         <p-column field="NumberOfMembers" header="Member Count" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
                                         <p-column [style]="{ 'width': '30px' }">
-                                            <template let-col let-item="rowData" pTemplate type="body">
+                                            <ng-template let-col let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
                                                     <a [routerLink]="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                                                 </div>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                     </p-dataTable>      
                                 </div>

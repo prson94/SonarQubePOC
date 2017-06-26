@@ -21,17 +21,17 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="items" selectionMode="single">
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                 <p-column field="ObjectName" header="Name" sortable="true" [filter]="!showSimpleFilter">
-                                    <template let-col let-item="rowData" pTemplate type="body">
+                                    <ng-template let-col let-item="rowData" pTemplate type="body">
                                         <a (click)="open(item)"><d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.ObjectName}}</d3s-tooltip></a>
-                                    </template>
+                                    </ng-template>
                                 </p-column>
                                 <p-column field="StepName" header="Step" sortable="true" [filter]="!showSimpleFilter"></p-column>                                
                                 <p-column field="Object" header="Object" sortable="true" [filter]="!showSimpleFilter"></p-column>
                                 <p-column field="TypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"></p-column>
                                 <p-column field="StartedOn" header="Started On" sortable="true" [filter]="!showSimpleFilter">
-                                    <template let-col let-data="rowData" pTemplate type="body">
+                                    <ng-template let-col let-data="rowData" pTemplate type="body">
                                         <span>{{data.StartedOn | date: 'shortDate'}}</span>
-                                    </template>
+                                    </ng-template>
                                 </p-column>
                                 <p-column field="StartedBy" header="Started By" sortable="true"></p-column>                                
                             </p-dataTable>       

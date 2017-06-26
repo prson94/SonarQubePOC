@@ -19,15 +19,15 @@ import { FormMode } from '../../models/form.model';
             <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 300px;display:inline-block;" *ngIf="formMode == FormMode.Default">   
             <p-treeTable *ngIf="formMode == FormMode.Default" [value]="technicalMappingsTree|treeSearch: searchValue: searchField" selectionMode="single" [(selection)]="selected">
             <p-column header="Group">
-                <template let-row="rowData" pTemplate type="body">
+                <ng-template let-row="rowData" pTemplate type="body">
                     <div *ngIf="row.data.ID != 0">{{row.data.ID}}</div>
                     <div *ngIf="row.data.ID == 0">NONE</div>
-                </template>
+                </ng-template>
             </p-column>
                 <p-column header="Transformation" field="Transformation">
-                    <template pTemplate type="body" let-item="rowData">
+                    <ng-template pTemplate type="body" let-item="rowData">
                         <div [innerHtml]="item.data.Transformation"></div> 
-                    </template>
+                    </ng-template>
                 </p-column>
                 <p-column header="Source Object" field="SourceObjectName"></p-column>
                 <p-column header="Source Configuration" field="SourceFusion"></p-column>
@@ -36,13 +36,13 @@ import { FormMode } from '../../models/form.model';
                 <p-column header="Target Configuration" field="TargetFusion"></p-column>
                 <p-column header="Target Attribute" field="TargetFusionAttributeTextPath"></p-column>
                 <p-column header="">
-                    <template pTemplate type="body" let-row="rowData">
+                    <ng-template pTemplate type="body" let-row="rowData">
                         <div class="RowTools">
                             <a *ngIf="row.data.ParentTextID == null" style="cursor: pointer" (click)="add(row)"><i class="fa fa-plus"></i></a>
                             <a style="cursor: pointer"><i class="fa fa-pencil" (click)="edit(row)"></i></a>
                             <a style="cursor: pointer"><i class="fa fa-trash-o" (click)="delete(row)"></i></a>
                         </div>
-                    </template>
+                    </ng-template>
                 </p-column>
             </p-treeTable>
             <div *ngIf="formMode == FormMode.Editing" class="row">

@@ -26,18 +26,18 @@ import { Title } from '@angular/platform-browser';
                                     <p-column field="ID" header="ID" [sortable]="true"></p-column>                                                            
                                     <p-column field="Name" header="Name" [sortable]="true"></p-column>                            
                                     <p-column [style]="{width:'40px'}">
-                                        <template let-lookup="rowData" pTemplate type="body">
+                                        <ng-template let-lookup="rowData" pTemplate type="body">
                                             <div class="RowTools">
                                                 <a style="cursor:pointer;" (click)="selectedLookup=lookup;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                     <p-column  [style]="{width:'40px'}">
-                                        <template let-lookup="rowData" pTemplate type="body">
+                                        <ng-template let-lookup="rowData" pTemplate type="body">
                                             <div class="RowTools">                                
                                                 <a style="cursor:pointer;" (click)="selectedLookup=lookup;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                             </div>
-                                        </template>
+                                        </ng-template>
                                     </p-column>                            
                                 </p-dataTable>  
                             </span> 

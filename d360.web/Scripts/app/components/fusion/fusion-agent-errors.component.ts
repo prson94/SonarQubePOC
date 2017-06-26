@@ -16,9 +16,9 @@ import { FusionAgentError } from '../../models/fusion.model';
                         <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'150px'}"></p-column>                        
                         <p-column field="Fusion" header="Configuration" [sortable]="true" [style]="{width:'150px'}"></p-column>                        
                         <p-column field="Date" header="Date" [sortable]="true" [style]="{width:'150px'}">
-                            <template let-col let-data="rowData" pTemplate type="body">
+                            <ng-template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.Date | date: 'short'}}</span>
-                            </template>
+                            </ng-template>
                         </p-column>                        
                         <p-column field="MachineName" header="Host" [sortable]="true" [style]="{width:'150px'}"></p-column> 
                     </p-dataTable>      

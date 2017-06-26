@@ -32,45 +32,45 @@ import { StringConstants } from '../../static/string-constants';
                     <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
                     <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
                     <div class="col s12">                
-                       <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
+                       <p-dataTable #dt [rowHover]="true" lazy="true" [totalRecords]="totalRecords" scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" sortable="true">
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)">{{item.Name}}</a>                                    
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
-                                <template let-item="rowData" pTemplate type="body">
+                                <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
-                                </template>
+                                </ng-template>
                             </p-column>
                             <p-column [style]="{width:'30px'}">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" style="color:red;">
                                             <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="certificate" icon="certificate" [class]="certificateColor(item)"></d3s-tooltip>                                            
                                         </div>
-                                    </template>
+                                    </ng-template>
                             </p-column>
                             <p-column [style]="{width:'30px'}">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <d3s-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" tooltipType="Preview" icon="info"></d3s-tooltip>                                            
                                         </div>
-                                    </template>
+                                    </ng-template>
                             </p-column>
                             <p-column [style]="{width:'30px'}" *ngIf="showEditButton">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
-                                    </template>
+                                    </ng-template>
                             </p-column>                            
                             <p-column  [style]="{width:'35px'}" *ngIf="showDeleteButton">
-                                    <template let-item="rowData" pTemplate type="body">
+                                    <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
-                                    </template>
+                                    </ng-template>
                             </p-column>                            
                         </p-dataTable>                           
                     </div>
@@ -191,6 +191,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
     
     getData() {        
+        console.log('data table getting data');
+        console.log(this.stateService.artifactTypeFilters.simpleTextFilter);
         this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners)
             .then(result => {
                 this.items = result.results;
@@ -210,7 +212,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showEditor = true;
     }
 
-    export(listableOnly) {
+    export(listableOnly) {        
         this.artifactService.getArtifactsXls(listableOnly, this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners);
     }
 
@@ -256,6 +258,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     private doSimpleSearch(dt: DataTable) {
+        console.log('doSimpleSearch');
         if (this.isGridFilterLoading) {
             if (this.simpleSearchID > 0) {
                 window.clearTimeout(this.simpleSearchID);
@@ -263,9 +266,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             }      
             this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds); //check back in a few search is ongoing
             return;
-        }
+        }        
         this.isGridFilterLoading = true;
-        if (dt) dt.reset();      
+        if (dt) dt.reset();
+        this.getData();
     }
 
     protected certificateColor(item) {

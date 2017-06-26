@@ -22,26 +22,26 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <p-dataTable #dt [value]="results" [globalFilter]="gb" selectionMode="single" [(selection)]="selected" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked" (onRowDblclick)="selected=$event.data;showRuleImplementation(selected);">
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="CreatedOn" header="Create Date" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'120px'}">
-                            <template let-col let-item="rowData" pTemplate type="body">
+                            <ng-template let-col let-item="rowData" pTemplate type="body">
                                 <span>{{item.CreatedOn | date : 'shortDate'}}</span>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column field="UpdatedOn" header="Update Date" [sortable]="true" [style]="{width:'120px'}" [filter]="!showSimpleFilter">
-                            <template let-col let-item="rowData" pTemplate type="body">
+                            <ng-template let-col let-item="rowData" pTemplate type="body">
                                 <span>{{item.UpdatedOn | date : 'shortDate'}}</span>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
-                            <template pTemplate type="body" let-item="rowData">
+                            <ng-template pTemplate type="body" let-item="rowData">
                                 <a (click)="showRuleImplementation(item);">{{item.Name}}</a>
-                            </template>
+                            </ng-template>
                         </p-column>
                         <p-column field="SourceID" header="Source Identifier" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="SourceUri" header="" [sortable]="true" [style]="{width:'35px'}" [filter]="!showSimpleFilter">
-                            <template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" pTemplate type="body">
                                 <a *ngIf="item.SourceUri == null"><i class="fa fa-info" title="Source Uri"></i></a>
                                 <a *ngIf="item.SourceUri != null" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
-                            </template>
+                            </ng-template>
                         </p-column>
                     </p-dataTable>
                 </div>                

@@ -33,30 +33,30 @@ import * as _ from 'lodash';
                                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                         <p-column field="ID" header="ID" sortable="true" [style]="{width:'5%'}" [filter]="!showSimpleFilter"></p-column>
                                         <p-column field="Name" header="Name" sortable="true" [style]="{width:'45%'}" [filter]="!showSimpleFilter">
-                                            <template let-item="rowData" pTemplate type="body">
+                                            <ng-template let-item="rowData" pTemplate type="body">
                                                 <a (click)="showRule(item)">{{item?.Name}}</a>
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                         <p-column field="StatusName" header="Status" sortable="true" [filter]="!showSimpleFilter" [style]="{width:'15%'}"></p-column>
                                         <p-column field="Dimension" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>                                        
                                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">                                                                
-                                            <template let-item="rowData" pTemplate type="body">
+                                            <ng-template let-item="rowData" pTemplate type="body">
                                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
-                                            </template>
+                                            </ng-template>
                                         </p-column>
                                         <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
-                                            <template let-item="rowData" pTemplate type="body">
+                                            <ng-template let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
                                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                                 </div>
-                                            </template>
+                                            </ng-template>
                                         </p-column>                            
                                         <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
-                                                <template let-item="rowData" pTemplate type="body">
+                                                <ng-template let-item="rowData" pTemplate type="body">
                                                     <div class="RowTools">                                
                                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                                     </div>
-                                                </template>
+                                                </ng-template>
                                         </p-column> 
                                     </p-dataTable>      
                                 </div>
