@@ -15,6 +15,7 @@
     var companyLogo = settings["CompanyLogo"];
     var companyIcon = settings["CompanyIcon"];
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
+    var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");
     var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
 
     var baseUrl = "";
@@ -52,7 +53,11 @@
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v4.1.0-rc2/theme.min.css", baseUrl)"/>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/quill.snow.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />    
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
+    @if (!string.IsNullOrEmpty(customStylesheetURL))
+    {
+        <link rel="stylesheet" type="text/css" href="@customStylesheetURL" />
+    }
     <style type="text/css">
         nav.top .logo {
             background-color:@(settings["HeaderBackgroundColor"]);
