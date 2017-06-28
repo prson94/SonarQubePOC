@@ -449,6 +449,11 @@ namespace d360.web.Controllers
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
 
+            if (!string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.ToUpper() == "/RESET")
+            {
+                ReturnUrl = "";
+            }
+
             if (ModelState.IsValid)
             {
                 var resource = Community.ValidateResource(model.UserName, model.Password);
