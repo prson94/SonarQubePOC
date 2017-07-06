@@ -76,7 +76,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             sql = string.Format(@"select * from ({0}) A", sql);
 
             sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: fields);
-            sql = applySortSuffix(sql, sortDataField, sortOrder);
+            sql = applySortSuffix(sql, sortDataField, sortOrder, isNumericString: isSortColumnNumber(sortDataField, fields));
 
             fields = fields.Where(x => (x.Type != "FilteredLookup" && x.Type != "FusionLookup" && x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup")).ToList();
                         

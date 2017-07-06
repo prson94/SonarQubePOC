@@ -817,7 +817,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             countSql += filters;
             querySql += filters;
 
-            querySql = applySortSuffix(querySql, sortDataField, sortOrder);         // Sorting
+            querySql = applySortSuffix(querySql, sortDataField, sortOrder, isNumericString:isSortColumnNumber(sortDataField, fields));         // Sorting
             querySql = applyPagingSuffix(querySql, pagenum, pagesize);              // Paging
 
             countSql += " OPTION (RECOMPILE)";
@@ -827,6 +827,17 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             var query = Company.Query<dynamic>(querySql, dbArgs);
 
             return new DynamicPagedResults { results = query, total = total };
+        }
+
+        protected bool isSortColumnNumber(string sortDataField, List<FieldType> fields)
+        {
+            if (string.IsNullOrEmpty(sortDataField)) return false;
+
+            var field = fields.Where(x => string.Compare($"Field{x.ID}", sortDataField, true) == 0).FirstOrDefault();
+
+            if (field == null) return false;
+
+            return field.Type == "Number";
         }
 
         #endregion
@@ -1348,7 +1359,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
         }
 
 
-        internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc")
+        internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc", bool isNumericString = false)
         {
             if (string.IsNullOrEmpty(sortDataField))
             {
@@ -1370,7 +1381,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 return sql;
             }
 
-            sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
+            if(isNumericString)
+                sql += " ORDER BY CAST(+ [" + sortDataField + "] AS int)" + sortOrder;
+            else
+                sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
 
             return sql;
         }
