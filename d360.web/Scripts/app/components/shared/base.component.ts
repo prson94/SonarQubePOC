@@ -11,6 +11,8 @@ import { Permission } from '../../models/permission.model'
 import { StringConstants } from '../../static/string-constants';
 import { JsonResult } from '../../models/jsonresult.model';
 
+declare var CompanySettings;
+
 export class BaseComponent {    
     protected isLoading = false;
 
@@ -100,7 +102,7 @@ export class BaseComponent {
     setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean, hasFollowers?: boolean) {
         if (this.rightSidebarService) {
             this.clearSidebar();
-            if (hasLineage) {
+            if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
                 this.lineageSidebar = new RightSidebarItem('Lineage', 'lineage', ['fa-random'], `/sidebar/visualization/lineage${this.objectContextUrl()}${this.lineageShowUsageOnly ? '/1' : ''}`);
                 this.rightSidebarService.showItem(this.lineageSidebar);
             }
@@ -108,12 +110,12 @@ export class BaseComponent {
                 this.auditSidebar = new RightSidebarItem('Audit', 'audit', ['fa-eye'], `/sidebar/audit${this.objectContextUrl()}`);
                 this.rightSidebarService.showItem(this.auditSidebar);
             }
-            if (hasOwnership) {
+            if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
                 this.ownershipSidebar = new RightSidebarItem('Ownership', 'ownership', ['fa-user'], `/sidebar/ownership${this.objectContextUrl()}`)
                 this.rightSidebarService.showItem(this.ownershipSidebar);
             }
             if (hasDashboard) this.rightSidebarService.showItem(new RightSidebarItem('Dashboards', 'dashboards', ['fa-tachometer'], `/sidebar/dashboard${this.objectContextUrl()}`));
-            if (hasImpact) {
+            if (hasImpact && CompanySettings.ShowImpactSidebar != 'false') {
                 this.impactSidebar = new RightSidebarItem('Impact', 'impact', ['fa-exchange'], `/sidebar/visualization/impact${this.objectContextUrl()}`);
                 this.rightSidebarService.showItem(this.impactSidebar);
             }
@@ -121,7 +123,7 @@ export class BaseComponent {
                 this.relationsSidebar = new RightSidebarItem('Relations', 'relationship', ['fa-retweet'], `/sidebar/relationships${this.objectContextUrl()}`)
                 this.rightSidebarService.showItem(this.relationsSidebar);
             }
-            if (hasFollowers) this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers', ['fa-bookmark-o'], `/sidebar/followers${this.objectContextUrl()}`));
+            if (hasFollowers && CompanySettings.ShowFollowersSidebar != 'false') this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers', ['fa-bookmark-o'], `/sidebar/followers${this.objectContextUrl()}`));
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {
