@@ -54,7 +54,20 @@ namespace d360.jobs.subscriber.Workflow
                     Console.WriteLine($"Debug - New [{info.Action}] event received.");
 
                     var sObject = info.Object.ObjectType.ToString();
-                    var registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID && i.Type.State == core.enums.State.Active && i.Type.PublishedVersionID != null).OrderBy(x=>x.ID).Include(x=>x.Type);
+
+                    IQueryable<core.entities.Workflow.WorkflowEventRegistration> registrations = null;
+
+                    if (info.Action == core.enums.Workflow.ChangeType.Loaded)
+                    {
+                        sObject = info.Object.Object.ToString();
+                        registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectID && i.Type.State == core.enums.State.Active && i.Type.PublishedVersionID != null).OrderBy(x => x.ID).Include(x => x.Type);
+                    }
+                    else
+                    {
+                        registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID && i.Type.State == core.enums.State.Active && i.Type.PublishedVersionID != null).OrderBy(x => x.ID).Include(x => x.Type);
+                    }
+
+                    if (registrations == null) return;
 
                     foreach (var registration in registrations)
                     {
