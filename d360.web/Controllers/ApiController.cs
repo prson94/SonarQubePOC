@@ -4012,6 +4012,22 @@ from    (
         [Route("resources/{typeID:int}/{id:int}")]
         public Resource GetResource(int typeID, int id)
         {
+            //check that the user can see other users profiles
+            var settings = Community.GetCompanySettings();
+            //check that current user is an admin or the company settings allow users to be listed
+            if (id != Company.CurrentResourceID)
+            {
+                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
+                    throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            }
+
+            //check that this user exists in this environment
+            if (!Company.GlobalReportingResources.Where(x => x.ResourceID == id).Any())
+            {
+                // user is not a user of this environment get them outa here!
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            }
+
             var model = Community.GetById<Resource>(id, i => i.ResourceType);
 
             if (model == null)
