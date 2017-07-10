@@ -18086,9 +18086,14 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Create))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
+                var code = form["Code"].ToString();
+
+                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == typeID && r.Code == code))
+                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
+
                 var a = new ReferenceItem
                 {
-                    Code = form["Code"],
+                    Code = code,
                     ReferenceItemTypeID = typeID,
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
@@ -18129,7 +18134,12 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Code = form["Code"];
+                var code = form["Code"].ToString();
+
+                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == model.ReferenceItemTypeID && r.Code == code && r.ID != model.ID))
+                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
+
+                model.Code = code;
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<ReferenceItem>(model, fields);

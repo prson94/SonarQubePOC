@@ -141,7 +141,8 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true;
         this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
-            .then(result => {                                        
+            .then(result => {   
+                this.showMessageForResult(this.messagesService, result);                                     
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
                 this.showEditor = false;                
                 this.getData();                
