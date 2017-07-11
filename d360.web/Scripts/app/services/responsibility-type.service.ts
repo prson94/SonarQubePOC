@@ -68,7 +68,12 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
     }
 
     getResponsibilityTypesByObject(type: string, id: number): Promise<any> {
-        return this.http.get(`api/ownership/${type}/${id}/responsibilitytypes`)
+        let uri = `api/ownership/${type}/${id}/responsibilitytypes`;
+        if (type.toLowerCase() == 'fusion') {
+            uri = `api/ownership/fusion/${id}/fusionresponsibilitytypes`
+        } 
+
+        return this.http.get(uri)
             .toPromise()
             .then(response => <any>response.json())
             .catch(err => this.handleError(err));

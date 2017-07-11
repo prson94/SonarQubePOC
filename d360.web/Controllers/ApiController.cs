@@ -3799,6 +3799,29 @@ order by C.TextPath";
                 );
         }
 
+        [Route("ownership/fusion/{id:int}/fusionresponsibilitytypes")]
+        public HttpResponseMessage GetFusionTypeResponsibilityByFusion(int id)
+        {
+            var fusion = Company.GetById<Fusion>(id);
+            if (fusion == null)
+                id = -1;
+            else
+                id = fusion.FusionTypeID;
+
+            return Request.CreateResponse(HttpStatusCode.OK,
+                Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectID == id && i.ObjectType == "FusionType", i => i.ResponsibilityType)
+                .Select(i => new
+                {
+                    ResponsibilityTypeGroup = i.ResponsibilityType.ResponsibilityTypeGroup,
+                    i.ResponsibilityTypeID,
+                    i.ObjectID,
+                    i.ObjectType,
+                    Name = i.ResponsibilityType.Name,
+                    Description = i.ResponsibilityType.Description
+                })
+                );
+        }
+
         #endregion
 
         #region Policies
