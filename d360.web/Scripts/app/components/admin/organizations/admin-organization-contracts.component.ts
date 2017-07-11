@@ -16,7 +16,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                     <p-dataTable #dt [globalFilter]="gb" [value]="contracts" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Title" header="Title" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="ContractTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'220px'}"></p-column>
                         <p-column [style]="{width:'40px'}">

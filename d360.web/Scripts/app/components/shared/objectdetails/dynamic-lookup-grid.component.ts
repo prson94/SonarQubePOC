@@ -16,7 +16,7 @@ import { BaseComponent } from '../base.component';
     <input #gb type="text" [hidden]="!showSimpleFilter || hideFilter || hideHeader" pInputText size="100" placeholder="Search..." class="grid-simple-filter" />
     <div [class.hide-datatable-header]="hideHeader">
         <p-dataTable #dt [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3" [globalFilter]="gb">
-            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
             <p-column *ngFor="let column of visibleColumns" [attr.header]="hideHeader ? null : column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable ? 'custom' : false" [field]="column.datafield" filterMatchMode="contains" (sortFunction)="customSort($event, column)">
                 <ng-template *ngIf="!hideHeader" pTemplate type="header">
                     <span *ngIf="column.description != null && column.description != ''" [pTooltip]="column.description" tooltipPosition="top">{{column.text}}</span>

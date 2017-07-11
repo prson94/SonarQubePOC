@@ -11,7 +11,7 @@ import { SortOrder } from '../../models/enums.model';
                     <header>Execution History - Result Details<d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>                    
                     <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                                                                            
                     <p-dataTable #dt scrollable="true" scrollWidth="100%" [value]="results" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onLazyLoad)="loadResultsLazy($event)" lazy="true" [totalRecords]="resultCount">                            
-                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="FusionAttributeType" header="Type" [sortable]="true" [style]="{width:'100px'}"></p-column>
                             <p-column field="FusionAttribute" header="Attribute" [sortable]="true" [style]="{width:'100px'}"></p-column>
                             <p-column field="Action" header="Action" [sortable]="true" [style]="{width:'100px'}"></p-column>

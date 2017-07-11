@@ -10,7 +10,7 @@ import { FusionRule } from '../../../models/fusion.model';
 <header>Rules<d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
 <input [hidden]="!showSimpleFilter" #gbRules type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
 <p-dataTable #dtRules [globalFilter]="gbRules" [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-    <footer *ngIf="dtRules.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRules.totalRecords" [first]="dtRules.first" [rows]="dtRules.rows"></d3s-grid-paging-info></footer>
+    <p-footer *ngIf="dtRules.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRules.totalRecords" [first]="dtRules.first" [rows]="dtRules.rows"></d3s-grid-paging-info></p-footer>
     <p-column header="Enabled" field="Enabled" sortable="true" [filter]="!showSimpleFilter" [style]="{width:'15%'}" filterMatchMode="equals">
         <ng-template let-item="rowData" pTemplate type="body">
             <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>

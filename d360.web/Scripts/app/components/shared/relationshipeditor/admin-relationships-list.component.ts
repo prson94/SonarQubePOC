@@ -16,7 +16,7 @@ import { BaseComponent } from '../../shared/base.component';
                     <div class="col s12">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                    
                         <p-dataTable #dt [globalFilter]="gb" [value]="relationships" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)" (onRowDblclick)="selected=$event.data;selectedChange.emit(selected);showEditor=true;" >                            
-                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="SubjectName" header="Subject" sortable="true" [filter]="!showSimpleFilter">
                                 <ng-template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></span>

@@ -36,7 +36,7 @@ import { Title } from '@angular/platform-browser';
                             <span  *ngIf="!isLoading">
                                 <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                                 <p-dataTable #dt [globalFilter]="gb" sortField="Name" [sortOrder]="1" [value]="scoretypes" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selectedType"  (onRowDblclick)="selectedType=$event.data;showEditor=true;" (onRowSelect)="selectedType=$event.data;getScoreMetrics(selectedType.ID);" >
-                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'40px'}">
@@ -78,7 +78,7 @@ import { Title } from '@angular/platform-browser';
                             <span  *ngIf="!isLoading">
                                 <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                                 <p-dataTable #dt [globalFilter]="gb" sortField="ObjectName" [sortOrder]="1" [value]="metrics" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selectedMetric"  (onRowDblclick)="selectedMetric=$event.data;showMetricEditor=true;" >
-                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="ObjectName" header="Object Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                                     <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">

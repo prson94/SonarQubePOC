@@ -22,7 +22,7 @@ import { Title } from '@angular/platform-browser';
                             <span *ngIf="!isLoading && !showEditor && !showDelete && !showCredentials">
                                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                
                                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="reports" selectionMode="single" [rows]="20" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
-                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="ReportType" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column [style]="{width:'40px'}">

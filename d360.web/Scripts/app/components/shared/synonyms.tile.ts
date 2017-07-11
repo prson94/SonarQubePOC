@@ -27,7 +27,7 @@ declare var CompanySettings: any;
                 <header>&nbsp;<d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="hasAdd"></d3s-tile-actions></header>
                 <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" [(selection)]="selectedItem">                
-                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                     <p-column header="Name" field="Name" sortable="true">
                         <ng-template pTemplate type="body" let-item="rowData">                        
                             <d3s-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">

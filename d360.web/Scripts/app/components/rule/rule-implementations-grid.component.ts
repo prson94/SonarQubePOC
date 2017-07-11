@@ -20,7 +20,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <div *ngIf="!isLoading">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter"> 
                     <p-dataTable #dt [value]="results" [globalFilter]="gb" selectionMode="single" [(selection)]="selected" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked" (onRowDblclick)="selected=$event.data;showRuleImplementation(selected);">
-                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="CreatedOn" header="Create Date" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'120px'}">
                             <ng-template let-col let-item="rowData" pTemplate type="body">
                                 <span>{{item.CreatedOn | date : 'shortDate'}}</span>

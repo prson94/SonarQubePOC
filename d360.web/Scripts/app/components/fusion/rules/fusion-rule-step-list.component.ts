@@ -12,7 +12,7 @@ import { FusionRule, FusionRuleStep } from '../../../models/fusion.model';
         <header>Steps for selected rule <d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
         <input [hidden]="!showSimpleFilter" #gbRuleSteps type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
         <p-dataTable #dtRuleSteps [globalFilter]="gbRuleSteps" [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-            <footer *ngIf="dtRuleSteps.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleSteps.totalRecords" [first]="dtRuleSteps.first" [rows]="dtRuleSteps.rows"></d3s-grid-paging-info></footer>
+            <p-footer *ngIf="dtRuleSteps.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleSteps.totalRecords" [first]="dtRuleSteps.first" [rows]="dtRuleSteps.rows"></d3s-grid-paging-info></p-footer>
             <p-column header="Step" field="Step" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>
             <p-column header="Action" field="Action" [style]="{width:'15%'}" [filter]="!showSimpleFilter"></p-column>
             <p-column header="Description" field="Description" [filter]="!showSimpleFilter"></p-column>

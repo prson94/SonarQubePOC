@@ -36,7 +36,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                             <span *ngIf="!isLoading">
                                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selectedTaxonomy"  (onRowDblclick)="selectedTaxonomy=$event.data;showEditor=true;" >                                                        
-                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
                                     <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
                                     <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            

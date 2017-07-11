@@ -24,12 +24,12 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                 <d3s-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]" tooltipType="preview">{{item.Text}}</d3s-tooltip>
                             </ng-template>
                         </p-column>                    
-                        <footer>
+                        <p-footer>
                             <d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info>
                             <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">Selected Items:
                                 <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last" >{{last?item.Text:item.Text +','}} </span></p>
                             </div>
-                        </footer>
+                        </p-footer>
                      </p-dataTable>
                 </span>
                 `,

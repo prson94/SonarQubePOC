@@ -45,7 +45,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <div class="row">
                         <div class="col s12">
                             <p-dataTable #dt [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="details?.ItemSteps" selectionMode="single">                    
-                                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                 <p-column field="StepName" header="Step Name" sortable="false">
                                     <ng-template let-itemStep="rowData" pTemplate type="body">
                                         <span *ngIf="itemStep.CompletedOn">{{itemStep.StepName}}</span>

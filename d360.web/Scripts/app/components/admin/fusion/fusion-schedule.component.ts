@@ -13,7 +13,7 @@ import { MessagesService } from '../../../services/messages.service';
             <header>Agent Execution Schedule<d3s-tile-actions hasClose="true" (closeClick)="onClose.emit()" [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="false" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
             </header>                        
             <p-dataTable #dt scrollable="true" scrollWidth="100%" [value]="schedules" [rows]="20" [paginator]="true" [(selection)]="selected">
-                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="DayText" header="Day"></p-column>
                 <p-column field="Time" header="Time (UTC)"></p-column>
                 <p-column field="FullRefresh" header="Full Refresh?">

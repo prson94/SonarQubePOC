@@ -15,7 +15,7 @@ declare var CompanySettings;
         <header>Mappings for selected step<d3s-tile-actions hasAdd="true" (addClick)="add();" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
         <input [hidden]="!showSimpleFilter" #gbRuleMappings type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
         <p-dataTable #dtRuleMappings [globalFilter]="gbRuleMappings" [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-            <footer *ngIf="dtRuleMappings.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleMappings.totalRecords" [first]="dtRuleMappings.first" [rows]="dtRuleMappings.rows"></d3s-grid-paging-info></footer>
+            <p-footer *ngIf="dtRuleMappings.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleMappings.totalRecords" [first]="dtRuleMappings.first" [rows]="dtRuleMappings.rows"></d3s-grid-paging-info></p-footer>
             <p-column header="Source" field="SourceFieldName" [filter]="!showSimpleFilter"></p-column>
             <p-column header="Target" field="TargetFieldName" [filter]="!showSimpleFilter"></p-column>
             <p-column header="">

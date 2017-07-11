@@ -7,7 +7,7 @@
             </header>
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
             <p-dataTable #dt [globalFilter]="gb" [value]="fusionTypes" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
-                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '75%' }"></p-column>
                 <p-column [style]="{width:'40px'}">
                     <ng-template let-col let-item="rowData" pTemplate type="body">

@@ -16,7 +16,7 @@ import { FusionConfigurationDetails, FusionQueryAttributeType  } from '../../mod
                     <span *ngIf="!isLoading && !showDelete && !showEditor">                        
                         <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                         <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="queries" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
-                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>                            
+                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                            
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Uri" header="Uri" [sortable]="false" [filter]="!showSimpleFilter">
                                 <ng-template let-query="rowData" pTemplate type="body">

@@ -19,7 +19,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <header>Open {{workflow?.Name}}<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                       
                             <p-dataTable #dt [globalFilter]="gb" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="items" selectionMode="single">
-                                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                 <p-column field="ObjectName" header="Name" sortable="true" [filter]="!showSimpleFilter">
                                     <ng-template let-col let-item="rowData" pTemplate type="body">
                                         <a (click)="open(item)" *ngIf="!item.IssueObject"><d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.ObjectName}}</d3s-tooltip></a>

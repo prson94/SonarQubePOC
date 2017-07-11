@@ -22,7 +22,7 @@ import { Title } from '@angular/platform-browser';
                             <span *ngIf="!showEditor && !showDelete && !isLoading">       
                                 <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                      
                                 <p-dataTable #dt [globalFilter]="gb" [value]="lookups" selectionMode="single" [rows]="20" paginator="true" pageLinks="3" [(selection)]="selectedLookup"  (onRowDblclick)="selectedLookup=$event.data;showEditor=true;" >                                                        
-                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="ID" header="ID" [sortable]="true"></p-column>                                                            
                                     <p-column field="Name" header="Name" [sortable]="true"></p-column>                            
                                     <p-column [style]="{width:'40px'}">

@@ -17,7 +17,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                 <span *ngIf="!isLoading">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                     <p-dataTable #dt [globalFilter]="gb" [value]="resources" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column header="Name" [style]="{width:'140px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <a (click)="openResource(item)">{{item.FirstName}} {{item.LastName}}</a>

@@ -15,7 +15,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">                     
                         <p-dataTable #dt sortField="Name" [sortOrder]="1"  [value]="groups" selectionMode="single" (onRowDblclick)="doSelect($event.data)" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3">                    
-                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="Name" header="Name" [sortable]="true">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <a (click)="doSelect(item)">{{item.Name}}</a>

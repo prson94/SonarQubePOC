@@ -15,7 +15,7 @@ import { BaseComponent } from '../shared/base.component';
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                    <p-dataTable #dt sortField="Level" [sortOrder]="1" [globalFilter]="gb" [value]="levels" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="showEditor=true" [(selection)]="selectedLevel" >                                                        
-                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                     <p-column field="Level" header="Level" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">

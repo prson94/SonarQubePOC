@@ -34,7 +34,7 @@ import { TreeNode } from 'primeng/primeng';
 <div class="row" *ngIf="isQueryEditor">
     <div class="col s4 offset-s4">
         <p-dataTable #dtItems [value]="queryValues" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-            <footer *ngIf="dtItems.totalRecords"><d3s-grid-paging-info [totalRecords]="dtItems.totalRecords" [first]="dtItems.first" [rows]="dtItems.rows"></d3s-grid-paging-info></footer>
+            <p-footer *ngIf="dtItems.totalRecords"><d3s-grid-paging-info [totalRecords]="dtItems.totalRecords" [first]="dtItems.first" [rows]="dtItems.rows"></d3s-grid-paging-info></p-footer>
             <p-column header="" field="selected" sortable="false" [style]="{width:'10%'}">
                 <ng-template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.selected" [disabled]="selectAllItems" />

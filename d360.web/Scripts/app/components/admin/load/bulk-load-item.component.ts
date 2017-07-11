@@ -15,7 +15,7 @@ import { BaseComponent } from '../../shared/base.component'
                 </header>
                 <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                 <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="25" paginator="true" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions">
-                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                     <p-column field="Status" header="Status" sortable="true" [style]="{'width':'125px'}" [filter]="!showSimpleFilter"></p-column>
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                     <p-column field="RowIndex" header="Row" sortable="true" [style]="{'width':'100px'}" [filter]="!showSimpleFilter"></p-column>        

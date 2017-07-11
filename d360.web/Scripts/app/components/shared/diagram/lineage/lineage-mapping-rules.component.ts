@@ -14,7 +14,7 @@ import { MapItem } from '../../../../models/lineage.model';
             </header>
             <input #gb type="text" pInputText placeholder="Search..." class="grid-simple-filter">         
             <p-dataTable #dt [globalFilter]="gb" [value]="items" [rowsPerPageOptions]="defaultPagingOptions">
-                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-headerColumnGroup>
                     <p-row>
                         <p-column header="Source" colspan="2" [style]="{'text-align' : 'center' }"></p-column>

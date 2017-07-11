@@ -9,7 +9,7 @@
         <div *ngSwitchDefault>
             <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
             <p-dataTable #dt [globalFilter]="gb" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedRow">
-                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="LastName" header="Last Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="FirstName" header="First Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="Owner" header="Owner" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>

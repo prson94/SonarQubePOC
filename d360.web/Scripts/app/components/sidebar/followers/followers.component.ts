@@ -17,7 +17,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                             <span *ngIf="!isLoading">
                                 <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                                 <p-dataTable #dt sortField="FollowerLastName" sortOrder="1" [globalFilter]="gb" [value]="items" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" selectionMode="single">
-                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                    <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="FollowerLastName" header="Last Name" sortable="true">
                                         <ng-template let-item="rowData" pTemplate type="body">
                                                 <a (click)="doSelect(item)">{{item.FollowerLastName}}</a>

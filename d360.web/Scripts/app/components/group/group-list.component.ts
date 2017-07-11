@@ -23,7 +23,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     </header>      
                                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                                     
                                     <p-dataTable  #dt sortField="Name" sortOrder="1" [globalFilter]="gb" [value]="groups" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showGroup(selected);" >
-                                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                         <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'60%'}" [filter]="!showSimpleFilter">
                                             <ng-template let-item="rowData" pTemplate type="body">
                                                 <a (click)="showGroup(item)">{{item.Name}}</a>

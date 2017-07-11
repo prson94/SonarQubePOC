@@ -9,7 +9,7 @@ import { BaseComponent } from '../../base.component';
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
             <p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
-                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="Role" header="Role"></p-column>
                 <p-column field="ResponsibleObjectName" header="Resource"></p-column>
                 <p-column field="ResponsibleObjectType" header="Group Owmer"></p-column>

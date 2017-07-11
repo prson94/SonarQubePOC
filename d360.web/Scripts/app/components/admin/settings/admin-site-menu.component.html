@@ -42,7 +42,7 @@
             <div *ngIf="selection.IsCustom" class="row">
                 <div class="col s12 m6">
                     <p-dataTable #dt [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
-                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Title" header="Available Folder Items"></p-column>
                         <p-column>
                             <ng-template let-item="rowData" pTemplate type="body">

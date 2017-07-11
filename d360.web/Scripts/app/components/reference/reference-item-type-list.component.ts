@@ -18,7 +18,7 @@ import { ReferenceItemType } from '../../models/reference.model';
                     <span *ngIf="!isLoading && !showEditor && !showDelete">
                         <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                         <p-dataTable sortField="Name" [sortOrder]="1" #dt [globalFilter]="gb" [value]="referenceTypes" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                                                
-                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="Name" header="Name" [sortable]="true"></p-column>                                
                             <p-column [style]="{width:'28px'}" *ngIf="hasRootUpdatePermissions()">
                                 <ng-template let-item="rowData" pTemplate type="body">

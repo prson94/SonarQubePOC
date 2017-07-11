@@ -18,7 +18,7 @@ import { BaseComponent } from '../../shared/base.component';
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                     <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
-                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 

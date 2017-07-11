@@ -33,7 +33,7 @@ import { StringConstants } from '../../static/string-constants';
                     <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
                     <div class="col s12">                
                        <p-dataTable #dt [rowHover]="true" lazy="true" [totalRecords]="totalRecords" scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
-                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="Name" header="Name" sortable="true">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)">{{item.Name}}</a>                                    

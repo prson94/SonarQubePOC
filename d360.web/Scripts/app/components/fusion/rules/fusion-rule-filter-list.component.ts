@@ -11,7 +11,7 @@ import { FusionRule, FusionRuleFilter } from '../../../models/fusion.model';
     <div *ngIf="!isLoading">
         <header>Filters for selected rule<d3s-tile-actions [hasAdd]="true" (addClick)="add();"></d3s-tile-actions></header>
         <p-dataTable #dt [value]="values" selectionMode="single" [selection]="selection" (selectionChange)="selectionChange.emit($event)" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">
-            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
             <p-column header="Filter Name" field="Name"></p-column>
             <p-column header="">
                 <ng-template pTemplate type="body" let-row="rowData">

@@ -19,7 +19,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                         <div class="tile tile-detail">   
                             <header>Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>                                                                                           
                             <p-dataTable #dt scrollable="true" scrollWidth="100%" lazy="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
-                                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                 <p-column field="ResourceName" header="User" sortable="true" [style]="{'width':'150px'}" filter="true"></p-column>                                                                                    
                                 <p-column field="Date" header="Date" sortable="true" [style]="{'width':'200px'}" filter="true">
                                     <ng-template let-col let-data="rowData" pTemplate type="body">
