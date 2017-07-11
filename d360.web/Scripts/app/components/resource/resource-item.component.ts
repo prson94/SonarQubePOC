@@ -11,6 +11,8 @@ import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 
 
 declare var CurrentResourceID;
@@ -38,8 +40,10 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         private route: ActivatedRoute,
         private resourcesService: ResourcesService,
         private statisticsService: ObjectStatisticsService,
-        private uriBasedService: UriBasedService) {
+        private uriBasedService: UriBasedService,
+        rightSideBarService: RightSidebarService) {
         super();
+        this.rightSidebarService = rightSideBarService;
     }
 
     ngOnInit() {
@@ -48,6 +52,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.sub = this.route.params.subscribe(params => {
             let resourceId = +params['resourceId'];
             this.resourceId = resourceId;
+            this.objectType = 'Resource';
+            this.objectID = this.resourceId;
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
             this.resourcesService.getResource(this.resourceId)
@@ -64,12 +70,18 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     else
                         this.isMe = false;
                     this.isLoading = false;
+
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(false, false, false, false, false, true, false);
+
+
                 });
             this.pageMode = PageMode.Default;
+
+
+
+
             this.updateStatistics();
-
-
-
 
         });
     }
@@ -82,6 +94,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     }
 
     ngOnDestroy() {
+        this.clearSidebar();
         this.sub.unsubscribe();
     }
 
