@@ -22,7 +22,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                 <p-column field="ObjectName" header="Name" sortable="true" [filter]="!showSimpleFilter">
                                     <ng-template let-col let-item="rowData" pTemplate type="body">
-                                        <a (click)="open(item)"><d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.ObjectName}}</d3s-tooltip></a>
+                                        <a (click)="open(item)" *ngIf="!item.IssueObject"><d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.ObjectName}}</d3s-tooltip></a>
+                                        <a (click)="open(item)" *ngIf="item.IssueObject && item.IssueObjectID"><d3s-tooltip [objectType]="item.IssueObject" [objectId]="item.IssueObjectID" tooltipType="preview">{{item.IssueObjectName}}</d3s-tooltip></a>
                                     </ng-template>
                                 </p-column>
                                 <p-column field="StepName" header="Step" sortable="true" [filter]="!showSimpleFilter"></p-column>                                

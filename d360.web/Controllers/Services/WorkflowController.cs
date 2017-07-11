@@ -1342,7 +1342,10 @@ namespace d360.web.Controllers.Services
 	                                ,wi.startedBy as 'StartedByResourceID'
                                     ,wi.id as 'ItemID'
 	                                ,gr.firstName + ' ' + gr.lastName as 'StartedBy'
-	                                ,od.ObjectTypeName as 'TypeName'
+	                                ,case 
+										when wi.[object] = 'Issue' then it.Name
+										else od.ObjectTypeName
+									end as 'TypeName'
 	                                ,od.ObjectType as 'ObjectType'
 	                                ,od.ObjectTypeID as 'ObjectTypeID'
 	                                ,coalesce(od.Name,'(unknown)') as 'ObjectName'
@@ -1350,6 +1353,9 @@ namespace d360.web.Controllers.Services
 	                                ,wvs.name as 'StepName'
 	                                ,wvs.steptype as 'StepType'
 	                                ,wvs.activitytype as 'ActivityType'
+                                    ,iss.[object] as 'IssueObject'
+									,iss.[objectid] as 'IssueObjectID'
+                                    ,cod.name as 'IssueObjectName'
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -1359,6 +1365,9 @@ namespace d360.web.Controllers.Services
 	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+                                    left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
+                                    left outer join cache.objectdetails cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+                                    left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)
                                 where
                                     wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
                            ";
