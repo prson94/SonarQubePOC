@@ -18,7 +18,8 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                         <div class="col s12">
                             <div class="tile tile-detail" *ngIf="!isCompleted && isUserAllowedToComplete">                        
                                 <header>{{title}}</header>
-                                <div class="form-instructions">The following form is for the [{{objectType}}] named [<d3s-tooltip objectType="Artifact" [objectId]="objectID" tooltipType="preview">{{objectName}}</d3s-tooltip>].  <span [innerHtml]="description"></span></div>                                            
+                                <div class="form-instructions" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{objectType}}</b>] named [<b><d3s-tooltip objectType="Artifact" [objectId]="objectID" tooltipType="preview">{{objectName}}</d3s-tooltip></b>].  <span [innerHtml]="description"></span></div>                                            
+                                <div class="form-instructions" *ngIf="objectType == 'Issue'">The following form is for the [<b><d3s-tooltip [objectType]="objectType" [objectId]="objectID" tooltipType="preview">{{issueTypeName}}</d3s-tooltip></b>] action raised on [<b><d3s-tooltip [objectType]="issueObject" [objectId]="issueObjectID" tooltipType="preview">{{issueObjectName}}</d3s-tooltip></b>].  <span [innerHtml]="description"></span></div>
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
                                     <div class="row">
                                         <div *ngFor="let field of fields;let indx=index" class="row">
@@ -73,6 +74,10 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private fields: WorkflowFormField[] = [];
     private description: string;
     private title: string;
+    private issueObject: string;
+    private issueObjectName: string;
+    private issueObjectID: number;
+    private issueTypeName: string;
     
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
@@ -128,6 +133,10 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.objectType = res.ObjectType;    
                 this.objectID = res.ObjectID;    
                 this.isUserAllowedToComplete = res.IsUserAllowedToComplete;
+                this.issueObject = res.IssueObject;
+                this.issueObjectID = res.IssueObjectID;
+                this.issueObjectName = res.IssueObjectName;
+                this.issueTypeName = res.IssueTypeName;
             });
     }
 

@@ -552,6 +552,9 @@ namespace d360.web.Controllers.Services
 
 
             ObjectDetail details = null;
+            ObjectDetail issueItemDetails = null;
+            var issueTypeName = "";
+            var issueObjectType = "";
 
             switch (itemStep.Item.Object)
             {
@@ -567,6 +570,11 @@ namespace d360.web.Controllers.Services
                             Name = comment != null ? comment.Body : "",
                             TypeName = issue.IssueType.Name
                         };
+
+                        if(issue.IssueType != null)
+                            issueTypeName = issue.IssueType.Name;
+                        issueItemDetails = Company.GetObjectDetail(issue.Object, issue.ObjectID);
+                        issueObjectType = issue.Object;
                     }
                     break;
                 default:
@@ -604,10 +612,14 @@ namespace d360.web.Controllers.Services
                 Title = title ?? "",
                 Description = desc ?? "",
                 IsCompleted = itemStep.CompletedOn.HasValue || isCompletedByCurrentUser,
-                ObjectName = details== null ? "(unknown)" : details.Name,
+                ObjectName = details == null ? "(unknown)" : details.Name,
                 ObjectType = itemStep.Item.Object,
                 ObjectID = itemStep.Item.ObjectID,
-                IsUserAllowedToComplete = IsUserAllowedToComplete
+                IsUserAllowedToComplete = IsUserAllowedToComplete,
+                IssueObject = issueObjectType,
+                IssueObjectID = issueItemDetails != null ? issueItemDetails.ID : 0,
+                IssueObjectName = issueItemDetails != null ? issueItemDetails.Name : "",
+                IssueTypeName = issueTypeName
             });
         }
 

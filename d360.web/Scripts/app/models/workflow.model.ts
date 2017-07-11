@@ -282,6 +282,10 @@ export class WorkflowForm {
     ObjectName: string;
     ObjectType: string;
     ObjectID: number;
+    IssueObject: string;
+    IssueObjectID: number;
+    IssueObjectName: string;
+    IssueTypeName: string;
 }
 
 export class WorkflowListItem {
