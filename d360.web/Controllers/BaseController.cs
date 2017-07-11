@@ -1378,7 +1378,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
-                return sql;
+                //return sql;
+                throw new Exception("Invalid sort field specified");
             }
 
             if(isNumericString)
