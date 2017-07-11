@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
     NodeModel,
@@ -10,7 +10,7 @@ import {
     EmailTaskRecipientTypeInfo,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-import { Column, Header, MenuItem } from 'primeng/primeng';
+import { Column, Header, MenuItem, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
@@ -24,9 +24,13 @@ import * as _ from 'lodash';
     templateUrl: './workflow-step-form-editor.component.html'
 })
 
-export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
+export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
     @Input() step: NodeModel;
+    @Input() objectId: number;
+    @Input() objectType: string;
     @Output() stepChange = new EventEmitter();
+    @ViewChild('ed') ed: Editor;
+    private quill;
 
     private model: WorkflowForm = new WorkflowForm();
 
@@ -95,10 +99,22 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     ngOnChanges() {
         this.initFields();
+
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
+        else
+            this.quill = null;
+    }
+
+    ngAfterViewChecked() {
+        if (this.ed != null && this.ed.quill != null)
+            this.quill = this.ed.quill;
     }
 
     ngOnDestroy() {
-        //this.fieldsSub.unsubscribe(); 
+        this.quill = null;
+        this.ed = null;
+
     }
 
     initFields() {
@@ -126,7 +142,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         else
             //convert to bool
             this.step.settings.SendFormEmail = this.step.settings.SendFormEmail.toString().toLowerCase() === 'true' ? true : false;
-
+        
         this.usedFields = this.workflowFieldsService.getUsedFields();
     }
 
@@ -180,6 +196,22 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
 
         this.workflowFieldsService.pushFormField(f);
+    }
+
+    appendField(e: string) {
+        //console.log(this.step.settings.MessageBodyTemplate, this.quill);
+
+        if (this.quill != null) {
+            let len = this.quill.getLength();
+            this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
+
+        } else {
+            this.step.settings.MessageBodyTemplate =
+                ((this.step.settings.MessageBodyTemplate == null) ? '' :
+                    this.step.settings.MessageBodyTemplate)
+                + e;
+        }
+
     }
 
 }

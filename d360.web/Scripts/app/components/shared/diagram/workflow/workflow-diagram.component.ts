@@ -646,6 +646,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                                 return false;
                             break;
                     }
+                    if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
+                        return false;
                 }
 
                 if (n.fields == null || n.fields == {})
@@ -812,6 +814,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                     n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                     n.settings.MessageToUser = e.settings.MessageToUser;
                     n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
+                    n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                 } else {
                     delete n.settings.MessageRecipientType;
                     delete n.settings.MessageToUser;

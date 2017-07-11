@@ -78,7 +78,13 @@
             </div>
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.Form">
-            <d3s-workflow-step-form-editor [step]="step" (stepChange)="step = $event; stepChange.emit(step)"></d3s-workflow-step-form-editor>
+            <d3s-workflow-step-form-editor 
+                                           [objectType]="objectType" 
+                                           [objectId]="objectId"
+                                           [step]="step" 
+                                           (stepChange)="step = $event; stepChange.emit(step)">
+
+            </d3s-workflow-step-form-editor>
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.Procedure">
             <div class="col s12">
