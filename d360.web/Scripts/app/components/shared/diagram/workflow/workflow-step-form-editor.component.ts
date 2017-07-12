@@ -24,7 +24,7 @@ import * as _ from 'lodash';
     templateUrl: './workflow-step-form-editor.component.html'
 })
 
-export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
+export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() step: NodeModel;
     @Input() objectId: number;
     @Input() objectType: string;
@@ -165,6 +165,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         if (i >= 0) {
             this.step.fields.form.field.splice(i, 1);
+
+            //primeng v4.1 issue
+            let fields = _.cloneDeep(this.step.fields.form.field);
+            this.step.fields.form.field = null;
+            this.step.fields.form.field = fields;
+
             this.stepChange.emit(this.step);
             this.deletingField['@stepId'] = this.step.key;
             this.workflowFieldsService.deleteFormField(this.deletingField);
@@ -189,7 +195,16 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         f['@type'] = this.newField['@type'];
         f['@stepId'] = this.step.key;
 
+
         this.step.fields.form.field.push(_.cloneDeep(this.newField));
+
+        //issue with primeng v4.1
+        let fields = _.cloneDeep(this.step.fields.form.field);
+        this.step.fields.form.field = null;
+        this.step.fields.form.field = fields;
+
+        //console.log(this.step.fields.form.field);
+
         this.newField = {};
         this.formMode = FormMode.Default;
         this.stepChange.emit(this.step);
