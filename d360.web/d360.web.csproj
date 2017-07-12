@@ -489,6 +489,16 @@
     <Content Include="Content\primeng\v4.1.0-rc2\primeng.css" />
     <Content Include="Content\primeng\v4.1.0-rc2\primeng.min.css" />
     <Content Include="Content\primeng\v4.1.0-rc2\theme.css" />
+    <Content Include="Content\primeng\v4.1.0\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\v4.1.0\images\color.png" />
+    <Content Include="Content\primeng\v4.1.0\images\hue.png" />
+    <Content Include="Content\primeng\v4.1.0\images\line.gif" />
+    <Content Include="Content\primeng\v4.1.0\images\loading.gif" />
+    <Content Include="Content\primeng\v4.1.0\images\password-meter.png" />
+    <Content Include="Content\primeng\v4.1.0\primeng.css" />
+    <Content Include="Content\primeng\v4.1.0\primeng.min.css" />
+    <Content Include="Content\primeng\v4.1.0\theme.css" />
+    <Content Include="Content\primeng\v4.1.0\theme.min.css" />
     <Content Include="Content\quill\quill.snow.css" />
     <Content Include="Content\quill\quill.snow.min.css" />
     <Content Include="Content\styles\ang.css" />
@@ -759,6 +769,10 @@
     <Content Include="Content\primeng\v4.1.0-rc2\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\v4.1.0-rc2\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v4.1.0-rc2\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\primeng\v4.1.0\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\v4.1.0\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\v4.1.0\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\v4.1.0\fonts\roboto-v15-latin-regular.woff2" />
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>
