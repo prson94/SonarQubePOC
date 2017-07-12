@@ -85,7 +85,10 @@
     <div class="col s12">
         <header>
             &nbsp;
-            <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
+            <!--<d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>-->
+            <div class="TileTools">
+                <a (click)="add()" style="color: black; cursor: pointer;"><i class="fa fa-plus"></i></a>
+            </div>
         </header>
         <p-dataTable [value]="step.fields.form.field" selectionMode="single">
             <p-column field="@id" header="Name"></p-column>
