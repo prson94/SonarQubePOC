@@ -1068,12 +1068,20 @@ namespace d360.model
 
                     if (creator != null)
                         issueInfo += $"<br>Created By <b>{creator.FullName}</b>";
+                    
+                    //get any field values for this issue
+                    var fieldTypes = FieldTypes.Where(x => x.Object == "IssueType" && x.ObjectID == issue.IssueTypeID);
 
-                    if (issue.CommentID.HasValue) {
-                        var comment = Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
+                    var fieldValues = Fields.Where(x => x.ObjectType == "Issue" && x.ObjectID == issue.ID);
 
-                        if(comment != null)
-                            issueInfo += $"<br><br>{comment.Body}";
+                    foreach (var fieldType in fieldTypes)
+                    {
+                        var field = fieldValues.Where(x => x.FieldTypeID == fieldType.ID).FirstOrDefault();
+
+                        if(field != null)
+                        {
+                            issueInfo += $"<br><b>{fieldType.FriendlyName}</b>: {field.FormattedValue}";
+                        }
                     }
                 }
 
