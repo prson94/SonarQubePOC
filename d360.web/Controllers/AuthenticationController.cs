@@ -355,8 +355,8 @@ namespace d360.web.Controllers
                         if (resource != null)
                         {
                             resource.DateLastLoggedIn = DateTime.UtcNow;
-                            resource.FirstName = firstName;
-                            resource.LastName = lastName;
+                            if (!string.IsNullOrEmpty(firstName)) resource.FirstName = firstName;
+                            if (!string.IsNullOrEmpty(lastName)) resource.LastName = lastName;
                             Community.Update<Resource>(resource);
                         }
                     }
