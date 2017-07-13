@@ -1,4 +1,4 @@
-﻿create procedure [fusion].[ProcessFusionCacheInQueue]
+﻿CREATE PROCEDURE [fusion].[ProcessFusionCacheInQueue]
 --declare
 	@FusionID int
 --set @FusionID = 15
@@ -12,4 +12,22 @@ begin
 	FROM	FusionAttribute 
 	WHERE	FusionID = @FusionID and deleted = 0
 
+	-- do any fusion specific processing
+	declare @fusionTypeId int;
+
+	select 
+		@fusionTypeId = fusiontypeid
+	from
+		fusion
+	where
+		id = @FusionID;
+
+	if @fusionTypeId = 13
+	begin		
+		exec fusion.GenerateMarkitMapLineageData @FusionID
+	end
+	else if @fusionTypeId = 16
+	begin
+		exec [fusion].[GenerateEagleLineageData] @FusionID
+	end
 end
