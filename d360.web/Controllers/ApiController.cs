@@ -4458,7 +4458,7 @@ where    A.RuleID = @id", new { id });
 
                         var owningModels = Company.Query<dynamic>(
                             QueryConstants.ObjectRelationships,
-                            new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id }
+                            new { type = type.ToString(), id }
                         ).Where(i => i.Type == "TaxonomyType" && i.TypeID == artifact.TaxonomyTypeID)
                         .Select(i => new
                         {
