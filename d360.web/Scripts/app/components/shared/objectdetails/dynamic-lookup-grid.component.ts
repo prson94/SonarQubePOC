@@ -18,11 +18,11 @@ import { BaseComponent } from '../base.component';
         <p-dataTable #dt [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3" [globalFilter]="gb">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
             <p-column *ngFor="let column of visibleColumns" [attr.header]="hideHeader ? null : column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable ? 'custom' : false" [field]="column.datafield" filterMatchMode="contains" (sortFunction)="customSort($event, column)">
-                <ng-template *ngIf="!hideHeader" pTemplate type="header">
+                <ng-template *ngIf="!hideHeader" pTemplate="header">
                     <span *ngIf="column.description != null && column.description != ''" [pTooltip]="column.description" tooltipPosition="top">{{column.text}}</span>
                     <span *ngIf="column.description == null || column.description == ''">{{column.text}}</span>
                 </ng-template>
-                <ng-template let-item="rowData" pTemplate type="body">
+                <ng-template let-item="rowData" pTemplate="body">
                     <d3s-dynamic-field-value [column]="column" [item]="item" [fields]="data.Fields" [isComplex]="isComplex"></d3s-dynamic-field-value>
                 </ng-template>
             </p-column>

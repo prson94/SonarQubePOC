@@ -549,6 +549,10 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 	background: #705F56;
 }
 
+button.ui-button:disabled {
+    	background: #b3998b;
+}
+
 /* Checkbox and Radio */
 .ui-chkbox-box.ui-state-active,
 .ui-chkbox-box.ui-state-focus.ui-state-active,
