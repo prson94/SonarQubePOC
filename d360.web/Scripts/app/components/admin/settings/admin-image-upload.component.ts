@@ -102,7 +102,6 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
 
 
     onLogoFileChange(event): void {
-        console.log(event);
         if (this.companyLogo == null)
             this.companyLogo = new CompanyImage();
 
