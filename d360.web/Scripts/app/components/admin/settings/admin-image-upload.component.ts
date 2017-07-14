@@ -102,6 +102,7 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
 
 
     onLogoFileChange(event): void {
+        console.log(event);
         if (this.companyLogo == null)
             this.companyLogo = new CompanyImage();
 
@@ -111,7 +112,9 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
             return;
         }
 
-        var files = event.srcElement.files;
+        let target = event.target || event.srcElement;
+        let files = target.files;
+
         this.companyLogo.file = files[0];
         this.companyLogo.setDataUrl();
 
@@ -127,7 +130,9 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
             return;
         }
 
-        var files = event.srcElement.files;
+        let target = event.target || event.srcElement;
+        let files = target.files;
+
         this.companyIcon.file = files[0];
         this.companyIcon.setDataUrl();
 
