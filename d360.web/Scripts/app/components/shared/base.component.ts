@@ -52,7 +52,7 @@ export class BaseComponent {
     //constructor(protected rightSidebarService?: RightSidebarService, protected webAnalyticsService?: WebAnalyticsService) { }
 
     protected setBrowserTitle(tileService: Title, area: string) {
-        tileService.setTitle(`D3S - ${area}`);
+        tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} - ${area}`);
     }
 
     logAction(actionName: string, objectName: string, objectId: number) {        

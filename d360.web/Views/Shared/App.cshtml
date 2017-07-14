@@ -22,6 +22,8 @@
     if ((useCdn ?? "").ToLower() == "true") {
         baseUrl = System.Configuration.ConfigurationManager.AppSettings["cdn:url"];
     }
+
+    var title = settings["BrowserTitlePrefix"] ?? "Data3Sixty, Inc.";
 }
 @functions{
     public string GetAntiForgeryToken()
@@ -37,7 +39,7 @@
     <base href="/"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta charset="utf-8"/>
-    <title>@ViewBag.Title - Data3Sixty, Inc.</title>
+    <title>@(title)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
     <meta name="description" content="Data3Sixty: Data Collaboration Suite"/>
     <link rel="icon" href="@(companyIcon)" type="image/x-icon"/>

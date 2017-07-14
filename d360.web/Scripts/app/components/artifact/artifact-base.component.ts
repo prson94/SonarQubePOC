@@ -23,11 +23,7 @@ export class ArtifactBaseComponent extends BaseComponent {
         this.rightSidebarService = rightSidebarService;
         this.webAnalyticsService = webAnalyticsService;
     }        
-
-    setBrowserTitle(tileService: Title, area: string) {
-        tileService.setTitle(`D3S - ${area}`);
-    }
-
+    
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         console.log('show/hide ' + activatedItem);
     }    
