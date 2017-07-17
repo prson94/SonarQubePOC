@@ -369,13 +369,22 @@ namespace d360.web.Controllers
 
                     if (resource.ID > 0)
                     {
+                        var settings = Community.GetCompanySettings();
+                        var sessionLengthMinutes = FormsAuthentication.Timeout.TotalMinutes;
+                        var sessionDurationString = settings["SessionTimeout"];
+
+                        if (!string.IsNullOrEmpty(sessionDurationString))
+                        {
+                            if (!double.TryParse(sessionDurationString, out sessionLengthMinutes))
+                                sessionLengthMinutes = FormsAuthentication.Timeout.TotalMinutes;
+                        }
                         // Create a login context for the asserted identity.
                         //FormsAuthentication.SetAuthCookie(userName, false);
                         var ticket = new FormsAuthenticationTicket(
                             1,
                             userName,
                             DateTime.Now,
-                            DateTime.Now.AddMinutes(FormsAuthentication.Timeout.TotalMinutes),
+                            DateTime.Now.AddMinutes(sessionLengthMinutes),
                             false,
                             $"userName, {Request.UserAgent}",
                             FormsAuthentication.FormsCookiePath
