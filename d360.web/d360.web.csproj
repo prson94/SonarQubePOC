@@ -880,6 +880,7 @@
     <Content Include="Views\Authentication\ResetMessage.cshtml" />
     <Content Include="Views\Shared\Anonymous.cshtml" />
     <Content Include="Views\Authentication\Register.cshtml" />
+    <Content Include="Views\Shared\GenericError.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -1,0 +1,33 @@
+﻿
+@{
+    ViewBag.Title = "Error";
+    Layout = "Anonymous.cshtml";
+}
+@section TopCss {
+    <style type="text/css">
+        #loginForm {
+            width: 90%;
+            max-width: 800px;
+        }
+
+            #loginForm #loginButton:disabled {
+                background-color: #ebebeb;
+                cursor: not-allowed;
+            }
+
+        .FieldNameRequired {
+            font-weight: 600;
+        }
+
+        .title {
+            font-size: 150%;
+        }
+    </style>
+}
+<body class="loginBody">
+
+    <div id="loginForm">
+        <p>An Error has occured.  Please contact your administrator for additional details.</p>
+    </div>
+</body>
+

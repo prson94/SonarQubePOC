@@ -1067,5 +1067,13 @@ namespace d360.web.Controllers
             FormsAuthentication.RedirectToLoginPage();
             return new EmptyResult();
         }
+
+
+        [AllowAnonymous, Route("Error")]
+        public ActionResult Error()
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            return View("../Shared/GenericError");
+        }
     }
 }
