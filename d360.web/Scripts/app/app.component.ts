@@ -30,7 +30,7 @@ import 'qtip2';
                     </div>                    
                     <d3s-right-sidebar></d3s-right-sidebar>                        
                 </main>
-                <p-growl [value]="msgs"></p-growl>
+                <p-growl [immutable] ="false" [value]="msgs"></p-growl>
                 <div #target></div>                
               `
 })
