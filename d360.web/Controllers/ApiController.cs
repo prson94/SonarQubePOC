@@ -7228,6 +7228,7 @@ SELECT (
             var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.SortOrder);
 
             var document = new SLDocument();
+            document.DeleteWorksheet("Sheet 1");
             document.AddWorksheet("Items");
 
             #region Create the list sheet
