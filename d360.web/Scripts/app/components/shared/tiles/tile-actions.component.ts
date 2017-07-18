@@ -7,35 +7,35 @@ import {MenuItem} from 'primeng/primeng';
      :host{
             text-transform:none;
         }   
-  `],
+  `], 
     template: `
                 <div class="TileTools"> 
                     <p-menubar *ngIf="hasDate" [model]="dateMenuItems"></p-menubar><!--workaround to position bug in menu-->
                     <p-menubar *ngIf="hasMenu" [model]="menuItems"></p-menubar>
                     <div *ngIf="!hasDate && !hasMenu">
                         <ul>                                                      
-                            <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" pTooltip="Add"><i class="fa fa-plus fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasSuggest"><a class="Action" (click)="suggestClick.emit(null)" pTooltip="Suggest"><i class="fa fa-commenting fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasExport"><a class="Action" (click)="exportClick.emit(null)" pTooltip="Export to Excel"><i class="fa fa-download fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasExportErrors"><a class="Action" (click)="exportErrorsClick.emit(null)" pTooltip="Export Errors to Excel"><i class="fa fa-download red-text fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasExportOriginal"><a class="Action" (click)="exportOriginalClick.emit(null)" pTooltip="Export Original Spreadsheet"><i class="fa fa-download blue-text fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasEdit"><a class="Action" (click)="editClick.emit(null)" pTooltip="Edit"><i class="fa fa-pencil fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasSave"><a class="Action" (click)="saveClick.emit(null)" pTooltip="Save"><i class="fa fa-floppy-o fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasFilterMode"><a class="Action" (click)="filterClick()" pTooltip="Filter Mode">
+                            <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Add'"><i class="fa fa-plus fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasSuggest"><a class="Action" (click)="suggestClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Suggest'"><i class="fa fa-commenting fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasExport"><a class="Action" (click)="exportClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Export to Excel'"><i class="fa fa-download fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasExportErrors"><a class="Action" (click)="exportErrorsClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Export Errors to Excel'"><i class="fa fa-download red-text fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasExportOriginal"><a class="Action" (click)="exportOriginalClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Export Original Spreadsheet'"><i class="fa fa-download blue-text fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasEdit"><a class="Action" (click)="editClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Edit'"><i class="fa fa-pencil fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasSave"><a class="Action" (click)="saveClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Save'"><i class="fa fa-floppy-o fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasFilterMode"><a class="Action" (click)="filterClick()" [pTooltip]="hideTooltip ? null : 'Filter Mode'">
                                 <i class="fa fa-filter fa-fw" [ngClass]="{'red-text darken-2':!filterMode}"></i>                                
                             </a></li>
-                            <li class="left" *ngIf="hasRefresh"><a class="Action" (click)="refreshClick.emit()" pTooltip="Refresh"><i class="fa fa-refresh fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasAuthenticate"><a class="Action" (click)="authenticateClick.emit()" pTooltip="Authenticate"><i class="fa fa-sign-in fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasApi"><a class="Action" (click)="apiClick.emit()" pTooltip="API Key"><i class="fa fa-key fa-fw"></i></a></li>
-                            <li class="left" *ngIf="hasPassword"><a class="Action" (click)="passwordClick.emit()" pTooltip="Password"><i class="fa fa-asterisk fa-fw"></i></a></li>                        
-                            <li class="left" *ngIf="hasFullScreen"><a class="Action" (click)="fullScreenClick.emit()" pTooltip="Fullscreen"><i class="fa fa-arrows-alt fa-fw"></i></a></li>                        
-                            <li class="left" *ngIf="hasUser"><a class="Action" (click)="userClick()" pTooltip="Show my items only">
+                            <li class="left" *ngIf="hasRefresh"><a class="Action" (click)="refreshClick.emit()" [pTooltip]="hideTooltip ? null : 'Refresh'"><i class="fa fa-refresh fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasAuthenticate"><a class="Action" (click)="authenticateClick.emit()" [pTooltip]="hideTooltip ? null : 'Authentication'"><i class="fa fa-sign-in fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasApi"><a class="Action" (click)="apiClick.emit()" [pTooltip]="hideTooltip ? null : 'API Key'"><i class="fa fa-key fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasPassword"><a class="Action" (click)="passwordClick.emit()" [pTooltip]="hideTooltip ? null : 'Password'"><i class="fa fa-asterisk fa-fw"></i></a></li>                        
+                            <li class="left" *ngIf="hasFullScreen"><a class="Action" (click)="fullScreenClick.emit()" [pTooltip]="hideTooltip ? null : 'Fullscreen'"><i class="fa fa-arrows-alt fa-fw"></i></a></li>                        
+                            <li class="left" *ngIf="hasUser"><a class="Action" (click)="userClick()" [pTooltip]="hideTooltip ? null : 'Show my items only'">
                                 <i class="fa fa-user fa-fw" [ngClass]="{'red-text darken-2':userMode}"></i>                                
                             </a></li>
-                            <li class="left" *ngIf="hasView"><a class="Action" (click)="viewClick.emit()" pTooltip="Preview"><i class="fa fa-eye fa-fw"></i></a></li>                        
+                            <li class="left" *ngIf="hasView"><a class="Action" (click)="viewClick.emit()" [pTooltip]="hideTooltip ? null : 'Preview'"><i class="fa fa-eye fa-fw"></i></a></li>                        
 
-<!-- close should always be leftmost -->
-                            <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" pTooltip="Close"><i class="fa fa-remove fa-fw"></i></a></li>
+<!-- close should always be last -->
+                            <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Close'"><i class="fa fa-remove fa-fw"></i></a></li>
                         </ul>
                     </div>
                 </div>          
@@ -86,6 +86,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];
     @Output() menuClick = new EventEmitter();
+
+    @Input() hideTooltip: boolean = false;
 
     @Output() fullScreenClick = new EventEmitter();
         

@@ -608,7 +608,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         switch (n.activityType) {
             case WorkflowActivityType.EmailNotification:
 
-                if (n.settings == null || n.settings == {})
+                if (n.settings == null || _.isEmpty(n.settings))
                     return false;
                 if (n.settings.MessageSubjectTemplate == null || n.settings.MessageSubjectTemplate.length < 1)
                     return false;
@@ -629,7 +629,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 }
                 break;
             case WorkflowActivityType.Form:
-                if (n.settings == null || n.settings == {})
+                if (n.settings == null || _.isEmpty(n.settings))
                     return false;
                 if (n.settings.FormResponseType == null)
                     return false;
@@ -650,7 +650,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                         return false;
                 }
 
-                if (n.fields == null || n.fields == {})
+                if (n.fields == null || _.isEmpty(n.fields))
                     return false;
                 if (n.fields.form == null)
                     return false;
@@ -1071,6 +1071,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
     private ExternalObjectsDropped(e: any) {
         this.myDiagram.model.nodeDataArray.forEach(n => {
+
+            //gojs doesn't like giving each node its own settings/fields object for some reason
+            //set it here if it's empty
+            if ((<any>n).settings == null || _.isEmpty((<any>n).settings))
+                (<any>n).settings = Object.create({});
+
+            if ((<any>n).fields == null || _.isEmpty((<any>n).fields))
+                (<any>n).fields = Object.create({});
+
             this.myDiagram.model.setDataProperty(n, 'valid', this.validateNode(<NodeModel>n));
         });
 

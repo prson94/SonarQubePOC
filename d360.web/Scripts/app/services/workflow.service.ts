@@ -233,6 +233,8 @@ export class WorkflowService extends BaseService {
     }
 
     getWorkflowTypeModel(id: number): Promise<WorkflowDiagramModel> {
+        if (id == null || id < 1)
+            return Promise.resolve(null);
         return this.http.get(`services/workflow/type/${id}`)
             .toPromise()
             .then(response => <WorkflowDiagramModel>response.json())

@@ -73,10 +73,10 @@
         </div>
         <div style="width: 95%">
             <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
-                <header>
+                <p-header>
                     <d3s-editor-header></d3s-editor-header>
                     <d3s-workflow-template-tool [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
-                </header>
+                </p-header>
             </p-editor>
         </div>
     </div>
@@ -85,13 +85,9 @@
     <div class="col s12">
         <header>
             &nbsp;
-            <!--primeng v4.1 issue, tooltip covers button-->
-            <!--<d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>-->
-            <div class="TileTools">
-                <a (click)="add()" style="color: black; cursor: pointer;"><i class="fa fa-plus"></i></a>
-            </div>
+            <d3s-tile-actions hideTooltip="true" hasAdd="true" (addClick)="add()"></d3s-tile-actions>
         </header>
-        <p-dataTable [value]="step.fields.form.field" selectionMode="single">
+        <p-dataTable [value]="step.fields.form.field" selectionMode="single" [immutable]="false">
             <p-column field="@id" header="Name"></p-column>
             <p-column field="@label" header="Label"></p-column>
             <p-column field="@type" header="Type"></p-column>

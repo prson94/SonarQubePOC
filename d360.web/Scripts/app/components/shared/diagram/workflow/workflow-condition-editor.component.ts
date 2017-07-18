@@ -187,7 +187,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             if (this.condition['@ValueType'] == 'L') {
                 this.workflowService.getLookupList(this.condition['@FieldTypeID'])
                     .then(r => {
-                        console.log(r);
+                        //console.log(r);
                         this.lookups = r;
                     });
             }

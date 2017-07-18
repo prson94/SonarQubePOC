@@ -28,17 +28,18 @@ declare var CompanySettings;
 
 export class AdminWorkflowEditorComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewChecked {
     @Input() id: number = 0;
+    @Input() model: WorkflowDiagramModel;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
     @ViewChild('ed2') ed: Editor;
 
-    private model: WorkflowDiagramModel;
     private workflowObjectTypes: WorkflowObjectType[] = [];
+    private defaultWorkflowObject = new WorkflowObjectType();
     private changesTypes: ChangeTypeInfo[] = [];
     private selectedObjectType: any = null;
     private conditions: any[] = [];
 
-    private showAddCondition: boolean = false;    
+    private showAddCondition: boolean = false;
     private saveButtonText: string = 'Next';
     private hideObject: boolean = false;
 
@@ -57,6 +58,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private responsibilities = [];
 
     private quill: any;
+
 
     constructor(
         private workflowService: WorkflowService,
@@ -90,15 +92,15 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 });
             })
             .then(() => {
-            //create initial model and settings if needed
-            if (this.model == null)
-                this.model = new WorkflowDiagramModel();
-            if (this.model.Event.SettingsObject == null)
-                this.model.Event.SettingsObject = {};
-            if (this.model.Event.SettingsObject.Settings == null)
-                this.model.Event.SettingsObject.Settings = {};
-            this.isLoading = false;
-        });
+                //create initial model and settings if needed
+                if (this.model == null)
+                    this.model = new WorkflowDiagramModel();
+                if (this.model.Event.SettingsObject == null)
+                    this.model.Event.SettingsObject = {};
+                if (this.model.Event.SettingsObject.Settings == null)
+                    this.model.Event.SettingsObject.Settings = {};
+                this.isLoading = false;
+            });
 
     }
 
@@ -125,9 +127,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                     return;
                 } else {
                     this.saveButtonText = 'Save';
+
+
                     return this.workflowService.getWorkflowTypeModel(this.id)
                         .then(r => {
-                            this.model = r
+                            if (this.id > 0)
+                                this.model = r;
 
                             if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null) {
                                 this.hideObject = (this.model.Event.SettingsObject.Settings.Visible == "false") ? true : false;
@@ -146,7 +151,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                             //console.log(r);
 
-                            if (this.model.Event.ConditionObject != null) {
+                            if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
                                 this.conditions = [];
 
                                 if (this.model.Event.ConditionObject.Condition.length == null)
@@ -175,7 +180,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             });
                         })
                         .then(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType))
-                        .then(r => this.workflowObjectTypes = r)
+                        .then(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r))
                         .then(() => {
                             if (this.hideShoppingCart) {
                                 this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
@@ -190,7 +195,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
-            .then(r => { this.workflowObjectTypes = r; })
+            .then(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r))
             .then(() => {
                 if (this.hideShoppingCart) {
                     this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
@@ -203,24 +208,27 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.showAddCondition = false;
         this.conditions = [];
 
-        if (e.indexOf('|') < 0)
-            return;
+        if (e != null && e.indexOf('|') > -1) {
+            this.objectType = e.split('|')[0];
+            this.objectID = +e.split('|')[1];
 
-        this.objectType = e.split('|')[0];
-        this.objectID = +e.split('|')[1];
+            if (this.objectType == 'ArtifactType')
+                this.loadTaxonomies();
+            else if (this.model.Event.SettingsObject.Settings.TaxonomyTypeID != null) {
+                delete this.model.Event.SettingsObject.Settings.TaxonomyTypeID;
+            }
 
-        if (this.objectType == 'ArtifactType')
-            this.loadTaxonomies();
-        else if (this.model.Event.SettingsObject.Settings.TaxonomyTypeID != null) {
-            delete this.model.Event.SettingsObject.Settings.TaxonomyTypeID;
+            if (this.model.Event.ChangeType != WorkflowChangeType.Schedule
+                && this.model.Event.SettingsObject.Settings.ScheduleInterval != null) {
+                delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
+            }
+
+            this.loadResponsibilities().then(() => this.validate());
+        } else {
+            this.isValid = false;
         }
 
-        if (this.model.Event.ChangeType != WorkflowChangeType.Schedule
-            && this.model.Event.SettingsObject.Settings.ScheduleInterval != null) {
-            delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
-        }
 
-        this.loadResponsibilities().then(() => this.validate());
     }
 
     loadTaxonomies(): Promise<any> {
@@ -266,7 +274,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.model.Type.PublishedVersionID = null;
 
         this.conditions.forEach(c => {
-                delete c['@FieldName']; 
+            delete c['@FieldName'];
         });
 
         if (this.model.Event.SettingsObject.Settings.SendAggregateEmail == false
@@ -286,7 +294,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
 
         this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
-        this.model.Event.Settings = JSON.stringify( this.model.Event.SettingsObject );
+        this.model.Event.Settings = JSON.stringify(this.model.Event.SettingsObject);
 
         //console.log('save: ', this.model.Event);
 
@@ -385,6 +393,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                     : this.model.Event.SettingsObject.Settings.MessageBodyTemplate)
                 + e;
         }
-        
+
     }
 }

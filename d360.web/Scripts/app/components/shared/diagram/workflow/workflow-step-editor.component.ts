@@ -104,7 +104,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     appendField(e: string) {
-        console.log(this.step.settings.MessageBodyTemplate, this.quill);
+        //console.log(this.step.settings.MessageBodyTemplate, this.quill);
 
         if (this.quill != null) {
             let len = this.quill.getLength();

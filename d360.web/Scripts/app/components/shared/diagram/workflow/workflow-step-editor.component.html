@@ -50,10 +50,10 @@
                 </div>
                 <div style="width: 95%">
                     <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
-                        <header>
+                        <p-header>
                             <d3s-editor-header></d3s-editor-header>
                             <d3s-workflow-template-tool [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
-                        </header>
+                        </p-header>
                     </p-editor>
                 </div>
             </div>

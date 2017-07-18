@@ -198,13 +198,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         this.step.fields.form.field.push(_.cloneDeep(this.newField));
 
-        //issue with primeng v4.1
-        let fields = _.cloneDeep(this.step.fields.form.field);
-        this.step.fields.form.field = null;
-        this.step.fields.form.field = fields;
-
-        //console.log(this.step.fields.form.field);
-
         this.newField = {};
         this.formMode = FormMode.Default;
         this.stepChange.emit(this.step);

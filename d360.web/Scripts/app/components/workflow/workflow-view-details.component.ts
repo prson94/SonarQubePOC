@@ -139,7 +139,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     }
 
     private showForm(item: any) {
-        console.log(item);
+        //console.log(item);
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowId}/${item.ID}/${item.ItemID}`);
     }
 };
