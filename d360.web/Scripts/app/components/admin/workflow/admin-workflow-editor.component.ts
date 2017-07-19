@@ -40,7 +40,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private conditions: any[] = [];
 
     private showAddCondition: boolean = false;
-    private saveButtonText: string = 'Next';
     private hideObject: boolean = false;
 
     private subjectAreaName: string;
@@ -91,16 +90,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                     });
                 });
             })
-            .then(() => {
-                //create initial model and settings if needed
-                if (this.model == null)
-                    this.model = new WorkflowDiagramModel();
-                if (this.model.Event.SettingsObject == null)
-                    this.model.Event.SettingsObject = {};
-                if (this.model.Event.SettingsObject.Settings == null)
-                    this.model.Event.SettingsObject.Settings = {};
-                this.isLoading = false;
-            });
+            .then(() => this.isLoading = false);
 
     }
 
@@ -117,32 +107,41 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     load(): Promise<any> {
+        
         this.isLoading = true;
 
         return this.workflowService.getChangeTypes()
             .then(r => { this.changesTypes = r; })
             .then(() => {
-                if (this.id < 1) {
-                    this.saveButtonText = 'Next';
-                    return;
-                } else {
-                    this.saveButtonText = 'Save';
-
 
                     return this.workflowService.getWorkflowTypeModel(this.id)
                         .then(r => {
-                            if (this.id > 0)
+                            if (this.id > 0 && this.model == null && r != null)
                                 this.model = r;
 
-                            if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null) {
-                                this.hideObject = (this.model.Event.SettingsObject.Settings.Visible == "false") ? true : false;
+
+                            //console.log('load', this.model);
+                            //if (this.id > 0 && (this.model == null || (this.model.Nodes == null && this.model.Links == null) || (this.model.Nodes.length)))
+                            //    this.model = r;
+
+                            //create initial model and settings if needed
+                            if (this.model == null)
+                                this.model = new WorkflowDiagramModel();
+                            if (this.model.Event.SettingsObject == null)
+                                this.model.Event.SettingsObject = {};
+                            if (this.model.Event.SettingsObject.Settings == null)
+                                this.model.Event.SettingsObject.Settings = {};
+
+                            if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null
+                            && this.model.Event.SettingsObject.Settings.Visible != null) {
+                                this.hideObject = (this.model.Event.SettingsObject.Settings.Visible.toString() == "false") ? true : false;
 
                                 if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null)
                                     //convert to bool
                                     this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() == "true" ? true : false;
                             }
 
-                            this.selectedObjectType = this.model.Event.Object + '|' + this.model.Event.ObjectID.toString();
+                            this.selectedObjectType = (this.model.Event.ObjectID != null) ? this.model.Event.Object + '|' + this.model.Event.ObjectID.toString() : '';
                             this.objectID = this.model.Event.ObjectID;
                             this.objectType = this.model.Event.Object;
 
@@ -151,7 +150,13 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                             //console.log(r);
 
-                            if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
+                            if (this.model.Event.ConditionObject == null && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
+                                let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
+                                this.conditions = [];
+                                conditions.forEach(c => this.conditions.push(c));
+
+                            }
+                            else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
                                 this.conditions = [];
 
                                 if (this.model.Event.ConditionObject.Condition.length == null)
@@ -186,7 +191,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                                 this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
                             }
                         });
-                }
+
             })
             .then(() => this.loadResponsibilities())
             .then(() => { this.validate(); });
@@ -296,19 +301,21 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
         this.model.Event.Settings = JSON.stringify(this.model.Event.SettingsObject);
 
-        //console.log('save: ', this.model.Event);
+        
 
-        if (this.id < 1)
-            this.onSave.emit(this.model);
-        else {
-            this.isLoading = true;
-            this.workflowService.saveWorkflowDiagramModel(this.model)
-                .then(r => {
-                    this.isLoading = false;
-                    this.model.Type.ID = r;
-                    this.onSave.emit(this.model);
-                });
-        }
+        //console.log('save: ', this.id, this.model);
+
+        //if (this.id < 1 || this.id == null)
+        this.onSave.emit(this.model);
+        //else {
+        //    this.isLoading = true;
+        //    this.workflowService.saveWorkflowDiagramModel(this.model)
+        //        .then(r => {
+        //            this.isLoading = false;
+        //            this.model.Type.ID = r;
+        //            this.onSave.emit(this.model);
+        //        });
+        //}
 
     }
 

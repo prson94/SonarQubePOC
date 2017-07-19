@@ -201,7 +201,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         this.workflowFieldsService.clearUsedFields();
 
         this.formFields = [];
-        //console.log('initializeFormFields', this.myDiagram.model.nodeDataArray);
+        //console.log('initializeFormFields', this.myDiagram.model.linkDataArray);
         this.myDiagram.model.nodeDataArray.forEach(n => {
 
             if (+(<NodeModel>n).activityType == WorkflowActivityType.Form
@@ -266,11 +266,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     //#region save/load
 
     private populateDiagram(): Promise<any> {
-        if (this.id < 1 || this.id == null) {
-            //this.model = new WorkflowDiagramModel();
-            this.parseData(this.model);
+        if (this.id < 1 || this.id == null || (this.model != null && this.model.Nodes != null && this.model.Nodes.length > 0)) {
+            return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object)
+                .then(r => this.fieldTypes = r)
+                .then(() => this.parseData(this.model));
+
+            //this.parseData(this.model);
             //console.log('populateDiagram', this.id);
-            return Promise.resolve();
+            //return Promise.resolve();
         }
 
         this.isLoading = true;
@@ -281,7 +284,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 if (this.model.Nodes != null)
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
                 //console.log(this.model);
-                //this.parseData(this.model);
             })
             .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
             .then(r => this.fieldTypes = r)
@@ -310,6 +312,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             data.Links.forEach(l => {
                 linkList.push(this.convertToDiagramModel(l, DiagramObjectType.Link))
             });
+        //console.log('parseData', nodeList, linkList);
 
         nodeList.forEach(n => this.myDiagram.model.addNodeData(n));
         linkList.forEach(l => dm.addLinkData(l));
@@ -346,12 +349,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
         this.model.Type.PublishedVersionID = publish ? -1 : null;
         m.Type = this.model.Type;
-        m.Event = this.id > 0 ? null : this.model.Event;
+        m.Event = this.model.Event;
         m.Nodes = nodes;
         m.Links = links;
 
 
-        console.log('save', m);
+        //console.log('save', m);
 
         this.isLoading = true;
 
@@ -422,7 +425,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             this.overlayHeader = this.tab;
         } else {
             let a = this.activityTypes.find(a => a.ID == p.activityType);
-            this.overlayHeader = (a == null) ? ((p.name == null || p.name == '') ? this.tab : p.name) : a.Description + (p.name == null ? '' : ' - ' + p.name);
+            let name = this.getNodeDisplayName(p);
+            this.overlayHeader = (a == null) ? name : a.Description + ((name == null || name.toLowerCase() == a.Description.toLowerCase()) ? '' : ' - ' + name);
+            //this.overlayHeader = (a == null) ? ((p.name == null || p.name == '') ? this.tab : p.name) : a.Description + (p.name == null ? '' : ' - ' + p.name);
         }
     }
 
@@ -439,8 +444,22 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         if (type == DiagramObjectType.Link) {
             let m: WorkflowDiagramLink = <WorkflowDiagramLink>model;
             let n = new LinkModel();
+            //console.log(_.cloneDeep(m), this.fieldTypes);
 
-            if (m.ConditionObject != null) {
+            if (m.ConditionObject == null && m.Condition != null && m.Condition.toString() === m.Condition && m.Condition.startsWith('{')) {
+                let conditions = JSON.parse(m.Condition).Conditions.Condition;
+                n.condition = [];
+                conditions.forEach(c => n.condition.push(c));
+
+                n.condition.forEach(c => {
+                    let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
+                    if (i >= 0)
+                        c['@FieldName'] = this.fieldTypes[i].FriendlyName;
+                });
+
+            }
+            else
+                if (m.ConditionObject != null) {
                 n.condition = [];
 
                 if (m.ConditionObject.Condition != null && m.ConditionObject.Condition.length != null) {
@@ -459,7 +478,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 n.condition = [];
             }
 
-            n.settings = (m.SettingsObject == null) ? {} : m.SettingsObject;
+            n.settings = (m.SettingsObject == null) ? ((m.Settings != null && m.Settings.toString() === m.Settings && m.Settings.startsWith('{')) ? JSON.parse(m.Settings).settings : {}) : m.SettingsObject;
             n.diagramObjectType = DiagramObjectType.Link;
             n.category = '';
             n.from = m.FromKey;
@@ -493,10 +512,16 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             n.stepType = m.StepType;
             n.category = 'task';
             n.fields = m.FieldsObject;
-            n.runCount = m.RunCount;
+            n.runCount = m.RunCount || 0;
 
             //special case for Form to deal with XML returning an object when field count = 1 instead of an array
             if (n.activityType == WorkflowActivityType.Form) {
+
+                if (m.Fields != null && m.Fields.toString() === m.Fields && m.FieldsObject == null && m.Fields.startsWith('{')) {
+                    n.fields = JSON.parse(m.Fields).fields;
+                    
+                }
+
                 if (n.fields != null && n.fields.form != null && n.fields.form.field != null && n.fields.form.field.length == null) {
                     let f = _.cloneDeep(n.fields.form.field);
 
@@ -505,16 +530,25 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 }
             }
 
-            if (m.ActivityTypeInfo != null) {
-                n.fore = m.ActivityTypeInfo.ForeColor;
-                n.back = m.ActivityTypeInfo.BackColor;
-                n.icon = m.ActivityTypeInfo.Icon;
-                n.activityName = m.ActivityTypeInfo.Name;
-                n.activityDescription = m.ActivityTypeInfo.Description;
+            let activityType: ActivityTypeInfo;
+
+            if (m.ActivityTypeInfo != null)
+                activityType = m.ActivityTypeInfo;
+            else
+                activityType = this.activityTypes.find(a => a.ID == n.activityType); 
+
+            if (activityType != null) {
+                n.fore = activityType.ForeColor;
+                n.back = activityType.BackColor;
+                n.icon = activityType.Icon;
+                n.activityName = activityType.Name;
+                n.activityDescription = activityType.Description;
             }
 
             if (m.SettingsObject != null && m.SettingsObject.settings != null)
                 n.settings = m.SettingsObject.settings;
+            else if (m.SettingsObject != null && !_.isEmpty(m.SettingsObject) && m.SettingsObject.settings == null)
+                n.settings = m.SettingsObject;
 
             if (m.StepType == StepType.Start)
                 n.category = 'start';
@@ -773,18 +807,34 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
     }
 
+    private getNodeDisplayName(data): string {
+        return data.name ? data.name.substring(0, 36) + (data.name.length > 36 ? '...' : '') : (data.activityDescription || data.activityName);
+    }
+
     //#endregion
 
     //#region events
+
+    private backClick() {
+        this.model.Nodes = [];
+        this.model.Links = [];
+
+        this.myDiagram.model.nodeDataArray.forEach(n => {
+            this.model.Nodes.push(<WorkflowDiagramNode>this.convertToWorkflowModel(<NodeModel>n));
+        });
+
+        (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
+            this.model.Links.push(<WorkflowDiagramLink>this.convertToWorkflowModel(<LinkModel>l));
+        });
+
+        this.onBackClick.emit(this.model);
+    }
 
     private changeStep(e: NodeModel) {
 
         this.myDiagram.startTransaction('changeStep');
 
         let n = this.myDiagram.model.findNodeDataForKey(e.key);
-        if (n != null) {
-            n.name = e.name;
-        }
 
         //TODO: just set n = e??
 
@@ -832,10 +882,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
         if (!e.hasMultipleInputs && n.settings.WaitForAllTransitions != null)
             delete n.settings.WaitForAllTransitions;
-        //console.log('changeStep: ', n, e);
 
-        //n.valid = this.validateNode(n);
-
+        this.myDiagram.model.setDataProperty(n, 'name', e.name);
         this.myDiagram.model.setDataProperty(n, 'valid', this.validateNode(n));
         this.validateDiagram();
 
@@ -882,7 +930,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         if (e.icon == 'fa-floppy-o')
             this.save();
         if (e.icon == 'fa-arrow-left')
-            this.onBackClick.emit();
+            this.backClick();
 
         //TODO: debugging remove this
         //this.resizeDiagram();
@@ -894,31 +942,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     }
 
     private resizeDiagram() {
-        //set the diagram div to a specific height
-        //required for GoJS
-
-        //let offset = this.diagramRef.nativeElement.offsetTop;
-        //let height = window.innerHeight;
-
-        //if (this.diagramRef.nativeElement.offsetParent) {
-        //    offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
-        //}
-
-        //debugging
-        //console.log('resizeDiagram :: innerHeight', window.innerHeight);
-        //console.log('resizeDiagram :: offsetTop', this.diagramRef.nativeElement.offsetTop);
-        //console.log('resizeDiagram :: offsetParent', (this.diagramRef.nativeElement.offsetParent) ? this.diagramRef.nativeElement.offsetParent.offsetTop : 0);
-        //console.log('resizeDiagram :: height', height - offset - 35);
-
-        //this.diagramRef.nativeElement.style.height = (height - offset - 35) + 'px';
-        //this.paletteRef.nativeElement.style.height = (height - offset - 35) + 'px';
-
         this.diagramRef.nativeElement.style.height = (window.innerHeight - this.diagramOffset) + 'px';
         this.paletteRef.nativeElement.style.height = (window.innerHeight - this.diagramOffset) + 'px';
         this.overlayMaxHeight = window.innerHeight - this.overlayOffset;
-
-        //this.overlayMaxHeight = height - offset - 35;
-        //console.log(this.overlayMaxHeight);
     }
 
     private reOrderLayout() {
@@ -1136,6 +1162,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
             let m = new NodeModel();
 
+            m.name = a.Description;
             m.category = 'task';
             m.fore = a.ForeColor;
             m.back = a.BackColor;
@@ -1233,7 +1260,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                         maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
                         font: "bold " + nodeFontSize + "pt sans-serif",
                     },
-                        new go.Binding("text", "activityName").makeTwoWay(),
+                        new go.Binding("text", "", d => this.getNodeDisplayName(d)),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     )
                 ),
@@ -1244,6 +1271,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             )
         );
     }
+
+
 
     private createTerminalNode(isStart: boolean): go.Node {
         let nodeWidth = 80;

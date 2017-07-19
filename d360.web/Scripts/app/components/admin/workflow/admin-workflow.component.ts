@@ -45,6 +45,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
 
     viewReadOnlyDiagram(e: any) {
         this.currentID = e;
+        this.workflow = null;
         this.mode = PageMode.ReadOnlyDiagram;
     }
 
@@ -54,6 +55,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
 
     add() {
         this.currentID = 0;
+        this.workflow = new WorkflowDiagramModel();
         this.mode = PageMode.Editor;
     }
 

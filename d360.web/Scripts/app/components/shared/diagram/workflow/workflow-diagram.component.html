@@ -27,14 +27,14 @@
         </div>
     </div>
     <div class="row" *ngIf="!isReadOnly" style="max-height: 50px; overflow-y: auto">
-        <div class="col s12">
+        <div class="col s6">
             <div *ngFor="let e of errors" class="errorMessage">&bull; {{e}}</div>
         </div>
     </div>
-    <div class="row" *ngIf="!isReadOnly" style="padding-top:8px;">
+    <div class="row" *ngIf="!isReadOnly" style="position: absolute; top: 97px; width: 100%;">
         <div class="col s6">
             <div>
-                <button pButton type="button" label="Back" (click)="onBackClick.emit()"></button>
+                <button pButton type="button" label="Back" (click)="backClick()"></button>
                 <button pButton type="button" label="Save" (click)="save()" [disabled]="!isValid"></button>
                 <button pButton type="button" label="Publish" (click)="save(true)" [disabled]="!isValid"></button>
             </div>

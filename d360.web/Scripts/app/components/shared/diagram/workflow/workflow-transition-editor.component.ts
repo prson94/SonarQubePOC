@@ -67,7 +67,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     ngOnChanges(changes: SimpleChanges) {
         if (!changes['transition'].isFirstChange() && changes['transition'].currentValue.key != changes['transition'].previousValue.key) {
-            this.formMode = FormMode.Adding;
+            this.formMode = FormMode.Default;
             this.filterFormFields();
         } else if (!changes['transition'].isFirstChange()) {
             this.filterFormFields();

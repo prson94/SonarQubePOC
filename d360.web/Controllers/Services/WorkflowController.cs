@@ -382,7 +382,7 @@ namespace d360.web.Controllers.Services
                 Type = type,
                 Event = @event,
                 CurrentVersion = currentVersion?.Version,
-                PublishedVersion = publishedVersion?.Version
+                PublishedVersion = publishedVersion?.Version ?? -1
             };
         }
 
@@ -813,14 +813,13 @@ namespace d360.web.Controllers.Services
             if (type == null || type.State != core.enums.State.Active)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
 
-            var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
-            var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
+            var model = GetWorkflowDiagram(id, currentVersion?.Version);
 
-            @event.ConditionObject = XmlToDynamic(@event.Condition);
-            @event.SettingsObject = (@event.Settings == null) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XDocument.Parse(@event.Settings)));
+            model.Type = type;
+            model.CurrentVersion = currentVersion?.Version ?? 1;
 
-            return Request.CreateResponse(HttpStatusCode.OK, new { Type = type, Event = @event, PublishedVersion = publishedVersion?.Version ?? -1, CurrentVersion = currentVersion.Version });
+            return Request.CreateResponse(HttpStatusCode.OK, model);
         }
 
         [Route("fieldtypes/{type}/{id:int}"), HttpGet]

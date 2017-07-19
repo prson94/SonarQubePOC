@@ -189,6 +189,8 @@ export class WorkflowService extends BaseService {
     }
 
     getWorkflowFieldTypes(id: number, type: string): Promise<FieldType[]> {
+        if (id == null || type == null)
+            return Promise.resolve([]);
         return this.http.get(`services/workflow/fieldtypes/${type}/${id}`)
             .toPromise()
             .then(response => <FieldType[]>response.json())
