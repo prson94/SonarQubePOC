@@ -291,6 +291,17 @@ namespace d360.web.Controllers
             return form.AllKeys.Any(i => i == fieldName) ? ((htmlEncode) ? Server.HtmlEncode(form[fieldName]) : form[fieldName]) : defaultValue;
         }
 
+        string parseNameField(FormCollection form, string fieldName, string defaultValue = null)
+        {
+            var value = form.AllKeys.Any(i => i == fieldName) ? (form[fieldName]) : defaultValue;
+
+            // only allow alpha numeric, whitespace, and apostrophes in firstname / last name.
+            if (!isValidUserProfileName(value))
+                throw new Exception("Error invalid characters contained in the provided name field.");
+
+            return value;
+        }
+
         #endregion
 
         #region Dynamic Editor Field Type Information For Angular2
@@ -14150,8 +14161,8 @@ order by	T.Name, I.DisplayValue";
                     a = new Resource
                     {
                         ResourceTypeID = typeID,
-                        FirstName = parseTextField(form, "FirstName"),
-                        LastName = parseTextField(form, "LastName"),
+                        FirstName = parseNameField(form, "FirstName"),
+                        LastName = parseNameField(form, "LastName"),
                         Email = parseTextField(form, "Email"),
                         Username = parseTextField(form, "Email"),
                         Status = parseBooleanField(form, "Status") ? "Active" : "Inactive",
@@ -14300,8 +14311,8 @@ order by	T.Name, I.DisplayValue";
                 if (model == null) throw new NotFoundException("resource");
 
                 // Static fields
-                model.FirstName = parseTextField(form, "FirstName");
-                model.LastName = parseTextField(form, "LastName");
+                model.FirstName = parseNameField(form, "FirstName");
+                model.LastName = parseNameField(form, "LastName");
                 model.Email = parseTextField(form, "Email");
                 model.Username = parseTextField(form, "Email");
                 model.Status = parseBooleanField(form, "Status") ? "Active" : "Inactive";
@@ -14359,8 +14370,8 @@ order by	T.Name, I.DisplayValue";
                 if (model == null) throw new NotFoundException("resource");
 
                 // Static fields
-                model.FirstName = parseTextField(form, "FirstName");
-                model.LastName = parseTextField(form, "LastName");
+                model.FirstName = parseNameField(form, "FirstName");
+                model.LastName = parseNameField(form, "LastName");
 
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);

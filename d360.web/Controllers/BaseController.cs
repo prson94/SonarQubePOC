@@ -1088,6 +1088,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return nameRegex.IsMatch(field);
         }
 
+        internal bool isValidUserProfileName(string name)
+        {
+            return !(name.Contains('>') || name.Contains('<') || name.Contains('"') || name.Contains('/') || name.Contains('\\'));
+        }
+
         internal string applyRelationFilteringExists(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null)
         {
             return sql + applyRelationFilteringExistsRawSuffix(Request, dbParams, fields);                
