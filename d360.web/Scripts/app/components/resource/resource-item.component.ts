@@ -16,6 +16,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 
 
 declare var CurrentResourceID;
+declare var SingleSignOn;
 
 @Component({
     selector: 'd3s-resource-item',
@@ -32,6 +33,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private selectedWorkflow: WorkflowType;
     private pageMode: PageMode = PageMode.Default;
     PageMode = PageMode;
+    private allowChangePassword = !SingleSignOn;
 
     constructor(
         protected router: Router,

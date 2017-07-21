@@ -1421,5 +1421,23 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
         }
 
         #endregion
+
+
+        protected bool IsSingleSignOn()
+        {
+            var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
+
+            foreach (var companySetting in c.CompanyDomainSettings)
+            {
+                if (Company.CurrentCompanyDomain == companySetting.UrlPrefix)
+                {
+                    return !(companySetting.AuthenticationType == core.enums.AuthenticationType.Forms);
+
+                }
+            }
+
+            return false;
+        }
+
     }
 }
