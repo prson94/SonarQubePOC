@@ -25,11 +25,17 @@
     "inputFiles": [
       "Content/primeng/v4.1.0-rc2/theme.css"
     ]
-  },  
+  },
   {
     "outputFileName": "content/primeng/v4.1.0/theme.min.css",
     "inputFiles": [
       "Content/primeng/v4.1.0/theme.css"
+    ]
+  },
+  {
+    "outputFileName": "content/primeng/v4.1.1/theme.min.css",
+    "inputFiles": [
+      "Content/primeng/v4.1.1/theme.css"
     ]
   },
   {
