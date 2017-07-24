@@ -2,6 +2,8 @@
 import { Subject } from 'rxjs/Subject';
 import { Favorite } from '../models/favorite.model';
 
+declare var CompanySettings;
+
 @Injectable()
 export class HeaderActionsService {    
     showFavorite: boolean = true;
@@ -9,7 +11,7 @@ export class HeaderActionsService {
     showHelp: boolean = true;
     showSearch: boolean = true;
     showRaiseIssue: boolean = false;  
-    showFollow: boolean = true;
+    showFollow: boolean = CompanySettings.ShowImpactSidebar != 'false';
     showShoppingCart: boolean = false;
 
     // Observable sources
