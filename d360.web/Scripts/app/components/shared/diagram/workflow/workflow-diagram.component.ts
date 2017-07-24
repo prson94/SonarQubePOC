@@ -53,6 +53,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     @Input() readonly: boolean = true;
     @Input() hasClose: boolean = false;
     @Input() hasBack: boolean = false;
+    @Input() hasHeader: boolean = true;
     @Input() selection: NodeModel | LinkModel;
     @Input() selectedStepId: string;
     @Output() selectedStepIdChange = new EventEmitter();
@@ -128,9 +129,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     }
 
     public ngOnChanges(changes: SimpleChanges) {
-        //TODO: handle on id change
-        if (changes['id'].currentValue != changes['id'].previousValue && !changes['id'].isFirstChange) {
+        //console.log('ngOnChanges', changes, this.id, this.version);
+        if ((changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue && !changes['id'].isFirstChange()) ||
+        (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue && !changes['version'].isFirstChange()))    {
             this.myDiagram.div = null;
+            this.myPalette.div = null;
+            this.model = null;
             this.initializeDiagram();
             this.initializeMenuItems();
             this.resizeDiagram();
@@ -140,7 +144,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
         if (changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue) {
             this.myDiagram.clearSelection();
-            this.myDiagram.select(this.myDiagram.findPartForKey(changes['selectedStepId'].currentValue));
+            let part = this.myDiagram.findPartForKey(changes['selectedStepId'].currentValue);
+            let node = this.myDiagram.findNodeForKey(changes['selectedStepId'].currentValue);
+            if (part) part.isSelected = true;
+            if (node) {
+                this.selectedData = node.data;
+                this.selectionChange.emit(node.data);
+                this.tab = 'history';
+                this.isWindowVisible = true;
+            }
         }
     }
 
@@ -266,7 +278,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     //#region save/load
 
     private populateDiagram(): Promise<any> {
-        if (this.id < 1 || this.id == null || (this.model != null && this.model.Nodes != null && this.model.Nodes.length > 0)) {
+        //console.log('populateDiagram', this.model, this.id, this.version);
+
+        if (this.model != null && this.model.Event != null && this.model.Event.ObjectID != null && (this.id < 1 || this.id == null || (this.model != null && this.model.Nodes != null && this.model.Nodes.length > 0))) {
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object)
                 .then(r => this.fieldTypes = r)
                 .then(() => this.parseData(this.model));
@@ -275,6 +289,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             //console.log('populateDiagram', this.id);
             //return Promise.resolve();
         }
+
+        if (this.id == null || this.version == null)
+            return Promise.resolve();
 
         this.isLoading = true;
 
@@ -942,9 +959,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     }
 
     private resizeDiagram() {
-        this.diagramRef.nativeElement.style.height = (window.innerHeight - this.diagramOffset) + 'px';
-        this.paletteRef.nativeElement.style.height = (window.innerHeight - this.diagramOffset) + 'px';
-        this.overlayMaxHeight = window.innerHeight - this.overlayOffset;
+        let dOffset = (this.hasHeader ? this.diagramOffset : this.diagramOffset - 125);
+        let oOffset = (this.hasHeader ? this.overlayOffset : this.overlayOffset - 125);
+        this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
+        this.paletteRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
+        this.overlayMaxHeight = window.innerHeight - oOffset;
     }
 
     private reOrderLayout() {

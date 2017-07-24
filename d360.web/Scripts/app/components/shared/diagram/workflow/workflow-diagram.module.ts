@@ -19,6 +19,7 @@ import { CoreModule } from '../../core.module';
 import { TilesModule } from '../../tiles/tiles.module';
 import { D3SOverlayWindowModule } from '../../overlay-window.component';
 import { D3SEditorHeaderModule } from '../../editor-header.component';
+import { SharedGridPagingInfoModule } from '../../grid-paging-info.component';
 
 import { WorkflowDiagramComponent } from './workflow-diagram.component';
 import { WorkflowStepEditorComponent } from './workflow-step-editor.component';
@@ -27,6 +28,7 @@ import { WorkflowConditionEditorComponent } from './workflow-condition-editor.co
 import { WorkflowStepFormEditorComponent } from './workflow-step-form-editor.component';
 import { WorkflowConditionListComponent } from './workflow-condition-list.component';
 import { WorkflowTemplateToolComponent } from './workflow-template-tool.component';
+import { WorkflowHistoryComponent } from './workflow-history.component';
 
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
@@ -40,6 +42,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         TilesModule,
         D3SOverlayWindowModule,
         D3SEditorHeaderModule,
+        SharedGridPagingInfoModule,
 
         //prime        
         DataTableModule,
@@ -56,12 +59,14 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         WorkflowStepFormEditorComponent,
         WorkflowConditionListComponent,
         WorkflowTemplateToolComponent,
+        WorkflowHistoryComponent,
     ],
     exports: [
         WorkflowDiagramComponent,
         WorkflowConditionEditorComponent,
         WorkflowConditionListComponent,
         WorkflowTemplateToolComponent,
+        WorkflowHistoryComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

@@ -279,4 +279,29 @@ export class WorkflowService extends BaseService {
             .then(response => <EmailTaskRecipientTypeInfo[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+
+    getWorkflowsByTypeList(types: string) {
+        return this.http.get(`services/workflow/typelist?types=${types}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+
+    }
+
+    getWorkflowVersionStepHistory(id: number) {
+        return this.http.get(`services/workflow/versionstep/history/${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+
+    }
+
+    getWorkflowVersionStepEvents(id: number) {
+        return this.http.get(`services/workflow/versionstep/events/${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+
+    }
 }

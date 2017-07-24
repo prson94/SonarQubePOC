@@ -1050,6 +1050,11 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />

@@ -1,9 +1,9 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { MonitorListComponent } from './monitor-list.component';
+import { MonitorComponent } from './monitor.component';
 
 const routes: Routes = [
-    { path: '', component: MonitorListComponent },
+    { path: '', component: MonitorComponent },
 ];
 
 @NgModule({

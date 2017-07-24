@@ -1,5 +1,5 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div class="tile tile-detail" style="max-height: 125px; height: 125px;">
+<div class="tile tile-detail" style="max-height: 125px; height: 125px;" *ngIf="hasHeader">
     <div class="row">
         <div class="col s12 m4">
             <div class="FieldName">
@@ -50,15 +50,15 @@
     <div  *ngIf="!isLoading" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
         <d3s-overlay-window width="500" padding="0" [(visible)]="isWindowVisible" [headerText]="overlayHeader" [overflowScroll]="true">
             <ul class="tab-menu">
+                <li *ngIf="isReadOnly" (click)="selectTab('history')" class="tab-item" [class.selected]="tab == 'history'">
+                    <i class="fa fa-history fa-2x"></i>
+                </li>
                 <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'">
                     <i class="fa fa-info-circle fa-2x"></i>
                 </li>
                 <li *ngIf="!isReadOnly" (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'">
                     <i class="fa fa-pencil fa-2x"></i>
                 </li>
-                <!--<li *ngIf="isReadOnly" (click)="selectTab('history')" class="tab-item" [class.selected]="tab == 'history'">
-                    <i class="fa fa-history fa-2x"></i>
-                </li>-->
             </ul>
             <div [ngSwitch]="tab" style="background-color: #fff; padding: 10px; overflow-y: auto; width:100%;" [style.max-height.px]="overlayMaxHeight">
                 <div *ngSwitchCase="'info'">
@@ -200,9 +200,15 @@
                         Nothing selected
                     </div>
                 </div>
-                <!--<div *ngSwitchCase="'history'">
-                    history goes here
-                </div>-->
+                <div *ngSwitchCase="'history'">
+                    <div *ngIf="selectedData != null">
+                        <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node" 
+                                              [versionStepId]="selectedData.key"></d3s-workflow-history>
+                        <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link" 
+                                              [versionStepTransitionFromId]="selectedData.from" 
+                                              [versionStepTransitionToId]="selectedData.to"></d3s-workflow-history>
+                    </div>
+                </div>
             </div>
         </d3s-overlay-window>
     </div>
