@@ -185,6 +185,12 @@ begin
 				delete PolicyTypeLevel where PolicyTypeID = @ObjectID
 			end
 
+			if @Object = 'ReferenceItemType'
+			BEGIN
+				DELETE ReferenceItem where ReferenceItemTypeID = @ObjectID
+				DELETE ReferenceItemType where ID = @ObjectID
+			END
+        
 			if @Object = 'ResponsibilityType'
 			begin
 				delete Responsibility where ResponsibilityTypeID = @ObjectID
