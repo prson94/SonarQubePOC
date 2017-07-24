@@ -44,7 +44,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     ngOnInit() {
         this.loadMenu();
-        this.loadFavorites();
+        if (CompanySettings.ShowFavorites != 'false')
+            this.loadFavorites();
 
         this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();

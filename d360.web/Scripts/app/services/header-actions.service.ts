@@ -6,7 +6,7 @@ declare var CompanySettings;
 
 @Injectable()
 export class HeaderActionsService {    
-    showFavorite: boolean = true;
+    showFavorite: boolean = CompanySettings.ShowFavorites != 'false';
     showNotifications: boolean = false;    
     showHelp: boolean = true;
     showSearch: boolean = true;
