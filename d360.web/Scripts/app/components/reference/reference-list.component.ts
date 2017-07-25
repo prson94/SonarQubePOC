@@ -36,7 +36,7 @@ import { ReferenceService } from '../../services/reference.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid #itemsGrid [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
+                                    <d3s-dynamic-grid #itemsGrid [sortField]="'Code'" [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>

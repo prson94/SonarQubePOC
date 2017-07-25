@@ -17,7 +17,7 @@ import { BaseComponent } from '../../shared/base.component';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                    <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
+                    <p-dataTable #dt [globalFilter]="gb" [sortField]="sortField" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">
                             <ng-template let-item="rowData" pTemplate type="body">
@@ -61,6 +61,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() editUri: string;
     @Input() title: string = "Items";
     @Input() itemName: string = "";
+    @Input() sortField: string;
 
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
