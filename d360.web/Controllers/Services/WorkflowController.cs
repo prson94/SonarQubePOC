@@ -1425,15 +1425,19 @@ namespace d360.web.Controllers.Services
 
             var results = Company.Query<dynamic>(string.Format(@"select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then 
                 cast(v.Version as varchar) + ' (Published)' 
-                else cast(v.Version as varchar) end as Version, v.UpdatedOn,
+                else cast(v.Version as varchar) end as VersionName, v.Version, v.UpdatedOn,
                 r.FirstName + ' ' + r.LastName as UpdatedBy  
-                ,d.Name as ObjectType, d.NgUrl, v.id as VersionID
+                ,d.Name as ObjectType, d.NgUrl, v.id as VersionID,
+				string_agg(cast(d2.Name as varchar(max)), ', ') as ObjectNames
                 from workflow.type t
                 join workflow.eventregistration e on e.typeid = t.id
                 join workflow.version v on v.typeid = t.id
                 left join cache.objectdetails d on d.object = e.object and d.objectid = e.objectid
                 left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
+				left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
+				left join cache.objectdetails d2 on d2.object = i.object and d2.objectid = i.objectid 
                 where t.id in ({0}) and t.Deleted = 0
+				group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name,d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
                 order by t.Name asc, v.Version asc, v.UpdatedOn desc", types)).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, results);

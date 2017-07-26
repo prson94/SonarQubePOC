@@ -41,7 +41,7 @@ import * as _ from 'lodash';
     <p-column header="Completed By" field="CompletedBy" sortable="true"></p-column>
     <p-column header="Name" field="Object" sortable="true">
         <ng-template pTemplate="body" let-item="rowData">
-            <a (click)="navigate(item.NgUrl)">{{item.Name}}</a>
+            <a>{{item.Name}}</a>
         </ng-template>
     </p-column>
 </p-dataTable>

@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
         <p-dataTable #dt [globalFilter]="gb" [value]="workflowItems" selectionMode="single" [rows]="15" [rowsPerPageOptions]="[10,15,25]" [paginator]="true" [pageLinks]="3" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>            
             <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="Version" header="Version" sortable="true" [filter]="!showSimpleFilter"></p-column>
+            <p-column field="VersionName" header="Version" sortable="true" [filter]="!showSimpleFilter"></p-column>
             <p-column field="UpdatedOn" header="Updated On" sortable="true" [filter]="!showSimpleFilter">
                 <ng-template pTemplate="body" let-item="rowData">
                     {{item.UpdatedOn | date:'shortDate'}}
@@ -29,6 +29,12 @@ import { Router } from '@angular/router';
             <p-column field="ObjectType" header="Type"sortable="true" [filter]="!showSimpleFilter">
                 <ng-template pTemplate="body" let-item="rowData">
                     <a (click)="openItem(item.NgUrl)">{{item.ObjectType}}</a>
+                </ng-template>
+            </p-column>
+            <p-column field="ObjectNames" header="Objects"sortable="true" [filter]="!showSimpleFilter">
+                <ng-template pTemplate="body" let-item="rowData">
+                    <a *ngIf="item.ObjectNames != null && item.ObjectNames.length > 15" [pTooltip]="item.ObjectNames">{{item.ObjectNames | slice:0:15}}...</a>
+                    <a *ngIf="item.ObjectNames != null && item.ObjectNames.length <= 15">{{item.ObjectNames}}</a>
                 </ng-template>
             </p-column>
         </p-dataTable>

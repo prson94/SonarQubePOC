@@ -1152,6 +1152,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         start.activityType = 0;
         start.pos = "0 0";
         start.valid = true;
+        start.runCount = 0;
 
         paletteModel.push(start);
 
@@ -1163,6 +1164,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         finish.activityType = 0;
         finish.pos = "0 0";
         finish.valid = true;
+        finish.runCount = 0;
 
         paletteModel.push(finish);
 
@@ -1174,6 +1176,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         terminate.activityType = 0;
         terminate.pos = "0 0";
         terminate.valid = true;
+        terminate.runCount = 0;
 
         paletteModel.push(terminate);
 
@@ -1322,6 +1325,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                     fill: backColor
                 }
                 ),
+                this.g(go.Panel, go.Panel.Horizontal, {
+                    alignment: go.Spot.BottomRight,
+                    margin: 0
+                },
+                    this.makeTerminalCountPanel(nodeFontSize, isStart)
+                ),
                 this.g(go.TextBlock, {
                     margin: 0,
                     alignment: go.Spot.Center,
@@ -1330,7 +1339,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                     stroke: "#fff",
                 },
                     new go.Binding("text", "name").makeTwoWay()
-                )
+                )     
             ),
             this.makePort((isStart) ? 'B' : 'T', (isStart) ? go.Spot.Bottom : go.Spot.Top, isStart, !isStart),
             this.makePort((isStart) ? 'R' : 'L', (isStart) ? go.Spot.Right : go.Spot.Left, isStart, !isStart)
@@ -1445,7 +1454,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         return iconPanel;
     }
 
-    private makeCountPanel(fontSize) {
+    private makeCountPanel(fontSize) {            
         fontSize -= 1;
         let countPanel = this.g(go.Panel,
             "Auto",
@@ -1470,6 +1479,40 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 },
                 new go.Binding("text", "runCount").makeTwoWay(),
                 new go.Binding("stroke", "back").makeTwoWay()
+            )
+            , new go.Binding("visible", "runCount", (k) => { return this.isReadOnly && k > 0; })
+        );
+
+        return countPanel;
+    }
+
+    private makeTerminalCountPanel(fontSize, isStart: boolean) {
+        //fontSize -= 1;
+        let backColor = isStart ? '#216b23' : '#6b2121';
+        let foreColor = '#fff';
+        let countPanel = this.g(go.Panel,
+            "Auto",
+            {
+                alignment: go.Spot.Center,
+                margin: 1
+            },
+            this.g(go.Shape, "RoundedRectangle",
+                {
+                    stroke: null,
+                    fill: foreColor,
+                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: 'Item count' })))
+                }
+            ),
+            this.g(go.TextBlock,
+                {
+                    row: 0,
+                    margin: 0,
+                    alignment: go.Spot.Center,
+                    editable: false,
+                    stroke: backColor,
+                    font: (fontSize) + "pt sans-serif",
+                },
+                new go.Binding("text", "runCount").makeTwoWay(),
             )
             , new go.Binding("visible", "runCount", (k) => { return this.isReadOnly && k > 0; })
         );

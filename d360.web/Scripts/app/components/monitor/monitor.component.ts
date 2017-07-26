@@ -13,12 +13,12 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     <div class="col s12 m5">
         <d3s-monitor-filter (selectionChange)="selectedWorkflowTypes = $event"></d3s-monitor-filter>
         <d3s-monitor-workflow [workflowTypes]="selectedWorkflowTypes" (selectionChange)="selectedWorkflowType = $event"></d3s-monitor-workflow>
-        <d3s-monitor-workflow-item [workflowVersionID]="selectedWorkflowType?.VersionID" (selectionChange)="selectedWorkflowItem = $event"></d3s-monitor-workflow-item>
+        <!--<d3s-monitor-workflow-item [workflowVersionID]="selectedWorkflowType?.Version" (selectionChange)="selectedWorkflowItem = $event"></d3s-monitor-workflow-item>-->
     </div>
     <div class="col s12 m7">
         <d3s-workflow-diagram 
             [id]="selectedWorkflowType?.TypeID" 
-            [version]="selectedWorkflowType?.VersionID" 
+            [version]="selectedWorkflowType?.Version" 
             [readonly]="true" 
             [hasHeader]="false"
             [selectedStepId]="selectedWorkflowItem?.VersionStepID">

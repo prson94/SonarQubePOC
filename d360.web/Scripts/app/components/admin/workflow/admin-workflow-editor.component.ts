@@ -148,9 +148,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             if (this.objectType == 'ArtifactType')
                                 this.loadTaxonomies();
 
-                            //console.log(r);
-
-                            if (this.model.Event.ConditionObject == null && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
+                            if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
                                 let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
                                 this.conditions = [];
                                 conditions.forEach(c => this.conditions.push(c));
@@ -323,6 +321,14 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.errorMessage = "";
 
         if (this.model == null) return;
+
+        this.conditions.forEach(c => {
+            if (c['@FieldName'] == null) {
+                this.errorMessage = "One or more conditions is not valid.";
+                this.isValid = false;
+                return;
+            }
+        });
 
         if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
             if (this.conditions.length < 1) {
