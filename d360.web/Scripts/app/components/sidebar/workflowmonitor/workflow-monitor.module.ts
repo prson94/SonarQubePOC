@@ -19,6 +19,10 @@ import { WorkflowDiagramModule } from '../../shared/diagram/workflow/workflow-di
 import { WorkflowMonitorRoutingModule } from './workflow-monitor.routes';
 
 import { WorkflowMonitorComponent } from './workflow-monitor.component';
+import { MonitorWorkflowComponent } from './monitor-workflow.component';
+
+import { MonitorModule } from '../../monitor/monitor.module';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -33,6 +37,7 @@ import { WorkflowMonitorComponent } from './workflow-monitor.component';
         CoreModule,        
         TilesModule,
         WorkflowDiagramModule,
+        MonitorModule,
 
         //prime        
         DataTableModule,
@@ -41,6 +46,7 @@ import { WorkflowMonitorComponent } from './workflow-monitor.component';
     ],
     declarations: [
         WorkflowMonitorComponent,
+        MonitorWorkflowComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

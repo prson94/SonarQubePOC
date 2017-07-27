@@ -1045,7 +1045,7 @@ namespace d360.web.Controllers.Services
                                         {
                                             var c = condition.Conditions.Condition[i];
 
-                                            if (c["@VersionStepID"] != null && c["@VersionStepID"] < 0)
+                                            if (c["@VersionStepID"] != null)
                                             {
                                                 condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
                                             }
@@ -1215,7 +1215,7 @@ namespace d360.web.Controllers.Services
                                             {
                                                 var c = condition.Conditions.Condition[i];
 
-                                                if (c["@VersionStepID"] != null && c["@VersionStepID"] < 0)
+                                                if (c["@VersionStepID"] != null)
                                                 {
                                                     condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
                                                 }
@@ -1266,7 +1266,7 @@ namespace d360.web.Controllers.Services
                                                 {
                                                     var c = condition.Conditions.Condition[i];
 
-                                                    if (c["@VersionStepID"] != null && c["@VersionStepID"] < 0)
+                                                    if (c["@VersionStepID"] != null)
                                                     {
                                                         condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
                                                     }
@@ -1413,21 +1413,11 @@ namespace d360.web.Controllers.Services
             if (string.IsNullOrWhiteSpace(types))
                 types = "-1";
 
-            //var results = Company.Query<dynamic>(
-            //    string.Format(@"select i.ID as ItemID, t.ID as TypeID, v.ID as VersionID, t.Name, 
-            //        v.Version, i.StartedOn, i.CompletedOn, d.ObjectTypeName, d.Name as ObjectName, d.NgUrl as Url
-            //        from workflow.item i
-            //        join workflow.version v on v.id = i.versionid
-            //        join workflow.type t on t.id = v.typeid
-            //        left join cache.objectdetails d on d.object = i.object and d.objectid = i.objectid
-            //        where t.id in ({0})
-            //        order by t.Name asc, v.Version asc, i.StartedOn desc, i.CompletedOn desc", types)).ToList();
-
             var results = Company.Query<dynamic>(string.Format(@"select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then 
                 cast(v.Version as varchar) + ' (Published)' 
                 else cast(v.Version as varchar) end as VersionName, v.Version, v.UpdatedOn,
                 r.FirstName + ' ' + r.LastName as UpdatedBy  
-                ,d.Name as ObjectType, d.NgUrl, v.id as VersionID,
+                ,d.Name as ObjectTypeName, d.ObjectType, d.ObjectTypeID, d.NgUrl, v.id as VersionID,
 				string_agg(cast(d2.Name as varchar(max)), ', ') as ObjectNames
                 from workflow.type t
                 join workflow.eventregistration e on e.typeid = t.id
@@ -1436,8 +1426,8 @@ namespace d360.web.Controllers.Services
                 left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
 				left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
 				left join cache.objectdetails d2 on d2.object = i.object and d2.objectid = i.objectid 
-                where t.id in ({0}) and t.Deleted = 0
-				group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name,d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
+                where t.id in ({0}) and t.State <> 3
+				group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name, d.ObjectType, d.ObjectTypeID, d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
                 order by t.Name asc, v.Version asc, v.UpdatedOn desc", types)).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
@@ -1449,14 +1439,36 @@ namespace d360.web.Controllers.Services
             var results = Company.Query<dynamic>(@"select 
 	            i.ID as ItemStepID, i.StartedOn, i.CompletedOn, r.FirstName + ' ' + r.LastName as StartedBy,
 	            r2.FirstName + ' ' + r2.LastName as CompletedBy, m.Object, m.ObjectID, d.Name, d.ObjectTypeName,
-	            d.NgUrl, d.TextPath,v.Name as StepName
+	            d.NgUrl, d.TextPath,v.Name as StepName, string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments, convert(varchar(max),vs.Settings) as Settings, vs.StepType as StepType, vs.ActivityType
+				,case when i.CompletedOn is not null then
+					case when vs.ActivityType = 2 then
+						'Status was changed on ' + cast(i.CompletedOn as varchar)
+					when vs.ActivityType = 3 then
+						'Form completed on ' + cast(i.CompletedOn as varchar) + ' by ' + string_agg(r3.FirstName + ' ' + r3.LastName, ', ')
+					when vs.ActivityType = 1 then
+						'Email sent on ' + cast(i.CompletedOn as varchar)
+					else
+						'Step completed on ' + cast(i.CompletedOn as varchar)
+					end
+				when vs.ActivityType = 3 then --form
+					'Waiting for form completion by ' + string_agg(r3.FirstName + ' ' + r3.LastName, ', ')
+				when vs.ActivityType = 1 then --email
+					'An error occurred or the email is currently queued for sending'
+				else
+					''
+				end as [Status]
             from workflow.itemstep i
             left join workflow.item m on m.id = i.itemid
+			left join workflow.itemassignment a on a.itemid = m.id
+			left join workflow.versionstep vs on vs.id = i.stepid
             left join cache.objectdetails d on d.object = m.object and d.objectid = m.objectid
             left join reporting.Global_resource r on r.ResourceID = i.StartedBy
             left join reporting.Global_resource r2 on r2.ResourceID = i.CompletedBy
+			left join reporting.Global_resource r3 on r3.ResourceID = a.ResourceObjectID
             inner join workflow.versionstep v on v.id = i.stepid
-            where v.id = @id", new { id }).ToList();
+            where v.id = @id
+			group by i.id, i.startedon, i.completedon, r.FirstName, r.LastName, r2.FirstName, r2.LastName, m.Object, m.ObjectID, d.Name,
+				d.ObjectTypeName, d.NgUrl, d.TextPath, v.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType", new { id }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }

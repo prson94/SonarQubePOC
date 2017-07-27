@@ -20,6 +20,7 @@ import { WorkflowListItem } from '../../models/workflow.model';
 })
 
 export class MonitorFilterComponent extends BaseComponent implements OnInit {
+    @Input() selectAll: boolean = false;
     @Input() selection: any[];
     @Output() selectionChange = new EventEmitter();
     items: any[];
@@ -42,6 +43,12 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
                     i.label = i.Name;
                     i.value = i.ID.toString();
                 });
+
+                this.selection = [];
+                if (this.selectAll)
+                    this.items.forEach(i => this.selection.push(i.value));
+                    
+                this.selectionChange.emit(this.selection);
                 this.isLoading = false;
             });
     }
@@ -49,7 +56,5 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
     change(e: any) {
         this.selection = e;
         this.selectionChange.emit(e);
-
-        //console.log(this.selection);
     }
 }

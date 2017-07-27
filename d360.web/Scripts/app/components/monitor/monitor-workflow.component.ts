@@ -26,9 +26,9 @@ import { Router } from '@angular/router';
                 </ng-template>
             </p-column>
             <p-column field="UpdatedBy" header="Updated By" sortable="true" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="ObjectType" header="Type"sortable="true" [filter]="!showSimpleFilter">
+            <p-column field="ObjectTypeName" header="Type"sortable="true" [filter]="!showSimpleFilter">
                 <ng-template pTemplate="body" let-item="rowData">
-                    <a (click)="openItem(item.NgUrl)">{{item.ObjectType}}</a>
+                    <a (click)="openItem(item.NgUrl)">{{item.ObjectTypeName}}</a>
                 </ng-template>
             </p-column>
             <p-column field="ObjectNames" header="Objects"sortable="true" [filter]="!showSimpleFilter">
@@ -70,6 +70,8 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit, O
     @Input() workflowTypes: any[];
     @Input() selection: any;
     @Output() selectionChange = new EventEmitter();
+    @Input() objectType: string;
+    @Input() objectId: number;
 
     workflowItems: any[];
 
@@ -99,8 +101,13 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit, O
         this.workflowService.getWorkflowsByTypeList(typeList)
             .then(r => {
                 this.workflowItems = r;
-                this.isLoading = false;
-            });
+            })
+            .then(() => {
+                if (this.objectType != null && this.objectId != null) {
+                    this.workflowItems = this.workflowItems.filter(i => i.ObjectType == this.objectType && i.ObjectTypeID == this.objectId);
+                }
+            })
+            .then(() => this.isLoading = false);
     }
 
     openItem(url: string) {

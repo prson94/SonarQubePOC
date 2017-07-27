@@ -18,6 +18,8 @@ import { WorkflowFieldsService } from '../../../services/workflow-fields.service
 import { TaxonomiesService } from '../../../services/taxonomies.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
+import * as _ from 'lodash';
+
 declare var CompanySettings;
 
 @Component({
@@ -148,7 +150,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             if (this.objectType == 'ArtifactType')
                                 this.loadTaxonomies();
 
-                            if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
+                            if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
                                 let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
                                 this.conditions = [];
                                 conditions.forEach(c => this.conditions.push(c));

@@ -1,9 +1,9 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { WorkflowMonitorComponent } from './workflow-monitor.component';
+import { MonitorWorkflowComponent } from './monitor-workflow.component';
 
 const routes: Routes = [
-    { path: ':objectType/:objectId', component: WorkflowMonitorComponent },
+    { path: ':objectType/:objectId', component: MonitorWorkflowComponent },
 ];
 
 @NgModule({

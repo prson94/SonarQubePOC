@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnChanges } from '@angular/core';
+﻿import { Component, OnInit, OnChanges, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -11,9 +11,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     template: ` 
 <div class="row">
     <div class="col s12 m5">
-        <d3s-monitor-filter (selectionChange)="selectedWorkflowTypes = $event"></d3s-monitor-filter>
-        <d3s-monitor-workflow [workflowTypes]="selectedWorkflowTypes" (selectionChange)="selectedWorkflowType = $event"></d3s-monitor-workflow>
-        <!--<d3s-monitor-workflow-item [workflowVersionID]="selectedWorkflowType?.Version" (selectionChange)="selectedWorkflowItem = $event"></d3s-monitor-workflow-item>-->
+        <d3s-monitor-filter (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
+        <d3s-monitor-workflow [workflowTypes]="selectedWorkflowTypes" (selectionChange)="selectedWorkflowType = $event" [objectType]="objectType" [objectId]="objectId"></d3s-monitor-workflow>
     </div>
     <div class="col s12 m7">
         <d3s-workflow-diagram 
@@ -29,10 +28,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 })
 
 export class MonitorComponent extends BaseComponent implements OnInit {
+    @Input() objectType: string;
+    @Input() objectId: number;
     selectedWorkflowTypes: any[];
     selectedWorkflowType: any;
     selectedWorkflowItem: any;
     selectedWorkflowItemDetail: any;
+    selectAll: boolean = false;
 
     constructor(
         protected titleService: Title,
@@ -42,6 +44,12 @@ export class MonitorComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
+        console.log(this.objectType, this.objectId);
+
+        if (this.objectType != null && this.objectId != null) {
+            this.selectAll = true;
+        }
+
         this.setBrowserTitle(this.titleService, 'Workflow Monitor');
 
         this.headerBreadcrumbService.clearBreadcrumbs();

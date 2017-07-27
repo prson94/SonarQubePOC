@@ -61,6 +61,13 @@ import {
         MonitorWorkflowComponent,    
         MonitorWorkflowItemComponent,   
     ],
+    exports: [
+        MonitorComponent,
+        MonitorFilterComponent,
+        MonitorListComponent,
+        MonitorWorkflowComponent,
+        MonitorWorkflowItemComponent,  
+        ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ] 

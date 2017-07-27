@@ -1217,6 +1217,7 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\visualization.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\visualization.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\monitor-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.routes.ts" />
