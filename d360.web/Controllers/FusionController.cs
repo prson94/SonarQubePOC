@@ -521,7 +521,8 @@ select * from h where ID <> @t order by h.[Level] desc;
                     FieldColumnName = $"{name}",
                     FieldName = $"{name}_T.FormattedValue as [{name}]",
                     FieldFriendlyName = f.FriendlyName,
-                    FieldJoin = $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = 'FusionAttribute' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1",
+                    //FieldJoin = $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = 'FusionAttribute' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1",
+                    FieldJoin = $"inner join FieldType { name }_TT on { name }_TT.ID = { f.ID } and { name }_TT.Object = 'FusionAttributeType' and { name }_TT.ObjectID = @t left join Field { name }_T on { name }_T.ObjectType = 'FusionAttribute' and { name }_T.ObjectID = A.ID and { name }_T.FieldTypeID = { name }_TT.ID ",
                     JoinOrder = 100
                 });
             });
