@@ -112,6 +112,11 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                 index = 1;
                 rowNumber++;
                 document.SetCellValue(rowNumber, index++, (string)row.Name);
+
+                if ((((string)row.Description) ??"").Contains("\u001A"))
+                {
+                    row.Description = (string)row.Description.Replace("\u001A", "");
+                }
                 document.SetCellValue(rowNumber, index++, (string)row.Description);
                 document.SetCellValue(rowNumber, index++, (string)row.TextPath);
                 if (type.ParentID > 0)
@@ -139,7 +144,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                             else
                                 document.SetCellValue(rowNumber, index++, val);
                             break;
-                        default:
+                        default:                            
                             document.SetCellValue(rowNumber, index++, (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]));
                             break;
                     }
