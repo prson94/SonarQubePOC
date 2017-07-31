@@ -285,7 +285,13 @@ namespace d360.web.Controllers
 
                         var db = Community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = Company.CurrentCompanyID }).SingleOrDefault();
 
-                        var fusionQueue = new FusionQueueManager(db.FusionQueue);
+                        var fusionQueueName = db.FusionQueue;
+
+#if DEBUG
+                        fusionQueueName = "fusion-queue-debug";
+#endif
+
+                        var fusionQueue = new FusionQueueManager(fusionQueueName);
 
                         await fusionQueue.SendMessageAsync(new FusionProcessingData
                         {

@@ -1001,6 +1001,8 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             {
                 Trace.TraceInformation("NOT LOGGING ANY CHANGED FUSION ATTRIBUTE INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
 
+                _workArea.Changes.AddCount += _workArea.FusionAttributeTempValues.Count();
+                
                 return;
             }
 
@@ -1029,6 +1031,8 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
             {
                 Trace.TraceInformation("NOT LOGGING ANY CHANGED FIELD INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
 
+
+                _workArea.Changes.AddCount += _workArea.FieldValueCollection.Count();
                 _workArea.FieldValueCollection = null;
 
                 return;
