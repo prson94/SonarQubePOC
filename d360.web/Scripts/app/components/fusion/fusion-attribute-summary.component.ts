@@ -84,7 +84,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         super();
     }
         
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
         if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {            
             this.fusionObject = 'FusionAttributeType';
             this.fusionObjectID = this.fusionAttributeTypeId;
@@ -104,6 +104,18 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
             this.getFieldsDefinition();            
         } 
+        else if (changes['initialFusionAttributeId'] && this.initialFusionAttributeId && this.fusionAttributeTypeId) 
+        {
+            this.fusionObject = 'FusionAttributeType';
+            this.fusionObjectID = this.fusionAttributeTypeId;
+            this.fusionQueryAttributeTypeId = null;
+            if (this.initialFusionAttributeId > 0)
+                this.stateService.fusionFilters.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
+
+            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID);
+
+            this.getFieldsDefinition();            
+        }
     }
 
     closeEditor() {
