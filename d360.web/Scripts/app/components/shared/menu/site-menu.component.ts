@@ -21,7 +21,7 @@ declare var CompanySettings;
                     <ng-template ngFor let-menu [ngForOf]="siteMenu">
                         <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [menu]="menu"></d3s-site-menu-category>
                     </ng-template>                  
-                    <d3s-site-menu-category *ngIf="isAdmin" [title]="'Settings'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>                    
+                    <d3s-site-menu-category *ngIf="isAdmin" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>                    
                 </ul>
                 `,    
     providers: [SiteMenuService, FavoritesService],
