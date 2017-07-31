@@ -23,25 +23,6 @@ import { Router } from '@angular/router';
     </div>
 </div>
 
-<!--
-            <p-column field="Name" header="Item" [sortable]="true">
-                <ng-template let-item="rowData" pTemplate type="body">
-                    <a (click)="openItem(item.Url)">{{item.Name}}</a>
-                </ng-template>
-            </p-column>  
-            <p-column field="NumberOfEvents" header="Total Events" [sortable]="true"></p-column>                                      
-            <p-column field="UpdatedOn" header="Updated" [sortable]="true">
-                <ng-template let-col let-data="rowData" pTemplate type="body">
-                    <span>{{data.UpdatedOn | date: 'shortDate'}}</span>
-                </ng-template>
-            </p-column>
-            <p-column field="CompletedOn" header="Completed" [sortable]="true">
-                <ng-template let-col let-data="rowData" pTemplate type="body">
-                    <span>{{data.CompletedOn | date: 'shortDate'}}</span>
-                </ng-template>
-            </p-column>
--->
-
               `,
     providers: [WorkflowService],
 })

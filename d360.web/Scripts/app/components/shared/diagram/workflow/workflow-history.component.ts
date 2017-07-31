@@ -23,8 +23,17 @@ import { WorkflowService } from '../../../../services/workflow.service';
     providers: [WorkflowService],
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-<p-dataTable #dt *ngIf="!isLoading" [value]="history" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,15]" [paginator]="true" [pageLinks]="3" scrollable="true" scrollWidth="480px">
+<header>&nbsp;
+    <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+</header>
+<p-dataTable #dt *ngIf="!isLoading" [value]="history" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,15]" [paginator]="true" [pageLinks]="3" scrollable="true" scrollWidth="560px">
     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>    
+    <p-column header="Object" field="Object" sortable="true" [style]="{'width' : '120px'}">
+        <ng-template pTemplate="body" let-item="rowData">
+            <a>{{item.Name}}</a>
+        </ng-template>
+    </p-column>    
+    <p-column header="Status" field="Status" sortable="true" [style]="{'width' : '80px'}">></p-column>
     <p-column header="Started On" field="StartedOn" sortable="true" [style]="{'width' : '80px'}">
         <ng-template pTemplate="body" let-item="rowData">
             {{item.StartedOn | date:'shortDate'}}
@@ -36,12 +45,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
         </ng-template>
     </p-column>
     <p-column header="Started By" field="StartedBy" sortable="true" [style]="{'width' : '120px'}"></p-column>
-    <p-column header="Object" field="Object" sortable="true" [style]="{'width' : '120px'}">
-        <ng-template pTemplate="body" let-item="rowData">
-            <a>{{item.Name}}</a>
-        </ng-template>
-    </p-column>
-    <p-column header="Status" field="Status" sortable="true" [style]="{'width' : '200px'}">></p-column>
+    <p-column header="Comment" field="Comment" sortable="true" [style]="{'width' : '200px'}">></p-column>
 </p-dataTable>
 
 `
@@ -76,5 +80,9 @@ export class WorkflowHistoryComponent extends BaseComponent implements OnInit, O
                     this.isLoading = false;
                 });
         }
+    }
+
+    export() {
+        this.workflowService.exportVersionStepHistory(this.versionStepId);
     }
 }

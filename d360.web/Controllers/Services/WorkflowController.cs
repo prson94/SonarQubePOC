@@ -24,6 +24,7 @@ using d360.model.workflow;
 using System.Data.Entity;
 using System.Collections;
 using System.Text.RegularExpressions;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers.Services
 {
@@ -1413,12 +1414,24 @@ namespace d360.web.Controllers.Services
             if (string.IsNullOrWhiteSpace(types))
                 types = "-1";
 
-            var results = Company.Query<dynamic>(string.Format(@"select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then 
+            var results = Company.Query<dynamic>(string.Format(@"with a as
+(
+select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then 
                 cast(v.Version as varchar) + ' (Published)' 
                 else cast(v.Version as varchar) end as VersionName, v.Version, v.UpdatedOn,
                 r.FirstName + ' ' + r.LastName as UpdatedBy  
                 ,d.Name as ObjectTypeName, d.ObjectType, d.ObjectTypeID, d.NgUrl, v.id as VersionID,
-				string_agg(cast(d2.Name as varchar(max)), ', ') as ObjectNames
+				string_agg(cast(d2.Name as varchar(max)), ', ') as ObjectNames, null as Responsibility, null as SpecificUser
+				,case when count(s.StepID) > 0 then
+					case when max(vs.ActivityType) = 3 then
+						'Waiting on user action'
+					else
+						'Incomplete'
+					end
+				else
+					'Complete'
+				end as [Status],
+				max(s.StepID) as CurrentStepID
                 from workflow.type t
                 join workflow.eventregistration e on e.typeid = t.id
                 join workflow.version v on v.typeid = t.id
@@ -1426,9 +1439,88 @@ namespace d360.web.Controllers.Services
                 left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
 				left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
 				left join cache.objectdetails d2 on d2.object = i.object and d2.objectid = i.objectid 
+				left join workflow.versionstep vs on vs.versionid = v.id
+				left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
+				left join workflow.itemassignment ia on ia.itemid = s.id
                 where t.id in ({0}) and t.State <> 3
-				group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name, d.ObjectType, d.ObjectTypeID, d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
-                order by t.Name asc, v.Version asc, v.UpdatedOn desc", types)).ToList();
+				group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name, d.ObjectType, 
+				d.ObjectTypeID, d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
+				)
+				select a.*,vs.Settings,vs.ActivityType, vs.StepType, null as ResponsibleUser, null as SpecificUser, s.StartedBy from a
+				left join workflow.versionstep vs on vs.id = a.currentstepid
+				left join (
+					select stepid, string_agg(r.Firstname + ' ' + r.LastName,', ') as StartedBy
+					from (select distinct stepid, startedby from workflow.itemstep) i
+					left join reporting.Global_resource r on r.ResourceID = i.StartedBy
+					group by stepid
+				) s on s.stepid = a.currentstepid
+				order by a.Name asc, a.Version asc, a.UpdatedOn desc", types)).ToList();
+
+            foreach(dynamic r in results)
+            {
+                if (r.CurrentStepID != null && r.Settings != null && r.ActivityType != null)
+                {
+                    var s = XmlToDynamic(r.Settings);
+
+                    switch((WorkflowActivityType)r.ActivityType)
+                    {
+                        case WorkflowActivityType.Form:
+                            if (s.SendFormEmail != null && (bool)s.SendFormEmail == true)
+                            {
+                                if (s.MessageRecipientType == EmailTaskRecipientType.Responsibility)
+                                {
+                                    if (s.ResponsibilityTypeID != null)
+                                    {
+                                        var resources = Company.Query<string>(@"select string_agg(r.FirstName + ' ' + r.LastName, ', ') as Resources from
+				                        (
+					                        select distinct r.* from responsibilitydetail d
+					                        left join [ResourceGroup] g on g.GroupID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Group'
+					                        left join reporting.Global_resource r on (r.ResourceID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Resource') or (r.ResourceID = g.ResourceID and d.ResponsibleObjectType = 'Group')
+					                        where responsibilitytypeid  = @id
+				                        ) r", new { id = (int)s.ResponsibilityTypeID });
+                                        r.ResponsibleUser = resources;
+                                    }
+                                }
+                                else if (s.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
+                                {
+                                    r.ResponsibleUser = s.MessageToUser; 
+                                }
+                                else if (s.MessageRecipientType == EmailTaskRecipientType.Initiator)
+                                {
+                                    r.ResponsibleUser = r.StartedBy;
+                                }
+                                    
+                            }
+                            break;
+                        case WorkflowActivityType.EmailNotification:
+                            if (s.MessageRecipientType == EmailTaskRecipientType.Responsibility)
+                            {
+                                if (s.ResponsibilityTypeID != null)
+                                {
+                                    var resources = Company.Query<string>(@"select string_agg(r.FirstName + ' ' + r.LastName, ', ') as Resources from
+				                        (
+					                        select distinct r.* from responsibilitydetail d
+					                        left join [ResourceGroup] g on g.GroupID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Group'
+					                        left join reporting.Global_resource r on (r.ResourceID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Resource') or (r.ResourceID = g.ResourceID and d.ResponsibleObjectType = 'Group')
+					                        where responsibilitytypeid  = @id
+				                        ) r", new { id = (int)s.ResponsibilityTypeID });
+                                    r.ResponsibleUser = resources;
+                                }
+                            }
+                            else if (s.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
+                            {
+                                r.ResponsibleUser = s.MessageToUser;
+                            }
+                            else if (s.MessageRecipientType == EmailTaskRecipientType.Initiator)
+                            {
+                                r.ResponsibleUser = r.StartedBy;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
@@ -1436,42 +1528,62 @@ namespace d360.web.Controllers.Services
         [Route("versionstep/history/{id:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowVersionStepHistory(int id)
         {
-            var results = Company.Query<dynamic>(@"select 
-	            i.ID as ItemStepID, i.StartedOn, i.CompletedOn, r.FirstName + ' ' + r.LastName as StartedBy,
-	            r2.FirstName + ' ' + r2.LastName as CompletedBy, m.Object, m.ObjectID, d.Name, d.ObjectTypeName,
-	            d.NgUrl, d.TextPath,v.Name as StepName, string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments, convert(varchar(max),vs.Settings) as Settings, vs.StepType as StepType, vs.ActivityType
-				,case when i.CompletedOn is not null then
-					case when vs.ActivityType = 2 then
-						'Status was changed on ' + cast(i.CompletedOn as varchar)
-					when vs.ActivityType = 3 then
-						'Form completed on ' + cast(i.CompletedOn as varchar) + ' by ' + string_agg(r3.FirstName + ' ' + r3.LastName, ', ')
-					when vs.ActivityType = 1 then
-						'Email sent on ' + cast(i.CompletedOn as varchar)
-					else
-						'Step completed on ' + cast(i.CompletedOn as varchar)
-					end
-				when vs.ActivityType = 3 then --form
-					'Waiting for form completion by ' + string_agg(r3.FirstName + ' ' + r3.LastName, ', ')
-				when vs.ActivityType = 1 then --email
-					'An error occurred or the email is currently queued for sending'
-				else
-					''
-				end as [Status]
-            from workflow.itemstep i
-            left join workflow.item m on m.id = i.itemid
-			left join workflow.itemassignment a on a.itemid = m.id
-			left join workflow.versionstep vs on vs.id = i.stepid
-            left join cache.objectdetails d on d.object = m.object and d.objectid = m.objectid
-            left join reporting.Global_resource r on r.ResourceID = i.StartedBy
-            left join reporting.Global_resource r2 on r2.ResourceID = i.CompletedBy
-			left join reporting.Global_resource r3 on r3.ResourceID = a.ResourceObjectID
-            inner join workflow.versionstep v on v.id = i.stepid
-            where v.id = @id
-			group by i.id, i.startedon, i.completedon, r.FirstName, r.LastName, r2.FirstName, r2.LastName, m.Object, m.ObjectID, d.Name,
-				d.ObjectTypeName, d.NgUrl, d.TextPath, v.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType", new { id }).ToList();
+            var results = Company.Query<dynamic>(QueryConstants.WorkflowVersionStepHistory, new { id }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
+
+        [Route("versionstep/history/{id:int}/excel.xls"), HttpGet]
+        public HttpResponseMessage ToExcel(int id)
+        {
+            var results = Company.Query<dynamic>(QueryConstants.WorkflowVersionStepHistory, new { id }).ToList();
+
+            #region Header
+
+            var document = new SLDocument();
+            document.AddWorksheet("History");
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Object");
+            document.SetCellValue(1, index++, "Status");
+            document.SetCellValue(1, index++, "Started On");
+            document.SetCellValue(1, index++, "Completed On");
+            document.SetCellValue(1, index++, "Started By");
+            document.SetCellValue(1, index++, "Comment");
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in results)
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, (string)row.Name ?? "");
+                document.SetCellValue(rowNumber, index++, (string)row.Status ?? "");
+                document.SetCellValue(rowNumber, index++, row.StartedOn?.ToString() ?? "");
+                document.SetCellValue(rowNumber, index++, row.CompletedOn?.ToString() ?? "");
+                document.SetCellValue(rowNumber, index++, (string)row.StartedBy ?? "");
+                document.SetCellValue(rowNumber, index++, (string)row.Comment ?? "");
+            }
+
+            document.AutoFitColumn(1, index);
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage result = null;
+            result = Request.CreateResponse(HttpStatusCode.OK);
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Step History {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
+
 
         [Route("versionstep/events/{id:int}")]
         public HttpResponseMessage GetWorkflowVersionStepEventInfo(int id)

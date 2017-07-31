@@ -48,7 +48,7 @@
     </header>
 
     <div  *ngIf="!isLoading" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
-        <d3s-overlay-window width="500" padding="0" [(visible)]="isWindowVisible" [headerText]="overlayHeader" [overflowScroll]="true">
+        <d3s-overlay-window [width]="overlayWidth" padding="0" [(visible)]="isWindowVisible" [headerText]="overlayHeader" [overflowScroll]="true">
             <ul class="tab-menu">
                 <li *ngIf="isReadOnly" (click)="selectTab('history')" class="tab-item" [class.selected]="tab == 'history'">
                     <i class="fa fa-history fa-2x"></i>
@@ -207,6 +207,9 @@
                         <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link" 
                                               [versionStepTransitionFromId]="selectedData.from" 
                                               [versionStepTransitionToId]="selectedData.to"></d3s-workflow-history>
+                    </div>
+                    <div *ngIf="selectedData == null">
+                        Nothing selected
                     </div>
                 </div>
             </div>

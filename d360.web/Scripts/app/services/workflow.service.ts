@@ -304,4 +304,9 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
 
     }
+
+    exportVersionStepHistory(id: number) {
+        window.location.assign(`services/workflow/versionstep/history/${id}/excel.xls`);
+    }
+
 }

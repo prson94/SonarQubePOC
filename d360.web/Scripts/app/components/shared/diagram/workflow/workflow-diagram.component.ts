@@ -56,6 +56,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     @Input() hasHeader: boolean = true;
     @Input() selection: NodeModel | LinkModel;
     @Input() selectedStepId: string;
+    @Input() monitorView: boolean = false;
     @Output() selectedStepIdChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
@@ -89,6 +90,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     private showLinkTabs = false;
     private overlayHeader = 'Info';
     private overlayMaxHeight = 500;
+    private overlayWidth = 500;
 
     //hard-coded offsets for diagram and overlay. Avoids issues with rendering completing after ngAfterViewInit()
     private overlayOffset = 391;
@@ -119,6 +121,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         else
             this.isReadOnly = false;
 
+        if (this.monitorView) {
+            this.overlayWidth = 600;
+            this.tab = 'history';
+            this.isWindowVisible = true;
+        }
+
         this.initializeDiagram();
         this.initializeMenuItems();
 
@@ -135,6 +143,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             this.myDiagram.div = null;
             this.myPalette.div = null;
             this.model = null;
+            this.selectedData = null;
             this.initializeDiagram();
             this.initializeMenuItems();
             this.resizeDiagram();
@@ -387,7 +396,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             .then(() => this.populateDiagram())
             .then(() => this.initializePalette())
             .then(() => this.initializeFormFields())
-            .then(() => this.isWindowVisible = !this.isReadOnly);
+            .then(() => this.isWindowVisible = (this.monitorView || !this.isReadOnly));
         //.then(() => { this.resizeDiagram(); this.resizePalette(); });
     }
 

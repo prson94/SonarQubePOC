@@ -20,7 +20,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
             [version]="selectedWorkflowType?.Version" 
             [readonly]="true" 
             [hasHeader]="false"
-            [selectedStepId]="selectedWorkflowItem?.VersionStepID">
+            [selectedStepId]="selectedWorkflowItem?.VersionStepID"
+            [monitorView]="true">
         </d3s-workflow-diagram>
     </div>
 </div>
