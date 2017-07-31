@@ -1422,5 +1422,45 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             left join reporting.Global_Resource r on r.ResourceID = p.ObjectID and p.Object = 'Resource'
             where p.SiteNavID = @id";
 
+        public static string WorkflowVersionStepHistory = @"
+select 
+	            i.ID as ItemStepID, i.StartedOn, i.CompletedOn, r.FirstName + ' ' + r.LastName as StartedBy,
+	            r2.FirstName + ' ' + r2.LastName as CompletedBy, m.Object, m.ObjectID, d.Name, d.ObjectTypeName,
+	            d.NgUrl, d.TextPath,v.Name as StepName, string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments, convert(varchar(max),vs.Settings) as Settings, vs.StepType as StepType, vs.ActivityType
+				,case when i.CompletedOn is not null then
+					case when vs.ActivityType = 2 then
+						'Status was changed on ' + cast(i.CompletedOn as varchar)
+					when vs.ActivityType = 3 then
+						'Form completed on ' + cast(i.CompletedOn as varchar) + ' by ' + coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
+					when vs.ActivityType = 1 then
+						'Email sent on ' + cast(i.CompletedOn as varchar)
+					else
+						'Step completed on ' + cast(i.CompletedOn as varchar)
+					end
+				when vs.ActivityType = 3 then --form
+					'Waiting for form completion by ' + coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
+				when vs.ActivityType = 1 then --email
+					'An error occurred or the email is currently queued for sending'
+				else
+					''
+				end as [Comment],
+				case when i.CompletedOn is not null then
+					'Complete'
+				else
+					'In Progress'
+				end as [Status]
+            from workflow.itemstep i
+            left join workflow.item m on m.id = i.itemid
+			left join workflow.itemassignment a on a.itemid = m.id
+			left join workflow.versionstep vs on vs.id = i.stepid
+            left join cache.objectdetails d on d.object = m.object and d.objectid = m.objectid
+            left join reporting.Global_resource r on r.ResourceID = i.StartedBy
+            left join reporting.Global_resource r2 on r2.ResourceID = i.CompletedBy
+			left join reporting.Global_resource r3 on r3.ResourceID = a.ResourceObjectID
+            inner join workflow.versionstep v on v.id = i.stepid
+            where v.id = @id
+			group by i.id, i.startedon, i.completedon, r.FirstName, r.LastName, r2.FirstName, r2.LastName, m.Object, m.ObjectID, d.Name,
+				d.ObjectTypeName, d.NgUrl, d.TextPath, v.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType";
+
     }
 }
