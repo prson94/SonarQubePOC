@@ -20,6 +20,8 @@ namespace d360.core.enums.Workflow
         Form = 3,
         [Name("Procedure"), Description("Sql Procedure"), BackColor("#4cde77"), ForeColor("#fff"), Icon("\uf1c0")]
         Procedure = 4,
+        [Name("Field Change"), Description("Field Change"), BackColor("#ff6600"), ForeColor("#fff"), Icon("\uf2c2")]
+        FieldChange = 5,
     }
 
     public class ActivityTypeInfo
