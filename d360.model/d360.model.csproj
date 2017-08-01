@@ -156,6 +156,7 @@
     <Compile Include="QueryConstants.cs" />
     <Compile Include="workflow\WorkflowCriteriaExpressionModel.cs" />
     <Compile Include="workflow\WorkflowEventRegistrationSettingsModel.cs" />
+    <Compile Include="workflow\WorkflowFieldUpdateSettings.cs" />
     <Compile Include="workflow\WorkflowFormFieldModel.cs" />
     <Compile Include="workflow\WorkflowFormFormModel.cs" />
     <Compile Include="workflow\WorkflowFormModel.cs" />

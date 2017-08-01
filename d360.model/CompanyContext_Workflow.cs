@@ -528,6 +528,11 @@ namespace d360.model
                         ExecuteProc(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.FieldChange:
+                        // change the specified field and mark the step complete
+                        UpdateItemField(itemStep, objectInfo, stepSettings);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -557,6 +562,47 @@ namespace d360.model
             if (isStepCompleted)
             {
                 await MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
+            }
+        }
+
+        private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
+        {
+            if (!settings.FieldUpdateSettings.Any()) return;
+
+            foreach (var item in settings.FieldUpdateSettings)
+            {
+                // get field type info
+                var fieldType = FieldTypes.Where(x => x.ID == item.FieldID).FirstOrDefault();
+
+                if (fieldType == null)
+                    throw new Exception($"ERROR - INVALID FIELD TYPE ID SPECIFIED FOR UPDATE FIELD WORKFLOW TASK. FIELD ID[ {item.FieldID} ]");
+
+                // check if the field exists
+                var field = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+
+                if(field == null)
+                {
+                    //insert
+                    var newField = new core.entities.Field
+                    {
+                        Value = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value,
+                        FieldTypeID = fieldType.ID,
+                        ObjectID = objectInfo.ObjectID,
+                        ObjectType = objectInfo.Object.ToString()
+                    };
+
+                    Add<core.entities.Field>(newField);
+
+                    SaveChanges();
+                }
+                else
+                {
+                    //update
+                    field.Value = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value;
+
+                    SaveChanges();
+                }
+
             }
         }
 
