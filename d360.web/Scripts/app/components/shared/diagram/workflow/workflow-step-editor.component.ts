@@ -84,6 +84,15 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 .then(r => {
                     this.procedures = r;
                 });
+        } else if (this.step.activityType == WorkflowActivityType.FieldChange) {
+            if (this.step.settings.FieldUpdate == null) {
+                this.step.settings.FieldUpdate = {};
+            }
+               
+            if (this.step.settings.FieldUpdate.Field == null) {
+                this.step.settings.FieldUpdate.Field = {};
+            }
+
         }
 
         if (this.ed != null && this.ed.quill != null)

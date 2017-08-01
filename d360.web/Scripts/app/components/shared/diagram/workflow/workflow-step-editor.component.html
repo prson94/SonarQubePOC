@@ -96,6 +96,14 @@
                 </div>
             </div>
         </div>
+        <div class="row" *ngSwitchCase="WorkflowActivityType.FieldChange">
+            <d3s-workflow-step-field-change 
+                                            [objectId]="objectId" 
+                                            [objectType]="objectType" 
+                                            [fieldUpdate]="step.settings.FieldUpdate.Field" 
+                                            (fieldUpdateChange)="step.settings.FieldUpdate.Field = $event; stepChange.emit(step)">
+            </d3s-workflow-step-field-change>
+        </div>
     </div>
     <div *ngIf="step.hasMultipleInputs" class="col s12" style="padding-top: 8px">
         <input type="checkbox" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)" /> Wait for all transitions to complete?

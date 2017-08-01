@@ -18,27 +18,27 @@ import { Router } from '@angular/router';
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
         <p-dataTable #dt [globalFilter]="gb" [value]="workflowItems" selectionMode="single" [rows]="15" [rowsPerPageOptions]="[10,15,25]" [paginator]="true" [pageLinks]="3" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>            
-            <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="ObjectTypeName" header="Type"sortable="true" [filter]="!showSimpleFilter">
+            <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
+            <p-column field="ObjectTypeName" header="Type"sortable="true" [filter]="!showSimpleFilter"  filterMatchMode="contains">
                 <ng-template pTemplate="body" let-item="rowData">
                     <a (click)="openItem(item.NgUrl)">{{item.ObjectTypeName}}</a>
                 </ng-template>
             </p-column>  
-            <p-column field="ObjectNames" header="Objects"sortable="true" [filter]="!showSimpleFilter">
+            <p-column field="ObjectNames" header="Objects"sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
                 <ng-template pTemplate="body" let-item="rowData">
                     <a *ngIf="item.ObjectNames != null && item.ObjectNames.length > 15" [pTooltip]="item.ObjectNames" style="word-wrap:break-word;">{{item.ObjectNames | slice:0:15}}...</a>
                     <a *ngIf="item.ObjectNames != null && item.ObjectNames.length <= 15" style="word-wrap:break-word;">{{item.ObjectNames}}</a>
                 </ng-template>
             </p-column>    
-            <p-column header="Status" field="Status" sortable="true" [filter]="!showSimpleFilter"></p-column>      
-            <p-column field="UpdatedOn" header="Updated On" sortable="true" [filter]="!showSimpleFilter">
+            <p-column header="Status" field="Status" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>      
+            <p-column field="UpdatedOn" header="Updated On" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
                 <ng-template pTemplate="body" let-item="rowData">
                     {{item.UpdatedOn | date:'shortDate'}}
                 </ng-template>
             </p-column>
-            <p-column field="UpdatedBy" header="Updated By" sortable="true" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="VersionName" header="Version" sortable="true" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="ResponsibleUser" header="Responsible Users" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'100px'}">
+            <p-column field="UpdatedBy" header="Updated By" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
+            <p-column field="VersionName" header="Version" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
+            <p-column field="ResponsibleUser" header="Responsible Users" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'100px'}" filterMatchMode="contains">
                <ng-template pTemplate="body" let-item="rowData">
                     <a *ngIf="item.ResponsibleUser != null && item.ResponsibleUser.length > 15" [pTooltip]="item.ResponsibleUser" style="word-wrap:break-word;">{{item.ResponsibleUser | slice:0:15}}...</a>
                     <a *ngIf="item.ResponsibleUser != null && item.ResponsibleUser.length <= 15" style="word-wrap:break-word;">{{item.ResponsibleUser}}</a>

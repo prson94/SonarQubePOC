@@ -269,7 +269,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'number':
                 return 'D';
             case 'date':
-            case 'dateTime':
+            case 'datetime':
                 return 'DT';
             case 'text':
                 return 'T';

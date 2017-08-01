@@ -726,6 +726,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 if (n.settings.Status == null || n.settings.Status == '')
                     return false;
                 break;
+            case WorkflowActivityType.FieldChange:
+                if (n.settings == null || n.settings.FieldUpdate == null || n.settings.FieldUpdate.Field == null) {
+                    return false;
+                }
+                if ((n.settings.FieldUpdate.Field['@ClearValue'] == null || n.settings.FieldUpdate.Field['@ClearValue'].toString() == 'false')
+                    && (n.settings.FieldUpdate.Field['@FieldId'] == null || n.settings.FieldUpdate.Field['@Value'] == null)) {
+                    return false;
+                }
+                break;
         }
 
         return true;
@@ -899,6 +908,9 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 break;
             case WorkflowActivityType.Procedure:
                 n.settings.ProcedureID = e.settings.ProcedureID;
+                break;
+            case WorkflowActivityType.FieldChange:
+                n.settings.FieldUpdate = e.settings.FieldUpdate;
                 break;
         }
 

@@ -641,6 +641,7 @@
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-field-change.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-form-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-editor.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
@@ -1069,6 +1070,7 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-history.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-field-change.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />

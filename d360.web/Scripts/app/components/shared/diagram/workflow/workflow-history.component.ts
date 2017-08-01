@@ -24,28 +24,29 @@ import { WorkflowService } from '../../../../services/workflow.service';
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <header>&nbsp;
-    <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+    <d3s-tile-actions [hasExport]="true" (exportClick)="export()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
 </header>
-<p-dataTable #dt *ngIf="!isLoading" [value]="history" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,15]" [paginator]="true" [pageLinks]="3" scrollable="true" scrollWidth="560px">
+<input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+<p-dataTable *ngIf="!isLoading" #dt [globalFilter]="gb" [value]="history" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,15]" [paginator]="true" [pageLinks]="3" scrollable="true" scrollWidth="560px">
     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>    
-    <p-column header="Object" field="Object" sortable="true" [style]="{'width' : '120px'}">
+    <p-column header="Object" field="Name" [style]="{'width' : '120px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
         <ng-template pTemplate="body" let-item="rowData">
             <a>{{item.Name}}</a>
         </ng-template>
     </p-column>    
-    <p-column header="Status" field="Status" sortable="true" [style]="{'width' : '80px'}">></p-column>
-    <p-column header="Started On" field="StartedOn" sortable="true" [style]="{'width' : '80px'}">
+    <p-column header="Status" field="Status" [style]="{'width' : '80px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">></p-column>
+    <p-column header="Started On" field="StartedOn" [style]="{'width' : '80px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
         <ng-template pTemplate="body" let-item="rowData">
             {{item.StartedOn | date:'shortDate'}}
         </ng-template>
     </p-column>
-    <p-column header="Completed On" field="CompletedOn" sortable="true" [style]="{'width' : '80px'}">
+    <p-column header="Completed On" field="CompletedOn" [style]="{'width' : '80px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
         <ng-template pTemplate="body" let-item="rowData">
             {{item.CompletedOn | date:'shortDate'}}
         </ng-template>
     </p-column>
-    <p-column header="Started By" field="StartedBy" sortable="true" [style]="{'width' : '120px'}"></p-column>
-    <p-column header="Comment" field="Comment" sortable="true" [style]="{'width' : '200px'}">></p-column>
+    <p-column header="Started By" field="StartedBy" [style]="{'width' : '120px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
+    <p-column header="Comment" field="Comment" [style]="{'width' : '200px'}" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">></p-column>
 </p-dataTable>
 
 `
@@ -60,6 +61,7 @@ export class WorkflowHistoryComponent extends BaseComponent implements OnInit, O
 
     constructor( private workflowService: WorkflowService) {
         super();
+        
     }
 
     ngOnInit() {

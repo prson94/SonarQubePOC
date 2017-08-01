@@ -13,7 +13,8 @@ import {
     SharedModule,
     AutoCompleteModule,
     ButtonModule,
-
+    CalendarModule,
+    InputMaskModule,
 } from 'primeng/primeng';
 
 import { CoreModule } from '../../core.module';
@@ -30,6 +31,7 @@ import { WorkflowStepFormEditorComponent } from './workflow-step-form-editor.com
 import { WorkflowConditionListComponent } from './workflow-condition-list.component';
 import { WorkflowTemplateToolComponent } from './workflow-template-tool.component';
 import { WorkflowHistoryComponent } from './workflow-history.component';
+import { WorkflowStepFieldChangeComponent } from './workflow-step-field-change.component';
 
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
@@ -52,6 +54,8 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         EditorModule,
         SharedModule,
         ButtonModule,
+        CalendarModule,
+        InputMaskModule,
 
     ],
     declarations: [
@@ -63,6 +67,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         WorkflowConditionListComponent,
         WorkflowTemplateToolComponent,
         WorkflowHistoryComponent,
+        WorkflowStepFieldChangeComponent,
     ],
     exports: [
         WorkflowDiagramComponent,
@@ -70,6 +75,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         WorkflowConditionListComponent,
         WorkflowTemplateToolComponent,
         WorkflowHistoryComponent,
+        WorkflowStepFieldChangeComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
