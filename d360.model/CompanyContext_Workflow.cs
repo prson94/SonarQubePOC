@@ -577,30 +577,41 @@ namespace d360.model
                 if (fieldType == null)
                     throw new Exception($"ERROR - INVALID FIELD TYPE ID SPECIFIED FOR UPDATE FIELD WORKFLOW TASK. FIELD ID[ {item.FieldID} ]");
 
-                // check if the field exists
-                var field = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldType.ID).FirstOrDefault();
-
-                if(field == null)
+                if (item.ClearValue)
                 {
-                    //insert
-                    var newField = new core.entities.Field
-                    {
-                        Value = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value,
-                        FieldTypeID = fieldType.ID,
-                        ObjectID = objectInfo.ObjectID,
-                        ObjectType = objectInfo.Object.ToString()
-                    };
+                    //delete the value
+                    var sql = "delete field where objectid = @id and objecttype = @objectType and fieldtypeid = @fieldTypeId";
 
-                    Add<core.entities.Field>(newField);
+                    Query<int>(sql, new { id = objectInfo.ObjectID, objectType = objectInfo.Object.ToString(), fieldTypeId = item.FieldID });
 
-                    SaveChanges();
                 }
                 else
                 {
-                    //update
-                    field.Value = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value;
+                    // check if the field exists
+                    var field = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
-                    SaveChanges();
+                    if (field == null)
+                    {
+                        //insert
+                        var newField = new core.entities.Field
+                        {
+                            Value = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value,
+                            FieldTypeID = fieldType.ID,
+                            ObjectID = objectInfo.ObjectID,
+                            ObjectType = objectInfo.Object.ToString()
+                        };
+
+                        Add<core.entities.Field>(newField);
+
+                        SaveChanges();
+                    }
+                    else
+                    {
+                        //update
+                        field.Value = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value;
+
+                        SaveChanges();
+                    }
                 }
 
             }

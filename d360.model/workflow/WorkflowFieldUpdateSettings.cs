@@ -12,13 +12,14 @@ namespace d360.model.workflow
         private static string FIELD_ID = "FieldId";
         private static string VALUE = "Value";
         private static string CURRENT_DATE = "UseCurrentDate";
+        private static string CLEAR_VALUE = "ClearValue";
 
         public int FieldID { get; set; }
 
         public string Value { get; set; }
 
         public bool CurrentDate { get; set; }
-
+        public bool ClearValue { get; set; }
 
         public static WorkflowFieldUpdateSettings ParseXml(XElement xml)
         {
@@ -27,6 +28,7 @@ namespace d360.model.workflow
             int fieldId = 0;
             string value = "";
             bool isCurrentDate = false;
+            bool isClearValue = false;
 
             if (xml.Attribute(FIELD_ID) != null)
             {
@@ -43,9 +45,15 @@ namespace d360.model.workflow
                 bool.TryParse(xml.Attribute(CURRENT_DATE).Value, out isCurrentDate);
             }
 
+            if(xml.Attribute(CLEAR_VALUE) != null)
+            {
+                bool.TryParse(xml.Attribute(CLEAR_VALUE).Value, out isClearValue);
+            }
+
             model.CurrentDate = isCurrentDate;
             model.FieldID = fieldId;
             model.Value = value;
+            model.ClearValue = isClearValue;
 
             return model;
         }
