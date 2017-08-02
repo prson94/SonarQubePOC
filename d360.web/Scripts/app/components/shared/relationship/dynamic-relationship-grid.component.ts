@@ -75,21 +75,18 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Input() addRelationship: boolean;
     @Input() hasEdit: boolean = true;
     @Input() hasDelete: boolean = true;
+    @Input() simpleFilter: boolean;
 
     @Output() addRelationshipChange = new EventEmitter();
     @Output() relationshipAdded = new EventEmitter();
     @Output() relationshipRemoved = new EventEmitter();
-
-
-    @Input() simpleFilter: boolean;
-
+    
     private fields: GridField[] = [];
 
     get taxonomyName() {
         return CompanySettings.ArtifactType_TaxonomyTypeID || '';
     }
-
-    
+        
     relations: any[] = [];
     columns: GridColumn[] = [];
     
@@ -99,7 +96,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     @ViewChild('dt') datatable;
     
-
     constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService) {
         super();
     }
@@ -116,7 +112,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.getData();
     }
     
-
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType')
             .then(result => {
@@ -145,14 +140,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             });
     }
     
-    private findItemIndex(id: number) {
-        var index: number = -1;
-        for (var item of this.relations) {
-            index++;
-            if (item.ID == id) return index;
-        }
-    }
-
     private shouldShowEditor(): boolean {
         return (this.addRelationship || this.showEditor) && !this.showTechnical;
     }
@@ -184,9 +171,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     deleteItem(item) {
-        this.relationshipsService.deleteRelationshipItem(item.ID).then(res => {
-            this.relations.splice(this.findItemIndex(item.ID), 1);
-
+        this.relationshipsService.deleteRelationshipItem(item.ID).then(res => {            
+            this.relations = this.relations.filter(x => x.ID != item.ID);            
             this.relationshipRemoved.emit();
         });
     }
@@ -195,5 +181,3 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
     }
 }
-
-
