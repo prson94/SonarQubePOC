@@ -20,7 +20,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <div class="col s12 FieldName">Workflow Name</div>
                         <div class="col s12">{{details?.Workflow.Name}}</div>
                         <div class="col s12 FieldName">Name</div>
-                        <div class="col s12" [innerHtml]="details?.ObjectDetails.Name"></div>
+                        <div class="col s12"><d3s-tooltip [objectType]="details?.Item.Object" [objectId]="details?.ObjectDetails.ID" tooltipType="preview">{{details?.ObjectDetails.Name}}</d3s-tooltip></div>
                         <div class="col s12 FieldName">Type Name</div>
                         <div class="col s12">{{details?.ObjectDetails.TypeName}}</div>
                         <div class="col s12 FieldName">Type</div>
@@ -53,6 +53,12 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     </ng-template>
                                 </p-column>
                                 <p-column field="StepType" header="Step Type" sortable="false"></p-column>
+                                <p-column header="Complete" sortable="false">
+                                    <ng-template let-itemStep="rowData" pTemplate type="body">
+                                        <span *ngIf="itemStep.CompletedOn;else other_content"><i class="fa fa-check enabled" title="True"></i></span>
+                                        <ng-template #other_content><span></span></ng-template>
+                                    </ng-template>
+                                </p-column>
                                 <p-column field="ActivityType" header="Activity Type" sortable="false"></p-column>
                                 <p-column field="StartedOn" header="Date Started" sortable="true">
                                     <ng-template let-itemStep="rowData" pTemplate type="body">
@@ -129,7 +135,6 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         this.sub.unsubscribe();
     }
     
-
     private getStepName(itemStep: any): string {
         if (!this.details || !this.details.Steps) return "";
         var step = this.details.Steps.filter(x => x.ID == itemStep.StepID);
@@ -138,8 +143,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         return step[0].Name;
     }
 
-    private showForm(item: any) {
-        //console.log(item);
+    private showForm(item: any) {        
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowId}/${item.ID}/${item.ItemID}`);
     }
 };
