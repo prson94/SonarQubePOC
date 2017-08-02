@@ -35,6 +35,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     private fields: FieldType[] = [];
     private field: FieldType;
     private lookups = [];
+    private bools = [
+        { value: 'false', label: 'False' },
+        { value: 'true', label: 'True' }
+    ];
 
 
     constructor(private workflowService: WorkflowService) {

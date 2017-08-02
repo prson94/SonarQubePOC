@@ -1462,5 +1462,71 @@ select
 			group by i.id, i.startedon, i.completedon, r.FirstName, r.LastName, r2.FirstName, r2.LastName, m.Object, m.ObjectID, d.Name,
 				d.ObjectTypeName, d.NgUrl, d.TextPath, v.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType";
 
+        public static string WorkflowTypeList = @"
+            with a as
+            (
+            select 
+	            t.id as TypeID,
+	            t.Name, 
+	            case when v.ID = t.PublishedVersionID then 
+		            cast(v.Version as varchar) + ' (Published)' 
+	            else 
+		            cast(v.Version as varchar) 
+	            end as VersionName, 
+	            v.Version, 
+	            v.UpdatedOn,
+	            r.FirstName + ' ' + r.LastName as UpdatedBy,  
+	            d.Name as ObjectTypeName, 
+	            d.ObjectType, 
+	            d.ObjectTypeID, 
+	            d.NgUrl, 
+	            v.id as VersionID,
+	            string_agg(cast(d2.Name as varchar(max)), ', ') as ObjectNames, 
+	            null as Responsibility, 
+	            null as SpecificUser,
+	            case when count(s.StepID) > 0 then
+		            case when max(vs.ActivityType) = 3 then
+			            'Waiting on user action'
+		            else
+			            'Incomplete'
+		            end
+	            else
+		            'Complete'
+	            end as [Status],
+	            max(s.StepID) as CurrentStepID
+            from workflow.type t
+            join workflow.eventregistration e on e.typeid = t.id
+            join workflow.version v on v.typeid = t.id
+            left join cache.objectdetails d on d.object = e.object and d.objectid = e.objectid
+            left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
+            left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
+            left join cache.objectdetails d2 on d2.object = i.object and d2.objectid = i.objectid 
+            left join workflow.versionstep vs on vs.versionid = v.id
+            left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
+            left join workflow.itemassignment ia on ia.itemid = s.id
+            where t.id in (45) and t.State <> 3
+            group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name, d.ObjectType, 
+            d.ObjectTypeID, d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
+            )
+            select 
+	            a.*,
+	            vs.Settings,
+	            vs.ActivityType, 
+	            vs.StepType, 
+	            null as ResponsibleUser, 
+	            null as SpecificUser, 
+	            s.StartedBy 
+            from a
+            left join workflow.versionstep vs on vs.id = a.currentstepid
+            left join (
+	            select 
+		            stepid, 
+		            string_agg(r.Firstname + ' ' + r.LastName,', ') as StartedBy
+	            from (select distinct stepid, startedby from workflow.itemstep) i
+	            left join reporting.Global_resource r on r.ResourceID = i.StartedBy
+	            group by stepid
+            ) s on s.stepid = a.currentstepid
+            order by a.Name asc, a.Version asc, a.UpdatedOn desc";
+
     }
 }

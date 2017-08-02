@@ -51,6 +51,11 @@
                     <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
                 </select>
             </div>
+            <div *ngIf="field.Type == 'Boolean'">
+                <select style="width: 95%" [ngModel]="fieldUpdate['@Value']" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)">
+                    <option *ngFor="let b of bools" [value]="b.value">{{b.label}}</option>
+                </select>
+            </div>
         </div>
         <ng-template #nothing>
             <div>

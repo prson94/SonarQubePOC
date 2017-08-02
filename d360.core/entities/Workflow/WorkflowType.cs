@@ -12,6 +12,9 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public string Name { get; set; }
 
+        [DataMember]
+        public string Description { get; set; }
+
         public int? CreatedBy { get; set; }
         
         public DateTime? CreatedOn { get; set; }

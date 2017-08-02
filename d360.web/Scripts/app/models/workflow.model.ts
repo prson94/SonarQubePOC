@@ -148,6 +148,7 @@ export class WorkflowTypeNew
 {
     ID: number;
     Name: string;
+    Description: string;
     CreatedBy: number;
     CreatedOn: string;
     UpdatedBy: number;

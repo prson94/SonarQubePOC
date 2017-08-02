@@ -27,10 +27,9 @@
                 Object Type
             </div>
             <div>
-                <p-dropdown 
-                            [options]="workflowObjectTypes" 
-                            [ngModel]="selectedObjectType" 
-                            (ngModelChange)="selectObjectType($event)" 
+                <p-dropdown [options]="workflowObjectTypes"
+                            [ngModel]="selectedObjectType"
+                            (ngModelChange)="selectObjectType($event)"
                             [disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0"
                             [style]="{'width': '95%'}"
                             filterPlaceholder="Choose a value"
@@ -67,9 +66,8 @@
                     Conditions
                 </div>
                 <div>
-                    <d3s-workflow-condition-list 
-                                                 (removeClick)="remove($event)"
-                                                 (addClick)="showCondition()" 
+                    <d3s-workflow-condition-list (removeClick)="remove($event)"
+                                                 (addClick)="showCondition()"
                                                  [conditions]="conditions"></d3s-workflow-condition-list>
 
                     <div *ngIf="showAddCondition">
@@ -81,6 +79,17 @@
                         </d3s-workflow-condition-editor>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="!isLoading">
+        <div class="col s12 m4">
+            <div class="FieldName">
+                Description
+            </div>
+            <div style="width: 95%">
+                <p-editor [(ngModel)]="model.Type.Description" [style]="{'height':'150px'}">
+                </p-editor>
             </div>
         </div>
     </div>

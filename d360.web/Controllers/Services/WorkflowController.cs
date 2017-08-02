@@ -860,6 +860,7 @@ namespace d360.web.Controllers.Services
                         type.UpdatedBy = Company.CurrentResourceID;
                         type.UpdatedOn = DateTime.UtcNow;
                         type.Name = model.Type.Name;
+                        type.Description = model.Type.Description;
                         type.State = core.enums.State.Active;
 
                         Company.Add(type);
@@ -889,6 +890,7 @@ namespace d360.web.Controllers.Services
                     {
                         var type = Company.WorkflowTypes.Find(model.Type.ID);
                         type.Name = model.Type.Name;
+                        type.Description = model.Type.Description;
                         type.UpdatedOn = DateTime.UtcNow;
                         type.UpdatedBy = Company.CurrentResourceID;
                         
@@ -1414,47 +1416,23 @@ namespace d360.web.Controllers.Services
             if (string.IsNullOrWhiteSpace(types))
                 types = "-1";
 
-            var results = Company.Query<dynamic>(string.Format(@"with a as
-(
-select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then 
-                cast(v.Version as varchar) + ' (Published)' 
-                else cast(v.Version as varchar) end as VersionName, v.Version, v.UpdatedOn,
-                r.FirstName + ' ' + r.LastName as UpdatedBy  
-                ,d.Name as ObjectTypeName, d.ObjectType, d.ObjectTypeID, d.NgUrl, v.id as VersionID,
-				string_agg(cast(d2.Name as varchar(max)), ', ') as ObjectNames, null as Responsibility, null as SpecificUser
-				,case when count(s.StepID) > 0 then
-					case when max(vs.ActivityType) = 3 then
-						'Waiting on user action'
-					else
-						'Incomplete'
-					end
-				else
-					'Complete'
-				end as [Status],
-				max(s.StepID) as CurrentStepID
-                from workflow.type t
-                join workflow.eventregistration e on e.typeid = t.id
-                join workflow.version v on v.typeid = t.id
-                left join cache.objectdetails d on d.object = e.object and d.objectid = e.objectid
-                left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
-				left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
-				left join cache.objectdetails d2 on d2.object = i.object and d2.objectid = i.objectid 
-				left join workflow.versionstep vs on vs.versionid = v.id
-				left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
-				left join workflow.itemassignment ia on ia.itemid = s.id
-                where t.id in ({0}) and t.State <> 3
-				group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name, d.ObjectType, 
-				d.ObjectTypeID, d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
-				)
-				select a.*,vs.Settings,vs.ActivityType, vs.StepType, null as ResponsibleUser, null as SpecificUser, s.StartedBy from a
-				left join workflow.versionstep vs on vs.id = a.currentstepid
-				left join (
-					select stepid, string_agg(r.Firstname + ' ' + r.LastName,', ') as StartedBy
-					from (select distinct stepid, startedby from workflow.itemstep) i
-					left join reporting.Global_resource r on r.ResourceID = i.StartedBy
-					group by stepid
-				) s on s.stepid = a.currentstepid
-				order by a.Name asc, a.Version asc, a.UpdatedOn desc", types)).ToList();
+            var results = Company.Query<dynamic>(string.Format(QueryConstants.WorkflowTypeList, types)).ToList();
+
+            #region parse XML
+
+            var responsibilitySql = @"
+                select 
+	                string_agg(r.FirstName + ' ' + r.LastName, ', ') as Resources 
+                from
+                (
+	                select distinct 
+		                r.* 
+	                from ResponsibilityDetail d
+	                left join [ResourceGroup] g on g.GroupID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Group'
+	                left join reporting.Global_resource r on (r.ResourceID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Resource') 
+		                or (r.ResourceID = g.ResourceID and d.ResponsibleObjectType = 'Group')
+	                where ResponsibilityTypeID  = @id
+                ) r";
 
             foreach(dynamic r in results)
             {
@@ -1471,13 +1449,7 @@ select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then
                                 {
                                     if (s.ResponsibilityTypeID != null)
                                     {
-                                        var resources = Company.Query<string>(@"select string_agg(r.FirstName + ' ' + r.LastName, ', ') as Resources from
-				                        (
-					                        select distinct r.* from responsibilitydetail d
-					                        left join [ResourceGroup] g on g.GroupID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Group'
-					                        left join reporting.Global_resource r on (r.ResourceID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Resource') or (r.ResourceID = g.ResourceID and d.ResponsibleObjectType = 'Group')
-					                        where responsibilitytypeid  = @id
-				                        ) r", new { id = (int)s.ResponsibilityTypeID });
+                                        var resources = Company.Query<string>(responsibilitySql, new { id = (int)s.ResponsibilityTypeID });
                                         r.ResponsibleUser = resources;
                                     }
                                 }
@@ -1497,13 +1469,7 @@ select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then
                             {
                                 if (s.ResponsibilityTypeID != null)
                                 {
-                                    var resources = Company.Query<string>(@"select string_agg(r.FirstName + ' ' + r.LastName, ', ') as Resources from
-				                        (
-					                        select distinct r.* from responsibilitydetail d
-					                        left join [ResourceGroup] g on g.GroupID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Group'
-					                        left join reporting.Global_resource r on (r.ResourceID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Resource') or (r.ResourceID = g.ResourceID and d.ResponsibleObjectType = 'Group')
-					                        where responsibilitytypeid  = @id
-				                        ) r", new { id = (int)s.ResponsibilityTypeID });
+                                    var resources = Company.Query<string>(responsibilitySql, new { id = (int)s.ResponsibilityTypeID });
                                     r.ResponsibleUser = resources;
                                 }
                             }
@@ -1522,6 +1488,8 @@ select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then
                 }
             }
 
+            #endregion
+
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
@@ -1534,7 +1502,7 @@ select t.id as TypeID, t.Name, case when v.ID = t.PublishedVersionID then
         }
 
         [Route("versionstep/history/{id:int}/excel.xls"), HttpGet]
-        public HttpResponseMessage ToExcel(int id)
+        public HttpResponseMessage GetWorkflowVersionStepHistoryExcel(int id)
         {
             var results = Company.Query<dynamic>(QueryConstants.WorkflowVersionStepHistory, new { id }).ToList();
 
