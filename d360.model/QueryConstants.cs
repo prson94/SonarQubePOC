@@ -1504,7 +1504,7 @@ select
             left join workflow.versionstep vs on vs.versionid = v.id
             left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
             left join workflow.itemassignment ia on ia.itemid = s.id
-            where t.id in (45) and t.State <> 3
+            where t.id in ({0}) and t.State <> 3
             group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name, d.ObjectType, 
             d.ObjectTypeID, d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
             )
