@@ -22,7 +22,7 @@ namespace d360.core.enums.Workflow
         ScoreUpdate = 5,
         [Description("Rule Result")]
         RuleResult = 6,
-        [Description("Loaded")]
+        [Description("Fusion Loaded")]
         Loaded = 7,
         [Description("Request Certification")]
         RequestCertification = 8        
