@@ -570,6 +570,7 @@
     <None Include="dbo\Tables\OrganizationInvitation.sql" />
     <None Include="dbo\Tables\OrganizationRegistration.sql" />
     <None Include="dbo\Tables\OrganizationResource.sql" />
+    <None Include="dbo\Functions\GetOwnersListForWorkflow.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

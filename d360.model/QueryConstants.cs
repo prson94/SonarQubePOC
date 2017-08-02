@@ -1426,14 +1426,22 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 select 
 	            i.ID as ItemStepID, i.StartedOn, i.CompletedOn, r.FirstName + ' ' + r.LastName as StartedBy,
 	            r2.FirstName + ' ' + r2.LastName as CompletedBy, m.Object, m.ObjectID, d.Name, d.ObjectTypeName,
-	            d.NgUrl, d.TextPath,v.Name as StepName, string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments, convert(varchar(max),vs.Settings) as Settings, vs.StepType as StepType, vs.ActivityType
+	            d.NgUrl, d.TextPath,vs.Name as StepName, string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments, convert(varchar(max),vs.Settings) as Settings, vs.StepType as StepType, vs.ActivityType
 				,case when i.CompletedOn is not null then
 					case when vs.ActivityType = 2 then
 						'Status was changed on ' + cast(i.CompletedOn as varchar)
 					when vs.ActivityType = 3 then
 						'Form completed on ' + cast(i.CompletedOn as varchar) + ' by ' + coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
 					when vs.ActivityType = 1 then
-						'Email sent on ' + cast(i.CompletedOn as varchar)
+						case when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
+							'Email sent to ' + r.FirstName + ' ' + r.LastName + ' on ' + cast(i.CompletedOn as varchar)
+						when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
+							'Email sent to ' + coalesce(convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]') + ' on ' + cast(i.CompletedOn as varchar)
+						when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Responsibility' then
+							'Email sent to ' + dbo.GetOwnersListForWorkflow(t.id,vs.id) + ' on ' +  cast(i.CompletedOn as varchar)
+						else
+							'Email sent on ' + cast(i.CompletedOn as varchar)
+						end
 					else
 						'Step completed on ' + cast(i.CompletedOn as varchar)
 					end
@@ -1457,10 +1465,11 @@ select
             left join reporting.Global_resource r on r.ResourceID = i.StartedBy
             left join reporting.Global_resource r2 on r2.ResourceID = i.CompletedBy
 			left join reporting.Global_resource r3 on r3.ResourceID = a.ResourceObjectID
-            inner join workflow.versionstep v on v.id = i.stepid
-            where v.id = @id
+			left join workflow.version v on v.id = vs.versionid
+			left join workflow.type t on t.id = v.typeid
+            where vs.id = @id
 			group by i.id, i.startedon, i.completedon, r.FirstName, r.LastName, r2.FirstName, r2.LastName, m.Object, m.ObjectID, d.Name,
-				d.ObjectTypeName, d.NgUrl, d.TextPath, v.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType";
+				d.ObjectTypeName, d.NgUrl, d.TextPath, vs.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType, vs.id, t.id";
 
         public static string WorkflowTypeList = @"
             with a as
