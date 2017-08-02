@@ -16711,6 +16711,8 @@ from    [IntersectType] RT
                 var @object = !model.TypeIsSubject ? model.Type : (SystemObjects)Enum.Parse(typeof(SystemObjects), synonymSegments[0]);
                 var objectID = !model.TypeIsSubject ? model.ID : int.Parse(synonymSegments[1]);
 
+                if (subjectID == objectID) return jsonException("Cannot add a synonym that specifies the same object as the current object.", HttpStatusCode.Forbidden);
+
                 var sSubject = subject.ToString();
                 var sObject = @object.ToString();
 
