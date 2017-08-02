@@ -2540,6 +2540,24 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 }
                 #endregion
 
+                #region Business logic : Reference Item
+
+                if(entry.Entity is ReferenceItem)
+                {
+                    var o = entry.Entity as ReferenceItem;
+                    
+                    switch (entry.State)
+                    {                        
+                        case EntityState.Deleted:                                                    
+                            if(Any<Intersect>(i => (i.Subject == "ReferenceItem" && i.SubjectID == o.ID) || (i.Object == "ReferenceItem" && i.ObjectID == o.ID)))
+                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "ReferenceItem"), Messages.Error_Item_RelationshipsReferences);
+                            break;                     
+                    }
+                }
+
+                #endregion
+
+
                 #region Business logic : Report
                 if (entry.Entity is Report)
                 {
