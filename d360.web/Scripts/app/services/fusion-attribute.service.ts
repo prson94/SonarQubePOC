@@ -58,7 +58,7 @@ export class FusionAttributeService extends BaseService {
             .catch(err => this.handleError(err));
     }
         
-    getFusionAttributeExcel(type: string, fusionId: number, fusionQueryAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]) {
+    getFusionAttributeExcel(type: string, fusionId: number, fusionQueryAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<any> {
         let route = 'ExportItemsByAttributeType';
         if (type == 'FusionQueryAttributeType') {
             route = 'ExportQueryItemsByAttributeType';
@@ -81,7 +81,11 @@ export class FusionAttributeService extends BaseService {
             }
         }
 
-        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data));
+        //this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data));
+        return this.http.get(url, { responseType: ResponseContentType.Blob })
+            .toPromise()
+            .then(data => this.downloadFile(data))
+            .catch(err => this.handleError(err));
     }
 
     downloadFile(data: Response) {
@@ -98,6 +102,7 @@ export class FusionAttributeService extends BaseService {
             anchor.href = url;
             anchor.click();
         }
+        return data;
     }
     
     getFusionAttributeDetails(fusionAttributeType: string, fusionAttributeId: number): Promise<FusionAttributeValueDetails> {

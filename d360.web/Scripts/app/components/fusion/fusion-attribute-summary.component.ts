@@ -202,7 +202,12 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
 
     private doExport() {
-        this.fusionAttributeService.getFusionAttributeExcel(this.fusionObject, this.fusionId, (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters);        
+        this.isLoading = true;
+        this.fusionAttributeService.getFusionAttributeExcel(this.fusionObject, this.fusionId, (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
+            .then(res => {                
+                this.isLoading = false;
+                this.changeDetectorRef.markForCheck();
+            });
     }
 
     saveItem(event) {
