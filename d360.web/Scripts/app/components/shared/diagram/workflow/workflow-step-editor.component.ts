@@ -30,6 +30,7 @@ import * as _ from 'lodash';
 export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
     @Input() objectId: number;
     @Input() objectType: string;
+    @Input() isAggregate: boolean = false;
     @Input() step: NodeModel;
     @Output() stepChange = new EventEmitter();
     @ViewChild('ed') ed: Editor;

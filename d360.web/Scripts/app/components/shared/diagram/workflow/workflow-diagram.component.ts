@@ -102,7 +102,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     private fieldsSub: any;
 
     private isValid = true;
-    private errors: string[]  = [];
+    private errors: string[] = [];
+    private isAggregate = false;
 
     constructor(
         private myElement: ElementRef,
@@ -287,16 +288,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     //#region save/load
 
     private populateDiagram(): Promise<any> {
-        //console.log('populateDiagram', this.model, this.id, this.version);
 
         if (this.model != null && this.model.Event != null && this.model.Event.ObjectID != null && (this.id < 1 || this.id == null || (this.model != null && this.model.Nodes != null && this.model.Nodes.length > 0))) {
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object)
                 .then(r => this.fieldTypes = r)
                 .then(() => this.parseData(this.model));
-
-            //this.parseData(this.model);
-            //console.log('populateDiagram', this.id);
-            //return Promise.resolve();
         }
 
         if (this.id == null || this.version == null)
@@ -309,14 +305,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 this.model = r;
                 if (this.model.Nodes != null)
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
-                //console.log(this.model);
             })
             .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
             .then(r => this.fieldTypes = r)
             .then(() => this.parseData(this.model))
             .then(() => { this.isLoading = false; this.hasType = true; });
-
-
     }
 
     private parseData(data: WorkflowDiagramModel) {

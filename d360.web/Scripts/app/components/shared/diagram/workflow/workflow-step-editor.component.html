@@ -82,8 +82,8 @@
                                            [objectType]="objectType" 
                                            [objectId]="objectId"
                                            [step]="step" 
-                                           (stepChange)="step = $event; stepChange.emit(step)">
-
+                                           (stepChange)="step = $event; stepChange.emit(step)"
+                                           [isAggregate]="isAggregate">
             </d3s-workflow-step-form-editor>
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.Procedure">

@@ -186,7 +186,8 @@
                         <d3s-workflow-step-editor [objectId]="model.Event.ObjectID"
                                                   [objectType]="model.Event.Object"
                                                   [step]="selectedData"
-                                                  (stepChange)="changeStep($event)">
+                                                  (stepChange)="changeStep($event)"
+                                                  [isAggregate]="(model?.Event?.SettingsObject?.Settings?.SendAggregateEmail != null && model?.Event?.SettingsObject?.Settings?.SendAggregateEmail.toString().toLowerCase() == 'true') ? true : false">
                         </d3s-workflow-step-editor>
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
