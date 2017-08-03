@@ -92,6 +92,18 @@ export class WorkflowFieldsService {
                 break;
         }
 
+        fields.push({
+            value: 'Contextual|name',
+            label: 'Name',
+            type: 'text'
+        });
+
+        fields.push({
+            value: 'Contextual|description',
+            label: 'Description',
+            type: 'text'
+        });
+
         return fields;
     }
 }

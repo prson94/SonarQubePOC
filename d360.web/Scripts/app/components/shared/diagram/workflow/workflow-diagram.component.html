@@ -137,6 +137,12 @@
                                 </p-dataTable>
                             </div>
                         </div>
+                        <div *ngIf="selectedData.activityType == WorkflowActivityType.FieldChange">
+                            <div class="col s6">
+
+                            </div>
+                        </div>
+
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">
 
