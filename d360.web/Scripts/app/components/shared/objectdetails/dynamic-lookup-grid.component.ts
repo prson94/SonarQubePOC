@@ -59,12 +59,12 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
         this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden'); 
     }
 
-    customSort(e: any, col: any) {
+    customSort(e: any, col: any) {        
         let field = e.field;
         let direction = e.order;
         let type = col.type;
 
-        this.data.Values = this.data.Values.sort((a, b) => {
+        this.data.Values = [...this.data.Values.sort((a, b) => {
             let fa = a[field];
             let fb = b[field];
 
@@ -90,10 +90,10 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
                         db = new Date(null).getTime();
 
                     return ((da > db) ? 1 : (da < db) ? -1 : 0) * direction;
-                default:
+                default:                    
                     return ((fa > fb) ? 1 : (fa < fb) ? -1 : 0) * direction;
             }
-        });
+        })];
     }
 }
 
