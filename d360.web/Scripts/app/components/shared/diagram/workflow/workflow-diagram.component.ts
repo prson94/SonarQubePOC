@@ -569,6 +569,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             else if (m.SettingsObject != null && !_.isEmpty(m.SettingsObject) && m.SettingsObject.settings == null)
                 n.settings = m.SettingsObject;
 
+            if (n.activityType == WorkflowActivityType.FieldChange) {
+                //populate field names
+                let fieldId = n.settings.FieldUpdate.Field['@FieldId'];
+                let field = this.fieldTypes.find(f => f.ID.toString() == fieldId);
+                if (field) n.settings.FieldUpdate.Field['@FieldName'] = field.FriendlyName;
+            }
+
             if (m.StepType == StepType.Start)
                 n.category = 'start';
             else if (m.StepType == StepType.Finish)
@@ -611,12 +618,18 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         } else if (model.diagramObjectType == DiagramObjectType.Node) {
             let m: NodeModel = <NodeModel>model;
             let n = new WorkflowDiagramNode();
+            let settings = _.cloneDeep(m.settings);
+
+            //remove name attribute
+            if (m.activityType == WorkflowActivityType.FieldChange)
+                delete settings.FieldUpdate.Field['@FieldName'];
+            
 
             n.Key = m.key;
             n.ActivityType = m.activityType;
             n.Name = m.name;
-            n.SettingsObject = m.settings;
-            n.Settings = JSON.stringify({ settings: m.settings });
+            n.SettingsObject = settings;
+            n.Settings = JSON.stringify({ settings: settings });
             n.Fields = (m.fields != null && m.fields.form != null) ? JSON.stringify({ fields: m.fields }) : '';
 
             n.StepType = m.stepType;

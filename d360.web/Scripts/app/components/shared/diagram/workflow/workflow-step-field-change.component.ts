@@ -82,6 +82,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         if (f) this.field = f;
 
         if (this.field) {
+            this.fieldUpdate['@FieldName'] = this.field.FriendlyName;
+
             if (this.field.Type == 'Lookup') {
                 this.workflowService.getLookupList(this.field.ID)
                     .then(r => {

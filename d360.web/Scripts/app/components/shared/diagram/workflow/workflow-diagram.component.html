@@ -47,7 +47,7 @@
         <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
     </header>
 
-    <div  *ngIf="!isLoading" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
+    <div *ngIf="!isLoading" style="position:relative;left: 100%; display: inline; width: 1px; top: 10px">
         <d3s-overlay-window [width]="overlayWidth" padding="0" [(visible)]="isWindowVisible" [headerText]="overlayHeader" [overflowScroll]="true">
             <ul class="tab-menu">
                 <li *ngIf="isReadOnly" (click)="selectTab('history')" class="tab-item" [class.selected]="tab == 'history'">
@@ -139,7 +139,18 @@
                         </div>
                         <div *ngIf="selectedData.activityType == WorkflowActivityType.FieldChange">
                             <div class="col s6">
-
+                                <div class="FieldName">Field</div>
+                                <div>{{selectedData?.settings?.FieldUpdate?.Field['@FieldName']}}</div>
+                                <div class="FieldName">Value</div>
+                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() == 'true'">
+                                    [clear the field value]
+                                </div>
+                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() == 'true'">
+                                    [use the current date at the time of execution]
+                                </div>
+                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() != 'true' && selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() != 'true'">
+                                    {{selectedData?.settings?.FieldUpdate?.Field['@Value']}}
+                                </div>
                             </div>
                         </div>
 
@@ -163,8 +174,7 @@
                             <div class="FieldName">
                                 Conditions
                             </div>
-                            <d3s-workflow-condition-list
-                                                         [readonly]="true"
+                            <d3s-workflow-condition-list [readonly]="true"
                                                          [conditions]="selectedData.condition">
                             </d3s-workflow-condition-list>
                         </div>
@@ -209,10 +219,10 @@
                 </div>
                 <div *ngSwitchCase="'history'">
                     <div *ngIf="selectedData != null">
-                        <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node" 
+                        <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node"
                                               [versionStepId]="selectedData.key"></d3s-workflow-history>
-                        <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link" 
-                                              [versionStepTransitionFromId]="selectedData.from" 
+                        <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link"
+                                              [versionStepTransitionFromId]="selectedData.from"
                                               [versionStepTransitionToId]="selectedData.to"></d3s-workflow-history>
                     </div>
                     <div *ngIf="selectedData == null">

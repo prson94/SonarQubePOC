@@ -828,7 +828,7 @@ namespace d360.web.Controllers.Services
         public HttpResponseMessage GetFieldTypes(int id, string type)
         {
             var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
-            string[] excludedTypes = { "ComplexRelationLookup", "Password", "Html", "Link", "FilteredLookup", "FusionLookup" };
+            string[] excludedTypes = { "ComplexRelationLookup", "Password", "Html", "Link", "FilteredLookup", "FusionLookup", "OwnershipLookup" };
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
 

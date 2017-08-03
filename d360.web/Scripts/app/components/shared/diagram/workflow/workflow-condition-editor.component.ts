@@ -161,11 +161,13 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     selectField(e: any) {
         this.selectedField = e;
-        //console.log('selectField: ',e);
+        
 
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
             let field = this.fields.find(f => f.ID == +this.selectedField.split('|')[1]);
+
+            //console.log('selectField: ', e, field);
 
             this.selectedType = field.Type.toLowerCase();
 
