@@ -916,7 +916,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                                 {
                                     if (key != "SourceID" && key != "FusionQueryAttributeTypeID")
                                     {
-                                        var queryAttributeFieldType = queryAttributeFieldTypes.SingleOrDefault(i => i.FusionQueryAttributeTypeID == fusionQueryAttributeTypeID && i.FieldTypeName == key);
+                                        var queryAttributeFieldType = queryAttributeFieldTypes.SingleOrDefault(i => i.FusionQueryAttributeTypeID == fusionQueryAttributeTypeID && string.Compare(i.FieldTypeName,key,true) == 0);
                                         if (queryAttributeFieldType != null)
                                         {
                                             var dr = table.NewRow();
