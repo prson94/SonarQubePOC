@@ -17980,7 +17980,8 @@ order by TextPath
                         MaximumLength = 500,
                         MinimumLength = 1,
                         SortOrder = 1,
-                        Type = DataType.Text.ToString()
+                        Type = DataType.Text.ToString(),
+                        IsDisplayable = true
                     });
                 }
 
