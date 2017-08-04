@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
-import { ColorPickerModule } from 'ngx-color-picker';
+//import { ColorPickerModule } from 'ngx-color-picker';
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
@@ -29,7 +29,8 @@ import { AdminFusionRoutingModule } from './admin-fusion.routes';
 
 import {
     ButtonModule,
-    CalendarModule,    
+    CalendarModule,
+    ColorPickerModule,
     EditorModule,
     GrowlModule,
     InputMaskModule,

@@ -4,7 +4,7 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { ColorPickerModule } from 'ngx-color-picker';
+//import { ColorPickerModule } from 'ngx-color-picker';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
@@ -28,6 +28,7 @@ import { AdminTaxonomiesRoutingModule } from './admin-taxonomies.routes';
 
 import {
     ButtonModule,
+    ColorPickerModule,
     EditorModule,
     DropdownModule,
     InputTextModule,

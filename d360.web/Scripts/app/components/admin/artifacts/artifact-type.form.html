@@ -26,49 +26,11 @@
                 </div>
                 <div class="row">
                     <div class="FieldName">Background Color</div>
-                    <table style="width:100%">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <input [(colorPicker)]="model.IconBackColor" 
-                                           style="height:25px;width:100%;display:block;" 
-                                           name="IconBackColor" 
-                                           cpOutputFormat="hex"
-                                           cpAlphaChannel="disabled"
-                                           cpFallbackColor="#000"
-                                           cpPosition="bottom"
-                                           spellcheck="false"
-                                           [value]="model.IconBackColor" required readonly />
-                                </td>
-                                <td>
-                                    <span [style.background-color]="model.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <p-colorPicker [(ngModel)]="model.IconBackColor" name="iconbackcolor"></p-colorPicker>                    
                 </div>
                 <div class="row">
                     <div class="FieldName">Text Color</div>
-                    <table style="width:100%">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <input [(colorPicker)]="model.IconForeColor" 
-                                           cpOutputFormat="hex"
-                                           cpAlphaChannel="disabled"
-                                           cpFallbackColor="#000"
-                                           cpPosition="bottom"
-                                           spellcheck="false"
-                                           style="height:25px;width:100%;display:block;" 
-                                           name="IconForeColor" 
-                                           [value]="model.IconForeColor" required readonly/>
-                                </td>
-                                <td>
-                                    <span [style.background-color]="model.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <p-colorPicker [(ngModel)]="model.IconForeColor" name="iconforecolor"></p-colorPicker>                    
                 </div>
                 <div class="row">
                     <div *ngIf="model.IconForeColor == model.IconBackColor" class="errorMessage">Foreground and background color cannot be the same</div>

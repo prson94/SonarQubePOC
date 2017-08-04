@@ -70,24 +70,7 @@ declare var CompanySettings;
                         <input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="any">   
                         <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00">   
                         <div *ngSwitchCase = "'Color'">
-                            <table style="width:100%">
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <input [(colorPicker)]="colorValue" 
-                                                cpOutputFormat="hex"
-                                                cpAlphaChannel="disabled"
-                                                cpFallbackColor="#000"
-                                                cpPosition="bottom"
-                                                spellcheck="false"
-                                                style="width: 100%;height:25px;" [formControlName]="field.FieldName" [value]="colorValue" (colorPickerChange)="setColorPickerValue($event)" readonly/>
-                                        </td>
-                                        <td>
-                                            <span [style.background-color]="field.Value" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <p-colorPicker [(ngModel)]="colorValue" [formControlName]="field.FieldName"></p-colorPicker>                            
                         </div>
                         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
                         <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />                        

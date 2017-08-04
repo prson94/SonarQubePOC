@@ -40,45 +40,11 @@ import * as _ from 'lodash';
                     </div>                    
                     <div class="col l6 s12">
                         <div class="FieldName">Background Color</div>
-                         <table style="width:100%">
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <input [(colorPicker)]="editedTaxonomy.IconBackColor" 
-                                            cpOutputFormat="hex"
-                                            cpAlphaChannel="disabled"
-                                            cpFallbackColor="#000"
-                                            cpPosition="bottom"
-                                            spellcheck="false"
-                                            name="background" [value]="editedTaxonomy.IconBackColor" style="width: 100%;height:25px;" required readonly />
-                                    </td>
-                                    <td>
-                                        <span [style.background-color]="editedTaxonomy.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <p-colorPicker [(ngModel)]="editedTaxonomy.IconBackColor" name="iconbackcolor"></p-colorPicker>                         
                     </div>
                     <div class="col l6 s12">
                         <div class="FieldName">Text Color</div>
-                         <table style="width:100%">
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <input [(colorPicker)]="editedTaxonomy.IconForeColor" 
-                                            cpOutputFormat="hex"
-                                            cpAlphaChannel="disabled"
-                                            cpFallbackColor="#000"
-                                            cpPosition="bottom"
-                                            spellcheck="false"
-                                            name="background" [value]="editedTaxonomy.IconForeColor" style="width: 100%;height:25px;" required readonly />
-                                    </td>
-                                    <td>
-                                        <span [style.background-color]="editedTaxonomy.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <p-colorPicker [(ngModel)]="editedTaxonomy.IconForeColor" name="iconforecolor"></p-colorPicker>                         
                     </div>
                     <div class="col s12">
                         <div *ngIf="editedTaxonomy.IconForeColor == editedTaxonomy.IconBackColor" class="errorMessage">Foreground and background color cannot be the same</div>

@@ -8,6 +8,7 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import {
     CalendarModule,
+    ColorPickerModule,
     DataTableModule,
     EditorModule,
     MultiSelectModule,
@@ -15,7 +16,7 @@ import {
     TooltipModule,
 } from 'primeng/primeng';
 
-import { ColorPickerModule } from 'ngx-color-picker';
+//import { ColorPickerModule } from 'ngx-color-picker';
 
 import { CoreModule } from '../core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
