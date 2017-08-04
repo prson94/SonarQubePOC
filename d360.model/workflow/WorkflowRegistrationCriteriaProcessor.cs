@@ -75,12 +75,12 @@ namespace d360.model.workflow
                 else if ((item.ContextualFieldID ?? "").ToLower() == "name")
                 {
                     var name = context.GetObjectDetail(@object, objectId).Name;
-                    if (!item.IsValueMatch(name.ToString())) return false;
+                    if (!item.IsValueMatch(name?.ToString() ?? "")) return false;
                 }
                 else if ((item.ContextualFieldID ?? "").ToLower() == "description")
                 {
                     var description = context.GetObjectDetail(@object, objectId).Description;
-                    if (!item.IsValueMatch(description.ToString())) return false;
+                    if (!item.IsValueMatch(description?.ToString() ?? "")) return false;
                 }
                 else if(item.VersionStepId > 0)
                 {

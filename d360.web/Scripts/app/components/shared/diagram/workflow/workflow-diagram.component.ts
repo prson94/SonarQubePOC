@@ -736,8 +736,12 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 if (n.settings == null || n.settings.FieldUpdate == null || n.settings.FieldUpdate.Field == null) {
                     return false;
                 }
+                console.log(n.settings);
                 if ((n.settings.FieldUpdate.Field['@ClearValue'] == null || n.settings.FieldUpdate.Field['@ClearValue'].toString() == 'false')
-                    && (n.settings.FieldUpdate.Field['@FieldId'] == null || n.settings.FieldUpdate.Field['@Value'] == null)) {
+                    && (n.settings.FieldUpdate.Field['@FieldId'] == null
+                        || ((n.settings.FieldUpdate.Field['@Value'] == null || n.settings.FieldUpdate.Field['@Value'] == '')
+                            && (n.settings.FieldUpdate.Field['@UseCurrentDate'] == null
+                            || n.settings.FieldUpdate.Field['@UseCurrentDate'].toString() == 'false')))) {
                     return false;
                 }
                 break;

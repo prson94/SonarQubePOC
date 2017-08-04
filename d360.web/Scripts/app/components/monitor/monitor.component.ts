@@ -10,11 +10,11 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     selector: 'd3s-monitor',
     template: ` 
 <div class="row">
-    <div class="col s12 m5">
+    <div class="col s12 m6">
         <d3s-monitor-filter (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
         <d3s-monitor-workflow [workflowTypes]="selectedWorkflowTypes" (selectionChange)="selectedWorkflowType = $event" [objectType]="objectType" [objectId]="objectId"></d3s-monitor-workflow>
     </div>
-    <div class="col s12 m7">
+    <div class="col s12 m6">
         <d3s-workflow-diagram 
             [id]="selectedWorkflowType?.TypeID" 
             [version]="selectedWorkflowType?.Version" 

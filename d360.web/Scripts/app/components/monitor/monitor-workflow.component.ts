@@ -38,7 +38,7 @@ import { Router } from '@angular/router';
             </p-column>
             <p-column field="UpdatedBy" header="Updated By" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
             <p-column field="VersionName" header="Version" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-            <p-column field="ResponsibleUser" header="Responsible Users" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'100px'}" filterMatchMode="contains">
+            <p-column field="ResponsibleUser" header="Responsibility" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'120px'}" filterMatchMode="contains">
                <ng-template pTemplate="body" let-item="rowData">
                     <a *ngIf="item.ResponsibleUser != null && item.ResponsibleUser.length > 15" [pTooltip]="item.ResponsibleUser" style="word-wrap:break-word;">{{item.ResponsibleUser | slice:0:15}}...</a>
                     <a *ngIf="item.ResponsibleUser != null && item.ResponsibleUser.length <= 15" style="word-wrap:break-word;">{{item.ResponsibleUser}}</a>
