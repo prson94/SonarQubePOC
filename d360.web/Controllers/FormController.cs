@@ -654,6 +654,8 @@ namespace d360.web.Controllers
                     return DeleteTaxonomyTypeClass(form);
                 case "TAXONOMYTYPELEVEL":
                     return DeleteTaxonomyTypeLevel(form);
+                case "TEMPLATE":
+                    return DeleteTooltipTemplate(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");

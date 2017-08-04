@@ -27,7 +27,7 @@ export class TemplatesService extends BaseService {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
         
-        let url = `form/templates/tooltip/${id}`;
+        let url = `form/dynamicedit/delete/template/${id}`;
 
         return this.http
             .delete(url, headers)
