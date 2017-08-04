@@ -31,7 +31,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     @Input() objectName: string;
     @Input() readonly: boolean = true;
     @Input() usageOnly: boolean = true;
-    @Input() nameOnly: boolean = true;
+    @Input() nameOnly: boolean = false;
     @ViewChild('diagram') diagramRef;
 
     DiagramObjectType = DiagramObjectType;
