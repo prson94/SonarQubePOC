@@ -631,9 +631,7 @@ namespace d360.web.Controllers
                 case "POLICYTYPE":
                     return DeletePolicyType(form);
                 case "POLICYTYPECLASS":
-                    return DeletePolicyTypeClass(form);
-                case "POLICYTYPELEVEL":
-                    return DeletePolicyTypeLevel(form);
+                    return DeletePolicyTypeClass(form);                
                 case "RULEIMPLEMENTATION":
                     return DeleteRuleImplementation(form);
                 case "SCORETYPE":
@@ -651,9 +649,7 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPE":
                     return DeleteTaxonomyType(form);
                 case "TAXONOMYTYPECLASS":
-                    return DeleteTaxonomyTypeClass(form);
-                case "TAXONOMYTYPELEVEL":
-                    return DeleteTaxonomyTypeLevel(form);
+                    return DeleteTaxonomyTypeClass(form);                
                 case "TEMPLATE":
                     return DeleteTooltipTemplate(form);
             }
@@ -11623,15 +11619,13 @@ from ArtifactType A
             }
         }
 
-        [HttpDelete, Route("DeletePolicyTypeLevel")]
-        public JsonResult DeletePolicyTypeLevel(FormCollection form)
+        [HttpDelete, Route("PolicyType/{policyTypeId:int}/levels/{policyTypeLevelId:int}")]
+        public JsonResult DeletePolicyTypeLevel(int policyTypeId, int policyTypeLevelId)
         {
             try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("policy type");
-
-                var id = parseIntField(form, "ID");
-                var level = parseIntField(form, "Level");
+            {                
+                var id = policyTypeId;
+                var level = policyTypeLevelId;
 
                 if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
@@ -17617,15 +17611,13 @@ order by TextPath
             }
         }
 
-        [HttpDelete, Route("DeleteTaxonomyTypeLevel")]
-        public JsonResult DeleteTaxonomyTypeLevel(FormCollection form)
+        [HttpDelete, Route("TaxonomyType/{taxonomyTypeId:int}/levels/{taxonomyTypeLevelId:int}")]        
+        public JsonResult DeleteTaxonomyTypeLevel(int taxonomyTypeId, int taxonomyTypeLevelId)
         {
             try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy type");
-
-                var id = parseIntField(form, "ID");
-                var level = parseIntField(form, "Level");
+            {                
+                var id = taxonomyTypeId;
+                var level = taxonomyTypeLevelId;
 
                 if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
