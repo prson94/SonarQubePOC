@@ -17,11 +17,11 @@ export class LookupService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteLookup(lookupId: number): Promise<JsonResult> {
+    deleteLookupType(lookupId: number): Promise<JsonResult> {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
-        let url = `form/LookupType/${lookupId}`;
+        let url = `form/dynamicedit/delete/LookupType/${lookupId}`;
 
         return this.http
             .delete(url, headers)            

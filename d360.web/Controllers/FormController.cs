@@ -596,6 +596,10 @@ namespace d360.web.Controllers
                     return DeleteIssueType(form);
                 case "LINEAGEMAPPING":
                     return DeleteLineageMapping(form);
+                case "LOOKUP":
+                    return DeleteLookup(form);
+                case "LOOKUPTYPE":
+                    return DeleteLookupType(form);
                 case "MAPRULE":
                     return DeleteMapRule(form);
                 case "MAPRULEITEM":
@@ -9794,7 +9798,8 @@ from ArtifactType A
                         MaximumLength = 250,
                         MinimumLength = 1,
                         SortOrder = 1,
-                        Type = DataType.Text.ToString()
+                        Type = DataType.Text.ToString(),
+                        IsEditable = true
                     });
                 }
 
