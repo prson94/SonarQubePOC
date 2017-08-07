@@ -63,7 +63,8 @@ export class FusionQueryAttributeEditorComponent extends BaseComponent {
             this.editedQuery = _.cloneDeep(this.query);          
         }
         else {
-            this.editedQuery = new FusionQueryAttributeType();            
+            this.editedQuery = new FusionQueryAttributeType();
+            this.editedQuery.DisplayFormat = "{ID}";
             this.action = "New";
         }
     }
