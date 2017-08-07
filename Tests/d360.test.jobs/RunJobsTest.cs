@@ -25,8 +25,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 53; //10
-            var fusionTypeID = 12;//13;
+            var companyID = 40; //10
+            var fusionTypeID = 76;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -47,7 +47,7 @@ SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Nam
                     BEGIN 
                     INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable) VALUES (@n, @f, @t, 'FusionType', @oid, @s, 0, @l, @d, @e)
                     END",
-                new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionTypeID, s = o.SortOrder, l = o.IsListable, d = true, e = false });
+                new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionTypeID, s = o.SortOrder, l = o.IsListable, d = true, e = true });
             }
 
             loadFusionAttributeTypes(company, fusionType.ID, "FusionAttributeType", null, fusionAttributeTypes);
@@ -100,10 +100,10 @@ END",
                     declare @ft int
                     if not exists(select 1 from FieldType where Name = @n and [Object] = 'FusionAttributeType' and ObjectID = @oid) 
                     BEGIN 
-                    INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable) VALUES (@n, @f, @t, 'FusionAttributeType', @oid, @s, 0, @l) 
+                    INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsEditable) VALUES (@n, @f, @t, 'FusionAttributeType', @oid, @s, 0, @l, @e) 
                     END 
                     ",
-                    new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionAttributeTypeID, s = o.SortOrder, l = o.IsListable });
+                    new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionAttributeTypeID, s = o.SortOrder, l = o.IsListable, e = false });
                 }
 
                 loadFusionAttributeTypes(company, fusionTypeID, type, t.ID, types);

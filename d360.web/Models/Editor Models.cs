@@ -819,7 +819,7 @@ namespace d360.web.Models
     {
         public RegisterStep Step { get; set; }
 
-        [Required, RegularExpression(@"^$|\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"), Display(Name = "Email address")]
+        [Required, RegularExpression(@"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"), Display(Name = "Email address")]
         public string Email { get; set; }
 
         [Display(Name = "First name")]

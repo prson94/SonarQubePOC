@@ -433,15 +433,17 @@ namespace d360.jobs.GenerateReportingLayer
                             objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.Name)));
                             viewNames.Add(objectName);
 
-                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, A.ParentID, P.TextPath as ParentName, {0} dbo.GenerateObjectUrl('{3}', 
-A.ArtifactTypeID, A.ID) as Url, 
-dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore, 
-AC.AttributeCount, 
-Rels.[Count] as RelationshipCount 
+                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, A.Status, 
+V.ID as SubjectAreaID, 
+V.Name as SubjectArea, 
+A.ParentID, 
+P.TextPath as ParentName, 
+{0} 
+dbo.GenerateObjectUrl('{3}', A.ArtifactTypeID, A.ID) as Url, 
+dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore
 from Artifact A 
-inner join TaxonomyType V on V.ID = A.TaxonomyTypeID {2}  
-left join Artifact P on P.ID = A.ParentID 
-cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.ArtifactTypeID = {1}", columns, o.ID, joins, objectType);
+inner join TaxonomyType V on V.ID = A.TaxonomyTypeID {2} and A.ArtifactTypeID = {1} 
+left join Artifact P on P.ID = A.ParentID", columns, o.ID, joins, objectType);
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -499,13 +501,11 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
 
                             selectSql = string.Format(@"select A.ID, A.ParentID, A.Name, A.TextPath, A.Description, A.[Level], L.Name as LevelName, L.Description as LevelDescription, 
     C.Name as Class,
-    {0} dbo.GenerateObjectUrl('{3}', A.TaxonomyTypeID, A.ID) as Url, dbo.GetObjectStatisticScore('Taxonomy', A.ID) as CurrentScore, AC.AttributeCount, Rels.[Count] as RelationshipCount 
+    {0} dbo.GenerateObjectUrl('{3}', A.TaxonomyTypeID, A.ID) as Url, dbo.GetObjectStatisticScore('Taxonomy', A.ID) as CurrentScore
     from Taxonomy A {2} 
     inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
     inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
     left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]
-    cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC 
-    cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels
     where A.TaxonomyTypeID = {1}", columns, o.ID, joins, objectType);
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -561,7 +561,7 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
                             objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.Name)));
                             viewNames.Add(objectName);
 
-                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, {0} dbo.GenerateObjectUrl('{3}', A.PolicyTypeID, A.ID) as Url, dbo.GetObjectStatisticScore('Policy', A.ID) as CurrentScore, AC.AttributeCount, Rels.[Count] as RelationshipCount from Policy A {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.PolicyTypeID = {1}", columns, o.ID, joins, objectType);
+                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, {0} dbo.GenerateObjectUrl('{3}', A.PolicyTypeID, A.ID) as Url, dbo.GetObjectStatisticScore('Policy', A.ID) as CurrentScore from Policy A {2} where A.PolicyTypeID = {1}", columns, o.ID, joins, objectType);
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -596,23 +596,23 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select    A.ID,
-                              A.ParentID,
-                              A.ArtifactTypeID,
-                              A.Name,
-                              A.Description,
-                              A.TextPath,
-                              T.Name as ArtifactType,
-                              A.Status,
-                              A.TaxonomyTypeID, 
-                              a.CreatedOn,
+select  A.ID,
+        A.ParentID,
+        A.ArtifactTypeID,
+        A.Name,
+        A.Description,
+        A.TextPath,
+        T.Name as ArtifactType,
+        A.Status,
+        A.TaxonomyTypeID, 
+        a.CreatedOn,
         a.UpdatedOn,
-                              CONVERT(VARCHAR(10), a.CreatedOn, 112) as CreatedOnKey,
-                              CONVERT(VARCHAR(10), a.UpdatedOn, 112) as UpdatedOnKey,
-                              TX.Name as TaxonomyTypeName,
+        CONVERT(VARCHAR(10), a.CreatedOn, 112) as CreatedOnKey,
+        CONVERT(VARCHAR(10), a.UpdatedOn, 112) as UpdatedOnKey,
+        TX.Name as TaxonomyTypeName,
         dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore,
-                              dbo.GetObjectStatisticScore('Artifact', A.ID) * 100 as CurrentScorePct
-from      Artifact A
+        dbo.GetObjectStatisticScore('Artifact', A.ID) * 100 as CurrentScorePct
+from    Artifact A
                               inner join ArtifactType T on T.ID = A.ArtifactTypeID
                               inner join TaxonomyType TX on tx.ID = A.TaxonomyTypeID";
 

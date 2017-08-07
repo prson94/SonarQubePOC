@@ -34,7 +34,6 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <a (click)="showHierarchy(item.data.id)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.Name}} <i *ngIf="item.data?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
                             </ng-template>
-
                         </p-column>                        
                         <p-column field="description" header="Description">
                             <ng-template let-item="rowData" pTemplate type="body">
@@ -47,25 +46,25 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                                 </ng-template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()" >
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=item;showAdd()" *ngIf="model.MaximumDepth > item.data.level"><i class="fa fa-plus"></i></a>                                        
-                                        </div>
-                                    </ng-template>
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=item;showAdd()" *ngIf="model.MaximumDepth > item.data.level"><i class="fa fa-plus"></i></a>                                        
+                                </div>
+                            </ng-template>
                         </p-column>     
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()" >
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
-                                        </div>
-                                    </ng-template>
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                </div>
+                            </ng-template>
                         </p-column>                            
                         <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">                                
-                                            <a *ngIf="!item.children || item.children?.length == 0" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                        </div>
-                                    </ng-template>
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <div class="RowTools">                                
+                                    <a *ngIf="!item.children || item.children?.length == 0" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                </div>
+                            </ng-template>
                         </p-column>       
                     </p-treeTable>                                   
                     <d3s-delete-form *ngIf="showDelete"
@@ -217,8 +216,10 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         for (let root of rootNodes) {            
             res.push({
                 label: root.Name,
-                expanded: true,
-                data:root,                
+                expanded: false,//true,
+                data: {
+                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : ''), level: root.Level
+                },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
         }

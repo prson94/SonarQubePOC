@@ -33,7 +33,8 @@ namespace d360.web.Controllers
 				from	[Intersect]
 				where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
 				) DC
-where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.Name, i.ParentID });
+where T.TaxonomyTypeID = @id AND T.Visible = 1 
+order by T.[Level], T.Name", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.Name, i.ParentID });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -58,10 +59,8 @@ where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => ne
 				                from	[Intersect]
 				                where	([Subject] = 'Taxonomy' and SubjectID = A.ID) OR ([Object] = 'Taxonomy' and ObjectID = A.ID)
 				                ) DC
-                where A.TaxonomyTypeID = @id AND A.Visible = 1", columns, joins);
-
-            var models = Company.Query<dynamic>(sql, new { id = id });
-            /*var models = Company.Query<TaxonomyDetail>(sql, new { id = id }).Select(i =>
+                where T.TaxonomyTypeID = @id AND T.Visible = 1 
+                order by T.[Level], T.Name", new { id = id }).Select(i =>
                 new
                 {
                     i.HasChildren,

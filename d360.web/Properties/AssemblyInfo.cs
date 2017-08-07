@@ -11,4 +11,4 @@ using System.Runtime.InteropServices;
 //[assembly: AssemblyProduct(d360.utils.AssemblySettings.TITLE_PREFIX + " UI")]
 //[assembly: AssemblyCopyright(d360.utils.AssemblySettings.COPYRIGHT)]
 [assembly: InternalsVisibleTo("d360.test.web")]
-[assembly: AssemblyVersion("2017.4.4.*")]//d360.utils.AssemblySettings.PRODUCT_VERSION
+[assembly: AssemblyVersion("2017.8.4.*")]//d360.utils.AssemblySettings.PRODUCT_VERSION

@@ -2989,7 +2989,7 @@ namespace d360.web.Controllers
 
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },
-                { "Email", @"^$|\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
+                { "Email", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
                 { "IP Address", @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
                 { "North American Phone", @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },                
                 { "Internal Url", @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
@@ -6198,6 +6198,25 @@ namespace d360.web.Controllers
                     ruleStep = Company.GetById<FusionRuleStep>(id);
             }
 
+            // These settings must be before the relate check below.
+            //var promotionType = ruleStep.PromotionObjectType;
+            var promotionType = ruleStep.GetSettingValueByName("Object");
+            var promotionObjectType = ruleStep.GetSettingValueByName("PromotionParentObjectType");
+            int promotionObjectID = 0;
+            int.TryParse(ruleStep.GetSettingValueByName("ObjectID"), out promotionObjectID);
+
+            if (ruleStep.Action.ToLower() == "relate")
+            {
+                //find the referenced step
+                int intersectTypeID = 0;
+                int.TryParse(ruleStep.GetSettingValueByName("IntersectType"), out intersectTypeID);
+                if (intersectTypeID > 0)
+                {
+                    promotionType = "IntersectType";
+                    promotionObjectID = intersectTypeID;
+                }
+            }
+
             #region Process Target Field Logic
 
             var targetFieldIDs = ruleStep.FusionRuleStepMappings.Where(i => i.TargetFieldTypeID > 0).Select(i => i.TargetFieldTypeID).ToList();
@@ -6214,12 +6233,6 @@ namespace d360.web.Controllers
                     targetFieldNames.Remove(existingItem.TargetFieldName);
                 }
             }
-
-            //var promotionType = ruleStep.PromotionObjectType;
-            var promotionType = ruleStep.GetSettingValueByName("Object");
-            var promotionObjectType = ruleStep.GetSettingValueByName("PromotionParentObjectType");
-            int promotionObjectID = 0;
-            int.TryParse(ruleStep.GetSettingValueByName("ObjectID"), out promotionObjectID);
 
             var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID)
                 .OrderBy(i => i.FriendlyName)
@@ -6253,6 +6266,9 @@ namespace d360.web.Controllers
                         if (!targetFieldNames.Contains("Subject Area"))
                             targetFields.Add(new SelectListItem { Text = "Subject Area", Value = "TaxonomyTypeID|0" });
                     }
+                    break;
+                case "IntersectType":
+                    targetFields.AddRange(targetDynamicFields);
                     break;
             }
 

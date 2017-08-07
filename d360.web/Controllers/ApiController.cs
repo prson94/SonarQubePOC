@@ -4038,7 +4038,7 @@ from    (
 
             if (HideData3SixtyUsers())
             {
-                querySql += " where A.Email not like '%@data3sixty.com'";
+                querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
             }
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
