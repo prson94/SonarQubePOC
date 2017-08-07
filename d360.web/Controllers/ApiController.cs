@@ -790,6 +790,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 case SystemObjects.TaxonomyType:
                     #region TaxonomyType
                     {
+                        //parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
                         var taxonomyFields = Company.Filter<FieldType>(i => i.Object == "TaxonomyType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.SortOrder).ToList();
 
                         foreach (var field in taxonomyFields)
