@@ -41,16 +41,27 @@ where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => ne
         [HttpGet, Route("ModelHierarchyDetailed"), NonNullableParameters]
         public JsonNetResult ModelHierarchyDetailed(int id, bool stripHtml = false)
         {
-            var models = Company.Query<TaxonomyDetail>(
-                @"select	T.*,
-			                case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren		 
-	                from	Taxonomy T
+            var joins = "";
+            var columns = "";
+
+            var fields = getFieldTypesByObjectType("TaxonomyType", id, true);
+
+            // get the dynamic fields set as listable for this taxonomy
+            getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, true, false, true, fields);
+
+            var sql = string.Format(
+                @"select	A.*, {0} case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren                             
+	                from	Taxonomy A
+                            {1}
 			                CROSS APPLY (
 				                select	count(1) as [ItemsCount]
 				                from	[Intersect]
-				                where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
+				                where	([Subject] = 'Taxonomy' and SubjectID = A.ID) OR ([Object] = 'Taxonomy' and ObjectID = A.ID)
 				                ) DC
-                where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i =>
+                where A.TaxonomyTypeID = @id AND A.Visible = 1", columns, joins);
+
+            var models = Company.Query<dynamic>(sql, new { id = id });
+            /*var models = Company.Query<TaxonomyDetail>(sql, new { id = id }).Select(i =>
                 new
                 {
                     i.HasChildren,
@@ -59,7 +70,7 @@ where T.TaxonomyTypeID = @id AND T.Visible = 1", new { id = id }).Select(i => ne
                     i.ParentID,
                     Description = HttpUtility.HtmlDecode(stripHtml ? System.Text.RegularExpressions.Regex.Replace(i.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty) : i.Description ?? ""),
                     i.Level
-                });
+                });*/
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }

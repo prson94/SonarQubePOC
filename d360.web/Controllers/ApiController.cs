@@ -786,7 +786,21 @@ where   h.ID <> @t order by h.[Level] desc;
                     fields.Add(new GridField { name = "DateLastLoggedIn", type = "date" });
                     fields.Add(new GridField { name = "Status", type = "string" });
                     break;
+                #endregion
+                case SystemObjects.TaxonomyType:
+                    #region TaxonomyType
+                    {
+                        var taxonomyFields = Company.Filter<FieldType>(i => i.Object == "TaxonomyType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+
+                        foreach (var field in taxonomyFields)
+                        {
+                            columns.Add(getGridColumnForColumn(field, 0, false));
+                            fields.Add(getGridFieldForColumn(field));
+                        }
+                    }
+                    break;
                     #endregion
+
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new

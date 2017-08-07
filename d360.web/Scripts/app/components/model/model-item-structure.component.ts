@@ -15,10 +15,12 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { LevelsService } from '../../services/levels.service';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { GridColumn, GridField } from '../../models/grid-definition.model';
+import { GridDefinitionService } from '../../services/grid-definition.service';
 
 @Component({
     selector: 'd3s-model-item-structure',
-    providers: [ModelsService, PermissionsService, LevelsService],
+    providers: [GridDefinitionService, ModelsService, PermissionsService, LevelsService],
     template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading">                            
@@ -30,14 +32,19 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="name" header="Name">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <a (click)="showHierarchy(item.data.id)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
+                                <a (click)="showHierarchy(item.data.id)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.Name}} <i *ngIf="item.data?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
                             </ng-template>
 
                         </p-column>                        
                         <p-column field="description" header="Description">
                             <ng-template let-item="rowData" pTemplate type="body">
-                               <div class="truncate" [title]="item.data.description">{{item.data.description}}</div>
+                               <div class="truncate" [title]="item.data.Description">{{item.data.Description}}</div>
                             </ng-template>
+                        </p-column>
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
+                                <ng-template let-item="rowData" pTemplate type="body">
+                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item.data"></d3s-dynamic-field-value>                                 
+                                </ng-template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()" >
                                     <ng-template let-item="rowData" pTemplate type="body">
@@ -86,6 +93,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
 
+    columns: GridColumn[] = [];
+    fields: GridField[] = [];
+
     searchValue: string;
     showEditor: boolean;
     showDelete: boolean;    
@@ -103,7 +113,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         protected messagesService: MessagesService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
-        protected levelsService: LevelsService
+        protected levelsService: LevelsService,
+        protected gridDefinitionService: GridDefinitionService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -120,6 +131,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.setObjectInfo('TaxonomyType', this.modelId);
             
             this.setCommonRightSideBar(true, true);
+
+            this.getFieldsDefinition();
             
             this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
 
@@ -159,9 +172,20 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     private loadModelHierarchy(modelId: number) {
         this.modelsService.getModelHierarchy(modelId, true, true)
             .then(result => {
+                result.forEach(function (part, index, theArray) {
+                    theArray[index].Description = theArray[index].Description ? String(theArray[index].Description).replace(/<[^>]+>/gm, '') : '';
+                });
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy)                
+            });
+    }
+
+    private getFieldsDefinition() {
+        this.gridDefinitionService.getGridDefinition(this.modelId, StringConstants.ObjectTaxonomyType)
+            .then(result => {
+                this.columns = result.Columns;   
+                this.fields = result.Fields;
             });
     }
 
@@ -190,13 +214,11 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
         let res: TreeNode[] = [];
 
-        for (let root of rootNodes) {
+        for (let root of rootNodes) {            
             res.push({
                 label: root.Name,
                 expanded: true,
-                data: {
-                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: (root.Description ? root.Description.replace(/<[^>]+>/gm, '') : ''), level: root.Level
-                },
+                data:root,                
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
         }
