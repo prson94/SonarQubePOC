@@ -57,8 +57,8 @@ namespace d360.web.Controllers
 				                            inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
 			                            where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId ) as 'PreviousValue'
 			
-                            from reporting.global_fieldaudit fa
-	                            inner join reporting.global_audit ga on ( fa.auditid = ga.id) 
+                            from reporting.global_audit ga 
+								left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId";
 
                 var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
@@ -106,9 +106,10 @@ namespace d360.web.Controllers
 				                            inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
 			                            where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId ) as 'PreviousValue'
 			
-                            from reporting.global_fieldaudit fa
-	                            inner join reporting.global_audit ga on ( fa.auditid = ga.id) 
-                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId";
+                            from reporting.global_audit ga 
+								left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId                        
+            ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -149,14 +150,14 @@ namespace d360.web.Controllers
                 document.SetCellValue(rowIndex, 1, row.ResourceName);
                 document.SetCellValue(rowIndex, 2, row.Date.ToString());
                 document.SetCellValue(rowIndex, 3, row.Action);
-                document.SetCellValue(rowIndex, 4, row.Field);
+                document.SetCellValue(rowIndex, 4, row.Field ?? "");
                 document.SetCellValue(rowIndex, 5, row.NewValue ?? "");
                 document.SetCellValue(rowIndex, 6, row.PreviousValue ?? "");
                 document.SetCellValue(rowIndex, 7, row.ActionObject);
                 document.SetCellValue(rowIndex, 8, row.ActionObjectTypeName);
                 document.SetCellValue(rowIndex, 9, row.ActionObjectName);
                 document.SetCellValue(rowIndex, 10, row.ActionDescription);
-                document.SetCellValue(rowIndex, 11, row.Version);
+                document.SetCellValue(rowIndex, 11, row.Version ?? "");
             }
 
             #endregion
