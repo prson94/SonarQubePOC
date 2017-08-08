@@ -22,6 +22,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     @Output() settingsChange = new EventEmitter(); 
 
     showTargetField = false;
+    findParent = false;
 
     searchTypes: any[] = [
         { value: "Fusion", text: "Fusion" },
@@ -100,6 +101,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
         delete this.settings.ObjectID;
         delete this.settings.FilterField;
         delete this.settings.TargetField;
+        if (search != 'ResultFromStep') delete this.settings.FindParent;
 
         switch (search) {
             case 'Glossary':
@@ -216,6 +218,10 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
         }
 
         this.isValidChange.emit(this.isValid);
+    }
+
+    changeFindParent(e: boolean) {
+        this.settings.FindParent = e ? 1 : 0;
     }
 
 };

@@ -75,8 +75,8 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
                 }
             })
             .then(() => {
-                //if there's only 1 form completed, just show it
-                if (this.fields != null && this.fields.form != null && this.fields.form.length == 1) {
+                //show the first completed form by default
+                if (this.fields != null && this.fields.form != null && this.fields.form.length > 0) {
                     this.selectedFormIndex = 0;
                     this.selectedForm = this.fields.form[0];
                 }

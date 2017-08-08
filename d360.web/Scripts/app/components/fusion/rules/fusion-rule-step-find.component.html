@@ -73,7 +73,7 @@
                 </select>
                 <div class="errorMessage" [hidden]="!showErrors || result.valid">Step is required</div>
                 <div class="FieldName" style="display: block">Find items parent?</div>
-                <input type="checkbox" [(ngModel)]="settings.FindParent" name="findparent" /> Enabled?
+                <input type="checkbox" [ngModel]="+settings.FindParent == 1 ? true : false" (ngModelChange)="changeFindParent($event);" name="findparent" /> Enabled?
             </div>
 
         </div>

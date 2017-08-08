@@ -35,10 +35,13 @@
     </p-dataTable>
 </div>
 <div *ngIf="formMode == FormMode.FormHistory">
-    <header>
+    <!--<header>
         &nbsp;
         <d3s-tile-actions [hasClose]="true" (closeClick)="formMode = FormMode.Default; selection = null;"></d3s-tile-actions>
-    </header>
+    </header>-->
+    <div style="float: right">
+        <button pButton type="button" label="Back to history" (click)="formMode = FormMode.Default; selection = null;"></button>
+    </div>
     <d3s-workflow-form-history
                                [itemStepId]="selection.ItemStepID"
                                [settings]="selection.SettingsObject"
