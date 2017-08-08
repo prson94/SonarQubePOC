@@ -79,7 +79,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
             this.fusionId = +params['fusionId'];
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
-            this.initialFusionAttributeId = +params['fusionAttributeId'];
+            this.initialFusionAttributeId = +params['fusionAttributeId'];            
             this.selectedFusionQueryAttributeTypeId = +params['fusionQueryAttributeTypeId'];
             this.initialFusionQueryAttributeId = +params['fusionQueryAttributeId'];
             this.isQueryConfigVisible = params['showQueryConfig'] == 'true';         
@@ -153,6 +153,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     }
     
     private changeFusionAttributeTypeId(event) {
+        if (event == this.selectedFusionAttributeTypeId) {
+            console.log('current type is same as selected');
+            return;
+        }
         this.selectedFusionAttribute = null;
         this.selectedFusionQueryAttribute = null;
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${event}`);
