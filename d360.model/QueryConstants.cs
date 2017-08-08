@@ -1424,7 +1424,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
         public static string WorkflowVersionStepHistory = @"
 select 
-	            i.ID as ItemStepID, i.StartedOn, i.CompletedOn, r.FirstName + ' ' + r.LastName as StartedBy,
+	            i.ID as ItemStepID, convert(varchar(max),i.Fields) as Fields, i.StartedOn, i.CompletedOn, r.FirstName + ' ' + r.LastName as StartedBy,
 	            r2.FirstName + ' ' + r2.LastName as CompletedBy, m.Object, m.ObjectID, d.Name, d.ObjectTypeName,
 	            d.NgUrl, d.TextPath,vs.Name as StepName, string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments, convert(varchar(max),vs.Settings) as Settings, vs.StepType as StepType, vs.ActivityType
 				,case when i.CompletedOn is not null then
@@ -1456,7 +1456,7 @@ select
 					'Complete'
 				else
 					'In Progress'
-				end as [Status]
+				end as [Status], null as SettingsObject, null as FieldsObject
             from workflow.itemstep i
             left join workflow.item m on m.id = i.itemid
 			left join workflow.itemassignment a on a.itemid = m.id
@@ -1469,7 +1469,7 @@ select
 			left join workflow.type t on t.id = v.typeid
             where vs.id = @id
 			group by i.id, i.startedon, i.completedon, r.FirstName, r.LastName, r2.FirstName, r2.LastName, m.Object, m.ObjectID, d.Name,
-				d.ObjectTypeName, d.NgUrl, d.TextPath, vs.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType, vs.id, t.id";
+				d.ObjectTypeName, d.NgUrl, d.TextPath, vs.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType, vs.id, t.id, convert(varchar(max),i.Fields)";
 
         public static string WorkflowTypeList = @"
             with a as

@@ -1498,6 +1498,12 @@ namespace d360.web.Controllers.Services
         {
             var results = Company.Query<dynamic>(QueryConstants.WorkflowVersionStepHistory, new { id }).ToList();
 
+            results.ForEach(r =>
+            {
+                r.SettingsObject = XmlToDynamic(r.Settings);
+                r.FieldsObject = XmlToDynamic(r.Fields);
+            });
+
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 

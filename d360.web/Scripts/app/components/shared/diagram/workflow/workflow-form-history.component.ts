@@ -1,0 +1,102 @@
+﻿import { Component, NgZone, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+import { BaseComponent } from '../../../shared/base.component';
+import {
+    WorkflowEventRegistration,
+    WorkflowObjectType,
+    WorkflowChangeType,
+    ChangeTypeInfo,
+    EventCondition,
+    WorkflowListItem,
+    WorkflowDiagramModel,
+    WorkflowDiagramNode,
+    NodeModel,
+    WorkflowActivityType,
+    WorkflowTaskProcedure,
+    EmailTaskRecipientType
+} from '../../../../models/workflow.model';
+import { Resource } from '../../../../models/resource.model';
+import { FieldType } from '../../../../models/fields.model';
+import { Column, Header, Editor } from 'primeng/primeng';
+import { WorkflowService } from '../../../../services/workflow.service';
+import { ResourcesService } from '../../../../services/resources.service';
+
+@Component({
+    selector: 'd3s-workflow-form-history',
+    providers: [WorkflowService, ResourcesService],
+    templateUrl: './workflow-form-history.component.html'
+})
+
+export class WorkflowFormHistoryComponent extends BaseComponent implements OnInit, OnChanges {
+    @Input() itemStepId: number;
+    @Input() settings: any;
+    @Input() fields: any;
+    @Input() completed: boolean = false;
+
+    resources: Resource[] = [];
+    selectedFormIndex: number;
+    selectedForm: any;
+
+    constructor(private workflowService: WorkflowService, private resourcesService: ResourcesService) {
+        super();
+
+    }
+
+    ngOnInit() {
+        console.log(this.itemStepId, this.settings, this.fields);
+
+        this.isLoading = true;
+        this.resourcesService.getResources()
+            .then(r => {
+                this.resources = r;
+            })
+            .then(() => {
+                //normalize input
+                if (this.fields != null && this.fields.form != null) {
+                    if (this.fields.form.constructor !== Array) {
+                        let f = this.fields.form;
+                        this.fields.form = [];
+                        this.fields.form.push(f);
+                    }
+
+                    this.fields.form.forEach(f => {
+                        if (f['@ResourceID'] != null) {
+                            let r = this.resources.find(r => r.ID == +f['@ResourceID']);
+                            f.ResourceName = r ? r.FirstName + ' ' + r.LastName : '[unknown]';
+                        }
+
+                        if (f.field != null) {
+                            if (f.field.constructor !== Array) {
+                                let l = f.field;
+                                f.field = [];
+                                f.field.push(l);
+                            }
+                        }
+                    });
+                }
+            })
+            .then(() => {
+                //if there's only 1 form completed, just show it
+                if (this.fields != null && this.fields.form != null && this.fields.form.length == 1) {
+                    this.selectedFormIndex = 0;
+                    this.selectedForm = this.fields.form[0];
+                }
+            })
+            .then(() => this.isLoading = false);
+    }
+
+    ngOnChanges() {
+        this.load();
+    }
+
+    load() {
+    }
+
+    selectForm(i: number) {
+        console.log(this.selectedForm, i);
+        if (i < 0) {
+            this.selectedForm = null;
+            return;
+        }
+        this.selectedForm = this.fields.form[i];
+    }
+}

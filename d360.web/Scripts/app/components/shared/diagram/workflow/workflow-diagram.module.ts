@@ -15,6 +15,7 @@ import {
     ButtonModule,
     CalendarModule,
     InputMaskModule,
+    DataListModule,
 } from 'primeng/primeng';
 
 import { CoreModule } from '../../core.module';
@@ -31,6 +32,7 @@ import { WorkflowStepFormEditorComponent } from './workflow-step-form-editor.com
 import { WorkflowConditionListComponent } from './workflow-condition-list.component';
 import { WorkflowTemplateToolComponent } from './workflow-template-tool.component';
 import { WorkflowHistoryComponent } from './workflow-history.component';
+import { WorkflowFormHistoryComponent } from './workflow-form-history.component';
 import { WorkflowStepFieldChangeComponent } from './workflow-step-field-change.component';
 
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -56,6 +58,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         ButtonModule,
         CalendarModule,
         InputMaskModule,
+        DataListModule,
 
     ],
     declarations: [
@@ -67,6 +70,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         WorkflowConditionListComponent,
         WorkflowTemplateToolComponent,
         WorkflowHistoryComponent,
+        WorkflowFormHistoryComponent,
         WorkflowStepFieldChangeComponent,
     ],
     exports: [
@@ -75,6 +79,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         WorkflowConditionListComponent,
         WorkflowTemplateToolComponent,
         WorkflowHistoryComponent,
+        WorkflowFormHistoryComponent,
         WorkflowStepFieldChangeComponent,
     ],
     providers: [
