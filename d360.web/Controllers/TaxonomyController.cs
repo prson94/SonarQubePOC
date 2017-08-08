@@ -50,6 +50,8 @@ order by T.[Level], T.Name", new { id = id }).Select(i => new { i.HasChildren, i
             // get the dynamic fields set as listable for this taxonomy
             getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, true, false, true, fields);
 
+            getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, true, false, true, fields);
+
             var sql = string.Format(
                 @"select	A.*, {0} case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren                             
 	                from	Taxonomy A
@@ -59,17 +61,9 @@ order by T.[Level], T.Name", new { id = id }).Select(i => new { i.HasChildren, i
 				                from	[Intersect]
 				                where	([Subject] = 'Taxonomy' and SubjectID = A.ID) OR ([Object] = 'Taxonomy' and ObjectID = A.ID)
 				                ) DC
-                where T.TaxonomyTypeID = @id AND T.Visible = 1 
-                order by T.[Level], T.Name", new { id = id }).Select(i =>
-                new
-                {
-                    i.HasChildren,
-                    i.ID,
-                    i.Name,
-                    i.ParentID,
-                    Description = HttpUtility.HtmlDecode(stripHtml ? System.Text.RegularExpressions.Regex.Replace(i.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty) : i.Description ?? ""),
-                    i.Level
-                });*/
+                where A.TaxonomyTypeID = @id AND A.Visible = 1", columns, joins);
+
+            var models = Company.Query<dynamic>(sql, new { id = id });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
