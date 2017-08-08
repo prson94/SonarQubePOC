@@ -49,9 +49,7 @@ order by T.[Level], T.Name", new { id = id }).Select(i => new { i.HasChildren, i
 
             // get the dynamic fields set as listable for this taxonomy
             getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, true, false, true, fields);
-
-            getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, true, false, true, fields);
-
+            
             var sql = string.Format(
                 @"select	A.*, {0} case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren                             
 	                from	Taxonomy A
