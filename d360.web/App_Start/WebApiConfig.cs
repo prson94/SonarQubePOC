@@ -22,9 +22,9 @@ namespace d360.web
 
             config.Services.Add(typeof(IExceptionLogger), new AiExceptionLogger());
 
-#if !DEBUG
-                config.Filters.Add(new ExceptionHandlingAttribute());
-#endif
+//#if !DEBUG
+  //              config.Filters.Add(new ExceptionHandlingAttribute());
+//#endif
 
             // Web API routes
             config.MapHttpAttributeRoutes();
