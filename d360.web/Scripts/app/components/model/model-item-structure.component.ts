@@ -32,7 +32,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="name" header="Name">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <a (click)="showHierarchy(item.data.id)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.Name}} <i *ngIf="item.data?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
+                                <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.Name}} <i *ngIf="item.data?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
                             </ng-template>
                         </p-column>                        
                         <p-column field="description" header="Description">
@@ -69,12 +69,12 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                     </p-treeTable>                                   
                     <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"
-                        [itemId]="selected?.data?.id"
+                        [itemId]="selected?.data?.ID"
                         [method]="'callback'"
-                        [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.name] + ']?'"                                         
+                        [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.Name] + ']?'"                                         
                         (onCancel)="showDelete=false;"
                     ></d3s-delete-form>        
-                    <d3s-dynamic-editor rowID="id" *ngIf="showEditor" [objectID]="model.ID" [objectType]="'Taxonomy'" [parentID]="selectedParentID" [title]="modelTaxonomyTitle()" [selection]="selected?.data" (saveClick)="saveTaxonomy($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>              
+                    <d3s-dynamic-editor rowID="ID" *ngIf="showEditor" [objectID]="model.ID" [objectType]="'Taxonomy'" [parentID]="selectedParentID" [title]="modelTaxonomyTitle()" [selection]="selected?.data" (saveClick)="saveTaxonomy($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>              
                 </div>                
                 `
 })
@@ -176,7 +176,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 });
                 this.modelHierarchy = result;
 
-                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy)                
+                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy)            
             });
     }
 
@@ -201,7 +201,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.level);
 
         if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
-        return `(Level ${this.selected.data.level + 1}) Item`;       
+        return `(Level ${this.selected.data.Level + 1}) Item`;       
     }
     
     private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number): TreeNode[] {
@@ -313,8 +313,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private showAdd() {
         this.showEditor = true;        
-        this.selectedParentID = this.selected ? this.selected.data.id : undefined;
-        this.selectedLevel = this.selected ? this.selected.data.level : 0;
+        this.selectedParentID = this.selected ? this.selected.data.ID : undefined;
+        this.selectedLevel = this.selected ? this.selected.data.Level : 0;
         this.selected = null;
     }
     
