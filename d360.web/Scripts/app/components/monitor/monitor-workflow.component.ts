@@ -94,7 +94,14 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit, O
             })
             .then(() => {
                 if (this.objectType != null && this.objectId != null) {
-                    this.workflowItems = this.workflowItems.filter(i => i.ObjectType == this.objectType && i.ObjectTypeID == this.objectId);
+                    //artifact type
+                    if (this.objectType.toLowerCase().endsWith('type')) {
+                        this.workflowItems = this.workflowItems.filter(i => i.ObjectType == this.objectType && i.ObjectTypeID == this.objectId);
+                    } else {
+                    //artifact
+                        let item = this.objectType + '|' + this.objectId.toString();
+                        this.workflowItems = this.workflowItems.filter(i => i.Objects != null && i.Objects.indexOf(item) > -1);
+                    }
                 }
             })
             .then(() => this.isLoading = false);

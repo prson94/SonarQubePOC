@@ -98,7 +98,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                 this.headerBreadcrumbService.popLastBreadcrumb();
                 this.selectPolicyHierarchy(hierarchyId);
                 this.clearSidebar();
-                this.setCommonRightSideBar(true, true, false, true, true, true, true);
+                this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
             }
         });
 

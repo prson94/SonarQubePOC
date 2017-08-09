@@ -1491,7 +1491,8 @@ select
 	            d.NgUrl, 
 	            v.id as VersionID,
 	            string_agg(cast(d2.Name as varchar(max)), ', ') as ObjectNames, 
-	            null as Responsibility, 
+				string_agg(cast(d2.Object as varchar(max)) + '|' + cast(d2.ObjectID as varchar(max)),', ') as [Objects],
+ 	            null as Responsibility, 
 	            null as SpecificUser,
 	            case when count(s.StepID) > 0 then
 		            case when max(vs.ActivityType) = 3 then

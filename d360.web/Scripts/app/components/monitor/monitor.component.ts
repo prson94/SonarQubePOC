@@ -35,7 +35,7 @@ export class MonitorComponent extends BaseComponent implements OnInit {
     selectedWorkflowType: any;
     selectedWorkflowItem: any;
     selectedWorkflowItemDetail: any;
-    selectAll: boolean = false;
+    selectAll: boolean = true;
 
     constructor(
         protected titleService: Title,

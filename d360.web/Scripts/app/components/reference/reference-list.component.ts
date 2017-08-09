@@ -61,7 +61,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
-        this.setCommonRightSideBar(true, true, false, true, true, true);
+        this.setCommonRightSideBar(true, true, false, true, true, true, false, true);
         this.auditSidebar.hasDynamicUrl = true;
         this.auditSidebar.dynamicUrlCallback = (() => {
             return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
@@ -81,6 +81,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.relationsSidebar.hasDynamicUrl = true;
         this.relationsSidebar.dynamicUrlCallback = (() => {
             return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+        });
+        this.monitorSidebar.hasDynamicUrl = true;
+        this.monitorSidebar.dynamicUrlCallback = (() => {
+            return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceItemType.ID}`
         });
     }
 

@@ -103,7 +103,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.headerBreadcrumbService.popLastBreadcrumb();
                 this.selectModelHierarchy(hierarchyId);
                 this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
+                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
             }
             
         });        
@@ -130,7 +130,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.setBrowserTitle(this.titleService, this.model.Name);
 
                 this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
+                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
             });
     }
 

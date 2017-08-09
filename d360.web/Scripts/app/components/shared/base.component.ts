@@ -30,6 +30,7 @@ export class BaseComponent {
     lineageSidebar: RightSidebarItem;
     impactSidebar: RightSidebarItem;
     relationsSidebar: RightSidebarItem;
+    monitorSidebar: RightSidebarItem;
     //tabs
 
     lineageShowUsageOnly: boolean = false;
@@ -99,7 +100,7 @@ export class BaseComponent {
 
     /*end permissions functionality*/
 
-    setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean, hasFollowers?: boolean) {
+    setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean, hasFollowers?: boolean, hasMonitor?: boolean) {
         if (this.rightSidebarService) {
             this.clearSidebar();
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
@@ -124,6 +125,11 @@ export class BaseComponent {
                 this.rightSidebarService.showItem(this.relationsSidebar);
             }
             if (hasFollowers && CompanySettings.ShowFollowersSidebar != 'false') this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers', ['fa-bookmark-o'], `/sidebar/followers${this.objectContextUrl()}`));
+
+            if (hasMonitor) {
+                this.monitorSidebar = new RightSidebarItem('Workflow Monitor', 'monitor', ['fa-television'], `/sidebar/workflowmonitor${this.objectContextUrl()}`);
+                this.rightSidebarService.showItem(this.monitorSidebar);
+            }
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {
