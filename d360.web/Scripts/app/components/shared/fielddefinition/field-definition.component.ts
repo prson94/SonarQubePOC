@@ -45,14 +45,18 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         for (let p in changes) {
             if (p == 'objectType') {
                 this.objectType = changes['objectType'].currentValue;
+                this.isEditing = false;
+                this.isAdding = false;
+                this.isDeleting = false;
             }
             if (p == 'objectID') {
                 this.objectID = changes['objectID'].currentValue;
+                this.isEditing = false;
+                this.isAdding = false;
+                this.isDeleting = false;
             }
         }
-
-        this.isDeleting = false;
-            
+    
         this.load();
     }
 
