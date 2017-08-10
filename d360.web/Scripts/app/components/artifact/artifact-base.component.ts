@@ -25,6 +25,6 @@ export class ArtifactBaseComponent extends BaseComponent {
     }        
     
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        console.log('show/hide ' + activatedItem);
+        
     }    
 }
