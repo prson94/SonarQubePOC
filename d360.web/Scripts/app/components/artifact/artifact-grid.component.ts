@@ -17,9 +17,9 @@ import { StringConstants } from '../../static/string-constants';
 @Component({
     selector: 'd3s-artifact-grid',
     providers: [GridDefinitionService, ArtifactService, PermissionsService],
-    template: ` <header *ngIf="!showEditor && !showDelete"><i *ngIf="artifactType && artifactType.Description" class="fa" [ngClass]="{'fa-plus-square-o':!showArtifactDetails,'fa-minus-square-o':showArtifactDetails}" aria-hidden="true" style="padding-right:5px;cursor:pointer" title="Show Details" (click)="showArtifactDetails=!showArtifactDetails"></i>{{artifactType?.Name}}{{titlePostfix}}
+    template: ` <header *ngIf="!showEditor && !showDelete"><i *ngIf="artifactType && artifactType.Description" class="fa" [ngClass]="{'fa-plus-square-o':!showArtifactDetails,'fa-minus-square-o':showArtifactDetails}" aria-hidden="true" style="padding-right:5px;cursor:pointer;font-size:12px" title="Details" (click)="toggleArtifactDetail()" (mouseenter)="showArtifactDetails=true"></i>{{artifactType?.Name}}{{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="true" (addClick)="add()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
-                    <div (click)="showArtifactDetails=!showArtifactDetails" *ngIf="showArtifactDetails && artifactType && artifactType.Description" [innerHtml]="artifactType.Description" style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"></div>
+                    <div (click)="toggleArtifactDetail()" *ngIf="showArtifactDetails && artifactType && artifactType.Description" [innerHtml]="artifactType.Description" style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"></div>
                 </header>    
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>                
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                    
@@ -159,6 +159,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.isGridFilterLoading = true;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
+    }
+
+    private toggleArtifactDetail() {
+        this.showArtifactDetails = !this.showArtifactDetails;
     }
 
     resetFilters(val) {        
