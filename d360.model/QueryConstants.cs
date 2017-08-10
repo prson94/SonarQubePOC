@@ -1423,27 +1423,27 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             where p.SiteNavID = @id";
 
         public static string WorkflowVersionStepHistory = @"
-select 
+			select 
 	            i.ID as ItemStepID, convert(varchar(max),i.Fields) as Fields, i.StartedOn, i.CompletedOn, r.FirstName + ' ' + r.LastName as StartedBy,
 	            r2.FirstName + ' ' + r2.LastName as CompletedBy, m.Object, m.ObjectID, d.Name, d.ObjectTypeName,
 	            d.NgUrl, d.TextPath,vs.Name as StepName, string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments, convert(varchar(max),vs.Settings) as Settings, vs.StepType as StepType, vs.ActivityType
 				,case when i.CompletedOn is not null then
 					case when vs.ActivityType = 2 then
-						'Status was changed on ' + cast(i.CompletedOn as varchar)
+						'Status was changed to '  + convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/Status[1]/text()[1]','varchar(max)')
 					when vs.ActivityType = 3 then
-						'Form completed on ' + cast(i.CompletedOn as varchar) + ' by ' + coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
+						'Form completed by ' + coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
 					when vs.ActivityType = 1 then
 						case when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
-							'Email sent to ' + r.FirstName + ' ' + r.LastName + ' on ' + cast(i.CompletedOn as varchar)
+							'Email sent to ' + r.FirstName + ' ' + r.LastName
 						when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
-							'Email sent to ' + coalesce(convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]') + ' on ' + cast(i.CompletedOn as varchar)
+							'Email sent to ' + coalesce(convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
 						when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Responsibility' then
-							'Email sent to ' + dbo.GetOwnersListForWorkflow(t.id,vs.id) + ' on ' +  cast(i.CompletedOn as varchar)
+							'Email sent to ' + dbo.GetOwnersListForWorkflow(t.id,vs.id)
 						else
-							'Email sent on ' + cast(i.CompletedOn as varchar)
+							'Email sent'
 						end
 					else
-						'Step completed on ' + cast(i.CompletedOn as varchar)
+						'Step completed'
 					end
 				when vs.ActivityType = 3 then --form
 					'Waiting for form completion by ' + coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
