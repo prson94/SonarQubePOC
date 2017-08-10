@@ -59,7 +59,7 @@ order by T.[Level], T.Name", new { id = id }).Select(i => new { i.HasChildren, i
 				                from	[Intersect]
 				                where	([Subject] = 'Taxonomy' and SubjectID = A.ID) OR ([Object] = 'Taxonomy' and ObjectID = A.ID)
 				                ) DC
-                where A.TaxonomyTypeID = @id AND A.Visible = 1", columns, joins);
+                where A.TaxonomyTypeID = @id AND A.Visible = 1 order by A.[Level], A.Name", columns, joins);
 
             var models = Company.Query<dynamic>(sql, new { id = id });
 

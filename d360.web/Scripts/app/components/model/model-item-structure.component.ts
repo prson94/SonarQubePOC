@@ -216,7 +216,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         for (let root of rootNodes) {            
             res.push({
                 label: root.Name,                
-                expanded: true,
+                expanded: false,
                 data: root,
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
