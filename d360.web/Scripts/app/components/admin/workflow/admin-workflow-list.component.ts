@@ -11,21 +11,25 @@ import { WorkflowService } from '../../../services/workflow.service';
     template: `
 
 <div>
+    <header>
+        Workflow Types
+        <d3s-tile-actions hasAdd="true" (addClick)="onAddClick.emit()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+    </header>
     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
     <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowDblclick)="onEditClick.emit($event.data.ID)">                                                        
     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>        
-    <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
-    <p-column field="Type" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
-    <p-column field="ChangeTypeName" header="Change Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>  
-    <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter">
+    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>        
+    <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>  
+    <p-column field="Type" header="Type" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column> 
+    <p-column field="ChangeTypeName" header="Change Type" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>  
+    <p-column field="UpdatedOn" header="Updated On" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
         <ng-template let-item="rowData" pTemplate type="body">
             <span>{{item.UpdatedOn | date:'shortDate'}}</span>
         </ng-template>
     </p-column> 
-    <p-column field="UpdatedBy" header="Updated By" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-  <p-column field="Published" header="Status" [sortable]="true" [filter]="!showSimpleFilter"></p-column> 
-    <p-column [style]="{width:'150px'}">
+    <p-column field="UpdatedBy" header="Updated By" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
+  <p-column field="Published" header="Status" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column> 
+  <p-column [style]="{width:'150px'}">
         <ng-template let-item="rowData" pTemplate type="body">
             <div class="RowTools">
                 <a style="cursor:pointer;" (click)="onEditClick.emit(item.ID)"><i class="fa fa-pencil"></i></a>    
@@ -43,6 +47,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     @Output() onViewClick = new EventEmitter();
     @Output() onDeleteClick = new EventEmitter();
     @Output() onEditClick = new EventEmitter();
+    @Output() onAddClick = new EventEmitter();
 
     private items: WorkflowListItem[] = [];
     private selection: WorkflowListItem;

@@ -3,14 +3,11 @@
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading" [ngSwitch]="mode">
             <div *ngSwitchCase="PageMode.Default" class="tile tile-detail">
-                <header>
-                    Workflow Types
-                    <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
-                </header>
                 <d3s-admin-workflow-list 
                                              (onViewClick)="viewReadOnlyDiagram($event)" 
                                              (onDeleteClick)="currentID = $event; workflow = null; mode = PageMode.Delete;" 
-                                             (onEditClick)="currentID = $event; workflow = null; mode = PageMode.Editor"></d3s-admin-workflow-list>
+                                             (onEditClick)="currentID = $event; workflow = null; mode = PageMode.Editor"
+                                             (onAddClick)="add()"></d3s-admin-workflow-list>
             </div>
             <div *ngSwitchCase="PageMode.ReadOnlyDiagram">
                 <d3s-workflow-diagram [id]="currentID" readonly="true" hasClose="true" (onCloseClick)="closeEditor()"></d3s-workflow-diagram>
