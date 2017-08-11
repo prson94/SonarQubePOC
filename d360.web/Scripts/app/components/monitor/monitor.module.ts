@@ -15,6 +15,7 @@ import { MonitorComponent } from './monitor.component';
 import { MonitorFilterComponent } from './monitor-filter.component';
 import { MonitorWorkflowComponent } from './monitor-workflow.component';
 import { MonitorWorkflowItemComponent } from './monitor-workflow-item.component';
+import { MonitorWorkflowActionComponent } from './monitor-workflow-actions.component';
 
 import { MonitorListComponent } from './monitor-list.component';
 
@@ -59,7 +60,8 @@ import {
         MonitorFilterComponent,     
         MonitorListComponent, 
         MonitorWorkflowComponent,    
-        MonitorWorkflowItemComponent,   
+        MonitorWorkflowItemComponent,  
+        MonitorWorkflowActionComponent, 
     ],
     exports: [
         MonitorComponent,
@@ -67,6 +69,7 @@ import {
         MonitorListComponent,
         MonitorWorkflowComponent,
         MonitorWorkflowItemComponent,  
+        MonitorWorkflowActionComponent,
         ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

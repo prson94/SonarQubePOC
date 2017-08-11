@@ -309,4 +309,11 @@ export class WorkflowService extends BaseService {
         window.location.assign(`services/workflow/versionstep/history/${id}/excel.xls`);
     }
 
+    getWorkflowOpenActions(types: string) {
+        return this.http.get(`services/workflow/openactions?types=${types}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

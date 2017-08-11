@@ -1574,6 +1574,26 @@ namespace d360.web.Controllers.Services
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
+        [Route("openactions"), HttpGet]
+        public HttpResponseMessage GetWorkflowActions(string types)
+        {
+
+            var resourceId = Company.CurrentResourceID;
+
+            types = Regex.Replace(types ?? "", "[^0123456789, ]", string.Empty);
+
+            types = types.Trim().TrimEnd(',');
+
+            if (string.IsNullOrWhiteSpace(types))
+                types = "-1";
+
+            var sql = string.Format(QueryConstants.WorkflowAssignments, types);
+            var results = Company.Query<dynamic>(sql, new { resourceId = resourceId }).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+
+        }
+
         #region Helper Methods
 
         private dynamic XmlToDynamic(string xml, bool omitRootElement = true)

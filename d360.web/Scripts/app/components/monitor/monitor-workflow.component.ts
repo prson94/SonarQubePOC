@@ -57,6 +57,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit, O
     @Output() selectionChange = new EventEmitter();
     @Input() objectType: string;
     @Input() objectId: number;
+    @Output() filteredTypes = new EventEmitter();
 
     workflowItems: any[];
 
@@ -77,6 +78,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit, O
             this.workflowItems = [];
             this.selection = null;
             this.selectionChange.emit(null);
+            this.filteredTypes.emit(null);
             return;
         }
 
@@ -98,11 +100,20 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit, O
                     if (this.objectType.toLowerCase().endsWith('type')) {
                         this.workflowItems = this.workflowItems.filter(i => i.ObjectType == this.objectType && i.ObjectTypeID == this.objectId);
                     } else {
-                    //artifact
+                        //artifact
                         let item = this.objectType + '|' + this.objectId.toString();
                         this.workflowItems = this.workflowItems.filter(i => i.Objects != null && i.Objects.indexOf(item) > -1);
                     }
                 }
+            })
+            .then(() => {
+                let filteredTypeList = [];
+                if (this.workflowItems != null) {
+                    this.workflowItems.forEach(w => filteredTypeList.push(w.TypeID));
+                    console.log(filteredTypeList);
+                    this.filteredTypes.emit(filteredTypeList);
+                }
+
             })
             .then(() => this.isLoading = false);
     }

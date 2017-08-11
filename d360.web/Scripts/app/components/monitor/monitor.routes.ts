@@ -4,6 +4,7 @@ import { MonitorComponent } from './monitor.component';
 
 const routes: Routes = [
     { path: '', component: MonitorComponent },
+    { path: 'type/:id', component: MonitorComponent },
 ];
 
 @NgModule({

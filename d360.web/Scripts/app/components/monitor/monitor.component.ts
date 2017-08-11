@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, OnChanges, Input } from '@angular/core';
-import { Router } from '@angular/router';
+﻿import { Component, OnInit, OnChanges, Input, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -12,7 +12,16 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 <div class="row">
     <div class="col s12 m6">
         <d3s-monitor-filter (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
-        <d3s-monitor-workflow [workflowTypes]="selectedWorkflowTypes" (selectionChange)="selectedWorkflowType = $event" [objectType]="objectType" [objectId]="objectId"></d3s-monitor-workflow>
+
+        <d3s-monitor-workflow 
+                [workflowTypes]="selectedWorkflowTypes" 
+                (selectionChange)="selectedWorkflowType = $event" 
+                [objectType]="objectType" 
+                [objectId]="objectId" 
+                (filteredTypes)="filteredTypes = $event">
+        </d3s-monitor-workflow>
+
+        <d3s-monitor-workflow-actions [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-workflow-actions>
     </div>
     <div class="col s12 m6">
         <d3s-workflow-diagram 
@@ -28,7 +37,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
               `
 })
 
-export class MonitorComponent extends BaseComponent implements OnInit {
+export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() objectType: string;
     @Input() objectId: number;
     selectedWorkflowTypes: any[];
@@ -36,18 +45,31 @@ export class MonitorComponent extends BaseComponent implements OnInit {
     selectedWorkflowItem: any;
     selectedWorkflowItemDetail: any;
     selectAll: boolean = true;
+    filteredTypes: any[];
+
+    sub: any;
+    type: number;
 
     constructor(
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected router: Router) {
+        protected router: Router,
+        protected route: ActivatedRoute) {
         super();
     }
 
     ngOnInit() {
-        console.log(this.objectType, this.objectId);
+        this.sub = this.route.params.subscribe(params => {
+            if (params['id'] != null) {
+                this.selectedWorkflowTypes = [];
+                this.selectedWorkflowTypes.push(+params['id']);
+                this.selectAll = false;
+            }
 
-        if (this.objectType != null && this.objectId != null) {
+            console.log(params);
+        });
+
+        if (this.objectType != null && this.objectId != null && this.selectedWorkflowTypes == null) {
             this.selectAll = true;
         }
 
@@ -56,5 +78,9 @@ export class MonitorComponent extends BaseComponent implements OnInit {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow Monitor', SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
+    }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
     }
 }

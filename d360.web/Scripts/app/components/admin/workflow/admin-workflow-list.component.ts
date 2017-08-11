@@ -4,6 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model';
 import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'd3s-admin-workflow-list',
@@ -29,12 +30,13 @@ import { WorkflowService } from '../../../services/workflow.service';
     </p-column> 
     <p-column field="UpdatedBy" header="Updated By" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
   <p-column field="Published" header="Status" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column> 
-  <p-column [style]="{width:'150px'}">
+  <p-column [style]="{width:'200px'}">
         <ng-template let-item="rowData" pTemplate type="body">
             <div class="RowTools">
                 <a style="cursor:pointer;" (click)="onEditClick.emit(item.ID)"><i class="fa fa-pencil"></i></a>    
                 <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.ID)"><i class="fa fa-trash-o"></i></a>    
-                <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>                                        
+                <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>    
+                <a style="cursor:pointer;" (click)="navigate(item.ID)"><i class="fa fa-television"></i></a>                                      
             </div>
         </ng-template>
     </p-column>                                                      
@@ -54,7 +56,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
     private changeTypes: ChangeTypeInfo[] = [];
 
-    constructor(private workflowService: WorkflowService) {
+    constructor(private workflowService: WorkflowService, protected router: Router) {
         super();
     }
 
@@ -74,5 +76,9 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                     i.ChangeTypeName = this.changeTypes.find(c => c.ID == i.ChangeType).Description;
                 });
             });
+    }
+
+    navigate(id: string) {
+        this.router.navigateByUrl(`/monitor/type/${id}`);
     }
 }
