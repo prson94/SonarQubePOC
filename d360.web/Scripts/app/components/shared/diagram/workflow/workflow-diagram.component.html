@@ -140,15 +140,15 @@
                         <div *ngIf="selectedData.activityType == WorkflowActivityType.FieldChange">
                             <div class="col s6">
                                 <div class="FieldName">Field</div>
-                                <div>{{selectedData?.settings?.FieldUpdate?.Field['@FieldName']}}</div>
+                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@FieldName'] != null">{{selectedData?.settings?.FieldUpdate?.Field['@FieldName']}}</div>
                                 <div class="FieldName">Value</div>
-                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() == 'true'">
+                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@ClearValue'] != null && selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() == 'true'">
                                     [clear the field value]
                                 </div>
-                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() == 'true'">
+                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'] != null && selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() == 'true'">
                                     [use the current date at the time of execution]
                                 </div>
-                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() != 'true' && selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() != 'true'">
+                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@Value'] != null && (selectedData?.settings?.FieldUpdate?.Field['@ClearValue'] != null ? selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() : 'false') != 'true' && (selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'] != null ? selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() : 'false') != 'true'">
                                     {{selectedData?.settings?.FieldUpdate?.Field['@Value']}}
                                 </div>
                             </div>

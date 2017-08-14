@@ -28,7 +28,7 @@ import { Router } from '@angular/router';
             </p-column>
             <p-column header="">
                 <ng-template let-item="rowData" type="body" pTemplate>
-                    <a (click)="openItem(item)" style="text-decoration: underline">Complete Form</a>
+                    <button pButton type="button" label="Complete Form" (click)="openItem(item)"></button>
                 </ng-template>
             </p-column>
         </p-dataTable>

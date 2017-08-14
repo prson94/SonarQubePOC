@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { ObjectDetailService } from '../../services/object-detail.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
@@ -11,8 +12,10 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     template: ` 
 <div class="row">
     <div class="col s12 m6">
-        <d3s-monitor-filter (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
-
+        <d3s-monitor-filter [hidden]="isFiltered" (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
+        
+        <d3s-monitor-workflow-actions *ngIf="isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-workflow-actions>
+        
         <d3s-monitor-workflow 
                 [workflowTypes]="selectedWorkflowTypes" 
                 (selectionChange)="selectedWorkflowType = $event" 
@@ -21,7 +24,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 (filteredTypes)="filteredTypes = $event">
         </d3s-monitor-workflow>
 
-        <d3s-monitor-workflow-actions [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-workflow-actions>
+        <d3s-monitor-workflow-actions *ngIf="!isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-workflow-actions>
     </div>
     <div class="col s12 m6">
         <d3s-workflow-diagram 
@@ -34,7 +37,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
         </d3s-workflow-diagram>
     </div>
 </div>
-              `
+              `,
+    providers: [ ObjectDetailService ]
 })
 
 export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -45,32 +49,35 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     selectedWorkflowItem: any;
     selectedWorkflowItemDetail: any;
     selectAll: boolean = true;
+    isFiltered: boolean = false;
     filteredTypes: any[];
 
     sub: any;
     type: number;
 
+
     constructor(
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected router: Router,
-        protected route: ActivatedRoute) {
+        protected route: ActivatedRoute,
+        private objectDetailService: ObjectDetailService) {
         super();
     }
 
     ngOnInit() {
+        this.isLoading = true;
         this.sub = this.route.params.subscribe(params => {
             if (params['id'] != null) {
                 this.selectedWorkflowTypes = [];
                 this.selectedWorkflowTypes.push(+params['id']);
                 this.selectAll = false;
             }
-
-            console.log(params);
         });
 
         if (this.objectType != null && this.objectId != null && this.selectedWorkflowTypes == null) {
             this.selectAll = true;
+            this.isFiltered = true;
         }
 
         this.setBrowserTitle(this.titleService, 'Workflow Monitor');
@@ -78,6 +85,14 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow Monitor', SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
+        if (this.isFiltered) {
+            this.objectDetailService.getObject(this.objectId, this.objectType)
+                .then(detail => {
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(detail.Name || '', null, true));
+                });
+        }
+
+        this.isLoading = false;
     }
 
     ngOnDestroy() {

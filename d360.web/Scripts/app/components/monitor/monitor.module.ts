@@ -30,6 +30,7 @@ import {
     MultiSelectModule,
     InputTextModule,
     TooltipModule,
+    ButtonModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -46,6 +47,7 @@ import {
         DropdownModule,
         InputTextModule,
         TooltipModule,
+        ButtonModule,
 
         MonitorRoutingModule,
 
