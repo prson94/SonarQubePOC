@@ -16,6 +16,7 @@ import {
     CalendarModule,
     InputMaskModule,
     DataListModule,
+    ToggleButtonModule,
 } from 'primeng/primeng';
 
 import { CoreModule } from '../../core.module';
@@ -50,6 +51,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         D3SOverlayWindowModule,
         D3SEditorHeaderModule,
         SharedGridPagingInfoModule,
+        ToggleButtonModule,
 
         //prime        
         DataTableModule,

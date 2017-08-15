@@ -1068,8 +1068,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-actions.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-assignments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-form-history.component.ts" />
@@ -1317,7 +1316,6 @@
     <TypeScriptCompile Include="Scripts\app\components\model\model-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.ts" />

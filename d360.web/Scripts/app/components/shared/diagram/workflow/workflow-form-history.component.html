@@ -31,8 +31,23 @@
         <div *ngFor="let f of selectedForm.field; let i = index" class="row">
             <div class="col s12">
                 <div class="FieldName">{{f['@label']}}</div>
-                <div>{{f['@value']}}</div>
+                <div *ngIf="f['@fieldtype'] == 'boolean'">
+                    <p-toggleButton onLabel="Yes" offLabel="No" onIcon="fa-check-square" offIcon="fa-times" [ngModel]="f['@value']" disabled></p-toggleButton>
+                </div>
+                <div *ngIf="f['@fieldtype'] == 'textarea'">
+                    <textarea style="width: 100%;" [ngModel]="f['@value']" readonly></textarea>
+                </div>
+                <div *ngIf="f['@fieldtype'] == 'date'">
+                    <p-calendar [ngModel]="f['@value']" disabled></p-calendar>
+                </div>
+                <div *ngIf="f['@fieldtype'] == 'text' || f['@fieldtype'] == 'integer'">
+                    <div>{{f['@value']}}</div>
+                </div>
             </div>
+            <!--<div class="col s12">
+                <div class="FieldName">{{f['@label']}}</div>
+                <div>{{f['@value']}}</div>
+            </div>-->
         </div>
     </div>
 </div>
