@@ -40,7 +40,7 @@ import { Title } from '@angular/platform-browser';
                             <input [(ngModel)]="companySettings.IpRestrictions[i].End" (ngModelChange)="companySettings.IpRestrictions[i].End = $event; companySettingsChange.emit(companySettings)" type="text" />
                         </td>
                         <td style="width: 20px; text-align: right; vertical-align: top">
-                            <a style="padding: 0 .5rem;" class="btn waves-effect waves-red btn-flat" title="Remove this restriction" (click)="removeIpResftriction(i)"><i class="fa fa-trash"></i></a>
+                            <a style="padding: 0 .5rem;" class="btn waves-effect waves-red btn-flat" title="Remove this restriction" (click)="removeIpRestriction(i)"><i class="fa fa-trash"></i></a>
                         </td>
                     </tr>
                 </tbody>

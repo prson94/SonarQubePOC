@@ -24,7 +24,7 @@ import { FormMode } from '../../../models/form.model';
                     &nbsp;<d3s-tile-actions hasAdd="true" (addClick)="addPermission()"></d3s-tile-actions>
                 </header>
                 <div>
-                    <p-dataTable [value]="siteNav.Permissions" selectionMode="single">
+                    <p-dataTable [value]="siteNav.Permissions" selectionMode="single" [immutable]="false">
                         <p-column field="Name" header="Permissions"></p-column>
                         <p-column [style]="{'width': '35px'}">
                             <ng-template let-item="rowData" let-i="index" pTemplate type="body">
