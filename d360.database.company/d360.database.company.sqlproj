@@ -517,6 +517,7 @@
     <Build Include="dbo\Tables\NymRelation.sql" />
     <Build Include="fusion\Stored Procedures\GenerateMarkitMapLineageData.sql" />
     <None Include="fusion\Stored Procedures\GenerateEagleLineageData.sql" />
+    <Build Include="utility\Stored Procedures\CalculateScores.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

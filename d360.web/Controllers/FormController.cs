@@ -15889,13 +15889,17 @@ order by	T.Name, I.DisplayValue";
                 case StatisticCheckType.Relationship:
                     try
                     {
-                        if (xml.Element("CheckObjects") != null)
+                        if (xml.Element("CheckObjects") != null && xml.Element("CheckObjects").Elements("Object").ToList().Count > 0)
                         {
                             model.Add("CheckObjects",
                                 xml.Element("CheckObjects")
                                     .Elements("Object")
                                     .Select(co => $"{co.Element("Type").Value}|{co.Element("ID").Value}").ToList()
                                 );
+                        }
+                        else if (xml.Element("CheckObjects") != null && xml.Element("CheckObjects").Elements("IntersectType").ToList().Count > 0)
+                        {
+                            model.Add("CheckObjects", xml.Element("CheckObjects").Elements("IntersectType").Select(e => $"{e.Value}").ToList());
                         }
                         else
                         {
@@ -15967,16 +15971,11 @@ from	ResponsibilityType T
                     break;
                 case StatisticCheckType.Relationship:
                     models.AddRange(Company.Query<KnockoutListItem>(@"
-select  distinct 
-        D.Object + '|' + cast(D.ObjectID as varchar) as value, 
-        D.TextPath as title
-from    [IntersectType] RT
-        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
-                                            and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
-                                            and ( 
-                                                (RT.Subject = @type and RT.SubjectID = @id) OR 
-                                                (RT.Object = @type and RT.ObjectID = @id) 
-                                                )", new { type = type.ToString(), id }).OrderBy(i => i.title));
+                    select  distinct 
+                            RT.ID as value, 
+                            RT.Name as title
+                    from    [IntersectType] RT
+                    where ((RT.Subject = @type and RT.SubjectID = @id) or (RT.Object = @type and RT.ObjectID = @id))", new { type = type.ToString(), id }).OrderBy(i => i.title));
                     break;
                 case StatisticCheckType.FusionOwnership:
                     //models.AddRange(Company.GetStatisticTypeCountCheckOptions().Select(i => new { title = i.Name, value = i.ID.ToString() }));
@@ -16041,12 +16040,7 @@ from    [IntersectType] RT
                         var checksElement = new XElement("CheckObjects");
                         checkObjectStrings.ForEach(i =>
                         {
-                            var values = i.Trim('"').Split('|');
-                            var checkElement = new XElement("Object");
-                            checkElement.Add(
-                                new XElement("Type", values[0]),
-                                new XElement("ID", values[1])
-                            );
+                            var checkElement = new XElement("IntersectType", i.Trim('"'));
                             checksElement.Add(checkElement);
                         });
                         fields.Add(checksElement);
