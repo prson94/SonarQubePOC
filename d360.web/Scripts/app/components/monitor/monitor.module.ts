@@ -13,11 +13,9 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { MonitorRoutingModule } from './monitor.routes';
 import { MonitorComponent } from './monitor.component';
 import { MonitorFilterComponent } from './monitor-filter.component';
-import { MonitorWorkflowComponent } from './monitor-workflow.component';
-import { MonitorWorkflowItemComponent } from './monitor-workflow-item.component';
-import { MonitorWorkflowActionComponent } from './monitor-workflow-actions.component';
+import { MonitorWorkflowComponent } from './monitor-list.component';
+import { MonitorWorkflowActionComponent } from './monitor-assignments.component';
 
-import { MonitorListComponent } from './monitor-list.component';
 
 import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
 
@@ -60,17 +58,13 @@ import {
     declarations: [   
         MonitorComponent,
         MonitorFilterComponent,     
-        MonitorListComponent, 
         MonitorWorkflowComponent,    
-        MonitorWorkflowItemComponent,  
         MonitorWorkflowActionComponent, 
     ],
     exports: [
         MonitorComponent,
         MonitorFilterComponent,
-        MonitorListComponent,
         MonitorWorkflowComponent,
-        MonitorWorkflowItemComponent,  
         MonitorWorkflowActionComponent,
         ],
     providers: [
