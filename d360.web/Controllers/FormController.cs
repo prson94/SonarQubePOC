@@ -497,6 +497,8 @@ namespace d360.web.Controllers
                     return EditFusion(form);
                 case "FUSIONATTRIBUTE":
                     return EditFusionAttribute(form);
+                case "FUSIONATTRIBUTETYPECUSTOMQUERY":
+                    return EditFusionAttributeTypeCustomQuery(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return EditFusionQueryAttribute(form);
                 case "FUSIONSCHEDULE":
@@ -588,6 +590,8 @@ namespace d360.web.Controllers
                     return DeleteCustomSynonym(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return DeleteFusionQueryAttribute(form);
+                case "FUSIONATTRIBUTETYPECUSTOMQUERY":
+                    return DeleteFusionAttributeTypeCustomQuery(form);
                 case "FUSIONSCHEDULE":
                     return DeleteFusionSchedule(form);
                 case "INTERSECTTYPE":
@@ -684,6 +688,8 @@ namespace d360.web.Controllers
                     return AddFusion(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return AddFusionQueryAttribute(form);
+                case "FUSIONATTRIBUTETYPECUSTOMQUERY":
+                    return AddFusionAttributeTypeCustomQuery(form);
                 case "FUSIONSCHEDULE":
                     return AddFusionSchedule(form);
                 case "INTERSECT":
@@ -6914,6 +6920,16 @@ namespace d360.web.Controllers
 
         #region FusionAttributeType
 
+        [Route("getfusionattributetypes"), NonNullableParameters]
+        public JsonNetResult GetFusionAttributeTypes(int fusionID)
+        {
+            var model = Company.GetById<Fusion>(fusionID, i => i.FusionType.FusionAttributeTypes);
+            return new JsonNetResult {
+                Data = model.FusionType.FusionAttributeTypes.OrderBy(i => i.TextPath),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         #region Field Generation
 
         /// <param name="fat">FusionTypeID</param>
@@ -7005,7 +7021,8 @@ namespace d360.web.Controllers
                     FusionTypeID = typeID,
                     ParentID = parentID,
                     Name = fusion.Name,
-                    ScanEnabled = fusion.ScanEnabled
+                    ScanEnabled = fusion.ScanEnabled//,
+                    //Query = fusion.Query
                 };
 
                 Company.Add<FusionAttributeType>(model);
@@ -7084,6 +7101,8 @@ namespace d360.web.Controllers
                 {
                     model.ScanEnabled = fusion.ScanEnabled;
                 }
+
+                //model.Query = fusion.Query;
 
                 Company.Update<FusionAttributeType>(model);
 
@@ -18281,6 +18300,118 @@ order by TextPath
                 Company.Update<core.entities.FusionSchedule>(model);
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region Fusion Attribute Type Custom Query
+
+        [HttpDelete, Route("DeleteFusionAttributeTypeCustomQuery")]
+        public JsonResult DeleteFusionAttributeTypeCustomQuery(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
+                if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                return jsonSuccess("Override successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionAttributeTypeCustomQuery")]
+        public JsonResult AddFusionAttributeTypeCustomQuery(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new FusionAttributeTypeCustomQuery
+                {
+                    FusionID = parseIntField(form, "FusionID"),
+                    FusionAttributeTypeID = parseIntField(form, "FusionAttributeTypeID"),
+                    Query = parseTextField(form, "Query")
+                };
+
+                // only allow select
+                var valid = Company.IsValidReportingQuery(a.Query);
+                if (!valid)
+                {
+                    throw new InvalidFieldException("Query", "not a SELECT statement or recognized query.");
+                }
+
+                Company.Add(a);
+
+                return jsonSuccess("Override successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("EditFusionAttributeTypeCustomQuery")]
+        public JsonResult EditFusionAttributeTypeCustomQuery(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
+
+                if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.FusionAttributeTypeID = parseIntField(form, "FusionAttributeTypeID");
+                model.Query = parseTextField(form, "Query");
+
+                // only allow select
+                var valid = Company.IsValidReportingQuery(model.Query);
+                if (!valid)
+                {
+                    throw new InvalidFieldException("Query", "not a SELECT statement or recognized query.");
+                }
+
+                Company.Update(model);
+
+                return jsonSuccess("Override successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

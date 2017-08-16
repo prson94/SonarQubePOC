@@ -152,6 +152,8 @@ namespace d360.model
 
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
+        public DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
+
         public DbSet<FusionFilter> FusionFilters { get; set; }
 
         public DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }

@@ -25,6 +25,10 @@ import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { FusionScheduleComponent } from './fusion-schedule.component';
 import { FusionScheduleEditorComponent } from './fusion-schedule-editor.component';
 
+import { FusionAttributeTypeCustomQueryComponent } from './fusion-attribute-type-custom-query.component';
+import { FusionAttributeTypeCustomQueryEditorComponent } from './fusion-attribute-type-custom-query-editor.component';
+
+
 import { AdminFusionRoutingModule } from './admin-fusion.routes';
 
 import {
@@ -39,6 +43,8 @@ import {
     DataTableModule,
     TreeTableModule,
 } from 'primeng/primeng';
+
+import { CodemirrorModule } from 'ng2-codemirror';
 
 @NgModule({
     imports: [CommonModule,
@@ -61,6 +67,9 @@ import {
         //color picker
         ColorPickerModule,
 
+        //editor
+        CodemirrorModule,
+
         //d3s                
         CoreModule,
         D3SSharedModule,
@@ -78,7 +87,9 @@ import {
         FusionAttributesTile,
         FusionConfigurationTile,
         FusionScheduleComponent,
-        FusionScheduleEditorComponent
+        FusionScheduleEditorComponent,
+        FusionAttributeTypeCustomQueryComponent,
+        FusionAttributeTypeCustomQueryEditorComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

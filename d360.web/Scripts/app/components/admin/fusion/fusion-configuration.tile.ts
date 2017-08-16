@@ -73,5 +73,6 @@ enum FormModeConfig {
     Deleting,
     Filters,
     AddingFilter,
-    Scheduling
+    Scheduling,
+    QueryOverrides
 }

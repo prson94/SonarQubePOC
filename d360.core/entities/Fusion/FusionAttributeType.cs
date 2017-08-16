@@ -20,7 +20,10 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         public string Name { get; set; }
 
-        [ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
+        //[DataMember]
+        //public string Query { get; set; }
+
+        [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
         public string TextPath { get; set; }
 
         //[DataMember]

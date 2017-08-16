@@ -1077,11 +1077,12 @@ select  O.ID,
 		O.Name, 
 		O.TextPath, 
 		F.FieldTypeID, 
-        F.Name as FieldName, 
-        F.FriendlyName as FieldFriendlyName, 
+        FT.Name as FieldName, 
+        FT.FriendlyName as FieldFriendlyName, 
 		F.FormattedValue as FieldValue 
 from	FusionAttribute O 
-		inner join FieldWithRelation F on F.ObjectType = 'FusionAttribute' and F.ObjectID = O.ID";
+		inner join Field F on F.ObjectType = 'FusionAttribute' and F.ObjectID = O.ID
+		inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1103,11 +1104,12 @@ select 	O.ID,
 		O.Name, 
 		O.TextPath, 
 		F.FieldTypeID, 
-        F.Name as FieldName, 
-        F.FriendlyName as FieldFriendlyName, 
+        FT.Name as FieldName, 
+        FT.FriendlyName as FieldFriendlyName, 
 		F.FormattedValue as FieldValue 
 from	Artifact O 
-		inner join FieldWithRelation F on F.ObjectType = 'Artifact' and F.ObjectID = O.ID";
+		inner join Field F on F.ObjectType = 'Artifact' and F.ObjectID = O.ID
+		inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1162,11 +1164,12 @@ select  O.ID,
 		O.Name, 
 		O.TextPath, 
 		F.FieldTypeID, 
-        F.Name as FieldName, 
-        F.FriendlyName as FieldFriendlyName, 
+        FT.Name as FieldName, 
+        FT.FriendlyName as FieldFriendlyName, 
 		F.FormattedValue as FieldValue 
 from	Taxonomy O 
-		inner join FieldWithRelation F on F.ObjectType = 'Taxonomy' and F.ObjectID = O.ID";
+		inner join Field F on F.ObjectType = 'Taxonomy' and F.ObjectID = O.ID
+		inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1355,11 +1358,12 @@ select 	O.ID,
 		O.ObjectTypeName, 
 		O.ObjectName, 
 		F.FieldTypeID, 
-        F.Name as FieldName, 
-        F.FriendlyName as FieldFriendlyName, 
+        FT.Name as FieldName, 
+        FT.FriendlyName as FieldFriendlyName, 
 		F.FormattedValue as FieldValue 
 from	IntersectDetail O 
-		inner join FieldWithRelation F on F.ObjectType = 'Intersect' and F.ObjectID = O.ID";
+		inner join Field F on F.ObjectType = 'Intersect' and F.ObjectID = O.ID
+		inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1406,8 +1410,8 @@ from	[Rule] R
                         objectName = $"{SCHEMA}.[Rules_Results]";
                         viewNames.Add(objectName);
 
-                        if (company.IsDevelopment)
-                        {
+                        //if (company.IsDevelopment)
+                        //{
                             selectSql = @"
 select	RI.RuleID,
 		R.Name as RuleName,
@@ -1435,35 +1439,35 @@ from	RuleResult RR
 					from	RuleResultQualifier 
 					where	RuleResultID = RR.ID
 					) Q";
-                        }
-                        else
-                        {
-                            selectSql = @"
-select	RR.RuleID,
-		R.Name as RuleName,
-		R.RuleDimensionID,
-		D.Name as RuleDimensionName,
-        RR.EffectiveDate,
-		RR.RowsPassed,
-		RR.RowsFailed,
-		RR.PassFraction,
-		RR.FailFraction,
-		R.Threshold,
-		RR.Passed,
-		RR.CreatedOn,
-		RR.FusionAttributeID,
-		FA.TextPath as FusionAttributeName,
-		Q.C as QualifierCount
-from	RuleResult RR
-        inner join [Rule] R on R.ID = RR.RuleID
-        left join RuleDimension D on D.ID = R.RuleDimensionID
-		left join FusionAttribute FA on Fa.ID = RR.FusionAttributeID
-		cross apply (
-					select	count(1) as C
-					from	RuleResultQualifier 
-					where	RuleResultID = RR.ID
-					) Q";
-                        }
+//                        }
+//                        else
+//                        {
+//                            selectSql = @"
+//select	RR.RuleID,
+//		R.Name as RuleName,
+//		R.RuleDimensionID,
+//		D.Name as RuleDimensionName,
+//        RR.EffectiveDate,
+//		RR.RowsPassed,
+//		RR.RowsFailed,
+//		RR.PassFraction,
+//		RR.FailFraction,
+//		R.Threshold,
+//		RR.Passed,
+//		RR.CreatedOn,
+//		RR.FusionAttributeID,
+//		FA.TextPath as FusionAttributeName,
+//		Q.C as QualifierCount
+//from	RuleResult RR
+//        inner join [Rule] R on R.ID = RR.RuleID
+//        left join RuleDimension D on D.ID = R.RuleDimensionID
+//		left join FusionAttribute FA on Fa.ID = RR.FusionAttributeID
+//		cross apply (
+//					select	count(1) as C
+//					from	RuleResultQualifier 
+//					where	RuleResultID = RR.ID
+//					) Q";
+//                        }
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
                         viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
@@ -1473,6 +1477,32 @@ from	RuleResult RR
 
 
                         #endregion
+
+                        #region Rule_Fields
+
+                        objectName = $"{SCHEMA}.[Rules_Fields]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select 	O.ID as RuleID, 
+		O.Name as RuleName, 
+		F.FieldTypeID, 
+        FT.Name as FieldName, 
+        FT.FriendlyName as FieldFriendlyName, 
+		F.FormattedValue as FieldValue 
+from	[Rule] O 
+		inner join Field F on F.ObjectType = 'Rule' and F.ObjectID = O.ID
+		inner join FieldType FT on FT.ID = F.FieldTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
 
                         #region All Workflows
 

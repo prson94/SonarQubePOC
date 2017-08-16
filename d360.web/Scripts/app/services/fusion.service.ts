@@ -9,6 +9,7 @@ import {
     AttributeNode,
     FusionType,
     FusionAttributeType,
+    FusionAttributeTypeCustomQuery,
     FusionAttributeItem,
     FusionQueryAttributeType,
     FusionConfiguration,
@@ -126,6 +127,24 @@ export class FusionService extends BaseService {
             .toPromise()
             .then(response => <FusionAgentError[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getFusionAttributeTypeCustomQueries(fusionTypeId: number, fusionId: number): Promise<FusionAttributeTypeCustomQuery[]> {
+        return this.http.get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/queryoverrides`)
+            .toPromise()
+            .then(response => <FusionAttributeTypeCustomQuery[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteFusionAttributeTypeCustomQuery(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'fusionattributetypecustomquery', id);
+    }
+
+    saveFusionAttributeTypeCustomQuery(override: any): Promise<JsonResult> {
+        if (override.ID == undefined || !override.ID) {
+            return this.postDynamic(this.http, 'fusionattributetypecustomquery', override);
+        }
+        return this.putDynamic(this.http, 'fusionattributetypecustomquery', override);
     }
 
     getFusionConfigurationSchedules(fusionTypeId: number, fusionId: number): Promise<FusionSchedule[]> {     

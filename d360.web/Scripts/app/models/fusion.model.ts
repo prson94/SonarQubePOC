@@ -97,6 +97,14 @@ export class FusionAgentExecutionStats {
     Success: boolean;
 }
 
+export class FusionAttributeTypeCustomQuery {
+    ID: number;
+    FusionID: number;
+    FusionAttributeType: string;
+    FusionAttributeTypeID: number;
+    Query: string;
+}
+
 export enum FusionScheduleDay {
     Sunday = 0,
     Monday = 1,

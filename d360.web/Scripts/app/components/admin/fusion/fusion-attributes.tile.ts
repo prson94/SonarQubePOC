@@ -5,6 +5,7 @@ import { ObjectStyle } from '../../../models/object-style.model';
 import { FusionService } from '../../../services/fusion.service';
 import { ObjectStyleService } from '../../../services/object-style.service';
 import { FormMode } from '../../../models/form.model';
+
 import * as _ from 'lodash';
 
 @Component({

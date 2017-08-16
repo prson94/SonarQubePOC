@@ -2080,7 +2080,7 @@
         </member>
         <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurations">
             <summary>
-            Get all available fusion configurations accross all types.  These configurations provide required connection and security credentials to connect to the underlying source.
+            Get all available fusion configurations across all types.  These configurations provide required connection and security credentials to connect to the underlying source.
             </summary>
             <returns>A list of available fusion configurations.</returns>
         </member>
@@ -2200,6 +2200,12 @@
             <param name="typeID">The ID of the fusion type.</param>
             <param name="fusionID">The ID of the fusion configuration.</param>
             <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetQueryOverridesByConfiguration(System.Int32,System.Int32)">
+            <summary>
+            Gets all overrides queries for a given fusion attribute type within a specific fusion configuration.
+            </summary>
+            <returns>A list of available overrides for a configuration.</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.FusionController.GetQueryAttributesByFusion(System.Int32,System.Int32)">
             <summary>

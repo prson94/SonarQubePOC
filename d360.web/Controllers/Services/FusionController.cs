@@ -72,7 +72,7 @@ namespace d360.web.Controllers.Services
         }
 
         /// <summary>
-        /// Get all available fusion configurations accross all types.  These configurations provide required connection and security credentials to connect to the underlying source.
+        /// Get all available fusion configurations across all types.  These configurations provide required connection and security credentials to connect to the underlying source.
         /// </summary>
         /// <returns>A list of available fusion configurations.</returns>
         [Route("configurations")]
@@ -196,6 +196,22 @@ where A.FusionTypeID = @id", columns, joins);
             var model = Company.GetFusionAsDictionary(id);
             if (model == null) return Request.CreateResponse(HttpStatusCode.NotFound);
             return Request.CreateResponse<Dictionary<string, object>>(HttpStatusCode.OK, model);
+        }
+
+        [Route("{typeID:int}/configurations/{id:int}/attributetypes")]
+        public IEnumerable<FusionAttributeTypeWithQuery> GetFusionAttributeTypes(int typeID, int id)
+        {
+            return Company.Query<FusionAttributeTypeWithQuery>(@"
+select	A.ID,
+        A.Name,
+        A.ScanEnabled,
+        Q.Query
+from    Fusion C
+        inner join FusionAttributeType A on A.FusionTypeID = C.FusionTypeID and C.ID = @id
+        left join FusionAttributeTypeCustomQuery Q on Q.FusionAttributeTypeID = A.ID and Q.FusionID = C.ID", 
+            new { id }
+        );
+            //return Company.Filter<FusionAttributeType>(i => i.FusionTypeID == id).AsQueryable();
         }
 
         /// <summary>
@@ -803,6 +819,32 @@ where A.FusionTypeID = @id", columns, joins);
         public List<FusionAttributeItem> GetAttributesByFusion(int typeID, int fusionID)
         {
             return Company.GetAttributesByFusion(fusionID);
+        }
+
+        /// <summary>
+        /// Gets all overrides queries for a given fusion attribute type within a specific fusion configuration.
+        /// </summary>
+        /// <returns>A list of available overrides for a configuration.</returns>
+        [Route("{fusionTypeID:int}/configurations/{fusionID:int}/queryoverrides")]
+        public HttpResponseMessage GetQueryOverridesByConfiguration(int fusionTypeID, int fusionID)
+        {
+            if (Company.CurrentResourceIsAdmin)
+            {
+                return Request.CreateResponse(
+                    HttpStatusCode.OK, 
+                    Company.Filter<FusionAttributeTypeCustomQuery>(i => i.FusionID == fusionID, i => i.FusionAttributeType).Select(o => new {
+                        FusionAttributeType = o.FusionAttributeType.TextPath,
+                        o.FusionAttributeTypeID,
+                        o.FusionID,
+                        o.ID,
+                        o.Query
+                    })
+                );
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
