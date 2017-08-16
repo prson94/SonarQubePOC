@@ -1,4 +1,65 @@
-﻿--add missing pk to sitenav. needed for fk on permission
+﻿--BEGIN: Migrate Score Metric relationship XML--------------------------------------------------------------------------------------------------------------
+
+if OBJECT_ID('tempdb..#tempScoreMetric') IS NOT NULL DROP TABLE #tempScoreMetric;
+go
+
+create table #tempScoreMetric (ID int, Object varchar(50), ObjectID int, Configuration XML);
+go
+
+insert into #tempScoreMetric 
+select 
+	s.ID,
+	s.Object,
+	s.ObjectID,
+	s.Configuration
+from 
+	scoretypemetric s 
+	outer apply s.Configuration.nodes('/fields/CheckObjects') as R(r)
+where 
+	s.checktype = 5 and s.deleted = 0 and s.Configuration.exist('/fields/CheckObjects/Object') = 1;
+
+declare @i int;
+select @i = count(*) from #tempScoreMetric;
+
+while @i != 0
+begin
+	declare @config xml;
+	declare @newConfig xml;
+	declare @rowId int;
+	
+	select top 1 
+		@config = Configuration, 
+		@rowId = ID,
+		@newConfig = ''
+	from #tempScoreMetric;
+	
+	select 
+		@newConfig = '<fields><CheckObjects>' + string_agg('<IntersectType>' + cast(T.ID as varchar) + '</IntersectType>', '') + '</CheckObjects></fields>'
+	from IntersectType T
+	inner join 
+	(
+		select 
+		R.r.value('(Type/text())[1]', 'varchar(50)') as [Object], 
+		R.r.value('(ID/text())[1]', 'int') as ObjectID 
+		from @config.nodes('/fields/CheckObjects/*') as R(r)
+	) obj on ((T.[Object] = obj.[Object] and T.ObjectID = obj.ObjectID) or (T.[Subject] = obj.[Object] and T.SubjectID = obj.ObjectID))
+	inner join #tempScoreMetric m on m.ID = @rowId
+	where ((T.[Object] = m.[Object] and T.objectID = m.ObjectID) or (T.[Subject] =  m.[Object] and T.SubjectID = m.ObjectID))
+
+	update ScoreTypeMetric
+	set Configuration = @newConfig
+	where ID = @rowID;
+
+	delete from #tempScoreMetric where ID = @rowID;
+
+	select @i = count(*) from #tempScoreMetric;
+end
+--END: Migrate Score Metric relationship XML----------------------------------------------------------------------------------------------------------------
+
+
+
+
+--add missing pk to sitenav. needed for fk on permission
 alter table SiteNav add constraint PK_SiteNav primary key (ID);
 go
 
