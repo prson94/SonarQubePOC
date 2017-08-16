@@ -16031,14 +16031,17 @@ from    [IntersectType] RT
                     fields.Add(new XElement("PropertyValue", form["PropertyValue"]));
                     break;
                 case StatisticCheckType.Relationship:
-                    var rawCheckObjects = form["CheckObjects[]"];
+                    var rawCheckObjects = form["CheckObjects"];
                     if (!string.IsNullOrEmpty(rawCheckObjects))
                     {
+                        //remove formatting
+                        rawCheckObjects = rawCheckObjects.Replace("\r", "").Replace("\n", "").Replace(" ", "").Trim('[').Trim(']');
+
                         var checkObjectStrings = rawCheckObjects.Split(',').ToList();
                         var checksElement = new XElement("CheckObjects");
                         checkObjectStrings.ForEach(i =>
                         {
-                            var values = i.Split('|');
+                            var values = i.Trim('"').Split('|');
                             var checkElement = new XElement("Object");
                             checkElement.Add(
                                 new XElement("Type", values[0]),
