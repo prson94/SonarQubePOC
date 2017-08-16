@@ -97,7 +97,10 @@
                 </div>
                 <div class="col s3">
                     <div class="FieldName">&nbsp;</div>
-                    <p-dropdown name="lookupTokens" [options]="model.LookupTokens" (onChange)="selectDisplayToken($event.value)" [disabled]="model.LookupTokens?.length < 1" [style]="{'width':'98%'}" ngDefaultControl></p-dropdown>
+                    <select [ngModel]="selectedLookupToken" (ngModelChange)="selectDisplayToken($event)" [disabled]="model.LookupTokens?.length < 1" style="width:98%" name="lookupTokens2">
+                        <option [value]="null"></option>
+                        <option *ngFor="let t of model.LookupTokens" [value]="t.value">{{t.label}}</option>
+                    </select>
                 </div>
                 <div class="col s3 offset-s6">
                     <div class="FieldNameRequired">List Edit Format</div>
@@ -105,7 +108,10 @@
                 </div>
                 <div class="col s3">
                     <div class="FieldName">&nbsp;</div>
-                    <p-dropdown name="lookupTokens" [options]="model.LookupTokens" (onChange)="selectEditToken($event.value)" [disabled]="model.LookupTokens?.length < 1" [style]="{'width':'98%'}" ngDefaultControl></p-dropdown>
+                    <select [ngModel]="selectedFormatToken" (ngModelChange)="selectEditToken($event)" [disabled]="model.LookupTokens?.length < 1" style="width:98%" name="lookupTokens">
+                        <option [value]="null"></option>
+                        <option *ngFor="let t of model.LookupTokens" [value]="t.value">{{t.label}}</option>
+                    </select>
                 </div>
             </div>
         </simple-accordion>

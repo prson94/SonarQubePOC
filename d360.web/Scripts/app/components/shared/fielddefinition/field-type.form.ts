@@ -75,6 +75,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private filteredSortOrderList: any[] = [];
     private filteredLookupHideHeader: boolean = false;
     private filteredLookupHideFooter: boolean = false; 
+    private selectedLookupToken = null;
+    private selectedFormatToken = null;
 
     private supportsPrimaryFilterOption: boolean = false;
     private displayFieldSelected: boolean = true;
@@ -775,16 +777,22 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //#endregion
 
     private selectDisplayToken(value: string) {
+        if (value == null || value == '' || value == 'null')
+            return;
         if (this.model.FieldType.LookupDisplayFormat == null) {
             this.model.FieldType.LookupDisplayFormat = '';
         }
+        this.selectedLookupToken = null;
         this.model.FieldType.LookupDisplayFormat += value;
     }
 
     private selectEditToken(value: string) {
+        if (value == null || value == '' || value == 'null')
+            return;
         if (this.model.FieldType.LookupEditFormat == null) {
             this.model.FieldType.LookupEditFormat = '';
         }
+        this.selectedFormatToken = null;
         this.model.FieldType.LookupEditFormat += value;
     }
 
