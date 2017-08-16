@@ -456,6 +456,7 @@
     <Content Include="Content\font-awesome.css" />
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\logo.new.png" />
+    <Content Include="Content\images\logo.old1.png" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.svg" />
     <Content Include="Content\primeng\d3s\images\icons_16.png" />
     <Content Include="Content\primeng\d3s\images\slider_handles%402x.png" />
@@ -815,7 +816,6 @@
     <Content Include="images\gritter.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\images\logo.old.png" />
     <None Include="Content\redactor\redactor-iframe.css.map">
       <DependentUpon>redactor-iframe.css</DependentUpon>
     </None>
