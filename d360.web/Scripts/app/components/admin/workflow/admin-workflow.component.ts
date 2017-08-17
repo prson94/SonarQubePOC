@@ -25,10 +25,8 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.clearSidebar();
         this.headerBreadcrumbService.clearBreadcrumbs();
-        let b = new Breadcrumb();
-        b.text = 'Workflow';
-        this.headerBreadcrumbService.showBreadcrumb(b);
-        this.titleService.setTitle("Workflow");
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow'));
+        this.titleService.setTitle('Workflow');
 
     }
 

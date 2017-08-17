@@ -13,8 +13,8 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { MonitorRoutingModule } from './monitor.routes';
 import { MonitorComponent } from './monitor.component';
 import { MonitorFilterComponent } from './monitor-filter.component';
-import { MonitorWorkflowComponent } from './monitor-list.component';
-import { MonitorWorkflowActionComponent } from './monitor-assignments.component';
+import { MonitorListComponent } from './monitor-list.component';
+import { MonitorAssignmentsComponent } from './monitor-assignments.component';
 
 
 import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
@@ -58,14 +58,14 @@ import {
     declarations: [   
         MonitorComponent,
         MonitorFilterComponent,     
-        MonitorWorkflowComponent,    
-        MonitorWorkflowActionComponent, 
+        MonitorListComponent,    
+        MonitorAssignmentsComponent, 
     ],
     exports: [
         MonitorComponent,
         MonitorFilterComponent,
-        MonitorWorkflowComponent,
-        MonitorWorkflowActionComponent,
+        MonitorListComponent,
+        MonitorAssignmentsComponent,
         ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

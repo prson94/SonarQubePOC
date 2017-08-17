@@ -1434,52 +1434,140 @@ namespace d360.web.Controllers.Services
 	                where ResponsibilityTypeID  = @id
                 ) r";
 
-            foreach(dynamic r in results)
+            foreach(dynamic result in results)
             {
-                if (r.CurrentStepID != null && r.Settings != null && r.ActivityType != null)
+                if (result.CurrentStepID != null && result.Settings != null && result.ActivityType != null)
                 {
-                    var s = XmlToDynamic(r.Settings);
+                    var settings = XmlToDynamic(result.Settings);
 
-                    switch((WorkflowActivityType)r.ActivityType)
+                    switch((WorkflowActivityType)result.ActivityType)
                     {
                         case WorkflowActivityType.Form:
-                            if (s.SendFormEmail != null && (bool)s.SendFormEmail == true)
+                            if (settings.SendFormEmail != null && (bool)settings.SendFormEmail == true)
                             {
-                                if (s.MessageRecipientType == EmailTaskRecipientType.Responsibility)
+                                if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                                 {
-                                    if (s.ResponsibilityTypeID != null)
+                                    if (settings.ResponsibilityTypeID != null)
                                     {
-                                        var resources = Company.Query<string>(responsibilitySql, new { id = (int)s.ResponsibilityTypeID });
-                                        r.ResponsibleUser = resources;
+                                        var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                        result.ResponsibleUser = resources;
                                     }
                                 }
-                                else if (s.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
+                                else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
                                 {
-                                    r.ResponsibleUser = s.MessageToUser; 
+                                    result.ResponsibleUser = settings.MessageToUser; 
                                 }
-                                else if (s.MessageRecipientType == EmailTaskRecipientType.Initiator)
+                                else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
                                 {
-                                    r.ResponsibleUser = r.StartedBy;
+                                    result.ResponsibleUser = result.StartedBy;
                                 }
                                     
                             }
                             break;
                         case WorkflowActivityType.EmailNotification:
-                            if (s.MessageRecipientType == EmailTaskRecipientType.Responsibility)
+                            if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
                             {
-                                if (s.ResponsibilityTypeID != null)
+                                if (settings.ResponsibilityTypeID != null)
                                 {
-                                    var resources = Company.Query<string>(responsibilitySql, new { id = (int)s.ResponsibilityTypeID });
-                                    r.ResponsibleUser = resources;
+                                    var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                    result.ResponsibleUser = resources;
                                 }
                             }
-                            else if (s.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
+                            else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
                             {
-                                r.ResponsibleUser = s.MessageToUser;
+                                result.ResponsibleUser = settings.MessageToUser;
                             }
-                            else if (s.MessageRecipientType == EmailTaskRecipientType.Initiator)
+                            else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
                             {
-                                r.ResponsibleUser = r.StartedBy;
+                                result.ResponsibleUser = result.StartedBy;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            #endregion
+
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+        }
+
+        [Route("typelist2"), HttpGet]
+        public HttpResponseMessage GetWorkflowsByTypeList2(string types)
+        {
+            //should only ever be comma separated list of numbers, remove anything else
+            types = Regex.Replace(types ?? "", "[^0123456789, ]", string.Empty);
+
+            types = types.Trim().TrimEnd(',');
+
+            if (string.IsNullOrWhiteSpace(types))
+                types = "-1";
+
+            var results = Company.Query<dynamic>(string.Format(QueryConstants.WorkflowTypeList2, types)).ToList();
+
+            #region parse XML
+
+            var responsibilitySql = @"
+                select 
+	                string_agg(r.FirstName + ' ' + r.LastName, ', ') as Resources 
+                from
+                (
+	                select distinct 
+		                r.* 
+	                from ResponsibilityDetail d
+	                left join [ResourceGroup] g on g.GroupID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Group'
+	                left join reporting.Global_resource r on (r.ResourceID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Resource') 
+		                or (r.ResourceID = g.ResourceID and d.ResponsibleObjectType = 'Group')
+	                where ResponsibilityTypeID  = @id
+                ) r";
+
+            foreach (dynamic result in results)
+            {
+                if (result.CurrentStepID != null && result.Settings != null && result.ActivityType != null)
+                {
+                    var settings = XmlToDynamic(result.Settings);
+
+                    switch ((WorkflowActivityType)result.ActivityType)
+                    {
+                        case WorkflowActivityType.Form:
+                            if (settings.SendFormEmail != null && (bool)settings.SendFormEmail == true)
+                            {
+                                if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
+                                {
+                                    if (settings.ResponsibilityTypeID != null)
+                                    {
+                                        var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                        result.ResponsibleUser = resources;
+                                    }
+                                }
+                                else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
+                                {
+                                    result.ResponsibleUser = settings.MessageToUser;
+                                }
+                                else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
+                                {
+                                    result.ResponsibleUser = result.StartedBy;
+                                }
+
+                            }
+                            break;
+                        case WorkflowActivityType.EmailNotification:
+                            if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
+                            {
+                                if (settings.ResponsibilityTypeID != null)
+                                {
+                                    var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                    result.ResponsibleUser = resources;
+                                }
+                            }
+                            else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
+                            {
+                                result.ResponsibleUser = settings.MessageToUser;
+                            }
+                            else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
+                            {
+                                result.ResponsibleUser = result.StartedBy;
                             }
                             break;
                         default:

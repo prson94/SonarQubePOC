@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 
 
 @Component({
-    selector: 'd3s-monitor-workflow-actions',
+    selector: 'd3s-monitor-assignments',
     template: ` 
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
@@ -38,7 +38,7 @@ import { Router } from '@angular/router';
     providers: [WorkflowService],
 })
 
-export class MonitorWorkflowActionComponent extends BaseComponent implements OnInit, OnChanges {
+export class MonitorAssignmentsComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() workflowTypes: any[];
     @Input() objectType: string;
     @Input() objectId: number;

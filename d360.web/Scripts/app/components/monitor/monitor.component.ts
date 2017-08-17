@@ -14,17 +14,17 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     <div class="col s12 m6">
         <d3s-monitor-filter [hidden]="isFiltered" (selectionChange)="selectedWorkflowTypes = $event" [selectAll]="selectAll"></d3s-monitor-filter>
         
-        <d3s-monitor-workflow-actions *ngIf="isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-workflow-actions>
+        <d3s-monitor-assignments *ngIf="isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
         
-        <d3s-monitor-workflow 
+        <d3s-monitor-list 
                 [workflowTypes]="selectedWorkflowTypes" 
                 (selectionChange)="selectedWorkflowType = $event" 
                 [objectType]="objectType" 
                 [objectId]="objectId" 
                 (filteredTypes)="filteredTypes = $event">
-        </d3s-monitor-workflow>
+        </d3s-monitor-list>
 
-        <d3s-monitor-workflow-actions *ngIf="!isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-workflow-actions>
+        <d3s-monitor-assignments *ngIf="!isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
     </div>
     <div class="col s12 m6">
         <d3s-workflow-diagram 
@@ -80,17 +80,14 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
             this.isFiltered = true;
         }
 
-        this.setBrowserTitle(this.titleService, 'Workflow Monitor');
+        if (!this.isFiltered) {
+            this.setBrowserTitle(this.titleService, 'Workflow Monitor');
 
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow Monitor', SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
-        if (this.isFiltered) {
-            this.objectDetailService.getObject(this.objectId, this.objectType)
-                .then(detail => {
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(detail.Name || '', null, true));
-                });
+            this.headerBreadcrumbService.clearBreadcrumbs();
+            this.headerBreadcrumbService.clearCurrentObjectInfo();
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow Monitor', SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
         }
+
 
         this.isLoading = false;
     }

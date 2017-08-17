@@ -17,7 +17,7 @@ import { Router } from '@angular/router';
         <d3s-tile-actions hasAdd="true" (addClick)="onAddClick.emit()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
     </header>
     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-    <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowDblclick)="onEditClick.emit($event.data.ID)">                                                        
+    <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selection" (onRowDblclick)="onEditClick.emit($event.data.ID)">                                                        
     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>        
     <p-column field="TypeName" header="Type Name" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>  

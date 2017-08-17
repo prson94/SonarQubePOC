@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 
 
 @Component({
-    selector: 'd3s-monitor-workflow',
+    selector: 'd3s-monitor-list',
     template: ` 
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
@@ -47,7 +47,7 @@ import { Router } from '@angular/router';
     providers: [WorkflowService],
 })
 
-export class MonitorWorkflowComponent extends BaseComponent implements OnInit, OnChanges {
+export class MonitorListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() workflowTypes: any[];
     @Input() selection: any;
     @Output() selectionChange = new EventEmitter();

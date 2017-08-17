@@ -1,4 +1,6 @@
-﻿import {
+﻿//#region imports
+
+import {
     Component,
     Input,
     OnInit,
@@ -38,6 +40,8 @@ import { MenuItem } from 'primeng/primeng';
 
 import * as go from 'gojs';
 import * as _ from 'lodash';
+
+//#endregion 
 
 declare var window: any;
 
@@ -289,13 +293,15 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
     private populateDiagram(): Promise<any> {
 
+
+
         if (this.model != null && this.model.Event != null && this.model.Event.ObjectID != null && (this.id < 1 || this.id == null || (this.model != null && this.model.Nodes != null && this.model.Nodes.length > 0))) {
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object)
                 .then(r => this.fieldTypes = r)
                 .then(() => this.parseData(this.model));
         }
 
-        if (this.id == null || this.version == null)
+        if (this.id == null)
             return Promise.resolve();
 
         this.isLoading = true;
