@@ -2812,6 +2812,11 @@ namespace d360.web.Controllers
                 list.Add("Email", 0);
                 list.Add("DateLastLoggedIn", 0);
             }
+            else if (type == SystemObjects.FusionAttributeType)
+            {
+                list.Add("Name", 0);
+                list.Add("TextPath", 0);
+            }
             else if (type == SystemObjects.FusionQueryAttributeType)
             {
                 list.Add("DisplayValue", 0);
