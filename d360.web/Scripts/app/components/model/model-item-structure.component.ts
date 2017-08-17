@@ -241,7 +241,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     deleteModelHierarchy(id: number) {
         this.isLoading = true;
         this.modelsService.deleteModelHierarchy(id).then(res => {            
-            if (!res.isError) {            
+            if (!res.isError) {        
                 this.deleteSelectedTreeNode(id);
             }
 
@@ -254,33 +254,30 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private deleteSelectedTreeNode(id: number): TreeNode {
         let nodes: TreeNode[] = [];
-
         // add root nodes
         for (var i = 0; i < this.treeNodeArray.length; i++) {
             if (this.treeNodeArray[i].data.id && this.treeNodeArray[i].data.id == id) {
                 this.treeNodeArray.splice(i, 1);
                 return
             }
-
             nodes.push(this.treeNodeArray[i]);
         }
 
-        //do a breadth first search for the given treenode
+        // do a breadth first search for the given treenode
         if (nodes.length == 0) return;
 
         let node = nodes[0];
 
         while (node) {
-            if (node.data.id && node.data.id == id) {
-
+            if (node.data.ID && node.data.ID == id) {
                 return node;
             }
 
             //push children
             if (node.children) {
                 for (var i = 0; i < node.children.length; i++) {                    
-                    if (node.children[i].data.id && node.children[i].data.id == id) {
-                        node.children.splice(i, 1);                        
+                    if (node.children[i].data.ID && node.children[i].data.ID == id) {
+                        node.children.splice(i, 1);   
                         return
                     }
                     nodes.push(node.children[i]);
@@ -291,6 +288,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             nodes.splice(0, 1);
 
             if (nodes.length == 0) return null;
+
             node = nodes[0];
         }
     }

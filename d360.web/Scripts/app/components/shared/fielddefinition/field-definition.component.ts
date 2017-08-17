@@ -71,7 +71,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             .then(data => {                
                 this.fieldDefinitions = data;
                 this.fieldDefinitions.forEach(d => {
-                    if (d.Type == 'ComplexRelationLookup') d.Type = 'Complex Relation Lookup';
+                    if (d.Type == 'ComplexRelationLookup') d.Type = 'Relation Lookup';
                     if (d.Type == 'RelationLookup') d.Type = 'Relation Lookup';
                     if (d.Type == 'FusionLookup') d.Type = 'Fusion Lookup';
                     if (d.Type == 'DateTime') d.Type = 'Date Time';
