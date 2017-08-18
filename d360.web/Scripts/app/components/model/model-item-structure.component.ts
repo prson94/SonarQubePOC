@@ -256,7 +256,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         let nodes: TreeNode[] = [];
         // add root nodes
         for (var i = 0; i < this.treeNodeArray.length; i++) {
-            if (this.treeNodeArray[i].data.id && this.treeNodeArray[i].data.id == id) {
+            if (this.treeNodeArray[i].data.ID && this.treeNodeArray[i].data.ID == id) {
                 this.treeNodeArray.splice(i, 1);
                 return
             }

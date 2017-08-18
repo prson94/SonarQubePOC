@@ -8,6 +8,12 @@
       "Content/styles/typeahead.css"
     ]
   },
+  //{
+  //  "outputFileName": "content/styles/ang.min.css",
+  //  "inputFiles": [
+  //    "Content/styles/ang.css"
+  //  ]
+  //},
   {
     "outputFileName": "content/styles/materialize.min.css",
     "inputFiles": [
