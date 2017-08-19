@@ -5,8 +5,8 @@
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="" />
       <Setting name="QueueMessageVisibilityTime" value="7200" />
-      <Setting name="QueueName" value="fusion-queue-dev" />
-      <!--<Setting name="QueueName" value="fusion-queue" />-->
+      <!--<Setting name="QueueName" value="fusion-queue-dev" />-->
+      <Setting name="QueueName" value="fusion-queue" />
       <Setting name="QueueCheckFrequency" value="60000" />
       <Setting name="DBExecuteQueryTimeout" value="10800" />
       <Setting name="DBReadQueryTimeout" value="1800" />
