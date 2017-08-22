@@ -587,6 +587,13 @@ namespace d360.model
                 }
                 else
                 {
+                    var val = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value;
+                    //if the value is a form value get it
+                    if (item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
+                    {
+                        val = GetFieldValueFromFormResponse(item);
+                    }
+
                     // check if the field exists
                     var field = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
@@ -595,7 +602,7 @@ namespace d360.model
                         //insert
                         var newField = new core.entities.Field
                         {
-                            Value = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value,
+                            Value = val,
                             FieldTypeID = fieldType.ID,
                             ObjectID = objectInfo.ObjectID,
                             ObjectType = objectInfo.Object.ToString()
@@ -608,13 +615,35 @@ namespace d360.model
                     else
                     {
                         //update
-                        field.Value = item.CurrentDate ? DateTime.UtcNow.ToShortDateString() : item.Value;
+                        field.Value = val;
 
                         SaveChanges();
                     }
                 }
 
             }
+        }
+
+        private string GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item)
+        {
+            var formResponses = WorkflowItemSteps.Where(x => x.ItemID == item.FormStepID && x.Step.ActivityType == WorkflowActivityType.Form);
+
+            var firstResponse = formResponses.FirstOrDefault();
+
+            if (firstResponse == null) return string.Empty;
+
+            var xml = XElement.Parse(firstResponse.Fields);
+
+            foreach (var form in xml.Elements("form"))
+            {
+                foreach (var field in form.Elements("field"))
+                {
+                    if((string)field.Attribute("id") == item.FormField)
+                        return (string)field.Attribute("value");                    
+                }
+            }
+
+            return "";
         }
 
         private void ExecuteProc(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)

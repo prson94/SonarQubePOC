@@ -13,6 +13,9 @@ namespace d360.model.workflow
         private static string VALUE = "Value";
         private static string CURRENT_DATE = "UseCurrentDate";
         private static string CLEAR_VALUE = "ClearValue";
+        private static string USEFORM_VALUE = "UseFormValue";
+        private static string FORM_FIELD_ID = "FormFieldId";
+        private static string FORM_STEP_ID = "FormStepId";
 
         public int FieldID { get; set; }
 
@@ -20,6 +23,11 @@ namespace d360.model.workflow
 
         public bool CurrentDate { get; set; }
         public bool ClearValue { get; set; }
+
+        public bool UseFormValue { get; set; }
+        public string FormField { get; set; }
+        public int FormStepID { get; set; }
+
 
         public static WorkflowFieldUpdateSettings ParseXml(XElement xml)
         {
@@ -29,6 +37,9 @@ namespace d360.model.workflow
             string value = "";
             bool isCurrentDate = false;
             bool isClearValue = false;
+            bool useFormValue = false;
+            int formStepId = 0;
+            string formField = "";
 
             if (xml.Attribute(FIELD_ID) != null)
             {
@@ -50,10 +61,28 @@ namespace d360.model.workflow
                 bool.TryParse(xml.Attribute(CLEAR_VALUE).Value, out isClearValue);
             }
 
+            if(xml.Attribute(USEFORM_VALUE) != null)
+            {
+                bool.TryParse(xml.Attribute(USEFORM_VALUE).Value, out useFormValue);
+            }
+
+            if (xml.Attribute(FORM_FIELD_ID) != null)
+            {
+                formField = xml.Attribute(FORM_FIELD_ID).Value;
+            }
+
+            if (xml.Attribute(FORM_STEP_ID) != null)
+            {
+                int.TryParse(xml.Attribute(FORM_STEP_ID).Value, out formStepId);
+            }
+
             model.CurrentDate = isCurrentDate;
             model.FieldID = fieldId;
             model.Value = value;
             model.ClearValue = isClearValue;
+            model.UseFormValue = useFormValue;
+            model.FormField = formField;
+            model.FormStepID = formStepId;
 
             return model;
         }
