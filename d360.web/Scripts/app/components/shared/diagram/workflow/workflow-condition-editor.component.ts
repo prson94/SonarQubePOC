@@ -244,6 +244,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 break;
             case 'decimal':
             case 'number':
+            case 'integer':
             case 'date':
             case 'datetime':
             default:
@@ -269,6 +270,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             //    return 'FL';
             case 'decimal':
             case 'number':
+            case 'integer':
                 return 'D';
             case 'date':
             case 'datetime':
