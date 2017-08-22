@@ -42,7 +42,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         { value: 'true', label: 'True' }
     ];
     private hasFormResponses = false;
-     
+    private selectedFormFieldId;
 
 
     constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
@@ -67,7 +67,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             this.changeUseFormValue(false);
         }
 
-        console.log(this.formFields);
+        //console.log(this.formFields);
 
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
             .then(r => {
@@ -77,10 +77,21 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 if (this.fieldUpdate != null && this.fieldUpdate['@FieldId'] != null) {
                     this.select(this.fieldUpdate['@FieldId'], false);
                 }
+
                 if (this.fieldUpdate['@ClearValue'] != null)
                     this.fieldUpdate['@ClearValue'] = this.fieldUpdate['@ClearValue'].toString().toLowerCase() == 'true' ? true : false;
                 if (this.fieldUpdate['@UseCurrentDate'] != null)
                     this.fieldUpdate['@UseCurrentDate'] = this.fieldUpdate['@UseCurrentDate'].toString().toLowerCase() == 'true' ? true : false;
+                if (this.fieldUpdate['@UseFormValue'] != null)
+                    this.fieldUpdate['@UseFormValue'] = this.fieldUpdate['@UseFormValue'].toString().toLowerCase() == 'true' ? true : false;
+
+                if (this.fieldUpdate['@UseFormValue'] == true) {
+                    if (this.fieldUpdate['@FormFieldId'] != null && this.fieldUpdate['@FormStepId'] != null) {
+                        this.changeFormValue(this.fieldUpdate['@FormFieldId'] + '|' + this.fieldUpdate['@FormStepId']);
+                    } 
+                }
+
+
             })
             .then(() => this.isLoading = false);
     }
@@ -127,9 +138,13 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     changeFormValue(e: any) {
-        let field = this.formFields.find(f => f['@id'] == e);
-        if (field == null) return;
-        this.fieldUpdate['@FormFieldId'] = e;
+        this.selectedFormFieldId = e;
+        let field = this.formFields.find(f => f['@FormFieldId'] == e);
+        if (field == null) {
+            this.fieldUpdate['@FormFieldId'] = null;
+            return;
+        }
+        this.fieldUpdate['@FormFieldId'] = field['@id'];
         this.fieldUpdate['@FormStepId'] = field['@stepId'];
 
         this.fieldUpdateChange.emit(this.fieldUpdate);

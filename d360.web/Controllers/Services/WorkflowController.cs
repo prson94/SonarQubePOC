@@ -1023,7 +1023,7 @@ namespace d360.web.Controllers.Services
 
                                     int key;
                                     if (!int.TryParse(n.Key, out key)) return;
-                                    if (key < 0)
+                                    if (keyMapping.ContainsKey(key))
                                         key = keyMapping[key];
 
                                     var node = Company.GetById<WorkflowVersionStep>(key);
@@ -1170,7 +1170,7 @@ namespace d360.web.Controllers.Services
 
                                     int key;
                                     if (!int.TryParse(n.Key, out key)) return;
-                                    if (key < 0)
+                                    if (keyMapping.ContainsKey(key))
                                         key = keyMapping[key];
 
                                     var node = Company.GetById<WorkflowVersionStep>(key);

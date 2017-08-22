@@ -149,10 +149,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         let upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
-        console.log('upstreamSteps',upstreamSteps);
+        //console.log('upstreamSteps',upstreamSteps);
         fields.forEach(f => {
             let k = upstreamSteps.filter(u => u == f['@stepId']);
             if (k != null && k.length > 0) {
+                f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
                 f['@FieldName'] = 'Form :: ' + f['@label'];
                 this.formFields.push(f);
             }
