@@ -50,11 +50,11 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     ngOnChanges() {
-        console.log(this.fieldUpdate);
         this.load();
     }
 
     load() {
+        this.isLoading = true;
         this.fields = [];
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
             .then(r => {
@@ -68,7 +68,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                     this.fieldUpdate['@ClearValue'] = this.fieldUpdate['@ClearValue'].toString().toLowerCase() == 'true' ? true : false;
                 if (this.fieldUpdate['@UseCurrentDate'] != null)
                     this.fieldUpdate['@UseCurrentDate'] = this.fieldUpdate['@UseCurrentDate'].toString().toLowerCase() == 'true' ? true : false;
-            });
+            })
+            .then(() => this.isLoading = false);
     }
 
     select(e: any, clear: boolean = true) {

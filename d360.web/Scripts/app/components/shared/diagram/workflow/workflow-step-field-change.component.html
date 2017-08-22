@@ -1,72 +1,75 @@
-﻿<div class="row">
-    <div class="col s12">
-        <div class="FieldName">Field</div>
-        <div>
-            <select style="width: 95%" [ngModel]="fieldUpdate['@FieldId']" (ngModelChange)="select($event)">
-                <option *ngFor="let f of fields" [value]="f.ID">{{f.FriendlyName}}</option>
-            </select>
-        </div>
-    </div>
-    <div class="col s12" *ngIf="fieldUpdate != null && (fieldUpdate['@ClearValue'] == null || fieldUpdate['@ClearValue'].toString() == 'false')">
-        <div class="FieldName">Value</div>
-        <div *ngIf="field != null; else nothing">
-            <div *ngIf="field.Type == 'Text'">
-                <input type="text" style="width: 95%" [ngModel]="fieldUpdate['@Value']" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)" />
-            </div>
-            <div *ngIf="field.Type == 'Decimal' || field.Type == 'Number'">
-                <input type="number" style="width: 95%" [ngModel]="fieldValue" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)" />
-            </div>
-            <div *ngIf="field.Type == 'Date' || field.Type == 'DateTime'">
-                <div style="padding-bottom: 10px">
-                    <div *ngIf="fieldUpdate['@UseCurrentDate'] == null || (fieldUpdate['@UseCurrentDate'] != null && fieldUpdate['@UseCurrentDate'].toString() != 'true')">
-                        <!--<p-calendar
-                                    [ngModel]="fieldUpdate['@Value']"
-                                    (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)"
-                                    dateFormat="dd/mm/yyyy"
-                                    [inline]="true"
-                                    [showTime]="field.Type == 'DateTime'">
-                        </p-calendar>-->
-                        <p-inputMask *ngIf="field.Type == 'Date'" 
-                                     mask="99/99/9999" 
-                                     [ngModel]="fieldUpdate['@Value']" 
-                                     (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)" 
-                                     placeholder="mm/dd/yyyy" 
-                                     slotChar="mm/dd/yyyy">
-                        </p-inputMask>
-                        <div *ngIf="field.Type == 'DateTime'">
-                            <p-inputMask 
-                                         mask="99/99/9999 99:99 aa" 
-                                         [ngModel]="fieldUpdate['@Value']" 
-                                         (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)" 
-                                         placeholder="mm/dd/yyyy hh:mm PM" 
-                                         slotChar="mm/dd/yyyy hh:mm PM">
-                            </p-inputMask>
-                        </div>   
-                    </div>
-                </div>
-                <input type="checkbox" [ngModel]="fieldUpdate['@UseCurrentDate']" (ngModelChange)="fieldUpdate['@UseCurrentDate'] = $event; fieldUpdateChange.emit(fieldUpdate);" /> Use current date at the time of execution?
-            </div>
-            <div *ngIf="field.Type == 'Lookup'">
-                <select style="width: 95%" [ngModel]="fieldUpdate['@Value']" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)">
-                    <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
-                </select>
-            </div>
-            <div *ngIf="field.Type == 'Boolean'">
-                <select style="width: 95%" [ngModel]="fieldUpdate['@Value']" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)">
-                    <option *ngFor="let b of bools" [value]="b.value">{{b.label}}</option>
-                </select>
-            </div>
-        </div>
-        <ng-template #nothing>
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">Field</div>
             <div>
-                (no field selected)
+                <select style="width: 95%" [ngModel]="fieldUpdate['@FieldId']" (ngModelChange)="select($event)">
+                    <option *ngFor="let f of fields" [value]="f.ID">{{f.FriendlyName}}</option>
+                </select>
             </div>
-        </ng-template>
-    </div>
-    <div class="col s12" style="padding-top:10px">
-        <div>
-            <input type="checkbox" [ngModel]="fieldUpdate['@ClearValue']" (ngModelChange)="fieldUpdate['@ClearValue'] = $event; fieldUpdateChange.emit(fieldUpdate)" /> Clear field value?
+        </div>
+        <div class="col s12" *ngIf="fieldUpdate != null && (fieldUpdate['@ClearValue'] == null || fieldUpdate['@ClearValue'].toString() == 'false')">
+            <div class="FieldName">Value</div>
+            <div *ngIf="field != null; else nothing">
+                <div *ngIf="field.Type == 'Text'">
+                    <input type="text" style="width: 95%" [ngModel]="fieldUpdate['@Value']" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)" />
+                </div>
+                <div *ngIf="field.Type == 'Decimal' || field.Type == 'Number'">
+                    <input type="number" style="width: 95%" [ngModel]="fieldValue" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)" />
+                </div>
+                <div *ngIf="field.Type == 'Date' || field.Type == 'DateTime'">
+                    <div style="padding-bottom: 10px">
+                        <div *ngIf="fieldUpdate['@UseCurrentDate'] == null || (fieldUpdate['@UseCurrentDate'] != null && fieldUpdate['@UseCurrentDate'].toString() != 'true')">
+                            <!--<p-calendar
+                                        [ngModel]="fieldUpdate['@Value']"
+                                        (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)"
+                                        dateFormat="dd/mm/yyyy"
+                                        [inline]="true"
+                                        [showTime]="field.Type == 'DateTime'">
+                            </p-calendar>-->
+                            <p-inputMask *ngIf="field.Type == 'Date'"
+                                         mask="99/99/9999"
+                                         [ngModel]="fieldUpdate['@Value']"
+                                         (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)"
+                                         placeholder="mm/dd/yyyy"
+                                         slotChar="mm/dd/yyyy">
+                            </p-inputMask>
+                            <div *ngIf="field.Type == 'DateTime'">
+                                <p-inputMask mask="99/99/9999 99:99 aa"
+                                             [ngModel]="fieldUpdate['@Value']"
+                                             (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)"
+                                             placeholder="mm/dd/yyyy hh:mm PM"
+                                             slotChar="mm/dd/yyyy hh:mm PM">
+                                </p-inputMask>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="checkbox" [ngModel]="fieldUpdate['@UseCurrentDate']" (ngModelChange)="fieldUpdate['@UseCurrentDate'] = $event; fieldUpdateChange.emit(fieldUpdate);" /> Use current date at the time of execution?
+                </div>
+                <div *ngIf="field.Type == 'Lookup'">
+                    <select style="width: 95%" [ngModel]="fieldUpdate['@Value']" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)">
+                        <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                    </select>
+                </div>
+                <div *ngIf="field.Type == 'Boolean'">
+                    <select style="width: 95%" [ngModel]="fieldUpdate['@Value']" (ngModelChange)="fieldUpdate['@Value'] = $event; fieldUpdateChange.emit(fieldUpdate)">
+                        <option *ngFor="let b of bools" [value]="b.value">{{b.label}}</option>
+                    </select>
+                </div>
+            </div>
+            <ng-template #nothing>
+                <div>
+                    (no field selected)
+                </div>
+            </ng-template>
+        </div>
+        <div class="col s12" style="padding-top:10px">
+            <div>
+                <input type="checkbox" [ngModel]="fieldUpdate['@ClearValue']" (ngModelChange)="fieldUpdate['@ClearValue'] = $event; fieldUpdateChange.emit(fieldUpdate)" /> Clear field value?
+            </div>
         </div>
     </div>
-</div>
 
+
+</div>

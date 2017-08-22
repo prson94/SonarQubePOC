@@ -77,14 +77,17 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     ngOnInit() {
         this.originalStep = _.cloneDeep(this.step);
 
+
+        let promises = [];
+
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
-        this.responsibilityService.getResponsibilityTypes()
+        promises.push(this.responsibilityService.getResponsibilityTypes()
             .then(r => {
                 this.responsibilities = r;
-            });
+            }));
 
-        this.workflowService.getEmailTaskRecipientType()
+        promises.push(this.workflowService.getEmailTaskRecipientType()
             .then(r => {
                 r.forEach(e => {
                     if (e.ID < 1)
@@ -94,7 +97,10 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                         label: e.Name
                     });
                 });
-            });
+            }));
+
+        this.isLoading = true;
+        Promise.all(promises).then(() => this.isLoading = false);
 
     }
 
