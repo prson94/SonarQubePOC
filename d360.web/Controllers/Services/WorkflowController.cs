@@ -988,6 +988,7 @@ namespace d360.web.Controllers.Services
 
                         if (model?.Nodes?.Count > 0)
                         {
+
                             model.Nodes.ForEach(n =>
                             {
                                 int id = 0;
@@ -1013,6 +1014,24 @@ namespace d360.web.Controllers.Services
                                 Company.SaveChanges();
                                 keyMapping.Add(id, step.ID);
                             });
+
+                            //2nd loop to handle mappings
+                            model.Nodes.ForEach(n =>
+                            {
+                                if (n.ActivityType == WorkflowActivityType.FieldChange)
+                                {
+
+                                    int key;
+                                    if (!int.TryParse(n.Key, out key)) return;
+                                    if (key < 0)
+                                        key = keyMapping[key];
+
+                                    var node = Company.GetById<WorkflowVersionStep>(key);
+                                    node.Settings = MapWorkflowSettings(node.Settings, keyMapping);
+
+                                }
+                            });
+                            Company.SaveChanges();
                         }
 
                         if (model?.Links?.Count > 0)
@@ -1035,36 +1054,8 @@ namespace d360.web.Controllers.Services
                                 link.Name = l.Name ?? "";
                                 link.TransitionType = l.TransitionType;
 
-
-
                                 //need to map new form conditions to their appropriate step id's 
-                                if (!string.IsNullOrEmpty(l.Condition))
-                                {
-                                    dynamic condition = JsonConvert.DeserializeObject(l.Condition);
-
-                                    if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count > 0)
-                                    {
-                                        for (int i = 0; i < condition.Conditions.Condition.Count; i++)
-                                        {
-                                            var c = condition.Conditions.Condition[i];
-
-                                            if (c["@VersionStepID"] != null)
-                                            {
-                                                condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
-                                            }
-                                        }
-                                        l.Condition = JsonConvert.SerializeObject(condition);
-                                    }
-                                    else if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count == 0)
-                                    {
-                                        condition.Conditions = null;
-                                        l.Condition = JsonConvert.SerializeObject(condition);
-                                    }
-                                    else
-                                    {
-                                        l.Condition = JsonConvert.SerializeObject(condition);
-                                    }
-                                }
+                                l.Condition = MapWorkflowConditions(l.Condition, keyMapping);
 
                                 link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
                                 link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
@@ -1113,7 +1104,6 @@ namespace d360.web.Controllers.Services
 
                         if (model?.Nodes?.Count > 0)
                         {
-                            //TODO: parse nodes and add
                             model.Nodes.ForEach(n =>
                             {
 
@@ -1171,7 +1161,27 @@ namespace d360.web.Controllers.Services
                                 }
                             });
                             Company.SaveChanges();
+
+                            //2nd loop to handle mappings
+                            model.Nodes.ForEach(n =>
+                            {
+                                if (n.ActivityType == WorkflowActivityType.FieldChange)
+                                {
+
+                                    int key;
+                                    if (!int.TryParse(n.Key, out key)) return;
+                                    if (key < 0)
+                                        key = keyMapping[key];
+
+                                    var node = Company.GetById<WorkflowVersionStep>(key);
+                                    node.Settings = MapWorkflowSettings(node.Settings, keyMapping);
+                                    
+                                }
+                            });
+                            Company.SaveChanges();
                         }
+
+
 
                         if (existingSteps.Count > 0 && model?.Nodes?.Count > 0)
                         {
@@ -1195,8 +1205,6 @@ namespace d360.web.Controllers.Services
 
                                 var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
 
-
-
                                 if (fromNew || toNew || link == null)
                                 {
                                     if (link == null)
@@ -1208,33 +1216,7 @@ namespace d360.web.Controllers.Services
                                     link.TransitionType = l.TransitionType;
 
                                     //need to map new form conditions to their appropriate step id's 
-                                    if (!string.IsNullOrEmpty(l.Condition))
-                                    {
-                                        dynamic condition = JsonConvert.DeserializeObject(l.Condition);
-
-                                        if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count > 0)
-                                        {
-                                            for (int i = 0; i < condition.Conditions.Condition.Count; i++)
-                                            {
-                                                var c = condition.Conditions.Condition[i];
-
-                                                if (c["@VersionStepID"] != null)
-                                                {
-                                                    condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
-                                                }
-                                            }
-                                            l.Condition = JsonConvert.SerializeObject(condition);
-                                        }
-                                        else if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count == 0)
-                                        {
-                                            condition.Conditions = null;
-                                            l.Condition = JsonConvert.SerializeObject(condition);
-                                        }
-                                        else
-                                        {
-                                            l.Condition = JsonConvert.SerializeObject(condition);
-                                        }
-                                    }
+                                    l.Condition = MapWorkflowConditions(l.Condition, keyMapping);
 
                                     link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
                                     link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
@@ -1259,35 +1241,7 @@ namespace d360.web.Controllers.Services
                                         link.ToPortID = l.ToPortID;
 
                                         //need to map new form conditions to their appropriate step id's 
-                                        if (!string.IsNullOrEmpty(l.Condition))
-                                        {
-                                            dynamic condition = JsonConvert.DeserializeObject(l.Condition);
-
-                                            if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count > 0)
-                                            {
-                                                for (int i = 0; i < condition.Conditions.Condition.Count; i++)
-                                                {
-                                                    var c = condition.Conditions.Condition[i];
-
-                                                    if (c["@VersionStepID"] != null)
-                                                    {
-                                                        condition.Conditions.Condition[i]["@VersionStepID"] = keyMapping[(int)c["@VersionStepID"]];
-                                                    }
-                                                }
-                                                l.Condition = JsonConvert.SerializeObject(condition);
-                                            }
-                                            else if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count == 0)
-                                            {
-                                                condition.Conditions = null;
-                                                l.Condition = JsonConvert.SerializeObject(condition);
-                                            }
-                                            else
-                                            {
-                                                l.Condition = JsonConvert.SerializeObject(condition);
-                                            }
-                                        }
-
-
+                                        l.Condition = MapWorkflowConditions(l.Condition, keyMapping);
 
                                         link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
                                         link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
@@ -1600,6 +1554,65 @@ namespace d360.web.Controllers.Services
         private dynamic XmlToDynamic(string xml, bool omitRootElement = true)
         {
             return string.IsNullOrEmpty(xml) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XElement.Parse(xml), Formatting.None, omitRootElement));
+        }
+
+        /// <summary>
+        /// Maps condition properties from a JSON string referencing temporary id's to the actual id's created
+        /// </summary>
+        private string MapWorkflowConditions(string conditionString, Dictionary<int, int> mappings)
+        {
+            if (!string.IsNullOrEmpty(conditionString))
+            {
+                dynamic condition = JsonConvert.DeserializeObject(conditionString);
+
+                if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count > 0)
+                {
+                    for (int i = 0; i < condition.Conditions.Condition.Count; i++)
+                    {
+                        var c = condition.Conditions.Condition[i];
+
+                        if (c["@VersionStepID"] != null)
+                        {
+                            condition.Conditions.Condition[i]["@VersionStepID"] = mappings[(int)c["@VersionStepID"]];
+                        }
+                    }
+                    return JsonConvert.SerializeObject(condition);
+                }
+                else if (condition.Conditions.Condition != null && condition.Conditions.Condition.Count == 0)
+                {
+                    condition.Conditions = null;
+                    return JsonConvert.SerializeObject(condition);
+                }
+                else
+                {
+                    return JsonConvert.SerializeObject(condition);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Maps settings properties from an XML string referencing temporary id's to the actual id's created
+        /// </summary>
+        private string MapWorkflowSettings(string settingsString, Dictionary<int, int> mappings)
+        {
+            if (!string.IsNullOrEmpty(settingsString))
+            {
+                dynamic settings = XmlToDynamic(settingsString);
+
+                if (settings.FieldUpdate != null && settings.FieldUpdate.Field != null)
+                {
+                    var fieldUpdate = settings.FieldUpdate.Field;
+
+                    if (fieldUpdate["@UseFormValue"] != null && settings.FieldUpdate.Field["@UseFormValue"].ToString().ToLower() == "true")
+                        fieldUpdate["@FormStepId"] = mappings[(int)fieldUpdate["@FormStepId"]];
+                }
+                return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(settings)).ToString();
+                
+            }
+
+            return settingsString;
         }
 
         #endregion

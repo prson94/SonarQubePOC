@@ -17,6 +17,7 @@ import {
 import { FieldType } from '../../../../models/fields.model';
 import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
 import * as _ from 'lodash';
 
@@ -30,6 +31,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() fieldUpdate = {};
+    @Input() formFields = [];
     @Output() fieldUpdateChange = new EventEmitter();
 
     private fields: FieldType[] = [];
@@ -39,9 +41,11 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         { value: 'false', label: 'False' },
         { value: 'true', label: 'True' }
     ];
+    private hasFormResponses = false;
+     
 
 
-    constructor(private workflowService: WorkflowService) {
+    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
         super();
     }
 
@@ -56,6 +60,15 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     load() {
         this.isLoading = true;
         this.fields = [];
+
+        this.hasFormResponses = this.formFields != null && this.formFields.length > 0;
+
+        if (!this.hasFormResponses && this.fieldUpdate != null) {
+            this.changeUseFormValue(false);
+        }
+
+        console.log(this.formFields);
+
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
             .then(r => {
                 this.fields = r;
@@ -102,6 +115,24 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         let dateString = "";
 
         dateString = (d.getMonth() + 1).toString()
+    }
+
+    changeUseFormValue(e: any) {
+        this.fieldUpdate['@UseFormValue'] = e;
+        if (!e) {
+            delete this.fieldUpdate['@FormFieldId'];
+            delete this.fieldUpdate['@FormStepId'];
+        }
+        this.fieldUpdateChange.emit(this.fieldUpdate);
+    }
+
+    changeFormValue(e: any) {
+        let field = this.formFields.find(f => f['@id'] == e);
+        if (field == null) return;
+        this.fieldUpdate['@FormFieldId'] = e;
+        this.fieldUpdate['@FormStepId'] = field['@stepId'];
+
+        this.fieldUpdateChange.emit(this.fieldUpdate);
     }
 }
 

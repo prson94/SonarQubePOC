@@ -98,6 +98,7 @@
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.FieldChange">
             <d3s-workflow-step-field-change 
+                                            [formFields]="formFields"
                                             [objectId]="objectId" 
                                             [objectType]="objectType" 
                                             [fieldUpdate]="step.settings.FieldUpdate.Field" 

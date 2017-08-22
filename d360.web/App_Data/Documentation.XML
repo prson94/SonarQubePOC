@@ -1934,6 +1934,16 @@
             <param name="id">The ID of the workflow record to retrieve status for.</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.WorkflowController.MapWorkflowConditions(System.String,System.Collections.Generic.Dictionary{System.Int32,System.Int32})">
+            <summary>
+            Maps condition properties from a JSON string referencing temporary id's to the actual id's created
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.WorkflowController.MapWorkflowSettings(System.String,System.Collections.Generic.Dictionary{System.Int32,System.Int32})">
+            <summary>
+            Maps settings properties from an XML string referencing temporary id's to the actual id's created
+            </summary>
+        </member>
         <member name="P:d360.web.Controllers.Services.EventsController.ResultModel.SourceID">
             <summary>
             Implementation SourceID, if there is one.

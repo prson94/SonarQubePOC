@@ -65,8 +65,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         { value: FormResponseType[FormResponseType.All], label: 'All' },
     ];
 
-    private fieldsSub: any;
-
     constructor(
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
@@ -76,7 +74,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     ngOnInit() {
         this.originalStep = _.cloneDeep(this.step);
-
 
         let promises = [];
 
@@ -152,7 +149,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         
         this.usedFields = this.workflowFieldsService.getUsedFields();
     }
-
 
     add() {
         this.formMode = FormMode.Adding;

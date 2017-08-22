@@ -199,7 +199,9 @@
                 </div>
                 <div *ngSwitchCase="'edit'">
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding:10px;">
-                        <d3s-workflow-step-editor [objectId]="model.Event.ObjectID"
+                        <d3s-workflow-step-editor 
+                                                  [diagram]="myDiagram"
+                                                  [objectId]="model.Event.ObjectID"
                                                   [objectType]="model.Event.Object"
                                                   [step]="selectedData"
                                                   (stepChange)="changeStep($event)"

@@ -17,9 +17,11 @@ import {
 import { FieldType } from '../../../../models/fields.model';
 import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
+import * as go from 'gojs';
 
 @Component({
     selector: 'd3s-workflow-step-editor',
@@ -32,6 +34,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     @Input() objectType: string;
     @Input() isAggregate: boolean = false;
     @Input() step: NodeModel;
+    @Input() diagram: go.Diagram;
     @Output() stepChange = new EventEmitter();
     @ViewChild('ed') ed: Editor;
 
@@ -51,11 +54,18 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     private responsibilities = [];
     private procedures: WorkflowTaskProcedure[] = [];
 
-    constructor(private responsibilityService: ResponsibilityTypeService, private workflowService: WorkflowService) {
+    private fieldsSub;
+    private formFields = [];
+
+    constructor(private responsibilityService: ResponsibilityTypeService, private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
         super();
     }
 
     ngOnInit() {
+        this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
+            this.filterFormFields();
+        });
+
         this.workflowService.getEmailTaskRecipientType()
             .then(r => {
                 r.forEach(e => {
@@ -94,6 +104,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 this.step.settings.FieldUpdate.Field = {};
             }
 
+            this.filterFormFields();
+
         }
 
         if (this.ed != null && this.ed.quill != null)
@@ -110,7 +122,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     ngOnDestroy() {
         this.quill = null;
         this.ed = null;
-
+        this.fieldsSub.unsubscribe();
     }
 
     appendField(e: string) {
@@ -126,6 +138,39 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                     this.step.settings.MessageBodyTemplate)
                     + e;
         }
+        
+    }
+
+    filterFormFields() {
+        this.formFields = [];
+        if (this.diagram == null) return;
+
+        let fields = this.workflowFieldsService.getFields();
+
+        let upstreamSteps = [];
+        this.traverseDiagram(this.step.key, upstreamSteps);
+        console.log('upstreamSteps',upstreamSteps);
+        fields.forEach(f => {
+            let k = upstreamSteps.filter(u => u == f['@stepId']);
+            if (k != null && k.length > 0) {
+                f['@FieldName'] = 'Form :: ' + f['@label'];
+                this.formFields.push(f);
+            }
+        });
+    }
+
+    traverseDiagram(key: any, upstreamSteps: any[]) {
+        let steps = <any[]>this.diagram.model.nodeDataArray;
+        let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
+
+        let step = steps.find(s => s.key == key);
+        let toLinks = links.filter(l => l.to == key);
+
+        upstreamSteps.push(step.key);
+
+        if (toLinks == null || toLinks.length < 1) return;
+
+        toLinks.forEach(l => this.traverseDiagram(l.from, upstreamSteps));
         
     }
 }
