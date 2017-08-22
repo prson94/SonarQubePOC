@@ -4199,9 +4199,7 @@ where    A.RuleTypeID = @id and A.[Visible] = 1", columns, joins);
 
         [Route("rules/{id:int}/implementations")]
         public HttpResponseMessage GetRuleImplementations(int id)
-        {
-            //return Company.Filter<Rule>(i => i.RuleTypeID == id, i => i.Dimension);
-
+        {            
             try
             {
                 var query = Company.Query<dynamic>(@"

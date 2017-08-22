@@ -7370,11 +7370,7 @@ namespace d360.web.Controllers
                     var sObject = @object.Value.ToString();
                     usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
                 }
-                //else
-                //{
-                //    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
-                //}
-
+                
                 if (predicateID > 0)
                 {
                     usedPredicateIDs.Remove(predicateID);
@@ -12474,6 +12470,51 @@ where   r.ID not in (
 					)
         and r.ReferenceItemTypeID = @targetTypeID 
 order by r.DisplayValue";
+                    }
+                    break;
+                #endregion
+                case "RuleImplementationType":
+                    #region
+                    if (targetTypeID == 0)
+                    {
+                        sql = $@"
+select	'RuleImplementation' as [Object], 
+        r.ID as ObjectID, 
+        coalesce(r.Name, 'Implementation ' + cast(r.ID as varchar)) as Name
+from	[dbo].[ruleimplementation] r with(nolock)
+where   r.ID not in (
+					select	case 
+                                when SubjectType = 'RuleImplementation' then SubjectID
+                                else ObjectID
+                            end
+					from	[IntersectDetail]
+					where	IntersectTypeID = @it and (
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'RuleImplementation') ) OR
+							 ( (SubjectType = 'RuleImplementation') AND (Object = @source and ObjectID = @id) )
+							)
+					)
+order by r.Name";
+                    }
+                    else
+                    {
+                        sql = $@"
+select	'RuleImplementation' as [Object], 
+        r.ID as ObjectID, 
+        coalesce(r.Name, 'Implementation ' + cast(r.ID as varchar)) as Name
+from	RuleImplementation r with(nolock)
+where   r.ID not in (
+					select	case 
+                                when SubjectType = 'RuleImplementation' then SubjectID
+                                else ObjectID
+                            end
+					from	[IntersectDetail]
+					where	IntersectTypeID = @it and (
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'RuleImplementation' and ObjectTypeID = r.RuleID) ) OR
+							 ( (SubjectType = 'RuleImplementation' and SubjectTypeID = r.RuleID) AND (Object = @source and ObjectID = @id) )
+							)
+					)
+        and r.RuleID = @targetTypeID 
+order by r.Name";
                     }
                     break;
                 #endregion

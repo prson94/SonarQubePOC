@@ -133,7 +133,9 @@ namespace d360.core
         [Description("Shopping Cart Type"), EnableAudit(true)]
         ShoppingCartType,
         [Description("Shopping Cart"), EnableAudit(true)]
-        ShoppingCart
+        ShoppingCart,
+        [Description("Rule Implementation Type"), EnableAudit(true)]
+        RuleImplementationType
     }
 
     public class SystemObjectInfo

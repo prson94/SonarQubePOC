@@ -80,7 +80,7 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
                 this.implementation = result;
 
                 this.setObjectInfo('RuleImplementation', this.implementation.ID, this.implementation.Name);
-                this.setCommonRightSideBar(true, false, false, false, false, false, false);
+                this.setCommonRightSideBar(true, false, false, false, false, true, false);
                 this.rightSidebarService.showItem(<RightSidebarItem>{
                     active: false,
                     icons: ['fa-tags'],
