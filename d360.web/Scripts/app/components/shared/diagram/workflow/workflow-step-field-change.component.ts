@@ -133,6 +133,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         if (!e) {
             delete this.fieldUpdate['@FormFieldId'];
             delete this.fieldUpdate['@FormStepId'];
+            delete this.fieldUpdate['@FormLabel'];
         }
         this.fieldUpdateChange.emit(this.fieldUpdate);
     }
@@ -146,6 +147,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
         this.fieldUpdate['@FormFieldId'] = field['@id'];
         this.fieldUpdate['@FormStepId'] = field['@stepId'];
+        this.fieldUpdate['@FormLabel'] = field['@label'];
 
         this.fieldUpdateChange.emit(this.fieldUpdate);
     }

@@ -60,7 +60,7 @@
             </div>
             <div *ngIf="field != null && fieldUpdate['@UseFormValue'] != null && fieldUpdate['@UseFormValue'].toString() == 'true'">
                 <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeFormValue($event)" style="width: 95%">
-                    <option *ngFor="let f of formFields" [value]="f['@FormFieldId']">{{f['@FieldName']}}</option>
+                    <option *ngFor="let f of formFields" [value]="f['@FormFieldId']">{{f['@FormLabel']}}</option>
                 </select>
             </div>
             <div *ngIf="field == null">

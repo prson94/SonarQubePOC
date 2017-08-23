@@ -154,7 +154,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             let k = upstreamSteps.filter(u => u == f['@stepId']);
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
-                f['@FieldName'] = 'Form :: ' + f['@label'];
+                f['@FormLabel'] = 'Form :: ' + f['@label'];
                 this.formFields.push(f);
             }
         });

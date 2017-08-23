@@ -148,6 +148,9 @@
                                 <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'] != null && selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() == 'true'">
                                     [use the current date at the time of execution]
                                 </div>
+                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@UseFormValue'] != null && selectedData?.settings?.FieldUpdate?.Field['@UseFormValue'].toString() == 'true' && selectedData?.settings?.FieldUpdate?.Field['@FormLabel'] != null">
+                                    [use form response value {{selectedData?.settings?.FieldUpdate?.Field['@FormLabel']}}]
+                                </div>
                                 <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@Value'] != null && (selectedData?.settings?.FieldUpdate?.Field['@ClearValue'] != null ? selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() : 'false') != 'true' && (selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'] != null ? selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() : 'false') != 'true'">
                                     {{selectedData?.settings?.FieldUpdate?.Field['@Value']}}
                                 </div>

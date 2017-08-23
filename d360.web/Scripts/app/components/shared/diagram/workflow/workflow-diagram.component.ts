@@ -327,16 +327,35 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
         if (data.Nodes)
             data.Nodes.forEach(n => {
-                nodeList.push(this.convertToDiagramModel(n, DiagramObjectType.Node))
+                nodeList.push(<NodeModel>this.convertToDiagramModel(n, DiagramObjectType.Node))
             });
 
         if (data.Links)
             data.Links.forEach(l => {
-                linkList.push(this.convertToDiagramModel(l, DiagramObjectType.Link))
+                linkList.push(<LinkModel>this.convertToDiagramModel(l, DiagramObjectType.Link))
             });
         //console.log('parseData', nodeList, linkList);
 
-        nodeList.forEach(n => this.myDiagram.model.addNodeData(n));
+        nodeList.forEach(n => {
+            if (n.activityType == WorkflowActivityType.FieldChange) {
+                if (n.settings != null && n.settings.FieldUpdate != null && n.settings.FieldUpdate.Field != null) {
+                    let field = n.settings.FieldUpdate.Field;
+                    if (field['@UseFormValue'] != null && field['@UseFormValue'].toString() == 'true') {
+                        if (field['@FormStepId'] != null && field['@FormFieldId'] != null) {
+                            let formNode = nodeList.find(n => n.key == field['@FormStepId'].toString());
+                            if (formNode != null && formNode.fields != null && formNode.fields.form != null && formNode.fields.form.field != null) {
+                                let formField = formNode.fields.form.field.find(f => f['@id'] == field['@FormFieldId']);
+                                if (formField != null) {
+                                    field['@FormLabel'] = 'Form :: ' + formField['@label'];
+                                } 
+                            }
+                        }
+                    }
+                }
+            }
+
+            this.myDiagram.model.addNodeData(n)
+        });
         linkList.forEach(l => dm.addLinkData(l));
 
         dm.linkDataArray.forEach(l => (<LinkModel>l).formInputs = this.getAvailableFormInputs(<LinkModel>l));
@@ -624,8 +643,10 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             let settings = _.cloneDeep(m.settings);
 
             //remove name attribute
-            if (m.activityType == WorkflowActivityType.FieldChange)
+            if (m.activityType == WorkflowActivityType.FieldChange) {
                 delete settings.FieldUpdate.Field['@FieldName'];
+                delete settings.FieldUpdate.Field['@FormLabel'];
+            }
             
 
             n.Key = m.key;
