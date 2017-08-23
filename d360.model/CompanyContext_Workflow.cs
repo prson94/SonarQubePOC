@@ -165,6 +165,7 @@ namespace d360.model
             var settings = WorkflowEventRegistrationSettingsModel.Parse(registration.Settings);
 
             int matchingItems = 0;
+            List<string> items = new List<string>();
 
 
             if(!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(settings.ScheduleInterval) <= DateTime.UtcNow ))
@@ -185,7 +186,10 @@ namespace d360.model
                                         ObjectTypeID = registration.ObjectID
                                     },
                                     registration,
-                                    0)) matchingItems++;
+                                    0)) {
+                                matchingItems++;
+                                items.Add(artifact.Name);
+                            }
                         }
                         break;
                     case "TAXONOMYTYPE":
@@ -201,7 +205,11 @@ namespace d360.model
                                         ObjectTypeID = registration.ObjectID
                                     },
                                     registration,
-                                    0)) matchingItems++;
+                                    0))
+                            {
+                                matchingItems++;
+                                items.Add(taxonomy.Name);
+                            }
                         }
                         break;
                     default:
@@ -216,7 +224,7 @@ namespace d360.model
                 //if the scheduled workflow needs an aggregate email send it
                 if (settings.SendAggregateEmail && matchingItems > 0)
                 {
-                    await SendAggregateWorkflowEmail(settings);
+                    await SendAggregateWorkflowEmail(settings,items);
                 }
             }
 
@@ -937,7 +945,7 @@ namespace d360.model
             SaveItemAssignments(users, itemId);
         }
 
-        private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings)
+        private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings, List<string> items)
         {
             
             var url = "";
@@ -952,6 +960,13 @@ namespace d360.model
             }
 
             settings.EmailMessageTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{settings.EmailMessageTemplate}";
+
+            if (items.Any()) settings.EmailMessageTemplate += "<b>The following items triggered this workflow:</b></br>";
+
+            foreach (var item in items)
+            {
+                settings.EmailMessageTemplate += $"<br>{item}";
+            }
             settings.EmailMessageTemplate += "</body></html>";
 
             if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
