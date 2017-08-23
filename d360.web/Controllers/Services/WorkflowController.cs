@@ -1608,7 +1608,9 @@ namespace d360.web.Controllers.Services
                     if (fieldUpdate["@UseFormValue"] != null && settings.FieldUpdate.Field["@UseFormValue"].ToString().ToLower() == "true")
                         fieldUpdate["@FormStepId"] = mappings[(int)fieldUpdate["@FormStepId"]];
                 }
-                return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(settings)).ToString();
+
+                
+                return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
                 
             }
 
