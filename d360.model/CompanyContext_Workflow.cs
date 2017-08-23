@@ -961,12 +961,12 @@ namespace d360.model
 
             settings.EmailMessageTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; background-color: #54a4da\"><tbody><tr><td><span style=\"float: none; display: inline-block; text-align: left;\"><img alt=\"Data3Sixty, Inc.\" height=\"50\" src=\"https://d3spublic.blob.core.windows.net/images/Logo246x50.jpg\" width=\"246\"></span></td></tr></tbody></table>{settings.EmailMessageTemplate}";
 
-            if (items.Any()) settings.EmailMessageTemplate += "<b>The following items triggered this workflow:</b></br>";
+            //if (items.Any()) settings.EmailMessageTemplate += "<b>The following items triggered this workflow:</b></br>";
 
-            foreach (var item in items)
+            /*foreach (var item in items)
             {
                 settings.EmailMessageTemplate += $"<br>{item}";
-            }
+            }*/
             settings.EmailMessageTemplate += "</body></html>";
 
             if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
