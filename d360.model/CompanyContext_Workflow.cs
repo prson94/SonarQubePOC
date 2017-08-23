@@ -163,7 +163,10 @@ namespace d360.model
             }
 
             var settings = WorkflowEventRegistrationSettingsModel.Parse(registration.Settings);
-            
+
+            int matchingItems = 0;
+
+
             if(!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(settings.ScheduleInterval) <= DateTime.UtcNow ))
             {
                 //evaluate objects that are part of this workflow
@@ -173,7 +176,7 @@ namespace d360.model
                         var artifacts = Artifacts.Where(x => x.ArtifactTypeID == registration.ObjectID);
                         foreach (var artifact in artifacts)
                         {
-                            await CreateWorkflowItem(registration.TypeID,
+                            if (await CreateWorkflowItem(registration.TypeID,
                                     new EventObjectInfo
                                     {
                                         Object = core.SystemObjects.Artifact,
@@ -182,14 +185,14 @@ namespace d360.model
                                         ObjectTypeID = registration.ObjectID
                                     },
                                     registration,
-                                    0);
+                                    0)) matchingItems++;
                         }
                         break;
                     case "TAXONOMYTYPE":
                         var taxonomies = Taxonomies.Where(x => x.TaxonomyTypeID == registration.ObjectID);
                         foreach (var taxonomy in taxonomies)
                         {
-                            await CreateWorkflowItem(registration.TypeID,
+                            if (await CreateWorkflowItem(registration.TypeID,
                                     new EventObjectInfo
                                     {
                                         Object = core.SystemObjects.Taxonomy,
@@ -198,7 +201,7 @@ namespace d360.model
                                         ObjectTypeID = registration.ObjectID
                                     },
                                     registration,
-                                    0);
+                                    0)) matchingItems++;
                         }
                         break;
                     default:
@@ -211,9 +214,9 @@ namespace d360.model
                 SaveChanges();
 
                 //if the scheduled workflow needs an aggregate email send it
-                if (settings.SendAggregateEmail)
+                if (settings.SendAggregateEmail && matchingItems > 0)
                 {
-                    SendAggregateWorkflowEmail(settings);
+                    await SendAggregateWorkflowEmail(settings);
                 }
             }
 
@@ -853,18 +856,21 @@ namespace d360.model
 
                 Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{settings.SpecificUser}].");
 
-                emailedUsers.Add(settings.SpecificUser);
-
-                var res = GlobalReportingResources.Where(x => string.Compare(x.Email,settings.SpecificUser, true) == 0).FirstOrDefault();
-
-                if(res == null)
+                foreach (var email in settings.SpecificUser.Split(';'))
                 {
-                    Console.WriteLine("FORM EMAIL SPECIFIC USER SET HOWEVER THE USER EMAIL IS NOT A VALID D3S EMAIL ACCOUNT.  WONT BE ABLE TO ASSIGN FORM TO USER..");
+                    emailedUsers.Add(email);
 
-                    return;
+                    var res = GlobalReportingResources.Where(x => string.Compare(x.Email, email, true) == 0).FirstOrDefault();
+
+                    if (res == null)
+                    {
+                        Console.WriteLine("FORM EMAIL SPECIFIC USER SET HOWEVER THE USER EMAIL IS NOT A VALID D3S EMAIL ACCOUNT.  WONT BE ABLE TO ASSIGN FORM TO USER..");
+
+                        continue;
+                    }
+
+                    users.Add(res);
                 }
-
-                users.Add(res);
             }
                         
             var url = "";
@@ -957,9 +963,13 @@ namespace d360.model
                     return;
                 }
 
-                Console.WriteLine($"DEBUG : WORKFLOW AGGREGATE EMAIL IS EMAILING [{settings.SpecificUser}].");
+                foreach (var email in settings.SpecificUser.Split(';'))
+                {
 
-                await extensions.mail.SimpleMessage.SendMessage(settings.EmailHeader, settings.SpecificUser, "", settings.EmailMessageTemplate, true);
+                    Console.WriteLine($"DEBUG : WORKFLOW AGGREGATE EMAIL IS EMAILING [{email}].");
+
+                    await extensions.mail.SimpleMessage.SendMessage(settings.EmailHeader, email, "", settings.EmailMessageTemplate, true);
+                }
             }
         }
 
@@ -1076,9 +1086,12 @@ namespace d360.model
 
                 Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{settings.SpecificUser}].");
 
-                emailedUsers.Add(settings.SpecificUser);
+                foreach (var email in settings.SpecificUser.Split(';'))
+                {
+                    emailedUsers.Add(email);
 
-                await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, settings.SpecificUser, "", settings.BodyTemplate, true);
+                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true);
+                }
             }
 
             SaveItemStepEmailedUsers(item, emailedUsers);
