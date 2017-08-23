@@ -30,6 +30,12 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                                                 <input *ngSwitchCase="fieldType.Integer" [name]="'input_'+indx" style="width: 100%;" type="number" [(ngModel)]="field.Value" >  
                                                 <textarea *ngSwitchCase="fieldType.TextArea" [name]="'input_'+indx" style="width: 100%;" [(ngModel)]="field.Value" ></textarea>
                                                 <p-calendar *ngSwitchCase="fieldType.Date" [(ngModel)]="field.Value" [name]="'input_'+indx"></p-calendar>
+                                                <div *ngSwitchCase="fieldType.List">
+                                                    <select [name]="'input_'+indx" style="height:auto;width:100%;" [(ngModel)]="field.Value">
+                                                        <option></option>
+                                                        <option *ngFor="let opt of field.Values" [value]="opt.Value">{{opt.Text}}</option>
+                                                    </select>                                                    
+                                                </div>
                                             </div>
                                             <div class="col s12">&nbsp;</div>
                                         </div>                                        

@@ -26,6 +26,7 @@ using System.Collections;
 using System.Text.RegularExpressions;
 using d360.web.Models.Attributes;
 
+
 namespace d360.web.Controllers.Services
 {
     [RoutePrefix("services/workflow"), Authorize]
@@ -549,7 +550,7 @@ namespace d360.web.Controllers.Services
                 
             List<WorkflowFormModelField> properties = (
                                  from s in XElement.Parse(xml).Element("form").Elements()
-                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
                                  ).ToList();
 
 
@@ -557,6 +558,35 @@ namespace d360.web.Controllers.Services
             ObjectDetail issueItemDetails = null;
             var issueTypeName = "";
             var issueObjectType = "";
+
+            foreach (var item in properties)
+            {
+                int fieldId = 0;
+
+                if (string.IsNullOrEmpty(item.ReferenceFieldID) || !int.TryParse(item.ReferenceFieldID, out fieldId) || item.FieldType != WorkflowFormModelFieldType.list) continue;
+
+                //load the field type
+                var fieldType = Company.FieldTypes.Where(x => x.ID == fieldId).FirstOrDefault();
+
+                if (fieldType == null) continue;
+
+                //get the possible values for this field
+                if (!string.IsNullOrEmpty(fieldType.LookupObjectType))
+                {                    
+                    try
+                    {
+                        item.Values = new List<System.Web.Mvc.SelectListItem>();
+
+                        item.Values.AddRange(
+                            Company.Filter<FieldLookupValue>(o => o.FieldTypeID == fieldType.ID && o.LookupObjectType == fieldType.LookupObjectType && o.LookupObjectID == fieldType.LookupObjectID.Value)
+                                .OrderBy(o => o.Text)
+                                .Select(i => new System.Web.Mvc.SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                .ToList()
+                        );
+                    }
+                    catch { }
+                }
+            }
 
             switch (itemStep.Item.Object)
             {

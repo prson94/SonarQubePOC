@@ -379,7 +379,8 @@ export enum WorkflowFormFieldType {
     Boolean = 1,
     Integer = 2,
     Date = 3,
-    TextArea = 4
+    TextArea = 4,
+    List = 5,
 }
 
 export enum WorkflowActivityType {

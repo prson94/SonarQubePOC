@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
+using System.Web.Mvc;
 using System.Xml.Linq;
 
 namespace d360.web.Models
@@ -16,7 +17,8 @@ namespace d360.web.Models
         boolean,
         integer,
         date,
-        textarea
+        textarea,
+        list
     }
 
     public class WorkflowFormModelField
@@ -27,6 +29,10 @@ namespace d360.web.Models
         public object Value { get; set; }
 
         public string ID { get; set; }
+
+        public string ReferenceFieldID { get; set; }
+
+        public List<SelectListItem> Values { get; set; }
     }
     
 }
