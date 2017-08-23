@@ -591,7 +591,7 @@ namespace d360.model
                     //if the value is a form value get it
                     if (item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
                     {
-                        val = GetFieldValueFromFormResponse(item);
+                        val = GetFieldValueFromFormResponse(item, itemStep.ItemID);
                     }
 
                     // check if the field exists
@@ -624,9 +624,9 @@ namespace d360.model
             }
         }
 
-        private string GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item)
+        private string GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item, long itemId)
         {
-            var formResponses = WorkflowItemSteps.Where(x => x.ItemID == item.FormStepID && x.Step.ActivityType == WorkflowActivityType.Form);
+            var formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.FormStepID && x.Step.ActivityType == WorkflowActivityType.Form);
 
             var firstResponse = formResponses.FirstOrDefault();
 
