@@ -462,7 +462,7 @@ from    [queue].[Task] T
                                                             tags.Add("updates", execution.Updates.HasValue ? execution.Updates.Value.ToString() : "None");
                                                             tags.Add("deletes", execution.Deletes.HasValue ? execution.Deletes.Value.ToString() : "None");
                                                             tags.Add("fusionUrl", $"https://{company.UrlPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}");
-                                                            tags.Add("executionUrl", $"https://{company.UrlPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}?execution={execution.ID}");
+                                                            tags.Add("executionUrl", $"https://{company.UrlPrefix}.data3sixty.com/fusion/history/{fusionInfo.FusionID}");
                                                             tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
                                                             tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
                                                             SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");
