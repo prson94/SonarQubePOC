@@ -647,6 +647,8 @@ namespace d360.web.Controllers.Services
                 ObjectName = details == null ? "(unknown)" : details.Name,
                 ObjectType = itemStep.Item.Object,
                 ObjectID = itemStep.Item.ObjectID,
+                ObjectTypeID = details.TypeID,
+                TypeName = details.TypeName,
                 IsUserAllowedToComplete = IsUserAllowedToComplete,
                 IssueObject = issueObjectType,
                 IssueObjectID = issueItemDetails != null ? issueItemDetails.ID : 0,

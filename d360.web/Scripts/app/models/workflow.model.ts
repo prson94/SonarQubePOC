@@ -282,11 +282,13 @@ export class WorkflowForm {
     IsUserAllowedToComplete: boolean;
     ObjectName: string;
     ObjectType: string;
+    ObjectTypeID: number;
     ObjectID: number;
     IssueObject: string;
     IssueObjectID: number;
     IssueObjectName: string;
     IssueTypeName: string;
+    TypeName: string;
 }
 
 export class WorkflowListItem {

@@ -8,7 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.model';
-
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -18,7 +18,7 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.
                         <div class="col s12">
                             <div class="tile tile-detail" *ngIf="!isCompleted && isUserAllowedToComplete">                        
                                 <header>{{title}}</header>
-                                <div class="form-instructions" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{objectType}}</b>] named [<b><d3s-tooltip objectType="Artifact" [objectId]="objectID" tooltipType="preview">{{objectName}}</d3s-tooltip></b>].  <span [innerHtml]="description"></span></div>                                            
+                                <div class="form-instructions" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{typeName}}</b>] named [<b><d3s-tooltip [objectType]="objectType" [objectId]="objectID" tooltipType="preview"><a [routerLink]="objectUrl">{{objectName}}</a></d3s-tooltip></b>].  <span [innerHtml]="description"></span></div>                                            
                                 <div class="form-instructions" *ngIf="objectType == 'Issue'">The following form is for the [<b><d3s-tooltip [objectType]="objectType" [objectId]="objectID" tooltipType="preview">{{issueTypeName}}</d3s-tooltip></b>] action raised on [<b><d3s-tooltip [objectType]="issueObject" [objectId]="issueObjectID" tooltipType="preview">{{issueObjectName}}</d3s-tooltip></b>].  <span [innerHtml]="description"></span></div>
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
                                     <div class="row">
@@ -84,6 +84,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private issueObjectName: string;
     private issueObjectID: number;
     private issueTypeName: string;
+    private objectTypeID: number;
+    private typeName: string;
     
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
@@ -119,6 +121,10 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         this.sub.unsubscribe();
     }
 
+    get objectUrl() {
+        return '/' +SiteUrlHelpers.getObjectUrl(this.objectType, this.objectID, this.objectTypeID);
+    }
+
     private onSubmit() {
         //save form values with stepid and itemid
         this.workflowService.submitWorkflowForm(this.workflowItemId, this.workflowItemStepId, this.fields);
@@ -143,6 +149,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.issueObjectID = res.IssueObjectID;
                 this.issueObjectName = res.IssueObjectName;
                 this.issueTypeName = res.IssueTypeName;
+                this.objectTypeID = res.ObjectTypeID;
+                this.typeName = res.TypeName;
             });
     }
 
