@@ -15282,8 +15282,38 @@ order by	T.Name, I.DisplayValue";
                 if (!Company.HasPermission(SystemObjects.Rule, model.RuleID, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete(model);
+                
+                //delete rule implementation qualifiters
 
+                var qualifiers = Company.RuleResultQualifierTypes.Where(x => x.RuleImplementationID == id);
+
+                // delete rule qualifiers
+
+                foreach (var qualifier in qualifiers)
+                {
+                    var items = Company.RuleResultQualifiers.Where(x => x.RuleResultQualifierTypeID == qualifier.ID);
+                    if (items.Any())
+                    {
+                        Company.RuleResultQualifiers.RemoveRange(items);
+
+                        Company.SaveChanges();
+                    }
+                }
+
+                Company.RuleResultQualifierTypes.RemoveRange(qualifiers);
+
+                Company.SaveChanges();
+
+                //delete rule results for this implementation
+                var res = Company.RuleResults.Where(x => x.RuleImplementationID == id);
+                if (res.Any())
+                {
+                    Company.RuleResults.RemoveRange(res);
+                    Company.SaveChanges();
+                }
+
+                Company.Delete(model);
+                                
                 dynamic custom = new
                 {
                     Name = model.Name,

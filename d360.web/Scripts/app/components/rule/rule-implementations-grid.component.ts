@@ -8,16 +8,17 @@ import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { MessagesService } from '../../services/messages.service';
 
 @Component({
     selector: 'd3s-rule-implementations-grid',
     template: `
                 <header>
                     Implementations
-                    <d3s-tile-actions [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+                    <d3s-tile-actions [hasExport]="true" [hasAdd]="false" (addClick)="doAdd()" (exportClick)="doExport()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading">
+                <div *ngIf="!isLoading && !showDelete">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter"> 
                     <p-dataTable #dt [value]="results" [globalFilter]="gb" selectionMode="single" [(selection)]="selected" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked" (onRowDblclick)="selected=$event.data;showRuleImplementation(selected);">
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
@@ -37,14 +38,30 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </ng-template>
                         </p-column>
                         <p-column field="SourceID" header="Source Identifier" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="SourceUri" header="" [sortable]="true" [style]="{width:'35px'}" [filter]="!showSimpleFilter">
+                        <p-column field="SourceUri" header="" [sortable]="false" [style]="{width:'35px'}" [filter]="!showSimpleFilter">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <a *ngIf="item.SourceUri == null"><i class="fa fa-info" title="Source Uri"></i></a>
-                                <a *ngIf="item.SourceUri != null" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
+                                <div class="RowTools">
+                                    <a *ngIf="item.SourceUri == null"><i class="fa fa-info" title="Source Uri"></i></a>
+                                    <a *ngIf="item.SourceUri != null" [href]="item.SourceUri"><i class="fa fa-info" title="Source Uri"></i></a>
+                                </div>
                             </ng-template>
                         </p-column>
+                        <p-column [style]="{width:'40px'}">
+                                <ng-template let-question="rowData" pTemplate type="body">
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=question;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </ng-template>
+                        </p-column>                                                
                     </p-dataTable>
-                </div>                
+                </div>      
+                <d3s-delete-form *ngIf="showDelete"
+                    [callback]="theDeleteCallback"
+                    [itemId]="selected?.ID"
+                    [method]="'callback'"
+                    [prompt]="'Are you sure you want to delete the rule implementation [' + [selected?.Name] + ']?'"                                         
+                    (onCancel)="showDelete=false;"
+                ></d3s-delete-form> 
                 `,
     providers: [RulesService],
 })
@@ -55,7 +72,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
     
     private selected: RuleImplementation;
     private rowsPerPage: number = 10;
-    private results: RuleImplementation[];//RuleImplementationPagedResults;
+    private results: RuleImplementation[];
     columns: GridColumn[] = [];
     fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
@@ -72,12 +89,18 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
     searchValue: string = "";
     simpleSearchID: number = 0;
     searchDelayMilliSeconds: number = 300;
+    theDeleteCallback: Function;
+
+    private showDelete: boolean = false;
+    private showEditor: boolean = false;
     
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private ruleService: RulesService) {
+        private ruleService: RulesService,
+        private messagesService: MessagesService) {
         super();
+        this.theDeleteCallback = this.deleteImplementation.bind(this);
     }
 
     ngOnInit() {
@@ -119,7 +142,14 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
 
     }
 
-
+    private deleteImplementation(id: number) {
+        this.ruleService.deleteRuleImplementation(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.results = this.results.filter(x => x.ID != id);
+            });
+    }
 
     private checkSimpleSearchEnter(event, dt: DataTable) {
         if (event.keyCode == 13) this.doSimpleSearch(dt);
