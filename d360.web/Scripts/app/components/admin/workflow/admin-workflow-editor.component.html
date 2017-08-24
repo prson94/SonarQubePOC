@@ -114,11 +114,12 @@
                 Recipient Type
             </div>
             <div>
-                <select [(ngModel)]="model.Event.SettingsObject.Settings.MessageRecipientType" style="width: 100%">
-                    <option *ngFor="let d of destination" [value]="d.value">{{d.label}}</option>
+                <select style="width: 100%" disabled>
+                    <option value="SpecificUser">Specific User</option>
+                    <!--<option *ngFor="let d of destination" [value]="d.value">{{d.label}}</option>-->
                 </select>
             </div>
-            <div *ngIf="model.Event.SettingsObject.Settings.MessageRecipientType == 'Responsibility'">
+            <!--<div *ngIf="model.Event.SettingsObject.Settings.MessageRecipientType == 'Responsibility'">
                 <div class="FieldName">
                     Responsibility
                 </div>
@@ -128,8 +129,8 @@
                         <option *ngFor="let r of responsibilities" [value]="r.ResponsibilityTypeID">{{r.Name}}</option>
                     </select>
                 </div>
-            </div>
-            <div *ngIf="model.Event.SettingsObject.Settings.MessageRecipientType == 'SpecificUser'">
+            </div>-->
+            <div>
                 <div class="FieldName">
                     Recipient
                 </div>

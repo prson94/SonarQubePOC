@@ -81,17 +81,18 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         }
 
         this.load()
-            .then(() => this.workflowService.getEmailTaskRecipientType())
-            .then(r => {
-                r.forEach(e => {
-                    if (e.ID < 1)
-                        return;
-                    this.destination.push({
-                        value: EmailTaskRecipientType[e.ID],
-                        label: e.Name
-                    });
-                });
-            })
+            .then(() => this.model.Event.SettingsObject.Settings.MessageRecipientType = 'SpecificUser')
+            //.then(() => this.workflowService.getEmailTaskRecipientType())
+            //.then(r => {
+            //    r.forEach(e => {
+            //        if (e.ID < 1)
+            //            return;
+            //        this.destination.push({
+            //            value: EmailTaskRecipientType[e.ID],
+            //            label: e.Name
+            //        });
+            //    });
+            //})
             .then(() => this.isLoading = false);
 
     }
@@ -121,7 +122,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             if (this.id > 0 && this.model == null && r != null)
                                 this.model = r;
 
-
+                            
                             //console.log('load', this.model);
                             //if (this.id > 0 && (this.model == null || (this.model.Nodes == null && this.model.Links == null) || (this.model.Nodes.length)))
                             //    this.model = r;

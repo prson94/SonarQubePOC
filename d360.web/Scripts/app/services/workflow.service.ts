@@ -316,4 +316,11 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getWorkflowVersionStepFormLookups(object: string, objectId: number) {
+        return this.http.get(`services/workflow/versionstep/form/lookups/${object}/${objectId}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

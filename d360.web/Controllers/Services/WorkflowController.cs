@@ -1545,6 +1545,19 @@ namespace d360.web.Controllers.Services
             return result;
         }
 
+        [Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
+        public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId)
+        {
+            var sql = @" select ft.ID as value, coalesce( ri.Name, lt.Name) as [label] from cache.ObjectDetails d
+                 join FieldType ft on ft.Object = d.ObjectType and ft.ObjectID = d.ObjectTypeID
+                 left join ReferenceItemType ri on ri.id = lookupobjectid and ft.lookupobjecttype = 'ReferenceItem'
+                 left join LookupType lt on lt.id = lookupobjectid and ft.lookupobjecttype = 'Lookup'
+                 where d.Object = @objectType and d.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
+
+            var results = Company.Query<dynamic>(sql, new { objectType = objectType, objectId = objectId });
+
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+        }
 
         [Route("versionstep/events/{id:int}")]
         public HttpResponseMessage GetWorkflowVersionStepEventInfo(int id)

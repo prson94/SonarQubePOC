@@ -648,6 +648,14 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 delete settings.FieldUpdate.Field['@FormLabel'];
             }
             
+            //another primeng issue. prime adds _$visited property sometimes, fix pending release
+            //but we need to remove it to avoid polluting the XML
+            if (m.fields != null && m.fields.form != null && m.fields.form.field != null && m.fields.form.field.length != null) {
+                m.fields.form.field.forEach(f => {
+                    delete f['_$visited'];
+                });
+            }
+
 
             n.Key = m.key;
             n.ActivityType = m.activityType;

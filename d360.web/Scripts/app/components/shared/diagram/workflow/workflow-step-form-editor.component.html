@@ -110,7 +110,7 @@
                     Field Type
                 </div>
                 <div>
-                    <select [(ngModel)]="newField['@type']" style="width:95%">
+                    <select [(ngModel)]="newField['@type']"  style="width:95%">
                         <option *ngFor="let t of types" [value]="t.label">{{t.label}}</option>
                     </select>
                 </div>
@@ -126,9 +126,20 @@
                 </div>
             </div>
         </div>
+        <div class="row" *ngIf="newField['@type'] == 'list'">
+            <div class="col s12">
+                <div class="FieldName">
+                    List
+                </div>
+                <select [(ngModel)]="newField['@referenceFieldId']" style="width: 95%">
+                    <option></option>
+                    <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                </select>
+            </div>
+        </div>
         <div class="row" style="padding-top: 8px;">
             <div class="col s12">
-                <button pButton type="button" label="Add" (click)="save()" [disabled]="newField['@label'] == null || newField['@label'].length < 1 || newField['@type'] == null"></button>
+                <button pButton type="button" label="Add" (click)="save()" [disabled]="newField['@label'] == null || newField['@label'].length < 1 || newField['@type'] == null || (newField['@type'] == 'list' && newField['@referenceFieldId'] == null)"></button>
                 <button pButton type="button" label="Cancel" (click)="cancel()"></button>
             </div>
         </div>

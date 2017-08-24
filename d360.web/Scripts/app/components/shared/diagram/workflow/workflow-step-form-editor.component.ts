@@ -47,12 +47,14 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private showHelp = false;
     private responsibilities = [];
     private destination = [];
+    private lookups = [];
 
     private types = [
         { value: WorkflowFormFieldType.Boolean, label: 'boolean' },
         { value: WorkflowFormFieldType.Integer, label: 'integer' },
         { value: WorkflowFormFieldType.Text, label: 'text' },
         { value: WorkflowFormFieldType.Date, label: 'date' },
+        { value: WorkflowFormFieldType.List, label: 'list' },
 
     ];
 
@@ -148,6 +150,11 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             this.step.settings.SendFormEmail = this.step.settings.SendFormEmail.toString().toLowerCase() === 'true' ? true : false;
         
         this.usedFields = this.workflowFieldsService.getUsedFields();
+
+        this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId)
+            .then(r => {
+                this.lookups = r;
+            });
     }
 
     add() {
@@ -174,11 +181,19 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             this.step.fields.form.field = null;
             this.step.fields.form.field = fields;
 
+            //another prime issue. prime adds _$visited property sometimes, fix pending release
+            //but we need to remove it to avoid polluting the XML
+            this.step.fields.form.field.forEach(f => {
+                if (f['_$visited']) delete f['_$visited'];
+            });
+
             this.stepChange.emit(this.step);
             this.deletingField['@stepId'] = this.step.key;
             this.workflowFieldsService.deleteFormField(this.deletingField);
+
         }
 
+        console.log('confirmDelete', this.step.fields.form.field);
         this.formMode = FormMode.Default;
     }
 
@@ -196,6 +211,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         f['@id'] = this.newField['@id'];
         f['@label'] = this.newField['@label'];
         f['@type'] = this.newField['@type'];
+        if (this.newField['@type'] == 'list') f['@referenceFieldId'] = this.newField['@referenceFieldId'];
+
         f['@stepId'] = this.step.key;
 
 
@@ -207,6 +224,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
 
         this.workflowFieldsService.pushFormField(f);
+        console.log(this.step.fields.form.field);
     }
 
     appendField(e: string) {
@@ -224,5 +242,4 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
     }
-
 }
