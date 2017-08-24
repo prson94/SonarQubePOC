@@ -60,7 +60,8 @@ BEGIN
 					left join [Intersect] I on	I.IntersectTypeID = @fieldToBBIntersectTypeID and 
 												I.Subject = 'FusionAttribute' and 
 												I.Object ='FusionAttribute' and
-												(												
+												(
+													--( I.SubjectID = faBB.ID and I.ObjectID = fa.ID ) OR
 													( I.SubjectID = fa.ID and I.ObjectID = faBB.ID )
 												)
 			where	fa.fusionattributetypeid = 205 and 
@@ -85,8 +86,8 @@ BEGIN
 						and s.Object = d.Object and s.ObjectID = d.ObjectID
 						)
 				WHEN NOT MATCHED THEN
-				INSERT  (IntersectTypeID, Classification, Subject, SubjectID, Object, ObjectID, [Owner])
-				VALUES  (s.IntersectTypeID, 2, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID, 'BB TO EAGLE');
+				INSERT  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, [Owner])
+				VALUES  (s.IntersectTypeID, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID, 'BB TO EAGLE');
 			
 	end;
 END

@@ -72,28 +72,32 @@ BEGIN
 				INTO    [Intersect] d
 				USING   (
 							SELECT	IntersectTypeID, 
-									ID,
+									--ID,
+									'FusionAttribute' as Subject,
 									StreamFusionAttributeID as SubjectID,
+									'FusionAttribute' as Object,
 									FieldFusionAttributeID as ObjectID
 							FROM	@StreamToFieldList							
 						) s
-				ON      (1 = 0)
+				ON      (
+						s.IntersectTypeID = d.IntersectTypeID 
+						and s.Subject = d.Subject and s.SubjectID = d.SubjectID 
+						and s.Object = d.Object and s.ObjectID = d.ObjectID
+						)
 				WHEN NOT MATCHED THEN
-				INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
-				VALUES  (s.IntersectTypeID, 2, NULL, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID)
-				OUTPUT  INSERTED.ID, s.ID into @IDList;
+					INSERT  (IntersectTypeID, Subject, SubjectID, Object, ObjectID)
+					VALUES  (s.IntersectTypeID, s.Subject, s.SubjectID, s.Object, s.ObjectID);
+				--OUTPUT  INSERTED.ID, s.ID into @IDList;
 										
-			insert into @Intersects 
-				select idl.intersectid from @IDList idl;
+			--insert into @Intersects 
+			--	select idl.intersectid from @IDList idl;
 			
-			declare @IntersectCount int
-			select @IntersectCount = count(1) from @Intersects
+			--declare @IntersectCount int
+			--select @IntersectCount = count(1) from @Intersects
 			
-			if @IntersectCount > 0 
-			begin				
-				EXEC cache.SynchronizeRelationships @Intersects
-			end
+			--if @IntersectCount > 0 
+			--begin				
+			--	EXEC cache.SynchronizeRelationships @Intersects
+			--end
 	end;
 end
-GO
-
