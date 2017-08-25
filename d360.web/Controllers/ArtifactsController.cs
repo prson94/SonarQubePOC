@@ -54,7 +54,7 @@ select	A.ID,
 		A.Status,
 		V.Name as TaxonomyType,
         {0}
-		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+		'artifact/' + cast(A.ArtifactTypeID as varchar) + '/' + cast(A.ID as varchar) as Url
 from	Artifact A inner join TaxonomyType V on (V.ID = A.TaxonomyTypeID)
         left join Artifact P on P.ID = A.ParentID 
         {1}
@@ -156,7 +156,9 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                 document.SetCellValue(rowNumber, index++, (string)row.Url);
             }
 
-            document.AutoFitColumn(1, index);
+            //only do autofit if less than 1000 items it takes a long time with large amounts of data
+            if(rowNumber < 1000)
+                document.AutoFitColumn(1, index);
             
             #endregion
 
