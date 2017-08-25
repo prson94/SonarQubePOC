@@ -15,10 +15,10 @@ import { MessagesService } from '../../services/messages.service';
     template: `
                 <header>
                     Implementations
-                    <d3s-tile-actions [hasExport]="true" [hasAdd]="false" (addClick)="doAdd()" (exportClick)="doExport()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+                    <d3s-tile-actions [hasExport]="true" [hasAdd]="true" (addClick)="add()" (exportClick)="doExport()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !showDelete">
+                <div *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter"> 
                     <p-dataTable #dt [value]="results" [globalFilter]="gb" selectionMode="single" [(selection)]="selected" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked" (onRowDblclick)="selected=$event.data;showRuleImplementation(selected);">
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
@@ -54,7 +54,8 @@ import { MessagesService } from '../../services/messages.service';
                                 </ng-template>
                         </p-column>                                                
                     </p-dataTable>
-                </div>      
+                </div>  
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'RuleImplementation'" [title]="'Rule Implementation'" [selection]="selected" (saveClick)="saveImplementation($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
@@ -128,8 +129,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
         //remove any invalid filters
         if (this.filters && this.filters.length > 0) {
             for (var i = this.filters.length - 1; i >= 0; i--) {
-                if (!this.filters[i].field || !this.filters[i].value) {
-                    //console.log("REMOVING FILTER", i);
+                if (!this.filters[i].field || !this.filters[i].value) {                    
                     this.filters.splice(i, 1);
                 }
             }
@@ -179,5 +179,26 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
 
     private showRuleImplementation(impl) {
         this.router.navigateByUrl(SiteUrlHelpers.getDeepObjectUrl('ruleimplementation', impl.RuleTypeID, impl.RuleID, impl.ID));
+    }
+
+    private add() {
+        this.selected = null;
+        this.showEditor = true;
+    }
+
+    private saveImplementation(event) {
+        event.item.RuleID = this.ruleId;
+        this.ruleService.saveRuleImplementation(event.item)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.getData();
+                this.showEditor = false;
+            });
+    }
+
+    private closeEditor() {
+        this.showEditor = false;
+        if (this.selected == null && this.results.length > 0)
+            this.selected = this.results[0];
     }
 };
