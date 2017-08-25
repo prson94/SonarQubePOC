@@ -193,7 +193,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         }
 
-        console.log('confirmDelete', this.step.fields.form.field);
+        //console.log('confirmDelete', this.step.fields.form.field);
         this.formMode = FormMode.Default;
     }
 
@@ -224,7 +224,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
 
         this.workflowFieldsService.pushFormField(f);
-        console.log(this.step.fields.form.field);
+        //console.log(this.step.fields.form.field);
     }
 
     appendField(e: string) {

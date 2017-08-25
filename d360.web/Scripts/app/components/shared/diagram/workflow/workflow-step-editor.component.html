@@ -101,8 +101,8 @@
                                             [formFields]="formFields"
                                             [objectId]="objectId" 
                                             [objectType]="objectType" 
-                                            [fieldUpdate]="step.settings.FieldUpdate.Field" 
-                                            (fieldUpdateChange)="step.settings.FieldUpdate.Field = $event; stepChange.emit(step)">
+                                            [fieldUpdate]="step.settings.FieldUpdate" 
+                                            (fieldUpdateChange)="step.settings.FieldUpdate = $event; stepChange.emit(step)">
             </d3s-workflow-step-field-change>
         </div>
     </div>

@@ -1648,15 +1648,18 @@ namespace d360.web.Controllers.Services
 
                 if (settings.FieldUpdate != null && settings.FieldUpdate.Field != null)
                 {
-                    var fieldUpdate = settings.FieldUpdate.Field;
+                    var fields = settings.FieldUpdate.Field;
 
-                    if (fieldUpdate["@UseFormValue"] != null && settings.FieldUpdate.Field["@UseFormValue"].ToString().ToLower() == "true")
-                        fieldUpdate["@FormStepId"] = mappings[(int)fieldUpdate["@FormStepId"]];
+                    for(var i = 0; i < fields.Count; i++)
+                    {
+                        var field = fields[i];
+
+                        if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true")
+                            field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
+                    }
                 }
-
                 
                 return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
-                
             }
 
             return settingsString;

@@ -32,14 +32,7 @@
             </div>
         </div>
     </div>
-    <div class="row" style="padding-top: 8px" *ngIf="!isAggregate">
-        <div class="col s12">
-            <div>
-                <input type="checkbox" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);" /> Send form email?
-            </div>
-        </div>
-    </div>
-    <div class="row" style="padding-top: 8px" *ngIf="step.settings.SendFormEmail == true">
+    <div class="row">
         <div class="col s12">
             <div class="FieldName">
                 Recipient Type
@@ -69,6 +62,15 @@
                 </select>
             </div>
         </div>
+    </div>
+    <div class="row" style="padding-top: 8px" *ngIf="!isAggregate">
+        <div class="col s12">
+            <div>
+                <input type="checkbox" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);" /> Send form email?
+            </div>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 8px" *ngIf="step.settings.SendFormEmail == true">
         <div class="col s12">
             <div class="FieldName">
                 Body

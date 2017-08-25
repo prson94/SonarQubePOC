@@ -339,17 +339,24 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         nodeList.forEach(n => {
             if (n.activityType == WorkflowActivityType.FieldChange) {
                 if (n.settings != null && n.settings.FieldUpdate != null && n.settings.FieldUpdate.Field != null) {
-                    let field = n.settings.FieldUpdate.Field;
-                    if (field['@UseFormValue'] != null && field['@UseFormValue'].toString() == 'true') {
-                        if (field['@FormStepId'] != null && field['@FormFieldId'] != null) {
-                            let formNode = nodeList.find(n => n.key == field['@FormStepId'].toString());
-                            if (formNode != null && formNode.fields != null && formNode.fields.form != null && formNode.fields.form.field != null) {
-                                let formField = formNode.fields.form.field.find(f => f['@id'] == field['@FormFieldId']);
-                                if (formField != null) {
-                                    field['@FormLabel'] = 'Form :: ' + formField['@label'];
-                                } 
+
+                    
+                    let fields = n.settings.FieldUpdate.Field;
+
+                    if (fields.length != null && fields.length > 0) {
+                        fields.forEach(field => {
+                            if (field['@UseFormValue'] != null && field['@UseFormValue'].toString() == 'true') {
+                                if (field['@FormStepId'] != null && field['@FormFieldId'] != null) {
+                                    let formNode = nodeList.find(n => n.key == field['@FormStepId'].toString());
+                                    if (formNode != null && formNode.fields != null && formNode.fields.form != null && formNode.fields.form.field != null) {
+                                        let formField = formNode.fields.form.field.find(f => f['@id'] == field['@FormFieldId']);
+                                        if (formField != null) {
+                                            field['@FormLabel'] = 'Form :: ' + formField['@label'];
+                                        }
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
                 }
             }
@@ -401,7 +408,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
         this.workflowService.saveWorkflowDiagramModel(m)
             .then(r => {
-                //TODO: message and automatically switch to readonly or edit??
                 this.onCloseClick.emit();
             });
     }
@@ -592,10 +598,23 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 n.settings = m.SettingsObject;
 
             if (n.activityType == WorkflowActivityType.FieldChange) {
+                
+                if (n.settings.FieldUpdate == null) n.settings.FieldUpdate = {};
+                if (n.settings.FieldUpdate.Field == null) n.settings.FieldUpdate.Field = [];
+                //handle obj vs array due to XML parsing
+                //console.log('load', n.settings.FieldUpdate.Field != null, !_.isEmpty(n.settings.FieldUpdate.Field), n.settings.FieldUpdate.Field.constructor !== Array);
+                if (n.settings.FieldUpdate.Field != null && !_.isEmpty(n.settings.FieldUpdate.Field) && n.settings.FieldUpdate.Field.constructor !== Array) {
+                    let f = _.cloneDeep(n.settings.FieldUpdate.Field);
+                    n.settings.FieldUpdate.Field = [];
+                    n.settings.FieldUpdate.Field.push(f);
+                }
+
                 //populate field names
-                let fieldId = n.settings.FieldUpdate.Field['@FieldId'];
-                let field = this.fieldTypes.find(f => f.ID.toString() == fieldId);
-                if (field) n.settings.FieldUpdate.Field['@FieldName'] = field.FriendlyName;
+                n.settings.FieldUpdate.Field.forEach(f => {
+                    let id = f['@FieldId'];
+                    let field = this.fieldTypes.find(t => t.ID.toString() == id);
+                    if (field) f['@FieldName'] = field.FriendlyName;
+                });
             }
 
             if (m.StepType == StepType.Start)
@@ -626,9 +645,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             n.TransitionType = m.transitionType;
             n.Name = m.name;
 
-            //clone conditions so we can remove field name
+            //clone conditions so we can remove field name and _$visited
             let cond = _.cloneDeep(m.condition);
-            cond.forEach(c => delete c['@FieldName']);
+            cond.forEach(c => {
+                delete c['@FieldName'];
+                delete c['_$visited'];
+            });
+
             n.Condition = JSON.stringify({ Conditions: { Condition: cond } });
             n.Settings = JSON.stringify({ settings: m.settings });
 
@@ -642,14 +665,20 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             let n = new WorkflowDiagramNode();
             let settings = _.cloneDeep(m.settings);
 
-            //remove name attribute
+            //remove name attributes and prime's _$visited property
             if (m.activityType == WorkflowActivityType.FieldChange) {
-                delete settings.FieldUpdate.Field['@FieldName'];
-                delete settings.FieldUpdate.Field['@FormLabel'];
+                if (settings.FieldUpdate != null && settings.FieldUpdate.Field != null && settings.FieldUpdate.Field.length != null) {
+                    let fields = settings.FieldUpdate.Field;
+
+                    fields.forEach(f => {
+                        delete f['@FieldName'];
+                        delete f['@FormLabel'];
+                        delete f['_$visited'];
+                    });
+                }
             }
             
-            //another primeng issue. prime adds _$visited property sometimes, fix pending release
-            //but we need to remove it to avoid polluting the XML
+            //remove primeng _$visited property
             if (m.fields != null && m.fields.form != null && m.fields.form.field != null && m.fields.form.field.length != null) {
                 m.fields.form.field.forEach(f => {
                     delete f['_$visited'];
@@ -731,19 +760,21 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                     return false;
                 if (n.settings.FormResponseType == null)
                     return false;
+                if (n.settings.MessageRecipientType == null)
+                    return false;
+                switch (n.settings.MessageRecipientType) {
+                    case 'SpecificUser':
+                        if (n.settings.MessageToUser == null || n.settings.MessageToUser.length < 1)
+                            return false;
+                        break;
+                    case 'Responsibility':
+                        if (n.settings.ResponsibilityTypeID == null || n.settings.ResponsibilityTypeID < 0)
+                            return false;
+                        break;
+                }
+
+
                 if (n.settings.SendFormEmail != null && n.settings.SendFormEmail.toString().toLowerCase() == 'true') {
-                    if (n.settings.MessageRecipientType == null)
-                        return false;
-                    switch (n.settings.MessageRecipientType) {
-                        case 'SpecificUser':
-                            if (n.settings.MessageToUser == null || n.settings.MessageToUser.length < 1)
-                                return false;
-                            break;
-                        case 'Responsibility':
-                            if (n.settings.ResponsibilityTypeID == null || n.settings.ResponsibilityTypeID < 0)
-                                return false;
-                            break;
-                    }
                     if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
                         return false;
                 }
@@ -765,54 +796,11 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                     return false;
                 break;
             case WorkflowActivityType.FieldChange:
-                if (n.settings == null || n.settings.FieldUpdate == null || n.settings.FieldUpdate.Field == null) {
-                    return false;
-                }
-
-                if (n.settings.FieldUpdate.Field['@FieldId'] == null)
+                if (n.settings == null || n.settings.FieldUpdate == null || n.settings.FieldUpdate.Field == null || _.isEmpty(n.settings.FieldUpdate.Field))
                     return false;
 
-                let clearValue = false;
-                let useFormValue = false;
-
-                if (n.settings.FieldUpdate.Field['@UseFormValue'] != null) {
-                    if (n.settings.FieldUpdate.Field['@UseFormValue'].toString() == 'true') {
-                        useFormValue = true;
-
-                        delete n.settings.FieldUpdate.Field['@ClearValue'];
-                        delete n.settings.FieldUpdate.Field['@Value'];
-
-                        if (n.settings.FieldUpdate.Field['@FormFieldId'] == null || n.settings.FieldUpdate.Field['@FormStepId'] == null)
-                            return false;
-                    } else {
-                        useFormValue = false;
-                        delete n.settings.FieldUpdate.Field['@FormFieldId'];
-                        delete n.settings.FieldUpdate.Field['@FormStepId'];
-                    }  
-                }
-                if (n.settings.FieldUpdate.Field['@ClearValue'] != null) {
-
-                    if (n.settings.FieldUpdate.Field['@ClearValue'].toString() == 'true') {
-                        clearValue = true;
-
-                        delete n.settings.FieldUpdate.Field['@FormFieldId'];
-                        delete n.settings.FieldUpdate.Field['@FormStepId'];
-                        delete n.settings.FieldUpdate.Field['@Value'];
-                        delete n.settings.FieldUpdate.Field['@UseCurrentDate'];
-                    } else {
-                        clearValue = false;
-                    }
-                }
-
-                if (!clearValue && !useFormValue) {
-                    if (n.settings.FieldUpdate.Field['@UseCurrentDate'] != null && n.settings.FieldUpdate.Field['@UseCurrentDate'].toString() == 'true') {
-                        delete n.settings.FieldUpdate.Field['@Value'];
-                        delete n.settings.FieldUpdate.Field['@FormFieldId'];
-                        delete n.settings.FieldUpdate.Field['@FormStepId'];
-                    } else {
-                        if (n.settings.FieldUpdate.Field['@Value'] == null) return false;
-                    }
-                }
+                if (n.settings.FieldUpdate.Field.length == null || n.settings.FieldUpdate.Field.length < 1)
+                    return false;
                 break;
         }
 
@@ -974,15 +962,13 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                 n.fields = e.fields;
                 n.settings.FormResponseType = e.settings.FormResponseType
                 n.settings.SendFormEmail = e.settings.SendFormEmail;
+                n.settings.MessageRecipientType = e.settings.MessageRecipientType;
+                n.settings.MessageToUser = e.settings.MessageToUser;
+                n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
                 if (n.settings.SendFormEmail == true) {
-                    n.settings.MessageRecipientType = e.settings.MessageRecipientType;
-                    n.settings.MessageToUser = e.settings.MessageToUser;
-                    n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
                     n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                 } else {
-                    delete n.settings.MessageRecipientType;
-                    delete n.settings.MessageToUser;
-                    delete n.settings.ResponsibilityTypeID;
+                    delete e.settings.MessageBodyTemplate;
                 }
                 break;
             case WorkflowActivityType.Procedure:
