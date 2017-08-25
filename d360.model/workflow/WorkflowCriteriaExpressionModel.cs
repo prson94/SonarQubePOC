@@ -139,7 +139,10 @@ namespace d360.model.workflow
             // dates are number of days from the date field value
             if(this.ValueDataType == CriteriaValueDataType.Date)
             {
-                DateTime dt = DateTime.Parse(givenValue);
+                DateTime dt = DateTime.MinValue;
+
+                if (!DateTime.TryParse(givenValue, out dt))
+                    return false;
                 DateTime currentDate = DateTime.UtcNow;
 
                 var numDays = (dt - currentDate).Days;
