@@ -37,8 +37,8 @@ import { MessagesService } from '../../services/messages.service';
                                 <a (click)="showRuleImplementation(item);">{{item.Name}}</a>
                             </ng-template>
                         </p-column>
-                        <p-column field="SourceID" header="Source Identifier" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="SourceUri" header="" [sortable]="false" [style]="{width:'35px'}" [filter]="!showSimpleFilter">
+                        <p-column field="SourceID" header="Source Identifier" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                        <p-column [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a *ngIf="item.SourceUri == null"><i class="fa fa-info" title="Source Uri"></i></a>
@@ -47,9 +47,16 @@ import { MessagesService } from '../../services/messages.service';
                             </ng-template>
                         </p-column>
                         <p-column [style]="{width:'40px'}">
-                                <ng-template let-question="rowData" pTemplate type="body">
+                            <ng-template let-imp="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=imp;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                </div>
+                            </ng-template>
+                        </p-column>                            
+                        <p-column [style]="{width:'40px'}">
+                                <ng-template let-imp="rowData" pTemplate type="body">
                                     <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=question;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                        <a style="cursor:pointer;" (click)="selected=imp;showDelete=true"><i class="fa fa-trash-o"></i></a>
                                     </div>
                                 </ng-template>
                         </p-column>                                                
