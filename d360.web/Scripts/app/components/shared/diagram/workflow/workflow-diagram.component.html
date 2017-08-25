@@ -138,22 +138,22 @@
                             </div>
                         </div>
                         <div *ngIf="selectedData.activityType == WorkflowActivityType.FieldChange">
-                            <div class="col s6">
-                                <div class="FieldName">Field</div>
-                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@FieldName'] != null">{{selectedData?.settings?.FieldUpdate?.Field['@FieldName']}}</div>
-                                <div class="FieldName">Value</div>
-                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@ClearValue'] != null && selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() == 'true'">
-                                    [clear the field value]
-                                </div>
-                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'] != null && selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() == 'true'">
-                                    [use the current date at the time of execution]
-                                </div>
-                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@UseFormValue'] != null && selectedData?.settings?.FieldUpdate?.Field['@UseFormValue'].toString() == 'true' && selectedData?.settings?.FieldUpdate?.Field['@FormLabel'] != null">
-                                    [use form response value {{selectedData?.settings?.FieldUpdate?.Field['@FormLabel']}}]
-                                </div>
-                                <div *ngIf="selectedData?.settings?.FieldUpdate?.Field != null && selectedData?.settings?.FieldUpdate?.Field['@Value'] != null && (selectedData?.settings?.FieldUpdate?.Field['@ClearValue'] != null ? selectedData?.settings?.FieldUpdate?.Field['@ClearValue'].toString() : 'false') != 'true' && (selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'] != null ? selectedData?.settings?.FieldUpdate?.Field['@UseCurrentDate'].toString() : 'false') != 'true'">
-                                    {{selectedData?.settings?.FieldUpdate?.Field['@Value']}}
-                                </div>
+                            <div class="col s12" *ngIf="selectedData?.settings?.FieldUpdate?.Field != null">
+                                <p-dataTable [value]="selectedData.settings.FieldUpdate.Field" selectionMode="single">
+                                    <p-column header="Field" field="@FieldName"></p-column>
+                                    <p-column header="Value" field="@Value">
+                                        <ng-template let-item="rowData" pTemplate type="body">
+                                            <div *ngIf="item != null">
+                                                <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
+                                                <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
+                                                <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true'">[use value from form input {{item['@Formlabel']}}]</span>
+                                                <span *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
+                                                    {{item['@Value']}}
+                                                </span>
+                                            </div>
+                                        </ng-template>
+                                    </p-column>
+                                </p-dataTable>
                             </div>
                         </div>
 
@@ -207,8 +207,7 @@
                                                   [objectId]="model.Event.ObjectID"
                                                   [objectType]="model.Event.Object"
                                                   [step]="selectedData"
-                                                  (stepChange)="changeStep($event)"
-                                                  [isAggregate]="(model?.Event?.SettingsObject?.Settings?.SendAggregateEmail != null && model?.Event?.SettingsObject?.Settings?.SendAggregateEmail.toString().toLowerCase() == 'true') ? true : false">
+                                                  (stepChange)="changeStep($event)">
                         </d3s-workflow-step-editor>
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding:10px;">

@@ -28,7 +28,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     @Input() step: NodeModel;
     @Input() objectId: number;
     @Input() objectType: string;
-    @Input() isAggregate: boolean = false;
     @Output() stepChange = new EventEmitter();
     @ViewChild('ed') ed: Editor;
     private quill;

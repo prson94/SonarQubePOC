@@ -36,6 +36,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     @Output() fieldUpdateChange = new EventEmitter();
 
     private fields: FieldType[] = [];
+    private usedFields: FieldType[] = [];
     private field: FieldType;
     private lookups = [];
     private bools = [
@@ -85,6 +86,13 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
                 this.fieldUpdate.Field.forEach(f => {
                     this.initField(f);
+                    let fieldIndex = this.fields.findIndex(i => i.ID.toString() == f['@FieldId'].toString());
+
+                    if (fieldIndex > -1) {
+                        this.usedFields.push(this.fields[fieldIndex]);
+                        this.fields.splice(fieldIndex, 1);
+                    }
+
                 });
             })
             .then(() => this.isLoading = false);
@@ -171,6 +179,12 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     save() {
         let field = _.cloneDeep(this.selectedField);
+        let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
+
+        if (fieldTypeIndex > -1) {
+            this.usedFields.push(this.fields[fieldTypeIndex]);
+            this.fields.splice(fieldTypeIndex, 1);
+        }
 
         let useCurrentDate = field['@UseCurrentDate'] == null ? false : (field['@UseCurrentDate'].toString() == 'true' ? true : false);
         let useFormValue = field['@UseFormValue'] == null ? false : (field['@UseFormValue'].toString() == 'true' ? true : false);
@@ -197,9 +211,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             delete field['@ClearValue'];
             delete field['@UseCurrentDate'];
         }
-
-
-        //let index = this.fieldUpdate.Field.findIndex(f => f['@FieldId'] == field['@FieldId']);
 
         if (this.selectedFieldIndex > -1) {
             this.fieldUpdate.Field[this.selectedFieldIndex] = field;
@@ -232,8 +243,19 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     confirmDelete() {
-        if (this.selectedFieldIndex > -1)
+
+        if (this.selectedFieldIndex > -1) {
+            let field = this.fieldUpdate.Field[this.selectedFieldIndex];
+            let usedFieldIndex = this.usedFields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
+
+            if (usedFieldIndex > -1) {
+                this.fields.push(this.usedFields[usedFieldIndex]);
+                this.usedFields.splice(usedFieldIndex, 1);
+            }
+
             this.fieldUpdate.Field.splice(this.selectedFieldIndex, 1);
+
+        }
         this.fieldUpdateChange.emit(this.fieldUpdate);
         this.selectedFieldIndex = -1;
         this.formMode = FormMode.Default;
