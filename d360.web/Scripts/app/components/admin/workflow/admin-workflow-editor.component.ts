@@ -82,17 +82,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         this.load()
             .then(() => this.model.Event.SettingsObject.Settings.MessageRecipientType = 'SpecificUser')
-            //.then(() => this.workflowService.getEmailTaskRecipientType())
-            //.then(r => {
-            //    r.forEach(e => {
-            //        if (e.ID < 1)
-            //            return;
-            //        this.destination.push({
-            //            value: EmailTaskRecipientType[e.ID],
-            //            label: e.Name
-            //        });
-            //    });
-            //})
             .then(() => this.isLoading = false);
 
     }
@@ -150,12 +139,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                             if (this.objectType == 'ArtifactType')
                                 this.loadTaxonomies();
-
                             if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
                                 let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
                                 this.conditions = [];
                                 conditions.forEach(c => this.conditions.push(c));
-
                             }
                             else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
                                 this.conditions = [];
@@ -298,26 +285,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         }
 
-
         this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
         this.model.Event.Settings = JSON.stringify(this.model.Event.SettingsObject);
 
-        
-
-        //console.log('save: ', this.id, this.model);
-
-        //if (this.id < 1 || this.id == null)
         this.onSave.emit(this.model);
-        //else {
-        //    this.isLoading = true;
-        //    this.workflowService.saveWorkflowDiagramModel(this.model)
-        //        .then(r => {
-        //            this.isLoading = false;
-        //            this.model.Type.ID = r;
-        //            this.onSave.emit(this.model);
-        //        });
-        //}
-
     }
 
     validate() {

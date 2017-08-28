@@ -1616,7 +1616,7 @@ namespace d360.web.Controllers.Services
                     {
                         var c = condition.Conditions.Condition[i];
 
-                        if (c["@VersionStepID"] != null)
+                        if (c["@VersionStepID"] != null && mappings.ContainsKey((int)c["@VersionStepID"]))
                         {
                             condition.Conditions.Condition[i]["@VersionStepID"] = mappings[(int)c["@VersionStepID"]];
                         }
@@ -1654,7 +1654,7 @@ namespace d360.web.Controllers.Services
                     {
                         var field = fields[i];
 
-                        if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true")
+                        if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true" && mappings.ContainsKey((int)field["@FormStepId"]))
                             field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
                     }
                 }

@@ -104,7 +104,6 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
     private isValid = true;
     private errors: string[] = [];
-    private isAggregate = false;
 
     constructor(
         private myElement: ElementRef,
@@ -920,6 +919,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     private backClick() {
         this.model.Nodes = [];
         this.model.Links = [];
+        this.model.Event.ConditionObject = null;
 
         this.myDiagram.model.nodeDataArray.forEach(n => {
             this.model.Nodes.push(<WorkflowDiagramNode>this.convertToWorkflowModel(<NodeModel>n));
