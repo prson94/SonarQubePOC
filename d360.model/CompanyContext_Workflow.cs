@@ -851,7 +851,7 @@ namespace d360.model
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
             {
-                users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID }).ToList();
+                users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflowV2] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID }).ToList();
             }
             else if(settings.RecipientType == EmailTaskRecipientType.SpecificUser)
             {
