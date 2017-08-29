@@ -8,12 +8,13 @@ import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { SurveysService } from '../../services/surveys.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RuleDetail } from '../../models/rule.model';
+import { RuleDetail, RuleImplementation } from '../../models/rule.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+
 
 @Component({
     selector: 'd3s-rule-item',
@@ -41,9 +42,14 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     </div>
                 </div>
                 <div class="row" *ngIf="!isLoading">
-                    <div class="col s12">
+                    <div class="col s12 m6 l3">
                         <div class="tile tile-detail">
-                            <d3s-rule-implementations-grid [ruleId]="rule?.ID"></d3s-rule-implementations-grid> 
+                            <d3s-rule-implementations-grid [ruleId]="rule?.ID" [(selected)]="selectedImp"></d3s-rule-implementations-grid> 
+                        </div>
+                    </div>
+                    <div class="col s12 m6 l9">
+                        <div class="tile tile-detail">
+                            <d3s-rule-implementation-summary [implementation]="selectedImp"></d3s-rule-implementation-summary>
                         </div>
                     </div>
                 </div>`
@@ -56,6 +62,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private messages: MessageBarItem[] = [];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;    
+    private selectedImp: RuleImplementation;
 
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
@@ -88,8 +95,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnDestroy() {        
-        this.sub.unsubscribe();
-        //this.rightSub.unsubscribe();
+        this.sub.unsubscribe();        
         this.clearSidebar();
     }
 

@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Component, OnInit, Input, SimpleChange, OnChanges} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { QualifierService } from '../../services/qualifier.service';
@@ -7,15 +7,12 @@ import { QualifierType } from '../../models/qualifier.model';
 import { FormMode } from '../../models/form.model';
 
 @Component({
-    selector: 'd3s-rule-qualifier-list',
-    template: ` 
-                <div class="row">
-                    <div class="col s12">
-                        <div class="tile tile-detail">    
-                            <div class="row" [ngSwitch]="formMode">
-                                <div class="col s12" *ngSwitchDefault>
+    selector: 'd3s-rule-qualifier-grid',
+    template: `         <span [ngSwitch]="formMode">
+                                <span *ngSwitchDefault>
                                     <header>
-                                        Rule Qualifiers
+                                        <span *ngIf="showTitle; else noTitle">Rule Qualifiers</span>
+                                        <ng-template #noTitle>&nbsp;</ng-template>
                                         <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
                                     </header>
                                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -34,14 +31,14 @@ import { FormMode } from '../../models/form.model';
                                             </ng-template>
                                         </p-column>
                                     </p-dataTable>     
-                                </div>
-                                <div *ngSwitchCase="FormMode.Adding">
+                                </span>
+                                <span *ngSwitchCase="FormMode.Adding">
                                     <d3s-rule-qualifier-editor [implementationId]="implementationId" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
-                                </div>
-                                <div *ngSwitchCase="FormMode.Editing">
+                                </span>
+                                <span *ngSwitchCase="FormMode.Editing">
                                     <d3s-rule-qualifier-editor [qualifier]="selectedQualifierType" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load()"></d3s-rule-qualifier-editor>
-                                </div>
-                                <div *ngSwitchCase="FormMode.Deleting">
+                                </span>
+                                <span *ngSwitchCase="FormMode.Deleting">
                                     <header>Delete Qualifier</header>
                                     <d3s-delete-form
                                         [uri]="'form/DeleteQualifierType?id=' + selectedQualifierType.ID"
@@ -51,45 +48,42 @@ import { FormMode } from '../../models/form.model';
                                         method="delete"
                                         prompt="Are you sure you want to delete this qualifier type?" >
                                     </d3s-delete-form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                </span>
+                            </span>
+                
           `,
     providers: [QualifierService],
 })
 
-export class RuleQualifierListComponent extends BaseComponent implements OnInit, OnDestroy {
-    implementationId: number;
-
-    private sub: any;
+export class RuleQualifierGridComponent extends BaseComponent implements OnInit, OnChanges {
+    @Input() implementationId: number;    
+    @Input() showTitle: boolean = true;
+    
     private qualifierTypes: QualifierType[] = [];
     private selectedQualifierType;
     private formMode: FormMode = FormMode.Default;
+    
     FormMode = FormMode;
 
     constructor(
         private qualifierService: QualifierService,
-        private messagesService: MessagesService,
-        private route: ActivatedRoute,
-        private router: Router,
+        private messagesService: MessagesService,        
     ) {
         super();
     }
     
-    ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
-            this.implementationId = +params['implementationId']; // (+) converts string 'id' to a number
-            
+    ngOnInit() {        
+        if (this.implementationId > 0) {
             this.load();
-        });
+        }
     }
 
-    ngOnDestroy() {
-        this.sub.unsubscribe();
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes['implementationId'] && this.implementationId <= 0) {            
+            this.load();
+        }
     }
-
+    
     private load() {
         this.isLoading = true;
         this.qualifierService.getQualifierTypes(this.implementationId)

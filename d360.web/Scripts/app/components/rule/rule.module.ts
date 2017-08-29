@@ -24,8 +24,10 @@ import { RuleImplementationComponent } from './rule-implementation.component';
 import { RuleResultsGridComponent } from './rule-results-grid.component';
 import { RuleColumnFilterComponent } from './rule-column-filter.component';
 import { RuleImplementationsGridComponent } from './rule-implementations-grid.component';
-import { RuleQualifierListComponent } from './rule-qualifier-list.component';
+import { RuleQualifierGridComponent } from './rule-qualifier-grid.component';
 import { RuleQualifierEditorComponent } from './rule-qualifier-editor.component';
+import { RuleQualifiersComponent } from './rule-qualifiers.component';
+import { RuleImplementationSummaryComponent } from './rule-implementation-summary.component';
 
 import {
     GrowlModule,
@@ -37,7 +39,8 @@ import {
     DropdownModule,
     CheckboxModule,    
     SelectButtonModule,
-    MultiSelectModule,    
+    MultiSelectModule,   
+    TabViewModule,
     TooltipModule,
     SharedModule,
 } from 'primeng/primeng';
@@ -60,7 +63,8 @@ import {
         DropdownModule,
         CheckboxModule,                        
         SelectButtonModule,        
-        MultiSelectModule,        
+        MultiSelectModule, 
+        TabViewModule,
         TooltipModule,                
         SharedModule,
                 
@@ -81,10 +85,12 @@ import {
         RuleItemComponent,
         RuleImplementationComponent,
         RuleImplementationsGridComponent,
+        RuleImplementationSummaryComponent,
         RuleResultsGridComponent,
         RuleColumnFilterComponent,   
-        RuleQualifierListComponent,
-        RuleQualifierEditorComponent,     
+        RuleQualifierGridComponent,
+        RuleQualifierEditorComponent,
+        RuleQualifiersComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

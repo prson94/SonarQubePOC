@@ -12,7 +12,8 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
     selector: 'd3s-rule-results-grid',
     template: `                 
                 <header>
-                    Results
+                    <span *ngIf="showTitle; else noTitle">Results</span>
+                    <ng-template #noTitle>&nbsp;</ng-template>
                     <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();" [hasRefresh]="true" (refreshClick)="getData();"></d3s-tile-actions>
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -53,10 +54,8 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
 export class RuleResultsGridComponent extends BaseComponent implements OnInit {
 
     @Input() implementationId: number;
-
-    //@Input() rule: any;
-    //@Output() ruleChange = new EventEmitter();
-
+    @Input() showTitle: boolean = true;
+    
     simpleTextFilter: string;
     showSimpleFilter: boolean = true;
     

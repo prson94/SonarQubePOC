@@ -1075,6 +1075,8 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-assignments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementation-summary.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifiers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-form-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-field-change.component.ts" />
@@ -1120,7 +1122,7 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\ownership\ownership.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementations-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-editor.component.ts" />
