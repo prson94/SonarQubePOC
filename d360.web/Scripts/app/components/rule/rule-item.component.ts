@@ -42,17 +42,20 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     </div>
                 </div>
                 <div class="row" *ngIf="!isLoading">
-                    <div class="col s12 m6 l3">
+                    <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-rule-implementations-grid [ruleId]="rule?.ID" [(selected)]="selectedImp"></d3s-rule-implementations-grid> 
+                            <div class="row">
+                                <div class="col s12 m6 l3">
+                                    <d3s-rule-implementations-grid [ruleId]="rule?.ID" [(selected)]="selectedImp"></d3s-rule-implementations-grid> 
+                                </div>
+                                <div class="col s12 m6 l9">
+                                    <d3s-rule-implementation-summary [implementation]="selectedImp"></d3s-rule-implementation-summary>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col s12 m6 l9">
-                        <div class="tile tile-detail">
-                            <d3s-rule-implementation-summary [implementation]="selectedImp"></d3s-rule-implementation-summary>
-                        </div>
-                    </div>
-                </div>`
+                </div>
+                `
 })
 
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
