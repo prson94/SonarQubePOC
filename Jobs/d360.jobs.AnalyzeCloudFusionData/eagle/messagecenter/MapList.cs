@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
@@ -42,12 +43,25 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
                 {
                     AddColumn(col);
                 }
+
+                //add relations for any postprocessing
+
+                if (doc.Element("POSTPROCESSING") != null)
+                {
+                    var postProcessing = doc.Element("POSTPROCESSING").Elements("PROCESSINSTREAM");
+
+                    foreach (var item in postProcessing)
+                    {
+                        AddPostProcess(item);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
         }
+
         
 
         public MapFormat Format { get; set; }
@@ -68,6 +82,68 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
             var tag = col.Attribute("TAG") != null ? col.Attribute("TAG").Value : string.Empty;
             
             this.Add(CreateRelationship(tag.ToUpper(), expression, userdescription));            
+        }
+
+        private void AddPostProcess(XElement item)
+        {
+            var messageData = item.Attribute("MESSAGEDATA") != null ? item.Attribute("MESSAGEDATA").Value : string.Empty;
+
+            if (string.IsNullOrEmpty(messageData)) return;
+
+            //parse the message data 
+            var messageItems = messageData.Split('+');
+
+            // loop through and peak at the next item if it is a mnemonic add a relationship
+            var i = 0;
+            var j = 1;
+
+            while(j < messageItems.Length)
+            {
+                var firstItem = messageItems[i];
+                var secondItem = messageItems[j];
+
+                if(string.IsNullOrEmpty(firstItem) || string.IsNullOrEmpty(secondItem))
+                {
+                    i++;j++;
+                    continue;
+                }
+
+                firstItem = firstItem.Trim('\'');
+                uint tag = 0;
+                //if item is not star tag move up one
+                if ((firstItem[0] != ':') || (firstItem[firstItem.Length - 1] != ':'))
+                {
+                    i++;j++;
+                    continue;
+                }
+
+                //stripg the : from the firstitem
+                firstItem = firstItem.Trim(':');
+
+                if(!uint.TryParse(firstItem, out tag))
+                {
+                    i++; j++;
+                    continue;
+                }
+
+                // if item is not mnemonic move up one.
+                if ((secondItem[0] !='|') || (secondItem[secondItem.Length-1] !='|'))
+                {
+                    i++; j++;
+                    continue;
+                }
+
+
+                // if is match add relationship and move up 2.
+                var rel = new BloombergRelationshipMapping { StarTag = tag, Tag = firstItem, ExpressionValueType = RelationshipExpressionType.DirectMapping};
+
+                rel.BloombergMnemonics.Add(secondItem.Trim('|'));
+
+                this.Add(rel);
+
+                i = i + 2;
+                j = j + 2;
+            }
         }
 
         protected abstract IRelationshipMapping CreateRelationship(string tag, string expression, string description);
