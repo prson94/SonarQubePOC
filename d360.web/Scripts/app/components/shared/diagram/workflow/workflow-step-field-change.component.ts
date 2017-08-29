@@ -235,9 +235,16 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     edit(i: any) {
-        console.log('edit', i);
         this.selectedFieldIndex = i;
         this.selectedField = _.cloneDeep(this.fieldUpdate.Field[i]);
+
+        //free up the field so it can be selected and changed
+        let usedFieldIndex = this.usedFields.findIndex(f => f.ID.toString() == this.selectedField['@FieldId'].toString());
+        if (usedFieldIndex > -1) {
+            this.fields.push(this.usedFields[usedFieldIndex]);
+            this.usedFields.splice(usedFieldIndex, 1);
+        }
+
         this.select(this.selectedField['@FieldId'], false);
         this.formMode = FormMode.Editing;
     }
