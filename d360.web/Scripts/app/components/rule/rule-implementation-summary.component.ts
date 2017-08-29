@@ -9,12 +9,12 @@ import { RuleImplementation } from '../../models/rule.model';
     selector: 'd3s-rule-implementation-summary',
     template: ` 
             <p-tabView *ngIf="implementation" styleClass="pillTabs">
-                <p-tabPanel header="Qualifiers">
-                   <d3s-rule-qualifier-grid [implementationId]="implementation?.ID" [showTitle]="false"></d3s-rule-qualifier-grid>
-                </p-tabPanel>                
                 <p-tabPanel header="Results">
                     <d3s-rule-results-grid [implementationId]="implementation?.ID" [showTitle]="false"></d3s-rule-results-grid> 
                 </p-tabPanel>
+                <p-tabPanel header="Qualifiers">
+                   <d3s-rule-qualifier-grid [implementationId]="implementation?.ID" [showTitle]="false"></d3s-rule-qualifier-grid>
+                </p-tabPanel>                
             </p-tabView>
           `,
     providers: [QualifierService],
