@@ -438,17 +438,35 @@ namespace d360.web.Controllers.Services
                 foreach (var field in model)
                 {
                     var val = field.Value != null ? field.Value.ToString() : "";
-
+                    var displayVal = val;
                     if (field.FieldType == WorkflowFormModelFieldType.boolean)
                     {
                         val = (val ?? "").ToUpper() == "TRUE" ? "TRUE" : "FALSE";
                     }
+                    else if(field.FieldType == WorkflowFormModelFieldType.list)
+                    {
+                        var fieldTypeId = int.Parse(field.ReferenceFieldID);
+                        var fieldType = Company.FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
+                        int intVal = 0;
+
+                        if (fieldType != null && int.TryParse(val, out intVal)) {
+
+                            var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == intVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
+
+                            if(lookup != null)
+                            {
+                                displayVal = lookup.Text;
+                            }
+                        }
+                    }
+
 
                     newForm.Add(new XElement("field",
                             new XAttribute("id", field.ID),
                             new XAttribute("label", field.Label),
                             new XAttribute("value", val),
-                            new XAttribute("fieldtype", field.FieldType.ToString().ToLower()))
+                            new XAttribute("displayvalue", displayVal),
+                            new XAttribute("fieldtype", field.FieldType.ToString().ToLower()))                            
                         );
                 }
 

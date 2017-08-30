@@ -1043,6 +1043,12 @@ namespace d360.model
                         {
                             var fieldName = (string)field.Attribute("label");
                             var value = (string)field.Attribute("value");
+                            var fieldType = (string)field.Attribute("fieldtype");
+
+                            if((fieldType ?? "").ToUpper() == "LIST")
+                            {
+                                value = (string)field.Attribute("displayvalue");
+                            }
 
                             sb.Append($"<b>{fieldName}</b> {value}<br>");
                         }
