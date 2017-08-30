@@ -36,12 +36,13 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     private contextualFields: any[] = [];
 
     private operators = [
-        { value: '=', label: 'equal to' },
-        { value: '!=', label: 'not equal to' },
-        { value: '>', label: 'greater than' },
-        { value: '<', label: 'less than' },
-        { value: '>=', label: 'greater than or equal to' },
-        { value: '<=', label: 'less than or equal to' },
+        { value: '=', label: '=' },
+        { value: '!=', label: '!=' },
+        { value: '>', label: '>' },
+        { value: '<', label: '<' },
+        { value: '>=', label: '>=' },
+        { value: '<=', label: '<=' },
+        { value: 'C', label: 'value changed' },
     ];
 
     private bool = [
@@ -178,7 +179,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@type'];
             delete this.condition['@ContextualFieldID'];
 
-            this.setOperators(field.Type);
+            this.setOperators(field.Type, this.selectedField.split('|')[0]);
 
             this.condition['@FieldTypeID'] = field.ID.toString();
             this.condition['@FieldName'] = field.FriendlyName;
@@ -198,7 +199,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
             this.selectedType = input['@type'].toLowerCase();
 
-            this.setOperators(this.selectedType);
+            this.setOperators(this.selectedType, this.selectedField.split('|')[0]);
 
             delete this.condition['@FieldTypeID'];
             delete this.condition['@label'];
@@ -222,7 +223,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@id'];
             delete this.condition['@type'];
 
-            this.setOperators(this.selectedType);
+            this.setOperators(this.selectedType, this.selectedField.split('|')[0]);
 
             this.condition['@ContextualFieldID'] = this.selectedField.split('|')[1];
             this.condition['@FieldName'] = special.label;
@@ -231,15 +232,15 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         }
     }
 
-    setOperators(type: string = '') {
+    setOperators(type: string = '', fieldType: string = '') {
         switch (type.toLowerCase()) {
             case 'boolean':
             case 'lookup':
             case 'fusionlookup':
             case 'text':
                 this.operators = [
-                    { value: '=', label: 'equal to' },
-                    { value: '!=', label: 'not equal to' },
+                    { value: '=', label: '=' },
+                    { value: '!=', label: '!=' },
                 ];
                 break;
             case 'decimal':
@@ -249,14 +250,18 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'datetime':
             default:
                 this.operators = [
-                    { value: '=', label: 'equal to' },
-                    { value: '!=', label: 'not equal to' },
-                    { value: '>', label: 'greater than' },
-                    { value: '<', label: 'less than' },
-                    { value: '>=', label: 'greater than or equal to' },
-                    { value: '<=', label: 'less than or equal to' },
+                    { value: '=', label: '=' },
+                    { value: '!=', label: '!=' },
+                    { value: '>', label: '>' },
+                    { value: '<', label: '<' },
+                    { value: '>=', label: '>=' },
+                    { value: '<=', label: '<=' },
                 ];
                 break;
+        }
+        //only supporting fields at the moment
+        if (fieldType == 'FieldType') {
+            this.operators.push({ value: 'C', label: 'value changed' });
         }
     }
 
@@ -280,6 +285,18 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             default:
                 return 'U';
         }
+    }
+
+    valid() {
+        if (this.condition['@Operator'] == null)
+            return false;
+        if ((this.condition['@FieldTypeID'] == null || this.condition['@FieldTypeID'] == '') &&
+            (this.condition['@ContextualFieldID'] == null || this.condition['@ContextualFieldID'] == ''))
+            return false;
+        if (this.condition['@Value'] == null && this.condition['@Operator'] != 'C')
+            return false;
+
+        return true;
     }
 
 }

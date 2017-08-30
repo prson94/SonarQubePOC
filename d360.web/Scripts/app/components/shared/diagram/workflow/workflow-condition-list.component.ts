@@ -11,8 +11,16 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
     </header>
     <p-dataTable [value]="conditions" selectionMode="single" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit(selection)" [immutable]="false">
         <p-column field="@FieldName" header="Field Name"></p-column>
-        <p-column field="@Operator" header="Operator"></p-column>
-        <p-column field="@Value" header="Value"></p-column>
+        <p-column field="@Operator" header="Operator">
+            <ng-template let-item="rowData" pTemplate type="body">
+                {{(item['@Operator'] == 'C') ? 'value changed' : item['@Operator']}}
+            </ng-template>
+        </p-column>
+        <p-column field="@Value" header="Value">
+            <ng-template let-item="rowData" pTemplate type="body">
+                {{(item['@Operator'] == 'C') ? '[any value change]' : item['@Value']}}
+            </ng-template>
+        </p-column>
         <p-column *ngIf="!readonly">
             <ng-template let-item="rowData" pTemplate type="body">
                 <div class="RowTools">

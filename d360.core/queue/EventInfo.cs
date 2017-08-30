@@ -17,6 +17,7 @@ namespace d360.core.queue
 
         public int ObjectTypeID { get; set; }
         public int? Score { get; set; }
+        public List<int> ChangedFieldIds { get; set; } = new List<int>();
     }
 
     public class EventInfo

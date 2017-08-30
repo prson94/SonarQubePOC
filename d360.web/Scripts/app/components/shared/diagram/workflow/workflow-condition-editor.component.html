@@ -15,10 +15,10 @@
         <div>
             <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] != '')">
                 <option></option>
-                <option *ngFor="let i of operators" [value]="i.value">{{i.value}}</option>
+                <option *ngFor="let i of operators" [value]="i.value">{{i.label}}</option>
             </select>
         </div>
-        <div *ngIf="condition['@FieldTypeID'] != ''">
+        <div *ngIf="condition['@FieldTypeID'] != '' && condition['@Operator'] != 'C'">
             <div *ngIf="selectedType == 'boolean' || selectedType == 'bool'">
                 <div class="FieldName">
                     Value
@@ -81,6 +81,6 @@
 <div class="row">
     <div class="col s12" style="float: right">
         <button type="button" pButton label="Cancel" (click)="close()"></button>
-        <button type="button" pButton label="Add" (click)="save()" [disabled]="condition['@Value'] == null || condition['@Operator'] == null || condition['@FieldTypeID'] == ''"></button>
+        <button type="button" pButton label="Add" (click)="save()" [disabled]="!valid()"></button>
     </div>
 </div>

@@ -103,7 +103,9 @@ namespace d360.model.workflow
                 case "<":
                     return CriteriaOperator.LessThan;
                 case "!=":
-                    return CriteriaOperator.NotEqual;         
+                    return CriteriaOperator.NotEqual;
+                case "C":
+                    return CriteriaOperator.Changed;
             }
 
             return CriteriaOperator.Invalid;
