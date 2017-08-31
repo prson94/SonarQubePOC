@@ -19,8 +19,8 @@ import { Router } from '@angular/router';
         <p-dataTable #dt [globalFilter]="gb" [value]="workflowItems" selectionMode="single" [rows]="15" [rowsPerPageOptions]="[10,15,25]" [paginator]="true" [pageLinks]="3" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>            
             <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
-            <p-column field="ObjectTypeName" header="Type"sortable="true" [filter]="!showSimpleFilter"  filterMatchMode="contains"></p-column>  
-            <p-column field="ObjectNames" header="Objects"sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
+            <p-column field="ObjectTypeName" header="Type" sortable="true" [filter]="!showSimpleFilter"  filterMatchMode="contains"></p-column>  
+            <p-column field="ObjectNames" header="Objects" sortable="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
                 <ng-template pTemplate="body" let-item="rowData">
                     <span *ngIf="item.ObjectNames != null && item.ObjectNames.length > 15" [pTooltip]="item.ObjectNames" style="word-wrap:break-word;">{{item.ObjectNames | slice:0:15}}...</span>
                     <span *ngIf="item.ObjectNames != null && item.ObjectNames.length <= 15" style="word-wrap:break-word;">{{item.ObjectNames}}</span>

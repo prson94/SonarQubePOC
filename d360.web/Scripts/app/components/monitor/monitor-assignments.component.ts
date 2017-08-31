@@ -19,8 +19,8 @@ import { Router } from '@angular/router';
         <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="15" [rowsPerPageOptions]="[10,15,25]" [paginator]="true" [pageLinks]="3" [(selection)]="selection">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer> 
             <p-column header="Workflow Name" field="WorkflowName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>  
-            <p-column header="Version" field="Version" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>          
-            <p-column header="Step Name" field="StepName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
+            <p-column header="Item" field="ObjectName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
+            <p-column header="Step" field="StepName" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains"></p-column>
             <p-column header="Started On" field="StartedOn" [sortable]="true" [filter]="!showSimpleFilter" filterMatchMode="contains">
                 <ng-template let-item="rowData" type="body" pTemplate>
                     {{item.StartedOn | date: 'short'}}

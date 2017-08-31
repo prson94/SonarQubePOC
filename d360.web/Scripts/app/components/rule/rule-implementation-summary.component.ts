@@ -9,6 +9,9 @@ import { RuleImplementation } from '../../models/rule.model';
     selector: 'd3s-rule-implementation-summary',
     template: ` 
             <p-tabView *ngIf="implementation" styleClass="pillTabs">
+                <p-tabPanel header="Definition">
+                    <d3s-object-detail [objectID]="implementation?.ID" [objectType]="'RuleImplementation'"></d3s-object-detail>
+                </p-tabPanel>
                 <p-tabPanel header="Results">
                     <d3s-rule-results-grid [implementationId]="implementation?.ID" [showTitle]="false"></d3s-rule-results-grid> 
                 </p-tabPanel>

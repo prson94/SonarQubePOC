@@ -837,19 +837,29 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
                                        end,
                             T.UpdatedOn = getutcdate(),
                             T.UpdatedBy = 0 
-        when    not matched then 
+        when    not matched by target then 
                 insert (FusionQueryAttributeTypeID, SourceID, Deleted, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
-                values (S.FusionQueryAttributeTypeID, S.SourceID, 0, getutcdate(), 0, getutcdate(), 0)
-        output  inserted.ID, S.FusionQueryAttributeTypeID, S.SourceID, S.[Action] into #MergeOutputFusionQueryAttribute;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                values (S.FusionQueryAttributeTypeID, S.SourceID, 0, getutcdate(), 0, getutcdate(), 0);", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                        //output  inserted.ID, S.FusionQueryAttributeTypeID, S.SourceID, S.[Action] into #MergeOutputFusionQueryAttribute;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+
+                        await companyConnection.ExecuteAsync(@"
+update	T
+set		T.Deleted = 1,
+		T.UpdatedOn = getutcdate(),
+		T.UpdatedBy = 0
+from	FusionQueryAttribute T
+		inner join FusionQueryAttributeType TT on TT.FusionID = @f and TT.ID = T.FusionQueryAttributeTypeID
+		left join #FusionQueryAttribute S on S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID and S.SourceID = T.SourceID
+where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
                         //merge temp table with fusion query attributes table
-                        await companyConnection.ExecuteAsync(@"
-        update  T 
-        set     T.ID = S.ID
-        from    #FusionQueryAttribute T
-                inner join #MergeOutputFusionQueryAttribute S on 
-                    S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
-                    and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                        //                await companyConnection.ExecuteAsync(@"
+                        //update  T 
+                        //set     T.ID = S.ID
+                        //from    #FusionQueryAttribute T
+                        //        inner join #MergeOutputFusionQueryAttribute S on 
+                        //            S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
+                        //            and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
                         Trace.TraceInformation($"MERGE query attributes TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
@@ -946,9 +956,16 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
         update  T 
         set     T.FusionQueryAttributeID = S.ID
         from    #FusionQueryAttributeField T
-                inner join #FusionQueryAttribute S on 
+                inner join FusionQueryAttribute S on 
                     S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
                     and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                        //                await companyConnection.ExecuteAsync(@"
+                        //update  T 
+                        //set     T.FusionQueryAttributeID = S.ID
+                        //from    #FusionQueryAttributeField T
+                        //        inner join #FusionQueryAttribute S on 
+                        //            S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
+                        //            and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
                         //merge temp table with fusion query attributes table
                         await companyConnection.ExecuteAsync(@"
@@ -962,7 +979,7 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
         when    matched then 
                 update set  T.Value = S.Value, 
                             T.FormattedValue = S.Value 
-        when    not matched then 
+        when    not matched by target then 
                 insert (ObjectType, ObjectID, FieldTypeID, Value, FormattedValue) 
                 values ('FusionQueryAttribute', S.FusionQueryAttributeID, S.FieldTypeID, S.Value, S.Value);", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 

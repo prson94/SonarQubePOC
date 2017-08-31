@@ -4531,6 +4531,14 @@ where    A.RuleID = @id", new { id });
                                 }
                             });
                         }
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.ID), FieldName = "ArtifactID", FieldDescription = artifact.GetDescription(i => i.ID), Value = $"{artifact.ID}" }
+                                }
+                        });
                     }
                     artifact = null;
                     break;
@@ -4802,11 +4810,11 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = fusion.GetName(i => i.Name), FieldName = "FusionName", FieldDescription = fusion.GetDescription(i => i.Name), Value = fusion.Name }
+                                new ReadOnlyField { Name = fusion.GetName(i => i.ID), FieldName = "FusionID", FieldDescription = fusion.GetDescription(i => i.ID), Value = fusion.ID.ToString() }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = fusion.GetName(i => i.ID), FieldName = "FusionID", FieldDescription = fusion.GetDescription(i => i.ID), Value = fusion.ID.ToString() }
+                                new ReadOnlyField { Name = fusion.GetName(i => i.Name), FieldName = "FusionName", FieldDescription = fusion.GetDescription(i => i.Name), Value = fusion.Name }
                             }
                         });
 
@@ -4862,6 +4870,14 @@ where    A.RuleID = @id", new { id });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
                         model.rows.AddRange(loadDisplayableRelationshipsAsFields(type, id));
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = fusionAttribute.GetName(i => i.ID), FieldName = "FAID", FieldDescription = fusionAttribute.GetDescription(i => i.ID), Value = $"{fusionAttribute.ID}" }
+                                }
+                        });
                     }
                     fusionAttribute = null;
                     break;
@@ -5156,6 +5172,14 @@ where    A.RuleID = @id", new { id });
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = policy.GetName(i => i.ID), FieldName = "PolicyID", FieldDescription = policy.GetDescription(i => i.ID), Value = $"{policy.ID}" }
+                                }
+                        });
                     }
                     policy = null;
                     break;
@@ -5265,6 +5289,14 @@ where    A.RuleID = @id", new { id });
                                 }
                             });
                         }
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = rule.GetName(i => i.ID), FieldName = "RuleID", FieldDescription = rule.GetDescription(i => i.ID), Value = $"{rule.ID}" }
+                                }
+                        });
                     }
                     rule = null;
                     break;
@@ -5285,6 +5317,15 @@ where    A.RuleID = @id", new { id });
                             SecondColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_SourceID, FieldName = "RuleImplementation_SourceID", Value = impl.SourceID }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_ResultsEndpoint, FieldName = "RuleImplementation_ResultsEndpoint", Value = $"POST to /services/events/rules/{impl.RuleID}/{impl.ID}/results" }
                             }
                         });
 
@@ -5337,6 +5378,14 @@ where    A.RuleID = @id", new { id });
                                 }
                             });
                         }
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = impl.GetName(i => i.ID), FieldName = "RuleImplementationID", FieldDescription = impl.GetDescription(i => i.ID), Value = $"{impl.ID}" }
+                                }
+                        });
                     }
                     rule = null;
                     break;
@@ -6037,6 +6086,14 @@ where    A.RuleID = @id", new { id });
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = taxonomy.GetName(i => i.ID), FieldName = "TaxonomyID", FieldDescription = taxonomy.GetDescription(i => i.ID), Value = $"{taxonomy.ID}" }
+                                }
+                        });
                     }
                     taxonomy = null;
                     break;

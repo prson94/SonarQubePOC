@@ -258,6 +258,9 @@
   <data name="RuleImplementation_Name" xml:space="preserve">
     <value>Implementation Name</value>
   </data>
+  <data name="RuleImplementation_ResultsEndpoint" xml:space="preserve">
+    <value>Results Endpoint</value>
+  </data>
   <data name="RuleImplementation_SourceID" xml:space="preserve">
     <value>Source Identifier</value>
   </data>

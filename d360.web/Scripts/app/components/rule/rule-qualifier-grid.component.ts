@@ -55,7 +55,7 @@ import { FormMode } from '../../models/form.model';
     providers: [QualifierService],
 })
 
-export class RuleQualifierGridComponent extends BaseComponent implements OnInit, OnChanges {
+export class RuleQualifierGridComponent extends BaseComponent implements OnInit { //, OnChanges
     @Input() implementationId: number;    
     @Input() showTitle: boolean = true;
     
@@ -79,7 +79,7 @@ export class RuleQualifierGridComponent extends BaseComponent implements OnInit,
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['implementationId'] && this.implementationId <= 0) {            
+        if (changes['implementationId'] && this.implementationId) {            
             this.load();
         }
     }

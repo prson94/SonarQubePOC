@@ -25,13 +25,13 @@ import { Permission } from '../../../../models/permission.model';
             </header>
             <div class="row" *ngFor="let item of items">
                 <div style="margin-top: 25px" class="col s12">
-                    <h4>{{item.Name}}</h4>
+                    <h4 style="font-weight: 600">{{item.Name}}</h4>
                 </div>
                 <div class="col s3">
                     <table class="responsive-table striped">
                         <thead>
-                            <tr>
-                                <th>1. Available Sources</th>
+                            <tr style="color: #999">
+                                <th>Sources</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -48,8 +48,8 @@ import { Permission } from '../../../../models/permission.model';
                 <div class="col s9">
                     <table class="responsive-table striped">
                         <thead>
-                            <tr style="vertical-align: top">
-                                <th style="width: 30%">2. Referenced Sources</th>
+                            <tr style="vertical-align: top; color: #999">
+                                <th style="width: 30%">Referenced Sources</th>
                                 <th style="width: 60px; padding-right: 5px">Sequence</th>
                                 <th>Translation</th>
                                 <th style="width: 30px"></th>

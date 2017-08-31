@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net47</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;</DefineConstants>
+    <OutputPath>bin\Debug</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;</DefineConstants>
+    <OutputPath>bin\Release</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ClientDev|AnyCPU'">
+    <DefineConstants>TRACE;CLIENTDEV;</DefineConstants>
+    <OutputPath>bin\ClientDevelopment</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Production|AnyCPU'">
+    <DefineConstants>TRACE;PROD;</DefineConstants>
+    <OutputPath>bin\Production</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>    
+    <PackageReference Include="Dapper" Version="1.50.2" />    
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data" Version="6.0.1304.1" />    
+    <PackageReference Include="EntityFramework" Version="6.1.3" />    
+    <PackageReference Include="Mandrill.net" Version="4.0.0" />    
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.0" />    
+    <PackageReference Include="SpreadsheetLight" Version="3.4.9" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\d360.core\d360.core.csproj" />
+    <ProjectReference Include="..\d360.extensions\d360.extensions.csproj" />
+    <ProjectReference Include="..\d360.model\d360.model.csproj" />
+    <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj" />
+    <ProjectReference Include="..\d360.utils\d360.utils.csproj" />
+    <ProjectReference Include="..\igx.functions.Core\igx.functions.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

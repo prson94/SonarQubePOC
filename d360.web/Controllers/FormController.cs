@@ -1010,29 +1010,29 @@ namespace d360.web.Controllers
                 Company.SaveOrUpdate<Artifact>(model, fields);
 
 
-                #region Add Comment
+                //#region Add Comment
 
-                try
-                {
-                    var comment = new Comment
-                    {
-                        Body = $"I updated the definition.",
-                        CreatingResourceID = model.UpdatedBy.HasValue ? model.UpdatedBy.Value : Company.CurrentResourceID,
-                        OwnerObjectType = "Artifact",
-                        OwnerObjectID = model.ID,
-                        CommentTypeID = CommentType.Governance,
-                        DateCreated = DateTime.UtcNow,
-                        Relations = new List<CommentRelation>()
-                    };
-                    comment.Relations.Add(new CommentRelation { ObjectType = "Artifact", ObjectID = model.ID, Date = DateTime.UtcNow });
-                    comment.Relations.Add(new CommentRelation { ObjectType = "Resource", ObjectID = Company.CurrentResourceID, Date = DateTime.UtcNow });
-                    Company.Add<Comment>(comment);
-                }
-                catch (Exception ex)
-                {
-                }
+                //try
+                //{
+                //    var comment = new Comment
+                //    {
+                //        Body = $"I updated the definition.",
+                //        CreatingResourceID = model.UpdatedBy.HasValue ? model.UpdatedBy.Value : Company.CurrentResourceID,
+                //        OwnerObjectType = "Artifact",
+                //        OwnerObjectID = model.ID,
+                //        CommentTypeID = CommentType.Governance,
+                //        DateCreated = DateTime.UtcNow,
+                //        Relations = new List<CommentRelation>()
+                //    };
+                //    comment.Relations.Add(new CommentRelation { ObjectType = "Artifact", ObjectID = model.ID, Date = DateTime.UtcNow });
+                //    comment.Relations.Add(new CommentRelation { ObjectType = "Resource", ObjectID = Company.CurrentResourceID, Date = DateTime.UtcNow });
+                //    Company.Add<Comment>(comment);
+                //}
+                //catch (Exception ex)
+                //{
+                //}
 
-                #endregion
+                //#endregion
 
                 #region Create Certify Workflow
 
@@ -2858,7 +2858,15 @@ namespace d360.web.Controllers
                 }).Distinct().ToList();
             relatedTypeList.ForEach(r =>
             {
-                list.Add($"Related Item.{r.Name}", r.ID);
+                if (list.ContainsKey($"Related Item.{r.Name}"))
+                {
+                    list.Add($"Related Item.{r.Name} ({r.ID})", r.ID);
+                }
+                else
+                {
+                    list.Add($"Related Item.{r.Name}", r.ID);
+                }
+                
             });
 
 

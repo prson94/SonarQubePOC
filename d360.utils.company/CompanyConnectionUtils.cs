@@ -87,6 +87,11 @@ namespace d360.utils.company
             }
         }
 
+        public static SqlConnection GetCompanyConnection(int id, string server, string username, string password)
+        {
+            return new SqlConnection(GetConnectionString(id, server, username, password));
+        }
+
         public static SqlConnection GetCompanyConnection(int companyID)
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
@@ -172,7 +177,7 @@ select  c.ID as CompanyID,
         ds.IsDevelopment,
         CDS.UrlPrefix
 from    company c 
-        inner join databaseserver ds on c.databaseserverid = ds.id
+        inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
         inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
             cnn.Close();
             cnn.Dispose();
