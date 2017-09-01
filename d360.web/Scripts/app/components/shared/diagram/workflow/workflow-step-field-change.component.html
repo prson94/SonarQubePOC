@@ -41,7 +41,7 @@
                     </select>
                 </div>
             </div>
-            <div class="col s12" *ngIf="selectedField != null && (selectedField['@ClearValue'] == null || selectedField['@ClearValue'].toString() == 'false')">
+            <!--<div class="col s12" *ngIf="selectedField != null && (selectedField['@ClearValue'] == null || selectedField['@ClearValue'].toString() == 'false')">
                 <div class="FieldName">Value</div>
                 <div *ngIf="field != null && (selectedField['@UseFormValue'] == null || selectedField['@UseFormValue'].toString() == 'false')">
                     <div *ngIf="field.Type == 'Text'">
@@ -89,8 +89,8 @@
                 <div *ngIf="field == null">
                     (no field selected)
                 </div>
-            </div>
-            <div class="col s12" style="padding-top:10px" *ngIf="hasFormResponses && (selectedField['@ClearValue'] == null || selectedField['@ClearValue'].toString() == 'false')">
+            </div>-->
+            <!--<div class="col s12" style="padding-top:10px" *ngIf="hasFormResponses && (selectedField['@ClearValue'] == null || selectedField['@ClearValue'].toString() == 'false')">
                 <div>
                     <input type="checkbox" [ngModel]="selectedField['@UseFormValue']" (ngModelChange)="changeUseFormValue($event);" /> Use a form response value?
                 </div>
@@ -99,9 +99,73 @@
                 <div>
                     <input type="checkbox" [(ngModel)]="selectedField['@ClearValue']" /> Clear field value?
                 </div>
+            </div>-->
+        </div>
+
+
+
+        <div class="row" *ngIf="field != null">
+            <div class="col s12">
+                <div class="FieldName">Value</div>
+                <div>
+                    <input type="radio" name="valueType" [checked]="valueType == 'manual' || valueType == null" (change)="changeValueType('manual')" /> Enter a value <br />
+
+                    <div *ngIf="valueType == 'manual'" style="padding-bottom:10px;">
+                        <div *ngIf="field.Type == 'Text'">
+                            <input type="text" style="width: 95%" [(ngModel)]="selectedField['@Value']" />
+                        </div>
+                        <div *ngIf="field.Type == 'Decimal' || field.Type == 'Number'">
+                            <input type="number" style="width: 95%" [(ngModel)]="selectedField['@Value']" />
+                        </div>
+                        <div *ngIf="field.Type == 'Date' || field.Type == 'DateTime'">
+                            <div style="padding-bottom: 10px">
+                                <div *ngIf="fieldUpdate['@UseCurrentDate'] == null || (selectedField['@UseCurrentDate'] != null && selectedField['@UseCurrentDate'].toString() != 'true')">
+                                    <p-inputMask *ngIf="field.Type == 'Date'"
+                                                 mask="99/99/9999"
+                                                 [(ngModel)]="selectedField['@Value']"
+                                                 placeholder="mm/dd/yyyy"
+                                                 slotChar="mm/dd/yyyy">
+                                    </p-inputMask>
+                                    <div *ngIf="field.Type == 'DateTime'">
+                                        <p-inputMask mask="99/99/9999 99:99 aa"
+                                                     [(ngModel)]="selectedField['@Value']"
+                                                     placeholder="mm/dd/yyyy hh:mm PM"
+                                                     slotChar="mm/dd/yyyy hh:mm PM">
+                                        </p-inputMask>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="field.Type == 'Lookup'">
+                            <select style="width: 95%" [(ngModel)]="selectedField['@Value']">
+                                <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                            </select>
+                        </div>
+                        <div *ngIf="field.Type == 'Boolean'">
+                            <select style="width: 95%" [(ngModel)]="selectedField['@Value']">
+                                <option *ngFor="let b of bools" [value]="b.value">{{b.label}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="field.Type == 'Date' || field.Type == 'DateTime'" style="padding-bottom:10px;">
+                    <input type="radio" name="valueType" [checked]="valueType == 'timestamp'" (change)="changeValueType('timestamp')" /> Use the current date at the time of execution
+                </div>
+                <div *ngIf="hasFormResponses" style="padding-bottom:10px;">
+                    <input type="radio" name="valueType" [checked]="valueType == 'form'" (change)="changeValueType('form')" /> Choose a form result value <br />
+                    <div *ngIf="valueType == 'form'">
+                        <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeFormValue($event)" style="width: 95%">
+                            <option *ngFor="let f of formFields" [value]="f['@FormFieldId']">{{f['@FormLabel']}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="padding-bottom:10px;">
+                    <input type="radio" name="valueType" [checked]="valueType == 'clear'" (change)="changeValueType('clear')" /> Clear the field value <br />
+                </div>
             </div>
         </div>
-        <div class="row">
+        
+        <div class="row" style="padding-top:10px">
             <div class="col s12">
                 <button pButton type="button" label="Cancel" (click)="selectedField = null; formMode = FormMode.Default"></button>
                 <button pButton type="button" [label]="(formMode == FormMode.Adding) ? 'Add' : 'Edit'" (click)="save()" [disabled]="!valid()"></button>

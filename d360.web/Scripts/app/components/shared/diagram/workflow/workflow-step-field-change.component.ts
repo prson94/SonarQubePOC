@@ -50,6 +50,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     private selectedFieldIndex = -1;
     FormMode = FormMode;
     private formMode = FormMode.Default;
+    private valueType = 'manual';
 
 
     constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
@@ -293,6 +294,34 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         return true;
     }
 
+    changeValueType(type: string) {
+        this.valueType = type;
+        switch (type.toLowerCase()) {
+            case 'manual':
+                delete this.selectedField['@UseFormValue'];
+                delete this.selectedField['@ClearValue'];
+                delete this.selectedField['@UseCurrentDate'];
+                break;
+            case 'clear':
+                delete this.selectedField['@UseFormValue'];
+                delete this.selectedField['@Value'];
+                delete this.selectedField['@UseCurrentDate'];
+                this.selectedField['@ClearValue'] = true;
+                break;
+            case 'form':
+                delete this.selectedField['@ClearValue'];
+                delete this.selectedField['@Value'];
+                delete this.selectedField['@UseCurrentDate'];
+                this.selectedField['@UseFormValue'] = true;
+                break;
+            case 'timestamp':
+                delete this.selectedField['@UseFormValue'];
+                delete this.selectedField['@ClearValue'];
+                delete this.selectedField['@Value'];
+                this.selectedField['@UseCurrentDate'] = true;
+                break;
+        }
+    }
 }
 
 class FieldUpdate {
