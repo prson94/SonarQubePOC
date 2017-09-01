@@ -12,6 +12,7 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web.Http;
@@ -37,41 +38,42 @@ namespace d360.web.Controllers.Services
 
         #region Models
 
-        //public class CreateEventsModelRequest
-        //{
-        //    public CreateEventsModelRequest()
-        //    {
-        //        Events = new List<CreateEventModelRequest>();
-        //    }
-
-        //    public string GroupKey { get; set; }
-        //    public int? EventCount { get; set; }
-        //    public string Name { get; set; }
-
-        //    public List<CreateEventModelRequest> Events { get; set; }
-        //}
-
+        [DataContract]
         public class ResultQualifierModel
         {
+            [DataMember]
             public string Name { get; set; }
+
+            [DataMember]
             public string Value { get; set; }
+
             public string ResultObject { get; set; }
+
             public int? ResultObjectID { get; set; }
         }
 
+        [DataContract]
         public class ResultModel
         {
+            [DataMember]
             public DateTime EffectiveDate { get; set; }
+            [DataMember]
             public DateTime RunDate { get; set; }
+            [DataMember]
             public int RowsPassed { get; set; }
+            [DataMember]
             public int RowsFailed { get; set; }
+            [DataMember]
             public int? FusionID { get; set; }
+            [DataMember]
             public List<string> FusionAttributes { get; set; }
+            [DataMember]
             public List<ResultQualifierModel> Qualifiers { get; set; }
 
             /// <summary>
             /// Implementation SourceID, if there is one.
             /// </summary>
+            [DataMember]
             public string SourceID { get; set; }
 
             /// <summary>
@@ -84,14 +86,6 @@ namespace d360.web.Controllers.Services
             /// </summary>
             public int? RuleImplementationID { get; set; }
         }
-
-        //public class CreateEventModelResponse
-        //{
-        //    public int ID { get; set; }
-        //    public string SourceID { get; set; }
-        //    public string ResponseCode { get; set; }
-        //    public string ResponseMessage { get; set; }
-        //}
 
         #endregion
 
@@ -437,9 +431,10 @@ order by I.ID, QT.Name", new { id }).ToList();
         }
 
         /// <summary>
-        /// Add one or more events to a rule.
+        /// Add one or more results to a rule implementation.
         /// </summary>
-        /// <param name="id">The ID of the rule to add events to.</param>
+        /// <param name="id">The ID of the rule to add results to.</param>
+        /// <param name="implementationID">The ID of the rule implementation to add results to.</param>
         /// <param name="models">A collection of aggregated rule results.</param>
         /// <returns></returns>
         [
@@ -454,7 +449,7 @@ order by I.ID, QT.Name", new { id }).ToList();
 
             if (models == null)
             {
-                Telemetry.TrackTrace(new TraceTelemetry { Message = "AddRuleResults => No Models Found", SeverityLevel = SeverityLevel.Error });
+                Telemetry.TrackTrace(new TraceTelemetry { Message = "AddRuleImplementationResults => No Models Found", SeverityLevel = SeverityLevel.Error });
 
                 var msg = new HttpResponseMessage(HttpStatusCode.BadRequest);
                 msg.ReasonPhrase = "Request body is invalid.  Please reformat your request.";
@@ -466,7 +461,7 @@ order by I.ID, QT.Name", new { id }).ToList();
             }
 
             var implementationQualifiers = Company.Query<ImplementationQualifier>(@"
-select	R.ID as RuleID,
+select	I.RuleID,
 		I.ID as ImplementationID,
 		I.SourceID,
 		QT.ID as RuleResultQualifierTypeID,
@@ -529,40 +524,6 @@ order by I.ID, QT.Name", new { id = implementationID }).ToList();
                         {
                             model.RuleImplementationID = hashImplementations.Single(v => v.Value == model.QualifierHash).Key;
                         }
-                        else
-                        {
-                            //If qualifier hashes do not line up, then see if we can match on incoming implementation sourceID.
-                            if (!string.IsNullOrEmpty(model.SourceID))
-                            {
-                                var iq = implementationQualifiers.FirstOrDefault(i => i.SourceID.Trim() == model.SourceID.Trim());
-                                if (iq != null)
-                                {
-                                    model.RuleImplementationID = iq.ImplementationID.Value;
-                                }
-                            }
-
-                            //If still no value, then assume this is a new implementation to add.
-                            if (!model.RuleImplementationID.HasValue)
-                            {
-                                var ri = new RuleImplementation { RuleID = id, SourceID = model.SourceID };
-                                Company.Add(ri);
-
-                                model.RuleImplementationID = ri.ID;
-
-                                var position = 1;
-                                model.Qualifiers.ForEach(o =>
-                                {
-                                    var q = new RuleResultQualifierType { RuleImplementationID = ri.ID, Name = o.Name, Order = position };
-                                    Company.Add(q);
-
-                                    //add to collection we are using in this execution.
-                                    implementationQualifiers.Add(new ImplementationQualifier { ImplementationID = ri.ID, Name = o.Name, Order = position, RuleID = id, RuleResultQualifierTypeID = q.ID, SourceID = ri.SourceID });
-
-                                    //increment position.
-                                    position++;
-                                });
-                            }
-                        }
 
                         #endregion
 
@@ -598,7 +559,7 @@ order by I.ID, QT.Name", new { id = implementationID }).ToList();
                     }
                     catch (Exception ex)
                     {
-                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"AddRuleResults => {ex.GetFullExceptionData()}", SeverityLevel = SeverityLevel.Critical });
+                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"AddRuleImplementationResults => {ex.GetFullExceptionData()}", SeverityLevel = SeverityLevel.Critical });
                         return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData(), ex);
                     }
 

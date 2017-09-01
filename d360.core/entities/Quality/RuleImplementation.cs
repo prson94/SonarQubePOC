@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using d360.core.entities.Contracts;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class RuleImplementation : BaseCreatedAndUpdatedIntObject
+    public class RuleImplementation : BaseCreatedAndUpdatedIntObject, ICreatedObject, IUpdatedObject, IUpdatedMetadata
     {        
         [DataMember]
         public int RuleID { get; set; }

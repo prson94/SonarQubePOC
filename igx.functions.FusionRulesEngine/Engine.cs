@@ -4,6 +4,7 @@ using Dapper;
 using igx.functions.Core;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Configuration;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace igx.functions.FusionRulesEngine
                     try
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        //company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                        company.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                         bool writeStatus = true;
 
@@ -50,6 +51,9 @@ namespace igx.functions.FusionRulesEngine
                         {
                             System.Threading.Thread.Sleep(15000);
                         }
+
+                        company.Close();
+                        company.Dispose();
                     }
                     catch (Exception ex)
                     {

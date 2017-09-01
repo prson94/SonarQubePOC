@@ -5,6 +5,7 @@ using Dapper;
 using igx.functions.Core;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -28,15 +29,15 @@ namespace igx.functions.WorkflowScheduling
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
+                var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
                 companies.ForEach(c =>
                 {
                     try
                     {
                         var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        companyConnection.Open();
-
-                        var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                        cnn.Open();
+                        companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                         #region Get updated resources
 
@@ -124,6 +125,8 @@ when	not matched by target then
 
                 });
 
+                cnn.Close();
+                cnn.Dispose();
             }
             catch (Exception ex)
             {

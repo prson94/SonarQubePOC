@@ -627,6 +627,11 @@
               Looks up a localized string similar to Implementation Name.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.RuleImplementation_ResultsEndpoint">
+            <summary>
+              Looks up a localized string similar to Results Endpoint.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.RuleImplementation_SourceID">
             <summary>
               Looks up a localized string similar to Source Identifier.
@@ -1998,6 +2003,15 @@
             Add one or more events to a rule.
             </summary>
             <param name="id">The ID of the rule to add events to.</param>
+            <param name="models">A collection of aggregated rule results.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddRuleImplementationResults(System.Int32,System.Int32,System.Collections.Generic.List{d360.web.Controllers.Services.EventsController.ResultModel})">
+            <summary>
+            Add one or more results to a rule implementation.
+            </summary>
+            <param name="id">The ID of the rule to add results to.</param>
+            <param name="implementationID">The ID of the rule implementation to add results to.</param>
             <param name="models">A collection of aggregated rule results.</param>
             <returns></returns>
         </member>

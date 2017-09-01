@@ -5325,7 +5325,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_ResultsEndpoint, FieldName = "RuleImplementation_ResultsEndpoint", Value = $"POST to /services/events/rules/{impl.RuleID}/{impl.ID}/results" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_ResultsEndpoint, FieldName = "RuleImplementation_ResultsEndpoint", Value = $"POST to <a href='/swagger/ui/index#!/Events/Events_AddRuleImplementationResults' target='api'>/services/events/rules/{impl.RuleID}/{impl.ID}/results</a>" }
                             }
                         });
 

@@ -4,6 +4,7 @@ using Dapper;
 using igx.functions.Core;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Configuration;
 using System.Linq;
@@ -119,7 +120,10 @@ namespace igx.functions.FusionSchedule
                     try
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
+                        company.OpenWithRetry(RetryPolicy.DefaultProgressive);
                         company.Execute(sql);
+                        company.Close();
+                        company.Dispose();
                     }
                     catch (Exception ex)
                     {

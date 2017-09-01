@@ -7,6 +7,7 @@ using Dapper;
 using igx.functions.Core;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -47,7 +48,7 @@ namespace igx.functions.EagleMessageStreams
                     {
                         var storageProvider = new AzureStorageProvider();
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        company.Open();
+                        company.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                         var streams = company.Query<FusionAttribute>("select * from fusionattribute where fusionattributetypeid = @t", new { t = MESSAGE_CENTER_FEED_FUSION_ATTRIBUTE_TYPE }).ToList();
 

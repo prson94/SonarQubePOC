@@ -26,6 +26,7 @@
   </PropertyGroup>
   <ItemGroup>    
     <PackageReference Include="Dapper" Version="1.50.2" />    
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Data" Version="6.0.1304.1" />    
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>

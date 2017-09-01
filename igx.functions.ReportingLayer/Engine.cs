@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Data.Entity.Design.PluralizationServices;
 using igx.functions.Core;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace igx.functions.ReportingLayer
 {
@@ -401,7 +402,7 @@ namespace igx.functions.ReportingLayer
                     try
                     {
                         var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        companyConnection.Open();
+                        companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                         var selectSql = "";
                         var viewSql = "";
