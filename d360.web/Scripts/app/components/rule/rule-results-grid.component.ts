@@ -31,7 +31,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                             </p-column>
                             <p-column field="EffectiveDate" header="Effective Date" [sortable]="true" [style]="{width:'120px'}">
                                 <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <span>{{item.EffectiveDate | date : 'short'}}</span>
+                                    <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
                                 </ng-template>
                             </p-column>
                             <p-column field="PassFraction" header="Pass Fraction" [sortable]="true" [style]="{width:'150px'}"></p-column>
