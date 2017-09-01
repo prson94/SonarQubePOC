@@ -26,11 +26,6 @@ import { MessagesService } from '../../services/messages.service';
                             <ng-template pTemplate type="body" let-item="rowData">
                                 <a (click)="showRuleImplementation(item);">{{item.Name}}</a>
                             </ng-template>
-                        </p-column>
-                        <p-column field="UpdatedOn" header="Update Date" [sortable]="true" [filter]="!showSimpleFilter">
-                            <ng-template let-col let-item="rowData" pTemplate type="body">
-                                <span>{{item.UpdatedOn | date : 'shortDate'}}</span>
-                            </ng-template>
                         </p-column>                        
                         <p-column [style]="{width:'40px'}">
                             <ng-template let-item="rowData" pTemplate type="body">
