@@ -24,6 +24,7 @@ namespace d360.web.Controllers
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("ResourceID", Company.CurrentResourceID);
+            ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
             ViewData.Add("Settings", Community.GetCompanySettings());
             ViewData.Add("SingleSignOn", IsSingleSignOn());
             return View("App");

@@ -7,6 +7,7 @@
     [IsOverride] BIT           CONSTRAINT [DF_Favorite_IsOverride] DEFAULT ((0)) NOT NULL,
     [Object]     VARCHAR (50)  NULL,
     [ObjectID]   INT           NULL,
+    [IsHomePage] BIT           CONSTRAINT [DF_Favorite_IsHomePage] DEFAULT ((0)) NOT NULL, 
     CONSTRAINT [PK_Favorite_ID] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 

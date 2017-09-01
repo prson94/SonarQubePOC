@@ -3,6 +3,7 @@
     Url: string;
     Items: SiteMenuItem[];
     IsLink: boolean;
+    IsHomePage: boolean = false;
 }
 
 export class SiteMenu {

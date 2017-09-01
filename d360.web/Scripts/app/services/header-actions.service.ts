@@ -13,6 +13,7 @@ export class HeaderActionsService {
     showRaiseIssue: boolean = false;  
     showFollow: boolean = CompanySettings.ShowImpactSidebar != 'false';
     showShoppingCart: boolean = false;
+    showHomePage: boolean = true;
 
     // Observable sources
     private onFavoritesChangeSource = new Subject();

@@ -1,6 +1,7 @@
 ﻿@{
     Layout = null;
     var CurrentResourceID = ViewData["ResourceID"].ToString();
+    var ResourceHomePage = ViewData["ResourceHomePage"].ToString();
     var VersionNumber = ViewData["VersionNumber"].ToString();
     var settings = (Dictionary<string, string>)ViewData["Settings"];
     var settingsJson = "";
@@ -47,6 +48,7 @@
     <script type="text/javascript">
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
+        var ResourceHomePage = '@(ResourceHomePage)';
         var SingleSignOn = @(ViewData["SingleSignOn"].ToString().ToLower());
     </script>    
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v4.1.2/primeng.min.css", baseUrl)" />

@@ -7,5 +7,6 @@
     isOverride: boolean = false;
     Category: string;
     Object: string;
-    ObjectID: number;    
+    ObjectID: number;  
+    IsHomePage: boolean = false;  
 }

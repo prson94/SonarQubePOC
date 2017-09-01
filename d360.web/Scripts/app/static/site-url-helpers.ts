@@ -1,4 +1,5 @@
 ﻿declare var CompanySettings;
+declare var ResourceHomePage;
 
 export class SiteUrlHelpers {
     
@@ -76,7 +77,10 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
 
     static getDefaultRoute() {
-        if (CompanySettings != null && CompanySettings.DefaultRoute != null && CompanySettings.DefaultRoute != '' && CompanySettings.DefaultRoute != '/') {
+        if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {
+            return ResourceHomePage;
+        }
+        else if (CompanySettings != null && CompanySettings.DefaultRoute != null && CompanySettings.DefaultRoute != '' && CompanySettings.DefaultRoute != '/') {
             return CompanySettings.DefaultRoute;
         } else {
             return this.SITE_URL_HOME_ROOT;

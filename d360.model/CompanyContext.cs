@@ -2936,6 +2936,13 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             }
         }
 
+        public string GetUserHomePage()
+        {
+            var homePage = Favorites.FirstOrDefault(f => f.ResourceID == CurrentResourceID && f.IsHomePage);
+
+            return homePage?.Route ?? "";
+        }
+
 #endregion
     }
 }

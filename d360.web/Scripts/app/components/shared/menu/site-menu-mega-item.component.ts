@@ -13,7 +13,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-site-menu-mega-item',    
     template: ` 
                 <a (click)="itemClick()" class="menu-item truncate" [ngStyle]="{'margin-left': getMargin()}">
-                    <i [class]="'fa fa-circle menu-level-indicator-' + level" aria-hidden="true"></i>{{item.Name}}</a>                    
+                    <i [class]="'fa fa-circle menu-level-indicator-' + level" aria-hidden="true"></i>{{item.Name}}<ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container></a>                 
                 <d3s-site-menu-mega-item *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush    

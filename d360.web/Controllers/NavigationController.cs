@@ -521,6 +521,14 @@ namespace d360.web.Controllers
                 favorite.SortOrder = Company.Favorites.Count(f => f.ResourceID == favorite.ResourceID) + 1;
                 favorite.IsOverride = false;
 
+                //only 1 home page allowed at once, remove old one(s)
+                if (favorite.IsHomePage)
+                {
+                    var favorites = Company.Filter<Favorite>(f => f.ResourceID == Company.CurrentResourceID && f.IsHomePage).ToList();
+                    Company.Favorites.RemoveRange(favorites);
+                    Company.SaveChanges();
+                }
+
                 Favorite existing = null;
 
                 if (!string.IsNullOrEmpty(favorite.Object) && favorite.ObjectID > 0) {
@@ -535,13 +543,24 @@ namespace d360.web.Controllers
                 {
                     Company.Add(favorite);
 
-                    message = "Favorite Added.";
+                    message = favorite.IsHomePage ? "Home page added" : "Favorite Added.";
                 }
                 else
                 {
-                    Company.Delete(existing);
+                    if (existing.IsHomePage != favorite.IsHomePage)
+                    {
+                        existing.IsHomePage = favorite.IsHomePage;
+                        Company.Update(existing);
+                        message = favorite.IsHomePage ? "Home page added" : "Favorite Added.";
+                    }
+                    else
+                    {
+                        Company.Delete(existing);
+                        message = favorite.IsHomePage ? "Home page removed" : "Favorite Removed.";
+                    }
+                    
 
-                    message = "Favorite Removed.";
+                    
                 }                
             }
             catch (Exception ex)
@@ -616,7 +635,8 @@ namespace d360.web.Controllers
 	                    fav.[ObjectId],
 	                    fav.SortOrder,
 	                    fav.Id,
-                        fav.ResourceId
+                        fav.ResourceId,
+                        fav.IsHomePage
                     from
 	                    [dbo].[favorite] fav
 	                    inner join [cache].[objectdetails] od on ( fav.[Object] = od.[Object] and fav.[ObjectId] = od.[ObjectId])
@@ -630,7 +650,8 @@ namespace d360.web.Controllers
 	                    fav.[ObjectId],
 	                    fav.SortOrder,
 	                    fav.Id,
-                        fav.ResourceId
+                        fav.ResourceId,
+                        fav.IsHomePage
                     from
 	                    [dbo].[favorite] fav	
                     where 

@@ -1080,6 +1080,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-form-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-field-change.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-homepage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />
