@@ -41,7 +41,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     subscription: Subscription;
     msgs: Message[];
 
-    constructor(protected typeBuilder: DynamicTypeBuilder, public componentFactoryResolver: ComponentFactoryResolver, private messagesService: MessagesService) {
+    constructor(
+        protected typeBuilder: DynamicTypeBuilder,
+        public componentFactoryResolver: ComponentFactoryResolver,
+        private messagesService: MessagesService,
+        protected headerActionsService: HeaderActionsService) {
         this.msgs = [];
         this.subscription = messagesService.errorMessage$.subscribe(
             errorMsg => {
@@ -54,7 +58,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
         
     ngAfterViewInit() {
-        this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function                           
+        this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function    
+        this.headerActionsService.emitFavoritesChange(); //on first load when a non-default home page is defined, we need to update the action icons                       
     }
 
     ngOnDestroy() {

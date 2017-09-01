@@ -51,13 +51,16 @@ export class HeaderActionsComponent {
         private router: Router) { }
 
     ngOnInit() {
+
+       // this.routerSub = this.router.
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.uri = _.trimStart(e.url,'/');
+                this.uri = _.trimStart(e.urlAfterRedirects,'/');
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
 
                 //dont show raise issue button on raise issue screen or any admin screens            
-                this.hasRaiseIssueButton = (!e.url.toLowerCase().endsWith('workflow/raiseissue') && (e.url.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');            
+                this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && (e.urlAfterRedirects.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');            
+
             }            
         });
 
