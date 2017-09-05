@@ -2332,6 +2332,13 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 {
                     
                     var field = (Field)entry.Entity;
+                    var dataType = field.FieldType.Type;
+
+                    if (dataType == "DateTime" || dataType == "Date")
+                    {
+                        field.Value = DateTime.Parse(field.Value).ToLocalTime().ToString("yyyy-MM-ddTHH:mm:ss");
+                    }
+
                     var existing = Fields.AsNoTracking().FirstOrDefault<Field>(f => f.FieldTypeID == field.FieldTypeID && f.ObjectID == field.ObjectID && f.ObjectType == field.ObjectType);
                     if (existing != null)
                     {

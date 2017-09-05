@@ -19,14 +19,15 @@ namespace d360.model.workflow
         public static WorkflowCriteriaExpressionModel Parse(XElement element)
         {
             var dataType = dataTypeFromString((string)element.Attribute("ValueType"));
+            var @operator = operatorFromString((string)element.Attribute("Operator"));
 
             return new WorkflowCriteriaExpressionModel
             {
                 FieldTypeId = int.Parse(((string)element.Attribute("FieldTypeID") ?? "0")),
                 ContextualFieldID = ((string)element.Attribute("ContextualFieldID") ?? ""),
-                Operator = operatorFromString((string)element.Attribute("Operator")),
+                Operator = @operator,
                 ValueDataType = dataType,
-                Value = valueFromString(dataType, (string)element.Attribute("Value")),
+                Value = @operator == CriteriaOperator.Changed ? "" : valueFromString(dataType, (string)element.Attribute("Value")),
                 VersionStepId = int.Parse(((string)element.Attribute("VersionStepID") ?? "0")),
                 FormInputId = ((string)element.Attribute("FormInputID"))
             };
@@ -129,7 +130,7 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Date:
                     return int.Parse(val);                    
                 case CriteriaValueDataType.Lookup:
-                    return int.Parse(val);                
+                    return int.Parse(val);    
             }
 
             throw new Exception("ERROR - INVALID DATA TYPE SPECIFIED TO PARSE VALUE");

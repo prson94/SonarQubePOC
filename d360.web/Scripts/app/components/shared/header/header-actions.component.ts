@@ -51,8 +51,6 @@ export class HeaderActionsComponent {
         private router: Router) { }
 
     ngOnInit() {
-
-       // this.routerSub = this.router.
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
                 this.uri = _.trimStart(e.urlAfterRedirects,'/');
