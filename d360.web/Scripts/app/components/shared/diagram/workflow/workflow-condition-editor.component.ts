@@ -178,6 +178,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@id'];
             delete this.condition['@type'];
             delete this.condition['@ContextualFieldID'];
+            delete this.condition['@Operator'];
+            delete this.condition['@Value'];
 
             this.setOperators(field.Type, this.selectedField.split('|')[0]);
 
@@ -206,6 +208,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@id'];
             delete this.condition['@type'];
             delete this.condition['@ContextualFieldID'];
+            delete this.condition['@Operator'];
+            delete this.condition['@Value'];
 
             this.condition['@VersionStepID'] = input['@stepId'];
             this.condition['@FormInputID'] = input['@id'];
@@ -222,6 +226,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@label'];
             delete this.condition['@id'];
             delete this.condition['@type'];
+            delete this.condition['@Operator'];
+            delete this.condition['@Value'];
 
             this.setOperators(this.selectedType, this.selectedField.split('|')[0]);
 
@@ -291,10 +297,13 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         if (this.condition['@Operator'] == null)
             return false;
         if ((this.condition['@FieldTypeID'] == null || this.condition['@FieldTypeID'] == '') &&
-            (this.condition['@ContextualFieldID'] == null || this.condition['@ContextualFieldID'] == ''))
+            (this.condition['@ContextualFieldID'] == null || this.condition['@ContextualFieldID'] == '') &&
+            this.condition['@FormInputID'] == null)
             return false;
         if (this.condition['@Value'] == null && this.condition['@Operator'] != 'C')
             return false;
+        if (this.condition['@Operator'] == '') return false;
+        if (this.condition['@Value'] == '') return false;
 
         return true;
     }
