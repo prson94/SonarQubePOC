@@ -823,8 +823,9 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
                 {
                     FieldColumnName = $"{name}",
                     FieldName = $"{name}_T.FormattedValue as [{name}]",
-                    FieldFriendlyName = f.FriendlyName,
-                    FieldJoin = $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = 'FusionQueryAttribute' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1",
+                    FieldFriendlyName = f.FriendlyName,                    
+                    FieldJoin = $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{type}' and {name}_TT.ObjectID = A.FusionQueryAttributeTypeID and {name}_TT.IsListable = 1 
+                                    left join Field {name}_T on {name}_T.ObjectType = 'FusionQueryAttribute' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ",
                     JoinOrder = 100
                 });
             });
@@ -885,9 +886,7 @@ where   A.FusionQueryAttributeTypeID = @t
                     col++;
                 }
             }
-
-            document.AutoFitColumn(1, totalColumns);
-
+            
             #endregion
 
             var stream = new MemoryStream();
