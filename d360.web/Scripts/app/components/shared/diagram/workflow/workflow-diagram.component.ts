@@ -128,21 +128,23 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             this.isWindowVisible = true;
         }
 
-        this.initializeDiagram();
-        this.initializeMenuItems();
+        //this.initializeDiagram();
+        //this.initializeMenuItems();
 
-        this.resizeDiagram();
+        //this.resizeDiagram();
 
-        this.load();
+        //this.load();
 
     }
 
     public ngOnChanges(changes: SimpleChanges) {
         //console.log('ngOnChanges', changes, this.id, this.version);
         if ((changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue && !changes['id'].isFirstChange()) ||
-        (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue && !changes['version'].isFirstChange()))    {
-            this.myDiagram.div = null;
-            this.myPalette.div = null;
+            (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue && !changes['version'].isFirstChange())) {
+            if (this.myDiagram != null && this.myDiagram.div != null)
+                this.myDiagram.div = null;
+            if(this.myPalette != null && this.myPalette.div != null)
+                this.myPalette.div = null;
             this.model = null;
             this.selectedData = null;
             this.initializeDiagram();
