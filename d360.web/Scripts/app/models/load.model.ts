@@ -21,3 +21,15 @@ export class LoadFilePostModel {
     Notes: string;
     File: string;
 }
+
+export class LoadColumn {
+    Name: string;
+    Required: boolean;
+    PartOfKey: boolean;
+    IsLookup: boolean;
+    Lookups: LoadColumnValue[];
+}
+
+export class LoadColumnValue {
+    Value: string;
+}

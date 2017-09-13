@@ -7,7 +7,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.ReportTile, "ReportTile")]
+    [DataContract(Namespace = NAMESPACE)]
     public class ReportTile : BaseIntObject, IIntObject, IUpdatedMetadata
     {
         [DataMember]

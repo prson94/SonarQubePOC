@@ -42,8 +42,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("default/contracts")]
         public IEnumerable<ContractModel> GetDefaultContracts()
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
+            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
             return (
                     from c in Company.Contracts.ToList()
@@ -71,8 +71,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{id:int}/contracts")]
         public IEnumerable<ContractModel> GetContractsByOrganization(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
+            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
             return (
                     from c in Company.Contracts.Include("Organization").ToList()
@@ -99,8 +99,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{id:int}/domains")]
         public IQueryable<OrganizationDomain> GetDomainsByOrganization(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
+            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
             return Company.Filter<OrganizationDomain>(i => i.OrganizationID == id);
         }
@@ -113,8 +113,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{id:int}/invitations")]
         public IQueryable<OrganizationInvitationDetail> GetInvitationsByOrganization(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
+            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
             return Company.Filter<OrganizationInvitationDetail>(i => i.OrganizationID == id);
         }
@@ -127,8 +127,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("{id:int}/users")]
         public IQueryable<OrganizationResourceDetail> GetResourcesByOrganization(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
+            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
             return Company.Filter<OrganizationResourceDetail>(i => i.OrganizationID == id);
         }
@@ -140,8 +140,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("domains")]
         public IQueryable<OrganizationDomain> GetDomainsForAllOrganizations()
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
+            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
             return Company.Table<OrganizationDomain>();
         }
@@ -153,8 +153,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("invitations")]
         public IQueryable<OrganizationInvitationDetail> GetInvitationsForAllOrganizations()
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
+            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
             return Company.Table<OrganizationInvitationDetail>();
         }
@@ -166,8 +166,8 @@ namespace d360.web.Controllers.Services
         [HttpGet, Route("users")]
         public IQueryable<OrganizationResourceDetail> GetResourcesForAllOrganizations()
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
+            if (!Company.CurrentResourceIsAdmin)//HasPermission(SystemObjects.ScoreTypeMetric, id, Claim.Update))
+                return null;// Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this metric result.");
 
             return Company.Table<OrganizationResourceDetail>();
         }

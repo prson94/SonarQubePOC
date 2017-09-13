@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy  } from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/fusion.service';
@@ -41,7 +41,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     providers: [FusionService],
 })
 
-export class FusionManualLoadComponent extends BaseComponent implements OnInit, OnDestroy {    
+export class FusionManualLoadComponent extends BaseComponent implements OnInit, OnDestroy {
     fusionID: number = 0;
     fusionTypeID: number = 0;
     fusionName: string;
@@ -50,10 +50,10 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     sub: any;
 
     private selectedFusionAttributeTypeId: number;
-    
+
     constructor(
         private router: Router,
-        private route: ActivatedRoute, 
+        private route: ActivatedRoute,
         private fusionService: FusionService
     ) {
         super();
@@ -82,9 +82,9 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     private onUpload(event) {
         for (let file of event.files) {
             this.uploadedFiles.push(file);
-        }        
+        }
     }
-        
+
     private downloadTemplate() {
         if (!this.fusionID || !this.fusionTypeID || !this.selectedFusionAttributeTypeId) {
             console.log("ERROR - NO FUSION / FUSIONATTRIBUTE TYPE ID POPULATED");
@@ -95,6 +95,6 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     }
 
     private goToFusion() {
-        this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT );
+        this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT);
     }
 };

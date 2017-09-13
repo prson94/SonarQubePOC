@@ -92,15 +92,22 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getSide1Options(): Promise<DropdownOption[]> {
-        return this.http.get('form/IntersectType_Side1Options')
+    getCardinalityOptions(): Promise<DropdownOption[]> {
+        return this.http.get('form/IntersectType_CardinalityOptions')
             .toPromise()
             .then(response => <DropdownOption[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getSide2Options(id: number, type: string, selectedId?: number, selectedType?: string, predicateId?: number): Promise<DropdownOption[]> {
-        let url = `form/IntersectType_Side2Options?id=${id}&type=${type}`;
+    getSubjectOptions(): Promise<DropdownOption[]> {
+        return this.http.get('form/IntersectType_SubjectOptions')
+            .toPromise()
+            .then(response => <DropdownOption[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getObjectOptions(id: number, type: string, selectedId?: number, selectedType?: string, predicateId?: number): Promise<DropdownOption[]> {
+        let url = `form/IntersectType_ObjectOptions?id=${id}&type=${type}`;
         if (selectedId != undefined)
             url = url += `&side2ID=${selectedId}`;
         if (selectedType != undefined)

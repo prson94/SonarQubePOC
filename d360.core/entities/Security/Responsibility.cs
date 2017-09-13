@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Responsibility, "Responsibility")]
+    [DataContract(Namespace = NAMESPACE)]
     public class Responsibility : BaseIntObject, IIntObject, IUpdatedMetadata
     {
         #region Properties

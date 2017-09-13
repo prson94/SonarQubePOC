@@ -13,13 +13,15 @@ import { TreeNode } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-policy-item',
     template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading" class="row">                    
                     <div class="col s12">
-                        <div class="row">
+                        <div class="row" *ngIf="showSocialScoreBar">
                             <div class="col s12">
                                  <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
                                     <d3s-object-governance [objectType]="'Policy'" [objectID]="selected?.ID" [objectName]="selected?.Name" [status]="selected?.StatusName"></d3s-object-governance>
@@ -47,7 +49,9 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     selected: Policy;
     sub: any;
     treeSub: any;
-        
+
+    private showSocialScoreBar: boolean = true;
+
     constructor(
         private headerActionsService: HeaderActionsService,
         protected titleService: Title,
@@ -102,7 +106,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             }
         });
 
-        
+        this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
     }
 
 

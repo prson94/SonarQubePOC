@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.QuestionType, "QuestionType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class QuestionType : BaseIntObject, ICreatedObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember, StringLength(500)]

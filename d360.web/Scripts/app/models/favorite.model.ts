@@ -8,5 +8,5 @@
     Category: string;
     Object: string;
     ObjectID: number;  
-    IsHomePage: boolean = false;  
+    IsHomePage: boolean = false;
 }

@@ -1,9 +1,12 @@
-﻿using ComponentSpace.SAML2.Assertions;
+﻿using ComponentSpace.SAML2;
+using ComponentSpace.SAML2.Assertions;
 using ComponentSpace.SAML2.Bindings;
+using ComponentSpace.SAML2.Profiles.SingleLogout;
 using ComponentSpace.SAML2.Profiles.SSOBrowser;
 using ComponentSpace.SAML2.Protocols;
 using d360.core.entities;
 using d360.core.enums;
+using d360.extensions.azuregraph;
 using d360.extensions.mail;
 using d360.model;
 using d360.web.Models;
@@ -12,6 +15,7 @@ using Microsoft.ApplicationInsights.DataContracts;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -173,6 +177,7 @@ namespace d360.web.Controllers
                     return new EmptyResult();
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+                    ViewData.Add("Settings", Community.GetCompanySettings());
                     return View();
             }
         }
@@ -355,8 +360,8 @@ namespace d360.web.Controllers
                         if (resource != null)
                         {
                             resource.DateLastLoggedIn = DateTime.UtcNow;
-                            if (!string.IsNullOrEmpty(firstName)) resource.FirstName = firstName;
-                            if (!string.IsNullOrEmpty(lastName)) resource.LastName = lastName;
+                            if(!string.IsNullOrEmpty(firstName)) resource.FirstName = firstName;
+                            if(!string.IsNullOrEmpty(lastName)) resource.LastName = lastName;
                             Community.Update<Resource>(resource);
                         }
                     }
@@ -375,7 +380,7 @@ namespace d360.web.Controllers
 
                         if (!string.IsNullOrEmpty(sessionDurationString))
                         {
-                            if (!double.TryParse(sessionDurationString, out sessionLengthMinutes))
+                            if(!double.TryParse(sessionDurationString, out sessionLengthMinutes))
                                 sessionLengthMinutes = FormsAuthentication.Timeout.TotalMinutes;
                         }
                         // Create a login context for the asserted identity.
@@ -457,6 +462,7 @@ namespace d360.web.Controllers
         public ActionResult Login(LoginModel model, string ReturnUrl)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("Settings", Community.GetCompanySettings());
 
             if (!string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.ToUpper() == "/RESET")
             {
@@ -498,17 +504,32 @@ namespace d360.web.Controllers
         [Route("slo")]
         public ActionResult Logout()
         {
+            FormsAuthentication.SignOut();  // Logout locally.
+
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
             {
                 case AuthenticationType.SSO:
-                    FormsAuthentication.SignOut();                  // Logout locally.                    
-                    ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-                    return View("Logout");
+                    var sloEndpoint = Community.CurrentCompanySsoModel.IdpSloEndpoint + "";
+                    sloEndpoint = sloEndpoint.Trim();
+                    if (!string.IsNullOrEmpty(sloEndpoint))
+                    {
+                        var lr = new LogoutResponse { Status = new Status(SAMLIdentifiers.PrimaryStatusCodes.Success, null), Issuer = new Issuer("http://data3ixty.com/ui") };
+                        var lrXml = lr.ToXml();
+
+                        // Send the logout response over HTTP redirect.
+                        //X509Certificate2 x509Certificate = (X509Certificate2)Community.CurrentCompanySsoModel.IdpCertificateFile;
+                        SingleLogoutService.SendLogoutResponseByHTTPRedirect(Response, sloEndpoint, lrXml, null, null);
+                        //SAMLServiceProvider.InitiateSLO(Response, null);
+                    }
+                    break;
                 default:
-                    FormsAuthentication.SignOut();
-                    ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-                    return View("Logout");
+                    break;
             }
+
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("Settings", Community.GetCompanySettings());
+            return View("Logout");
+
         }
 
         bool setTermsOfUseText(OrganizationRegistration registration, RegisterModel model)
@@ -561,12 +582,20 @@ namespace d360.web.Controllers
             return success;
         }
 
+        [AllowAnonymous, Route("registration")]
+        public async Task<ActionResult> Registration()
+        {
+            return await Register(null,RegisterStep.Registration);
+        }
+
         [AllowAnonymous, Route("register")]
-        public ActionResult Register(Guid? registrationId = null)
+        public async Task<ActionResult> Register(Guid? registrationId = null, RegisterStep startStep = RegisterStep.Initial)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("Settings", Community.GetCompanySettings());
 
-            var model = new RegisterModel { Step = RegisterStep.Initial, RegistrationID = registrationId, Accept = false };
+            var model = new RegisterModel { Step = startStep, RegistrationID = registrationId, Accept = false};
+            model.IsUsingActiveDirectory = isUsingActiveDirectory();
             var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
 
             if (registrationId.HasValue)
@@ -580,7 +609,7 @@ namespace d360.web.Controllers
                     {
                         model.Message = "You have already registered.";
                     }
-                    model.Email = registration.Email;
+                    model.Email = registration.Email ?? " ";
 
                     switch (registration.Step)
                     {
@@ -597,7 +626,7 @@ namespace d360.web.Controllers
                         case RegisterStep.TermsOfUseValidated:
                             if (orgs.Any())
                             {
-                                foreach(var o in orgs)
+                                foreach (var o in orgs)
                                 {
                                     o.Accepted = true;
                                     o.AcceptedBy = Company.CurrentResourceID;
@@ -605,8 +634,8 @@ namespace d360.web.Controllers
                                 }
                                 Company.SaveChanges();
                             }
-
-                            model.Message = "Thank you for accepting the terms of use. You may now <a href='/login'>sign into Data3Sixty</a>.";
+                                                        
+                            model.Message = "Thank you for accepting the terms of use. You may now <a href='/'>sign into Data3Sixty</a>.";
                             break;
                     }
 
@@ -616,14 +645,39 @@ namespace d360.web.Controllers
                     model.Message = "No registration found.";
                 }
             }
-
+            
             return View("Register", model);
+        }
+
+        private async Task<InvitedUserResult> registerAzureActiveDirectoryGuest(string email, string firstName, string lastName, string url)
+        {            
+            var settings = Community.GetCompanySettings();
+            var tenantId = settings["AzureADTenant"];     //ad tenant / directory id
+            var clientSecret = settings["AzureGraphAPIKey"]; // key for application from azure portal
+            var clientId = settings["AzureApplicationId"]; //application id from azure portal
+            
+            if (!string.IsNullOrEmpty(tenantId) && !string.IsNullOrEmpty(clientSecret) && !string.IsNullOrEmpty(clientId))
+            {
+                //var email = "kmcnamee@gmail.com";
+                //var tenantId = "b0f971a2-a021-43c6-b4e9-8bf500ebf35b"; // azure ad tenant / directory id
+
+                // from portal
+                //var clientId = "a9f106b3-52fc-43ca-b33b-9e53a58b40dd"; // application id from portal
+                //var clientSecret = "5w+fAVAdSv1bZtHMVBwAQy1AJtbUr/2v1X3rbCRpY0U=";  // encoded key from azure portal app key
+                var invite = await AzureGraphProvider.CreateGuestAccount(email, firstName, lastName, url, tenantId, clientId, clientSecret);
+
+                return invite;
+            }
+
+            return null;
         }
 
         [AllowAnonymous, Route("register"), HttpPost]
         public async Task<ActionResult> Register(RegisterModel model)
         {
+            model.IsUsingActiveDirectory = isUsingActiveDirectory();
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("Settings", Community.GetCompanySettings());
 
             if (ModelState.IsValid)
             {
@@ -666,11 +720,21 @@ namespace d360.web.Controllers
                                 };
                                 Company.Add(registration);
 
-                                var content = $@"Please complete registration to {orgs.First().Name} by clicking on the following link: <a href='http://demo.dev.data3sixty.local/register?registrationId={registration.ID}'>Complete registration</a>.";
-                                await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                if (model.IsUsingActiveDirectory)
+                                {
+                                    model.Step = RegisterStep.ADRegistration;
+                                    model.RegistrationID = registration.ID;
+                                }
+                                else 
+                                {
 
-                                model.Step = RegisterStep.Email;
-                                model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                    var content = $@"Please complete registration to {orgs.First().Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
+                                    await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+
+                                    model.Step = RegisterStep.Email;
+                                    model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                }
+                                
                                 return View(model);
 
                             }
@@ -682,7 +746,7 @@ namespace d360.web.Controllers
                                 {
                                     if (!org.Accepted.Value)
                                     {
-                                        ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organizational terms of use.");
+                                        ModelState.AddModelError("Invalid", "Your domain owner has not accepted the organisational terms of use.");
                                         return View(model);
                                     }
 
@@ -697,23 +761,33 @@ namespace d360.web.Controllers
                                     };
                                     Company.Add(registration);
 
-                                    var content = $@"Please complete registration to {org.Name} by clicking on the following link: <a href='http://demo.dev.data3sixty.local/register?registrationId={registration.ID}'>Complete registration</a>.";
-                                    await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                    if (model.IsUsingActiveDirectory)
+                                    {
+                                        model.Step = RegisterStep.ADRegistration;
+                                        model.RegistrationID = registration.ID;
+                                    }
+                                    else
+                                    {
 
-                                    model.Step = RegisterStep.Email;
-                                    model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                        var content = $@"Please complete registration to {org.Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
+                                        await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+
+                                        model.Step = RegisterStep.Email;
+                                        model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                    }
+                                    
                                     return View(model);
                                 }
                                 else
                                 {
-                                    ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organizational terms of use.");
+                                    ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organisational terms of use.");
                                     return View(model);
                                 }
                             }
                             else
                             {
                                 var invite = Company.OrganizationInvitationDetails.FirstOrDefault(i => i.Email == model.Email);
-                                
+
 
                                 if (invite != null)
                                 {
@@ -721,7 +795,7 @@ namespace d360.web.Controllers
                                     var org = Company.GetById<Organization>(invite.OrganizationID);
                                     if (!org.Accepted ?? true)
                                     {
-                                        ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organizational terms of use.");
+                                        ModelState.AddModelError("Invalid", "Your domain owner has not yet accepted the organisational terms of use.");
                                         return View(model);
                                     }
 
@@ -737,16 +811,25 @@ namespace d360.web.Controllers
                                     };
                                     Company.Add(registration);
 
-                                    var content = $@"Please complete registration to {invite.OrganizationName} by clicking on the following link: <a href='http://demo.dev.data3sixty.local/register?registrationId={registration.ID}'>Complete registration</a>.";
-                                    await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                    if (model.IsUsingActiveDirectory)
+                                    {
+                                        model.Step = RegisterStep.ADRegistration;
+                                        model.RegistrationID = registration.ID;
+                                    }
+                                    else
+                                    {
+                                        var content = $@"Please complete registration to {invite.OrganizationName} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
+                                        await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
 
-                                    model.Step = RegisterStep.Email;
-                                    model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                        model.Step = RegisterStep.Email;
+                                        model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                    }
+                                    
                                     return View(model);
                                 }
                                 else
                                 {
-                                    ModelState.AddModelError("Unauthorized", "The user name or password provided is incorrect.");
+                                    ModelState.AddModelError("Unauthorized", "Your organisation is not yet registered with the Market Business Glossary or you details are invalid. Please contact <a href='mailto:glossary@londonmarketgroup.co.uk'>glossary@londonmarketgroup.co.uk</a> for assistance.");
                                     return View(model);
                                 }
 
@@ -759,6 +842,34 @@ namespace d360.web.Controllers
                         }
                         break;
                     #endregion
+                    case RegisterStep.ADRegistration:
+                        // Save current place in the process.
+                        //  registration.Step = RegisterStep.TermsOfUse;
+                        //Company.Update(registration);
+                        {
+                            var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
+                            if (registration != null)
+                            {
+                                model.Email = registration.Email;
+
+                                var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+
+                                if (orgs.Any())
+                                {
+                                    if (!setOrgAndUserTermsOfUseText(registration, model))
+                                    {
+                                        return View(model);
+                                    }
+                                }
+                                else if (!setTermsOfUseText(registration, model))
+                                {
+                                    return View(model);
+                                }
+
+                                model.Step = RegisterStep.ADTermsOfUse;
+                            }
+                        }
+                        return View(model);                        
                     case RegisterStep.Registration:
                         #region
                         try
@@ -786,61 +897,64 @@ namespace d360.web.Controllers
                             #endregion
 
                             var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
-                            if (registration != null)
-                            {
-                                var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
-
-                                if (orgs.Any())
+                                if (registration != null)
                                 {
-                                    if (!setOrgAndUserTermsOfUseText(registration, model))
+                                    model.Email = registration.Email;
+
+                                    var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+
+                                    if (orgs.Any())
+                                    {
+                                        if (!setOrgAndUserTermsOfUseText(registration, model))
+                                        {
+                                            return View(model);
+                                        }
+                                    }
+                                    else if (!setTermsOfUseText(registration, model))
                                     {
                                         return View(model);
                                     }
-                                }
-                                else if (!setTermsOfUseText(registration, model))
-                                {
-                                    return View(model);
-                                }
 
-                                #region Check/Create resource account in community
+                                    #region Check/Create resource account in community
 
-                                var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
+                                    var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
 
-                                if (resource == null)
-                                {
-                                    resource = new Resource
+                                    if (resource == null)
                                     {
-                                        Email = model.Email,
-                                        FirstName = model.FirstName,
-                                        LastName = model.LastName,
-                                        Password = Community.HashPassword(model.Password),
-                                        ResourceTypeID = 1,
-                                        Status = "Active",
-                                        Username = model.Email
-                                    };
-                                    Community.Add(resource);
+                                        resource = new Resource
+                                        {
+                                            Email = model.Email,
+                                            FirstName = model.FirstName,
+                                            LastName = model.LastName,
+                                            Password = Community.HashPassword(model.Password),
+                                            ResourceTypeID = 1,
+                                            Status = "Active",
+                                            Username = model.Email
+                                        };
+                                        Community.Add(resource);
 
-                                    Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
-                                }
-                                else
-                                {
-                                    if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
-                                    {
                                         Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
                                     }
-                                }
+                                    else
+                                    {
+                                        if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
+                                        {
+                                            Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                        }
+                                    }
 
-                                #endregion
+                                    #endregion
 
-                                #region Check/create organization resource
+                                    #region Check/create organization resource
 
-                                var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
+                                    var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
 
-                                if (orgResource == null)
-                                {
-                                    orgResource = new OrganizationResource { Accepted = false, OrganizationID = registration.OrganizationID, ResourceID = resource.ID };
-                                    Company.Add(orgResource);
-                                }
+                                    if (orgResource == null)
+                                    {
+                                        orgResource = new OrganizationResource { Accepted = false, OrganizationID = registration.OrganizationID, ResourceID = resource.ID };
+                                        Company.Add(orgResource);
+                                    }
+                                    
 
                                 #endregion
 
@@ -863,6 +977,155 @@ namespace d360.web.Controllers
                         }
                         break;
                     #endregion
+                    case RegisterStep.ADTermsOfUse:
+                        try
+                        {
+                            #region Validation
+
+                            if (!model.RegistrationID.HasValue)
+                            {
+                                ModelState.AddModelError("Invalid", "No registration found.");
+                                return View(model);
+                            }
+
+                            #endregion
+
+                            var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
+                            if (registration != null)
+                            {
+                                #region Validation
+
+                                if (!model.Accept ?? false)
+                                {
+                                    ModelState.AddModelError("Invalid", "You must accept the terms of use.");
+                                    return View(model);
+                                }
+
+                                #endregion
+
+                                #region Check/Create resource account in community
+
+                                var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
+
+                                if (resource == null)
+                                {
+                                    resource = new Resource
+                                    {
+                                        Email = model.Email,
+                                        FirstName = model.FirstName,
+                                        LastName = model.LastName,
+                                        Password = Community.HashPassword(Guid.NewGuid().ToString()),
+                                        ResourceTypeID = 1,
+                                        Status = "Active",
+                                        Username = model.Email
+                                    };
+                                    Community.Add(resource);
+
+                                    Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                }
+                                else
+                                {
+                                    if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
+                                    {
+                                        Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                                    }
+                                }
+
+                                {
+                                    var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
+
+                                    if (orgResource == null)
+                                    {
+                                        orgResource = new OrganizationResource { Accepted = false, OrganizationID = registration.OrganizationID, ResourceID = resource.ID };
+                                        Company.Add(orgResource);
+                                    }
+                                }
+
+                                if(resource == null)
+                                {
+                                    ModelState.AddModelError("Invalid", "Resource not available for this user.");
+                                    return View(model);
+                                }
+
+                                #endregion
+
+                                #region Check if organization resource account exists
+
+                                var org = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false);
+
+                                if (org.Any())
+                                {
+                                    foreach (var o in org)
+                                    {
+                                        o.Accepted = true;
+                                        o.AcceptedBy = resource.ID;
+                                        o.DateAccepted = DateTime.UtcNow;
+                                    }
+                                    Company.SaveChanges();
+                                }
+                                else
+                                {
+                                    var orgResource = Company.Filter<OrganizationResource>(i => i.ResourceID == resource.ID && i.OrganizationID == registration.OrganizationID).SingleOrDefault();
+
+                                    if (orgResource == null)
+                                    {
+                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                        return View(model);
+                                    }
+
+                                    orgResource.Accepted = true;
+                                    orgResource.DateAccepted = DateTime.UtcNow;
+                                    Company.Update(orgResource);
+                                }
+
+                                #endregion
+
+                                // Save current place in the process.
+                                registration.Step = RegisterStep.TermsOfUseValidated;
+                                Company.Update(registration);
+
+                                if (model.IsUsingActiveDirectory)
+                                {
+                                    var aadReturnDomain = Company.CurrentCompanyDomain;
+
+                                    var host = Request.Headers["Host"];
+                                    if (host.Contains(".data3sixty"))
+                                    {
+                                        aadReturnDomain = $"https://{aadReturnDomain}.data3sixty.com/";
+                                    }
+                                    else
+                                    {
+                                        aadReturnDomain = $"https://{aadReturnDomain}/";
+                                    }
+
+                                    var inviteResult = await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.LastName, aadReturnDomain);
+
+                                    if(inviteResult != null && !string.IsNullOrEmpty(inviteResult.inviteRedeemUrl))
+                                    {
+                                        return new RedirectResult(inviteResult.inviteRedeemUrl);
+                                    }
+
+                                    model.Message = "Thank you for accepting the terms of use.  Please review your mail for an invitation to use Data3Sixty.";
+                                }
+                                else
+                                {
+                                    model.Message = "Thank you for accepting the terms of use. You may now <a href='/'>sign into Data3Sixty</a>.";
+                                }
+
+                                model.Step = registration.Step;
+                                return View(model);
+                            }
+                            else
+                            {
+                                ModelState.AddModelError("Invalid", "No registration found.");
+                                return View(model);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            return View(model);
+                        }                                                
                     case RegisterStep.TermsOfUse:
                         #region
                         try
@@ -911,7 +1174,7 @@ namespace d360.web.Controllers
 
                                 if (org.Any())
                                 {
-                                    foreach(var o in org)
+                                    foreach (var o in org)
                                     {
                                         o.Accepted = true;
                                         o.AcceptedBy = Company.CurrentResourceID;
@@ -942,8 +1205,29 @@ namespace d360.web.Controllers
                                 registration.Step = RegisterStep.TermsOfUseValidated;
                                 Company.Update(registration);
 
-                                model.Step = registration.Step;
-                                model.Message = "Thank you for accepting the terms of use. You may now <a href='/login'>sign into Data3Sixty</a>.";
+                                if (model.IsUsingActiveDirectory)
+                                {
+                                    var aadReturnDomain = Company.CurrentCompanyDomain;
+
+                                    var host = Request.Headers["Host"];
+                                    if (host.Contains(".data3sixty"))
+                                    {
+                                        aadReturnDomain = $"https://{aadReturnDomain}.data3sixty.com/";
+                                    }
+                                    else
+                                    {
+                                        aadReturnDomain = $"https://{aadReturnDomain}/";
+                                    }
+
+                                    await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.LastName, aadReturnDomain);
+                                    model.Message = "Thank you for accepting the terms of use.  Please review your mail for an invitation to use Data3Sixty.";
+                                }
+                                else
+                                {
+                                    model.Message = "Thank you for accepting the terms of use. You may now <a href='/'>sign into Data3Sixty</a>.";
+                                }
+
+                                model.Step = registration.Step;                                
                                 return View(model);
                             }
                             else
@@ -971,6 +1255,30 @@ namespace d360.web.Controllers
             return View(model);
         }
 
+        private bool isUsingActiveDirectory()
+        {
+            // check that we are single sign on if not return false
+            var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
+            
+            foreach (var companySetting in c.CompanyDomainSettings)
+            {
+                if (Company.CurrentCompanyDomain == companySetting.UrlPrefix)
+                {
+                    if (companySetting.AuthenticationType == AuthenticationType.Forms) return false;
+                    break;
+                }
+            }
+
+            // now check if we also have the required ad guest info.
+            var settings = Community.GetCompanySettings();
+            var tenantId = settings["AzureADTenant"];     //ad tenant / directory id
+            var clientSecret = settings["AzureGraphAPIKey"]; // key for application from azure portal
+            var clientId = settings["AzureApplicationId"]; //application id from azure portal
+
+            if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(clientSecret) || string.IsNullOrEmpty(clientId)) return false;
+
+            return true;
+        }
 
         [AllowAnonymous, Route("reset"), HttpPost]
         public ActionResult Reset(LoginModel model)
@@ -1017,11 +1325,11 @@ namespace d360.web.Controllers
             return new EmptyResult();
         }
 
-
         [AllowAnonymous, Route("reset")]
         public ActionResult Reset()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("Settings", Community.GetCompanySettings());
             return View("Reset");
         }
 
@@ -1057,6 +1365,7 @@ namespace d360.web.Controllers
                             if (success)
                             {
                                 ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+                                ViewData.Add("Settings", Community.GetCompanySettings());
                                 return View("ResetMessage");
                             }
                         }
@@ -1067,7 +1376,6 @@ namespace d360.web.Controllers
             FormsAuthentication.RedirectToLoginPage();
             return new EmptyResult();
         }
-
 
         [AllowAnonymous, Route("Error")]
         public ActionResult Error()

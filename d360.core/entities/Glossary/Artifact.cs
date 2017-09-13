@@ -9,18 +9,15 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Artifact, "Artifact")]
-    public class Artifact : BaseIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
+    [DataContract(Namespace = NAMESPACE)]
+    public class Artifact : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, ICreatedMetadata, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         public Artifact()
         {
             Visible = true;
         }
 
-        #region Properties
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ArtifactType_Name", Description = "ArtifactType_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ArtifactType_Name", Description = "ArtifactType_Description")]
         public int ArtifactTypeID { get; set; }
 
         [DataMember]
@@ -54,7 +51,8 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "DateLastCertified_Name", Description = "DateLastCertified_Description")]
         public DateTime? DateLastCertified { get; set; }
 
-        #endregion
+        [DataMember]
+        public string SourceID { get; set; }
 
         #region Navigation Properties
 
@@ -109,6 +107,11 @@ namespace d360.core.entities
                 ObjectType = SystemObjects.ArtifactType,
                 ObjectTypeID = ArtifactTypeID
             };
+        }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.ArtifactType, Object = SystemObjects.Artifact, TypeID = ArtifactTypeID };
         }
     }
 }

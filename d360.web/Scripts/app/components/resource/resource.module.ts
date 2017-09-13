@@ -26,6 +26,7 @@ import { ResourceItemComponent } from './resource-item.component';
 import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 import { ResourceFollowingTile } from './resource-following.tile';
 import { ResourceListComponent } from './resource-list.component';
+import { ResourcePasswordComponent } from './resource-password.component';
   
 import { 
     ButtonModule,    
@@ -47,7 +48,8 @@ import {
         ResourceListComponent,
         ResourceGroupsComponent,    
         ResourceFollowingGridTile,
-        ResourceFollowingTile,         
+        ResourceFollowingTile,  
+        ResourcePasswordComponent,       
     ],    
     imports: [
         //angular

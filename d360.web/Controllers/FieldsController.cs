@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.model;
 using d360.web.Models.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -23,13 +24,11 @@ namespace d360.web.Controllers
         #region Json
 
         [Route("{type}/{id:int}.json")]
-        public JsonResult _FieldTypesByObject(SystemObjects type, int id)
+        public JsonNetResult _FieldTypesByObject(SystemObjects type, int id)
         {
-            var list = Company.GetFieldTypesByObject(type, id).ToList();
-
-            return Json(
-                list.Select(i => new
-                {
+            var list = Company
+                .GetFieldTypesByObject(type, id)
+                .Select(i => new {
                     i.FriendlyName,
                     i.Category,
                     i.DisplayDescription,
@@ -37,40 +36,46 @@ namespace d360.web.Controllers
                     i.ID,
                     i.IsListable,
                     i.IsRequired,
+                    i.ColumnOrder,
                     i.SortOrder,
                     ObjectType = i.Object,
                     i.ObjectID
-                }), 
-                JsonRequestBehavior.AllowGet
-                );
+                });
+
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-
-        //additoinal details in this one only used by angular 2 right now name is missing in old one.
+        /// <summary>
+        /// Provides additional details in this one only used by Angular right now name is missing in old one.
+        /// </summary>
+        /// <param name="type">The object type name</param>
+        /// <param name="id">The object type ID</param>
+        /// <returns></returns>
         [Route("{type}/{id:int}/full")]
-        public JsonResult _FieldTypesByObjectFull(SystemObjects type, int id)
+        public JsonNetResult _FieldTypesByObjectFull(SystemObjects type, int id)
         {
-            var list = Company.GetFieldTypesByObject(type, id).ToList();
+            var types = DataType.Text.GetDataTypeInfoList();
+            var list = (from ft in Company.GetFieldTypesByObject(type, id).ToList()
+                       join dt in types on ft.Type equals dt.Name
+                       select new {
+                           ft.FriendlyName,
+                           ft.Category,
+                           ft.DisplayDescription,
+                           ft.FormDescription,
+                           ft.ID,
+                           ft.IsListable,
+                           ft.IsPartOfKey,
+                           ft.IsRequired,
+                           ft.ColumnOrder,
+                           ft.SortOrder,
+                           ObjectType = ft.Object,
+                           ft.ObjectID,
+                           ft.Name,
+                           Type = dt.Description,
+                           ft.ColumnWidth
+                       }).ToList().OrderBy(i => i.ColumnOrder);
 
-            return Json(
-                list.Select(i => new
-                {
-                    i.FriendlyName,
-                    i.Category,
-                    i.DisplayDescription,
-                    i.FormDescription,
-                    i.ID,
-                    i.IsListable,
-                    i.IsPartOfKey,
-                    i.IsRequired,
-                    i.SortOrder,
-                    ObjectType = i.Object,
-                    i.ObjectID,
-                    i.Name,
-                    i.Type
-                }),
-                JsonRequestBehavior.AllowGet
-                );
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         #endregion
@@ -86,7 +91,7 @@ namespace d360.web.Controllers
             string errorMessage = string.Format("{0} with ID {1} could not be found.", type.ToString(), id);
 
             var sType = type.ToString();
-            var list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.SortOrder).ThenBy(i => i.Name).ToList();
+            var list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.ColumnOrder).ThenBy(i => i.Name).ToList();
 
             if (list != null)
             {
@@ -94,12 +99,12 @@ namespace d360.web.Controllers
 
                 var maxPosition = list.Count;
                 
-                var currentPosition = fieldToMove.SortOrder;
+                var currentPosition = fieldToMove.ColumnOrder;
                 var newPosition = (direction == "up") ? 
                     (currentPosition > 0 ? currentPosition - 1 : 0) : 
                     (currentPosition < maxPosition ? currentPosition + 1 : maxPosition);
 
-                fieldToMove.SortOrder = newPosition;
+                fieldToMove.ColumnOrder = newPosition;
 
                 // Get list of available sort values for this list size
                 var sorts = new List<int>();
@@ -111,9 +116,9 @@ namespace d360.web.Controllers
                     }
                 }
 
-                foreach (var f in list.Where(i => i.Name != fieldToMove.Name).OrderBy(i => i.SortOrder))
+                foreach (var f in list.Where(i => i.Name != fieldToMove.Name).OrderBy(i => i.ColumnOrder))
                 {
-                    f.SortOrder = sorts[0];
+                    f.ColumnOrder = sorts[0];
                     sorts.RemoveAt(0);
                 }
 

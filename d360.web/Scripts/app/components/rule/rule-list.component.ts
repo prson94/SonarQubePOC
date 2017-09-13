@@ -156,8 +156,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     if (!rule.Dimension) rule.Dimension = ""; //prime grid has issues with null objects make sure we dont have any.
                     rule.StatusName = RuleStatus[rule.Status];
                 }
-                this.rules = result;   
-                console.log(this.rules);  
+                this.rules = result;     
                                               
                 if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
             });

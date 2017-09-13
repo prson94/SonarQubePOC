@@ -691,7 +691,7 @@ namespace d360.extensions.search
 
                 var taxonomy = GetPropertyValue<string>(h._source, "Taxonomy");
 
-                return $"{name} ({taxonomy})";
+                return (string.IsNullOrEmpty(taxonomy) ? $"{name}" : $"{name} ({taxonomy})");                
             }
 
             var nymType = GetPropertyValue<string>(h._source, "NymType");

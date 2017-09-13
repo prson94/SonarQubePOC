@@ -2,39 +2,63 @@
     Layout = null;
     var VersionNumber = ViewData["VersionNumber"].ToString();
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
+
+    var companyLogo = "/Content/images/logo.new.png";
+    var companyIcon = "/favicon.ico";
+    var customStylesheet = "";
+
+
+    if (ViewData["Settings"] != null)
+    {
+        var settings = (Dictionary<string, string>)ViewData["Settings"];
+
+        companyLogo = settings["CompanyLogo"];
+        companyIcon = settings["CompanyIcon"];
+        customStylesheet = (settings["CustomCSSLocation"] ?? "");
+    }
+
 }
 <!DOCTYPE html>
 <html class="no-js">
-    <head>
-        <meta charset="utf-8" />
-        <title>@ViewBag.Title - Data3Sixty, Inc.</title>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-        <link rel="Shortcut Icon" href="/favicon.ico" />
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-        <link rel="stylesheet" href="/Content/styles/root@(suffix).css?version=@(VersionNumber)" />
-        <link href="/Content/styles/materialize.css" rel="stylesheet" />
-        @RenderSection("TopJs", false)
-        <style>
-            .loginlogo {
-                background-image: url(/Content/images/logo.new.png);
-                background-repeat: no-repeat;
-                background-position: left top;
-                background-size: auto 40px;
-                height: 40px;
-                width: 200px;
-                display: inline-block;
-            }
-            .directions {
-                font-size: 85%;
-                margin: 10px 0 10px 0;
-            }
-            .form-tools {
-                margin-top: 20px;
-            }
-        </style>
-        @RenderSection("TopCss", false)
-    </head>
-    @RenderBody()
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - Data3Sixty, Inc.</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <link rel="icon" type="image/x-icon" href="@(companyIcon)" />
+    <link rel="Shortcut Icon" href="@(companyIcon)" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="/Content/styles/root@(suffix).css?version=@(VersionNumber)" />
+    <link href="/Content/styles/materialize.css" rel="stylesheet" />
+    @if (!string.IsNullOrEmpty(customStylesheet))
+    {
+        <link rel="stylesheet" type="text/css" href="@(customStylesheet)" />
+    }
+
+    @RenderSection("TopJs", false)
+    <style>
+        .loginlogo {
+            background-image: url(@(companyLogo));
+            background-repeat: no-repeat;
+            background-position: left top;
+            background-size: auto 40px;
+            height: 40px;
+            width: 200px;
+            display: inline-block;
+        }
+
+        .directions {
+            font-size: 85%;
+            margin: 10px 0 10px 0;
+        }
+
+        .form-tools {
+            margin-top: 20px;
+        }
+    </style>
+
+
+    @RenderSection("TopCss", false)
+</head>
+@RenderBody()
 </html>

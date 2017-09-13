@@ -30,9 +30,9 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                     <div *ngIf="!showDelete && !showEditor && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
-                        <p-column field="name" header="Name">
+                        <p-column field="Name" header="Name">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.Name}} <i *ngIf="item.data?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
+                                <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.Name}} <i *ngIf="item.data?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>
                             </ng-template>
                         </p-column>                        
                         <p-column field="description" header="Description">
@@ -73,7 +73,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                         [method]="'callback'"
                         [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.Name] + ']?'"                                         
                         (onCancel)="showDelete=false;"
-                    ></d3s-delete-form>        
+                    ></d3s-delete-form>
                     <d3s-dynamic-editor rowID="ID" *ngIf="showEditor" [objectID]="model.ID" [objectType]="'Taxonomy'" [parentID]="selectedParentID" [title]="modelTaxonomyTitle()" [selection]="selected?.data" (saveClick)="saveTaxonomy($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>              
                 </div>                
                 `
@@ -128,13 +128,11 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.modelId = +params['modelId'];
 
             this.setObjectInfo('TaxonomyType', this.modelId);
-            
             this.setCommonRightSideBar(true, true);
 
             this.getFieldsDefinition();
             
             this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
-
             this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
             this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
 
@@ -176,7 +174,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 });
                 this.modelHierarchy = result;
 
-                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy)            
+                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
             });
     }
 
@@ -213,9 +211,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
         let res: TreeNode[] = [];
 
-        for (let root of rootNodes) {            
+        for (let root of rootNodes) {
             res.push({
-                label: root.Name,                
+                label: root.Name,
                 expanded: false,
                 data: root,
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
@@ -241,7 +239,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     deleteModelHierarchy(id: number) {
         this.isLoading = true;
         this.modelsService.deleteModelHierarchy(id).then(res => {            
-            if (!res.isError) {        
+            if (!res.isError) {
                 this.deleteSelectedTreeNode(id);
             }
 
@@ -254,16 +252,18 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private deleteSelectedTreeNode(id: number): TreeNode {
         let nodes: TreeNode[] = [];
+
         // add root nodes
         for (var i = 0; i < this.treeNodeArray.length; i++) {
             if (this.treeNodeArray[i].data.ID && this.treeNodeArray[i].data.ID == id) {
                 this.treeNodeArray.splice(i, 1);
                 return
             }
+
             nodes.push(this.treeNodeArray[i]);
         }
 
-        // do a breadth first search for the given treenode
+        //do a breadth first search for the given treenode
         if (nodes.length == 0) return;
 
         let node = nodes[0];
@@ -277,7 +277,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             if (node.children) {
                 for (var i = 0; i < node.children.length; i++) {                    
                     if (node.children[i].data.ID && node.children[i].data.ID == id) {
-                        node.children.splice(i, 1);   
+                        node.children.splice(i, 1);
                         return
                     }
                     nodes.push(node.children[i]);
@@ -288,7 +288,6 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             nodes.splice(0, 1);
 
             if (nodes.length == 0) return null;
-
             node = nodes[0];
         }
     }

@@ -47,5 +47,8 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("LoadID")]
         public virtual ICollection<LoadItem> LoadItems { get; set; }
+
+        [IgnoreDataMember, ForeignKey("LoadID")]
+        public virtual ICollection<LoadItemColumn> LoadItemColumns { get; set; }
     }
 }

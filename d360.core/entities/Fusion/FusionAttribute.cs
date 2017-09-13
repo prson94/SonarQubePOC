@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.FusionAttribute, "FusionAttribute")]
+    [DataContract(Namespace = NAMESPACE)]
     public class FusionAttribute : BaseIntObject, IIntObject, IFieldsObject, ISearchable
     {
         [DataMember]
@@ -45,5 +45,10 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("ParentID")]
         public virtual List<FusionAttribute> Children { get; set; }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.FusionAttributeType, Object = SystemObjects.FusionAttribute, TypeID = FusionAttributeTypeID };
+        }
     }
 }

@@ -11,6 +11,8 @@ import { SearchModule } from '../search/search.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
+import { ShortcutModule } from '../shared/shortcuts/shortcut.module';
+import { DashboardModule } from '../sidebar/dashboard/dashboard.module';
 
 import { HomeComponent} from './home.component';
 import { ActivityTile } from './activity-tile.component';
@@ -20,9 +22,9 @@ import { BoardTile} from './board-tile.component';
 import { HomeRoutingModule } from './home.routes';
 
 import {
-    GrowlModule,    
+    GrowlModule,
     DataTableModule,
-    ButtonModule,    
+    ButtonModule,
     TooltipModule,    
     SharedModule,
     InputTextModule,
@@ -39,7 +41,7 @@ import {
         InputTextModule,
         GrowlModule,       
         DataTableModule,
-        ButtonModule,     
+        ButtonModule,
         TooltipModule,                     
         SharedModule,
 
@@ -49,7 +51,9 @@ import {
         SocialModule,
         SharedAssignmentsModule,
         TilesModule,
-        SharedGridPagingInfoModule,        
+        SharedGridPagingInfoModule, 
+        ShortcutModule,
+        DashboardModule,
     ],
     declarations: [
         ActivityDetailsTile,

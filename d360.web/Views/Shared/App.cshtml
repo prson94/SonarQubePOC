@@ -1,20 +1,21 @@
 ﻿@{
     Layout = null;
     var CurrentResourceID = ViewData["ResourceID"].ToString();
-    var ResourceHomePage = ViewData["ResourceHomePage"].ToString();
     var VersionNumber = ViewData["VersionNumber"].ToString();
+    var ResourceHomePage = ViewData["ResourceHomePage"].ToString();
+
+
     var settings = (Dictionary<string, string>)ViewData["Settings"];
     var settingsJson = "";
     foreach (var k in settings.Keys)
     {
-        if (k != "PowerBIAccessKey" && k != "PowerBIWorkspaceId")
+        if (k != "PowerBIAccessKey" && k != "PowerBIWorkspaceId" && k != "AzureADTenant" && k != "AzureGraphAPIKey" && k != "AzureApplicationId")
         {
             settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
         }
     }
     settingsJson = "{" + settingsJson + "}";
-    var companyLogo = settings["CompanyLogo"];
-    var companyIcon = settings["CompanyIcon"];
+
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
     var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");
     var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
@@ -25,6 +26,14 @@
     }
 
     var title = settings["BrowserTitlePrefix"] ?? "Data3Sixty, Inc.";
+
+    var companyLogo = string.Format("{0}/content/images/logo.new.png", baseUrl);
+    var companyIcon = string.Format("{0}/favicon.ico", baseUrl);
+
+    companyLogo = settings["CompanyLogo"];
+    companyIcon = settings["CompanyIcon"];
+
+
 }
 @functions{
     public string GetAntiForgeryToken()
@@ -50,19 +59,15 @@
         var CurrentResourceID = @(CurrentResourceID);
         var ResourceHomePage = '@(ResourceHomePage)';
         var SingleSignOn = @(ViewData["SingleSignOn"].ToString().ToLower());
-    </script>    
+    </script>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v4.1.2/primeng.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
-    <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)"/>
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v4.1.2/theme.min.css", baseUrl)"/>
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/quill.snow.min.css", baseUrl)" />
+    <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v4.1.2/theme.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/quill.snow.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
-    @if (!string.IsNullOrEmpty(customStylesheetURL))
-    {
-        <link rel="stylesheet" type="text/css" href="@customStylesheetURL" />
-    }
     <style type="text/css">
         nav.top .logo {
             background-color:@(settings["HeaderBackgroundColor"]);
@@ -78,6 +83,10 @@
         .ng-loading-wrap{position:fixed;top:45%;left:50%;color:#54a4da;}
         .ng-loading-image{background-image: url(@string.Format("{0}/content/images/logo.new.png", baseUrl));background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-80px;}
     </style>
+    @if (!string.IsNullOrEmpty(customStylesheetURL))
+    {
+        <link rel="stylesheet" type="text/css" href="@customStylesheetURL" />
+    }
     <script src="@string.Format("{0}/scripts/quill.min.js", baseUrl)"></script>
 </head>
 <body>

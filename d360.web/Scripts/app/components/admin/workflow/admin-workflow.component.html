@@ -19,7 +19,7 @@
                 <d3s-workflow-diagram 
                                       [id]="workflow.Type.ID" 
                                       [model]="workflow"
-                                      readonly="false" 
+                                      [readonly]="false" 
                                       hasClose="true" 
                                       hasBack="true"
                                       (onBackClick)="workflow = $event; mode = PageMode.Editor"

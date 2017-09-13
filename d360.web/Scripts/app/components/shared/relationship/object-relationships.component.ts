@@ -10,7 +10,7 @@ import { Permission } from '../../../models/permission.model'
     providers: [RelationshipsService],      
     template: `
                 <header>Relationships
-                    <d3s-tile-actions [hasAdd]="hasRelationships && selected &&  hasRelationshipCreatePermissions()" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="cardinalityShow && hasRelationships && selected &&  hasRelationshipCreatePermissions()" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && hasRelationships" class="row" style="padding-left:10px;padding-bottom:5px;">
@@ -21,7 +21,7 @@ import { Permission } from '../../../models/permission.model'
                 <div *ngIf="!isLoading && hasRelationships" class="row">
                     <div class="col l3 s12 relationship-container">
                         <ng-template ngFor let-rel [ngForOf]="relationshipItems">                        
-                            <div class="row relationship" *ngIf="(rel.Count > 0 && !showEmptyRelationshipTypes) || showEmptyRelationshipTypes" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;">
+                            <div class="row relationship" *ngIf="(rel.Count > 0 && !showEmptyRelationshipTypes) || showEmptyRelationshipTypes" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;cardinalityShow = (rel.Cardinality == 2) || (rel.Count == 0 && rel.Cardinality != 2);">
                                 <div class="col s10 name"><i class="fa inactive-tool-icon" [ngClass]="{'fa-book':rel.Object=='ArtifactType','fa-sitemap':rel.Object=='TaxonomyType','fa-university':rel.Object=='PolicyType','fa-database':rel.Object=='FusionAttributeType','fa-pie-chart':rel.Object=='RuleType', 'fa-user':rel.Object=='ResourceType', 'fa-list':rel.Object=='ReferenceItemType'}" [pTooltip]="rel.Object | technicalNameToDisplayValue"></i> {{rel.Name}}</div>
                                 <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
                             </div>                        
@@ -48,6 +48,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     relationshipItems: ObjectRelationshipCount[] = [];
     selected: ObjectRelationshipCount;
 
+    cardinalityShow: boolean = true;
     hasRelationships: boolean;
     showAddRelationship: boolean = false;
     showEmptyRelationshipTypes: boolean = true;
@@ -95,7 +96,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             });
     }
     
-
     export() {        
         if (!this.selected) return;
         this.relationshipsService.exportObjectRelationshipsToExcel(this.objectType, this.objectID, this.selected.Object, this.selected.ObjectID, this.selected.IntersectTypeID, false);
@@ -116,7 +116,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         return this.selected.Count > 0;
     }
 
-    isSelected(item: ObjectRelationshipCount): boolean {        
+    isSelected(item: ObjectRelationshipCount): boolean {  
         return (this.selected && this.selected == item);
     }
 

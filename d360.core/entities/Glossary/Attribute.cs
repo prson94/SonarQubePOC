@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Attribute, "Attribute")]
+    [DataContract(Namespace = NAMESPACE)]
     public partial class Attribute : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata
     {
         [DataMember]
@@ -29,9 +29,7 @@ namespace d360.core.entities
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
-
-        #region Properties
-
+        
         [XmlIgnore()]
         public virtual AttributeType AttributeType { get; set; }
 
@@ -42,6 +40,9 @@ namespace d360.core.entities
         [ForeignKey("ParentID")]
         public virtual List<Attribute> Children { get; set; }
 
-        #endregion
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.AttributeType, Object = SystemObjects.Attribute, TypeID = AttributeTypeID };
+        }
     }
 }

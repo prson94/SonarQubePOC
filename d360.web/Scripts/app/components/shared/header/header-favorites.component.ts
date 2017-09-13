@@ -8,7 +8,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 
 @Component({
-    selector: 'd3s-header-favorites',    
+    selector: 'd3s-header-favorites',
     template:
     `
         <span *ngIf="visible" (click)="handleClick()" class="favorite" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
@@ -27,26 +27,26 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     @Input() currentObjectId: number;
 
     private isHomePageItem: boolean = false;
-    private subBreadcrumb: any;  
+    private subBreadcrumb: any;
     private isLoading = false;
 
     private name: string;
     private visible: boolean = true;
-    
+
     constructor(private router: Router,
         private favoritesService: FavoritesService,
         private breadcrumbService: HeaderBreadcrumbService,
         protected headerActionsService: HeaderActionsService,
         private ref: ChangeDetectorRef
-    ) {        
+    ) {
     }
-    
-    ngOnInit() {        
+
+    ngOnInit() {
         this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe(b => {
-            this.name = b.text;            
+            this.name = b.text;
         });
     }
-    
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.uri && changes["uri"]) {
             this.visible = this.checkVisible();
@@ -86,21 +86,21 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         f.Route = this.uri ? this.uri : 'home';//null route is home        
         this.isFavoriteItem = !this.isFavoriteItem;
         this.favoritesService.toggleFavorite(f)
-            .then(fav => {                
-                this.headerActionsService.emitFavoritesChange();                
+            .then(fav => {
+                this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.ref.markForCheck();
-            });            
+            });
     }
-    
-    checkIsFavorite() {        
+
+    checkIsFavorite() {
         if (this.favItems == null) return;
 
         this.isFavoriteItem = false;
         if (!this.uri) this.uri = 'home';
         let index = this.favItems.findIndex(x => x.Route == this.uri);
-        
-        this.isFavoriteItem = index >= 0;        
+
+        this.isFavoriteItem = index >= 0;
     }
 
     checkIsHomePage() {
@@ -117,7 +117,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         return !this.isAdminUri() && !this.isIssueUri();
     }
 
-    isAdminUri() {                
+    isAdminUri() {
         return (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
     }
 

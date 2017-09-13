@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.model;
 using d360.core;
+using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,10 @@ using d360.core.enums;
 using System.Collections;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using Newtonsoft.Json;
+using System.Data.SqlClient;
 
 namespace d360.web.Controllers.Services
 {
@@ -319,18 +324,37 @@ where A.ArtifactTypeID = @id", columns, joins);
 
                 #endregion
 
+
+                if (!model.ContainsKey("Name"))
+                    throw new MissingPropertiesException("Artifact.Name");
+
+                if (!model.ContainsKey("Description"))
+                    throw new MissingPropertiesException("Artifact.Description");
+
+                if (!model.ContainsKey("TaxonomyTypeID"))
+                    throw new MissingPropertiesException("Artifact.TaxonomyTypeID");
+
+                if (model.ContainsKey("SourceID"))
+                {
+                    var sourceID = model["SourceID"].ToString();
+                    if (!string.IsNullOrEmpty(sourceID))
+                    {
+                        item = Company.Filter<Artifact>(i => i.ArtifactTypeID == id && i.SourceID == sourceID).FirstOrDefault();
+                        if (item == null)
+                        {
+                            item = new Artifact { SourceID = sourceID };
+                        }
+                    }
+                }
+                else
+                {
+                    item = new Artifact();
+                }
+
+                item.Name = model["Name"].ToString();
+                item.Description = model["Description"].ToString();
                 item.ArtifactTypeID = id;
-
-                if (model.ContainsKey("Name")) 
-                    item.Name = model["Name"].ToString();
-                else
-                    throw new MissingPropertiesException("Artifact");
-
-                if (model.ContainsKey("Description")) 
-                    item.Description = model["Description"].ToString();
-                else
-                    throw new MissingPropertiesException("Artifact");
-
+                item.TaxonomyTypeID = int.Parse(model["TaxonomyTypeID"].ToString());
                 item.Status = "Draft";
 
                 int parentID = 0;

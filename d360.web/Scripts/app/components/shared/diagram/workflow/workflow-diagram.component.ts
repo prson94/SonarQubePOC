@@ -117,30 +117,33 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     //#region angular
 
     public ngOnInit() {
-        if (this.readonly.toString().toLowerCase() == 'true')
-            this.isReadOnly = true;
-        else
-            this.isReadOnly = false;
-
         if (this.monitorView) {
             this.overlayWidth = 600;
             this.tab = 'history';
             this.isWindowVisible = true;
         }
 
-        //this.initializeDiagram();
-        //this.initializeMenuItems();
-
-        //this.resizeDiagram();
-
-        //this.load();
-
     }
 
     public ngOnChanges(changes: SimpleChanges) {
-        //console.log('ngOnChanges', changes, this.id, this.version);
-        if ((changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue && !changes['id'].isFirstChange()) ||
-            (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue && !changes['version'].isFirstChange())) {
+        //set read only value
+        if (changes['readonly'] != null && changes['readonly'].currentValue != changes['readonly'].previousValue) {
+            this.isReadOnly = this.readonly.toString().toLowerCase() == 'true' ? true : false;
+        }
+
+        //if a model was passed, just use that
+        if (changes['model'] != null && changes['model'].currentValue != changes['model'].previousValue) {
+            this.selectedData = null;
+            this.initializeDiagram();
+            this.initializeMenuItems();
+            this.resizeDiagram();
+
+            this.load();
+        }
+        //else we need at least an id and preferably a id/version combo
+        //without a version we just load the most recent one
+        else if ((changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue) ||
+            (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue)) {
             if (this.myDiagram != null && this.myDiagram.div != null)
                 this.myDiagram.div = null;
             if(this.myPalette != null && this.myPalette.div != null)
@@ -154,6 +157,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             this.load();
         }
 
+        //if a step selection binding changes, select the appropriate step and show the history for it
         if (changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue) {
             this.myDiagram.clearSelection();
             let part = this.myDiagram.findPartForKey(changes['selectedStepId'].currentValue);
@@ -170,7 +174,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
     public ngOnDestroy() {
         //garbage collection
-        this.myDiagram.div = null;
+        if (this.myDiagram != null && this.myDiagram.div != null)
+            this.myDiagram.div = null;
         if (this.fieldsSub != null)
             this.fieldsSub.unsubscribe();
     }
@@ -206,6 +211,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
         this.myDiagram.commandHandler.deleteSelection = () => this.deleteSelection();
 
+        //console.log('init diagram', this.isReadOnly);
 
         this.myDiagram.validCycle = go.Diagram.CycleNotDirected; //disallow cycles
         this.myDiagram.maxSelectionCount = 1; //only select 1 item at a time, this makes handling selections a lot easier
@@ -291,14 +297,20 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
 
     private populateDiagram(): Promise<any> {
 
+        //load from model
+        if (this.model != null) {
+            if (this.model.Event == null || this.model.Event.Object == null || this.model.Event.ObjectID == null) {
+                console.warn('Model passed to workflow diagram with no Event Registration data.');
+                return Promise.resolve();
 
+            }
 
-        if (this.model != null && this.model.Event != null && this.model.Event.ObjectID != null && (this.id < 1 || this.id == null || (this.model != null && this.model.Nodes != null && this.model.Nodes.length > 0))) {
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object)
                 .then(r => this.fieldTypes = r)
                 .then(() => this.parseData(this.model));
         }
 
+        //if we don't have at least an id at this point, there's nothing we can do
         if (this.id == null)
             return Promise.resolve();
 
@@ -919,6 +931,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     //#region events
 
     private backClick() {
+        //console.log(this.model);
         this.model.Nodes = [];
         this.model.Links = [];
         this.model.Event.ConditionObject = null;

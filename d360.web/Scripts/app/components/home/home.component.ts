@@ -9,16 +9,30 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { DashboardService } from '../../services/dashboard.service';
+import { Dashboard } from '../../models/dashboard.model';
+
+declare var CompanySettings;
 
 @Component({
     selector: 'home',
-    templateUrl: './home.component.html'
+    templateUrl: './home.component.html',
+    providers: [ DashboardService ]
 })
 
 export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private showActivityDetails: boolean = false;
     private showBoardDetails: boolean = false;
     private showAssignmentDetails: boolean = false;
+
+    private showActivityTile: boolean = true;
+    private showBoardTile: boolean = true;
+    private showAssignmentTile: boolean = true;
+    private showTitle: boolean = false;
+    private titleSize: string = '38pt';
+    private titleColor: string = '#fff';
+    private title: string = 'D3S';
+    private backgroundImage: string = '';
 
     private activityDaysToLookBack: number = 7;
     private boardDaysToLookBack: number = 7;
@@ -30,18 +44,23 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
     private selectedWorkflowType: WorkflowType;
 
+    private numTiles: number = 3;
+    private colSize = 4;
+    private hasResults = false;
+    private dashboard: Dashboard = null;
+
     constructor(protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,        
         webAnalyticsService: WebAnalyticsService,
         protected router: Router,
-        rightSidebarService: RightSidebarService) {
+        rightSidebarService: RightSidebarService,
+        private dashboardService: DashboardService) {
         super();
         this.rightSidebarService = rightSidebarService;
         this.webAnalyticsService = webAnalyticsService;
     }
 
     ngOnInit() {
-
         this.setBrowserTitle(this.titleService, 'Home');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -49,6 +68,28 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Home'));
         this.clearSidebar();
         this.setCommonRightSideBar(false, false, true);
+
+        this.showActivityTile = CompanySettings.ShowHomeActivityTile == 'true' ? true: false;
+        this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == 'true' ? true : false;;
+        this.showBoardTile = CompanySettings.ShowHomeBoardTile == 'true' ? true : false;
+
+        this.showTitle = CompanySettings.ShowHomePageTitle == 'true' ? true : false;
+        this.title = CompanySettings.BrowserTitlePrefix;
+        this.titleSize = CompanySettings.HomePageTitleSize;
+        this.titleColor = CompanySettings.HomePageTitleColor;
+
+        this.backgroundImage = CompanySettings.HomePageBackgroundImage;
+
+        this.numTiles = (this.showAssignmentTile ? 1 : 0)
+            + (this.showBoardTile ? 1 : 0)
+            + (this.showActivityTile ? 1 : 0);
+
+        this.colSize = 12.0 / (this.numTiles == 0 ? 1 : this.numTiles);
+
+        this.dashboardService.getHomePageDashboards().then(r => {
+            if (r && r.length > 0)
+                this.dashboard = r[0];
+        });
     }
 
     ngOnDestroy() {
@@ -95,4 +136,8 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.showAssignmentDetails = false;
         this.showActivityDetails = false;        
     }    
+
+    private checkHasResults(e: any) {
+        this.hasResults = (e != null);
+    }
 }

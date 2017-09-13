@@ -177,6 +177,9 @@
   <data name="Tab" xml:space="preserve">
     <value>Please provide a tab name.</value>
   </data>
+  <data name="DisplayFormat" xml:space="preserve">
+    <value>Please provide a proper format string.</value>
+  </data>
   <data name="TextFormatString" xml:space="preserve">
     <value>Please provide a proper format string.</value>
   </data>

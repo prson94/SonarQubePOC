@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { LoadDetail, LoadFilePostModel } from '../models/load.model';
+import { LoadDetail, LoadFilePostModel, LoadColumn, LoadColumnValue } from '../models/load.model';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { GridColumn } from '../models/grid-definition.model';
@@ -37,13 +37,12 @@ export class LoadService extends BaseService {
     getActionOptions(): SelectItem[] {
         return [
             { label: 'Promotion', value: 'P' },
-            { label: 'Promotion (via Propose Workflow)', value: 'W' },
             { label: 'Relation', value: 'R' },
             { label: 'Responsibilities', value: 'O' },
             { label: 'Unrelation', value: 'U' },
             { label: 'Lineage : Business', value: 'BL' },
-            { label: 'Lineage : Technical', value: 'TL' },
-            { label: 'Synonyms', value: 'S' }
+            { label: 'Lineage : Technical', value: 'TL' }//,
+            //{ label: 'Synonyms', value: 'S' }
         ];
     }
 
@@ -62,17 +61,17 @@ export class LoadService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getExpectedColumns(type: string, id: number): Promise<string[]>  {
-        return this.http.get(`form/Load_ExpectedColumns?id=${id}&type=${type}`)
+    getExpectedColumns(action: string, type: string, id: number): Promise<LoadColumn[]>  {
+        return this.http.get(`form/Load_ExpectedColumns?action=${action}&id=${id}&type=${type}`)
             .toPromise()
-            .then(response => <string[]>response.json())
+            .then(response => <LoadColumn[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getExpectedColumnsExcel(type: string, id: number): Promise<any> {
-        return this.http.get(`form/Load_ExpectedColumns_ToExcel?id=${id}&type=${type}`)
+    getExpectedColumnsExcel(action: string, type: string, id: number): Promise<LoadColumn[]> {
+        return this.http.get(`form/Load_ExpectedColumns_ToExcel?action=${action}&id=${id}&type=${type}`)
             .toPromise()
-            .then(response => <any>response.json())
+            .then(response => <LoadColumn[]>response.json())
             .catch(err => this.handleError(err));
     }
 

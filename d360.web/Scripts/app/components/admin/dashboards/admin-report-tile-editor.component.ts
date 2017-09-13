@@ -26,7 +26,7 @@ import * as _ from 'lodash';
                             </div>                                                    
                         </div>
                         <div class="col s12">
-                            <div class="FieldName">SQL</div>                            
+                            <div class="FieldName">SQL</div>
                             <codemirror [(ngModel)]="editedTile.CommandText"
                                 name="query"
                                 [config]="baseConfig"
@@ -63,7 +63,6 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
         theme: 'mdn-like',
         mode: 'sql'
     };
-    
     
     constructor(private companySettingsService: CompanySettingsService) {
         super();        

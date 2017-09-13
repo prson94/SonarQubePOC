@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Report, "Report")]
+    [DataContract(Namespace = NAMESPACE)]
     public class Report : BaseIntObject, IIntObject, IUpdatedMetadata
     {
         [DataMember]
@@ -64,6 +64,9 @@ namespace d360.core.entities
 
         [NotMapped,DataMember]
         public string VisibleTo { get; set; }
+
+        [DataMember]
+        public bool ShowOnHomePage { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }

@@ -50,7 +50,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
     permissionMode: FormMode = FormMode.Default;
 
-
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,

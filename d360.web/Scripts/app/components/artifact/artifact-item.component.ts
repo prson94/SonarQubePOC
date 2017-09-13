@@ -16,6 +16,8 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { StringConstants } from '../../static/string-constants';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-artifact-item',
     template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                
@@ -28,7 +30,7 @@ import { StringConstants } from '../../static/string-constants';
                             </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row" *ngIf="showSocialScoreBar">
                         <div class="col s12">
                              <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
                                 <d3s-object-governance [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [status]="artifact?.Status" [isWorkflowEnabled]="artifact?.HasWorkflow"></d3s-object-governance>
@@ -54,7 +56,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     private messages: MessageBarItem[]=[];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;
-    
+
+    private showSocialScoreBar: boolean = true;
+
     constructor(private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
         private router: Router,
@@ -81,6 +85,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId);
 
             this.load(artifactId).then(() => this.isLoading = false);
+
+            this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
         });
     }
 

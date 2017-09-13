@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.model;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -305,6 +306,9 @@ namespace d360.web.Models
                                     value = dateTimeVal.ToString("s"); //already in utc
                                 }
                                 break;
+                            case "Relationship":
+                                //this will be handled differently.
+                                break;
                             default:
                                 value = form[ft.Name];
                                 break;
@@ -322,6 +326,7 @@ namespace d360.web.Models
                     }
                 }
             }
+
             return fields;
         }
     }
@@ -427,6 +432,9 @@ namespace d360.web.Models
 
         [DataMember]
         public string description { get; set; }
+
+        [DataMember]
+        public int? columnWidth { get; set; }
     }
 
     [DataContract]

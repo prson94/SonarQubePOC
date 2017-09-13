@@ -30,7 +30,7 @@ namespace d360.web.Controllers
         { }
 
         #endregion
-                
+
         private IPowerBIClient CreatePowerBIClient(string accessKey)
         {
             var credentials = new TokenCredentials(accessKey, "AppKey");
@@ -173,7 +173,7 @@ namespace d360.web.Controllers
                 }
 
                 return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
-            }            
+            }
         }
 
         [Route("tiles")]
@@ -331,6 +331,17 @@ namespace d360.web.Controllers
                 return new JsonNetResult { Data = new { error = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
                 //throw;
             }
+        }
+
+        [Route("home"), HttpGet]
+        public JsonNetResult GetHomePageReports()
+        {
+            var reports = Company.Filter<Report>(r => r.ShowOnHomePage && r.ReportType.ToLower() != "powerbi").ToList();
+            return new JsonNetResult
+            {
+                Data = reports,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
     }
 }

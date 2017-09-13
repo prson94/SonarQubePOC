@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.TooltipTemplate, "TooltipTemplate")]
+    [DataContract(Namespace = NAMESPACE)]
     public class TooltipTemplate : BaseIntObject, IIntObject
     {
         [

@@ -39,17 +39,23 @@ namespace d360.core
         FusionLookup,
         [Description("Attribute Hierarchy"), ReadOnly(true)]
         Attribute,
-        [Description("Filtered Lookup")]//, ReadOnly(true)]
+        [Description("Filtered Lookup")]
         FilteredLookup,
-        [Description("Relation Lookup")]//, ReadOnly(true)]
+        [Description("Relation Lookup")]
         ComplexRelationLookup,
         [Description("Percentage"), ReadOnly(true)]
         Percentage, // used for range of > 0 and < 1
         [Description("DataTableSelect"), ReadOnly(true)]
         DataTableSelect,
-        [Description("Ownership Lookup")]//, ReadOnly(true)]
-        OwnershipLookup
-    }
+        [Description("Ownership Lookup")]
+        OwnershipLookup,
+        [Description("Relationship")]
+        Relationship,
+        [Description("Field from Relationship")]
+        FieldFromRelationship,
+        [Description("Reference Item List from Relationship")]
+        RefListRelationship
+    } 
 
     public class DataTypeInfo
     {

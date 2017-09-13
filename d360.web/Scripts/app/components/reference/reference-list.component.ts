@@ -28,15 +28,15 @@ import { ReferenceService } from '../../services/reference.service';
                         </div>
                         <div class="row">
                             <div class="col s12">
-                                <div class="tile tile-detail">                                              
-                                    <d3s-field-definition-tile (onFieldsChanged)="refreshItems(itemsGrid);"  [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" ></d3s-field-definition-tile>
+                                <div class="tile tile-detail">           
+                                    <d3s-dynamic-grid #itemsGrid [sortField]="'Code'" [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col s12">
-                                <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid #itemsGrid [sortField]="'Code'" [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
+                                <div class="tile tile-detail">                                              
+                                    <d3s-field-definition-tile (onFieldsChanged)="refreshItems(itemsGrid);"  [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" ></d3s-field-definition-tile>
                                 </div>
                             </div>
                         </div>
@@ -62,30 +62,49 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         super();
         this.rightSidebarService = rightSidebarService;
         this.setCommonRightSideBar(true, true, false, true, true, true, false, true);
-        this.auditSidebar.hasDynamicUrl = true;
-        this.auditSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-        });
-        this.ownershipSidebar.hasDynamicUrl = true;
-        this.ownershipSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/ownership/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-        });
-        this.impactSidebar.hasDynamicUrl = true;
-        this.impactSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-        });
-        this.lineageSidebar.hasDynamicUrl = true;
-        this.lineageSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/visualization/lineage/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-        });
-        this.relationsSidebar.hasDynamicUrl = true;
-        this.relationsSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-        });
-        this.monitorSidebar.hasDynamicUrl = true;
-        this.monitorSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceItemType.ID}`
-        });
+
+        if (this.auditSidebar)
+        {
+            this.auditSidebar.hasDynamicUrl = true;
+            this.auditSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+            });
+        }
+
+        if (this.ownershipSidebar) {
+            this.ownershipSidebar.hasDynamicUrl = true;
+            this.ownershipSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/ownership/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+            });
+        }
+
+        if (this.impactSidebar) {
+            this.impactSidebar.hasDynamicUrl = true;
+            this.impactSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+            });
+        }
+
+        if (this.lineageSidebar) {
+            this.lineageSidebar.hasDynamicUrl = true;
+            this.lineageSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/visualization/lineage/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+            });
+        }
+
+        if (this.relationsSidebar) {
+            this.relationsSidebar.hasDynamicUrl = true;
+            this.relationsSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+            });
+        }
+
+        if (this.monitorSidebar) {
+            this.monitorSidebar.hasDynamicUrl = true;
+            this.monitorSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+            });
+        }
     }
 
     ngOnInit() {

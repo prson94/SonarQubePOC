@@ -43,7 +43,7 @@ namespace d360.core.entities
 
 
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Rule, "Rule")]
-    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
+    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         public Rule()
         {
@@ -87,5 +87,10 @@ namespace d360.core.entities
 
         [ForeignKey("RuleID")]
         public virtual ICollection<RuleImplementation> RuleImplementations { get; set; }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.RuleType, Object = SystemObjects.Rule, TypeID = RuleTypeID };
+        }
     }
 }

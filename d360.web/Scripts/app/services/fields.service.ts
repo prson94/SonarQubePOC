@@ -41,6 +41,14 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
+    getRelationObjectFields(type: string, id: number, intersectTypeID: number): Promise<SelectItem[]> {
+        return this.http.get(`form/FieldType_FieldFromRelationship_Fields?type=${type}&id=${id}&intersectTypeID=${intersectTypeID}`)
+            .toPromise()
+            .then(response => <FtItem[]>response.json())
+            .then(r => this.ftItemToSelectItem(r))
+            .catch(err => this.handleError(err));
+    }
+
     getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Promise<SelectItem[]> {
         return this.http.get(`form/FieldType_RelationLookup_DisplayFields?id=${id}&type=${type}&intersectTypeID=${intersectTypeID}`)
             .toPromise()
@@ -80,6 +88,8 @@ export class FieldsService extends BaseService implements IFieldsService {
                     l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
                 });
 
+                l.CardinalRelationships = this.ftItemToSelectItem(r.CardinalRelationships);
+                l.CardinalReferenceItemRelationships = this.ftItemToSelectItem(r.CardinalReferenceItemRelationships);
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
                 l.Patterns = this.ftItemToSelectItem(r.Patterns);      
                 l.ComplexLookupRelations = r.ComplexLookupRelations;

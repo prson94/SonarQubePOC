@@ -51,7 +51,7 @@ select
 	sum(Total) as Total,
 	Id
 from
-(select  at.name as Name,
+(select  at.Name,
 	    1 as New,        					
 		0 as Total,
         at.id as Id		
@@ -59,7 +59,7 @@ from    Artifact a
         inner join artifacttype at on a.artifacttypeid = at.id
 where   a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
 union all
-select  at.name as Name,
+select  at.Name,
 	    0 as New,   
 		1 as Total,     					
         at.id as Id		
@@ -69,7 +69,7 @@ where a.updatedon > dateadd(day, @d, CURRENT_TIMESTAMP)) T
 group by Name, Id";
 
         public static string ArtifactActivityAllDateCountList = @"
-select  at.name as Name,
+select  at.Name,
 	    count(1) as New,        					
         count(1) as Total,
         at.id as Id								
@@ -648,13 +648,20 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[ObjectName] 
 			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+		end + 
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+		end as [Name],
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectCardinality] 
+			else IT.SubjectCardinality
+		end as Cardinality
 from	[dbo].[fusionattribute] fa	
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) OR 
 										(IT.Object = 'FusionAttributeType' and IT.ObjectID = fa.fusionattributetypeid) 
 									   )
-		left join [Predicate] P on P.ID = IT.PredicateID
 		cross apply (
 					select	count(1) as [Count]
 					from	[Intersect] 
@@ -668,7 +675,11 @@ where	fa.ID = @objId
 order by case 
 			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[ObjectName] 
 			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')
+		end + 
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+		end
 ";
 
         public static string FusionQueryAttributeRelationshipAllCountsWithZero = @"
@@ -685,13 +696,20 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectName] 
 			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+		end + 
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+		end as [Name],
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectCardinality] 
+			else IT.SubjectCardinality
+		end as Cardinality
 from	[dbo].[fusionQueryattribute] fa	
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) OR 
 										(IT.Object = 'FusionQueryAttributeType' and IT.ObjectID = fa.fusionqueryattributetypeid) 
 									   )
-		left join [Predicate] P on P.ID = IT.PredicateID
 		cross apply (
 					select	count(1) as [Count]
 					from	[Intersect] 
@@ -705,7 +723,11 @@ where	fa.ID = @objId
 order by case 
 			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectName] 
 			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')
+		end + 
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+		end
 ";
 
         public static string ObjectRelationshipAllCountsWithZero = @"
@@ -722,13 +744,20 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
 			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+		end + 
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+		end as [Name],
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectCardinality] 
+			else IT.SubjectCardinality
+		end as Cardinality
 from	cache.[Object] CO	
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) OR 
 										(IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) 
 									   )
-		left join [Predicate] P on P.ID = IT.PredicateID
 		cross apply (
 					select	count(1) as [Count]
 					from	[Intersect] 
@@ -742,7 +771,11 @@ where	CO.[Object] = @obj and CO.ObjectID = @objId
 order by case 
 			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
 			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')";
+		end + 
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+		end";
 
         
         public static string ObjectRelationshipTypeIDs = @"

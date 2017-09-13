@@ -57,6 +57,14 @@ namespace d360.core.entities
         public string UrlPrefix { get; set; }
     }
 
+    public class FieldsObjectModel 
+    {
+        public SystemObjects Type { get; set; }
+        public int TypeID { get; set; }
+
+        public SystemObjects @Object { get; set; }
+    }
+
 
     [DataContract(Namespace = NAMESPACE), System.ComponentModel.DataAnnotations.Schema.Table("Global_Resource", Schema = "reporting")]
     public class GlobalReportingResource : BaseObject
@@ -320,6 +328,29 @@ namespace d360.core.entities
         public int GroupID { get; set; }
 
         [DataMember]
+        public int ObjectID { get; set; }
+    }
+
+    public class BulkLoadRelationModel
+    {
+        public string DisplayValue { get; set; }
+
+        public string Object { get; set; }
+
+        public int ObjectID { get; set; }
+    }
+
+    public class BulkLoadMatchingModel
+    {
+        public int FieldTypeID { get; set; }
+        public int ColumnIndex { get; set; }
+        public List<BulkLoadMatchingFieldModel> Fields { get; set; }
+    }
+
+    public class BulkLoadMatchingFieldModel
+    {
+        //public int FieldTypeID { get; set; }
+        public string Value { get; set; }
         public int ObjectID { get; set; }
     }
 

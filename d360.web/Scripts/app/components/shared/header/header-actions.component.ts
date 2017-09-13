@@ -25,11 +25,11 @@ declare var CompanySettings;
                     <li><a href="/slo" title="Sign out"><i class="fa fa-sign-out"></i></a></li>
                     <li><a [routerLink]="resourceUrl()" class="photo" title="Go to your profile"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a></li>                    
                 </ul> 
-                `,  
+                `,
     providers: [FavoritesService]
 })
 
-export class HeaderActionsComponent {        
+export class HeaderActionsComponent {
     private resourceId: number = CurrentResourceID;
     private isAdminUrl = false;
     private uri = "";
@@ -53,13 +53,13 @@ export class HeaderActionsComponent {
     ngOnInit() {
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.uri = _.trimStart(e.urlAfterRedirects,'/');
+                this.uri = _.trimStart(e.urlAfterRedirects, '/');
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
 
                 //dont show raise issue button on raise issue screen or any admin screens            
-                this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && (e.urlAfterRedirects.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');            
+                this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && (e.urlAfterRedirects.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');
 
-            }            
+            }
         });
 
 
@@ -71,7 +71,7 @@ export class HeaderActionsComponent {
 
         this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.currentObject = c.type;
-            this.currentObjectId = c.id; 
+            this.currentObjectId = c.id;
             if (this.favItems == null) {
                 this.favoritesService.getFavorites()
                     .then(fav => {

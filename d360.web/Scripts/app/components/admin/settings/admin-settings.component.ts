@@ -35,6 +35,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     searchTypes: SearchType[] = SettingsHelper.getSearchTypesList();
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
+    homePageImage: CompanyImage = new CompanyImage()
+
     sub: any;
     routeValidationMessage = "";
     
@@ -62,6 +64,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             .then(data => {
                 this.companyLogo = new CompanyImage();
                 this.companyIcon = new CompanyImage();
+                this.homePageImage = new CompanyImage();
 
                 this.companySettings = data;
                 this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes);
@@ -79,6 +82,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.DefaultSearchTypes = SettingsHelper.searchTypeListToString(this.searchTypes);
         this.companySettings.CompanyIcon = this.companyIcon.dataUrl;
         this.companySettings.CompanyLogo = this.companyLogo.dataUrl;
+        this.companySettings.HomePageBackgroundImage = this.homePageImage.dataUrl;
 
         this.companySettingsService.putSettings(this.companySettings)
             .then(data => {                

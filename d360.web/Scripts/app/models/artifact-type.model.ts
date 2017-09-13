@@ -13,9 +13,17 @@ export class ArtifactType {
     Description: string;
     AllowHierarchy: boolean;
     AllowRelatedArtifacts: boolean;
+    AutoDisplayDescription: boolean;
     CanOwnFusion: boolean;
     HasDashboards: boolean;    
     HasV2Workflows: boolean;
+    HasCustomExportTemplates: boolean;
+}
+
+export class ArtifactTypeExportTemplate {
+    ID: number;
+    Name: string;
+    Description: string;
 }
 
 export class ArtifactTypeSummary {

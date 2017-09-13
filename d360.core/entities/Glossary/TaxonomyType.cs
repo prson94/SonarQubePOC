@@ -8,7 +8,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.TaxonomyType, "TaxonomyType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class TaxonomyType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         #region Properties

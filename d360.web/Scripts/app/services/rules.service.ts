@@ -68,7 +68,6 @@ export class RulesService extends BaseService {
     deleteRuleType(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'ruletype', id);
     }
-    
 
     saveRuleType(ruleType: RuleType): Promise<JsonResult> {
         if (ruleType.ID == undefined || !ruleType.ID) {

@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.TaxonomyType, "PolicyType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class PolicyType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
     {
         #region Properties

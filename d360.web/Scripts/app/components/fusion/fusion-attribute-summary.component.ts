@@ -84,7 +84,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         super();
     }
         
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {             
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {            
             this.fusionObject = 'FusionAttributeType';
             this.fusionObjectID = this.fusionAttributeTypeId;

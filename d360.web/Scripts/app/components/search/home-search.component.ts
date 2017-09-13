@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
@@ -17,6 +17,7 @@ declare var CompanySettings;
 })
 
 export class HomeSearchComponent extends BaseComponent {
+    @Output() resultsChange = new EventEmitter()
     private searchResults: SearchResultsObject;
     private categories: SearchCategories[] = [];
     private selectedCategory: SearchCategories;
@@ -39,6 +40,7 @@ export class HomeSearchComponent extends BaseComponent {
         this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, this.searchTypes, filterCategory, this.isExactMatch)
             .then(res => {                
                 this.searchResults = res;
+                this.resultsChange.emit(this.searchResults);
                 if (filterCategory == undefined) this.categories = res.Categories;
             });
     }

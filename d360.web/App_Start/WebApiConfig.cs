@@ -1,11 +1,11 @@
 ﻿using d360.media.formatters;
+using d360.web.Filters;
 using d360.web.Models.Attributes;
 using System;
 using System.Net.Http.Formatting;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.OData.Extensions;
-using d360.web.Filters;
 
 namespace d360.web
 {
@@ -22,9 +22,9 @@ namespace d360.web
 
             config.Services.Add(typeof(IExceptionLogger), new AiExceptionLogger());
 
-//#if !DEBUG
-  //              config.Filters.Add(new ExceptionHandlingAttribute());
-//#endif
+            #if !DEBUG
+                config.Filters.Add(new ExceptionHandlingAttribute());
+            #endif
 
             // Web API routes
             config.MapHttpAttributeRoutes();

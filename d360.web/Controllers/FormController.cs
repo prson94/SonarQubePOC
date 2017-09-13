@@ -43,6 +43,7 @@ namespace d360.web.Controllers
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
+
         }
 
         #endregion
@@ -635,7 +636,9 @@ namespace d360.web.Controllers
                 case "POLICYTYPE":
                     return DeletePolicyType(form);
                 case "POLICYTYPECLASS":
-                    return DeletePolicyTypeClass(form);                
+                    return DeletePolicyTypeClass(form);
+                case "POLICYTYPELEVEL":
+                    return DeletePolicyTypeLevel(form);
                 case "RULEIMPLEMENTATION":
                     return DeleteRuleImplementation(form);
                 case "SCORETYPE":
@@ -653,9 +656,9 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPE":
                     return DeleteTaxonomyType(form);
                 case "TAXONOMYTYPECLASS":
-                    return DeleteTaxonomyTypeClass(form);                
-                case "TEMPLATE":
-                    return DeleteTooltipTemplate(form);
+                    return DeleteTaxonomyTypeClass(form);
+                case "TAXONOMYTYPELEVEL":
+                    return DeleteTaxonomyTypeLevel(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -932,8 +935,10 @@ namespace d360.web.Controllers
                     if (model.ParentID == 0) model.ParentID = null;
                 }
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList(), form, Server);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList();
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server);
                 Company.SaveOrUpdate<Artifact>(model, fields);
+                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, typeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
 
                 return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
             }
@@ -956,13 +961,11 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("artifact");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<Artifact>(id);
-                if (model == null) throw new NotFoundException("artifact");
 
                 if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Delete, ClaimObject.Root))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete(model);
+                Company.Delete(SystemObjects.Artifact, id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
             }
@@ -1006,9 +1009,10 @@ namespace d360.web.Controllers
                 model.ParentID = parseIntField(form, "ParentID");
                 if (model.ParentID == 0) model.ParentID = null;
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList(), form, Server, false);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList();
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server, false);
                 Company.SaveOrUpdate<Artifact>(model, fields);
-
+                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.ArtifactTypeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
 
                 //#region Add Comment
 
@@ -1214,7 +1218,8 @@ namespace d360.web.Controllers
                 {
                     Name = model.ArtifactType.Name,
                     Description = model.ArtifactType.Description,
-                    CanOwnFusion = model.ArtifactType.CanOwnFusion
+                    CanOwnFusion = model.ArtifactType.CanOwnFusion,
+                    AutoDisplayDescription = model.ArtifactType.AutoDisplayDescription
                 };
 
                 if (model.ArtifactType.ParentID != null)
@@ -1264,6 +1269,7 @@ namespace d360.web.Controllers
                 existing.Name = model.ArtifactType.Name;
                 existing.Description = model.ArtifactType.Description;
                 existing.CanOwnFusion = model.ArtifactType.CanOwnFusion;
+                existing.AutoDisplayDescription = model.ArtifactType.AutoDisplayDescription;
 
                 Company.Update(existing);
 
@@ -1302,8 +1308,7 @@ namespace d360.web.Controllers
 
                 if (model.ParentID.HasValue) id = model.ParentID.Value;
 
-                Company.Delete(model);
-                deleteObjectStyle(SystemObjects.ArtifactType, id);
+                Company.Delete(SystemObjects.ArtifactType, id);
 
                 dynamic custom = new
                 {
@@ -1595,7 +1600,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
                                 
-                Company.Delete("AttributeType", id);//Company.Delete<AttributeType>(model);
+                Company.Delete(SystemObjects.AttributeType, id);
 
                 return jsonSuccess(Resources.FormInfo.Delete_AttributeType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -2036,6 +2041,9 @@ namespace d360.web.Controllers
             model.EnableShoppingCart = (settings.Any(i => i.SettingID == 20) ? bool.Parse(settings.Single(i => i.SettingID == 20).Value) : false);
             model.DefaultRoute = (settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
             model.EnableSearchExactMatch = (settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);
+            model.ShowDefaultHelpVideos = (settings.Any(i => i.SettingID == 35) ? bool.Parse(settings.Single(i => i.SettingID == 35).Value) : true);
+
+           
 
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
@@ -2056,7 +2064,15 @@ namespace d360.web.Controllers
             model.SiteNav = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
 
             model.HeaderBackgroundColor = (settings.Any(i => i.SettingID == 10) ? settings.Single(i => i.SettingID == 10).Value : "");
-            
+
+            model.ShowHomeAssignmentTile = (settings.Any(i => i.SettingID == 39) ? bool.Parse(settings.Single(i => i.SettingID == 39).Value) : true);
+            model.ShowHomeBoardTile = (settings.Any(i => i.SettingID == 40) ? bool.Parse(settings.Single(i => i.SettingID == 40).Value) : true);
+            model.ShowHomeActivityTile = (settings.Any(i => i.SettingID == 41) ? bool.Parse(settings.Single(i => i.SettingID == 41).Value) : true);
+            model.ShowHomePageTitle = (settings.Any(i => i.SettingID == 42) ? bool.Parse(settings.Single(i => i.SettingID == 42).Value) : false);
+            model.HomePageTitleSize = (settings.Any(i => i.SettingID == 43) ? settings.Single(i => i.SettingID == 43).Value : "38pt");
+            model.HomePageTitleColor = (settings.Any(i => i.SettingID == 44) ? settings.Single(i => i.SettingID == 44).Value : "#fff");
+            model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
+
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -2073,7 +2089,7 @@ namespace d360.web.Controllers
 
                 var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
 
-                #region icon
+                #region Icon
 
                 var iconSetting = settings.SingleOrDefault(i => i.SettingID == 3);
                 if (formModel.SetIconToDefault)
@@ -2116,7 +2132,7 @@ namespace d360.web.Controllers
 
                 #endregion
 
-                #region logo
+                #region Logo
 
                 var logoSetting = settings.SingleOrDefault(i => i.SettingID == 2);
                 if (formModel.SetLogoToDefault)
@@ -2164,131 +2180,26 @@ namespace d360.web.Controllers
 
                 #endregion
 
-                #region social
+                #region Social
 
-                var socialSetting = settings.FirstOrDefault(i => i.SettingID == 1);
-                if (socialSetting == null)
-                {
-                    socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 1, Value = formModel.DisableCommunityPosting.ToString().ToLower() };
-                    Community.Add<CompanySetting>(socialSetting);
-                }
-                else
-                {
-                    socialSetting.Value = formModel.DisableCommunityPosting.ToString().ToLower();
-                    Community.SaveChanges();
-                }
-
-                socialSetting = settings.FirstOrDefault(i => i.SettingID == 5);
-                if (socialSetting == null)
-                {
-                    socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 5, Value = formModel.DisableIssuePosting.ToString().ToLower() };
-                    Community.Add<CompanySetting>(socialSetting);
-                }
-                else
-                {
-                    socialSetting.Value = formModel.DisableIssuePosting.ToString().ToLower();
-                    Community.SaveChanges();
-                }
+                updateCompanySetting(settings, 1, formModel.DisableCommunityPosting.ToString().ToLower());
+                updateCompanySetting(settings, 5, formModel.DisableIssuePosting.ToString().ToLower());
 
                 #endregion
 
-                #region global fields
-
-                var subjectAreaSetting = settings.FirstOrDefault(i => i.SettingID == 7);
-                if (subjectAreaSetting == null)
-                {
-                    if (!string.IsNullOrEmpty(formModel.ArtifactType_TaxonomyTypeID))
-                    {
-                        subjectAreaSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 7, Value = formModel.ArtifactType_TaxonomyTypeID };
-                        Community.Add<CompanySetting>(subjectAreaSetting);
-                    }
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(formModel.ArtifactType_TaxonomyTypeID))
-                    {
-                        Community.Delete<CompanySetting>(subjectAreaSetting);
-                    }
-                    else
-                    {
-                        subjectAreaSetting.Value = formModel.ArtifactType_TaxonomyTypeID;
-                        Community.SaveChanges();
-                    }
-                }
-
-                var subjectAreaNodesSetting = settings.FirstOrDefault(i => i.SettingID == 8);
-                if (subjectAreaNodesSetting == null)
-                {
-                    if (!string.IsNullOrEmpty(formModel.ArtifactType_TaxonomyTypeIDNodes))
-                    {
-                        subjectAreaNodesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 8, Value = formModel.ArtifactType_TaxonomyTypeIDNodes };
-                        Community.Add<CompanySetting>(subjectAreaNodesSetting);
-                    }
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(formModel.ArtifactType_TaxonomyTypeIDNodes))
-                    {
-                        Community.Delete<CompanySetting>(subjectAreaNodesSetting);
-                    }
-                    else
-                    {
-                        subjectAreaNodesSetting.Value = formModel.ArtifactType_TaxonomyTypeIDNodes;
-                        Community.SaveChanges();
-                    }
-                }
-
-                var issueManagamentSetting = settings.FirstOrDefault(i => i.SettingID == 17);
-                if (issueManagamentSetting == null)
-                {
-                    issueManagamentSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 17, Value = formModel.DisableIssueManagement.ToString().ToLower() };
-                    Community.Add<CompanySetting>(issueManagamentSetting);
-                }
-                else
-                {
-                    issueManagamentSetting.Value = formModel.DisableIssueManagement.ToString().ToLower();
-                    Community.SaveChanges();
-                }
-
-                var shoppingCartSetting = settings.FirstOrDefault(i => i.SettingID == 20);
-                if (shoppingCartSetting == null)
-                {
-                    shoppingCartSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 20, Value = formModel.EnableShoppingCart.ToString().ToLower() };
-                    Community.Add<CompanySetting>(shoppingCartSetting);
-                }
-                else
-                {
-                    shoppingCartSetting.Value = formModel.EnableShoppingCart.ToString().ToLower();
-                    Community.SaveChanges();
-                }
-
-                var defaultRouteSetting = settings.FirstOrDefault(i => i.SettingID == 22);
-                if (defaultRouteSetting == null)
-                {
-                    defaultRouteSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 22, Value = (formModel.DefaultRoute??"").Trim() };
-                    Community.Add<CompanySetting>(defaultRouteSetting);
-                }
-                else
-                {
-                    defaultRouteSetting.Value = formModel.DefaultRoute ?? "".Trim();
-                    Community.SaveChanges();
-                }
-
-                var enableExactMatchSetting = settings.FirstOrDefault(i => i.SettingID == 23);
-                if (enableExactMatchSetting == null)
-                {
-                    enableExactMatchSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 23, Value = formModel.EnableSearchExactMatch.ToString().ToLower() };
-                    Community.Add<CompanySetting>(enableExactMatchSetting);
-                }
-                else
-                {
-                    enableExactMatchSetting.Value = formModel.EnableSearchExactMatch.ToString().ToLower();
-                    Community.SaveChanges();
-                }
+                #region Global Fields
+                
+                updateCompanySetting(settings, 7, formModel.ArtifactType_TaxonomyTypeID);
+                updateCompanySetting(settings, 8, formModel.ArtifactType_TaxonomyTypeIDNodes);
+                updateCompanySetting(settings, 17, formModel.DisableIssueManagement.ToString().ToLower());
+                updateCompanySetting(settings, 20, formModel.EnableShoppingCart.ToString().ToLower());
+                updateCompanySetting(settings, 22, (formModel.DefaultRoute ?? "").Trim());
+                updateCompanySetting(settings, 23, formModel.EnableSearchExactMatch.ToString().ToLower());
+                updateCompanySetting(settings, 35, formModel.ShowDefaultHelpVideos.ToString().ToLower());
 
                 #endregion
 
-                #region ip
+                #region IP
 
                 var ipValidationCheckPassed = true;
                 var ipSetting = settings.SingleOrDefault(i => i.SettingID == 4);
@@ -2341,44 +2252,81 @@ namespace d360.web.Controllers
 
                 #region Search
 
-                var searchSetting = settings.FirstOrDefault(i => i.SettingID == 13);
-                if (searchSetting == null)
-                {
-                    searchSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 13, Value = formModel.DefaultSearchTypes.ToString() };
-                    Community.Add<CompanySetting>(searchSetting);
-                }
-                else
-                {
-                    searchSetting.Value = (formModel.DefaultSearchTypes ?? "").ToString();
-                    Community.SaveChanges();
-                }
+                updateCompanySetting(settings, 13, (formModel.DefaultSearchTypes ?? "").ToString());
 
                 #endregion
 
                 #region Header Styles
 
-                var headerBackgroundColorSetting = settings.SingleOrDefault(i => i.SettingID == 10);
-                if (string.IsNullOrEmpty(formModel.HeaderBackgroundColor))
+                updateCompanySetting(settings, 10, formModel.HeaderBackgroundColor);
+
+                #endregion
+
+                #region Home Page Customization
+
+                updateCompanySetting(settings, 39, formModel.ShowHomeAssignmentTile.ToString().ToLower());
+                updateCompanySetting(settings, 40, formModel.ShowHomeBoardTile.ToString().ToLower());
+                updateCompanySetting(settings, 41, formModel.ShowHomeActivityTile.ToString().ToLower());
+                updateCompanySetting(settings, 42, formModel.ShowHomePageTitle.ToString().ToLower());
+
+                //prevent the user from entering special characters
+                var alphaNumericChars = "abcdefghijklmnopqrstuvwxyz0123456789";
+                var sizeAllowedChars = alphaNumericChars + ".";
+                var colorAllowedChars = alphaNumericChars + "#";
+
+                var safeSize = System.Text.RegularExpressions.Regex.Replace(formModel.HomePageTitleSize?.Trim() ?? "", $"[^{sizeAllowedChars}]", string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                var safeColor = System.Text.RegularExpressions.Regex.Replace(formModel.HomePageTitleColor?.Trim() ?? "", $"[^{colorAllowedChars}]", string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                updateCompanySetting(settings, 43, safeSize);
+                updateCompanySetting(settings, 44, safeColor);
+
+                #region Home Page Background Image
+
+                var homePageBackgroundSetting = settings.SingleOrDefault(i => i.SettingID == 45);
+                if (formModel.ClearHomePageBackgroundImage)
                 {
-                    if(headerBackgroundColorSetting != null)
+                    if (homePageBackgroundSetting != null)
                     {
-                        Community.Delete<CompanySetting>(headerBackgroundColorSetting);
-                    }                        
+                        Community.Delete(homePageBackgroundSetting);
+                    }
                 }
                 else
                 {
-                    if (headerBackgroundColorSetting == null)
+                    if (!string.IsNullOrEmpty(formModel.HomePageBackgroundImage))
                     {
-                        searchSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 10, Value = formModel.HeaderBackgroundColor };
-                        Community.Add<CompanySetting>(searchSetting);
-                    }
-                    else
-                    {
-                        headerBackgroundColorSetting.Value = formModel.HeaderBackgroundColor;
-                        Community.SaveChanges();
+                        var imageMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.HomePageBackgroundImage);
+
+                        var imageMime = imageMatch.Groups["mime"].Value;
+                        var imageEncoding = imageMatch.Groups["encoding"].Value;
+                        var imageData = imageMatch.Groups["data"].Value;
+                        var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                        var imageByteArray = Convert.FromBase64String(imageData);
+                        var imageGuid = Guid.NewGuid();
+
+                        using (var imageStream = new MemoryStream(imageByteArray))
+                        {
+                            var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_RESOURCES_FOLDER, $"{Company.CurrentCompanyID}.home.");
+                            filesToDelete.ForEach(f =>
+                            {
+                                Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, f);
+                            });
+
+                            var imageFileName = string.Format("{0}.home.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                            Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+
+                            //always delete and add for guid
+                            if (homePageBackgroundSetting != null)
+                                Community.Delete(homePageBackgroundSetting);
+
+                            var newHomePageBackgroundSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 45, Value = string.Format("{0}{1}", constants.COMPANY_RESOURCES_URL, imageFileName) };
+                            Community.Add(newHomePageBackgroundSetting);
+
+                        }
                     }
                 }
-                                
+
+                #endregion
+
                 #endregion
 
                 return jsonSuccess("Settings successfully updated.", "0", "edit", HttpStatusCode.OK);
@@ -2391,6 +2339,32 @@ namespace d360.web.Controllers
             {
                 SendException(ex);
                 return jsonException(ex.GetFullExceptionData(), HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private void updateCompanySetting(List<CompanySetting> settings, int settingID, string value)
+        {
+
+            var setting = settings.FirstOrDefault(i => i.SettingID == settingID);
+            if (setting == null)
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    setting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = settingID, Value = value };
+                    Community.Add(setting);
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    Community.Delete(setting);
+                }
+                else
+                {
+                    setting.Value = value;
+                    Community.SaveChanges();
+                }
             }
         }
 
@@ -2424,6 +2398,7 @@ namespace d360.web.Controllers
         [HttpGet, Route("GetSiteNavFolderAvailableItems")]
         public JsonNetResult GetSiteNavFolderAvailableItems()
         {
+            throw new NotImplementedException("Do we even need this?");
             return null;
         }
 
@@ -2431,150 +2406,150 @@ namespace d360.web.Controllers
 
         #region EmailTemplate
 
-        #region Field Generation
+        //#region Field Generation
 
-        [Route("EmailTemplate_AddFields")]
-        public JsonResult EmailTemplate_AddFields()
-        {
-            var list = new List<EditableField>();
+        //[Route("EmailTemplate_AddFields")]
+        //public JsonResult EmailTemplate_AddFields()
+        //{
+        //    var list = new List<EditableField>();
 
-            var names = Enum.GetNames(typeof(SystemObjects)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
-            names.Add(new SelectListItem { Text = "Global.Footer", Value = "Global.Footer" });
-            names.Add(new SelectListItem { Text = "Global.Header", Value = "Global.Header" });
+        //    var names = Enum.GetNames(typeof(SystemObjects)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
+        //    names.Add(new SelectListItem { Text = "Global.Footer", Value = "Global.Footer" });
+        //    names.Add(new SelectListItem { Text = "Global.Header", Value = "Global.Header" });
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Lookup.ToString(), Items = names });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Action", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TemplateSubject", Name = "Subject", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Subject", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "TemplateBody", Name = "Body", FieldType = DataType.Html.ToString(), Validations = checkAndAddValidation("Text", "Body", true, "", null, null) });
+        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Lookup.ToString(), Items = names });
+        //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Action", true, "", 1, 250) });
+        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+        //    list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TemplateSubject", Name = "Subject", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Subject", true, "", 1, 250) });
+        //    list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "TemplateBody", Name = "Body", FieldType = DataType.Html.ToString(), Validations = checkAndAddValidation("Text", "Body", true, "", null, null) });
 
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
 
-        /// <param name="id">EmailTemplateID</param>
-        [Route("EmailTemplate_DeleteFields"), NonNullableParameters]
-        public JsonResult EmailTemplate_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<EmailTemplate>(id);
+        ///// <param name="id">EmailTemplateID</param>
+        //[Route("EmailTemplate_DeleteFields"), NonNullableParameters]
+        //public JsonResult EmailTemplate_DeleteFields(int id)
+        //{
+        //    var list = new List<EditableField>();
+        //    var a = Company.GetById<EmailTemplate>(id);
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
 
-        /// <param name="id">EmailTemplateID</param>
-        [Route("EmailTemplate_EditFields"), NonNullableParameters]
-        public JsonResult EmailTemplate_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<EmailTemplate>(id);
+        ///// <param name="id">EmailTemplateID</param>
+        //[Route("EmailTemplate_EditFields"), NonNullableParameters]
+        //public JsonResult EmailTemplate_EditFields(int id)
+        //{
+        //    var list = new List<EditableField>();
+        //    var a = Company.GetById<EmailTemplate>(id);
 
-            var names = Enum.GetNames(typeof(SystemObjects)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
-            names.Add(new SelectListItem { Text = "Global.Footer", Value = "Global.Footer" });
-            names.Add(new SelectListItem { Text = "Global.Header", Value = "Global.Header" });
+        //    var names = Enum.GetNames(typeof(SystemObjects)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
+        //    names.Add(new SelectListItem { Text = "Global.Footer", Value = "Global.Footer" });
+        //    names.Add(new SelectListItem { Text = "Global.Header", Value = "Global.Header" });
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Lookup.ToString(), Items = names, Value = a.Name });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Text.ToString(), Value = a.Action, Validations = checkAndAddValidation("Text", "Action", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TemplateSubject", Name = "Subject", FieldType = DataType.Text.ToString(), Value = a.TemplateSubject, Validations = checkAndAddValidation("Text", "Subject", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "TemplateBody", Name = "Body", FieldType = DataType.Html.ToString(), Value = a.TemplateBody, Validations = checkAndAddValidation("Text", "Body", true, "", null, null) });
+        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Lookup.ToString(), Items = names, Value = a.Name });
+        //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Text.ToString(), Value = a.Action, Validations = checkAndAddValidation("Text", "Action", true, "", 1, 250) });
+        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
+        //    list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TemplateSubject", Name = "Subject", FieldType = DataType.Text.ToString(), Value = a.TemplateSubject, Validations = checkAndAddValidation("Text", "Subject", true, "", 1, 250) });
+        //    list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "TemplateBody", Name = "Body", FieldType = DataType.Html.ToString(), Value = a.TemplateBody, Validations = checkAndAddValidation("Text", "Body", true, "", null, null) });
 
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
 
-        #endregion
+        //#endregion
 
-        #region Form Get/Post
+        //#region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddEmailTemplate")]
-        public JsonResult AddEmailTemplate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("email template");
+        //[ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddEmailTemplate")]
+        //public JsonResult AddEmailTemplate(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("email template");
 
-                var a = new EmailTemplate
-                {
-                    Action = parseTextField(form, "Action"),
-                    Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name"),
-                    TemplateBody = parseTextField(form, "TemplateBody"),
-                    TemplateSubject = parseTextField(form, "TemplateSubject")
-                };
+        //        var a = new EmailTemplate
+        //        {
+        //            Action = parseTextField(form, "Action"),
+        //            Description = parseTextField(form, "Description"),
+        //            Name = parseTextField(form, "Name"),
+        //            TemplateBody = parseTextField(form, "TemplateBody"),
+        //            TemplateSubject = parseTextField(form, "TemplateSubject")
+        //        };
 
-                Company.Add<EmailTemplate>(a);
+        //        Company.Add<EmailTemplate>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //        return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
-        [HttpDelete, Route("DeleteEmailTemplate")]
-        public JsonResult DeleteEmailTemplate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("email template");
+        //[HttpDelete, Route("DeleteEmailTemplate")]
+        //public JsonResult DeleteEmailTemplate(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("email template");
 
-                var id = parseIntField(form, "ID");
-                Company.Delete<EmailTemplate>(i => i.ID == id);
+        //        var id = parseIntField(form, "ID");
+        //        Company.Delete<EmailTemplate>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //        return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
-        [HttpPut, ValidateInput(false), Route("EditEmailTemplate")]
-        public JsonResult EditEmailTemplate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("email template");
+        //[HttpPut, ValidateInput(false), Route("EditEmailTemplate")]
+        //public JsonResult EditEmailTemplate(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("email template");
 
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<EmailTemplate>(id);
-                if (model == null) throw new NotFoundException("email template");
+        //        var id = parseIntField(form, "ID");
+        //        var model = Company.GetById<EmailTemplate>(id);
+        //        if (model == null) throw new NotFoundException("email template");
 
-                model.Action = parseTextField(form, "Action");
-                model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name");
-                model.TemplateBody = parseTextField(form, "TemplateBody");
-                model.TemplateSubject = parseTextField(form, "TemplateSubject");
+        //        model.Action = parseTextField(form, "Action");
+        //        model.Description = parseTextField(form, "Description");
+        //        model.Name = parseTextField(form, "Name");
+        //        model.TemplateBody = parseTextField(form, "TemplateBody");
+        //        model.TemplateSubject = parseTextField(form, "TemplateSubject");
 
-                Company.Update<EmailTemplate>(model);
+        //        Company.Update<EmailTemplate>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //        return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
-        #endregion
+        //#endregion
 
         #endregion
 
@@ -2866,13 +2841,69 @@ namespace d360.web.Controllers
                 {
                     list.Add($"Related Item.{r.Name}", r.ID);
                 }
-                
             });
 
 
             return new JsonNetResult
             {
                 Data = list.Select(i => new { title = i.Key, value = $"{i.Value}|{i.Key}" }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Route("FieldType_FieldFromRelationship_Fields"), NonNullableParameters]
+        public JsonNetResult FieldType_FieldFromRelationship_Fields(SystemObjects type, int id, int intersectTypeID)
+        {
+            var intersectType = Company.GetById<IntersectType>(intersectTypeID);
+
+            if (intersectType == null)
+                return new JsonNetResult { Data = new Dictionary<string, int>() };
+
+            var isSubject = (intersectType.Subject == type.ToString() && intersectType.SubjectID == id);
+
+            var targetObjectType = isSubject ? intersectType.Object : intersectType.Subject;
+            var targetObjectTypeID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+
+            var list = Company.Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString() && i.Type != DataType.Relationship.ToString())
+                .Select(i => new { i.ID, i.Name })
+                .Distinct()
+                .ToDictionary(i => i.Name, i => i.ID);
+
+            //if (type == SystemObjects.ReferenceItemType)
+            //{
+            //    if (id == 0)
+            //    {
+            //        list.Add("Name", 0);
+            //        if (!list.ContainsKey("Description"))
+            //            list.Add("Description", 0);
+            //    }
+            //    else
+            //    {
+            //        list.Add("Code", 0);
+            //    }
+            //}
+            //else if (type == SystemObjects.ResourceType)
+            //{
+            //    list.Add("FirstName", 0);
+            //    list.Add("LastName", 0);
+            //    list.Add("Email", 0);
+            //    list.Add("DateLastLoggedIn", 0);
+            //}
+            //else if (type == SystemObjects.FusionQueryAttributeType)
+            //{
+            //    list.Add("DisplayValue", 0);
+            //}
+            //else
+            //{
+            //    list.Add("DisplayValue", 0);
+            //    //list.Add("TextPath", 0);
+            //}
+
+
+            return new JsonNetResult
+            {
+                Data = list.Select(i => new { title = i.Key, value = $"{i.Value}" }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -3006,6 +3037,28 @@ namespace d360.web.Controllers
 
             var complexLookupRelations = ComplexLookupRelationType.ChildItem.GetComplexLookupRelationTypeInfoList().ToList();
 
+            var sType = type.ToString();
+            var cardinalRelationshipsList = Company.Filter<IntersectTypeDetail>(i =>
+                (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
+                (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+            ).ToList();
+
+            var cardinalRelationships = cardinalRelationshipsList
+            .Select(i => new {
+                title = ((i.Subject == sType && i.SubjectID == id) ? $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" : $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                value = $"{i.ID}"
+            });
+
+            var cardinalReferenceItemRelationships = cardinalRelationshipsList
+                .Where(i => 
+                    (i.Subject == sType && i.SubjectID == id) ? 
+                        i.Object == SystemObjects.ReferenceItemType.ToString() : 
+                        i.Subject == SystemObjects.ReferenceItemType.ToString()
+                    ).Select(i => new {
+                        title = ((i.Subject == sType && i.SubjectID == id) ? $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" : $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                        value = $"{i.ID}"
+                    });
+
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },
                 { "Email", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
@@ -3032,6 +3085,8 @@ namespace d360.web.Controllers
                 Data = new
                 {
                     Attributes = attributes,
+                    CardinalRelationships = cardinalRelationships,
+                    CardinalReferenceItemRelationships = cardinalReferenceItemRelationships,
                     DataTypes = dataTypeOptions,
                     FilteredLookups = filteredLookups,
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
@@ -3191,8 +3246,7 @@ namespace d360.web.Controllers
         {
             var nameUpper = name.ToUpper();
 
-            if (nameUpper == "PARENTID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
-            //if (nameUpper == "STATUS" || nameUpper == "NAME" || nameUpper == "DESCRIPTION" || nameUpper == "PARENTID" || nameUpper == "DATELASTCERTIFIED" || nameUpper == "TAXONOMYTYPEID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
+            if (nameUpper == "PARENTID")  throw new Exception("Use of a field type with the name " + name + " is prohibited.");
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFieldType")]
@@ -3200,14 +3254,14 @@ namespace d360.web.Controllers
         {
             try
             {
-                int maxSort = 0;
-                try { maxSort = Company.GetFieldTypesByObject((SystemObjects)Enum.Parse(typeof(SystemObjects), model.FieldType.Object), model.FieldType.ObjectID).Max(i => i.SortOrder); }
+                int maxColumnOrder = 0;
+                try { maxColumnOrder = Company.GetFieldTypesByObject((SystemObjects)Enum.Parse(typeof(SystemObjects), model.FieldType.Object), model.FieldType.ObjectID).Max(i => i.ColumnOrder); }
                 catch { }
 
                 //dont let fields with reserved names in
                 CheckIsFieldTypeNameReserved(model.FieldType.Name);
 
-                model.FieldType.SortOrder = maxSort + 1;
+                model.FieldType.ColumnOrder = maxColumnOrder + 1;
 
                 var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
                 if (!nameRegex.IsMatch(model.FieldType.Name))
@@ -3496,9 +3550,14 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
 
                 var id = parseIntField(form, "ID");
+
+                if (!Company.HasPermission(SystemObjects.FieldType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
                 var model = Company.GetById<FieldType>(id);
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
-                Company.Delete("FieldType", id);//Company.Delete<FieldType>(model);
+                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
+
+                Company.Delete(SystemObjects.FieldType, id);
 
                 return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -3575,12 +3634,14 @@ namespace d360.web.Controllers
                 var oldType = ft.Type;
 
                 ft.Name = model.FieldType.Name;
+                ft.SortOrder = model.FieldType.SortOrder;
                 ft.Category = model.FieldType.Category;
                 ft.FriendlyName = model.FieldType.FriendlyName;
                 ft.DefaultValue = (string.IsNullOrEmpty(model.FieldType.DefaultValue)) ? null : model.FieldType.DefaultValue.Trim();
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
+                ft.ColumnWidth = model.FieldType.ColumnWidth;
                 if (
                     (model.FieldType.Type == DataType.ComplexRelationLookup.ToString()) ||
                     (model.FieldType.Type == DataType.FilteredLookup.ToString()) ||
@@ -4050,8 +4111,50 @@ namespace d360.web.Controllers
                         }
 
                         break;
-                        #endregion
+                    #endregion
+                    case "Relationship":
+                        #region
+                        ft.LookupObjectType = model.FieldType.LookupObjectType;
+                        ft.LookupObjectID = model.FieldType.LookupObjectID;
+                        ft.LookupDisplayFormat = null;
+                        ft.LookupEditFormat = null;
 
+                        //Clean up previous stuff
+                        if (defs.Count != 0)
+                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
+                        if (efli != null)
+                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
+                        break;
+                    #endregion
+                    case "FieldFromRelationship":
+                        #region
+                        ft.LookupObjectType = model.FieldType.LookupObjectType;
+                        ft.LookupObjectID = model.FieldType.LookupObjectID;
+                        ft.LookupObjectFieldTypeID = model.FieldType.LookupObjectFieldTypeID;
+                        ft.LookupDisplayFormat = null;
+                        ft.LookupEditFormat = null;
+
+                        //Clean up previous stuff
+                        if (defs.Count != 0)
+                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
+                        if (efli != null)
+                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
+                        break;
+                    #endregion
+                    case "ReferenceItemListFromRelationship":
+                        #region
+                        ft.LookupObjectType = model.FieldType.LookupObjectType;
+                        ft.LookupObjectID = model.FieldType.LookupObjectID;
+                        ft.LookupDisplayFormat = null;
+                        ft.LookupEditFormat = null;
+
+                        //Clean up previous stuff
+                        if (defs.Count != 0)
+                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
+                        if (efli != null)
+                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
+                        break;
+                        #endregion
                 }
 
                 Company.Update<FieldType>(ft);
@@ -6782,11 +6885,12 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.FusionType, model.ID, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                if (Company.Filter<FusionAttributeType>(i => i.FusionTypeID == model.ID).Count() > 0)
-                    return jsonException(FormInfo.FusionType_Remove, HttpStatusCode.Conflict);
+                Company.Delete(SystemObjects.FusionType, model.ID);
+                //if (Company.Filter<FusionAttributeType>(i => i.FusionTypeID == model.ID).Count() > 0)
+                //    return jsonException(FormInfo.FusionType_Remove, HttpStatusCode.Conflict);
 
-                Company.Delete<FusionType>(model);
-                deleteObjectStyle(SystemObjects.FusionType, model.ID);
+                //Company.Delete<FusionType>(model);
+                //deleteObjectStyle(SystemObjects.FusionType, model.ID);
 
                 return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -7034,8 +7138,7 @@ namespace d360.web.Controllers
                     FusionTypeID = typeID,
                     ParentID = parentID,
                     Name = fusion.Name,
-                    ScanEnabled = fusion.ScanEnabled//,
-                    //Query = fusion.Query
+                    ScanEnabled = fusion.ScanEnabled
                 };
 
                 Company.Add<FusionAttributeType>(model);
@@ -7072,7 +7175,7 @@ namespace d360.web.Controllers
                 if (Company.Filter<FusionAttribute>(i => i.FusionAttributeTypeID == model.ID).Count() > 0)
                     return jsonException(FormInfo.FusionAttributeType_Remove, HttpStatusCode.Conflict);
 
-                Company.Delete<FusionAttributeType>(model);
+                Company.Delete(SystemObjects.FusionAttributeType, model.ID);
                 return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -7115,8 +7218,6 @@ namespace d360.web.Controllers
                     model.ScanEnabled = fusion.ScanEnabled;
                 }
 
-                //model.Query = fusion.Query;
-
                 Company.Update<FusionAttributeType>(model);
 
                 if (style != null)
@@ -7141,8 +7242,120 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region Fusion Attribute Type Custom Query
+
+        [HttpDelete, Route("DeleteFusionAttributeTypeCustomQuery")]
+        public JsonResult DeleteFusionAttributeTypeCustomQuery(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
+                if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                return jsonSuccess("Override successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionAttributeTypeCustomQuery")]
+        public JsonResult AddFusionAttributeTypeCustomQuery(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new FusionAttributeTypeCustomQuery
+                {
+                    FusionID = parseIntField(form, "FusionID"),
+                    FusionAttributeTypeID = parseIntField(form, "FusionAttributeTypeID"),
+                    Query = parseTextField(form, "Query")
+                };
+
+                // only allow select
+                var valid = Company.IsValidReportingQuery(a.Query);
+                if (!valid)
+                {
+                    throw new InvalidFieldException("Query", "not a SELECT statement or recognized query.");
+                }
+
+                Company.Add(a);
+
+                return jsonSuccess("Override successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("EditFusionAttributeTypeCustomQuery")]
+        public JsonResult EditFusionAttributeTypeCustomQuery(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
+
+                if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.FusionAttributeTypeID = parseIntField(form, "FusionAttributeTypeID");
+                model.Query = parseTextField(form, "Query");
+
+                // only allow select
+                var valid = Company.IsValidReportingQuery(model.Query);
+                if (!valid)
+                {
+                    throw new InvalidFieldException("Query", "not a SELECT statement or recognized query.");
+                }
+
+                Company.Update(model);
+
+                return jsonSuccess("Override successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
         #region FusionQueryAttributeType
-                
+
         protected JsonResult EditFusionQueryAttribute(FormCollection form)//(int typeID, int id, FusionAttributeType model)
         {
             try
@@ -7284,6 +7497,112 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region Fusion Schedule
+
+        [HttpDelete, Route("DeleteFusionSchedule")]
+        public JsonResult DeleteFusionSchedule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("delete fusion schedule");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.FusionSchedule>(id);
+                if (model == null) throw new NotFoundException("fusion schedule");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<core.entities.FusionSchedule>(i => i.ID == id);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionSchedule")]
+        public JsonResult AddFusionSchedule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionschedule");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new FusionSchedule
+                {                    
+                    FusionID = parseIntField(form,"FusionID"),
+                    FullRefresh = parseBooleanField(form, "FullRefresh"),
+                    Day = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), form["Day"]),
+                    Time = TimeSpan.Parse(parseTextField(form,"Time")),
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                };
+                
+                Company.Add<FusionSchedule>(a);
+
+                return jsonSuccess("Fusion schedule successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("EditFusionSchedule")]
+        public JsonResult EditFusionSchedule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusionschedule");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<FusionSchedule>(id);
+
+                if (model == null) throw new NotFoundException("issuetype");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.FullRefresh = parseBooleanField(form, "FullRefresh");
+                model.Day = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), form["Day"]);
+                model.Time = TimeSpan.Parse(parseTextField(form, "Time"));                
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+
+                Company.Update<core.entities.FusionSchedule>(model);
+
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
         #region Intersect/Other Relationships
 
         [HttpDelete, Route("DeleteIntersect"), NonNullableParameters]
@@ -7352,8 +7671,10 @@ namespace d360.web.Controllers
                 var model = new Dictionary<string, object> {
                     { "ID", id },
                     { "LimitedChangesOnly", currentIntersects },
-                    { "Side1", $"{type.Subject}|{type.SubjectID}" },
-                    { "Side2", $"{type.Object}|{type.ObjectID}" },
+                    { "Subject", $"{type.Subject}|{type.SubjectID}" },
+                    { "SubjectCardinality", $"{(int)type.SubjectCardinality}" },
+                    { "Object", $"{type.Object}|{type.ObjectID}" },
+                    { "ObjectCardinality", $"{(int)type.ObjectCardinality}" },
                     { "Predicate", type.PredicateID }
                 };
 
@@ -7378,7 +7699,11 @@ namespace d360.web.Controllers
                     var sObject = @object.Value.ToString();
                     usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
                 }
-                
+                //else
+                //{
+                //    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
+                //}
+
                 if (predicateID > 0)
                 {
                     usedPredicateIDs.Remove(predicateID);
@@ -7401,8 +7726,17 @@ namespace d360.web.Controllers
             }
         }
 
-        [Route("IntersectType_Side1Options")]
-        public JsonNetResult IntersectType_Side1Options()
+        [Route("IntersectType_CardinalityOptions")]
+        public JsonNetResult IntersectType_CardinalityOptions()
+        {
+            var models = Cardinality.One.GetList()
+                .Select(i => new { title = i.Name, value = i.ID });
+
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        [Route("IntersectType_SubjectOptions")]
+        public JsonNetResult IntersectType_SubjectOptions()
         {
             var models = Company.GetIntersectTypeOptions()
                 .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
@@ -7410,8 +7744,8 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("IntersectType_Side2Options"), NonNullableParameters]
-        public JsonNetResult IntersectType_Side2Options(SystemObjects type, int id, SystemObjects? side2Type = null, int? side2ID = null, int? predicateID = null)
+        [Route("IntersectType_ObjectOptions"), NonNullableParameters]
+        public JsonNetResult IntersectType_ObjectOptions(SystemObjects type, int id, SystemObjects? side2Type = null, int? side2ID = null, int? predicateID = null)
         {
             try
             {
@@ -7438,10 +7772,10 @@ namespace d360.web.Controllers
             {
                 if (form == null) throw new NoFormDataException("relationship type");
 
-                var side1 = form["Side1"];
-                var side1Info = side1.Split('|');
-                var side2 = form["Side2"];
-                var side2Info = side2.Split('|');
+                var subject = form["Subject"];
+                var subjectInfo = subject.Split('|');
+                var @object = form["Object"];
+                var objectInfo = @object.Split('|');
 
                 var predicate = form["Predicate"];
                 int? predicateID = null;
@@ -7459,20 +7793,22 @@ namespace d360.web.Controllers
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
                 }
-                if ((side1 != side2) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+                if ((subject != @object) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
                 }
-                if ((side1 == side2) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+                if ((subject == @object) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
                 }
 
                 var model = new IntersectType {
-                    Subject = side1Info[0],
-                    SubjectID = int.Parse(side1Info[1]),
-                    Object = side2Info[0],
-                    ObjectID = int.Parse(side2Info[1]),
+                    Subject = subjectInfo[0],
+                    SubjectCardinality = parseEnumField<Cardinality>(form, "SubjectCardinality"),
+                    SubjectID = int.Parse(subjectInfo[1]),
+                    Object = objectInfo[0],
+                    ObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality"),
+                    ObjectID = int.Parse(objectInfo[1]),
                     IsSystem = false,
                     PredicateID = predicateID
                 };
@@ -7509,7 +7845,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<IntersectType>(id);
                 if (model == null) throw new NotFoundException("relationship type");
 
-                Company.Delete<IntersectType>(model);
+                Company.Delete(SystemObjects.IntersectType, id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -7541,11 +7877,11 @@ namespace d360.web.Controllers
                 if (model == null) throw new NotFoundException("relationship type");
 
 
-                var side1 = form["Side1"];
-                var side1Info = side1.Split('|');
+                var subject = form["Subject"];
+                var subjectInfo = subject.Split('|');
 
-                var side2 = form["Side2"];
-                var side2Info = side2.Split('|');
+                var @object = form["Object"];
+                var objectInfo = @object.Split('|');
 
                 var predicate = form["Predicate"];
                 int? predicateID = null;
@@ -7563,19 +7899,21 @@ namespace d360.web.Controllers
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to edit relationship type with this predicate.");
                 }
-                if ((side1 != side2) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+                if ((subject != @object) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
                 }
-                if ((side1 == side2) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+                if ((subject == @object) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
                 }
 
-                model.Subject = side1Info[0];
-                model.SubjectID = int.Parse(side1Info[1]);
-                model.Object = side2Info[0];
-                model.ObjectID = int.Parse(side2Info[1]);
+                model.Subject = subjectInfo[0];
+                model.SubjectCardinality = parseEnumField<Cardinality>(form, "SubjectCardinality");
+                model.SubjectID = int.Parse(subjectInfo[1]);
+                model.Object = objectInfo[0];
+                model.ObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality");
+                model.ObjectID = int.Parse(objectInfo[1]);
                 model.PredicateID = int.Parse(predicate);
 
                 Company.Update<IntersectType>(model);
@@ -7594,6 +7932,246 @@ namespace d360.web.Controllers
         }
 
         #endregion
+
+        #endregion
+
+        #region Issue Types
+
+        [Route("IssueType_EditFields"), NonNullableParameters]
+        public JsonResult IssueType_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<core.entities.IssueType>(id);
+
+            if (!Company.HasPermission(SystemObjects.IssueType, a.ID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        
+        [Route("IssueType_AddFields"), NonNullableParameters]
+        public JsonResult IssueType_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+            
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("Issue_AddFields")]
+        public JsonResult Issue_AddFields(int issueTypeId)
+        {            
+            var list = new List<EditableField>();
+            var type = Company.GetById<core.entities.IssueType>(issueTypeId);
+
+            if (type == null) throw new NotFoundException("issuetype");
+
+            list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
+
+            var names = Enum.GetNames(typeof(IssueCriticality)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
+
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Criticality", Name = "Criticality", Required = true, FieldType = DataType.Lookup.ToString(), Items = names });            
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIssue")]
+        public JsonResult AddIssue(FormCollection form)
+        {
+            try
+            {
+                var issueTypeId = parseIntField(form, "IssueTypeID");
+                var objectId = parseIntField(form, "ObjectID");
+                var objectType = parseTextField(form, "ObjectType");
+                var desc = parseTextField(form, "ProblemDesc");
+                IssueCriticality criticality =  (IssueCriticality)Enum.Parse(typeof(IssueCriticality), parseTextField(form, "Criticality"));
+
+                var issueType = Company.GetById<core.entities.IssueType>(issueTypeId);
+
+                if (issueType == null) throw new NoFormDataException("IssueType");
+
+                //get the object name
+                var obj = Company.GetObjectDetail(objectType, objectId);
+
+                if (obj == null) throw new NoFormDataException("GetObject");
+
+                var relations = new List<CommentRelation>();
+                var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
+                var comment = new Comment();
+
+                relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
+
+                comment.OwnerObjectType = SystemObjects.Resource.ToString();
+                comment.OwnerObjectID = Company.CurrentResourceID;
+                comment.CommentTypeID = CommentType.Issue;
+                comment.Body = desc ?? "";
+                
+
+                //add relation to current artifact
+                relations.Add(new CommentRelation { ObjectType = objectType, ObjectID = objectId, Date = DateTime.UtcNow });
+
+                var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
+
+                //insert issue into issue table
+                var model = new Issue
+                {
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow,
+                    IssueTypeID = issueTypeId,
+                    Criticality = criticality,
+                    Object = objectType,
+                    ObjectID = objectId,
+                    ObjectType = obj.Type,
+                    ObjectTypeID = obj.TypeID,
+                    CommentID = dtl.ID
+                };
+
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, model.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), form, Server);
+                Company.SaveOrUpdate<Issue>(model, fields);
+
+                return jsonSuccess("Successfully created issue.", model.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIssueType")]
+        public JsonResult AddIssueType(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("IssueType");
+
+                var model = new core.entities.IssueType
+                {
+                    Name = parseTextField(form, "Name"),
+                    Description = parseTextField(form, "Description"),  
+                    IsSystem = false,                  
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow                    
+                };
+
+                Company.Add<core.entities.IssueType>(model);
+
+                if (model.ID > 0)
+                {
+                    Company.Add<FieldType>(new FieldType
+                    {
+                        ObjectID = model.ID,
+                        Object = SystemObjects.IssueType.ToString(),
+                        IsListable = true,
+                        IsRequired = true,
+                        FriendlyName = "Description",
+                        Name = "ProblemDesc",                        
+                        SortOrder = 1,
+                        Type = DataType.Html.ToString()
+                    });
+                }
+
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, ValidateInput(false), Route("EditIssueType")]
+        public JsonResult EditIssueType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("issuetype");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.IssueType>(id);
+
+                if (model == null) throw new NotFoundException("issuetype");
+
+                if (!Company.HasPermission(SystemObjects.IssueType, model.ID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = form["Name"];
+                model.Description = form["Description"];
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+
+                Company.SaveOrUpdate<core.entities.IssueType>(model);
+
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+
+        [HttpDelete, Route("DeleteIssueType")]
+        public JsonResult DeleteIssueType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("issue type");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.IssueType>(id);
+                if (model == null) throw new NotFoundException("issue type");
+
+                if (!Company.HasPermission(SystemObjects.IssueType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<core.entities.IssueType>(i => i.ID == id);
+                
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
 
         #endregion
 
@@ -8853,168 +9431,168 @@ for json path");
             public string File { get; set; }
         }
 
-        List<string> getFieldNamesByType(string type, int id)
-        {
-            var fieldTypeNames = new List<string>();
+        //List<string> getFieldNamesByType(string type, int id)
+        //{
+        //    var fieldTypeNames = new List<string>();
 
-            switch (type)
-            {
-                case "Lineage":
-                    #region
-                    fieldTypeNames.Add("Action");
+        //    switch (type)
+        //    {
+        //        case "Lineage":
+        //            #region
+        //            fieldTypeNames.Add("Action");
 
-                    fieldTypeNames.Add("Source Relation");
-                    fieldTypeNames.Add("Source subject subject area");
-                    fieldTypeNames.Add("Source subject");
-                    fieldTypeNames.Add("Source object subject area");
-                    fieldTypeNames.Add("Source object");
+        //            fieldTypeNames.Add("Source Relation");
+        //            fieldTypeNames.Add("Source subject subject area");
+        //            fieldTypeNames.Add("Source subject");
+        //            fieldTypeNames.Add("Source object subject area");
+        //            fieldTypeNames.Add("Source object");
 
-                    fieldTypeNames.Add("Source Fusion Configuration");
-                    fieldTypeNames.Add("Source Fusion Path");
+        //            fieldTypeNames.Add("Source Fusion Configuration");
+        //            fieldTypeNames.Add("Source Fusion Path");
 
-                    fieldTypeNames.Add("Target Relation");
-                    fieldTypeNames.Add("Target subject subject area");
-                    fieldTypeNames.Add("Target subject");
-                    fieldTypeNames.Add("Target object subject area");
-                    fieldTypeNames.Add("Target object");
+        //            fieldTypeNames.Add("Target Relation");
+        //            fieldTypeNames.Add("Target subject subject area");
+        //            fieldTypeNames.Add("Target subject");
+        //            fieldTypeNames.Add("Target object subject area");
+        //            fieldTypeNames.Add("Target object");
 
-                    fieldTypeNames.Add("Target Fusion Configuration");
-                    fieldTypeNames.Add("Target Fusion Path");
+        //            fieldTypeNames.Add("Target Fusion Configuration");
+        //            fieldTypeNames.Add("Target Fusion Path");
 
-                    fieldTypeNames.Add("Transformation");
+        //            fieldTypeNames.Add("Transformation");
 
-                    break;
-                #endregion
-                case "Synonym":
-                    #region
-                    fieldTypeNames.Add("Source object type");
-                    fieldTypeNames.Add("Source object type name");
-                    fieldTypeNames.Add("Source object subject area");
-                    fieldTypeNames.Add("Source object");
+        //            break;
+        //        #endregion
+        //        //case "Synonym":
+        //        //    #region
+        //        //    fieldTypeNames.Add("Source object type");
+        //        //    fieldTypeNames.Add("Source object type name");
+        //        //    fieldTypeNames.Add("Source object subject area");
+        //        //    fieldTypeNames.Add("Source object");
 
-                    fieldTypeNames.Add("Target object type");
-                    fieldTypeNames.Add("Target object type name");
-                    fieldTypeNames.Add("Target object subject area");
-                    fieldTypeNames.Add("Target object");
-                    break;
-                    #endregion
-                case "TechnicalLineage":
-                    #region
-                    fieldTypeNames.Add("Source Fusion Configuration");
-                    fieldTypeNames.Add("Source Fusion Path");
-                    fieldTypeNames.Add("Target Fusion Configuration");
-                    fieldTypeNames.Add("Target Fusion Path");
-                    fieldTypeNames.Add("Group");
-                    break;
-                #endregion
-                default:
-                    #region
-                    if (id > 0)
-                    {
-                        switch (type)
-                        {
-                            case "ArtifactType":
-                            case "AttributeType":
-                            case "ReferenceItemType":
-                            case "IntersectType":
-                            case "TaxonomyType":
-                                fieldTypeNames.AddRange(
-                                    Company
-                                    .Filter<FieldType>(i => 
-                                        i.Object == type && 
-                                        i.ObjectID == id &&
-                                        i.Type != "Attribute" &&
-                                        i.Type != "FilteredLookup" &&
-                                        i.Type != "FusionLookup" &&
-                                        i.Type != "ComplexRelationLookup" &&
-                                        i.Type != "OwnershipLookup"
-                                    )
-                                    .OrderBy(i => i.SortOrder)
-                                    .Select(i => i.Name)
-                                );
-                                break;
-                        }
+        //        //    fieldTypeNames.Add("Target object type");
+        //        //    fieldTypeNames.Add("Target object type name");
+        //        //    fieldTypeNames.Add("Target object subject area");
+        //        //    fieldTypeNames.Add("Target object");
+        //        //    break;
+        //        //    #endregion
+        //        case "TechnicalLineage":
+        //            #region
+        //            fieldTypeNames.Add("Source Fusion Configuration");
+        //            fieldTypeNames.Add("Source Fusion Path");
+        //            fieldTypeNames.Add("Target Fusion Configuration");
+        //            fieldTypeNames.Add("Target Fusion Path");
+        //            fieldTypeNames.Add("Group");
+        //            break;
+        //        #endregion
+        //        default:
+        //            #region
+        //            if (id > 0)
+        //            {
+        //                switch (type)
+        //                {
+        //                    case "ArtifactType":
+        //                    case "AttributeType":
+        //                    case "ReferenceItemType":
+        //                    case "IntersectType":
+        //                    case "TaxonomyType":
+        //                        fieldTypeNames.AddRange(
+        //                            Company
+        //                            .Filter<FieldType>(i => 
+        //                                i.Object == type && 
+        //                                i.ObjectID == id &&
+        //                                i.Type != "Attribute" &&
+        //                                i.Type != "FilteredLookup" &&
+        //                                i.Type != "FusionLookup" &&
+        //                                i.Type != "ComplexRelationLookup" &&
+        //                                i.Type != "OwnershipLookup"
+        //                            )
+        //                            .OrderBy(i => i.SortOrder)
+        //                            .Select(i => i.Name)
+        //                        );
+        //                        break;
+        //                }
 
-                        switch (type)
-                        {
-                            case "ArtifactType":
-                                #region
-                                fieldTypeNames.Insert(0, "Name");
-                                fieldTypeNames.Insert(1, "Description");
-                                fieldTypeNames.Insert(2, "Subject Area");
-                                var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
-                                if (artifactType.ParentID.HasValue)
-                                    fieldTypeNames.Insert(3, string.Format("Parent {0}", artifactType.Parent.Name));
-                                break;
-                            #endregion
-                            case "AttributeType":
-                                #region
-                                fieldTypeNames.Insert(0, "Owner Type");
-                                fieldTypeNames.Insert(1, "Owner Type Name");
-                                fieldTypeNames.Insert(2, "Owner Name");
-                                break;
-                            #endregion
-                            case "ReferenceItemType":
-                                #region
-                                fieldTypeNames.Insert(0, "Code");
-                                break;
-                            #endregion
-                            case "IntersectType":
-                                #region
-                                var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
-                                if (intersectType != null)
-                                {
-                                    fieldTypeNames.Insert(0, intersectType.ObjectName);
+        //                switch (type)
+        //                {
+        //                    case "ArtifactType":
+        //                        #region
+        //                        //fieldTypeNames.Insert(0, "Name");
+        //                        //fieldTypeNames.Insert(1, "Description");
+        //                        //fieldTypeNames.Insert(2, "Subject Area");
+        //                        var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
+        //                        if (artifactType.ParentID.HasValue)
+        //                            fieldTypeNames.Insert(0, string.Format("Parent {0}", artifactType.Parent.Name));
+        //                        break;
+        //                    #endregion
+        //                    case "AttributeType":
+        //                        #region
+        //                        fieldTypeNames.Insert(0, "Owner Type");
+        //                        fieldTypeNames.Insert(1, "Owner Type Name");
+        //                        fieldTypeNames.Insert(2, "Owner Name");
+        //                        break;
+        //                    #endregion
+        //                    case "ReferenceItemType":
+        //                        #region
+        //                        fieldTypeNames.Insert(0, "Code");
+        //                        break;
+        //                    #endregion
+        //                    case "IntersectType":
+        //                        #region
+        //                        var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
+        //                        if (intersectType != null)
+        //                        {
+        //                            fieldTypeNames.Insert(0, intersectType.ObjectName);
 
-                                    if (intersectType.Object == "ArtifactType")
-                                        fieldTypeNames.Insert(0, $"{intersectType.ObjectName} Subject Area");
+        //                            if (intersectType.Object == "ArtifactType")
+        //                                fieldTypeNames.Insert(0, $"{intersectType.ObjectName} Subject Area");
 
 
-                                    fieldTypeNames.Insert(0, intersectType.SubjectName);
+        //                            fieldTypeNames.Insert(0, intersectType.SubjectName);
 
-                                    if (intersectType.Subject == "ArtifactType")
-                                        fieldTypeNames.Insert(0, $"{intersectType.SubjectName} Subject Area");
-                                }
-                                break;
-                            #endregion
-                            case "TaxonomyType":
-                                #region
-                                var levels = Company.Query<int>("select MaximumDepth from TaxonomyType where ID = @id", new { id }).SingleOrDefault();
-                                for (int i = 0; i < levels; i++)
-                                {
-                                    fieldTypeNames.Insert(i, "Level" + (i + 1));
-                                }
+        //                            if (intersectType.Subject == "ArtifactType")
+        //                                fieldTypeNames.Insert(0, $"{intersectType.SubjectName} Subject Area");
+        //                        }
+        //                        break;
+        //                    #endregion
+        //                    case "TaxonomyType":
+        //                        #region
+        //                        var levels = Company.Query<int>("select MaximumDepth from TaxonomyType where ID = @id", new { id }).SingleOrDefault();
+        //                        for (int i = 0; i < levels; i++)
+        //                        {
+        //                            fieldTypeNames.Insert(i, "Level" + (i + 1));
+        //                        }
 
-                                // fieldTypeNames.Add("Name");
-                                fieldTypeNames.Add("Description");
-                                // fieldTypeNames.Add("Parent");
-                                break;
-                            #endregion
-                        }
-                    }
-                    else
-                    {
-                        fieldTypeNames = new List<string>() {
-                            "Item Type",
-                            "Item Path",
-                            "Responsibility",
-                            "Resource"
-                        };
+        //                        // fieldTypeNames.Add("Name");
+        //                        // fieldTypeNames.Add("Description");
+        //                        // fieldTypeNames.Add("Parent");
+        //                        break;
+        //                    #endregion
+        //                }
+        //            }
+        //            else
+        //            {
+        //                fieldTypeNames = new List<string>() {
+        //                    "Item Type",
+        //                    "Item Path",
+        //                    "Responsibility",
+        //                    "Resource"
+        //                };
 
-                        switch (type)
-                        {
-                            case "ArtifactType":
-                                fieldTypeNames.Insert(1, "Subject Area");
-                                break;
-                        }
-                    }
+        //                switch (type)
+        //                {
+        //                    case "ArtifactType":
+        //                        //fieldTypeNames.Insert(1, "Subject Area");
+        //                        break;
+        //                }
+        //            }
 
-                    break;
-                    #endregion
-            }
+        //            break;
+        //            #endregion
+        //    }
 
-            return fieldTypeNames;
-        }
+        //    return fieldTypeNames;
+        //}
 
         [Route("Load_TypeOptions"), NonNullableParameters]
         public JsonNetResult Load_TypeOptions(string act)
@@ -9053,14 +9631,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 ) O order by title";
                     break;
                 #endregion
-                case "W":   // Propose Promotion
-                    #region
-                    sql = @"
-select 'ArtifactType|' + cast(A.ID as varchar(10)) as value, 'Glossary: ' + A.Name as title 
-from ArtifactType A
-	inner join WorkflowTypeRelation WTR on WTR.Object = 'ArtifactType' and WTR.ObjectID = A.ID and WTR.Enabled = 1 and WTR.WorkflowType = 1";
-                    break;
-                #endregion
                 case "R":   // Relation
                 case "U":   // Unrelation
                     #region
@@ -9073,9 +9643,6 @@ from ArtifactType A
                 case "TL":   // Technical Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "TechnicalLineage|-1" } };
                     break;
-                case "S":   // Synonym
-                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "Synonym|-1" } };
-                    break;
             }
 
             if (!string.IsNullOrEmpty(sql))
@@ -9085,245 +9652,248 @@ from ArtifactType A
         }
 
         [Route("Load_ExpectedColumns"), NonNullableParameters]
-        public JsonNetResult Load_ExpectedColumns(string type, int id)
+        public JsonNetResult Load_ExpectedColumns(string action, string type, int id)
         {
-            return new JsonNetResult { Data = getFieldNamesByType(type, id), Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult
+            {
+                Data = Company.GetLoadColumns(action, type, id, false), //getFieldNamesByType(type, id),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
 
         [FileDownload, Route("Load_ExpectedColumns_ToExcel"), NonNullableParameters]
-        public FileResult Load_ExpectedColumns_ToExcel(string type, int id)
+        public FileResult Load_ExpectedColumns_ToExcel(string action, string type, int id)
         {
             var document = new SLDocument();
             var defaultSheet = "Items";
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);
             document.AddWorksheet("Lookups");
             document.SelectWorksheet(defaultSheet);
-            var columns = getFieldNamesByType(type, id);
-            var lookupColumns = 1;
-            var parentColumnName = string.Empty;
-            var artifactParentID = -1;
 
-            if (type == "ArtifactType" && id > 0)
-            {
-                var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
-                if (artifactType.ParentID.HasValue)
-                {
-                    artifactParentID = artifactType.ParentID.Value;
-                    parentColumnName = string.Format("Parent {0}", artifactType.Parent.Name).ToLower();
-                }
-            }
+            var models = Company.GetLoadColumns(action, type, id, true);
+            
+            //var columns = getFieldNamesByType(type, id);
+            var lookupColumns = 1;
+            //var parentColumnName = string.Empty;
+            //var artifactParentID = -1;
+
+            //if (type == "ArtifactType" && id > 0)
+            //{
+            //    var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
+            //    if (artifactType.ParentID.HasValue)
+            //    {
+            //        artifactParentID = artifactType.ParentID.Value;
+            //        parentColumnName = string.Format("Parent {0}", artifactType.Parent.Name).ToLower();
+            //    }
+            //}
 
             #region Header
 
-            for (int i = 0; i < columns.Count; i++)
+            for (int i = 0; i < models.Count; i++)
             {
+                var model = models[i];
                 SLStyle style = document.CreateStyle();
 
-                style.Font.Bold = isRequiredColumn(type, id, columns[i], parentColumnName);
+                style.Font.Bold = model.Required;//isRequiredColumn(type, id, columns[i], parentColumnName);
 
                 document.SetCellStyle(1, i + 1, style);
 
-                document.SetCellValue(1, i + 1, columns[i]);
+                document.SetCellValue(1, i + 1, model.Name);// columns[i]);
 
-                var lowerColName = columns[i].ToLower();
-
-                if ((type == "ArtifactType" && lowerColName == "subject area") || (type == "IntersectType" && lowerColName.Contains("subject area")))
+                if (model.IsLookup)
                 {
-                    var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                        document.AddDataValidation(dv);
-                    }
-                }
-                else if (lowerColName == "action") //Lineage, Relationship
-                {
-                    var items = new List<string>() { "Add", "Remove" };
-
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                        document.AddDataValidation(dv);
-                    }
-                }
-                else if (lowerColName == "item type" && id == 0) //Responsibility bulk load
-                {
-                    switch (type)
-                    {
-                        case "ArtifactType":
-                            #region
-                            var artifactTypeItems = Company.Table<ArtifactType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                            if (artifactTypeItems.Any())
-                            {
-                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                                CreateExcelList(lookupColumns++, document, "Lookups", dv, artifactTypeItems);
-
-                                document.AddDataValidation(dv);
-                            }
-                            break;
-                            #endregion
-                        case "ReferenceItemType":
-                            #region
-                            var referenceItemTypeItems = Company.Table<ReferenceItemType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                            if (referenceItemTypeItems.Any())
-                            {
-                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                                CreateExcelList(lookupColumns++, document, "Lookups", dv, referenceItemTypeItems);
-
-                                document.AddDataValidation(dv);
-                            }
-                            break;
-                            #endregion
-                        case "FusionType":
-                            #region
-                            var fusionTypeItems = Company.Table<FusionType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                            if (fusionTypeItems.Any())
-                            {
-                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                                CreateExcelList(lookupColumns++, document, "Lookups", dv, fusionTypeItems);
-
-                                document.AddDataValidation(dv);
-                            }
-                            break;
-                            #endregion
-                        case "PolicyType":
-                            #region
-                            var policyTypeItems = Company.Table<PolicyType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                            if (policyTypeItems.Any())
-                            {
-                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                                CreateExcelList(lookupColumns++, document, "Lookups", dv, policyTypeItems);
-
-                                document.AddDataValidation(dv);
-                            }
-                            break;
-                            #endregion
-                        case "TaxonomyType":
-                            #region
-                            var taxonomyTypeItems = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                            if (taxonomyTypeItems.Any())
-                            {
-                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                                CreateExcelList(lookupColumns++, document, "Lookups", dv, taxonomyTypeItems);
-
-                                document.AddDataValidation(dv);
-                            }
-                            break;
-                            #endregion
-                    }
-                }
-                else if (lowerColName == "responsibility" && id == 0) //Responsibility bulk load
-                {
-                    var items = Company.Table<ResponsibilityType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                        document.AddDataValidation(dv);
-                    }
-                }
-                else if (lowerColName == "resource" && id == 0) //Responsibility bulk load
-                {
-                    var items = Company.Table<Group>().OrderBy(x => x.Name).Select(x => "Group:"+ x.Name).ToList();
-                    items.AddRange(
-                        Company.Table<GlobalReportingResource>().ToList().OrderBy(r => r.LastName).ThenBy(r => r.FirstName).Select(x => "User:" + x.FullName)
-                     );
-
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                        document.AddDataValidation(dv);
-                    }
-                }
-                else if (type == "ArtifactType" && lowerColName == parentColumnName)
-                {
-                    if (artifactParentID < 0) continue;
-
-                    var items = Company.Filter<Artifact>(x => x.ArtifactTypeID == artifactParentID).OrderBy(x => x.Name).Select(x => x.Name);
-
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                        document.AddDataValidation(dv);
-                    }
-                }
-                else if (type == "Lineage" && lowerColName.In("source relation", "target relation"))
-                {
-                    var items = Company.Table<IntersectType>().Where(o => !o.IsSystem.Value || !o.IsSystem.HasValue).OrderBy(x => x.Name).Select(x => x.Name);
-
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                        document.AddDataValidation(dv);
-                    }
-                }
-                else if (type == "Synonym" && lowerColName.In("source object type", "target object type"))
-                {
-                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-                    var typesList = new List<string> { "Artifact", "Policy", "Rule", "Taxonomy" };
-
-                    CreateExcelList(lookupColumns++, document, "Lookups", dv, typesList.OrderBy(x => x));
-
+                    var dv = document.CreateDataValidation(2, i + 1, model.Lookups.Count + 1, i + 1);
+                    CreateExcelList(lookupColumns++, document, "Lookups", dv, model.Lookups.Select(m => m.Value));
                     document.AddDataValidation(dv);
                 }
-                else if (
-                    ((type == "Lineage") && lowerColName.In("source subject subject area", "source object subject area", "target subject subject area", "target object subject area")) ||
-                    (type == "Synonym" && lowerColName.In("source object subject area", "target object subject area"))
-                    )
-                {
-                    var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
 
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
 
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+                //var lowerColName = model.Name.ToLower(); //columns[i].ToLower();
 
-                        document.AddDataValidation(dv);
-                    }
-                }
-                else if ( (type == "Lineage" || type == "TechnicalLineage") && (lowerColName == "source fusion configuration" || lowerColName == "target fusion configuration") )
-                {
-                    var items = Company.Table<Fusion>().OrderBy(x => x.Name).Select(x => x.Name);
+                //if (lowerColName == "action") //Lineage, Relationship
+                //{
+                //    var items = new List<string>() { "Add", "Remove" };
 
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+                //    if (items.Any())
+                //    {
+                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
 
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
 
-                        document.AddDataValidation(dv);
-                    }
-                }
+                //        document.AddDataValidation(dv);
+                //    }
+                //}
+                //else if (lowerColName == "item type" && id == 0) //Responsibility bulk load
+                //{
+                //    switch (type)
+                //    {
+                //        case "ArtifactType":
+                //            #region
+                //            var artifactTypeItems = Company.Table<ArtifactType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                //            if (artifactTypeItems.Any())
+                //            {
+                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, artifactTypeItems);
+
+                //                document.AddDataValidation(dv);
+                //            }
+                //            break;
+                //            #endregion
+                //        case "ReferenceItemType":
+                //            #region
+                //            var referenceItemTypeItems = Company.Table<ReferenceItemType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                //            if (referenceItemTypeItems.Any())
+                //            {
+                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, referenceItemTypeItems);
+
+                //                document.AddDataValidation(dv);
+                //            }
+                //            break;
+                //            #endregion
+                //        case "FusionType":
+                //            #region
+                //            var fusionTypeItems = Company.Table<FusionType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                //            if (fusionTypeItems.Any())
+                //            {
+                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, fusionTypeItems);
+
+                //                document.AddDataValidation(dv);
+                //            }
+                //            break;
+                //            #endregion
+                //        case "PolicyType":
+                //            #region
+                //            var policyTypeItems = Company.Table<PolicyType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                //            if (policyTypeItems.Any())
+                //            {
+                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, policyTypeItems);
+
+                //                document.AddDataValidation(dv);
+                //            }
+                //            break;
+                //            #endregion
+                //        case "TaxonomyType":
+                //            #region
+                //            var taxonomyTypeItems = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                //            if (taxonomyTypeItems.Any())
+                //            {
+                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, taxonomyTypeItems);
+
+                //                document.AddDataValidation(dv);
+                //            }
+                //            break;
+                //            #endregion
+                //    }
+                //}
+                //else if (lowerColName == "responsibility" && id == 0) //Responsibility bulk load
+                //{
+                //    var items = Company.Table<ResponsibilityType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                //    if (items.Any())
+                //    {
+                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                //        document.AddDataValidation(dv);
+                //    }
+                //}
+                //else if (lowerColName == "resource" && id == 0) //Responsibility bulk load
+                //{
+                //    var items = Company.Table<Group>().OrderBy(x => x.Name).Select(x => "Group:"+ x.Name).ToList();
+                //    items.AddRange(
+                //        Company.Table<GlobalReportingResource>().ToList().OrderBy(r => r.LastName).ThenBy(r => r.FirstName).Select(x => "User:" + x.FullName)
+                //     );
+
+                //    if (items.Any())
+                //    {
+                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                //        document.AddDataValidation(dv);
+                //    }
+                //}
+                //else if (type == "ArtifactType" && lowerColName == parentColumnName)
+                //{
+                //    if (artifactParentID < 0) continue;
+
+                //    var items = Company.Filter<Artifact>(x => x.ArtifactTypeID == artifactParentID).OrderBy(x => x.DisplayValue).Select(x => x.DisplayValue);
+
+                //    if (items.Any())
+                //    {
+                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                //        document.AddDataValidation(dv);
+                //    }
+                //}
+                //else if (type == "Lineage" && lowerColName.In("source relation", "target relation"))
+                //{
+                //    var items = Company.Table<IntersectType>().Where(o => !o.IsSystem.Value || !o.IsSystem.HasValue).OrderBy(x => x.Name).Select(x => x.Name);
+
+                //    if (items.Any())
+                //    {
+                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                //        document.AddDataValidation(dv);
+                //    }
+                //}
+                //else if (type == "Synonym" && lowerColName.In("source object type", "target object type"))
+                //{
+                //    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+                //    var typesList = new List<string> { "Artifact", "Policy", "Rule", "Taxonomy" };
+
+                //    CreateExcelList(lookupColumns++, document, "Lookups", dv, typesList.OrderBy(x => x));
+
+                //    document.AddDataValidation(dv);
+                //}
+                ////else if (
+                ////    ((type == "Lineage") && lowerColName.In("source subject subject area", "source object subject area", "target subject subject area", "target object subject area")) ||
+                ////    (type == "Synonym" && lowerColName.In("source object subject area", "target object subject area"))
+                ////    )
+                ////{
+                ////    var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                ////    if (items.Any())
+                ////    {
+                ////        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                ////        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                ////        document.AddDataValidation(dv);
+                ////    }
+                ////}
+                //else if ( (type == "Lineage" || type == "TechnicalLineage") && (lowerColName == "source fusion configuration" || lowerColName == "target fusion configuration") )
+                //{
+                //    var items = Company.Table<Fusion>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                //    if (items.Any())
+                //    {
+                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                //        document.AddDataValidation(dv);
+                //    }
+                //}
 
                 document.AutoFitColumn(1, i + 1);
             }
@@ -9337,49 +9907,49 @@ from ArtifactType A
             return File(stream.ToArray(), "application/vnd.ms-excel", "Load.xlsx");
         }
 
-        private bool isRequiredColumn(string type, int id, string columnName, string parentColumnName)
-        {
-            columnName = columnName.ToLower();
+        //private bool isRequiredColumn(string type, int id, string columnName, string parentColumnName)
+        //{
+        //    columnName = columnName.ToLower();
 
-            var required = true;
+        //    var required = true;
 
-            if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != "description" && columnName != parentColumnName))
-                required = false;
-            else if (type == "ReferenceItemType" && (columnName != "code"))
-                required = false;
-            else if (type == "Lineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
-                required = false;
+        //    if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != "description" && columnName != parentColumnName))
+        //        required = false;
+        //    else if (type == "ReferenceItemType" && (columnName != "code"))
+        //        required = false;
+        //    else if (type == "Lineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
+        //        required = false;
 
-            if (type == "IntersectType")
-            {
-                required = true; //All fields are required.
-            }
-            if (type == "TechnicalLineage")
-            {
-                required = (columnName != "group"); //All fields except Group are required.
-            }
-            else if (type == "Synonym")
-            {
-                required = true; //All fields are required.
-            }
+        //    if (type == "IntersectType")
+        //    {
+        //        required = true; //All fields are required.
+        //    }
+        //    if (type == "TechnicalLineage")
+        //    {
+        //        required = (columnName != "group"); //All fields except Group are required.
+        //    }
+        //    else if (type == "Synonym")
+        //    {
+        //        required = true; //All fields are required.
+        //    }
 
 
-            if (id == 0)
-            {
-                if (
-                    columnName == "item type" ||
-                    columnName == "subject area" ||
-                    columnName == "item path" ||
-                    columnName == "responsibility" ||
-                    columnName == "resource"
-                    )
-                {
-                    required = true;
-                }
-            }
+        //    if (id == 0)
+        //    {
+        //        if (
+        //            columnName == "item type" ||
+        //            columnName == "subject area" ||
+        //            columnName == "item path" ||
+        //            columnName == "responsibility" ||
+        //            columnName == "resource"
+        //            )
+        //        {
+        //            required = true;
+        //        }
+        //    }
 
-            return required;
-        }
+        //    return required;
+        //}
 
         private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, IEnumerable<string> values)
         {
@@ -9443,9 +10013,9 @@ from ArtifactType A
 
                         xls = new SLDocument(stream);
 
-                        var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
+                        var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);// getFieldNamesByType(load.Object, load.ObjectID);
 
-                        fieldTypeNames = fieldTypeNames.Select(i => i.Trim()).ToList();
+                        //fieldTypeNames = fieldTypeNames.Select(i => i.Trim()).ToList();
 
                         var stats = xls.GetWorksheetStatistics();
                         int columnCount = 0;
@@ -9463,7 +10033,7 @@ from ArtifactType A
                             }
                         }
 
-                        //spreadsheet should not have more columns than the type has
+                        // spreadsheet should not have more columns than the type has
                         // it can have less
                         // spreadsheet should only contain columns that the type has
                         if (columnCount <= fieldTypeNames.Count)
@@ -9477,7 +10047,7 @@ from ArtifactType A
 
                                 if (string.IsNullOrEmpty(columnName)) continue;
 
-                                if (!fieldTypeNames.Any(x => x == columnName))
+                                if (!fieldTypeNames.Any(x => x.Name == columnName))
                                 {
                                     hasError = true;
                                     errorMessage += string.Format("Unexpected column found [{0}]", columnName);
@@ -9870,7 +10440,7 @@ from ArtifactType A
                 if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<LookupType>(i => i.ID == id);
+                Company.Delete(SystemObjects.LookupType, id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -9927,6 +10497,159 @@ from ArtifactType A
         }
 
         #endregion
+
+        #endregion
+
+        #region Map
+
+        [Route("Map_AddFields"), NonNullableParameters]
+        public JsonResult Map_AddFields()
+        {
+            var list = new List<EditableField>();
+            
+            if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var mapTypes = new List<SelectListItem>();            
+            
+            foreach (var item in Company.MapTypes)
+            {
+                mapTypes.Add(new SelectListItem { Text = item.Name, Value = item.ID.ToString() });
+            }
+                        
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = "" });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = "" });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes });            
+            
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("Map_EditFields"), NonNullableParameters]
+        public JsonResult Map_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<core.entities.Map>(id);
+
+            if (!Company.HasPermission(SystemObjects.Map, a.ID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var mapTypes = new List<SelectListItem>();
+
+            foreach (var item in Company.MapTypes)
+            {
+                mapTypes.Add(new SelectListItem { Text = item.Name, Value = item.ID.ToString() });
+            }
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = a.Transformation });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes, Value = a.MapTypeID.ToString() });            
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddMap")]
+        public JsonResult AddMap(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("Map");
+
+                var map = new Map
+                {
+                    Name = parseTextField(form,"Name"),
+                    Transformation= parseTextField(form, "Transform"),
+                    MapTypeID = parseIntField(form, "MapType"),
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                };
+
+                Company.Add<Map>(map);
+
+                return jsonSuccess("Map successfully allocated.", map.ID.ToString(), "add", HttpStatusCode.Created);
+                
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditMap")]
+        public JsonResult EditMap(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("Map");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.Map>(id);
+                
+                if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Update, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                
+                model.Name = parseTextField(form, "Name");
+                model.Transformation = parseTextField(form, "Transform");                
+                model.MapTypeID = parseIntField(form, "MapType");                
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+                
+                Company.Update<Map>(model);
+
+                return jsonSuccess("Map successfully updated.", model.ID.ToString(), "update", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        [HttpDelete, Route("DeleteLineageMapping")]
+        public JsonResult DeleteLineageMapping(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("lineage mapping");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<core.entities.Map>(id);
+                if (model == null) throw new NotFoundException("mapping");
+
+                if (!Company.HasPermission(SystemObjects.Map, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<core.entities.Map>(i => i.ID == id);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
 
         #endregion
 
@@ -10354,6 +11077,7 @@ from ArtifactType A
                 if (!regex.IsMatch(a.AdministratorEmail))
                     return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
 
+
                 Company.Add(a);
 
                 dynamic custom = new
@@ -10397,7 +11121,6 @@ from ArtifactType A
                 if (!regex.IsMatch(existing.AdministratorEmail))
                     return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
 
-
                 Company.Update(existing);
 
                 dynamic custom = new
@@ -10429,7 +11152,6 @@ from ArtifactType A
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
 
                 //get child records
                 var domains = Company.Filter<OrganizationDomain>(i => i.OrganizationID == model.ID);
@@ -10911,7 +11633,7 @@ from ArtifactType A
 
                 var emailRegex = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
                 var regex = new System.Text.RegularExpressions.Regex(emailRegex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                
+
 
                 if (!regex.IsMatch(existing.Email))
                     return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
@@ -11086,9 +11808,9 @@ from ArtifactType A
                     Name = model.Name,
                     action = "add",
                     Context = form["_context"]
-                };
+                };                
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
+                return jsonSuccess("Policy successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -11115,16 +11837,16 @@ from ArtifactType A
                 if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete(model);
+                Company.Delete(SystemObjects.Policy, id);
 
                 dynamic custom = new
                 {
                     Name = model.Name,
                     action = "delete",
                     Context = form["_context"]
-                };
+                };                
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess("Policy successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -11175,7 +11897,7 @@ from ArtifactType A
                     Context = form["_context"]
                 };
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess("Policy successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -11313,10 +12035,7 @@ from ArtifactType A
                 if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<PolicyType>(i => i.ID == id);
-                deleteObjectStyle(SystemObjects.PolicyType, id);
-
-                
+                Company.Delete(SystemObjects.PolicyType, id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -11663,13 +12382,15 @@ from ArtifactType A
             }
         }
 
-        [HttpDelete, Route("PolicyType/{policyTypeId:int}/levels/{policyTypeLevelId:int}")]
-        public JsonResult DeletePolicyTypeLevel(int policyTypeId, int policyTypeLevelId)
+        [HttpDelete, Route("DeletePolicyTypeLevel")]
+        public JsonResult DeletePolicyTypeLevel(FormCollection form)
         {
             try
-            {                
-                var id = policyTypeId;
-                var level = policyTypeLevelId;
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("policy type");
+
+                var id = parseIntField(form, "ID");
+                var level = parseIntField(form, "Level");
 
                 if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
@@ -11893,6 +12614,316 @@ from ArtifactType A
         }
 
         #endregion
+
+        #endregion
+
+        #region Reference Item
+
+        /// <param name="id">LookupTypeID</param>
+        [Route("ReferenceItem_AddFields"), NonNullableParameters]
+        public JsonResult ReferenceItem_AddFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var type = Company.GetById<ReferenceItemType>(id);
+
+            list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString() });
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), 2);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("ReferenceItem_DeleteFields"), NonNullableParameters]
+        public JsonResult ReferenceItem_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<ReferenceItem>(id);
+
+            if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">LookupID</param>
+        [Route("ReferenceItem_EditFields"), NonNullableParameters]
+        public JsonResult ReferenceItem_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<ReferenceItem>(id);
+
+            if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 2);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+        
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReferenceItem")]
+        public JsonResult AddReferenceItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("lookup");
+
+                int typeID = parseIntField(form, "ReferenceItemTypeID");
+                var type = Company.GetById<ReferenceItemType>(typeID);
+
+                if (type == null) throw new NotFoundException("referenceitemtype");
+
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var code = form["Code"].ToString();
+
+                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == typeID && r.Code == code))
+                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
+
+                var a = new ReferenceItem
+                {
+                    Code = code,
+                    ReferenceItemTypeID = typeID,
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow//,
+                    //DisplayValue = 
+                };
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
+                Company.SaveOrUpdate<ReferenceItem>(a, fields);
+
+                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, Route("DeleteReferenceItem")]
+        public JsonResult DeleteReferenceItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItem");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ReferenceItem>(id);
+                if (model == null) throw new NotFoundException("ReferenceItem");
+
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<ReferenceItem>(model);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, ValidateInput(false), Route("EditReferenceItem")]
+        public JsonResult EditReferenceItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("referenceitem");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ReferenceItem>(id);
+
+                if (model == null) throw new NotFoundException("referenceitem");
+
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                var code = form["Code"].ToString();
+
+                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == model.ReferenceItemTypeID && r.Code == code && r.ID != model.ID))
+                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
+
+                model.Code = code;
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
+                Company.SaveOrUpdate<ReferenceItem>(model, fields);
+
+                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+        
+        #endregion
+
+        #region Reference Item Types
+
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReferenceItemType")]
+        public JsonResult AddReferenceItemType(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
+
+                var model = new ReferenceItemType
+                {
+                    Name = parseTextField(form, "Name"),
+                    Description = parseTextField(form, "Description"),
+                    DisplayFormat = parseTextField(form, "DisplayFormat"),
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow,
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow
+                };
+
+                Company.Add<ReferenceItemType>(model);
+
+                if (model.ID > 0)
+                {
+                    Company.Add<FieldType>(new FieldType
+                    {
+                        ObjectID = model.ID,
+                        Object = SystemObjects.ReferenceItemType.ToString(),
+                        IsListable = true,
+                        IsRequired = true,
+                        IsEditable = true,
+                        FriendlyName = "Long Description",
+                        Name = "LongDesc",
+                        MaximumLength = 500,
+                        MinimumLength = 1,
+                        SortOrder = 1,
+                        Type = DataType.Text.ToString(),
+                        IsDisplayable = true
+                    });
+                }
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "add",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, Route("DeleteReferenceItemType")]
+        public JsonResult DeleteReferenceItemType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ReferenceItemType>(id);
+                if (model == null) throw new NotFoundException("ReferenceItemType");
+
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "delete",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut, ValidateInput(false), Route("EditReferenceItemType")]
+        public JsonResult EditReferenceItemType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ReferenceItemType>(id);
+                if (model == null) throw new NotFoundException("ReferenceItemType");
+
+                if ((!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Update)))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name");
+                model.Description = parseTextField(form, "Description");
+                model.DisplayFormat = parseTextField(form, "DisplayFormat");
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+
+                Company.Update<ReferenceItemType>(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "edit",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
 
         #endregion
 
@@ -13766,8 +14797,7 @@ order by	T.Name, I.DisplayValue";
                 var model = Company.GetById<ResponsibilityType>(id);
                 if (model == null) throw new NotFoundException("ownership type");
 
-                Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id);
-                Company.Delete<ResponsibilityType>(model);
+                Company.Delete(SystemObjects.ResponsibilityType, id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -15011,7 +16041,7 @@ order by	T.Name, I.DisplayValue";
         [Route("RuleDimension_AddFields")]
         public JsonResult RuleDimension_AddFields()
         {
-            var model = new Rule();
+            var model = new RuleDimension();
             if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create, ClaimObject.Root))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -15321,7 +16351,7 @@ order by	T.Name, I.DisplayValue";
                 }
 
                 Company.Delete(model);
-                                
+
                 dynamic custom = new
                 {
                     Name = model.Name,
@@ -15586,10 +16616,7 @@ order by	T.Name, I.DisplayValue";
                 if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<RuleType>(i => i.ID == id);
-                deleteObjectStyle(SystemObjects.RuleType, id);
-
-                
+                Company.Delete(SystemObjects.RuleType, id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -16254,7 +17281,7 @@ from    [IntersectType] RT
         #endregion
 
         #region ShoppingCart
-        
+
         [HttpPut, Route("shoppingcart/add")]
         public JsonResult AddShoppingCartItem(string type, int id, int cartTypeID)
         {
@@ -16278,7 +17305,7 @@ from    [IntersectType] RT
                 {
                     return jsonException(ex, HttpStatusCode.InternalServerError);
                 }
-                
+
             }
             else if (carts.Count == 1)
             {
@@ -16324,7 +17351,7 @@ from    [IntersectType] RT
             return jsonSuccess("The item has been added to your cart", id.ToString(), "add", HttpStatusCode.OK);
 
         }
-        
+
         [HttpDelete, Route("shoppingcart/remove")]
         public JsonResult RemoveShoppingCartItem(string type, int id, int shoppingCartID)
         {
@@ -16340,7 +17367,7 @@ from    [IntersectType] RT
             var item = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == shoppingCartID && i.Object == type && i.ObjectID == id).FirstOrDefault();
             if (item == null)
                 return jsonException("Shopping cart item could not be found", HttpStatusCode.NotFound);
-            
+
             try
             {
                 Company.ShoppingCartItems.Remove(item);
@@ -16361,7 +17388,8 @@ from    [IntersectType] RT
                 return new JsonNetResult
                 {
                     Data =
-                    new {
+                    new
+                    {
                         Cart = (ShoppingCart)null,
                         Items = (dynamic)null
                     },
@@ -16407,7 +17435,7 @@ from    [IntersectType] RT
             };
         }
 
-        
+
         [HttpPost, Route("shoppingcart/request")]
         public JsonResult RequestShoppingCart(ShoppingCart cart)
         {
@@ -16425,7 +17453,7 @@ from    [IntersectType] RT
 
                 Company.SaveChanges();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
@@ -16433,7 +17461,7 @@ from    [IntersectType] RT
             return jsonSuccess("Your request has been submitted", cart.ID.ToString(), "update", HttpStatusCode.OK);
 
         }
-        
+
         [HttpPost, Route("shoppingcart/clear")]
         public JsonResult EmptyShoppingCart(int cartID)
         {
@@ -16459,6 +17487,167 @@ from    [IntersectType] RT
 
         }
 
+        #endregion
+
+        #region Shortcut
+
+        [HttpPost, Route("shortcut/add")]
+        public JsonResult AddShortcut(Shortcut shortcut)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+            if (string.IsNullOrEmpty(shortcut.Name))
+                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
+            if (string.IsNullOrEmpty(shortcut.Url))
+                return jsonException("This shortcut requires a url", HttpStatusCode.BadRequest);
+            if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconPayload))
+                return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
+
+            try
+            {
+                if (!string.IsNullOrEmpty(shortcut.IconPayload))
+                {
+                    var imageMatch = MimeTypeExtensionsMap.RegEx.Match(shortcut.IconPayload);
+
+                    var imageMime = imageMatch.Groups["mime"].Value;
+                    var imageEncoding = imageMatch.Groups["encoding"].Value;
+                    var imageData = imageMatch.Groups["data"].Value;
+                    var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                    var imageByteArray = Convert.FromBase64String(imageData);
+                    var imageGuid = Guid.NewGuid();
+
+                    using (var imageStream = new MemoryStream(imageByteArray))
+                    {
+                        var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+
+                        shortcut.IconUrl = $"{constants.COMPANY_RESOURCES_URL}{imageFileName}";
+
+                    }
+                }
+
+                Company.Add(shortcut);
+            }
+            catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }          
+
+            return jsonSuccess("Shortcut added successfully", shortcut.ID.ToString(), "add", HttpStatusCode.OK);
+
+        }
+
+        [HttpPut, Route("shortcut/edit")]
+        public JsonResult EditShortcut(Shortcut shortcut)
+        {
+
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+
+            var existing = Company.GetById<Shortcut>(shortcut.ID);
+
+            if (existing == null)
+                return jsonException($"The shortcut with id {shortcut.ID} could not be found.", HttpStatusCode.BadRequest);
+            if (string.IsNullOrEmpty(shortcut.Name))
+                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
+            if (string.IsNullOrEmpty(shortcut.Url))
+                return jsonException("This shortcut requires a url", HttpStatusCode.BadRequest);
+            if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconUrl) && string.IsNullOrEmpty(shortcut.IconPayload))
+                return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
+
+            try
+            {
+                if (!string.IsNullOrEmpty(shortcut.IconPayload))
+                {
+                    //remove old icon
+                    if (!string.IsNullOrEmpty(existing.IconUrl))
+                    {
+                        try
+                        {
+                            Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                        }
+                        catch { }
+                    }
+                        
+
+
+                    var imageMatch = MimeTypeExtensionsMap.RegEx.Match(shortcut.IconPayload);
+
+                    var imageMime = imageMatch.Groups["mime"].Value;
+                    var imageEncoding = imageMatch.Groups["encoding"].Value;
+                    var imageData = imageMatch.Groups["data"].Value;
+                    var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                    var imageByteArray = Convert.FromBase64String(imageData);
+                    var imageGuid = Guid.NewGuid();
+
+                    using (var imageStream = new MemoryStream(imageByteArray))
+                    {
+                        var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+
+                        shortcut.IconUrl = $"{constants.COMPANY_RESOURCES_URL}{imageFileName}";
+
+                    }
+                }
+                else if (!string.IsNullOrEmpty(existing.IconUrl) && string.IsNullOrEmpty(shortcut.IconUrl))
+                {
+                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                }
+
+                existing.Name = shortcut.Name;
+                existing.Icon = shortcut.Icon;
+                existing.IconUrl = shortcut.IconUrl;
+                existing.Url = shortcut.Url;
+
+                Company.Update(existing);
+               
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Shortcut modified successfully", shortcut.ID.ToString(), "edit", HttpStatusCode.OK);
+        }
+
+        [HttpDelete, Route("shortcut/delete/{id:int}")]
+        public JsonResult DeleteShortcut(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+
+            var existing = Company.GetById<Shortcut>(id);
+
+            if (existing == null)
+                return jsonException($"The shortcut with the id {id} could not be found.", HttpStatusCode.BadRequest);
+
+            try
+            {
+                if (!string.IsNullOrEmpty(existing.IconUrl))
+                {
+                    //delete the file
+                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                }
+
+                Company.Delete(existing);
+            }
+            catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Shortcut deleted successfully.", id.ToString(), "delete", HttpStatusCode.OK);
+        }
+        
+        [HttpGet, Route("shortcut/list")]
+        public JsonNetResult ListShortcuts()
+        {
+            return new JsonNetResult
+            {
+                Data = Company.Shortcuts.ToList(),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         #endregion
 
         #region SurveyType
@@ -17107,7 +18296,7 @@ order by TextPath
 
                 
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
+                return jsonSuccess("Model successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -17142,10 +18331,8 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                Company.Delete(model);
-
+                Company.Delete(SystemObjects.Taxonomy, id);
                 
-
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
@@ -17191,9 +18378,7 @@ order by TextPath
                     Context = form["_context"]
                 };
 
-                
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess("Model successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -17361,10 +18546,7 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<TaxonomyType>(i => i.ID == id);
-                deleteObjectStyle(SystemObjects.TaxonomyType, id);
-
-                
+                Company.Delete(SystemObjects.TaxonomyType, id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -17727,13 +18909,15 @@ order by TextPath
             }
         }
 
-        [HttpDelete, Route("TaxonomyType/{taxonomyTypeId:int}/levels/{taxonomyTypeLevelId:int}")]        
-        public JsonResult DeleteTaxonomyTypeLevel(int taxonomyTypeId, int taxonomyTypeLevelId)
+        [HttpDelete, Route("DeleteTaxonomyTypeLevel")]
+        public JsonResult DeleteTaxonomyTypeLevel(FormCollection form)
         {
             try
-            {                
-                var id = taxonomyTypeId;
-                var level = taxonomyTypeLevelId;
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("taxonomy type");
+
+                var id = parseIntField(form, "ID");
+                var level = parseIntField(form, "Level");
 
                 if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
@@ -17786,1117 +18970,6 @@ order by TextPath
         }
 
         #endregion
-
-        #endregion
-
-        #region TooltipTemplate
-
-        #region Field Generation
-
-        [Route("TooltipTemplate_AddFields")]
-        public JsonResult TooltipTemplate_AddFields()
-        {
-            var list = new List<EditableField>();
-
-            var names = Enum.GetNames(typeof(SystemObjects)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
-            var actions = new List<SelectListItem>();
-            actions.Add(new SelectListItem { Text = "Preview", Value = "Preview" });
-            actions.Add(new SelectListItem { Text = "Assigning Item Preview", Value = "AssigningItemPreview" });
-            actions.Add(new SelectListItem { Text = "Lookup Preview", Value = "LookupPreview" });
-            actions.Add(new SelectListItem { Text = "View Statistics", Value = "Statistics" });
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Lookup.ToString(), Items = names });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Lookup.ToString(), Items = actions });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TemplateBody", Name = "Body", FieldType = DataType.Html.ToString(), Validations = checkAndAddValidation("Text", "Body", true, "", null, null) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">TooltipTemplateID</param>
-        [Route("TooltipTemplate_DeleteFields"), NonNullableParameters]
-        public JsonResult TooltipTemplate_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<TooltipTemplate>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">TooltipTemplateID</param>
-        [Route("TooltipTemplate_EditFields"), NonNullableParameters]
-        public JsonResult TooltipTemplate_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<TooltipTemplate>(id);
-
-            var names = Enum.GetNames(typeof(SystemObjects)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
-
-            var actions = new List<SelectListItem>();
-            actions.Add(new SelectListItem { Text = "Preview", Value = "Preview" });
-            actions.Add(new SelectListItem { Text = "Assigning Item Preview", Value = "AssigningItemPreview" });
-            actions.Add(new SelectListItem { Text = "Lookup Preview", Value = "LookupPreview" });
-            actions.Add(new SelectListItem { Text = "View Statistics", Value = "Statistics" });
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Lookup.ToString(), Items = names, Value = a.Name });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Lookup.ToString(), Items = actions, Value = a.Action });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TemplateBody", Name = "Body", FieldType = DataType.Html.ToString(), Value = a.TemplateBody, Validations = checkAndAddValidation("Text", "Body", true, "", null, null) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [HttpPost, ValidateInput(false), Route("AddTooltipTemplateRaw")]
-        public JsonResult AddTooltipTemplateRaw(TemplateModel template)
-        {
-            var form = new FormCollection();            
-            form.Add("Name", template.Name);
-            form.Add("Description", template.Description);
-            form.Add("TemplateBody", template.TemplateBody);
-            form.Add("Action", template.Action);
-
-            return AddTooltipTemplate(form);
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTooltipTemplate")]
-        public JsonResult AddTooltipTemplate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("tooltip template");
-
-                var a = new TooltipTemplate
-                {
-                    Action = parseTextField(form, "Action"),
-                    Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name"),
-                    TemplateBody = parseTextField(form, "TemplateBody")
-                };
-
-                Company.Add<TooltipTemplate>(a);
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
- 
-        [HttpDelete, Route("DeleteTooltipTemplate")]
-        public JsonResult DeleteTooltipTemplate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("tooltip template");
-
-                var id = parseIntField(form, "ID");
-                Company.Delete<TooltipTemplate>(i => i.ID == id);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public class TemplateModel
-        {
-            public string ID { get; set; }
-            public string Name { get; set; }
-            public string Description { get; set; }
-            public string Action { get; set; }
-            public string TemplateBody { get; set; }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditTooltipTemplateRaw")]
-        public JsonResult EditTooltipTemplateRaw(TemplateModel template)        
-        {            
-                        
-            var form = new FormCollection();
-            form.Add("ID", template.ID);
-            form.Add("Name", template.Name);
-            form.Add("Description", template.Description);
-            form.Add("TemplateBody", template.TemplateBody);
-            form.Add("Action", template.Action);
-
-            return EditTooltipTemplate(form);
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditTooltipTemplate")]
-        public JsonResult EditTooltipTemplate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("tooltip template");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<TooltipTemplate>(id);
-                if (model == null) throw new NotFoundException("tooltip template");
-
-                model.Action = parseTextField(form, "Action");
-                model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name");
-                model.TemplateBody = parseTextField(form, "TemplateBody");
-
-                Company.Update<TooltipTemplate>(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-        
-        
-        #region Reference Item Types
-
-
-        [HttpPut, ValidateInput(false), Route("EditReferenceItemType")]
-        public JsonResult EditReferenceItemType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItemType>(id);
-                if (model == null) throw new NotFoundException("ReferenceItemType");
-
-                if ((!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Update)))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-                model.DisplayFormat = parseTextField(form, "DisplayFormat");
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update<ReferenceItemType>(model);
-
-                dynamic custom = new
-                {
-                    Name = model.Name,
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [HttpDelete, Route("DeleteReferenceItemType")]
-        public JsonResult DeleteReferenceItemType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItemType>(id);
-                if (model == null) throw new NotFoundException("ReferenceItemType");
-
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(model);
-
-                dynamic custom = new
-                {
-                    Name = model.Name,
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReferenceItemType")]
-        public JsonResult AddReferenceItemType(FormCollection form)
-        {
-            try
-            {                
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var model = new ReferenceItemType
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    DisplayFormat = parseTextField(form, "DisplayFormat"),
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow,
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow
-                };
-
-                Company.Add<ReferenceItemType>(model);
-                
-                if (model.ID > 0)
-                {
-                    Company.Add<FieldType>(new FieldType
-                    {
-                        ObjectID = model.ID,
-                        Object = SystemObjects.ReferenceItemType.ToString(),
-                        IsListable = true,
-                        IsRequired = true,
-                        IsEditable = true,
-                        FriendlyName = "Long Description",
-                        Name = "LongDesc",
-                        MaximumLength = 500,
-                        MinimumLength = 1,
-                        SortOrder = 1,
-                        Type = DataType.Text.ToString(),
-                        IsDisplayable = true
-                    });
-                }
-
-                dynamic custom = new
-                {
-                    Name = model.Name,
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        /// <param name="id">LookupTypeID</param>
-        [Route("ReferenceItem_AddFields"), NonNullableParameters]
-        public JsonResult ReferenceItem_AddFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var type = Company.GetById<ReferenceItemType>(id);
-
-            list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), 2);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("ReferenceItem_DeleteFields"), NonNullableParameters]
-        public JsonResult ReferenceItem_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ReferenceItem>(id);
-
-            if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LookupID</param>
-        [Route("ReferenceItem_EditFields"), NonNullableParameters]
-        public JsonResult ReferenceItem_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ReferenceItem>(id);
-
-            if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 2);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [HttpDelete, Route("DeleteReferenceItem")]
-        public JsonResult DeleteReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItem");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItem>(id);
-                if (model == null) throw new NotFoundException("ReferenceItem");
-
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<ReferenceItem>(model);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReferenceItem")]
-        public JsonResult AddReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("lookup");
-
-                int typeID = parseIntField(form, "ReferenceItemTypeID");
-                var type = Company.GetById<ReferenceItemType>(typeID);
-
-                if (type == null) throw new NotFoundException("referenceitemtype");
-
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var code = form["Code"].ToString();
-
-                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == typeID && r.Code == code))
-                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
-
-                var a = new ReferenceItem
-                {
-                    Code = code,
-                    ReferenceItemTypeID = typeID,
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow//,
-                    //DisplayValue = 
-                };
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
-                Company.SaveOrUpdate<ReferenceItem>(a, fields);
-
-                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [HttpPut, ValidateInput(false), Route("EditReferenceItem")]
-        public JsonResult EditReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("referenceitem");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItem>(id);
-
-                if (model == null) throw new NotFoundException("referenceitem");
-
-                if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var code = form["Code"].ToString();
-
-                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == model.ReferenceItemTypeID && r.Code == code && r.ID != model.ID))
-                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
-
-                model.Code = code;
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
-                Company.SaveOrUpdate<ReferenceItem>(model, fields);
-
-                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        #endregion
-
-        #region Fusion Schedule
-
-        [HttpDelete, Route("DeleteFusionSchedule")]
-        public JsonResult DeleteFusionSchedule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("delete fusion schedule");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.FusionSchedule>(id);
-                if (model == null) throw new NotFoundException("fusion schedule");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<core.entities.FusionSchedule>(i => i.ID == id);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionSchedule")]
-        public JsonResult AddFusionSchedule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionschedule");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var a = new FusionSchedule
-                {                    
-                    FusionID = parseIntField(form,"FusionID"),
-                    FullRefresh = parseBooleanField(form, "FullRefresh"),
-                    Day = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), form["Day"]),
-                    Time = TimeSpan.Parse(parseTextField(form,"Time")),
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-                
-                Company.Add<FusionSchedule>(a);
-
-                return jsonSuccess("Fusion schedule successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("EditFusionSchedule")]
-        public JsonResult EditFusionSchedule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionschedule");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<FusionSchedule>(id);
-
-                if (model == null) throw new NotFoundException("issuetype");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.FullRefresh = parseBooleanField(form, "FullRefresh");
-                model.Day = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), form["Day"]);
-                model.Time = TimeSpan.Parse(parseTextField(form, "Time"));                
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update<core.entities.FusionSchedule>(model);
-
-                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #region Fusion Attribute Type Custom Query
-
-        [HttpDelete, Route("DeleteFusionAttributeTypeCustomQuery")]
-        public JsonResult DeleteFusionAttributeTypeCustomQuery(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
-                if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(model);
-
-                return jsonSuccess("Override successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionAttributeTypeCustomQuery")]
-        public JsonResult AddFusionAttributeTypeCustomQuery(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var a = new FusionAttributeTypeCustomQuery
-                {
-                    FusionID = parseIntField(form, "FusionID"),
-                    FusionAttributeTypeID = parseIntField(form, "FusionAttributeTypeID"),
-                    Query = parseTextField(form, "Query")
-                };
-
-                // only allow select
-                var valid = Company.IsValidReportingQuery(a.Query);
-                if (!valid)
-                {
-                    throw new InvalidFieldException("Query", "not a SELECT statement or recognized query.");
-                }
-
-                Company.Add(a);
-
-                return jsonSuccess("Override successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("EditFusionAttributeTypeCustomQuery")]
-        public JsonResult EditFusionAttributeTypeCustomQuery(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
-
-                if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
-
-                if (!Company.HasPermission(SystemObjects.Fusion, model.FusionID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.FusionAttributeTypeID = parseIntField(form, "FusionAttributeTypeID");
-                model.Query = parseTextField(form, "Query");
-
-                // only allow select
-                var valid = Company.IsValidReportingQuery(model.Query);
-                if (!valid)
-                {
-                    throw new InvalidFieldException("Query", "not a SELECT statement or recognized query.");
-                }
-
-                Company.Update(model);
-
-                return jsonSuccess("Override successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #region Issue Types
-
-        [Route("IssueType_EditFields"), NonNullableParameters]
-        public JsonResult IssueType_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<core.entities.IssueType>(id);
-
-            if (!Company.HasPermission(SystemObjects.IssueType, a.ID, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        
-        [Route("IssueType_AddFields"), NonNullableParameters]
-        public JsonResult IssueType_AddFields()
-        {
-            if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-            
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("Issue_AddFields")]
-        public JsonResult Issue_AddFields(int issueTypeId)
-        {            
-            var list = new List<EditableField>();
-            var type = Company.GetById<core.entities.IssueType>(issueTypeId);
-
-            if (type == null) throw new NotFoundException("issuetype");
-
-            list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
-
-            var names = Enum.GetNames(typeof(IssueCriticality)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
-
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Criticality", Name = "Criticality", Required = true, FieldType = DataType.Lookup.ToString(), Items = names });            
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIssue")]
-        public JsonResult AddIssue(FormCollection form)
-        {
-            try
-            {
-                var issueTypeId = parseIntField(form, "IssueTypeID");
-                var objectId = parseIntField(form, "ObjectID");
-                var objectType = parseTextField(form, "ObjectType");
-                var desc = parseTextField(form, "ProblemDesc");
-                IssueCriticality criticality =  (IssueCriticality)Enum.Parse(typeof(IssueCriticality), parseTextField(form, "Criticality"));
-
-                var issueType = Company.GetById<core.entities.IssueType>(issueTypeId);
-
-                if (issueType == null) throw new NoFormDataException("IssueType");
-
-                //get the object name
-                var obj = Company.GetObjectDetail(objectType, objectId);
-
-                if (obj == null) throw new NoFormDataException("GetObject");
-
-                var relations = new List<CommentRelation>();
-                var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
-                var comment = new Comment();
-
-                relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
-
-                comment.OwnerObjectType = SystemObjects.Resource.ToString();
-                comment.OwnerObjectID = Company.CurrentResourceID;
-                comment.CommentTypeID = CommentType.Issue;
-                comment.Body = desc ?? "";
-                
-
-                //add relation to current artifact
-                relations.Add(new CommentRelation { ObjectType = objectType, ObjectID = objectId, Date = DateTime.UtcNow });
-
-                var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
-
-                //insert issue into issue table
-                var model = new Issue
-                {
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow,
-                    IssueTypeID = issueTypeId,
-                    Criticality = criticality,
-                    Object = objectType,
-                    ObjectID = objectId,
-                    ObjectType = obj.Type,
-                    ObjectTypeID = obj.TypeID,
-                    CommentID = dtl.ID
-                };
-
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, model.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), form, Server);
-                Company.SaveOrUpdate<Issue>(model, fields);
-
-                return jsonSuccess("Successfully created issue.", model.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIssueType")]
-        public JsonResult AddIssueType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.IssueType, 0, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("IssueType");
-
-                var model = new core.entities.IssueType
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),  
-                    IsSystem = false,                  
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow                    
-                };
-
-                Company.Add<core.entities.IssueType>(model);
-
-                if (model.ID > 0)
-                {
-                    Company.Add<FieldType>(new FieldType
-                    {
-                        ObjectID = model.ID,
-                        Object = SystemObjects.IssueType.ToString(),
-                        IsListable = true,
-                        IsRequired = true,
-                        FriendlyName = "Description",
-                        Name = "ProblemDesc",                        
-                        SortOrder = 1,
-                        Type = DataType.Html.ToString()
-                    });
-                }
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditIssueType")]
-        public JsonResult EditIssueType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("issuetype");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.IssueType>(id);
-
-                if (model == null) throw new NotFoundException("issuetype");
-
-                if (!Company.HasPermission(SystemObjects.IssueType, model.ID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = form["Name"];
-                model.Description = form["Description"];
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.SaveOrUpdate<core.entities.IssueType>(model);
-
-                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-
-        [HttpDelete, Route("DeleteIssueType")]
-        public JsonResult DeleteIssueType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("issue type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.IssueType>(id);
-                if (model == null) throw new NotFoundException("issue type");
-
-                if (!Company.HasPermission(SystemObjects.IssueType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<core.entities.IssueType>(i => i.ID == id);
-                
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        #endregion
-
-        #region Lineage Mapping
-
-        [Route("Map_AddFields"), NonNullableParameters]
-        public JsonResult Map_AddFields()
-        {
-            var list = new List<EditableField>();
-            
-            if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var mapTypes = new List<SelectListItem>();            
-            
-            foreach (var item in Company.MapTypes)
-            {
-                mapTypes.Add(new SelectListItem { Text = item.Name, Value = item.ID.ToString() });
-            }
-                        
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = "" });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = "" });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes });            
-            
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("Map_EditFields"), NonNullableParameters]
-        public JsonResult Map_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<core.entities.Map>(id);
-
-            if (!Company.HasPermission(SystemObjects.Map, a.ID, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var mapTypes = new List<SelectListItem>();
-
-            foreach (var item in Company.MapTypes)
-            {
-                mapTypes.Add(new SelectListItem { Text = item.Name, Value = item.ID.ToString() });
-            }
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = a.Transformation });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes, Value = a.MapTypeID.ToString() });            
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddMap")]
-        public JsonResult AddMap(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("Map");
-
-                var map = new Map
-                {
-                    Name = parseTextField(form,"Name"),
-                    Transformation= parseTextField(form, "Transform"),
-                    MapTypeID = parseIntField(form, "MapType"),
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                Company.Add<Map>(map);
-
-                return jsonSuccess("Map successfully allocated.", map.ID.ToString(), "add", HttpStatusCode.Created);
-                
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditMap")]
-        public JsonResult EditMap(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Map");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.Map>(id);
-                
-                if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Update, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                
-                model.Name = parseTextField(form, "Name");
-                model.Transformation = parseTextField(form, "Transform");                
-                model.MapTypeID = parseIntField(form, "MapType");                
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-                
-                Company.Update<Map>(model);
-
-                return jsonSuccess("Map successfully updated.", model.ID.ToString(), "update", HttpStatusCode.OK);
-
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [HttpDelete, Route("DeleteLineageMapping")]
-        public JsonResult DeleteLineageMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("lineage mapping");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<core.entities.Map>(id);
-                if (model == null) throw new NotFoundException("mapping");
-
-                if (!Company.HasPermission(SystemObjects.Map, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<core.entities.Map>(i => i.ID == id);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
 
         #endregion
     }

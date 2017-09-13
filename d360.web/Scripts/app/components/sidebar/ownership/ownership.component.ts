@@ -33,7 +33,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];      
+            this.objectType = params['objectType'];
 
             if (this.objectType && this.objectType.toUpperCase() == 'FUSION') {
                 this.fusionService.getFusionConfiguration(this.objectID).then(res => {
@@ -51,5 +51,5 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
     ngOnDestroy() {
         this.sub.unsubscribe();
     }
-    
+
 }

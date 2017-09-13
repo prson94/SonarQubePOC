@@ -9,7 +9,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Fusion, "Fusion")]
+    [DataContract(Namespace = NAMESPACE)]
     public class Fusion : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         public int FusionTypeID { get; set; }
@@ -65,6 +65,11 @@ namespace d360.core.entities
                 ObjectType = SystemObjects.FusionType,
                 ObjectTypeID = FusionTypeID
             };
+        }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.FusionType, Object = SystemObjects.Fusion, TypeID = FusionTypeID };
         }
     }
 }

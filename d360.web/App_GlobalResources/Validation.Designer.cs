@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please provide a proper format string..
+        /// </summary>
+        public static string DisplayFormat {
+            get {
+                return ResourceManager.GetString("DisplayFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please provide an extension name..
         /// </summary>
         public static string ExtensionName {

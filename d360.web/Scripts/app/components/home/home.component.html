@@ -1,11 +1,17 @@
-﻿<div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails">
-    <div class="col l4 s12">
+﻿<div *ngIf="showTitle">
+    <div [style.color]="titleColor" [style.font-size]="titleSize" style="letter-spacing: 3px">{{title}}</div>
+</div>
+<div *ngIf="backgroundImage != ''">
+    <img [src]="backgroundImage" style="width:100%; position:absolute; left:0; top:0; z-index: -10000" />
+</div>
+<div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && numTiles > 0">
+    <div [class]="'col s12 l' + colSize" *ngIf="showAssignmentTile">
         <d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
     </div>
-    <div class="col l4 s12">
+    <div [class]="'col s12 l' + colSize" *ngIf="showBoardTile">
         <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);" [(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
     </div>
-    <div class="col l4 s12">
+    <div [class]="'col s12 l' + colSize" *ngIf="showActivityTile">
         <d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);" [(daysToLookBack)]="activityDaysToLookBack"></d3s-activity-tile>
     </div>
 </div>
@@ -24,4 +30,15 @@
     </div>
 </div>
 
-<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails"></d3s-home-search>    
+<div style="position: relative;" [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null">
+    <d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails" (resultsChange)="checkHasResults($event)"></d3s-home-search> 
+</div>
+
+<div [hidden]="hasResults" style="position: relative;" [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null">
+    <d3s-shortcut-display></d3s-shortcut-display>
+</div>
+
+<!--<div *ngIf="dashboard != null" class="tile tile-detail" style="position: relative;" [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null">
+    <d3s-sagacity-viewer *ngIf="dashboard.ReportType =='sagacity'" [dashboard]="dashboard"></d3s-sagacity-viewer>
+</div>-->
+   

@@ -62,7 +62,7 @@ import { Title } from '@angular/platform-browser';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid [title]="'Items'" [itemName]="'Lookup'" [objectType]="'LookupType'" [objectID]="selectedLookup?.ID" [createUri]="'form/dynamicedit/create/lookup/'" [editUri]="'form/dynamicedit/edit/lookup/'" [dataUri]="lookupUri()" [deleteUri]="'form/dynamicedit/delete/Lookup/'"></d3s-dynamic-grid>                                                                       
+                                    <d3s-dynamic-grid [title]="'Items'" [itemName]="'Lookup'" [objectType]="'LookupType'" [objectID]="selectedLookup?.ID" [createUri]="'form/dynamicedit/create/lookup/'" [editUri]="'form/dynamicedit/edit/lookup/'" [dataUri]="lookupUri()" [deleteUri]="'form/DeleteLookupByIdRaw?id='"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>
@@ -126,8 +126,8 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
 
     deleteLookup(id: number) {
         this.isLoading = true;
-        this.lookupService.deleteLookupType(id).
-            then(result => {
+        this.lookupService.deleteLookupType(id)
+            .then(result => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;

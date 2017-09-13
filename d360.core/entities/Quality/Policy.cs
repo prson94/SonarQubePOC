@@ -31,15 +31,13 @@ namespace d360.core.entities
         #endregion
     }
 
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Policy, "Policy")]
+    [DataContract(Namespace = NAMESPACE)]
     public class Policy : PolicyModel, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata
     {
         public Policy()
         {
             Visible = true;
         }
-
-        #region Properties
 
         [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
@@ -54,9 +52,8 @@ namespace d360.core.entities
 
         public bool Visible { get; set; }
 
-        #endregion
-
-        #region Navigation Properties
+        [DataMember]
+        public string SourceID { get; set; }
 
         [IgnoreDataMember]
         public virtual Policy Parent { get; set; }
@@ -67,6 +64,9 @@ namespace d360.core.entities
         [ForeignKey("ParentID"), IgnoreDataMember]
         public virtual ICollection<Policy> Children { get; set; }
 
-        #endregion
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.PolicyType, Object = SystemObjects.Policy, TypeID = PolicyTypeID };
+        }
     }
 }

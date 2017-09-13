@@ -703,6 +703,7 @@ namespace d360.web.Controllers.Services
         public HttpResponseMessage GetWorkflowTypes()
         {
             var types = Company.Query<dynamic>(QueryConstants.WorkflowList).ToList();
+
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
 

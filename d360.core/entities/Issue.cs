@@ -9,7 +9,7 @@ using d360.core.queue;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Issue : BaseIntObject, IIntObject, IUpdatedMetadata, IEventTrackedEntity
+    public class Issue : BaseIntObject, IIntObject, IFieldsObject, IUpdatedMetadata, IEventTrackedEntity
     {
         public int IssueTypeID { get; set; }
 
@@ -52,6 +52,11 @@ namespace d360.core.entities
                 ObjectType = SystemObjects.IssueType,
                 ObjectTypeID = IssueTypeID
             };
+        }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.IssueType, Object = SystemObjects.Issue, TypeID = IssueTypeID };
         }
     }
 }

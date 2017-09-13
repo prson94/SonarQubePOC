@@ -1,13 +1,13 @@
 ﻿using d360.core.entities.Contracts;
+using d360.core.queue;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
-using d360.core.queue;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class ReferenceItem : BaseIntObject, IIntObject, ISearchable, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
+    public class ReferenceItem : BaseIntObject, IIntObject, IFieldsObject, ISearchable, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]
         public string Code { get; set; }
@@ -37,6 +37,11 @@ namespace d360.core.entities
                 ObjectType = SystemObjects.ReferenceItemType,
                 ObjectTypeID = ReferenceItemTypeID
             };
+        }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.ReferenceItemType, Object = SystemObjects.ReferenceItem, TypeID = ReferenceItemTypeID };
         }
     }
 }

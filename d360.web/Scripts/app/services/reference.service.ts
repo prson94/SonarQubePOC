@@ -29,7 +29,7 @@ export class ReferenceService extends BaseService {
     }
 
     exportReferenceItems(id: number, name: string) {
-        this.http.get(`api/referenceItems/${id}/items.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));  
+        this.http.get(`api/referenceItems/${id}/items.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));
     }
 
     downloadFile(data: Response, name: string) {

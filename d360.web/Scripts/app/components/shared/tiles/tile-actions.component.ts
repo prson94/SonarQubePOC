@@ -7,7 +7,7 @@ import {MenuItem} from 'primeng/primeng';
      :host{
             text-transform:none;
         }   
-  `], 
+  `],
     template: `
                 <div class="TileTools"> 
                     <p-menubar *ngIf="hasDate" [model]="dateMenuItems"></p-menubar><!--workaround to position bug in menu-->
@@ -17,6 +17,7 @@ import {MenuItem} from 'primeng/primeng';
                             <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Add'"><i class="fa fa-plus fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasSuggest"><a class="Action" (click)="suggestClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Suggest'"><i class="fa fa-commenting fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExport"><a class="Action" (click)="exportClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Export to Excel'"><i class="fa fa-download fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasCustomExport"><a class="Action" (click)="customExportClick.emit(null)" pTooltip="Choose export to Excel format"><i class="fa fa-download fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExportErrors"><a class="Action" (click)="exportErrorsClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Export Errors to Excel'"><i class="fa fa-download red-text fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExportOriginal"><a class="Action" (click)="exportOriginalClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Export Original Spreadsheet'"><i class="fa fa-download blue-text fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasEdit"><a class="Action" (click)="editClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Edit'"><i class="fa fa-pencil fa-fw"></i></a></li>
@@ -33,8 +34,6 @@ import {MenuItem} from 'primeng/primeng';
                                 <i class="fa fa-user fa-fw" [ngClass]="{'red-text darken-2':userMode}"></i>                                
                             </a></li>
                             <li class="left" *ngIf="hasView"><a class="Action" (click)="viewClick.emit()" [pTooltip]="hideTooltip ? null : 'Preview'"><i class="fa fa-eye fa-fw"></i></a></li>                        
-
-<!-- close should always be last -->
                             <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Close'"><i class="fa fa-remove fa-fw"></i></a></li>
                         </ul>
                     </div>
@@ -46,6 +45,7 @@ import {MenuItem} from 'primeng/primeng';
 export class TileActionsComponent implements OnInit, OnChanges {
     @Output() addClick = new EventEmitter();
     @Output() exportClick = new EventEmitter();
+    @Output() customExportClick = new EventEmitter();
     @Output() exportErrorsClick = new EventEmitter();
     @Output() exportOriginalClick = new EventEmitter();
     @Output() editClick = new EventEmitter();
@@ -67,6 +67,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     
     @Input() hasAdd: boolean = false;
     @Input() hasExport: boolean = false;
+    @Input() hasCustomExport: boolean = false;
     @Input() hasExportErrors: boolean = false;
     @Input() hasExportOriginal: boolean = false;
     @Input() hasEdit: boolean = false;

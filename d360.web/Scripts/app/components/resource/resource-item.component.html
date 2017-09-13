@@ -57,14 +57,8 @@
     <div *ngSwitchCase="PageMode.EditingPassword">
         <div class="col s12">
             <div class="tile tile-detail">
-                <d3s-dynamic-editor objectType="resourceselfpassword"
-                                    objectID="-1"
-                                    title="Your Password"
-                                    hasCloseButton="true"
-                                    [selection]="resource"
-                                    (closeClick)="pageMode = PageMode.Default;"
-                                    (saveClick)="savePass($event)">
-                </d3s-dynamic-editor>
+                <d3s-resource-password (onClose)="pageMode = PageMode.Default" (onSave)="pageMode = PageMode.Default">
+                </d3s-resource-password>
             </div>
         </div>
     </div>

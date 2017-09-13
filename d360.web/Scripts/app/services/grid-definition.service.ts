@@ -13,7 +13,7 @@ export class GridDefinitionService extends BaseService {
         let url = `api/${objectType}/${objectID}/grid/definition`;
 
         if (parentID && parentType) {
-            url += `?${parentType}=${parentID}`;
+            url += `?target=${parentType}&targetID=${parentID}`;
         }
         
         return this.http.get(url)

@@ -13,8 +13,9 @@ import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { RightSidebarService } from '../../services/right-sidebar.service';
+import { MessagesService } from '../../services/messages.service';
 
-
+declare var CompanySettings;
 declare var CurrentResourceID;
 declare var SingleSignOn;
 
@@ -32,6 +33,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private statistics: ObjectStatistics;
     private selectedWorkflow: WorkflowType;
     private pageMode: PageMode = PageMode.Default;
+    private showResourcesLink: boolean = ((CompanySettings.ShowResources) && (CompanySettings.ShowResources.toUpperCase() == 'TRUE'));
     PageMode = PageMode;
     private allowChangePassword = !SingleSignOn;
 
@@ -43,7 +45,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         private resourcesService: ResourcesService,
         private statisticsService: ObjectStatisticsService,
         private uriBasedService: UriBasedService,
-        rightSideBarService: RightSidebarService) {
+        rightSideBarService: RightSidebarService,
+        protected messagesService: MessagesService) {
         super();
         this.rightSidebarService = rightSideBarService;
     }
@@ -54,8 +57,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.sub = this.route.params.subscribe(params => {
             let resourceId = +params['resourceId'];
             this.resourceId = resourceId;
-            this.objectType = 'Resource';
-            this.objectID = this.resourceId;
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
             this.resourcesService.getResource(this.resourceId)
@@ -75,16 +76,10 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
                     this.clearSidebar();
                     this.setCommonRightSideBar(false, false, false, false, false, true, false);
-
-
                 });
+
             this.pageMode = PageMode.Default;
-
-
-
-
             this.updateStatistics();
-
         });
     }
 
@@ -139,16 +134,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.uriBasedService.saveItem(null, "form/dynamicedit/edit/resourceself", values)
             .then(result => {
                 this.pageMode = PageMode.Default;
-            });
-    }
-
-    savePass(e: any) {
-        let values = e.item;
-        values.ID = -1;
-
-        this.uriBasedService.saveItem(null, "form/dynamicedit/edit/resourceselfpassword", values)
-            .then(result => {
-                this.pageMode = PageMode.Default;
+                this.showMessageForResult(this.messagesService, result);
             });
     }
 };

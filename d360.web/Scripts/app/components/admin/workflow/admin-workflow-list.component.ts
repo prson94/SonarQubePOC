@@ -11,7 +11,8 @@ import { Router } from '@angular/router';
     providers: [WorkflowService],
     template: `
 
-<div>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
     <header>
         Workflow Types
         <d3s-tile-actions hasAdd="true" (addClick)="onAddClick.emit()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
@@ -75,7 +76,8 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                 this.items.forEach(i => {
                     i.ChangeTypeName = this.changeTypes.find(c => c.ID == i.ChangeType).Description;
                 });
-            });
+            })
+            .then(() => this.isLoading = false);
     }
 
     navigate(id: string) {

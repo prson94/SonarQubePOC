@@ -95,7 +95,7 @@ namespace d360.web.Controllers
             if (typeCheck != null)
             {
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
-                var fieldTypes = Company.Filter<FieldType>(i => i.Object == typeCheck.Type && i.ObjectID == typeCheck.ID && i.IsDisplayable).OrderBy(i => i.SortOrder).ToList();
+                var fieldTypes = Company.Filter<FieldType>(i => i.Object == typeCheck.Type && i.ObjectID == typeCheck.ID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
                 fieldTypes.ForEach(ft =>
                 {
@@ -224,6 +224,86 @@ namespace d360.web.Controllers
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderOwnershipLookupField(type.ToString(), id, ft.ID));
                         }
+
+                        if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
+                        {
+                            var intersectTypeID = ft.LookupObjectID.Value;
+                            var sType = type.ToString();
+                            var intersect = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).FirstOrDefault();
+                            if (intersect != null)
+                            {
+                                var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
+                                var intersectDisplayValue = isSubject ? intersect.ObjectName : intersect.SubjectName;
+                                var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
+                                var obj = isSubject ? intersect.Object : intersect.Subject;
+                                var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+
+                                var ro = new ReadOnlyField
+                                {
+                                    Name = ft.FriendlyName,
+                                    Value = intersectDisplayValue,
+                                    FieldDescription = ft.DisplayDescription,
+                                    FieldName = ft.Name,
+                                    DataType = "Html",
+                                    TooltipID = objID,
+                                    TooltipType = obj,
+                                    TooltipContext = (obj == SystemObjects.ReferenceItem.ToString() || obj == SystemObjects.ReferenceItemType.ToString()) ? "LookupPreview" : "Preview",
+                                };
+
+                                if (obj == SystemObjects.ReferenceItem.ToString() || obj == SystemObjects.ReferenceItemType.ToString())
+                                {
+                                    ro.TooltipUrl = $"reference/{objID}";
+                                }
+
+                                list.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> { ro },
+                                    Category = ft.Category
+                                });
+                            }
+                        }
+
+                        if (ft.Type == DataType.FieldFromRelationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue && ft.LookupObjectFieldTypeID.HasValue)
+                        {
+                            var intersectTypeID = ft.LookupObjectID.Value;
+                            var fieldTypeID = ft.LookupObjectFieldTypeID.Value;
+                            var sType = type.ToString();
+                            var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).FirstOrDefault();
+                            if (intersect != null)
+                            {
+                                var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
+                                var obj = isSubject ? intersect.Object : intersect.Subject;
+                                var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+
+                                var rfld = Company.Filter<Field>(i => i.FieldTypeID == fieldTypeID && i.ObjectType == obj && i.ObjectID == objID).SingleOrDefault();
+
+                                if (rfld != null)
+                                {
+                                    var ro = new ReadOnlyField
+                                    {
+                                        Name = ft.FriendlyName,
+                                        Value = rfld.FormattedValue,
+                                        FieldDescription = ft.DisplayDescription,
+                                        FieldName = ft.Name,
+                                        DataType = "Html"
+                                    };
+
+                                    list.Add(new DetailReadOnlyRowModel
+                                    {
+                                        columns = 1,
+                                        FirstColumnFields = new List<ReadOnlyField> { ro },
+                                        Category = ft.Category
+                                    });
+                                }
+                            }
+                        }
+
+                        if (ft.Type == DataType.RefListRelationship.ToString())
+                        {
+                            //look at fusionlookup field and figure out what to show
+                            list.AddRange(RenderReferenceListItemsField(type.ToString(), id, ft.ID));
+                        }
                     }
                 });
             }
@@ -328,7 +408,7 @@ namespace d360.web.Controllers
                     break;
             }
 
-            var gc = new GridColumn { text = item.FriendlyName, datafield = $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = item.ColumnWidth };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -336,7 +416,7 @@ namespace d360.web.Controllers
             return gc;
         }
 
-        GridField getGridFieldForColumn(FieldType item)
+        string getGridFieldTypeForColumn(FieldType item)
         {
             string fieldType = "string";
 
@@ -359,7 +439,12 @@ namespace d360.web.Controllers
                     break;
             }
 
-            return new GridField { name = $"Field{item.ID}", type = fieldType };
+            return fieldType;
+        }
+
+        GridField getGridFieldForColumn(FieldType item)
+        {
+            return new GridField { name = $"Field{item.ID}", type = getGridFieldTypeForColumn(item) };
         }
 
         void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, List<GridColumnGroup> groups, decimal dynamicFieldWidth, bool serverPaged = false)
@@ -411,7 +496,7 @@ namespace d360.web.Controllers
 
             var sType = type.ToString();
             var totalItems = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).ToList();
-            var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+            var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
             var columns = new List<GridColumn>();
             var fields = new List<GridField>();
@@ -422,7 +507,7 @@ namespace d360.web.Controllers
             int remainingWidth = 0;
             int staticFieldCount = 0;
             ObjectDetail detail = null;
-
+            
             Dictionary<string, string> settings = null;
 
             switch (type)
@@ -798,10 +883,13 @@ where   h.ID <> @t order by h.[Level] desc;
                             columns.Add(getGridColumnForColumn(field, 0, false));
                             fields.Add(getGridFieldForColumn(field));
                         }
+
+                        fields.Add(new GridField { name = "ID", type = "number" });
+                        fields.Add(new GridField { name = "ParentID", type = "number" });
+                        fields.Add(new GridField { name = "TaxonomyTypeID", type = "number" });
                     }
                     break;
                     #endregion
-
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new
@@ -967,6 +1055,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("Description", artifactType.Description);
             model.Add("ParentID", artifactType.ParentID);
             model.Add("CanOwnFusion", artifactType.CanOwnFusion);
+            model.Add("AutoDisplayDescription", artifactType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType == "powerbi").Any();
             model.Add("HasDashboards", hasDashboards);
@@ -2665,6 +2754,7 @@ end",
                                 break;
                             case "FusionAttributeType":
                                 #region FusionAttributeType
+
                                 var oc = new ComplexColumnModel
                                 {
                                     DisplayColumn = objectDisplayColumn,
@@ -2686,10 +2776,12 @@ end",
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'FusionAttribute'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('FusionAttribute', A{pos}.FusionAttributeTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
-                                #endregion
                                 break;
+                                
+                                #endregion
                             case "PolicyType":
                                 #region PolicyType
+
                                 //Create the column/field to display the visible column cell.
                                 var pc = new ComplexColumnModel
                                 {
@@ -2712,8 +2804,9 @@ end",
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Policy'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Policy', A{pos}.PolicyTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
-                                #endregion
                                 break;
+                                
+                                #endregion
                             case "ResourceType":
                                 #region ResourceType
 
@@ -2755,12 +2848,12 @@ end",
                                     columnModels.Add(rec2);
                                 }
 
-                                #endregion
                                 break;
+                                
+                                #endregion
                             case "RuleType":
                                 #region RuleType
                                 //Create the column/field to display the visible column cell.
-                                
                                 var rc = new ComplexColumnModel
                                 {
                                     DisplayColumn = objectDisplayColumn,
@@ -2796,11 +2889,10 @@ end",
                                 }
                                 else
                                 {
-                                  
+
                                     setColumnTypeInfo(ft, i, rc);
                                     rc.datafieldtype = "lookup"; //must be done after function call above.
                                     columnModels.Add(rc);
-
 
                                     // Add the fields that you need to create link in Angular component.
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
@@ -2808,9 +2900,11 @@ end",
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
                                 }
-                                #endregion
                                 break;
+                                #endregion
                             case "TaxonomyType":
+                                #region TaxonomyType
+
                                 var tc = new ComplexColumnModel
                                 {
                                     DisplayColumn = objectDisplayColumn,
@@ -2833,6 +2927,8 @@ end",
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Taxonomy', A{pos}.TaxonomyTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
                                 break;
+
+                                #endregion
                             default:
                                 if (i.Object == "ReferenceItemType" && i.ObjectID == 0)
                                 {
@@ -3203,6 +3299,7 @@ end",
                 sqlQuery += orderQuery;
 
                 columnModels = columnModels.OrderBy(c => c.DisplayOrder).ToList();
+
                 columnModels.ForEach(c =>
                 {
                     if (!gridFields.Any(gf => gf.name == c.datafield))
@@ -3231,7 +3328,6 @@ end",
                     }
                 });
 
-
                 results = Company.Query<dynamic>(sqlQuery).Distinct();
             }
             catch (Exception ex)
@@ -3257,6 +3353,142 @@ end",
         public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)
         {
             return await Company.GetFieldFiltersByType(type, id);
+        }
+
+        #endregion
+
+        #region Reference List Items Field
+
+        private List<DetailReadOnlyRowModel> RenderReferenceListItemsField(string type, int id, int fieldTypeID)
+        {
+            var list = new List<DetailReadOnlyRowModel>();
+            var ft = Company.GetById<FieldType>(fieldTypeID);
+
+            if (ft != null)
+            {
+                if (ft.LookupObjectType == SystemObjects.IntersectType.ToString() == ft.LookupObjectID.HasValue)
+                {
+                    var intersect = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ( (i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id) ) ).FirstOrDefault();
+                    if (intersect != null)
+                    {
+                        var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
+                        if (AnyReferenceListItemsFieldValues(referenceItemTypeID))
+                        {
+                            var referenceItemType = Company.GetById<ReferenceItemType>(referenceItemTypeID);
+
+                            list.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Column = 1,
+                                        Name = $"{ft.FriendlyName} Name",
+                                        FieldDescription = ft.DisplayDescription,
+                                        FieldName = ft.Name,
+                                        Value = referenceItemType.Name
+                                    }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Column = 2,
+                                        Name = $"{ft.FriendlyName} Description",
+                                        FieldDescription = ft.DisplayDescription,
+                                        FieldName = ft.Name,
+                                        Value = referenceItemType.Name
+                                    }
+                                },
+                                Category = ft.Category
+                            });
+
+                            list.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Column = 1,
+                                        Name = $"{ft.FriendlyName} Items",
+                                        FieldDescription = ft.DisplayDescription,
+                                        FieldName = ft.Name,
+                                        HideHeader = false,
+                                        HideFooter = false,
+                                        HideFilter = false,
+                                        LookupGridUrl = $"/api/ReferenceListItemsField/{referenceItemTypeID}/values"
+                                    }
+                                },
+                                Category = ft.Category
+                            });
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        private bool AnyReferenceListItemsFieldValues(int id)
+        {
+            var sqlQuery = $"select case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end from ReferenceItem where ReferenceItemTypeID = {id}";
+            return Company.Query<bool>(sqlQuery).First();
+        }
+
+        [Route("ReferenceListItemsField/{id:int}/values")]
+        public HttpResponseMessage GetReferenceListItemsField(int id)
+        {
+            var gridFields = new List<GridField>();
+            var columns = new List<GridColumn>();
+            IEnumerable<dynamic> results = null;
+
+            try
+            {
+                var fieldTypes = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+
+                columns.Add(new GridColumn { datafield = "Code", text = "Code" });
+                gridFields.Add(new GridField { name = "Code", type = "string" });
+
+                var sqlJoins = "";
+                var sqlColumns = "";
+                var sqlOrderBy = "";
+                foreach (var f in fieldTypes)
+                {
+                    sqlColumns += $", F{f.ID}.FormattedValue as [{f.Name}]";
+                    sqlJoins += $" left join Field F{f.ID} on F{f.ID}.ObjectType = 'ReferenceItem' and F{f.ID}.ObjectID = R.ID";
+
+                    var gc = new GridColumn { datafield = f.Name, text = f.FriendlyName };
+                    if (f.ColumnWidth.HasValue)
+                    {
+                        gc.columnWidth = f.ColumnWidth.Value;
+                    }
+
+                    columns.Add(gc);
+                    gridFields.Add(new GridField { name = "{f.Name}", type = getGridFieldTypeForColumn(f) });
+                }
+                foreach (var f in fieldTypes.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
+                {
+                    sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ") + $"F{f.ID}.FormattedValue";
+                }
+                if (!string.IsNullOrEmpty(sqlOrderBy))
+                {
+                    sqlOrderBy = $" order by {sqlOrderBy}";
+                }
+
+                var sqlQuery = $"select R.Code{sqlColumns} from ReferenceItem R{sqlJoins} where R.ReferenceItemTypeID = {id}{sqlOrderBy}";
+
+                results = Company.Query<dynamic>(sqlQuery).Distinct();
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, new
+                {
+                    Error = ex.GetFullExceptionData(),
+                });
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                Values = results,
+                Columns = columns,
+                Fields = gridFields
+            });
         }
 
         #endregion
@@ -3691,17 +3923,17 @@ order by C.TextPath";
 
         #region Template Logic
 
-        [Route("templates/email")]
-        public List<EmailTemplate> GetEmailTemplates()
-        {
-            return Company.Table<EmailTemplate>().OrderBy(i => i.Name).ToList();
-        }
+        //[Route("templates/email")]
+        //public List<EmailTemplate> GetEmailTemplates()
+        //{
+        //    return Company.Table<EmailTemplate>().OrderBy(i => i.Name).ToList();
+        //}
 
-        [Route("templates/tooltip")]
-        public List<TooltipTemplate> GetTooltipTemplates()
-        {
-            return Company.Table<TooltipTemplate>().OrderBy(i => i.Name).ToList();
-        }
+        //[Route("templates/tooltip")]
+        //public List<TooltipTemplate> GetTooltipTemplates()
+        //{
+        //    return Company.Table<TooltipTemplate>().OrderBy(i => i.Name).ToList();
+        //}
 
         #endregion
 
@@ -3802,29 +4034,6 @@ order by C.TextPath";
             var sType = type.ToString();
             return Request.CreateResponse(HttpStatusCode.OK,
                 Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectID == id && i.ObjectType == sType, i => i.ResponsibilityType)
-                .Select(i => new
-                {
-                    ResponsibilityTypeGroup = i.ResponsibilityType.ResponsibilityTypeGroup,
-                    i.ResponsibilityTypeID,
-                    i.ObjectID,
-                    i.ObjectType,
-                    Name = i.ResponsibilityType.Name,
-                    Description = i.ResponsibilityType.Description
-                })
-                );
-        }
-
-        [Route("ownership/fusion/{id:int}/fusionresponsibilitytypes")]
-        public HttpResponseMessage GetFusionTypeResponsibilityByFusion(int id)
-        {
-            var fusion = Company.GetById<Fusion>(id);
-            if (fusion == null)
-                id = -1;
-            else
-                id = fusion.FusionTypeID;
-
-            return Request.CreateResponse(HttpStatusCode.OK,
-                Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectID == id && i.ObjectType == "FusionType", i => i.ResponsibilityType)
                 .Select(i => new
                 {
                     ResponsibilityTypeGroup = i.ResponsibilityType.ResponsibilityTypeGroup,
@@ -4010,6 +4219,11 @@ order by    title
         [Route("resources/{typeID:int}")]
         public HttpResponseMessage GetResourcesByType(int typeID)
         {
+            var settings = Community.GetCompanySettings();
+            //check that current user is an admin or the company settings allow users to be listed
+            if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
             var joins = "";
             var columns = "";
             getDynamicFieldJoinStatements(typeID, "Resource", out joins, out columns, false, false);
@@ -4348,6 +4562,7 @@ where    A.RuleID = @id", new { id });
                         list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Name_Name, Name = "Name", Value = rule.Name });
                         list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Description_Name, Name = "Description", Value = rule.Description });
                         list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.RuleType_Name, Name = "RuleTypeID", Value = rule.RuleType.Name });
+                        loadDisplayFields(list, type, id);
                     }
                     rule = null;
                     break;
@@ -6477,6 +6692,7 @@ where    A.RuleID = @id", new { id });
             var columns = "";
             //var whereClause = "";
             getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
+            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out joins, out columns, false, false, false, true, "ObjectID");
 
             var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
             foreach (var f in attributesTypes)
@@ -6859,7 +7075,6 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
                 model
             );
         }
-           
 
         #endregion
 
@@ -7288,7 +7503,6 @@ SELECT (
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
-
         [HttpGet, Route("referenceItems/{typeID:int}/items.xls")]
         public async Task<HttpResponseMessage> GetReferenceItemsExcel(int typeID)
         {
@@ -7298,8 +7512,8 @@ SELECT (
             var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.SortOrder);
 
             var document = new SLDocument();
-            document.DeleteWorksheet("Sheet 1");
             document.AddWorksheet("Items");
+            document.DeleteWorksheet("Sheet1");
 
             #region Create the list sheet
 
@@ -7308,7 +7522,7 @@ SELECT (
             var colIndex = 0;
 
             document.SetCellValue(1, ++colIndex, "Code");
-            
+
             //add fields for this relation
             foreach (var field in fields)
             {
@@ -7325,7 +7539,7 @@ SELECT (
                 rowIndex++;
 
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Code ?? "");
-                
+
 
                 var rowDict = ((IDictionary<string, object>)row);
                 foreach (var field in fields)
@@ -7342,7 +7556,7 @@ SELECT (
             }
 
             #endregion
-                        
+
             var stream = new MemoryStream();
             document.SaveAs(stream);
             var len = stream.Length;

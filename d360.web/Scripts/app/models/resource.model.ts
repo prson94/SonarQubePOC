@@ -1,4 +1,12 @@
-﻿export class Resource {    
+﻿export class HelpResource {
+    Name: string;
+    Description: string;
+    Url: string;
+    Type: number;
+    ID: number;
+}
+
+export class Resource {    
     DateLastLoggedIn: string;
     Email: string;
     FirstName: string;

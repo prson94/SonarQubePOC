@@ -51,6 +51,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     ngOnInit() {
         this.loadMenu();
+
         if (CompanySettings.ShowFavorites != 'false')
             this.loadFavorites();
 
@@ -216,8 +217,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         workflowMenu.Name = "Workflow";
         workflowMenu.Items = [];
 
-        workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false});
-        workflowMenu.Items.push({ Name: 'Action Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false});
+        workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false });
+        workflowMenu.Items.push({ Name: 'Action Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false });
 
         this.adminMenu.NavigationItems.push(workflowMenu);
         

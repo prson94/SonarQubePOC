@@ -26,4 +26,11 @@ export class DashboardService extends BaseService {
             .then(response => <DashboardTokens>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getHomePageDashboards(): Promise<Dashboard[]> {
+        return this.http.get('reports/home')
+            .toPromise()
+            .then(response => <Dashboard[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

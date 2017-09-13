@@ -34,7 +34,7 @@ import {
     SelectButtonModule,    
     MultiSelectModule,    
     TooltipModule,        
-    TreeModule,    
+    TreeModule,
     SharedModule,
 } from 'primeng/primeng';
 
@@ -58,9 +58,9 @@ import {
         SelectButtonModule,        
         MultiSelectModule,        
         TooltipModule,
-        TreeModule,                        
+        TreeModule,                
         SharedModule,
-        
+
         //d3s
         D3SSharedModule,
         CoreModule,        

@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Synonym, "Synonym")]
+    [DataContract(Namespace = NAMESPACE)]
     public partial class Nym : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
     {
         public Nym()

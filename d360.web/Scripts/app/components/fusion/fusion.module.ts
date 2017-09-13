@@ -71,7 +71,7 @@ import { CodemirrorModule } from 'ng2-codemirror';
         RouterModule,
 
         FusionRoutingModule,
-        
+
         //primeng
         GrowlModule,
         InputTextModule,
@@ -126,7 +126,7 @@ import { CodemirrorModule } from 'ng2-codemirror';
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,
         FusionTechnicalMappingsComponent,
-        FusionStructureTreeComponent,        
+        FusionStructureTreeComponent,
         FusionQueryListComponent,
         FusionQueryAttributeEditorComponent,        
     ],

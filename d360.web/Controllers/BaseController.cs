@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.model;
 using d360.web.Models;
 using Microsoft.ApplicationInsights;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Web;
@@ -138,6 +140,8 @@ namespace d360.web.Controllers
         internal CompanyContext Company;
         internal CommunityContext Community;
 
+        internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString() };
+
         public BaseApiController(CommunityContext community, CompanyContext company)
         {
             Community = community;
@@ -184,20 +188,28 @@ namespace d360.web.Controllers
 
         #region Private Methods
 
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true)
+        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "ID")
         {
             columns = "";
             joins = "";
 
             var fieldTypeRelationTypeString = type;
             switch (type)
-            { 
+            {
                 case "Rule":
                 default:
                     fieldTypeRelationTypeString += "Type";
                     break;
             }
-            var fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationTypeString && i.ObjectID == typeID && i.IsListable).ToList();
+            var qry = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationTypeString && i.ObjectID == typeID);
+
+            if (checkForListable)
+                qry = qry.Where(i => i.IsListable);
+
+            if (checkForKeyColumn)
+                qry = qry.Where(i => i.IsPartOfKey);
+
+            var fields = qry.ToList();
 
             foreach (var f in fields)
             {
@@ -214,11 +226,8 @@ namespace d360.web.Controllers
     else '' 
 end as [{fieldName}], ";
 
-//                    joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
-//left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
-
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID}
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.{coreTableIdJoinColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
                 else
                 {
@@ -229,11 +238,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
     when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
     else '' 
 end as [{name}], ";
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{type}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
-
-//                    joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
-//left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
+                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationTypeString}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.{coreTableIdJoinColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
             }
             fields = null;
@@ -473,7 +479,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     #region Is Editable
 
-                    if (f.Type != DataType.Attribute.ToString() && f.Type != DataType.FilteredLookup.ToString() && f.Type != DataType.ComplexRelationLookup.ToString())
+                    if (
+                        f.Type != DataType.Attribute.ToString() && 
+                        f.Type != DataType.FilteredLookup.ToString() && 
+                        f.Type != DataType.ComplexRelationLookup.ToString() && 
+                        f.Type != DataType.FieldFromRelationship.ToString() &&
+                        f.Type != DataType.DataTableSelect.ToString() &&
+                        f.Type != DataType.OwnershipLookup.ToString() &&
+                        f.Type != DataType.RefListRelationship.ToString()
+                       )
                     {
                         var patternMessage = "";
 
@@ -493,8 +507,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         {
                             patternMessage = f.ValidationDescription;
                         }
-
-
+                        
                         var fld = new EditableField
                         {
                             Row = row,
@@ -534,20 +547,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             );
                         }
 
-                        if (!string.IsNullOrEmpty(f.LookupObjectType))
+                        if (f.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
                         {
                             fld.FieldType = DataType.Lookup.ToString();
                             try
                             {
-                                //if (f.LookupObjectType == "Predicate")
-                                //{
-                                //    fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
-                                //        .OrderBy(o => o.Text)
-                                //        .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                //        .ToList();
-                                //}
-                                //else
-                                //{
                                 fld.Items = new List<SelectListItem>();
 
                                 if (!f.IsRequired) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
@@ -559,13 +563,70 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                     .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                     .ToList()
                                 );
-                                //}
                             }
                             catch
                             {
                                 fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
                             }
                         }
+
+                        if (f.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
+                        {
+                            fld.FieldType = DataType.Relationship.ToString();
+                            try
+                            {
+                                fld.Items = new List<SelectListItem>();
+
+                                if (!f.IsRequired) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+                                if (f.AllowAllValue) fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
+
+                                var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
+                                if (intersectType != null)
+                                {
+                                    var obj = "";
+                                    var objID = 0;
+
+                                    obj = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID) ? intersectType.Object : intersectType.Subject;
+                                    objID = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID) ? intersectType.ObjectID : intersectType.SubjectID;
+
+                                    var sql = "";
+
+                                    switch (obj)
+                                    {
+                                        case "ArtifactType":
+                                            sql = $"select ID as Value, TextPath as Text from Artifact where ArtifactTypeID = {objID} order by DisplayValue";
+                                            break;
+                                        case "FusionAttributeType":
+                                            sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
+                                            break;
+                                        case "PolicyType":
+                                            sql = $"select ID as Value, TextPath as Text from [Policy] where PolicyTypeID = {objID} order by TextPath";
+                                            break;
+                                        case "ReferenceItemType":
+                                            sql = $"select ID as Value, DisplayValue as Text from [ReferenceItem] where ReferenceItemTypeID = {objID} order by DisplayValue";
+                                            break;
+                                        case "ResourceType":
+                                            sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
+                                            break;
+                                        case "RuleType":
+                                            sql = $"select ID as Value, Name as Text from [Rule] where RuleTypeID = {objID} order by DisplayValue";
+                                            break;
+                                        case "TaxonomyType":
+                                            sql = $"select ID as Value, TextPath as Text from Taxonomy where TaxonomyTypeID = {objID} order by TextPath";
+                                            break;
+                                    }
+
+                                    fld.Items.AddRange(
+                                        Company.Query<SelectListItem>(sql)
+                                    );
+                                }
+                            }
+                            catch
+                            {
+                                fld.Items.Add(new SelectListItem { Text = "No valid relationship option found", Value = "" });
+                            }
+                        }
+
                         fld.Required = (f.MinimumLength > 0 || f.Length > 0);
                         /* Boolean, Date, DateTime, Decimal, Integer, String */
                         list.Add(fld);
@@ -589,7 +650,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     #region Is Editable
 
-                    if (ft.Type != DataType.FilteredLookup.ToString() && ft.Type != DataType.Attribute.ToString() && ft.Type != DataType.ComplexRelationLookup.ToString())
+                    if (
+                        ft.Type != DataType.FilteredLookup.ToString() && 
+                        ft.Type != DataType.Attribute.ToString() && 
+                        ft.Type != DataType.ComplexRelationLookup.ToString() &&
+                        ft.Type != DataType.FieldFromRelationship.ToString() &&
+                        ft.Type != DataType.DataTableSelect.ToString() &&
+                        ft.Type != DataType.OwnershipLookup.ToString() &&
+                        ft.Type != DataType.RefListRelationship.ToString()
+                       )
                     {
                         var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
 
@@ -624,6 +693,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             Category = ft.Category
                         };
 
+                        #region FusionLookup
+
                         if (ft.Type == DataType.FusionLookup.ToString())
                         {
                             var IDs = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
@@ -646,7 +717,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             );
                         }
 
-                        if (!string.IsNullOrEmpty(ft.LookupObjectType))
+                        #endregion FusionLookup
+
+                        #region Lookup
+
+                        if (ft.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
                         {
                             //fld.FieldType = DataType.Lookup.ToString();
                             try
@@ -671,6 +746,95 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
                             }
                         }
+
+                        #endregion Lookup
+
+                        #region Relationship
+
+                        if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
+                        {
+                            fld.FieldType = DataType.Relationship.ToString();
+                            try
+                            {
+                                fld.Items = new List<SelectListItem>();
+
+                                var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
+                                if (intersectType != null)
+                                {
+                                    var obj = "";
+                                    var objID = 0;
+
+                                    var isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
+                                    obj = isSubject ? intersectType.Object : intersectType.Subject;
+                                    objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+
+                                    // Required relationship.
+                                    if ( (isSubject && intersectType.ObjectCardinality != Cardinality.One) || (!isSubject && intersectType.SubjectCardinality != Cardinality.One))
+                                        fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+
+                                    var sql = "";
+
+                                    #region sql
+
+                                    switch (obj)
+                                    {
+                                        case "ArtifactType":
+                                            sql = $"select ID as Value, TextPath as Text from Artifact where ArtifactTypeID = {objID} order by DisplayValue";
+                                            break;
+                                        case "FusionAttributeType":
+                                            sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
+                                            break;
+                                        case "PolicyType":
+                                            sql = $"select ID as Value, TextPath as Text from [Policy] where PolicyTypeID = {objID} order by TextPath";
+                                            break;
+                                        case "ReferenceItemType":
+                                            if (objID == 0)
+                                            {
+                                                sql = $"select ID as Value, Name as Text from [ReferenceItemType] order by Name";
+                                            }
+                                            else
+                                            {
+                                                sql = $"select ID as Value, DisplayValue as Text from [ReferenceItem] where ReferenceItemTypeID = {objID} order by DisplayValue";
+                                            }
+                                            break;
+                                        case "ResourceType":
+                                            sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
+                                            break;
+                                        case "RuleType":
+                                            sql = $"select ID as Value, Name as Text from [Rule] where RuleTypeID = {objID} order by DisplayValue";
+                                            break;
+                                        case "TaxonomyType":
+                                            sql = $"select ID as Value, TextPath as Text from Taxonomy where TaxonomyTypeID = {objID} order by TextPath";
+                                            break;
+                                    }
+
+                                    #endregion sql
+
+                                    var intersectObj = fields[0].ObjectType;
+                                    var intersectObjID = fields[0].ObjectID;
+                                    var intersect = Company.Filter<Intersect>(i => 
+                                        i.IntersectTypeID == intersectType.ID && 
+                                        ( (isSubject && i.Subject == intersectObj && i.SubjectID == intersectObjID) || (!isSubject && i.Object == intersectObj && i.ObjectID == intersectObjID) )
+                                        ).FirstOrDefault();
+
+                                    if (intersect != null)
+                                    {
+                                        fld.Value = isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}";
+                                    }
+
+                                    fld.Items.AddRange(
+                                        Company.Query<SelectListItem>(sql)
+                                    );
+                                }
+                            }
+                            catch
+                            {
+                                fld.Items.Add(new SelectListItem { Text = "No valid relationship option found", Value = "" });
+                            }
+                        }
+
+                        #endregion Relationship
+
                         fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
                         /* Boolean, Date, DateTime, Decimal, Integer, String */
                         if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
@@ -688,6 +852,84 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             });
 
             return list;
+        }
+
+        protected bool isSortColumnNumber(string sortDataField, List<FieldType> fields)
+        {
+            if (string.IsNullOrEmpty(sortDataField)) return false;
+
+            var field = fields.Where(x => string.Compare($"Field{x.ID}", sortDataField, true) == 0).FirstOrDefault();
+
+            if (field == null) return false;
+
+            return field.Type == "Number";
+        }
+
+        internal void processFormDynamicRelationshipFields(SystemObjects ot, int otid, SystemObjects o, int oid, ICollection<FieldType> fieldTypes, FormCollection form)
+        {
+            foreach (var ft in fieldTypes)
+            {
+                if (ft.Type == DataType.Relationship.ToString())
+                {
+                    var value = form[ft.Name];
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
+                        if (intersectType != null)
+                        {
+                            var isSubject = (intersectType.Subject == ot.ToString() && intersectType.SubjectID == otid);
+
+                            var obj = "";
+                            var sub = "";
+                            var objID = 0;
+                            var subID = 0;
+
+                            Intersect intersect = null;
+
+                            if (isSubject)
+                            {
+                                sub = o.ToString();
+                                subID = oid;
+                                obj = intersectType.Object;
+                                obj = (obj == "ReferenceItemType" && intersectType.ObjectID == 0) ? obj : obj.Replace("Type", "");
+                                objID = int.Parse(value);
+
+                                intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == sub && i.SubjectID == subID).FirstOrDefault();
+                            }
+                            else
+                            {
+                                obj = o.ToString();
+                                objID = oid;
+                                sub = intersectType.Subject;
+                                sub = (obj == "ReferenceItemType" && intersectType.SubjectID == 0) ? obj : obj.Replace("Type", "");
+                                subID = int.Parse(value);
+
+                                intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == obj && i.ObjectID == objID).FirstOrDefault();
+                            }
+
+                            if (intersect != null)
+                            {
+                                if (isSubject)
+                                {
+                                    intersect.Object = obj;
+                                    intersect.ObjectID = objID;
+                                }
+                                else
+                                {
+                                    intersect.Subject = sub;
+                                    intersect.SubjectID = subID;
+                                }
+                                Company.Update(intersect);
+                            }
+                            else
+                            {
+                                intersect = new Intersect { IntersectTypeID = intersectType.ID, Object = obj, ObjectID = objID, Subject = sub, SubjectID = subID, Visible = true };
+                                Company.Add(intersect);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         internal Dictionary<string, object> SerializeDynamicObject(ExpandoObject obj)
@@ -751,8 +993,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
         internal List<FieldType> getFieldTypesByObjectType(string objectType, int objectTypeID, bool listableOnly)
         {
             return (listableOnly) ?
-                Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID && i.IsListable).OrderBy(i => i.SortOrder).ToList() :
-                Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID).OrderBy(i => i.SortOrder).ToList();
+                Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList() :
+                Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID).OrderBy(i => i.ColumnOrder).ToList();
         }
 
         internal DynamicPagedResults processDynamicResults(
@@ -764,7 +1006,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             string filter = "", string ownerUsers = "", string ownerGroups = "",
             string sortDefaultField = "Name", string sortDefaultDirection = "asc",
             Dictionary<string, object> extraParams = null,
-            bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false)
+            bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false)
         {
             var requestParams = Request.Params;
             var dbArgs = new Dapper.DynamicParameters();
@@ -787,6 +1029,20 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             var joins = "";
             var columns = "";
             getDynamicFieldJoinStatements(objectTypeID, obj, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields);
+
+            if (fetchPermissions)
+            {
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    columns += "1 P_CanEdit, 1 P_CanDelete,";
+                }
+                else
+                {                    
+                    columns += $" (select count(1) from securitydetail p_sd_edit where (A.ID = p_sd_edit.ObjectID and p_sd_edit.ObjectType = 'Artifact' and p_sd_edit.Claim = 3 and p_sd_edit.ClaimObject = 1 and p_sd_edit.ResponsibleObjectType = 'Resource' and p_sd_edit.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanEdit, ";
+                    columns += $" (select count(1) from securitydetail p_sd_delete where (A.ID = p_sd_delete.ObjectID and p_sd_delete.ObjectType = 'Artifact' and p_sd_delete.Claim = 4 and p_sd_delete.ClaimObject = 1 and p_sd_delete.ResponsibleObjectType = 'Resource' and p_sd_delete.ResponsibleObjectID = {Company.CurrentResourceID})) as P_CanDelete, ";
+                }
+            }
+
             sql = string.Format(sql, columns, joins);
 
             #endregion
@@ -797,7 +1053,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             // If simple filter specified add that criteria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" }, obj, objectTypeID, filter, dbArgs)}";
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" }, obj, objectTypeID, filter, dbArgs, fields)}";
             }
 
             var querySql = $@"select * from ({sql}) A";
@@ -817,7 +1073,36 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             countSql += filters;
             querySql += filters;
 
-            querySql = applySortSuffix(querySql, sortDataField, sortOrder, isNumericString:isSortColumnNumber(sortDataField, fields));         // Sorting
+            #region Sorting
+
+            if (string.IsNullOrEmpty(sortDataField))
+            {
+                var sortSql = "";
+                
+                foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
+                {
+                    var columnName = useFriendlyName ? field.FriendlyName.Replace("[", "").Replace("]", "") : $"Field{field.ID}";
+                    if (field.Type == "Number")
+                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS int)";
+                    else
+                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
+                }
+
+                if (string.IsNullOrEmpty(sortSql))
+                {
+                    sortSql = "Name";
+                }
+
+                querySql += " ORDER BY " + sortSql;
+            }
+            else
+            {
+                //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.
+                querySql = applySortSuffix(querySql, sortDataField, sortOrder, sortDefaultField, sortDefaultDirection, isNumericString: isSortColumnNumber(sortDataField, fields));         // Sorting
+            }
+
+            #endregion
+
             querySql = applyPagingSuffix(querySql, pagenum, pagesize);              // Paging
 
             countSql += " OPTION (RECOMPILE)";
@@ -829,20 +1114,49 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return new DynamicPagedResults { results = query, total = total };
         }
 
-        protected bool isSortColumnNumber(string sortDataField, List<FieldType> fields)
-        {
-            if (string.IsNullOrEmpty(sortDataField)) return false;
-
-            var field = fields.Where(x => string.Compare($"Field{x.ID}", sortDataField, true) == 0).FirstOrDefault();
-
-            if (field == null) return false;
-
-            return field.Type == "Number";
-        }
-
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// Only used in the method below.
+        /// </summary>
+        internal class RelationshipDirectionFieldInfo
+        {
+            public bool IsSubject { get; set; }
+            public int FieldTypeID { get; set; }
+            public int IntersectTypeID { get; set; }
+            public string Object { get; set; }
+            public int ObjectID { get; set; }
+        }
+
+        internal List<RelationshipDirectionFieldInfo> getRelationFieldData(string type, int typeID, List<FieldType> fields)
+        {
+            var relationFieldInfos = new List<RelationshipDirectionFieldInfo>();
+            var relationshipFields = fields.Where(i => i.Type == DataType.Relationship.ToString() || i.Type == DataType.FieldFromRelationship.ToString()).ToList();
+            if (relationshipFields != null)
+            {
+                if (relationshipFields.Count > 0)
+                {
+                    var intersectTypeIDs = relationshipFields.Select(i => i.LookupObjectID.Value).ToList();
+                    var intersectTypes = Company.Filter<IntersectType>(i => intersectTypeIDs.Contains(i.ID)).ToList();
+                    foreach (var rF in relationshipFields)
+                    {
+                        var relationFieldInfo = new RelationshipDirectionFieldInfo { FieldTypeID = rF.ID, IntersectTypeID = rF.LookupObjectID.Value };
+                        var intersectType = intersectTypes.SingleOrDefault(i => i.ID == relationFieldInfo.IntersectTypeID);
+                        if (intersectType != null)
+                        {
+                            relationFieldInfo.IsSubject = (intersectType.Subject == type && intersectType.SubjectID == typeID);
+                            relationFieldInfo.Object = relationFieldInfo.IsSubject ? intersectType.Object : intersectType.Subject;
+                            relationFieldInfo.ObjectID = relationFieldInfo.IsSubject ? intersectType.ObjectID : intersectType.SubjectID;
+
+                            relationFieldInfos.Add(relationFieldInfo);
+                        }
+                    }
+                }
+            }
+            return relationFieldInfos;
+        }
 
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null)
         {
@@ -863,24 +1177,73 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             if (fields == null)
             {
                 if(listableOnly)
-                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
                 else
-                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.SortOrder).ToList();
+                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.ColumnOrder).ToList();
             }
+
+            var relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
 
             foreach (var f in fields)
             {
-                var name = $"Field{f.ID}";//f.Name.Replace("'", "''").Replace("--", "");
+                var name = $"Field{f.ID}";
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
-                if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                columns += $@"case 
+
+                if (f.Type == DataType.Relationship.ToString())
+                {
+                    var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
+
+                    if (relationFieldInfo != null)
+                    {
+                        var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
+                        var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
+                        var typeIDColumnName = relationFieldInfo.Object + "ID";
+
+                        if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                        columns += (isReferenceItemType ? $"{name}_OT.Name" : $"{name}_OT.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                        joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = A.ID" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = A.ID";
+                        joins += (isReferenceItemType) 
+                            ? $" left join [{tableName}] {name}_OT on " 
+                            : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
+                        joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                    }
+                }
+                else if (f.Type == DataType.FieldFromRelationship.ToString())
+                {
+                    var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
+
+                    if (relationFieldInfo != null)
+                    {
+                        //var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
+                        //var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
+                        //var typeIDColumnName = relationFieldInfo.Object + "ID";
+
+                        if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                        columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                        joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = A.ID" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = A.ID";
+                        joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {f.LookupObjectFieldTypeID}";
+                        joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
+                        joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+
+                    }
+                }
+                else
+                {
+                        if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                        columns += $@"case 
     when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
     when {name}_T.Value is not null then {name}_T.FormattedValue 
     when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
     else '' 
 end as [{(useFriendlyName ? friendlyName : name)}], ";
-                joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+
+                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+                }
             }
 
             fields = null;
@@ -904,7 +1267,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             //loop through visible fields for this item 
             if (fields == null)
             {
-                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
             }
 
             StringBuilder sb = new StringBuilder();
@@ -915,14 +1278,44 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                 sb.Append($"({column} like @simpleFilter + '%')");
             }
-            
+
+            var relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
+
             foreach (var field in fields)
             {
                 if (sb.Length != 0) sb.Append(" or ");
 
-                var name = $"Field{field.ID}_T.FormattedValue";
-                
-                sb.Append($"({name} like @simpleFilter + '%')");
+                if (field.Type == DataType.Relationship.ToString())
+                {
+                    var relationFieldInfo = relationFieldInfos.FirstOrDefault(i => i.FieldTypeID == field.ID);
+                    var columnName = "DisplayValue";
+                    if (relationFieldInfo != null)
+                    {
+                        if (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString())
+                        {
+                            columnName = "Name";
+                        }
+                    }
+                    sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
+                    //sb.Append($"(IIF(Field{field.ID}_T.SubjectType = '{fieldTypeRelationType}' and Field{field.ID}_T.SubjectTypeID = {typeID} , Field{field.ID}_T.SubjectName, Field{field.ID}_T.SubjectName) like @simpleFilter + '%')");
+                }
+                else if (field.Type == DataType.FieldFromRelationship.ToString())
+                {
+                    var columnName = "FormattedValue";
+                    sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
+                }
+                else
+                {
+                    if (field.Name.ToLower() == "highproductrisk" && filterExp.ToLower() == "yes")
+                    {
+                        //do nothing, LMTOM-specific. Yes means Yes AND No
+                    }
+                    else
+                    {
+                        sb.Append($"(Field{field.ID}_T.FormattedValue like @simpleFilter + '%')");
+                    }
+                    
+                }
             }
 
             var val = new Dapper.DbString { Value = filterExp.Replace('*','%').Replace('?','_'), Length = 200};
@@ -932,7 +1325,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return $"({sb.ToString()})";
         }
 
-        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null)
+        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null)
         {
             columns = "";
             joins = "";
@@ -953,7 +1346,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             if (fields == null)
             {
-                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
             }
 
             foreach (var f in fields)
@@ -961,7 +1354,6 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 var name = $"Field{f.ID}"; //f.Name.Replace("'", "''").Replace("--", "");
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
 
-                if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
 
                 //var thisColumn = $", coalesce({name}_T.FormattedValue, {name}_TT.DefaultFormattedValue) as [{(useFriendlyName ? friendlyName : name)}]";
                 var thisColumn = $@", case 
@@ -971,10 +1363,12 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
     else '' 
 end as [{(useFriendlyName ? friendlyName : name)}]";
 
+                if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                columns += thisColumn;
+
                 var thisJoin = $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} and {name}_TT.IsListable = 1 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
-
-                columns += thisColumn;
+                
                 joins += thisJoin;
 
                 if (filterFields.Contains(name))
@@ -1073,10 +1467,18 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     break;
             }
 
-            if (!string.IsNullOrEmpty(allItemsBind) && !string.IsNullOrEmpty(allValueBind))
+            if (field.ToLower() == "field50102" && value.ToLower() == "yes") //field50102 = highproductrisk
             {
-                dbParams.Add(allItemsBind, $"{allValueBind}");
-                querySyntax = $"({querySyntax} or {field} = @{allItemsBind})";
+                //do nothing, this is LMTOM-specific. Need to deal with this some other way. No means No, Yes means YES and NO.
+                querySyntax = "";
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(allItemsBind) && !string.IsNullOrEmpty(allValueBind))
+                {
+                    dbParams.Add(allItemsBind, $"{allValueBind}");
+                    querySyntax = $"({querySyntax} or {field} = @{allItemsBind})";
+                }
             }
 
             return querySyntax;
@@ -1363,7 +1765,6 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return filters;
         }
 
-
         internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc", bool isNumericString = false)
         {
             if (string.IsNullOrEmpty(sortDataField))
@@ -1383,11 +1784,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
-                //return sql;
                 throw new Exception("Invalid sort field specified");
             }
 
-            if(isNumericString)
+            if (isNumericString)
                 sql += " ORDER BY CAST(+ [" + sortDataField + "] AS int)" + sortOrder;
             else
                 sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
@@ -1422,7 +1822,6 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
         #endregion
 
-
         protected bool IsSingleSignOn()
         {
             var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
@@ -1431,13 +1830,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             {
                 if (Company.CurrentCompanyDomain == companySetting.UrlPrefix)
                 {
-                    return !(companySetting.AuthenticationType == core.enums.AuthenticationType.Forms);
-
+                    return !(companySetting.AuthenticationType == AuthenticationType.Forms);
+                    
                 }
             }
 
             return false;
         }
+
 
     }
 }

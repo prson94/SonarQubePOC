@@ -2,13 +2,20 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials } from '../models/resource.model';
+import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class ResourcesService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+
+    getHelpResources(): Promise<HelpResource[]> {
+        return this.http.get('/resources/HelpResources')
+            .toPromise()
+            .then(response => <HelpResource[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 
     getResources(): Promise<Resource[]> {
         return this.http.get('/api/resources/1')

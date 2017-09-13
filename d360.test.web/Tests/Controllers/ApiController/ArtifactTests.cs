@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Web.Http;
-using System.Net;
-using d360.web.Models;
+﻿using d360.web.Models;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Web.Http;
 
 namespace d360.test.web.Tests.Controllers.ApiController
 {

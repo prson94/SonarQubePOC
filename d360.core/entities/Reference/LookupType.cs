@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.LookupType, "LookupType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class LookupType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata
     {
         [DataMember(Name = "name")]

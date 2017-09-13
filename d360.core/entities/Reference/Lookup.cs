@@ -4,7 +4,7 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Lookup, "Lookup")]
+    [DataContract(Namespace = NAMESPACE)]
     public class Lookup : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata
     {
         public int LookupTypeID { get; set; }
@@ -13,5 +13,10 @@ namespace d360.core.entities
         public int? UpdatedBy { get; set; }
 
         public virtual LookupType LookupType { get; set; }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.LookupType, Object = SystemObjects.Lookup, TypeID = LookupTypeID };
+        }
     }
 }

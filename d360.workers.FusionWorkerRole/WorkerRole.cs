@@ -43,7 +43,8 @@ namespace d360.workers.FusionWorkerRole
             IFusionQueueManager queueManager = new FusionQueueManager(GlobalStaticProperties.QueueName);
 
             FusionProcessingData fusionData = new FusionProcessingData
-            { CompanyID = 4, FusionID = 69, LogFileName = "1.69.2017-08-25_08.17.00.json" };
+            { CompanyID = 56, FusionID = 1, LogFileName = "76.1.2017-08-07_06.20.59.json" };
+            //{ CompanyID = 4, FusionID = 69, LogFileName = "1.69.2017-08-25_08.17.00.json" };
             //{
             //    CompanyID = 4,
             //    FusionID = 68,

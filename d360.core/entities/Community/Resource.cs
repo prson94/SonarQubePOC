@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Resource, "Resource")]
+    [DataContract(Namespace = NAMESPACE)]
     public class Resource : BaseIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject
     {
         #region Properties
@@ -66,6 +66,11 @@ namespace d360.core.entities
         {
             return string.Format("{0} {1}", FirstName, LastName);
             //return string.Format("{0} {1} ({2})", FirstName, LastName, Username);
+        }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.ResourceType, Object = SystemObjects.Resource, TypeID = ResourceTypeID };
         }
     }
 }

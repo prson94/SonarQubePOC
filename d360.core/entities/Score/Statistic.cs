@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Statistic, "Statistic")]
+    [DataContract(Namespace = NAMESPACE)]
     public partial class Statistic : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

@@ -9,14 +9,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-relationships-component',
-    template: `<div *ngIf="isRolesVisible" class="row">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-admin-relationship-roles></d3s-admin-relationship-roles>
-                        </div>
-                    </div>
-                </div>
-                <div *ngIf="!isRolesVisible" class="row">
+    template: `<div class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
                             <d3s-admin-relationships-list [(selected)]="selected"></d3s-admin-relationships-list>
@@ -36,7 +29,6 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 })
 
 export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {   
-    private isRolesVisible: boolean = false;
     private selected: RelationshipType;
     
     constructor(rightSidebarService: RightSidebarService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
@@ -44,11 +36,12 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         this.areaName = "Relationship Types";
         this.setCommonItems();
         this.setCommonRightSideBar(true);    
-                
+
         this.auditSidebar.hasDynamicUrl = true;
         this.auditSidebar.dynamicUrlCallback = (() => {
             return `/sidebar/audit/IntersectType/${this.selected.ID}`
         });
+        //this.rightSidebarService.showItem(new RightSidebarItem('Relationship Roles', 'roles', ['fa-user']));
     }
     
     ngOnDestroy() {
@@ -56,6 +49,6 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
     }
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        if (activatedItem.tag == 'roles') this.isRolesVisible = !this.isRolesVisible; 
+        //if (activatedItem.tag == 'roles') this.isRolesVisible = !this.isRolesVisible; 
     }
 }

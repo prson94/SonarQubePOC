@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.TaxonomyTypeLevel, "TaxonomyTypeLevel")]
+    [DataContract(Namespace = NAMESPACE)]
     public class TaxonomyTypeLevel : BaseObject
     {
         [DataMember,  Key,  Column(Order = 1), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description")]

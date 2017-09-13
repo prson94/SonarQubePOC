@@ -52,10 +52,10 @@ namespace d360.web
             {
                 host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
             }
-            else
-            {
-                host = "demo.dev";
-            }
+            //else
+            //{
+            //    host = "demo.dev";
+            //}
 
             var dict = await loadCache();
 

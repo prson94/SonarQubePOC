@@ -28,7 +28,7 @@ namespace d360.extensions.storage
             var keyValue = constants.AZURE_MEDIA_SERVICES_KEY;
             return new MediaServicesCredentials(acctName, keyValue);
         }
-        
+
 
         public void UploadAsset(string path)
         {
@@ -47,7 +47,7 @@ namespace d360.extensions.storage
             var uri = key.GetKeyDeliveryUrl(ContentKeyDeliveryType.BaselineHttp);
             var aesKey = GetDeliveryKey(uri, null);
             //ConfigureClearAssetDeliveryPolicy(inputAsset);
-          
+
             //GetLatestMediaProcessorByName("Media Encoder Standard");
 
             //var tokenTemplateString = AddTokenRestrictedAuthorizationPolicy(key);
@@ -59,9 +59,9 @@ namespace d360.extensions.storage
             ////Console.WriteLine("The authorization token is:\nBearer {0}", testToken);
             //Console.WriteLine();
 
-          
 
-            
+
+
 
         }
 
@@ -97,13 +97,13 @@ namespace d360.extensions.storage
 
         private void BuildStreamingURLs(IAsset asset)
         {
-            
+
             // Create a 30-day readonly access policy. 
             // You cannot create a streaming locator using an AccessPolicy that includes write or delete permissions.
             IAccessPolicy policy = context.AccessPolicies.Create("Streaming policy",
                 TimeSpan.FromDays(36500),
                 AccessPermissions.Read);
-           
+
             // Create a locator to the streaming content on an origin. 
             ILocator originLocator = context.Locators.CreateLocator(LocatorType.OnDemandOrigin, asset,
                 policy,
@@ -227,7 +227,7 @@ namespace d360.extensions.storage
 
 
 
-         private string GenerateTokenRequirements()
+        private string GenerateTokenRequirements()
         {
             TokenRestrictionTemplate template = new TokenRestrictionTemplate(TokenType.SWT);
 
@@ -298,7 +298,7 @@ namespace d360.extensions.storage
                     Name = "Testing Open Auth Policy",
                     KeyRestrictionType = (int)ContentKeyRestrictionType.Open,
                     Requirements = null
-        };
+                };
 
             restrictions.Add(restriction);
 
@@ -345,7 +345,7 @@ namespace d360.extensions.storage
                     "Token Policy Option",
                     ContentKeyDeliveryType.BaselineHttp,
                     restrictions,
-                    null 
+                    null
                     );
 
             policy.Options.Add(policyOption);

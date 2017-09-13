@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnInit, OnDestroy} from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
+﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AuditService } from '../../../services/audit.service';
@@ -68,7 +68,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     filters: GridFilterExpression[] = [];
 
     constructor(
-        private route: ActivatedRoute,        
+        private route: ActivatedRoute,
         private router: Router,
         private auditService: AuditService,
         private headerBreadcrumbService: HeaderBreadcrumbService,

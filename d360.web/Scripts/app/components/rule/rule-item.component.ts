@@ -15,6 +15,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 
+declare var CompanySettings;
 
 @Component({
     selector: 'd3s-rule-item',
@@ -28,8 +29,8 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                                     <d3s-take-survey [surveyType]="surveyType" [objectID]="selected?.ID" [objectType]="'Taxonomy'" (surveyCancel)="showSurvey=false" (surveyComplete)="completeSurvey()"></d3s-take-survey>
                                 </div>
                     </div>
-                    <div class="col s12">
-                            <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
+                    <div class="col s12" *ngIf="showSocialScoreBar">
+                        <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
                             <d3s-object-governance [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name" [status]="rule?.Status"></d3s-object-governance>
                         </div>
                     </div>
@@ -54,8 +55,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                             </div>
                         </div>
                     </div>
-                </div>
-                `
+                </div>`
 })
 
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -66,6 +66,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private surveyType: SurveyType;
     private showSurvey: boolean = false;    
     private selectedImp: RuleImplementation;
+    private showSocialScoreBar: boolean = true;
 
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
@@ -77,12 +78,10 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             protected surveysService: SurveysService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;        
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {
-        
-                
         this.sub = this.route.params.subscribe(params => {
             let ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number            
@@ -95,6 +94,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
             this.load(ruleId).then(() => this.isLoading = false);
         });
+
+        this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
     }
 
     ngOnDestroy() {        

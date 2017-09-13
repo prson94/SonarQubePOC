@@ -36,6 +36,9 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupObjectID_Name", Description = "LookupObjectID_Description")]
         public int? LookupObjectID { get; set; }
 
+        [DataMember]
+        public int? LookupObjectFieldTypeID { get; set; }
+
         [DataMember, StringLength(250)]
         public string LookupDisplayFormat { get; set; }
 
@@ -74,6 +77,12 @@ namespace d360.core.entities
 
         [DataMember]
         public bool IsPartOfKey { get; set; }
+
+        [DataMember]
+        public int ColumnOrder { get; set; }
+
+        [DataMember]
+        public int? ColumnWidth { get; set; }
 
         [DataMember]
         public int SortOrder { get; set; }

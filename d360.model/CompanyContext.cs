@@ -11,6 +11,7 @@ using d360.core.resources;
 using d360.extensions;
 using Dapper;
 using gudusoft.gsqlparser;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -86,6 +87,10 @@ namespace d360.model
 
         public DbSet<Artifact> Artifacts { get; set; }
 
+        public DbSet<ArtifactTypeExportTemplate> ArtifactTypeExportTemplates { get; set; }
+
+        public DbSet<ArtifactTypeExportTemplateStyle> ArtifactTypeExportTemplateStyles { get; set; }
+
         public DbSet<ArtifactType> ArtifactTypes { get; set; }
 
         public DbSet<d360.core.entities.Attribute> Attributes { get; set; }
@@ -108,11 +113,7 @@ namespace d360.model
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
 
-        public DbSet<EmailTemplate> EmailTemplates { get; set; }
-
-        public DbSet<Event> Events { get; set; }
-
-        public DbSet<EventGroup> EventGroups { get; set; }
+        //public DbSet<EmailTemplate> EmailTemplates { get; set; }
 
         public DbSet<Favorite> Favorites { get; set; }
 
@@ -185,17 +186,10 @@ namespace d360.model
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
         public DbSet<Issue> Issues { get; set; }
+
         public DbSet<core.entities.IssueType> IssueTypes { get; set; }
 
         public DbSet<Language> Languages { get; set; }
-
-        public DbSet<Load> Loads { get; set; }
-
-        public DbSet<LoadItem> LoadItems { get; set; }
-
-        public DbSet<LoadItemColumn> LoadItemColumns { get; set; }
-
-        public DbSet<LoadColumn> LoadColumns { get; set; }
 
         public DbSet<Lookup> Lookups { get; set; }
 
@@ -297,15 +291,17 @@ namespace d360.model
 
         public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
+        public DbSet<SiteNav> SiteNav { get; set; }
+
+        public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
+
         public DbSet<ShoppingCartType> ShoppingCartTypes { get; set; }
 
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
         public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
 
-        public DbSet<SiteNav> SiteNav { get; set; }
-
-        public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
+        public DbSet<Shortcut> Shortcuts { get; set; }
 
         public DbSet<Survey> Surveys { get; set; }
 
@@ -319,11 +315,7 @@ namespace d360.model
 
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
-        public DbSet<TooltipTemplate> TooltipTemplates { get; set; }
-        
-        public DbSet<d360.workflow.entities.WorkflowIssue> WorkflowIssues { get; set; }
-        public DbSet<d360.workflow.entities.WorkflowResource> WorkflowResources { get; set; }
-        
+        //public DbSet<TooltipTemplate> TooltipTemplates { get; set; }     
         
         public DbSet<AuditField> AuditFields { get; set; }
         public DbSet<Audit> Audits { get; set; }
@@ -616,7 +608,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             return Filter<FieldType>(
                 i => i.Object == sType && i.ObjectID == id
                 )
-                .OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName)
+                .OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName)
                 .AsQueryable();
         }
 
@@ -704,81 +696,6 @@ from	TaxonomyType
 
         #endregion
 
-        #region Load
-
-        string LoadDetailBaseSql = @"select	L.ID,
-		L.[Object],
-		L.ObjectID,
-		coalesce(D.TextPath, 'Default') as ObjectName,
-		L.Notes,
-		'MyFile.' + L.Extension as FilePath,
-		L.DateStarted,
-		L.DateCompleted,
-		case L.[Action]
-			when 'P' then 'Promotion'
-			when 'R' then 'Relation'
-			when 'U' then 'Unrelation'
-            when 'BL' then 'Lineage : Business'
-            when 'L' then 'Lineage'
-            when 'DL' then 'Remove Lineage : Business'
-            when 'N' then 'Lineage : Business'
-            when 'O' then 'Responsibilities'
-            when 'T' then 'Lineage : Technical'
-            when 'S' then 'Synonyms'
-			when 'W' then 'Promotion (via Propose Workflow)'
-		end as [Action],
-        S.C as Success,
-        E.C as Error,
-        I.C as Incomplete,
-		T.C as Total,
-        R.FirstName + ' ' + R.LastName as Requestor
-from	[Load] L
-		left join cache.ObjectDetails D on D.[Object] = L.[Object] and D.ObjectID = L.ObjectID
-		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T 
-";
-       
-        public IEnumerable<LoadDetail> GetLoadDetails()
-        {
-            return Query<LoadDetail>(LoadDetailBaseSql + " order by L.ID desc");
-        }
-
-        public LoadDetail GetLoadDetail(int id)
-        {
-            return Query<LoadDetail>(LoadDetailBaseSql + " where ID = " + id).SingleOrDefault();
-        }
-
-        public IEnumerable<dynamic> GetLoadColumnDetails(int id)
-        {
-            return Query<dynamic>(@"
-select		'Column' + cast(ColumnIndex as varchar) as datafield,
-			Name as text
-from		LoadColumn
-where		LoadID = @id
-order by	ColumnIndex", new { id });
-        }
-
-        public IEnumerable<dynamic> GetLoadItemDetails(int id)
-        {
-            var columns = Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
-            var sql = "";
-            var sqlColumns = "select I.LoadID, I.RowIndex";
-            var sqlTables = "from LoadItem I";
-            columns.ForEach(c =>
-            {
-                sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
-                sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
-            });
-            sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage"; 
-            sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex";
-            return Query<dynamic>(sql, new { id });
-        }
-
-        #endregion
-
         class LookupFieldValueModel
         {
             public int ID { get; set; }
@@ -841,14 +758,14 @@ order by	ColumnIndex", new { id });
             return items;
         }
 
-        class ReferenceItemFieldValueModel
-        {
-            public int ID { get; set; }
-            public string Name { get; set; }
-            public int SortOrder { get; set; }
-            public int ObjectID { get; set; }
-            public string FormattedValue { get; set; }
-        }
+        //class ReferenceItemFieldValueModel
+        //{
+        //    public int ID { get; set; }
+        //    public string Name { get; set; }
+        //    public int SortOrder { get; set; }
+        //    public int ObjectID { get; set; }
+        //    public string FormattedValue { get; set; }
+        //}
         
         public ObjectDetail GetObjectDetail(SystemObjects type, long id)
         {
@@ -863,7 +780,7 @@ order by	ColumnIndex", new { id });
             if (model != null)
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                model.PluralizedName = pluralize.Pluralize(model.Name);
+                model.PluralizedName = pluralize.Pluralize(model.Name??"");
                 pluralize = null;
             }
             return model;
@@ -875,76 +792,6 @@ order by	ColumnIndex", new { id });
             return Filter<ObjectStyle>(i => i.ObjectType == sType && i.ObjectID == id).FirstOrDefault();
         }
         
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = true)
-        {
-            try
-            {
-                var sql = @"select * from ResponsibilityDetail where ObjectType = @type and ObjectID = @id" + (showHidden ? "" : " and Visible = 1") + " order by [Role], [ResponsibleObjectName]";
-                return Query<ResponsibilityDetail>(sql, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByResource(SystemObjects type, int id)
-        {
-            try
-            {
-                var sType = type.ToString();
-                return Filter<ResponsibilityDetail>(i => i.ResponsibleObjectType == sType && i.ResponsibleObjectID == id);
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public IQueryable<ResponsibilitySummaryDetail> GetResponsibilitiesByType(int id)
-        {
-            try
-            {
-                return Filter<ResponsibilitySummaryDetail>(i => i.ResponsibilityTypeID == id);
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public List<StatisticDetail> GetStatisticDetailsByType(SystemObjects type, int id)
-        {
-            return Query<StatisticDetail>($"GetStatisticDetails '{type.ToString()}', {id}").ToList();
-        }
-
-        public IEnumerable<dynamic> GetStatisticTypeRollupCheckOptions()
-        {
-            var sql = @"select * from (
-			select	'ArtifactType|' + cast(ID as varchar(15)) as ID, 'Artifacts :: ' + Name as Name from ArtifactType
-			) O order by Name";
-            return Query<dynamic>(sql).ToList();
-        }
-
-        public bool HasClaimInCurrentPermissionList(List<SecurityDetail> list, Claim claim, ClaimObject claimObject = ClaimObject.Root)
-        {
-            var has = CurrentResourceIsAdmin;
-            if (!has) has = list.Any(i => i.Claim == claim && i.ClaimObject == claimObject);
-            return has;
-        }
-
         public bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID)
         {
             if (!resourceID.HasValue)
@@ -981,17 +828,6 @@ order by	ColumnIndex", new { id });
             {
                 return null;
             }
-        }
-
-
-        public IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90)
-        {
-            return Database.Connection.Query<T>(sql, param, null, true, timeout);
-        }
-
-        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
-        {
-            return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
         }
 
         public bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false)
@@ -1054,40 +890,6 @@ order by	ColumnIndex", new { id });
             return value;
         }
 
-        public ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id)
-        {
-            var model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
-
-            var list = Database.Connection.Query<RawObjectStatistic>("[tile].[GetObjectStatistics] @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).ToList();
-            
-            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-
-            list.ForEach(i =>
-            {
-                switch (i.Group)
-                {
-                    case "Comments":
-                        model.CommentCount = i.Value;                        
-                        model.CommentLast = i.MostRecent;
-                        break;
-                    case "Followers":
-                        model.FollowerCount = i.Value;                        
-                        break;
-                    case "Score":
-                        model.Score = i.Value;                        
-                        break;
-                    case "Issues":
-                        model.IssueCount = i.Value;                        
-                        model.IssueLast = i.MostRecent;
-                        break;
-                    default:
-                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name ?? ""), TypeID = i.TypeID });
-                        break;
-                }
-            });
-
-            return model;
-        }
 
         #region Permission
 
@@ -1101,6 +903,63 @@ order by	ColumnIndex", new { id });
         {
             var sType = type.ToString();
             return Filter<SecurityDetail>(i => i.ObjectType == sType && id.Contains(i.ObjectID) && i.ResponsibleObjectID == CurrentResourceID);
+        }
+
+        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = true)
+        {
+            try
+            {
+                var sql = @"select * from ResponsibilityDetail where ObjectType = @type and ObjectID = @id" + (showHidden ? "" : " and Visible = 1") + " order by [Role], [ResponsibleObjectName]";
+                return Query<ResponsibilityDetail>(sql, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
+            }
+            catch (SqlException ex)
+            {
+                throw CheckAndTranslateSqlException(ex, "Responsibility");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByResource(SystemObjects type, int id)
+        {
+            try
+            {
+                var sType = type.ToString();
+                return Filter<ResponsibilityDetail>(i => i.ResponsibleObjectType == sType && i.ResponsibleObjectID == id);
+            }
+            catch (SqlException ex)
+            {
+                throw CheckAndTranslateSqlException(ex, "Responsibility");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public IQueryable<ResponsibilitySummaryDetail> GetResponsibilitiesByType(int id)
+        {
+            try
+            {
+                return Filter<ResponsibilitySummaryDetail>(i => i.ResponsibilityTypeID == id);
+            }
+            catch (SqlException ex)
+            {
+                throw CheckAndTranslateSqlException(ex, "Responsibility");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        
+        public bool HasClaimInCurrentPermissionList(List<SecurityDetail> list, Claim claim, ClaimObject claimObject = ClaimObject.Root)
+        {
+            var has = CurrentResourceIsAdmin;
+            if (!has) has = list.Any(i => i.Claim == claim && i.ClaimObject == claimObject);
+            return has;
         }
 
         public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
@@ -1323,7 +1182,6 @@ order by	ColumnIndex", new { id });
 
         public bool DeleteRelationship(int id)
         {
-
             var item = GetById<Intersect>(id);
             if (item == null) throw new NotFoundException("Relationship");
             var res = Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
@@ -1570,147 +1428,6 @@ where	R.SourceObject = 'FusionAttribute'
                     }).OrderBy(i => i.TypeName)
                 );
             return list;
-        }
-
-        #endregion
-
-        #region Reporting Engine
-
-        public IEnumerable<dynamic> GetReportQueryResults(int reportTileID, SystemObjects type, int id)
-        {
-            return Query<dynamic>(@"
-declare @commandText nvarchar(max)
-select @commandText = CommandText from ReportTile where ID = @id
-set  @commandText = REPLACE(@commandText, '[TYPE]', @t)
-set  @commandText = REPLACE(@commandText, '[ID]', @i)
-exec sp_executesql @commandText", new { id = reportTileID, t = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, i = id }, 180);
-        }
-
-        public class SqlStatementValidityTest
-        {
-            public SqlStatementValidityTest()
-            {
-                IsValid = false;
-                Results = new List<SqlStatementValidityTestResult>();
-            }
-
-            public bool IsValid { get; set; }
-
-            public List<SqlStatementValidityTestResult> Results { get; set; }
-        }
-
-        public class SqlStatementValidityTestResult
-        {
-            public string ErrorToken { get; set; }
-            public int XPosition { get; set; }
-            public int YPosition { get; set; }
-            public string ErrorMessage { get; set; }
-        }
-
-        public bool IsValidReportingQuery(string statement)
-        {
-            bool isValid = false;
-
-            var dbv = TDbVendor.DbVMssql;
-            var parser = new TGSqlParser(dbv);
-            parser.SqlText.Text = statement;
-            parser.Parse();
-            isValid = (parser.SqlStatements[0] is TSelectSqlStatement);
-            //TSelectSqlStatement selectStatement
-            //TSqlStatementType.sstMssqlSelect
-
-            return isValid;
-        }
-
-        public List<string> SelectQueryColumns(string statement)
-        {
-            bool isValid = false;
-            List<string> columns = new List<string>();
-
-            var dbv = TDbVendor.DbVMssql;
-            var parser = new TGSqlParser(dbv);
-            parser.SqlText.Text = statement;
-            parser.Parse();
-            isValid = (parser.SqlStatements[0] is TSelectSqlStatement);
-            //TSelectSqlStatement selectStatement
-            //TSqlStatementType.sstMssqlSelect
-
-            if (!isValid) throw new Exception("Non-select statement specified to function that gets columns from select statements.");
-
-            TSelectSqlStatement select = (TSelectSqlStatement)parser.SqlStatements[0];
-            var fields = select.Fields;
-            foreach (var field in select.Fields)
-            {
-                columns.Add((field.DisplayName ?? "").Replace("[","").Replace("]","").Replace("'",""));
-            }
-            return columns;
-        }
-
-        public List<ReportSchemaModel> GetReportingSchema()
-        {
-            string k = key(REPORTING_SCHEMA_KEY, CurrentCompanyID);
-            if (Caching.ItemExists<List<ReportSchemaModel>>(k))
-            {
-                return Caching.GetItem<List<ReportSchemaModel>>(k);
-            }
-            else
-            {
-                var models = Query<ReportSchemaModel>(
-@"select	distinct 
-		SUBSTRING(TABLE_NAME, 0, CHARINDEX('_', TABLE_NAME)) as ID,
-        NULL as ParentID,
-        SUBSTRING(TABLE_NAME, 0, CHARINDEX('_', TABLE_NAME)) as Name,
-        TABLE_SCHEMA as [Schema],
-        0 as [Position],
-        'Group' as [Type]
-from	[INFORMATION_SCHEMA].[VIEWS] 
-where	TABLE_SCHEMA = 'reporting'
-union
-select	TABLE_NAME as ID,
-        SUBSTRING(TABLE_NAME, 0, CHARINDEX('_', TABLE_NAME)) as ParentID,
-        TABLE_NAME as Name,
-        TABLE_SCHEMA as [Schema],
-        0 as [Position],
-        'View' as [Type]
-from	[INFORMATION_SCHEMA].[TABLES] 
-where	TABLE_SCHEMA = 'reporting'
-union
-select	TABLE_NAME as ID,
-        SUBSTRING(TABLE_NAME, 0, CHARINDEX('_', TABLE_NAME)) as ParentID,
-        TABLE_NAME as Name,
-        TABLE_SCHEMA as [Schema],
-        0 as [Position],
-        'View' as [Type]
-from	[INFORMATION_SCHEMA].[VIEWS] 
-where	TABLE_SCHEMA = 'reporting'
-union
-select	TABLE_NAME + cast(ORDINAL_POSITION as varchar(10)) as ID,
-        TABLE_NAME as ParentID,
-        COLUMN_NAME as Name,
-        TABLE_SCHEMA as [Schema],
-        ORDINAL_POSITION as [Position],
-        'Column' as [Type]
-from	[INFORMATION_SCHEMA].[COLUMNS]
-where	TABLE_SCHEMA = 'reporting'").ToList();
-
-                var altered = loadSchemaChildren(models, null);
-                Caching.SetItem<List<ReportSchemaModel>>(k, altered, true, 5);
-                return altered;
-            }
-
-        }
-
-        List<ReportSchemaModel> loadSchemaChildren(List<ReportSchemaModel> schemaItems, string parentID)
-        {
-            var array = new List<ReportSchemaModel>();
-
-            foreach (var c in schemaItems.Where(i => i.ParentID == parentID).OrderBy(i => i.Position).ThenBy(i => i.Name))
-            {
-                c.Items = loadSchemaChildren(schemaItems, c.ID);
-                array.Add(c);
-            }
-
-            return array;
         }
 
         #endregion
@@ -2026,6 +1743,14 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
         #region Token Processing Methods
 
+        private string getObjectDisplayValue(IFieldsObject obj, int id)
+        {
+            var info = obj.GetFieldsObjectInfo();
+            string query = string.Format("select utility.GetObjectDisplayValue('{0}', {1}, {2})", info.Object.ToString(), id, info.TypeID);
+            var value = Database.SqlQuery<string>(query).FirstOrDefault();
+            return value;
+        }
+
         private string renderTemplate(string templateType, string action, SystemObjects type, int id)
         {
             var settings = Community.GetCompanySettings();
@@ -2048,8 +1773,6 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
         }
 
         #endregion
-
-        
 
         #endregion
 
@@ -2100,11 +1823,11 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
         /// <summary>
         /// Removes the item from the system, as well as any dynamic fields associated with this item, if any.
         /// </summary>
-        public bool Delete(string type, int id)
+        public bool Delete(SystemObjects type, int id)
         {
             try
             {
-                Database.Connection.Execute("DeleteObject @Obj, @ObjectID, @ResourceID", new { Obj = type, ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
+                Database.Connection.Execute("DeleteObject @Obj, @ObjectID, @ResourceID", new { Obj = type.ToString(), ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
                 return true;
             }
             catch (Exception ex)
@@ -2136,6 +1859,16 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             modelBuilder.Entity<FusionRuleStep>().HasRequired(t => t.FusionRule).WithMany(t => t.FusionRuleSteps).HasForeignKey(k => k.RuleID).WillCascadeOnDelete(true);
 
             base.OnModelCreating(modelBuilder);
+        }
+
+        public IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90)
+        {
+            return Database.Connection.Query<T>(sql, param, null, true, timeout);
+        }
+
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
+        {
+            return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
         }
 
         public override bool Update<T>(T item)
@@ -2308,45 +2041,23 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 #endregion
 
                 #region Business logic : EmailTemplate
-                if (entry.Entity is EmailTemplate)
-                {
-                    var o = entry.Entity as EmailTemplate;
-                    var id = o.ID.ToString();
+                //if (entry.Entity is EmailTemplate)
+                //{
+                //    var o = entry.Entity as EmailTemplate;
+                //    var id = o.ID.ToString();
 
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<EmailTemplate>(i => i.Name == o.Name && i.Action == o.Action))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<EmailTemplate>(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : Field
-                if (entry.Entity is Field)
-                {
-                    
-                    var field = (Field)entry.Entity;
-                    var dataType = field.FieldType.Type;
-
-                    if (dataType == "DateTime" || dataType == "Date")
-                    {
-                        field.Value = DateTime.Parse(field.Value).ToLocalTime().ToString("yyyy-MM-ddTHH:mm:ss");
-                    }
-
-                    var existing = Fields.AsNoTracking().FirstOrDefault<Field>(f => f.FieldTypeID == field.FieldTypeID && f.ObjectID == field.ObjectID && f.ObjectType == field.ObjectType);
-                    if (existing != null)
-                    {
-                        if (existing.Value != field.Value)
-                            changedFields.Add(field);
-                    }
-
-                }
+                //    switch (entry.State)
+                //    {
+                //        case EntityState.Added:
+                //            if (Any<EmailTemplate>(i => i.Name == o.Name && i.Action == o.Action))
+                //                throw new ArgumentException(Messages.Error_NameTaken);
+                //            break;
+                //        case EntityState.Modified:
+                //            if (Any<EmailTemplate>(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
+                //                throw new ArgumentException(Messages.Error_NameTaken);
+                //            break;
+                //    }
+                //}
                 #endregion
 
                 #region Business logic : FieldType
@@ -2487,28 +2198,51 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                     var o = entry.Entity as IntersectType;
                     var id = o.ID;
 
+                    var sql = $@"
+declare	@id int = {id},
+        @s varchar(50) = '{o.Subject}',
+		@sid int = {o.SubjectID},
+		@sc int = {(int)o.SubjectCardinality},
+		@o varchar(50) = '{o.Object}',
+		@oid int = {o.ObjectID},
+		@oc int = {(int)o.ObjectCardinality},
+		@p int = {o.PredicateID},
+		@err nvarchar(500) = ''
+
+if exists(select 1 from IntersectType where Subject = @s and SubjectID = @sid and Object = @o and ObjectID = @oid and PredicateID = @p and ( (@id is not null and ID <> @id) OR (@id is null) ) )
+begin
+	set @err = 'Another relationship already exists with this configuration.'
+end
+
+if @err = '' and (@sc = 0 OR @sc = 1) --ONLY ONE, check if multiple already
+begin
+	if exists(select Object, ObjectID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by Object, ObjectID having count(1) > 1)
+	begin
+		set @err = 'There are objects that are related to more than one subject.'
+	end
+end
+
+if @err = '' and (@oc = 0 OR @oc = 1) --ONLY ONE, check if multiple already
+begin
+	if exists(select Subject, SubjectID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by Subject, SubjectID having count(1) > 1)
+	begin
+		set @err = 'There are subjects that are related to more than one object.'
+	end
+end
+
+select @err";
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            var anyAdd = Any<IntersectType>(i =>
-                                i.Object == o.Object &&
-                                i.ObjectID == o.ObjectID &&
-                                i.PredicateID == o.PredicateID &&
-                                i.Subject == o.Subject &&
-                                i.SubjectID == o.SubjectID);
-                            if (anyAdd) throw new ConflictException("Relationship Type Cannot Be Created", "Another relationship already exists with this configuration.");
-                            
+                            var addCheck = Query<string>(sql).SingleOrDefault();
+                            if (!string.IsNullOrEmpty(addCheck))
+                                throw new ConflictException("Relationship Type Cannot Be Created", addCheck);
                             break;
                         case EntityState.Modified:
-                            var anyEdit = Any<IntersectType>(i =>
-                                i.Object == o.Object &&
-                                i.ObjectID == o.ObjectID &&
-                                i.PredicateID == o.PredicateID &&
-                                i.Subject == o.Subject &&
-                                i.SubjectID == o.SubjectID &&
-                                i.ID != o.ID);
-                            if (anyEdit) throw new ConflictException("Relationship Type Cannot Be Updated", "Another relationship already exists with this configuration.");
-                            
+                            var updateCheck = Query<string>(sql).SingleOrDefault();
+                            if (!string.IsNullOrEmpty(updateCheck))
+                                throw new ConflictException("Relationship Type Cannot Be Updated", updateCheck);
                             break;
                     }
                 }
@@ -2826,28 +2560,28 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                 #endregion
 
                 #region Business logic : TooltipTemplate
-                if (entry.Entity is TooltipTemplate)
-                {
-                    var o = entry.Entity as TooltipTemplate;
-                    var id = o.ID.ToString();
+                //if (entry.Entity is TooltipTemplate)
+                //{
+                //    var o = entry.Entity as TooltipTemplate;
+                //    var id = o.ID.ToString();
 
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<TooltipTemplate>(i => i.Name == o.Name && i.Action == o.Action))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<TooltipTemplate>(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
+                //    switch (entry.State)
+                //    {
+                //        case EntityState.Added:
+                //            if (Any<TooltipTemplate>(i => i.Name == o.Name && i.Action == o.Action))
+                //                throw new ArgumentException(Messages.Error_NameTaken);
+                //            break;
+                //        case EntityState.Modified:
+                //            if (Any<TooltipTemplate>(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
+                //                throw new ArgumentException(Messages.Error_NameTaken);
+                //            break;
+                //    }
+                //}
                 #endregion
             }
 
-            
-            // get objects that need event tracking.
+            #region Get objects that need event tracking.
+
             var modifiedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
                .Where(p => p.State == EntityState.Modified)
                .Select(p => p.Entity).ToList();
@@ -2859,7 +2593,9 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             var deletedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
                 .Where(p => p.State == EntityState.Deleted)
                 .Select(p => p.Entity).ToList();
-            
+
+            #endregion
+
             try
             {                
                 returnValue = base.SaveChanges();
@@ -2867,8 +2603,6 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             catch (OptimisticConcurrencyException)
             {
             }
-
-            
             
             // create events for the objects this needs to be done after save changes so we have new objects id's
             if(IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
@@ -2910,7 +2644,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             }
 
             foreach (var modified in modifiedEntities)
-            {               
+            {
                 addQE(events, ChangeType.Update, modified.GetEventObjectInfo());
             }
                         
@@ -2950,6 +2684,6 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             return homePage?.Route ?? "";
         }
 
-#endregion
+        #endregion
     }
 }

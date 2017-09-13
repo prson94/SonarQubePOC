@@ -68,7 +68,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.isLoading = true;
 
         this.fieldsService.getFields(this.objectID, this.objectType)
-            .then(data => {                
+            .then(data => {
                 this.fieldDefinitions = data;
                 this.fieldDefinitions.forEach(d => {
                     if (d.Type == 'ComplexRelationLookup') d.Type = 'Relation Lookup';

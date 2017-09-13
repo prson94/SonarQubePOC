@@ -4,7 +4,7 @@ import { SiteUrlHelpers } from './static/site-url-helpers';
 import { SelectivePreloadingStrategy } from './selective-preloading-strategy';
 
 const routes: Routes = [    
-    { path: '', redirectTo: SiteUrlHelpers.getDefaultRoute(), pathMatch: 'full' },      
+    { path: '', redirectTo: SiteUrlHelpers.getDefaultRoute(), pathMatch: 'full' },
     
     // lazy loaded modules 
     { path: SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT, loadChildren: './components/community/community.module#CommunityModule?chunkName=communityChunk' },            

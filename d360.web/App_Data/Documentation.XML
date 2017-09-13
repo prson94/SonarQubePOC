@@ -1615,6 +1615,11 @@
               Looks up a localized string similar to Please provide your current password..
             </summary>
         </member>
+        <member name="P:Resources.Validation.DisplayFormat">
+            <summary>
+              Looks up a localized string similar to Please provide a proper format string..
+            </summary>
+        </member>
         <member name="P:Resources.Validation.ExtensionName">
             <summary>
               Looks up a localized string similar to Please provide an extension name..
@@ -1727,6 +1732,19 @@
             <param name="id">The ID of the rule to retrieve attributes for.</param>
             <param name="typeID">The ID of the attribute type to get.</param>
             <returns></returns>
+        </member>
+        <member name="T:d360.web.Controllers.Services.AssetsController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.AssetsController.PostBulkAssetsAsync(System.String,System.Int32)">
+            <summary>
+            Takes a given set of assets and bulk inserts/updates them.
+            </summary>
+            <param name="ot">The Object Type of the asset type.</param>
+            <param name="otid">The Object Type ID of the asset type.</param>
+            <returns>An HTTP status code and message.</returns>
         </member>
         <member name="T:d360.web.Controllers.Services.ReferenceController">
             <summary>
@@ -2104,7 +2122,7 @@
         </member>
         <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurations">
             <summary>
-            Get all available fusion configurations across all types.  These configurations provide required connection and security credentials to connect to the underlying source.
+            Get all available fusion configurations accross all types.  These configurations provide required connection and security credentials to connect to the underlying source.
             </summary>
             <returns>A list of available fusion configurations.</returns>
         </member>
@@ -2290,6 +2308,11 @@
             <param name="id">The ID of the object</param>
             <returns>A list of fields with the name, friendly name, and value.</returns>
         </member>
+        <member name="T:d360.web.Controllers.BaseController.RelationshipDirectionFieldInfo">
+            <summary>
+            Only used in the method below.
+            </summary>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">
             <param name="at">ArtifactTypeID</param>
             <param name="p">ParentID</param>
@@ -2350,12 +2373,6 @@
             <param name="ObjectType"></param>
             <param name="ObjectID"></param>
             <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.EmailTemplate_DeleteFields(System.Int32)">
-            <param name="id">EmailTemplateID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.EmailTemplate_EditFields(System.Int32)">
-            <param name="id">EmailTemplateID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.FieldType_ComplexLookup_ChildItems(d360.core.SystemObjects,System.Int32)">
             <summary>
@@ -2596,6 +2613,12 @@
         <member name="M:d360.web.Controllers.FormController.Predicate_EditFields(System.Int32)">
             <param name="id">PredicateID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.ReferenceItem_AddFields(System.Int32)">
+            <param name="id">LookupTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ReferenceItem_EditFields(System.Int32)">
+            <param name="id">LookupID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Relationship_AddFields(System.Int32,d360.core.SystemObjects,System.Int32,System.Boolean)">
             <param name="it">IntersectTypeID</param>
             <param name="type">Object</param>
@@ -2704,17 +2727,13 @@
         <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_EditFields(System.Int32,System.Int32)">
             <param name="id">TaxonomyTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.TooltipTemplate_DeleteFields(System.Int32)">
-            <param name="id">TooltipTemplateID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TooltipTemplate_EditFields(System.Int32)">
-            <param name="id">TooltipTemplateID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ReferenceItem_AddFields(System.Int32)">
-            <param name="id">LookupTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ReferenceItem_EditFields(System.Int32)">
-            <param name="id">LookupID</param>
+        <member name="M:d360.web.Controllers.FieldsController._FieldTypesByObjectFull(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Provides additional details in this one only used by Angular right now name is missing in old one.
+            </summary>
+            <param name="type">The object type name</param>
+            <param name="id">The object type ID</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FusionController.GetConfigurationsByType(System.Int32)">
             <summary>

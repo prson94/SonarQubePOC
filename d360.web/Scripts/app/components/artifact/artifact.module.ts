@@ -29,13 +29,14 @@ import { ArtifactListComponent } from './artifact-list.component';
 import { ArtifactTopLevelListComponent } from './artifact-top-level-list.component';
 import { ArtifactTypeMetricsComponent } from './artifact-type-metrics.component';
 import { ArtifactTopLevelFilterComponent } from './artifact-top-level-filter.component';
+import { ArtifactCustomExportComponent } from './artifact-custom-export.component';
 
 import {    
     InputTextModule,    
     DataTableModule,
     TreeTableModule,
     ButtonModule,
-    DropdownModule,       
+    DropdownModule,    
     SelectButtonModule,    
     MultiSelectModule,    
     TooltipModule,        
@@ -55,7 +56,7 @@ import {
         DataTableModule,
         TreeTableModule,
         ButtonModule,
-        DropdownModule,            
+        DropdownModule,        
         SelectButtonModule,        
         MultiSelectModule,        
         TooltipModule,             
@@ -79,6 +80,7 @@ import {
     declarations: [        
         ArtifactColumnFilterComponent,
         ArtifactComponent,
+        ArtifactCustomExportComponent,
         ArtifactDefnintionComponent,
         ArtifactGridComponent,
         ArtifactItemComponent,

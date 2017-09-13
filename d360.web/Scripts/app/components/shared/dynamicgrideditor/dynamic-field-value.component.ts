@@ -61,7 +61,6 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     }
 
     private formatAsNumber(): string {
-        console.log(this.fieldValue);
         return this.fieldValue != '' && this.fieldValue != null ? Number(this.fieldValue).toLocaleString() : "";
     }
 

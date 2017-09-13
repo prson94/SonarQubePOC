@@ -26,7 +26,7 @@ namespace d360.web.Controllers
         }
 
         #endregion
-      
+
         [Route("sitemenu")]
         public JsonNetResult SiteMenu()
         {
@@ -123,16 +123,17 @@ namespace d360.web.Controllers
                     var record = Company.GetById<SiteNav>(d.ID);
                     Company.Delete(record);
                 });
-                
+
                 Company.Add(item);
                 Company.SaveChanges();
                 message = "Folder item added successfully.";
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 success = false;
                 message = ex.GetFullExceptionData();
             }
-           
+
             return new JsonNetResult
             {
                 Data = new { success, message },
@@ -154,7 +155,8 @@ namespace d360.web.Controllers
                 Company.Delete(fi);
                 Company.SaveChanges();
                 message = "Folder item removed successfully.";
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 success = false;
                 message = ex.GetFullExceptionData();
@@ -190,7 +192,8 @@ namespace d360.web.Controllers
                 Company.Delete(folder);
                 Company.SaveChanges();
                 message = "Folder removed successfully.";
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 success = false;
                 message = ex.GetFullExceptionData();
@@ -226,7 +229,8 @@ namespace d360.web.Controllers
                 Company.SaveChanges();
                 SetSiteNavPermissions(model.Folder);
                 message = "Folder added successfully";
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 success = false;
                 message = ex.GetFullExceptionData();
@@ -313,7 +317,7 @@ namespace d360.web.Controllers
             var message = "";
             try
             {
-                if(folder == null)
+                if (folder == null)
                     throw new Exception("Invalid folder.");
                 var siteNav = Company.GetById<SiteNav>(folder.ID);
                 if (siteNav == null)
@@ -326,7 +330,7 @@ namespace d360.web.Controllers
                 message = "Folder updated successfully.";
 
             }
-             catch (Exception ex)
+            catch (Exception ex)
             {
                 success = false;
                 message = ex.GetFullExceptionData();
@@ -341,11 +345,11 @@ namespace d360.web.Controllers
         }
 
         #region Permissions
-        
+
         [Authorize, HttpGet, Route("permissions/get/list/{id:int}")]
         public JsonNetResult GetSiteNavPermissionList(int id = 0)
         {
-                var sql = @"
+            var sql = @"
                     select * from
                     (
 	                    select 'Group :: ' + g.Name as label, 'Group|' + cast(g.ID as varchar) as [value] from [Group] g
@@ -403,7 +407,7 @@ namespace d360.web.Controllers
                     Company.SaveChanges();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return jsonNetException(ex);
             }
@@ -434,7 +438,7 @@ namespace d360.web.Controllers
                 Company.SiteNavPermissions.Add(perm);
                 Company.SaveChanges();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return jsonNetException(ex);
             }
@@ -492,7 +496,7 @@ namespace d360.web.Controllers
             var message = "";
 
             try
-            {                
+            {
                 Company.Delete<Favorite>(i => i.ResourceID == Company.CurrentResourceID);
 
                 message = "Favorites List Cleared.";
@@ -531,14 +535,15 @@ namespace d360.web.Controllers
 
                 Favorite existing = null;
 
-                if (!string.IsNullOrEmpty(favorite.Object) && favorite.ObjectID > 0) {
+                if (!string.IsNullOrEmpty(favorite.Object) && favorite.ObjectID > 0)
+                {
                     existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Object == favorite.Object && f.ObjectID == favorite.ObjectID);
                 }
                 else
                 {
                     existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Name == favorite.Name && f.Route == favorite.Route);
                 }
-                              
+
                 if (existing == null)
                 {
                     Company.Add(favorite);
@@ -558,10 +563,8 @@ namespace d360.web.Controllers
                         Company.Delete(existing);
                         message = favorite.IsHomePage ? "Home page removed" : "Favorite Removed.";
                     }
-                    
 
-                    
-                }                
+                }
             }
             catch (Exception ex)
             {
@@ -570,7 +573,7 @@ namespace d360.web.Controllers
             }
             return new JsonNetResult
             {
-                Data = new { success, message},
+                Data = new { success, message },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 
@@ -611,7 +614,8 @@ namespace d360.web.Controllers
 
                 Company.SaveChanges();
                 message = "Favorite moved successfully.";
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 success = false;
                 message = ex.GetFullExceptionData();
@@ -627,7 +631,7 @@ namespace d360.web.Controllers
 
         [Authorize, HttpGet, Route("GetFavorites")]
         public JsonNetResult GetFavorites(bool adminOnly = false)
-        {            
+        {
             var sql = @"select 
 	                    od.Name as Name,	
 	                    fav.Route as [Route],

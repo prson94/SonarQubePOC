@@ -25,6 +25,15 @@ export class CompanySettings {
     EnableShoppingCart: boolean;
     DefaultRoute: string;
     EnableSearchExactMatch: boolean;
+    ShowDefaultHelpVideos: boolean;
+    ShowHomeAssignmentTile: boolean;
+    ShowHomeBoardTile: boolean;
+    ShowHomeActivityTile: boolean;
+    ShowHomePageTitle: boolean;
+    HomePageTitleSize: string;
+    HomePageTitleColor: string;
+    HomePageBackgroundImage: string;
+    ClearHomePageBackgroundImage: boolean = false;
 }
 
 export class IpRestriction {

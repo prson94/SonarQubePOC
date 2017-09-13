@@ -18,6 +18,9 @@ namespace d360.core.entities
         public int SubjectID { get; set; }
 
         [DataMember]
+        public Cardinality SubjectCardinality { get; set; }
+
+        [DataMember]
         public string SubjectName { get; set; }
 
         [DataMember]
@@ -38,6 +41,9 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
 
         [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
+
+        [DataMember]
         public string ObjectName { get; set; }
 
         [DataMember]
@@ -56,6 +62,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string PredicateName { get; set; }
+
+        [DataMember]
+        public string PredicateInverse { get; set; }
 
         [DataMember]
         public PredicateType? PredicateType { get; set; }

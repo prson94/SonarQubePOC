@@ -8,7 +8,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.AttributeType, "AttributeType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class AttributeType : BaseIntObject, IIntObject, IUpdatedMetadata, IEventTrackedEntity
     {
         #region Properties

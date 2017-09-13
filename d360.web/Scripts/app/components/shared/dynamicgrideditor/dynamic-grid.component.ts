@@ -12,7 +12,7 @@ import { BaseComponent } from '../../shared/base.component';
     providers: [GridDefinitionService, UriBasedService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{title}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter" [hasExport]="showExportButton" (exportClick)="exportClick.emit()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter" [hasExport]="showExportButton" (exportClick)="exportClick.emit()"></d3s-tile-actions>
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
@@ -55,7 +55,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() rowID: string = 'ID';
     @Input() objectID: number;
-    @Input() dataUri: string;    
+    @Input() dataUri: string;
     @Input() deleteUri: string;
     @Input() createUri: string;
     @Input() editUri: string;
@@ -142,7 +142,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true;
         this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
-            .then(result => {   
+            .then(result => {
                 this.showMessageForResult(this.messagesService, result);                                     
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
                 this.showEditor = false;                

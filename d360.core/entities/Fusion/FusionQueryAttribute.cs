@@ -28,5 +28,10 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual FusionQueryAttributeType FusionQueryAttributeType { get; set; }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.FusionQueryAttributeType, Object = SystemObjects.FusionQueryAttribute, TypeID = FusionQueryAttributeTypeID };
+        }
     }
 }

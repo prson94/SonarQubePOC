@@ -26,6 +26,8 @@
         public const string COMPANY_ICON_URL = "https://data3sixty.blob.core.windows.net/company-icons/";
         public const string COMPANY_LOGO_FOLDER = "company-logos";
         public const string COMPANY_LOGO_URL = "https://data3sixty.blob.core.windows.net/company-logos/";
+        public const string COMPANY_RESOURCES_FOLDER = "company-resources";
+        public const string COMPANY_RESOURCES_URL = "https://data3sixty.blob.core.windows.net/company-resources/";
 
         public const string ARTIFACT_STATUS_DRAFT = "Draft";
         public const string ARTIFACT_STATUS_REVIEW = "Under Review";

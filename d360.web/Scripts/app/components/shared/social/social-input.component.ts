@@ -41,7 +41,7 @@ import { Tag } from '../../../models/tag.model';
                 margin-right: 5px;
                 padding: 3px 10px;
                 cursor:pointer;
-            }       
+            }
         `],
 })
 
@@ -67,9 +67,8 @@ export class SocialInputComponent extends BaseComponent {
     
 
     private setFocus(items) {
-        if (items.length > 0) {    
-            items._results[0].quill.focus();   
-            console.log(items._results[0].quill);         
+        if (items.length > 0) {
+            items._results[0].quill.focus();
         }
     }
 

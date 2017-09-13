@@ -130,5 +130,4 @@ export class SiteMenuService extends BaseService {
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
-    
 }

@@ -19,11 +19,11 @@
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>            
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             
-        <p-dataTable #dt [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="true"  scrollHeight="200px" sortField="SortOrder" [sortOrder]="1">
+        <p-dataTable #dt [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="true"  scrollHeight="200px">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
             <p-column field="FriendlyName" header="Field" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="Type" header="Type" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
-            <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
+            <p-column field="Type" header="Type" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
+            <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="IsRequired" header="Required?" sortable="true" [style]="{ 'width': '12%' }">
                 <ng-template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsRequired" disabled />
@@ -39,6 +39,8 @@
                     <input type="checkbox" [(ngModel)]="item.IsPartOfKey" disabled />
                 </ng-template>
             </p-column>
+            <p-column field="SortOrder" header="Sort" sortable="true" [style]="{ 'width': '12%' }" [filter]="!showSimpleFilter"></p-column>
+            <p-column field="ColumnWidth" header="Width" sortable="true" [style]="{ 'width': '12%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column [style]="{ 'width': '30px' }">
                 <ng-template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">

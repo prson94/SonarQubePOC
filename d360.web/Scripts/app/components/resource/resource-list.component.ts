@@ -13,11 +13,13 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-resource-list',
     providers: [GridDefinitionService, UriBasedService, PermissionsService, ResourcesService],
     template: ` 
-                <div class="row">
+                <div class="row" *ngIf="showResources">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <div class="tile tile-detail">
@@ -29,7 +31,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 })
 
 export class ResourceListComponent extends BaseComponent {
-    
+    private showResources: boolean = ((CompanySettings.ShowResources) && (CompanySettings.ShowResources.toUpperCase() == 'TRUE'));
 
     constructor(private route: ActivatedRoute,
         private router: Router,    

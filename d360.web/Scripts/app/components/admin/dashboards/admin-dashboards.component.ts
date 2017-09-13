@@ -111,7 +111,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.auditSidebar.hasDynamicUrl = true;
         this.auditSidebar.dynamicUrlCallback = (() => {
             return `/sidebar/audit/Report/${this.selected.ID}`
-        });        
+        });
         this.theDeleteCallback = this.deleteReport.bind(this);
     }
 

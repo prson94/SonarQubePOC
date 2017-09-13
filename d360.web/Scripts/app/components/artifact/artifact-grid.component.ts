@@ -17,8 +17,11 @@ import { StringConstants } from '../../static/string-constants';
 @Component({
     selector: 'd3s-artifact-grid',
     providers: [GridDefinitionService, ArtifactService, PermissionsService],
-    template: ` <header *ngIf="!showEditor && !showDelete"><i *ngIf="artifactType && artifactType.Description" class="fa" [ngClass]="{'fa-plus-square-o':!showArtifactDetails,'fa-minus-square-o':showArtifactDetails}" aria-hidden="true" style="padding-right:5px;cursor:pointer;font-size:12px" title="Details" (click)="toggleArtifactDetail()" (mouseenter)="showArtifactDetails=true"></i>{{artifactType?.Name}}{{titlePostfix}}
-                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="true" (addClick)="add()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
+    template: ` <header *ngIf="!showEditor && !showDelete">
+                    <i *ngIf="artifactType && artifactType.Description" class="fa" [ngClass]="{'fa-plus-square-o':!showArtifactDetails,'fa-minus-square-o':showArtifactDetails}" aria-hidden="true" style="padding-right:5px;cursor:pointer;font-size:12px" title="Details" (click)="toggleArtifactDetail()" (mouseenter)="showArtifactDetails=true"></i>
+                    {{artifactType?.Name}}
+                    {{titlePostfix}}
+                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="!artifactType.HasCustomExportTemplates" [hasCustomExport]="artifactType.HasCustomExportTemplates" (addClick)="add()" (customExportClick)="customExport()" (exportClick)="export(false)" [hasFilterMode]="true" [filterMode]="showGridSimpleFilter" (filterModeChange)="resetFilters($event);"></d3s-tile-actions>
                     <div (click)="toggleArtifactDetail()" *ngIf="showArtifactDetails && artifactType && artifactType.Description" [innerHtml]="artifactType.Description" style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"></div>
                 </header>    
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>                
@@ -32,15 +35,25 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                     <d3s-artifact-column-filter *ngIf="!showGridSimpleFilter" [(attributeFilters)]="stateService.artifactTypeFilters.attributes" [(ownerFilter)]="stateService.artifactTypeFilters.owners" [(relationshipFilters)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData()"></d3s-artifact-column-filter>
                     <d3s-loading [isLoading]="isGridFilterLoading"></d3s-loading>
-                    <div class="col s12">                
-                       <p-dataTable #dt [rowHover]="true" lazy="true" [totalRecords]="totalRecords" scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
+                    <d3s-artifact-custom-export *ngIf="showCustomExport" (closeClick)="showCustomExport=false" 
+                            [artifactType]="artifactType" 
+                            [sortOrder]="stateService.artifactTypeFilters.sortOrder" 
+                            [sortField]="stateService.artifactTypeFilters.sortField"
+                            [filters]="stateService.artifactTypeFilters.filters"
+                            [relationships]="stateService.artifactTypeFilters.relationships"
+                            [attributes]="stateService.artifactTypeFilters.attributes"
+                            [simpleFilter]="stateService.artifactTypeFilters.simpleTextFilter"
+                            [owner]="stateService.artifactTypeFilters.owners"
+                    ></d3s-artifact-custom-export>
+                    <div class="col s12" [hidden]="showCustomExport">                
+                       <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="Name" header="Name" sortable="true">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)">{{item.Name}}</a>                                    
                                 </ng-template>
                             </p-column>
-                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
+                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{width:column.columnWidth ? column.columnWidth + 'px' : ''}">                                                                
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
                                 </ng-template>
@@ -49,13 +62,6 @@ import { StringConstants } from '../../static/string-constants';
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" style="color:red;">
                                             <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="certificate" icon="certificate" [class]="certificateColor(item)"></d3s-tooltip>                                            
-                                        </div>
-                                    </ng-template>
-                            </p-column>
-                            <p-column [style]="{width:'30px'}">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <d3s-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" tooltipType="Preview" icon="info"></d3s-tooltip>                                            
                                         </div>
                                     </ng-template>
                             </p-column>
@@ -68,11 +74,18 @@ import { StringConstants } from '../../static/string-constants';
                             </p-column>                            
                             <p-column  [style]="{width:'35px'}" *ngIf="showDeleteButton">
                                     <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">                                
+                                        <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
                                     </ng-template>
                             </p-column>                            
+                            <p-column [style]="{width:'30px'}">
+                                    <ng-template let-item="rowData" pTemplate type="body">
+                                        <div class="RowTools">
+                                            <d3s-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" tooltipType="Preview" icon="info"></d3s-tooltip>                                            
+                                        </div>
+                                    </ng-template>
+                            </p-column>
                         </p-dataTable>                           
                     </div>
                 </div>                                  
@@ -99,6 +112,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
+    showCustomExport: boolean = false;
     isGridFilterLoading: boolean = false;
     isMenuOpen: boolean = false;
     showArtifactDetails: boolean = false;
@@ -152,17 +166,16 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     load() {        
         this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID);
-        this.getFieldsDefinition();              
+        this.getFieldsDefinition();
+        if (this.artifactType.AutoDisplayDescription) {
+            this.toggleArtifactDetail();
+        }
     }
 
     public filterGridData() {
         this.isGridFilterLoading = true;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
-    }
-
-    private toggleArtifactDetail() {
-        this.showArtifactDetails = !this.showArtifactDetails;
     }
 
     resetFilters(val) {        
@@ -201,7 +214,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;                
-                if (this.items.length > 0) this.selected = this.items[0]; 
+                if (this.items && this.items.length > 0) this.selected = this.items[0]; 
                 this.simpleSearchID = 0;
                 this.isGridFilterLoading = false;              
             });
@@ -216,8 +229,13 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showEditor = true;
     }
 
-    export(listableOnly) {        
+    export(listableOnly) {
         this.artifactService.getArtifactsXls(listableOnly, this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners);
+    }
+
+    customExport() {
+        //show the custom export screen        
+        this.showCustomExport = !this.showCustomExport;
     }
 
     saveItem(event) {
@@ -262,7 +280,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     private doSimpleSearch(dt: DataTable) {
-        console.log('doSimpleSearch');
         if (this.isGridFilterLoading) {
             if (this.simpleSearchID > 0) {
                 window.clearTimeout(this.simpleSearchID);
@@ -270,7 +287,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             }      
             this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds); //check back in a few search is ongoing
             return;
-        }        
+        }
         this.isGridFilterLoading = true;
         if (dt) dt.reset();
         this.getData();
@@ -300,6 +317,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         if (this.isMenuOpen) {        
             this.isMenuOpen = false;
         }
+    }
+
+    private toggleArtifactDetail() {
+        this.showArtifactDetails = !this.showArtifactDetails;
     }
 }
 

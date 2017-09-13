@@ -8,7 +8,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Name = NAMESPACE), ObjectType(ObjectTypeInfo.FusionType, "FusionType")]
+    [DataContract(Name = NAMESPACE)]
     public class FusionType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         [

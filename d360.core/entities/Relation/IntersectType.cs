@@ -10,7 +10,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.IntersectType, "IntersectType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class IntersectType : BaseIntObject, IIntObject, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]
@@ -35,11 +35,17 @@ namespace d360.core.entities
         [DataMember]
         public int SubjectID { get; set; }
 
+        [DataMember]
+        public Cardinality SubjectCardinality { get; set; }
+
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]
         public int ObjectID { get; set; }
+
+        [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
 
         [DataMember]
         public bool? IsSystem { get; set; }

@@ -8,7 +8,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.ArtifactType, "ArtifactType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class ArtifactType : BaseIntObject, IIntObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         #region Properties
@@ -27,8 +27,10 @@ namespace d360.core.entities
         public string Description { get; set; }
         
         [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "CanOwnFusion_Name", Description = "CanOwnFusion_Description")]
         public bool CanOwnFusion { get; set; }
+
+        [DataMember]
+        public bool AutoDisplayDescription { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }

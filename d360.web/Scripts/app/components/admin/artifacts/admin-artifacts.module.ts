@@ -25,6 +25,8 @@ import { ArtifactTypeForm } from './artifact-type.form';
 
 import { AdminArtifactsRoutingModule } from './admin-artifacts.routes';
 
+import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
+
 import {
     ButtonModule,
     ColorPickerModule,
@@ -54,6 +56,7 @@ import {
 
         //color picker 
         ColorPickerModule,
+        SimpleAccordionModule,
 
         //d3s  
         AdminModule,

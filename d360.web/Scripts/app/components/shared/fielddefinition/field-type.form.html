@@ -22,6 +22,10 @@
                             <p-dropdown required name="datatype" [options]="lookups.DataTypes" [ngModel]="model.FieldType.Type" (ngModelChange)="model.FieldType.Type = $event; anyDisplayFieldsSelected(false);" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadDataType($event.value)" #dataType="ngModel" ngDefaultControl></p-dropdown>
                             <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
                         </div>
+                        <div *ngIf="model?.FieldType?.IsListable">
+                            <div class="FieldNameRequired">Column Width (pixels)</div>
+                            <input name="columnwidth" pInputText type="number" [(ngModel)]="model.FieldType.ColumnWidth" style="width: 25%; display: block;" />
+                        </div>
                     </div>
                     <div style="float: left; width: 49%">
                         <div>
@@ -33,6 +37,12 @@
                             <div id='CategoryTip' class="FieldName">Category</div>
                             <input name="category" pInputText type="text" [(ngModel)]="model.FieldType.Category" style="width: 98%; display: block;" />
                         </div>
+                        <div>
+                            <div>
+                                <div class="FieldNameRequired">Sort Order</div>
+                                <input name="sortorder" pInputText type="number" [(ngModel)]="model.FieldType.SortOrder" style="width: 25%; display: block;" />
+                            </div>                            
+                        </div>                        
                     </div>
                     <div style="clear: both"></div>
                 </simple-accordion>
@@ -65,21 +75,21 @@
                                     [(ngModel)]="model.FieldType.IsRequired" 
                                     label="Is Required?" 
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
+                                    [disabled]="model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsPartOfKey"
                                     label="Part Of Key?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
+                                    [disabled]="model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true" 
                                     [(ngModel)]="model.FieldType.IsPrimaryFilter" 
                                     label="Show As Top Level Filter?" 
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="!supportsPrimaryFilterOption || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
+                                    [disabled]="!supportsPrimaryFilterOption || model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
                     </div>
                 </simple-accordion>
             </div>
@@ -322,6 +332,40 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </simple-accordion>
+
+        <!-- relation -->
+        <simple-accordion header="Relationship" active="true" *ngIf="model.FieldType.Type == 'Relationship'">
+            <div class="row">
+                <div class="col s12" style="margin: 10px 0 10px 0">
+                    <div class="FieldName">One-to-Many Relationship</div>
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.CardinalRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                </div>
+            </div>
+        </simple-accordion>
+
+        <!-- field from relation -->
+        <simple-accordion header="Field from Relationship" active="true" *ngIf="model.FieldType.Type == 'FieldFromRelationship'">
+            <div class="row">
+                <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
+                    <div class="FieldName">One-to-Many Relationship</div>
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.CardinalRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                </div>
+                <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
+                    <div class="FieldName">Selected Field</div>
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="fieldsFromRelation" [ngModel]="model.FieldType.LookupObjectFieldTypeID"  (ngModelChange)="cardinalFieldFromRelationship_FieldSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                </div>
+            </div>
+        </simple-accordion>
+
+        <!-- reference list from relation -->
+        <simple-accordion header="Reference Item List from Relationship" active="true" *ngIf="model.FieldType.Type == 'RefListRelationship'">
+            <div class="row">
+                <div class="col s12" style="margin: 10px 0 10px 0">
+                    <div class="FieldName">One-to-Many Relationship</div>
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.CardinalReferenceItemRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalReferenceItemListFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
             </div>
         </simple-accordion>

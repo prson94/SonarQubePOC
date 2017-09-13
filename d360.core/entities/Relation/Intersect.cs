@@ -9,8 +9,8 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Intersect, "Intersect")]
-    public class Intersect : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
+    [DataContract(Namespace = NAMESPACE)]
+    public class Intersect : BaseIntObject, IIntObject, IFieldsObject, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
     {
         public Intersect()
         {
@@ -60,6 +60,11 @@ namespace d360.core.entities
                 ObjectType = SystemObjects.IntersectType,
                 ObjectTypeID = IntersectTypeID
             };
+        }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.IntersectType, Object = SystemObjects.Intersect, TypeID = IntersectTypeID };
         }
     }
 }

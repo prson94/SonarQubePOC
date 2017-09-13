@@ -65,8 +65,8 @@ namespace d360.web.Controllers
             
             value.IP = GetClientIp(Request);
             value.UserAgent = HttpContext.Current.Request.UserAgent;
-            value.Host = HttpContext.Current.Request.UrlReferrer.Host;
-            value.Host = value.Host.Substring(0, value.Host.IndexOf(".data3sixty")).ToLower();
+            //value.Host = HttpContext.Current.Request.UrlReferrer.Host;
+            value.Host = Company.CurrentCompanyDomain; //value.Host.Substring(0, value.Host.IndexOf(".data3sixty")).ToLower();
             value.Path = HttpContext.Current.Request.UrlReferrer.AbsolutePath;
             value.BrowserLanguages = string.Join(",",HttpContext.Current.Request.UserLanguages);
             value.RowKey = Guid.NewGuid().ToString();

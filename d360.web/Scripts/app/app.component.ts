@@ -8,14 +8,14 @@ import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
 import { DynamicTypeBuilder, IHaveDynamicData } from './services/dynamic-type-builder';
 import { SiteMessage } from './models/site-message.model';
-import { Subscription }   from 'rxjs/Subscription';
+import { Subscription } from 'rxjs/Subscription';
 import { Message } from 'primeng/primeng';
 import * as $ from 'jquery';
 import 'qtip2';
 
 
 @Component({
-    selector: 'd3s-app',    
+    selector: 'd3s-app',
     template: ` <header>
                     <d3s-header></d3s-header>
                     <d3s-site-menu></d3s-site-menu>
@@ -35,7 +35,7 @@ import 'qtip2';
               `
 })
 
-export class AppComponent implements AfterViewInit, OnDestroy {        
+export class AppComponent implements AfterViewInit, OnDestroy {
     @ViewChild('target', { read: ViewContainerRef }) protected dynamicComponentTarget: ViewContainerRef;
     protected componentRef: ComponentRef<IHaveDynamicData>;
     subscription: Subscription;
@@ -56,7 +56,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 this.msgs.push({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
     }
-        
+
     ngAfterViewInit() {
         this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function    
         this.headerActionsService.emitFavoritesChange(); //on first load when a non-default home page is defined, we need to update the action icons                       
@@ -66,16 +66,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         // prevent memory leak when component destroyed
         this.subscription.unsubscribe();
     }
-    
+
     private initializeQtipTooltips() {
         var me = this;
-        $('body').on('mouseenter', '*[data-type]', function (event) {          
+        $('body').on('mouseenter', '*[data-type]', function (event) {
             $(this).qtip({
                 content: {
                     title: $(this).data('title'),
                     // Set the text to an image HTML string with the correct src URL to the loading image you want to use
-                   // text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
-                    text: function (event, api) {                        
+                    // text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
+                    text: function (event, api) {
                         //api.set('content.text','<i class="fa fa-spinner fa-spin fa-4x"></i>');
                         // This time, we return the deferred object, not a 'Loading...' message.
                         $.ajax({
@@ -116,7 +116,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                                 api.set('content.text', status + ': ' + error);
                             });
                         return '<i class="fa fa-spinner fa-spin fa-4x"></i>';
-                    }                    
+                    }
                 },
                 position: {
                     at: 'bottom center', // Position the tooltip above the link
@@ -133,11 +133,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 hide: {
                     fixed: true,
                     delay: 250,
-                },                
+                },
                 style: {
                     classes: 'qtip-light qtip-shadow'
                 },
             });
         });
-    }    
+    }
 }

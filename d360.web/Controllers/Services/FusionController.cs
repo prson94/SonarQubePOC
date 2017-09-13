@@ -72,7 +72,7 @@ namespace d360.web.Controllers.Services
         }
 
         /// <summary>
-        /// Get all available fusion configurations across all types.  These configurations provide required connection and security credentials to connect to the underlying source.
+        /// Get all available fusion configurations accross all types.  These configurations provide required connection and security credentials to connect to the underlying source.
         /// </summary>
         /// <returns>A list of available fusion configurations.</returns>
         [Route("configurations")]
@@ -831,7 +831,7 @@ from    Fusion C
             if (Company.CurrentResourceIsAdmin)
             {
                 return Request.CreateResponse(
-                    HttpStatusCode.OK, 
+                    HttpStatusCode.OK,
                     Company.Filter<FusionAttributeTypeCustomQuery>(i => i.FusionID == fusionID, i => i.FusionAttributeType).Select(o => new {
                         FusionAttributeType = o.FusionAttributeType.TextPath,
                         o.FusionAttributeTypeID,

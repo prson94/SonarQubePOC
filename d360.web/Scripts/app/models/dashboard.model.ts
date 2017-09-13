@@ -7,6 +7,7 @@
     PowerBIReportID: string;
     ReportType: string;
     Url: string;
+    ShowOnHomePage: boolean = false;
 }
 
 export class PowerBIReport {

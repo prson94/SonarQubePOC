@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.ReportLayout, "ReportLayout")]
+    [DataContract(Namespace = NAMESPACE)]
     public class ReportLayout : BaseIntObject, IIntObject
     {
         [DataMember]

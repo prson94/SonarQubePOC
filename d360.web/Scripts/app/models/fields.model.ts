@@ -20,6 +20,7 @@ export class FieldDefinition {
     ID: number;
     Category: string;
     FriendlyName: string;
+    ColumnOrder: string;
     SortOrder: string;
     IsListable: boolean;
     IsRequired: boolean;
@@ -38,6 +39,7 @@ export class FieldTypeEditorModel {
     RelationItems: FieldTypeRelationItemEditorModel[] = [];
     RelationItem: FieldTypeRelationItemEditorModel;
     selectedLookup: string;
+    cardinalRelationship: number;
     LookupTokens: SelectItem[] = new Array<SelectItem>();
     FilteredLookupItems: FilteredLookupItem[] = [];
     FilteredLookupItem: FilteredLookupItem;
@@ -88,6 +90,7 @@ export class FieldType {
     LookupObjectID: number;
     LookupDisplayFormat: string;
     LookupEditFormat: string;
+    LookupObjectFieldTypeID: number;
     Length: number;
     MinimumLength: number;
     MaximumLength: number;
@@ -181,7 +184,6 @@ export class FieldTypeFusionLookupDefinition {
     FieldTypeFusionLookupDisplayFields: FieldTypeFusionLookupDisplayField[];
 }
 
-
 export class FieldTypeRelationLookupDefinition {
     ID: number;
     IntersectTypeID: number;
@@ -193,7 +195,6 @@ export class FieldTypeRelationLookupDefinition {
     FieldType: FieldType;
     FieldTypeRelationLookupDisplayFields: FieldTypeRelationLookupDisplayField[];
 }
-
 
 export class FieldTypeRelationLookupDisplayField {
     ID: number;
@@ -223,6 +224,8 @@ export class Lookups {
     IntersectTypes: LookupItem[];
     FusionAttributeTypes: SelectItem[];
     Lookups: SelectItem[];
+    CardinalRelationships: SelectItem[];
+    CardinalReferenceItemRelationships: SelectItem[];
     ComplexLookupRelations: any[] = [];
     FilteredLookups: any[] = [];
 

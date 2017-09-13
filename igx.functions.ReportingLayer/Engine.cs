@@ -446,8 +446,14 @@ A.ParentID,
 P.TextPath as ParentName, 
 {columns} 
 dbo.GenerateObjectUrl('{objectType}', A.ArtifactTypeID, A.ID) as Url, 
-dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore
+S.Value as CurrentScore
 from Artifact A 
+	cross apply (
+		select	max(ID) as ID
+		from	Score
+		where	Object = 'Artifact' and ObjectID = A.ID
+	) MS 
+	left join Score S on S.ID = MS.ID 
 inner join TaxonomyType V on V.ID = A.TaxonomyTypeID and A.ArtifactTypeID = {o.ID} 
 left join Artifact P on P.ID = A.ParentID 
 {joins}";
@@ -518,12 +524,18 @@ select  A.ID,
         C.Name as Class,
         {columns} 
         dbo.GenerateObjectUrl('{objectType}', A.TaxonomyTypeID, A.ID) as Url, 
-        dbo.GetObjectStatisticScore('Taxonomy', A.ID) as CurrentScore
+        S.Value as CurrentScore
 from    Taxonomy A 
         {joins} 
         inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
-        inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
-        left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]
+        inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID 
+	cross apply (
+		select	max(ID) as ID
+		from	Score
+		where	Object = 'Taxonomy' and ObjectID = A.ID
+	) MS 
+	left join Score S on S.ID = MS.ID 
+    left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]
 where   A.TaxonomyTypeID = {o.ID}";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -586,9 +598,15 @@ select  A.ID,
         A.Description, 
         {columns} 
         dbo.GenerateObjectUrl('{objectType}', A.PolicyTypeID, A.ID) as Url, 
-        dbo.GetObjectStatisticScore('Policy', A.ID) as CurrentScore 
+        S.Value as CurrentScore 
 from    Policy A 
-        {joins} 
+	cross apply (
+		select	max(ID) as ID
+		from	Score
+		where	Object = 'Policy' and ObjectID = A.ID
+	) MS
+	left join Score S on S.ID = MS.ID
+    {joins} 
 where   A.PolicyTypeID = {o.ID}";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -638,10 +656,16 @@ select  A.ID,
         CONVERT(VARCHAR(10), a.CreatedOn, 112) as CreatedOnKey,
         CONVERT(VARCHAR(10), a.UpdatedOn, 112) as UpdatedOnKey,
         TX.Name as TaxonomyTypeName,
-        dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore,
-        dbo.GetObjectStatisticScore('Artifact', A.ID) * 100 as CurrentScorePct
+        S.Value as CurrentScore,
+        S.Value as CurrentScorePct
 from    Artifact A  
-        inner join ArtifactType T on T.ID = A.ArtifactTypeID 
+	cross apply (
+		select	max(ID) as ID
+		from	Score
+		where	Object = 'Artifact' and ObjectID = A.ID
+	) MS 
+	left join Score S on S.ID = MS.ID 
+    inner join ArtifactType T on T.ID = A.ArtifactTypeID 
         inner join TaxonomyType TX on tx.ID = A.TaxonomyTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -1440,19 +1464,20 @@ from	[Rule] R
                         selectSql = @"
 select	RI.RuleID,
 	R.Name as RuleName,
-    RI.Name as RuleImplementationName,
 	R.RuleDimensionID,
 	D.Name as RuleDimensionName,
+    R.Status as RuleStatus,
+	R.Threshold,
+    RI.ID as RuleImplementationID,
+    RI.Name as RuleImplementationName,
     RR.EffectiveDate,
+	RR.CreatedOn,
+    RR.RunDate,
 	RR.RowsPassed,
 	RR.RowsFailed,
 	RR.PassFraction,
 	RR.FailFraction,
-	R.Threshold,
 	RR.Passed,
-	RR.CreatedOn,
-	--RR.FusionAttributeID,
-	--FA.TextPath as FusionAttributeName,
 	Q.C as QualifierCount
 from	RuleResult RR
 	inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
@@ -1470,7 +1495,34 @@ from	RuleResult RR
                         viewSql += $@" VIEW {objectName} AS {selectSql}";
 
                         executeSqlWithTry(companyConnection, viewSql);
-                            
+
+
+
+
+                        objectName = $"{SCHEMA}.[Rules_ResultQualifiers]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	rr.ID as RuleResultID
+		, rr.RunDate
+		, rr.EffectiveDate
+		, rr.RowsPassed
+		, rr.RowsFailed
+		, rr.PassFraction
+		, rr.FailFraction
+		, rr.Passed
+		, qt.Name as QualifierName
+		, q.Value as QualifierValue
+from	RuleResult rr
+		inner Join RuleResultQualifier q on q.RuleResultID = rr.ID
+		inner join RuleResultQualifierType qt on qt.ID = q.RuleResultQualifierTypeID";
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
                         #endregion
 
                         #region Rule_Fields

@@ -1,4 +1,4 @@
-﻿import { Component, Input, ChangeDetectionStrategy, OnInit} from '@angular/core';
+﻿import { Component, Input, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchFullResult } from '../../models/search-result.model';
@@ -21,12 +21,12 @@ declare var CompanySettings;
                     <p class="search-result-desc" *ngIf="result?.Description" [innerHtml]="result.Description"></p>
                     <h5 class="search-result-attributes"><span *ngIf="result?.Type">Category: <em class="result-category" [innerHtml]="result?.Type"></em>&nbsp;&nbsp;</span>Type: <em class="result-type">{{displayType}}</em></h5>
                 </div>        
-                `,    
+                `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [ShoppingCartService]
 })
 
-export class SearchResultItemComponent extends BaseComponent implements OnInit  {
+export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
 
     showShoppingCart = false;
@@ -41,7 +41,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit  
                 default:
                     return this.result.Group
             }
-        }            
+        }
     }
 
     get type() {
@@ -56,7 +56,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit  
             }
         }
     }
-    
+
     constructor(private router: Router, private shoppingCartService: ShoppingCartService, private messagesService: MessagesService) {
         super();
     }
@@ -68,7 +68,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit  
 
     private navigateLink() {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
-    }   
+    }
 
     private add() {
         var type = this.result.ID.toString().split('|')[0];

@@ -14,10 +14,12 @@ export class RelationshipDetail {
     ID: number;
     LimitedChangesOnly: boolean;
     Predicate: number;
-    Side1: string;
-    Side1DisplayText: string;
-    Side2: string;
-    Side2DisplayText: string;
+    Subject: string;
+    SubjectDisplayText: string;
+    SubjectCardinality: number;
+    Object: string;
+    ObjectDisplayText: string;
+    ObjectCardinality: number;
 }
 
 export class ObjectRelationship {
@@ -41,6 +43,7 @@ export class ObjectRelationshipCount {
     Name: string;
     Count: number;
     IntersectTypeID: number;
+    Cardinality: number;
 }
 
 

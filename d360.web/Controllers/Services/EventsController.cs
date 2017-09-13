@@ -144,10 +144,10 @@ namespace d360.web.Controllers.Services
             }
             catch (Exception ex)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
             }
-
         }
+
 
         /// <summary>
         /// Add a rule to your environment.  Once created, this rule can hold events
@@ -209,6 +209,7 @@ namespace d360.web.Controllers.Services
             }
 
         }
+
 
         /// <summary>
         /// Add one or more events to a rule.

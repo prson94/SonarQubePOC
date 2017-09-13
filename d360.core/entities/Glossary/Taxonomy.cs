@@ -8,8 +8,8 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.Taxonomy, "Taxonomy")]
-    public class Taxonomy : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
+    [DataContract(Namespace = NAMESPACE)]
+    public class Taxonomy : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity//, IDisplayValueObject
     {
         public Taxonomy()
         {
@@ -42,6 +42,9 @@ namespace d360.core.entities
 
         public bool Visible { get; set; }
 
+        [DataMember]
+        public string SourceID { get; set; }
+
         #region Navigation Properties
 
         [IgnoreDataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description")]
@@ -58,6 +61,11 @@ namespace d360.core.entities
                 ObjectType = SystemObjects.TaxonomyType,
                 ObjectTypeID = TaxonomyTypeID
             };
+        }
+
+        public FieldsObjectModel GetFieldsObjectInfo()
+        {
+            return new FieldsObjectModel { Type = SystemObjects.TaxonomyType, Object = SystemObjects.Taxonomy, TypeID = TaxonomyTypeID };
         }
     }
 }

@@ -34,7 +34,7 @@ import {
     SelectButtonModule,    
     MultiSelectModule,    
     TooltipModule,    
-    TreeModule,    
+    TreeModule,
     SharedModule,
 } from 'primeng/primeng';
 
@@ -67,7 +67,7 @@ import {
         PipesModule,  
               
         SharedGridPagingInfoModule,        
-        SharedDeleteFormModule,        
+        SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
         SharedObjectGovernanceModule,        
         TilesModule,

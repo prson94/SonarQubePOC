@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.AttributeTypeCategory, "AttributeTypeCategory")]
+    [DataContract(Namespace = NAMESPACE)]
     public class AttributeTypeCategory : BaseIntObject, IIntObject
     {
         #region Properties

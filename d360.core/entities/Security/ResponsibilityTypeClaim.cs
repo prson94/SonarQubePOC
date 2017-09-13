@@ -4,7 +4,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(d360.core.ObjectTypeInfo.ResponsibilityTypeClaim, "ResponsibilityTypeClaim")]
+    [DataContract(Namespace = NAMESPACE)]
     public class ResponsibilityTypeClaim : BaseIntObject, IIntObject
     {
         #region Properties

@@ -28,7 +28,7 @@
             <div *ngIf="!isLoadingColumns" style="overflow-x:auto;">
                 <table style="border-collapse:initial; border-spacing:10px;">
                     <tr>
-                        <td *ngFor="let col of columns" [class.required]="isRequiredColumn(col)" style="margin:5px;">{{col}}</td>
+                        <td *ngFor="let col of columns" [class.required]="col.Required" style="margin:5px;">{{col.Name}}</td>
                     </tr>
                 </table>
             </div>

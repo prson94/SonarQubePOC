@@ -15,6 +15,8 @@ import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-model-item',
     providers: [ModelsService, SurveysService, PermissionsService],
@@ -30,7 +32,7 @@ import { StringConstants } from '../../static/string-constants';
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row" *ngIf="showSocialScoreBar">
                             <div class="col s12">
                                  <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
                                     <d3s-object-governance [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-governance>
@@ -60,7 +62,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     private messages: MessageBarItem[] = [];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;
-    
+    private showSocialScoreBar: boolean = true;
+
     constructor(private route: ActivatedRoute,
             private router: Router,
             rightSidebarService: RightSidebarService,
@@ -103,10 +106,12 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.headerBreadcrumbService.popLastBreadcrumb();
                 this.selectModelHierarchy(hierarchyId);
                 this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
+                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
             }
             
-        });        
+        });
+
+        this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
     }
 
     ngOnDestroy() {
@@ -130,7 +135,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.setBrowserTitle(this.titleService, this.model.Name);
 
                 this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
+                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
             });
     }
 

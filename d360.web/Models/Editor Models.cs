@@ -279,6 +279,7 @@ namespace d360.web.Models
         public string CompanyIcon { get; set; }
         public bool SetIconToDefault { get; set; }
         public string CurrentCompanyIconPath { get; set; }
+
         public bool UseNewWorkflow { get; set; }
         public bool EnableShoppingCart { get; set; }
         public string DefaultRoute { get; set; }
@@ -292,6 +293,18 @@ namespace d360.web.Models
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
         public List<SiteNav> SiteNav { get; set; } = new List<SiteNav>();
         public string DefaultSearchTypes { get; set; }
+
+        public bool ShowDefaultHelpVideos { get; set; }
+
+        public bool ShowHomeAssignmentTile { get; set; }
+        public bool ShowHomeBoardTile { get; set; }
+        public bool ShowHomeActivityTile { get; set; }
+        public bool ShowHomePageTitle { get; set; }
+        public string HomePageTitleSize { get; set; }
+        public string HomePageTitleColor { get; set; }
+        public string HomePageBackgroundImage { get; set; }
+        public bool ClearHomePageBackgroundImage { get; set; } = false;
+
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
@@ -841,6 +854,8 @@ namespace d360.web.Models
         public string Message { get; set; }
 
         public List<ContractRegisterModel> Contracts { get; set; }
+
+        public bool IsUsingActiveDirectory { get; set; }
     }
 
     public class ContractRegisterModel

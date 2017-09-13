@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
-import { LoadDetail, LoadFilePostModel } from '../../../models/load.model';
+import { LoadDetail, LoadFilePostModel, LoadColumn, LoadColumnValue } from '../../../models/load.model';
 import { LoadService } from '../../../services/load.service';
 import { FormEvents, FormHelper } from '../../../models/form.model';
 import * as _ from 'lodash';
@@ -28,7 +28,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
     types: SelectItem[];
     selectedType: string;
     notes: string;
-    columns: string[];
+    columns: LoadColumn[];
     file: File;
     errorMessage = "";
 
@@ -79,7 +79,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
             return;
         }
         this.isLoadingColumns = true;
-        this.loadService.getExpectedColumns(type, id).then(data => {
+        this.loadService.getExpectedColumns(this.selectedAction, type, id).then(data => {
             this.columns = data;
             this.isLoadingColumns = false;
         });
@@ -120,7 +120,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
         } catch (e) {
             return null;
         }
-        return `form/Load_ExpectedColumns_ToExcel?id=${id}&type=${type}`;
+        return `form/Load_ExpectedColumns_ToExcel?action=${this.selectedAction}&id=${id}&type=${type}`;
     }
 
     private changeFile(e) {

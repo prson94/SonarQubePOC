@@ -157,9 +157,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         .then(r => {
                             //need to apply names to loaded conditions
                             r.forEach(t => {
-                                let c = this.conditions.find(c => c['@FieldTypeID'] == t.ID);
+                                let c = this.conditions.filter(c => c['@FieldTypeID'] == t.ID);
                                 if (c != null)
-                                    c['@FieldName'] = t.FriendlyName;
+                                    c.forEach(f => f['@FieldName'] = t.FriendlyName);
+                                    //c['@FieldName'] = t.FriendlyName;
                             });
                         })
                         .then(() => {
@@ -287,6 +288,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
         this.model.Event.Settings = JSON.stringify(this.model.Event.SettingsObject);
+
+        
 
         this.onSave.emit(this.model);
     }

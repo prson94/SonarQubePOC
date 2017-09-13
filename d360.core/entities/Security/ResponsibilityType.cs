@@ -8,7 +8,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.ResponsibilityType, "ResponsibilityType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class ResponsibilityType : BaseIntObject, IIntObject, IUpdatedMetadata
     {
         #region Properties

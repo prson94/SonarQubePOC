@@ -9,6 +9,7 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
+import { ShortcutModule } from '../../shared/shortcuts/shortcut.module';
 
 import { IconPickerComponent } from './icon-picker.component';
 import { AdminSettingsComponent } from './admin-settings.component';
@@ -16,6 +17,7 @@ import { AdminSiteMenuComponent } from './admin-site-menu.component';
 import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
 import { AdminImageUploadComponent } from './admin-image-upload.component';
 import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions.component';
+import { AdminHomeComponent } from './admin-home.component';
 
 import { AdminSettingsRoutingModule } from './admin-settings.routes';
 
@@ -45,6 +47,7 @@ import {
         CoreModule,        
         SharedGridPagingInfoModule,        
         TilesModule,
+        ShortcutModule
     ],
     declarations: [
         IconPickerComponent,
@@ -53,6 +56,7 @@ import {
         AdminIpRestrictionComponent,
         AdminImageUploadComponent,
         AdminSiteMenuPermissionsComponent,
+        AdminHomeComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

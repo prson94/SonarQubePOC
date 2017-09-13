@@ -12,6 +12,7 @@ export class GridColumn {
     cellsformat: string;
     type: string;
     description: string;
+    columnWidth: number;
 }
 
 export class GridRelationshipFilterExpression {

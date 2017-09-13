@@ -14,7 +14,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string Name { get; set; }
-        
+
         [DataMember]
         public string Route { get; set; }
 
@@ -28,10 +28,10 @@ namespace d360.core.entities
         public int? ObjectID { get; set; }
 
         [DataMember]
-        public string Icon{ get; set; }
+        public string Icon { get; set; }
 
         [DataMember]
-        public string Title{ get; set; }
+        public string Title { get; set; }
 
         [NotMapped, DataMember]
         public List<SiteNavPermission> Permissions { get; set; }

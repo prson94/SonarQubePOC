@@ -15,6 +15,10 @@ namespace d360.core.enums
         [Name("Relate")]
         Relate,
         [Name("Lineage")]
-        Lineage
+        Lineage,
+        [Name("FindRelation")]
+        FindRelation,
+        [Name("Update")]
+        Update  
     }
 }

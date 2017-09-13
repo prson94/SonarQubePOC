@@ -47,6 +47,12 @@ declare var CompanySettings;
                                 <input required style="width: 100%;" name="url" type="string" [(ngModel)]="editedReport.Url" #name="ngModel" maxlength="500">
                             </div>
                         </div>
+                        <div class="col s12" *ngIf="editedReport.ReportType == 'sagacity'">
+                            <div class="FieldName">Show on Home Page?</div>
+                            <div>
+                                <input name="showOnHomePage" type="checkbox" [(ngModel)]="editedReport.ShowOnHomePage" #name="ngModel" />
+                            </div>
+                        </div>
                         <div class="col s12" *ngIf="editedReport.ReportType == 'legacy'">
                             <div class="FieldName">Report Layout</div>
                             <div>                                
@@ -99,7 +105,7 @@ export class AdminDashboardsEditor {
         private claimsService: ClaimsService
     ) {        
         this.reportTypes.push({ value:"legacy", title:"Default" });
-        this.reportTypes.push({ value: "powerbi", title: "PowerBI" });        
+        this.reportTypes.push({ value:"powerbi", title:"PowerBI" });
     }
 
     ngOnInit() {
