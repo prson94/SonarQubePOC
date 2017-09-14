@@ -1028,6 +1028,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-ip-restriction.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu-permissions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />
