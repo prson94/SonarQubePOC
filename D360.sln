@@ -50,15 +50,15 @@ Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "d360.database.company", "d3
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "d360.database.community", "d360.database.community\d360.database.community.sqlproj", "{52ECE463-AC2D-4EA5-B16B-8CC8BF2ED18A}"
 EndProject
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "d360.worker.ProcessFusion", "d360.worker.ProcessFusion\d360.worker.ProcessFusion.ccproj", "{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}"
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "d360.worker.ProcessFusion", "Workers\d360.worker.ProcessFusion\d360.worker.ProcessFusion.ccproj", "{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.FusionWorkerRole", "d360.workers.FusionWorkerRole\d360.workers.FusionWorkerRole.csproj", "{23A76C7C-9489-4CA2-AA7B-6182924EC188}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.FusionWorkerRole", "Workers\d360.workers.FusionWorkerRole\d360.workers.FusionWorkerRole.csproj", "{23A76C7C-9489-4CA2-AA7B-6182924EC188}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.fusion", "d360.fusion\d360.fusion.csproj", "{0373748F-2BCE-4C69-8031-7D7907282B60}"
 EndProject
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "d360.worker.ProcessDatabaseTasks", "d360.worker.ProcessDatabaseTasks\d360.worker.ProcessDatabaseTasks.ccproj", "{854E5857-8BF1-4A14-A3CF-4404E406305C}"
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "d360.worker.ProcessDatabaseTasks", "Workers\d360.worker.ProcessDatabaseTasks\d360.worker.ProcessDatabaseTasks.ccproj", "{854E5857-8BF1-4A14-A3CF-4404E406305C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.ProcessDatabaseTasksWorkerRole", "d360.workers.ProcessDatabaseTasksWorkerRole\d360.workers.ProcessDatabaseTasksWorkerRole.csproj", "{E08D277F-9E95-4842-84D0-511076BA356D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.ProcessDatabaseTasksWorkerRole", "Workers\d360.workers.ProcessDatabaseTasksWorkerRole\d360.workers.ProcessDatabaseTasksWorkerRole.csproj", "{E08D277F-9E95-4842-84D0-511076BA356D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.test.web", "d360.test.web\d360.test.web.csproj", "{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6}"
 EndProject
@@ -74,39 +74,39 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Timers", "Timers", "{422C0E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services Bus", "Services Bus", "{B6341FD6-4B3B-4DE9-8E22-B312DFFAC81F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.WorkflowTopicSubscriber", "igx.functions.WorkflowTopicSubscriber\igx.functions.WorkflowTopicSubscriber.csproj", "{57AD7C81-02B0-4E26-83CB-C31826E88CDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.WorkflowTopicSubscriber", "Functions\igx.functions.WorkflowTopicSubscriber\igx.functions.WorkflowTopicSubscriber.csproj", "{57AD7C81-02B0-4E26-83CB-C31826E88CDF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.FusionSchedule", "igx.functions.FusionSchedule\igx.functions.FusionSchedule.csproj", "{0F82007B-F457-4FA4-B27E-F0F581C93630}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.FusionSchedule", "Functions\igx.functions.FusionSchedule\igx.functions.FusionSchedule.csproj", "{0F82007B-F457-4FA4-B27E-F0F581C93630}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.ReportingLayer", "igx.functions.ReportingLayer\igx.functions.ReportingLayer.csproj", "{ADF76E93-5FF5-4739-BDD7-0207EDC42E9B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.ReportingLayer", "Functions\igx.functions.ReportingLayer\igx.functions.ReportingLayer.csproj", "{ADF76E93-5FF5-4739-BDD7-0207EDC42E9B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.ResourceCache", "igx.functions.ResourceCache\igx.functions.ResourceCache.csproj", "{7ED34DB2-572E-4D33-BF3C-95A98FBD7AB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.ResourceCache", "Functions\igx.functions.ResourceCache\igx.functions.ResourceCache.csproj", "{7ED34DB2-572E-4D33-BF3C-95A98FBD7AB1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Scoring", "igx.functions.Scoring\igx.functions.Scoring.csproj", "{8735F4FC-5505-4A38-8FB0-789DD51C3B07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Scoring", "Functions\igx.functions.Scoring\igx.functions.Scoring.csproj", "{8735F4FC-5505-4A38-8FB0-789DD51C3B07}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.DatabaseMaintenance", "igx.functions.DatabaseMaintenance\igx.functions.DatabaseMaintenance.csproj", "{059322B3-E7DE-4F3D-AAF7-74C5F67AFFC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.DatabaseMaintenance", "Functions\igx.functions.DatabaseMaintenance\igx.functions.DatabaseMaintenance.csproj", "{059322B3-E7DE-4F3D-AAF7-74C5F67AFFC1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.FusionRulesEngine", "igx.functions.FusionRulesEngine\igx.functions.FusionRulesEngine.csproj", "{8DBCE6C3-7B3B-420E-830A-B6826C2D5811}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.FusionRulesEngine", "Functions\igx.functions.FusionRulesEngine\igx.functions.FusionRulesEngine.csproj", "{8DBCE6C3-7B3B-420E-830A-B6826C2D5811}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.DataQualityRulesEngine", "igx.functions.DataQualityRulesEngine\igx.functions.DataQualityRulesEngine.csproj", "{269484BE-52DC-4286-989B-8720D8A27F0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.DataQualityRulesEngine", "Functions\igx.functions.DataQualityRulesEngine\igx.functions.DataQualityRulesEngine.csproj", "{269484BE-52DC-4286-989B-8720D8A27F0D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.DataQualityChecker", "igx.functions.DataQualityChecker\igx.functions.DataQualityChecker.csproj", "{FF3E57D8-9F3C-47A9-82A4-8791F23E0B2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.DataQualityChecker", "Functions\igx.functions.DataQualityChecker\igx.functions.DataQualityChecker.csproj", "{FF3E57D8-9F3C-47A9-82A4-8791F23E0B2C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Queue", "Queue", "{E9B7AA4C-7A93-4EFF-899D-F8BAF3198883}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Indexing", "igx.functions.Indexing\igx.functions.Indexing.csproj", "{F4A2789B-E2B6-41AF-B2BD-5142623AE0AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Indexing", "Functions\igx.functions.Indexing\igx.functions.Indexing.csproj", "{F4A2789B-E2B6-41AF-B2BD-5142623AE0AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.EagleMessageStreams", "igx.functions.EagleMessageStreams\igx.functions.EagleMessageStreams.csproj", "{6DF45696-6F9E-4DBD-93B1-23E91BB85B50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.EagleMessageStreams", "Functions\igx.functions.EagleMessageStreams\igx.functions.EagleMessageStreams.csproj", "{6DF45696-6F9E-4DBD-93B1-23E91BB85B50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Core", "igx.functions.Core\igx.functions.Core.csproj", "{98576836-DCB0-4581-B963-A0B6B8858DB5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Core", "Functions\igx.functions.Core\igx.functions.Core.csproj", "{98576836-DCB0-4581-B963-A0B6B8858DB5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.BulkLoad", "igx.functions.BulkLoad\igx.functions.BulkLoad.csproj", "{43013CF3-9269-4B78-96F3-D3D4F318C933}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.BulkLoad", "Functions\igx.functions.BulkLoad\igx.functions.BulkLoad.csproj", "{43013CF3-9269-4B78-96F3-D3D4F318C933}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.FusionProcessor", "igx.functions.FusionProcessor\igx.functions.FusionProcessor.csproj", "{6C3303F9-020C-47D9-B4D2-83EC38CE3967}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.FusionProcessor", "Functions\igx.functions.FusionProcessor\igx.functions.FusionProcessor.csproj", "{6C3303F9-020C-47D9-B4D2-83EC38CE3967}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.DatabaseTaskProcessor", "igx.functions.DatabaseTaskProcessor\igx.functions.DatabaseTaskProcessor.csproj", "{72A1D8BE-7565-4795-8F60-C7BE3F9474A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.DatabaseTaskProcessor", "Functions\igx.functions.DatabaseTaskProcessor\igx.functions.DatabaseTaskProcessor.csproj", "{72A1D8BE-7565-4795-8F60-C7BE3F9474A1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.IntegrationAgent", "igx.functions.IntegrationAgent\igx.functions.IntegrationAgent.csproj", "{B2760B2E-A8EE-4D1A-9631-AAE42B764FF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.IntegrationAgent", "Functions\igx.functions.IntegrationAgent\igx.functions.IntegrationAgent.csproj", "{B2760B2E-A8EE-4D1A-9631-AAE42B764FF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

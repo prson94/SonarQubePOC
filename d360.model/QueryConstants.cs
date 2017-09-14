@@ -650,11 +650,11 @@ select	IT.ID as IntersectTypeID,
 			else IT.SubjectName
 		end + 
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.FusionAttributeTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = 'FusionAttributeType' and IT.ObjectID = fa.FusionAttributeTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
 		end as [Name],
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectCardinality] 
+			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.FusionAttributeTypeID) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
 		end as Cardinality
 from	[dbo].[fusionattribute] fa	
@@ -677,8 +677,8 @@ order by case
 			else IT.SubjectName
 		end + 
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.FusionAttributeTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = 'FusionAttributeType' and IT.ObjectID = fa.FusionAttributeTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
 		end
 ";
 
@@ -698,11 +698,11 @@ select	IT.ID as IntersectTypeID,
 			else IT.SubjectName
 		end + 
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = 'FusionQueryAttributeType' and IT.ObjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
 		end as [Name],
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectCardinality] 
+			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
 		end as Cardinality
 from	[dbo].[fusionQueryattribute] fa	
@@ -725,8 +725,8 @@ order by case
 			else IT.SubjectName
 		end + 
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = 'FusionQueryAttributeType' and IT.ObjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
 		end
 ";
 
