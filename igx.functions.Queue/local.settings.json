@@ -1,0 +1,13 @@
+{
+    "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==",
+    "AzureWebJobsDashboard": "DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==",
+    "BulkLoadQueueName": "d3s-bulkload-debug",
+    "MainStorageAccount": "DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=WoUrx1+4aeynNGuJkj/j6rKnszTbunJr2WQ3bJZQ/qU94YIn0zSQ0jRLFj5NN8pKKMY+QiBdGJcIqXyECf7oRA==;EndpointSuffix=core.windows.net",
+    "DBExecuteQueryTimeout": "10800",
+    "DBReadQueryTimeout": "1800",
+    "DBBulkCopyTimeout": "1800",
+    "MergeChunkSize":  "5000"
+  }
+}

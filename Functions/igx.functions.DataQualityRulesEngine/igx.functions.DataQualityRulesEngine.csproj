@@ -33,7 +33,6 @@
     <ProjectReference Include="..\d360.core\d360.core.csproj" />
     <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj" />
     <ProjectReference Include="..\d360.utils\d360.utils.csproj" />
-    <ProjectReference Include="..\igx.functions.Core\igx.functions.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

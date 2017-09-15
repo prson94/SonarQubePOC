@@ -137,19 +137,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\d360.core\d360.core.csproj">
+    <ProjectReference Include="..\..\d360.core\d360.core.csproj">
       <Project>{9341cca8-d3f2-467a-ae9c-0581054b8de2}</Project>
       <Name>d360.core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
+    <ProjectReference Include="..\..\d360.extensions\d360.extensions.csproj">
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj">
+    <ProjectReference Include="..\..\d360.utils.company\d360.utils.company.csproj">
       <Project>{88bba351-da2a-4551-af28-5f1568952f7e}</Project>
       <Name>d360.utils.company</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.utils\d360.utils.csproj">
+    <ProjectReference Include="..\..\d360.utils\d360.utils.csproj">
       <Project>{9775b4df-0ac8-4524-ba10-4a43bf9cb61e}</Project>
       <Name>d360.utils</Name>
     </ProjectReference>

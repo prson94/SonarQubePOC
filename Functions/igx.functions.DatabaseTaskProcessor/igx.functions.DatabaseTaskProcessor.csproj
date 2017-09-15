@@ -33,12 +33,11 @@
     <PackageReference Include="SpreadsheetLight" Version="3.4.9" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\d360.core\d360.core.csproj" />
-    <ProjectReference Include="..\d360.extensions\d360.extensions.csproj" />
-    <ProjectReference Include="..\d360.model\d360.model.csproj" />
-    <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj" />
-    <ProjectReference Include="..\d360.utils\d360.utils.csproj" />
-    <ProjectReference Include="..\igx.functions.Core\igx.functions.Core.csproj" />
+    <ProjectReference Include="..\..\d360.core\d360.core.csproj" />
+    <ProjectReference Include="..\..\d360.extensions\d360.extensions.csproj" />
+    <ProjectReference Include="..\..\d360.model\d360.model.csproj" />
+    <ProjectReference Include="..\..\d360.utils.company\d360.utils.company.csproj" />
+    <ProjectReference Include="..\..\d360.utils\d360.utils.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
