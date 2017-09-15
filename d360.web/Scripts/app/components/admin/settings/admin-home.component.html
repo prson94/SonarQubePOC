@@ -26,8 +26,7 @@
                 </div>
                 <div class="col s6">
                     <div class="FieldName">Title color</div>
-                    <input type="text" [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)" style="width:95%" [disabled]="!companySettings.ShowHomePageTitle" />
-                    <!--<p-colorPicker [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)" ></p-colorPicker>-->
+                    <p-colorPicker [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)"></p-colorPicker>
                 </div>
             </div>
         </div>

@@ -1184,7 +1184,6 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\settings\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\shared-dynamic-grid-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\shared-field-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />

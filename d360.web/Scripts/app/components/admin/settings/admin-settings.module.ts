@@ -10,8 +10,8 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { ShortcutModule } from '../../shared/shortcuts/shortcut.module';
+import { IconPickerModule } from '../../shared/icon-picker.component';
 
-import { IconPickerComponent } from './icon-picker.component';
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
 import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
@@ -50,7 +50,6 @@ import {
         ShortcutModule
     ],
     declarations: [
-        IconPickerComponent,
         AdminSettingsComponent,
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,
