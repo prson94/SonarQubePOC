@@ -22,9 +22,9 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     <p><a style="cursor:pointer" (click)="downloadTemplate()">Download Template</a> - Use the template to load new data to the {{fusionName}} fusion data.</p>
                                     <div class="row">
                                         <h4 style="margin-top:20px;margin-bottom:5px;">Upload Data from a spreadsheet</h4>
-                                        <p-fileUpload name="file" [url]="fileUploadUrl()" (onUpload)="onUpload($event)" 
+                                        <p-fileUpload name="file[]" [url]="fileUploadUrl()" (onUpload)="onUpload($event)" 
                                                 multiple="multiple" accept=".xls,.xlsx" maxFileSize="10000000">
-                                            <ng-template pTemplate type="content">
+                                            <ng-template pTemplate="content">
                                                 <ul *ngIf="uploadedFiles.length">
                                                     <li *ngFor="let file of uploadedFiles">{{file.name}} - {{file.size}} bytes</li>
                                                 </ul>
