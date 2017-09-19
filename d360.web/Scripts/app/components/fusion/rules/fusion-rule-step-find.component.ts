@@ -27,8 +27,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     searchTypes: any[] = [
         { value: "Fusion", text: "Fusion" },
         { value: "FusionOwner", text: "Fusion Owner" },
-        { value: "Glossary", text: "Glossary" },
-        { value: "Promotion", text: "Previous Promotion" },
+        { value: "Glossary", text: "Glossary" },        
         { value: "ResultFromStep", text: "Result From Step" }
     ];
 
