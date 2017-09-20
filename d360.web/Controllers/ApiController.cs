@@ -761,9 +761,9 @@ where   h.ID <> @t order by h.[Level] desc;
 
                     int fusionID = 0;
                     bool fusionIDPresent = false;
-                    if (!string.IsNullOrEmpty(Request.GetQueryString("fusionID")))
+                    if (!string.IsNullOrEmpty(Request.GetQueryString("targetID")))
                     {
-                        fusionIDPresent = int.TryParse(Request.GetQueryString("fusionID"), out fusionID);
+                        fusionIDPresent = int.TryParse(Request.GetQueryString("targetID"), out fusionID);
                     }
 
                     //Parent columns have be listed in DESC order by Level.
