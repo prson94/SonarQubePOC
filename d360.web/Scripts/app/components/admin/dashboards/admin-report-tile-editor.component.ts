@@ -4,6 +4,7 @@ import { MessagesService } from '../../../services/messages.service';
 import { CompanySettingsService  } from '../../../services/settings.service';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
+import 'codemirror/mode/sql/sql.js';
 
 
 
@@ -60,7 +61,7 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
 
     private baseConfig = {
         lineNumbers: true,
-        theme: 'mdn-like',
+        theme: 'eclipse',
         mode: 'sql'
     };
     

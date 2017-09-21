@@ -4,7 +4,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SiteCustomizationsService } from '../../../services/site-customizations.service';
 import { MessagesService } from '../../../services/messages.service';
 import { Title } from '@angular/platform-browser';
-
+import 'codemirror/mode/css/css.js';
 
 @Component({
     selector: 'd3s-admin-customizations-component',
@@ -56,9 +56,9 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
     }
 
     private baseConfig = {
-        lineNumbers: true,
-        theme: 'mdn-like',
-        mode: 'CSS'
+        lineNumbers: true,       
+        theme: 'eclipse',
+        mode: 'css'
     };
 
     private load() {
