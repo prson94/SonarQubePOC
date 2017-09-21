@@ -50,8 +50,15 @@ namespace d360.extensions.storage
 
         public void CreateFile(string folderName, string fileName, string content)
         {
+            CreateFile(folderName, fileName, content, "");
+        }
+
+        public void CreateFile(string folderName, string fileName, string content, string contentType)
+        {
             var c = getContainer(folderName);
             CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
+
+            if (!string.IsNullOrEmpty(contentType)) blockBlob.Properties.ContentType = contentType;
             blockBlob.UploadText(content);
         }
 

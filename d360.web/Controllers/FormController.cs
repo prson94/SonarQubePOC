@@ -2027,6 +2027,68 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region Style Customizations
+
+
+        [Route("StyleCustomizations")]
+        public JsonNetResult StyleCustomizations()
+        {
+            var css = "";
+            //go to azure storage for this company try to get the custom css
+            try
+            {
+                css = Storage.GetFileContentsAsString(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
+            }
+            catch { }
+            return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        [HttpPut, ValidateInput(false), Route("UpdateStyleCustomizations")]
+        public JsonResult UpdateStyleCustomizations(string css)
+        {
+            //delete the old css file
+            try
+            {
+                Storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
+            }
+            catch { }
+
+            try
+            {
+                var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+
+                var stylesSetting = settings.SingleOrDefault(i => i.SettingID == 24);
+                //if the css is not empty or null create a new css
+                if (!string.IsNullOrWhiteSpace(css))
+                {
+                    //update the company setting to sya where the files is 
+                    
+
+                    if (stylesSetting == null)
+                    {
+                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"https://data3sixty.blob.core.windows.net/{constants.COMPANY_STYLES_FOLDER}/{Company.CurrentCompanyID}.css" };
+                        Community.Add<CompanySetting>(stylesSetting);
+                    }
+                    else
+                    {
+                        stylesSetting.Value = $"https://data3sixty.blob.core.windows.net/{constants.COMPANY_STYLES_FOLDER}/{Company.CurrentCompanyID}.css";
+                        Community.SaveChanges();
+                    }
+
+                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css");
+                }
+                else
+                {
+                    Community.Delete<CompanySetting>(stylesSetting);
+                }
+            }
+            catch { }
+
+            return jsonSuccess("Syles successfully updated.", "0", "edit", HttpStatusCode.OK);
+        }
+
+        #endregion
+
         #region Company Settings
 
         [Route("CompanySettings")]

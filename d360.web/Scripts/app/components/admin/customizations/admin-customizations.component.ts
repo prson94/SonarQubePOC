@@ -1,0 +1,78 @@
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { AdminBaseComponent } from '../admin-base.component';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SiteCustomizationsService } from '../../../services/site-customizations.service';
+import { MessagesService } from '../../../services/messages.service';
+import { Title } from '@angular/platform-browser';
+
+
+@Component({
+    selector: 'd3s-admin-customizations-component',
+    providers: [SiteCustomizationsService],
+    template: `<div class="row">
+                    <form (ngSubmit)="saveCustomizations()" #customForm="ngForm">
+                        <div class="col s12">                    
+                            <div class="tile tile-detail">
+                                <header>Style Customizations</header>  
+                                <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                                <div class="row" *ngIf="!isLoading">
+                                    <div class="col s12">
+                                        <codemirror [(ngModel)]="customCss"
+                                                            name="css"
+                                                            [config]="baseConfig"
+                                                            style="height:600px;">
+                                        </codemirror>                                          
+                                    </div>
+                                    <div class="col s12">&nbsp;</div>
+                                    <div class="col s12">
+                                        <button pButton type="submit" label="Save"></button>
+                                    </div>                    
+                                </div>
+                            </div>
+                        </div>                        
+                    </form>
+                </div>
+                `
+})
+
+export class AdminCustomizationsComponent extends AdminBaseComponent implements OnInit {
+    private customCss: string;
+
+    constructor(
+        headerBreadcrumbService: HeaderBreadcrumbService,        
+        titleService: Title,
+        protected siteCustomizationsService: SiteCustomizationsService,
+        protected messagesService: MessagesService
+    ) {
+
+        super(headerBreadcrumbService, titleService);
+        this.areaName = "Customizations";
+        this.setCommonItems();
+        
+    }
+
+    ngOnInit() {
+        this.load();
+    }
+
+    private baseConfig = {
+        lineNumbers: true,
+        theme: 'mdn-like',
+        mode: 'CSS'
+    };
+
+    private load() {
+        this.isLoading = true;
+        this.siteCustomizationsService.getCustomCss().then(res => {
+            this.isLoading = false;
+            this.customCss = res;
+        });
+    }
+
+    private saveCustomizations() {
+        this.siteCustomizationsService.saveCustomCss(this.customCss).then(res => {
+            this.showMessageForResult(this.messagesService, res);
+            window.location.reload();
+        });
+    }
+}
