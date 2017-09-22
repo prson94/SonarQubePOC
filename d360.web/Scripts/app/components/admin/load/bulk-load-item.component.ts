@@ -17,7 +17,7 @@ import { BaseComponent } from '../../shared/base.component'
                 <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="25" paginator="true" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions">
                     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                     <p-column field="Status" header="Status" sortable="true" [style]="{'width':'125px'}" [filter]="!showSimpleFilter"></p-column>
-                    <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                    <p-column *ngFor="let column of columns" sortable="true" [field]="column.datafield" [header]="column.text" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                     <p-column field="RowIndex" header="Row" sortable="true" [style]="{'width':'100px'}" [filter]="!showSimpleFilter"></p-column>        
                     <p-column field="StatusMessage" header="Message" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                         <ng-template let-item="rowData" pTemplate type="body">
