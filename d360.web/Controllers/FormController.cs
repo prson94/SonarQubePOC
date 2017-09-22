@@ -7791,8 +7791,10 @@ namespace d360.web.Controllers
         [Route("IntersectType_CardinalityOptions")]
         public JsonNetResult IntersectType_CardinalityOptions()
         {
-            var models = Cardinality.One.GetList()
+            var models = Cardinality.One.GetList().Where(x=>x.ID !=0)
                 .Select(i => new { title = i.Name, value = i.ID });
+
+            
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
