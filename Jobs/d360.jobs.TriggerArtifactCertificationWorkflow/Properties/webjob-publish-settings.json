@@ -1,9 +1,0 @@
-﻿{
-  "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
-  "webJobName": "TriggerRecurringCertification",
-  "startTime": "2016-02-01T00:00:00-05:00",
-  "endTime": null,
-  "jobRecurrenceFrequency": "Minute",
-  "interval": 30,
-  "runMode": "Scheduled"
-}

@@ -1,9 +1,0 @@
-﻿{
-  "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
-  "webJobName": "MatchTechnicalMappingsToBusinessMappings",
-  "startTime": "2016-08-01T00:00:00-05:00",
-  "endTime": null,
-  "jobRecurrenceFrequency": "Minute",
-  "interval": 15,
-  "runMode": "Scheduled"
-}
