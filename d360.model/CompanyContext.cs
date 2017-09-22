@@ -1304,11 +1304,11 @@ where	R.SourceObject = 'FusionAttribute'
 						'RuleType' AS Type
 				FROM	RuleType
                 UNION
-				SELECT	ID,
+				/*SELECT	ID,
 						'Rule Implementation :: ' + Name as Name,
 						'RuleImplementationType' as Type
                 FROM    [Rule]
-				UNION
+				UNION*/
 				SELECT	ID,
 						'Reference :: Item :: ' + Name AS Name,
 						'ReferenceItemType' AS Type
