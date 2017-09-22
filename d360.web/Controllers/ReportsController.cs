@@ -336,7 +336,7 @@ namespace d360.web.Controllers
         [Route("home"), HttpGet]
         public JsonNetResult GetHomePageReports()
         {
-            var reports = Company.Filter<Report>(r => r.ShowOnHomePage && r.ReportType.ToLower() != "powerbi").ToList();
+            var reports = Company.Filter<Report>(r => r.ShowOnHomePage && r.ReportType.ToLower() != "legacy").ToList();
             return new JsonNetResult
             {
                 Data = reports,

@@ -871,7 +871,7 @@ namespace d360.web.Controllers
 
             list = loadStatusField(list, SystemObjects.Artifact, a.Status, 4, 1);
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 5, true);
+            list = loadDynamicFields(SystemObjects.Artifact.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 5, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -1374,7 +1374,10 @@ namespace d360.web.Controllers
             var a = Company.GetById<d360.core.entities.Attribute>(id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list = loadDynamicFields(list,
+            list = loadDynamicFields(
+                SystemObjects.Attribute.ToString(), 
+                id, 
+                list,
                 Company.GetFieldTypesByObject(SystemObjects.AttributeType, a.AttributeTypeID).ToList(),
                 Company.GetFieldRelationsByObject(SystemObjects.Attribute, id).ToList(),
                 1);
@@ -4321,7 +4324,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners});
 
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.FusionType, a.FusionTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Fusion, id).ToList(), 7);
+            list = loadDynamicFields(SystemObjects.Fusion.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.FusionType, a.FusionTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Fusion, id).ToList(), 7);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -7049,7 +7052,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             //list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, a.FusionAttributeTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.FusionAttribute, a.ID).ToList(), 2, true);
+            list = loadDynamicFields(SystemObjects.FusionAttribute.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, a.FusionAttributeTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.FusionAttribute, a.ID).ToList(), 2, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9495,169 +9498,6 @@ for json path");
             public string File { get; set; }
         }
 
-        //List<string> getFieldNamesByType(string type, int id)
-        //{
-        //    var fieldTypeNames = new List<string>();
-
-        //    switch (type)
-        //    {
-        //        case "Lineage":
-        //            #region
-        //            fieldTypeNames.Add("Action");
-
-        //            fieldTypeNames.Add("Source Relation");
-        //            fieldTypeNames.Add("Source subject subject area");
-        //            fieldTypeNames.Add("Source subject");
-        //            fieldTypeNames.Add("Source object subject area");
-        //            fieldTypeNames.Add("Source object");
-
-        //            fieldTypeNames.Add("Source Fusion Configuration");
-        //            fieldTypeNames.Add("Source Fusion Path");
-
-        //            fieldTypeNames.Add("Target Relation");
-        //            fieldTypeNames.Add("Target subject subject area");
-        //            fieldTypeNames.Add("Target subject");
-        //            fieldTypeNames.Add("Target object subject area");
-        //            fieldTypeNames.Add("Target object");
-
-        //            fieldTypeNames.Add("Target Fusion Configuration");
-        //            fieldTypeNames.Add("Target Fusion Path");
-
-        //            fieldTypeNames.Add("Transformation");
-
-        //            break;
-        //        #endregion
-        //        //case "Synonym":
-        //        //    #region
-        //        //    fieldTypeNames.Add("Source object type");
-        //        //    fieldTypeNames.Add("Source object type name");
-        //        //    fieldTypeNames.Add("Source object subject area");
-        //        //    fieldTypeNames.Add("Source object");
-
-        //        //    fieldTypeNames.Add("Target object type");
-        //        //    fieldTypeNames.Add("Target object type name");
-        //        //    fieldTypeNames.Add("Target object subject area");
-        //        //    fieldTypeNames.Add("Target object");
-        //        //    break;
-        //        //    #endregion
-        //        case "TechnicalLineage":
-        //            #region
-        //            fieldTypeNames.Add("Source Fusion Configuration");
-        //            fieldTypeNames.Add("Source Fusion Path");
-        //            fieldTypeNames.Add("Target Fusion Configuration");
-        //            fieldTypeNames.Add("Target Fusion Path");
-        //            fieldTypeNames.Add("Group");
-        //            break;
-        //        #endregion
-        //        default:
-        //            #region
-        //            if (id > 0)
-        //            {
-        //                switch (type)
-        //                {
-        //                    case "ArtifactType":
-        //                    case "AttributeType":
-        //                    case "ReferenceItemType":
-        //                    case "IntersectType":
-        //                    case "TaxonomyType":
-        //                        fieldTypeNames.AddRange(
-        //                            Company
-        //                            .Filter<FieldType>(i => 
-        //                                i.Object == type && 
-        //                                i.ObjectID == id &&
-        //                                i.Type != "Attribute" &&
-        //                                i.Type != "FilteredLookup" &&
-        //                                i.Type != "FusionLookup" &&
-        //                                i.Type != "ComplexRelationLookup" &&
-        //                                i.Type != "OwnershipLookup"
-        //                            )
-        //                            .OrderBy(i => i.SortOrder)
-        //                            .Select(i => i.Name)
-        //                        );
-        //                        break;
-        //                }
-
-        //                switch (type)
-        //                {
-        //                    case "ArtifactType":
-        //                        #region
-        //                        //fieldTypeNames.Insert(0, "Name");
-        //                        //fieldTypeNames.Insert(1, "Description");
-        //                        //fieldTypeNames.Insert(2, "Subject Area");
-        //                        var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
-        //                        if (artifactType.ParentID.HasValue)
-        //                            fieldTypeNames.Insert(0, string.Format("Parent {0}", artifactType.Parent.Name));
-        //                        break;
-        //                    #endregion
-        //                    case "AttributeType":
-        //                        #region
-        //                        fieldTypeNames.Insert(0, "Owner Type");
-        //                        fieldTypeNames.Insert(1, "Owner Type Name");
-        //                        fieldTypeNames.Insert(2, "Owner Name");
-        //                        break;
-        //                    #endregion
-        //                    case "ReferenceItemType":
-        //                        #region
-        //                        fieldTypeNames.Insert(0, "Code");
-        //                        break;
-        //                    #endregion
-        //                    case "IntersectType":
-        //                        #region
-        //                        var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
-        //                        if (intersectType != null)
-        //                        {
-        //                            fieldTypeNames.Insert(0, intersectType.ObjectName);
-
-        //                            if (intersectType.Object == "ArtifactType")
-        //                                fieldTypeNames.Insert(0, $"{intersectType.ObjectName} Subject Area");
-
-
-        //                            fieldTypeNames.Insert(0, intersectType.SubjectName);
-
-        //                            if (intersectType.Subject == "ArtifactType")
-        //                                fieldTypeNames.Insert(0, $"{intersectType.SubjectName} Subject Area");
-        //                        }
-        //                        break;
-        //                    #endregion
-        //                    case "TaxonomyType":
-        //                        #region
-        //                        var levels = Company.Query<int>("select MaximumDepth from TaxonomyType where ID = @id", new { id }).SingleOrDefault();
-        //                        for (int i = 0; i < levels; i++)
-        //                        {
-        //                            fieldTypeNames.Insert(i, "Level" + (i + 1));
-        //                        }
-
-        //                        // fieldTypeNames.Add("Name");
-        //                        // fieldTypeNames.Add("Description");
-        //                        // fieldTypeNames.Add("Parent");
-        //                        break;
-        //                    #endregion
-        //                }
-        //            }
-        //            else
-        //            {
-        //                fieldTypeNames = new List<string>() {
-        //                    "Item Type",
-        //                    "Item Path",
-        //                    "Responsibility",
-        //                    "Resource"
-        //                };
-
-        //                switch (type)
-        //                {
-        //                    case "ArtifactType":
-        //                        //fieldTypeNames.Insert(1, "Subject Area");
-        //                        break;
-        //                }
-        //            }
-
-        //            break;
-        //            #endregion
-        //    }
-
-        //    return fieldTypeNames;
-        //}
-
         [Route("Load_TypeOptions"), NonNullableParameters]
         public JsonNetResult Load_TypeOptions(string act)
         {
@@ -9720,7 +9560,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             return new JsonNetResult
             {
-                Data = Company.GetLoadColumns(action, type, id, false), //getFieldNamesByType(type, id),
+                Data = Company.GetLoadColumns(action, type, id, false),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -9735,21 +9575,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             document.SelectWorksheet(defaultSheet);
 
             var models = Company.GetLoadColumns(action, type, id, true);
-            
-            //var columns = getFieldNamesByType(type, id);
-            var lookupColumns = 1;
-            //var parentColumnName = string.Empty;
-            //var artifactParentID = -1;
 
-            //if (type == "ArtifactType" && id > 0)
-            //{
-            //    var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
-            //    if (artifactType.ParentID.HasValue)
-            //    {
-            //        artifactParentID = artifactType.ParentID.Value;
-            //        parentColumnName = string.Format("Parent {0}", artifactType.Parent.Name).ToLower();
-            //    }
-            //}
+            var lookupColumns = 1;
 
             #region Header
 
@@ -9758,211 +9585,23 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var model = models[i];
                 SLStyle style = document.CreateStyle();
 
-                style.Font.Bold = model.Required;//isRequiredColumn(type, id, columns[i], parentColumnName);
+                style.Font.Bold = model.Required;
 
                 document.SetCellStyle(1, i + 1, style);
 
-                document.SetCellValue(1, i + 1, model.Name);// columns[i]);
+                document.SetCellValue(1, i + 1, model.Name);
 
-                if (model.IsLookup)
+                if (model.IsLookup && model.Lookups != null)
                 {
                     var dv = document.CreateDataValidation(2, i + 1, model.Lookups.Count + 1, i + 1);
                     CreateExcelList(lookupColumns++, document, "Lookups", dv, model.Lookups.Select(m => m.Value));
                     document.AddDataValidation(dv);
                 }
 
-
-                //var lowerColName = model.Name.ToLower(); //columns[i].ToLower();
-
-                //if (lowerColName == "action") //Lineage, Relationship
-                //{
-                //    var items = new List<string>() { "Add", "Remove" };
-
-                //    if (items.Any())
-                //    {
-                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                //        document.AddDataValidation(dv);
-                //    }
-                //}
-                //else if (lowerColName == "item type" && id == 0) //Responsibility bulk load
-                //{
-                //    switch (type)
-                //    {
-                //        case "ArtifactType":
-                //            #region
-                //            var artifactTypeItems = Company.Table<ArtifactType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                //            if (artifactTypeItems.Any())
-                //            {
-                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, artifactTypeItems);
-
-                //                document.AddDataValidation(dv);
-                //            }
-                //            break;
-                //            #endregion
-                //        case "ReferenceItemType":
-                //            #region
-                //            var referenceItemTypeItems = Company.Table<ReferenceItemType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                //            if (referenceItemTypeItems.Any())
-                //            {
-                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, referenceItemTypeItems);
-
-                //                document.AddDataValidation(dv);
-                //            }
-                //            break;
-                //            #endregion
-                //        case "FusionType":
-                //            #region
-                //            var fusionTypeItems = Company.Table<FusionType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                //            if (fusionTypeItems.Any())
-                //            {
-                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, fusionTypeItems);
-
-                //                document.AddDataValidation(dv);
-                //            }
-                //            break;
-                //            #endregion
-                //        case "PolicyType":
-                //            #region
-                //            var policyTypeItems = Company.Table<PolicyType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                //            if (policyTypeItems.Any())
-                //            {
-                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, policyTypeItems);
-
-                //                document.AddDataValidation(dv);
-                //            }
-                //            break;
-                //            #endregion
-                //        case "TaxonomyType":
-                //            #region
-                //            var taxonomyTypeItems = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                //            if (taxonomyTypeItems.Any())
-                //            {
-                //                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //                CreateExcelList(lookupColumns++, document, "Lookups", dv, taxonomyTypeItems);
-
-                //                document.AddDataValidation(dv);
-                //            }
-                //            break;
-                //            #endregion
-                //    }
-                //}
-                //else if (lowerColName == "responsibility" && id == 0) //Responsibility bulk load
-                //{
-                //    var items = Company.Table<ResponsibilityType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                //    if (items.Any())
-                //    {
-                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                //        document.AddDataValidation(dv);
-                //    }
-                //}
-                //else if (lowerColName == "resource" && id == 0) //Responsibility bulk load
-                //{
-                //    var items = Company.Table<Group>().OrderBy(x => x.Name).Select(x => "Group:"+ x.Name).ToList();
-                //    items.AddRange(
-                //        Company.Table<GlobalReportingResource>().ToList().OrderBy(r => r.LastName).ThenBy(r => r.FirstName).Select(x => "User:" + x.FullName)
-                //     );
-
-                //    if (items.Any())
-                //    {
-                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                //        document.AddDataValidation(dv);
-                //    }
-                //}
-                //else if (type == "ArtifactType" && lowerColName == parentColumnName)
-                //{
-                //    if (artifactParentID < 0) continue;
-
-                //    var items = Company.Filter<Artifact>(x => x.ArtifactTypeID == artifactParentID).OrderBy(x => x.DisplayValue).Select(x => x.DisplayValue);
-
-                //    if (items.Any())
-                //    {
-                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                //        document.AddDataValidation(dv);
-                //    }
-                //}
-                //else if (type == "Lineage" && lowerColName.In("source relation", "target relation"))
-                //{
-                //    var items = Company.Table<IntersectType>().Where(o => !o.IsSystem.Value || !o.IsSystem.HasValue).OrderBy(x => x.Name).Select(x => x.Name);
-
-                //    if (items.Any())
-                //    {
-                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                //        document.AddDataValidation(dv);
-                //    }
-                //}
-                //else if (type == "Synonym" && lowerColName.In("source object type", "target object type"))
-                //{
-                //    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-                //    var typesList = new List<string> { "Artifact", "Policy", "Rule", "Taxonomy" };
-
-                //    CreateExcelList(lookupColumns++, document, "Lookups", dv, typesList.OrderBy(x => x));
-
-                //    document.AddDataValidation(dv);
-                //}
-                ////else if (
-                ////    ((type == "Lineage") && lowerColName.In("source subject subject area", "source object subject area", "target subject subject area", "target object subject area")) ||
-                ////    (type == "Synonym" && lowerColName.In("source object subject area", "target object subject area"))
-                ////    )
-                ////{
-                ////    var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                ////    if (items.Any())
-                ////    {
-                ////        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                ////        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                ////        document.AddDataValidation(dv);
-                ////    }
-                ////}
-                //else if ( (type == "Lineage" || type == "TechnicalLineage") && (lowerColName == "source fusion configuration" || lowerColName == "target fusion configuration") )
-                //{
-                //    var items = Company.Table<Fusion>().OrderBy(x => x.Name).Select(x => x.Name);
-
-                //    if (items.Any())
-                //    {
-                //        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                //        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                //        document.AddDataValidation(dv);
-                //    }
-                //}
-
                 document.AutoFitColumn(1, i + 1);
-            }
 
-            #endregion
+                #endregion
+            }
 
             document.HideWorksheet("Lookups");
 
@@ -9971,49 +9610,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return File(stream.ToArray(), "application/vnd.ms-excel", "Load.xlsx");
         }
 
-        //private bool isRequiredColumn(string type, int id, string columnName, string parentColumnName)
-        //{
-        //    columnName = columnName.ToLower();
-
-        //    var required = true;
-
-        //    if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != "description" && columnName != parentColumnName))
-        //        required = false;
-        //    else if (type == "ReferenceItemType" && (columnName != "code"))
-        //        required = false;
-        //    else if (type == "Lineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
-        //        required = false;
-
-        //    if (type == "IntersectType")
-        //    {
-        //        required = true; //All fields are required.
-        //    }
-        //    if (type == "TechnicalLineage")
-        //    {
-        //        required = (columnName != "group"); //All fields except Group are required.
-        //    }
-        //    else if (type == "Synonym")
-        //    {
-        //        required = true; //All fields are required.
-        //    }
-
-
-        //    if (id == 0)
-        //    {
-        //        if (
-        //            columnName == "item type" ||
-        //            columnName == "subject area" ||
-        //            columnName == "item path" ||
-        //            columnName == "responsibility" ||
-        //            columnName == "resource"
-        //            )
-        //        {
-        //            required = true;
-        //        }
-        //    }
-
-        //    return required;
-        //}
 
         private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, IEnumerable<string> values)
         {
@@ -10077,7 +9673,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                         xls = new SLDocument(stream);
 
-                        var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);// getFieldNamesByType(load.Object, load.ObjectID);
+                        var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);
 
                         //fieldTypeNames = fieldTypeNames.Select(i => i.Trim()).ToList();
 
@@ -10269,7 +9865,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.LookupType, a.LookupTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Lookup, id).ToList(), 1);
+            list = loadDynamicFields(SystemObjects.Lookup.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.LookupType, a.LookupTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Lookup, id).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11820,7 +11416,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString(), Value = ((int)model.Status).ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = model.Description });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 5, true);
+            list = loadDynamicFields(SystemObjects.Policy.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 5, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -12726,7 +12322,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 2);
+            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13226,7 +12822,7 @@ order by D.TextPath";
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1);
+            list = loadDynamicFields(SystemObjects.Intersect.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -15269,7 +14865,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString(), Value = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID).IsAdministrator.ToString() });
             list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Status", Name = "Active?", FieldType = DataType.Boolean.ToString(), Value = (a.Status == "Active").ToString() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(), 4);
+            list = loadDynamicFields(SystemObjects.Resource.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(), 4);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -15284,7 +14880,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Value = a.FirstName, Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Value = a.LastName, Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(), 2);
+            list = loadDynamicFields(SystemObjects.Resource.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -15942,7 +15538,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 5, Column = 1, Required = false, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString(), Value = model.Purpose });
             list.Add(new EditableField { Row = 5, Column = 2, Required = false, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString(), Value = model.Resolution });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Rule, id).ToList(), 6);
+            list = loadDynamicFields(SystemObjects.Rule.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Rule, id).ToList(), 6);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -18280,7 +17876,7 @@ order by TextPath
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = Resources.FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parents, Value = ((a.ParentID.HasValue) ? a.ParentID.Value.ToString() : "0") });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, a.TaxonomyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Taxonomy, id).ToList(), 3);
+            list = loadDynamicFields(SystemObjects.Taxonomy.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, a.TaxonomyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Taxonomy, id).ToList(), 3);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

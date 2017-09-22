@@ -12,7 +12,7 @@ export class GridDefinitionService extends BaseService {
     getGridDefinition(objectID: number, objectType: string, parentID?: number, parentType?: string): Promise<GridDefinition> {
         let url = `api/${objectType}/${objectID}/grid/definition`;
 
-        if (parentID && parentType) {
+        if ((parentID >= 0) && parentType) {
             url += `?target=${parentType}&targetID=${parentID}`;
         }
         

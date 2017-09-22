@@ -602,6 +602,7 @@
     <Content Include="Scripts\app\46.chunk.js" />
     <Content Include="Scripts\app\47.chunk.js" />
     <Content Include="Scripts\app\48.chunk.js" />
+    <Content Include="Scripts\app\49.chunk.js" />
     <Content Include="Scripts\app\5.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
     <Content Include="Scripts\app\7.chunk.js" />
@@ -619,6 +620,7 @@
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-find.component.html" />
     <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-update.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-business-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-diagram.component.html" />
@@ -1029,6 +1031,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu-permissions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />
@@ -1612,6 +1615,8 @@
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://demo.dev.data3sixty.local</IISUrl>
+          <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
+          <IISAppRootUrl>http://client.dev.data3sixty.local/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

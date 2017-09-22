@@ -674,199 +674,199 @@ from    Artifact A
 
                         #region Glossary Attributes
 
-                        objectName = $"{SCHEMA}.[Glossary_AllAttributes]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Glossary_AllAttributes]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = @"
-select	A.ID as ArtifactID,
-		A.TextPath as ArtifactName, 
-		[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
-		A.ArtifactTypeID,
-		T.Name as ArtifactTypeName,
-		V.ID as SubjectAreaID, 
-		V.Name as SubjectArea, 
-		AD.ID as AttributeID, 
-		AD.ParentID as ParentAttributeID, 
-		AD.Name as Attribute, 
-		AD.FormattedValue as AttributeValue 
-from	Artifact A 
-		inner join ArtifactType T on T.ID = A.ArtifactTypeID
-		inner join TaxonomyType V on V.ID = A.TaxonomyTypeID 
-		inner join AttributeDetail AD on AD.ObjectType = 'Artifact' and AD.ObjectID = A.ID";
+//                        selectSql = @"
+//select	A.ID as ArtifactID,
+//		A.TextPath as ArtifactName, 
+//		[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+//		A.ArtifactTypeID,
+//		T.Name as ArtifactTypeName,
+//		V.ID as SubjectAreaID, 
+//		V.Name as SubjectArea, 
+//		AD.ID as AttributeID, 
+//		AD.ParentID as ParentAttributeID, 
+//		AD.Name as Attribute, 
+//		AD.FormattedValue as AttributeValue 
+//from	Artifact A 
+//		inner join ArtifactType T on T.ID = A.ArtifactTypeID
+//		inner join TaxonomyType V on V.ID = A.TaxonomyTypeID 
+//		inner join AttributeDetail AD on AD.ObjectType = 'Artifact' and AD.ObjectID = A.ID";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
                         #region Model Attributes
 
-                        objectName = $"{SCHEMA}.[Model_AllAttributes]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Model_AllAttributes]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = @"
-select	A.ID as TaxonomyID,
-		A.TextPath as TaxonomyName, 
-		[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
-		A.TaxonomyTypeID,
-		T.Name as TaxonomyTypeName,
-		AD.ID as AttributeID, 
-		AD.ParentID as ParentAttributeID, 
-		AD.Name as Attribute, 
-		AD.FormattedValue as AttributeValue 
-from	Taxonomy A 
-		inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
-		inner join AttributeDetail AD on AD.ObjectType = 'Taxonomy' and AD.ObjectID = A.ID";
+//                        selectSql = @"
+//select	A.ID as TaxonomyID,
+//		A.TextPath as TaxonomyName, 
+//		[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+//		A.TaxonomyTypeID,
+//		T.Name as TaxonomyTypeName,
+//		AD.ID as AttributeID, 
+//		AD.ParentID as ParentAttributeID, 
+//		AD.Name as Attribute, 
+//		AD.FormattedValue as AttributeValue 
+//from	Taxonomy A 
+//		inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+//		inner join AttributeDetail AD on AD.ObjectType = 'Taxonomy' and AD.ObjectID = A.ID";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
                         #region Missing Stats
 
-                        #region
+//                        #region
 
-                        var statusSuffixColumnSql = @" Att.MissingAttributes, Rel.MissingRelationships, Res.MissingResponsibilities";
+//                        var statusSuffixColumnSql = @" Att.MissingAttributes, Rel.MissingRelationships, Res.MissingResponsibilities";
 
-                        Func<string, string> getStatsSuffixSql = (obj) =>
-                        {
-                            return $@"
-        cross apply (
-					select		case 
-									when count(ATTR.ID) < count(ATR.AttributeTypeID) then cast(1 as bit)
-									else cast(0 as bit)
-								end as MissingAttributes
-					from		AttributeTypeRelation ATR
-								inner join AttributeType AT on AT.ID = ATR.AttributeTypeID and ATR.ObjectType = '{obj}Type' and ATR.ObjectID = A.{obj}TypeID
-								left join AttributeTypeCategory C on C.ID = AT.AttributeTypeCategoryID
-								left join Attribute ATTR on ATTR.ObjectType = '{obj}' and ATTR.ObjectID = A.ID
-					) Att
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as MissingRelationships
-					from	( 
-					        select	case 
-								        when count(I.ID) = 0 then cast(1 as bit)
-								        else cast(0 as bit)
-							        end as O
-					        from	IntersectType IT
-							        left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{obj}' and I.SubjectID = A.ID) OR (I.Object = '{obj}' and I.ObjectID = A.ID) )
-					        where	( (IT.Subject = '{obj}Type' and IT.SubjectID = A.{obj}TypeID) OR (IT.Subject = '{obj}Type' and IT.SubjectID = A.{obj}TypeID) )
-							        and I.ID is null
-					        group by IT.ID having count(I.ID) = 0
-                            ) R
-					) Rel
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as MissingResponsibilities
-					from	( 
-							select	case 
-										when count(1) = 0 then cast(1 as bit)
-										else cast(0 as bit) 
-									end as MissingResponsibilities
-							from	[cache].[Responsibilities]
-							where	[Object] = '{obj}' and ObjectID = A.ID
-							group by ResponsibilityTypeID having count(1) = 0
-							) R
-					) Res
-where	Att.MissingAttributes > 0 
-		OR Rel.MissingRelationships > 0  
-		OR Res.MissingResponsibilities > 0";
-                        };
+//                        Func<string, string> getStatsSuffixSql = (obj) =>
+//                        {
+//                            return $@"
+//        cross apply (
+//					select		case 
+//									when count(ATTR.ID) < count(ATR.AttributeTypeID) then cast(1 as bit)
+//									else cast(0 as bit)
+//								end as MissingAttributes
+//					from		AttributeTypeRelation ATR
+//								inner join AttributeType AT on AT.ID = ATR.AttributeTypeID and ATR.ObjectType = '{obj}Type' and ATR.ObjectID = A.{obj}TypeID
+//								left join AttributeTypeCategory C on C.ID = AT.AttributeTypeCategoryID
+//								left join Attribute ATTR on ATTR.ObjectType = '{obj}' and ATTR.ObjectID = A.ID
+//					) Att
+//		cross apply (
+//					select	case 
+//								when count(1) > 0 then cast(1 as bit)
+//								else cast(0 as bit)
+//							end as MissingRelationships
+//					from	( 
+//					        select	case 
+//								        when count(I.ID) = 0 then cast(1 as bit)
+//								        else cast(0 as bit)
+//							        end as O
+//					        from	IntersectType IT
+//							        left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{obj}' and I.SubjectID = A.ID) OR (I.Object = '{obj}' and I.ObjectID = A.ID) )
+//					        where	( (IT.Subject = '{obj}Type' and IT.SubjectID = A.{obj}TypeID) OR (IT.Subject = '{obj}Type' and IT.SubjectID = A.{obj}TypeID) )
+//							        and I.ID is null
+//					        group by IT.ID having count(I.ID) = 0
+//                            ) R
+//					) Rel
+//		cross apply (
+//					select	case 
+//								when count(1) > 0 then cast(1 as bit)
+//								else cast(0 as bit)
+//							end as MissingResponsibilities
+//					from	( 
+//							select	case 
+//										when count(1) = 0 then cast(1 as bit)
+//										else cast(0 as bit) 
+//									end as MissingResponsibilities
+//							from	[cache].[Responsibilities]
+//							where	[Object] = '{obj}' and ObjectID = A.ID
+//							group by ResponsibilityTypeID having count(1) = 0
+//							) R
+//					) Res
+//where	Att.MissingAttributes > 0 
+//		OR Rel.MissingRelationships > 0  
+//		OR Res.MissingResponsibilities > 0";
+//                        };
 
-                        #endregion
+//                        #endregion
 
-                        #region Glossary Missing Stats
+//                        #region Glossary Missing Stats
 
-                        objectName = $"{SCHEMA}.[Glossary_MissingItems_Count]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Glossary_MissingItems_Count]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = $@"
-select	A.ID as ArtifactID, 
-		A.TextPath as ArtifactName, 
-		[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
-		A.Status, 
-		A.ArtifactTypeID,
-		T.Name as ArtifactTypeName,
-		V.ID as SubjectAreaID, 
-		V.Name as SubjectArea, 
-		{statusSuffixColumnSql}
-from	Artifact A 
-		inner join ArtifactType T on T.ID = A.ArtifactTypeID
-		inner join TaxonomyType V on V.ID = A.TaxonomyTypeID 
-        {getStatsSuffixSql("Artifact")}";
+//                        selectSql = $@"
+//select	A.ID as ArtifactID, 
+//		A.TextPath as ArtifactName, 
+//		[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+//		A.Status, 
+//		A.ArtifactTypeID,
+//		T.Name as ArtifactTypeName,
+//		V.ID as SubjectAreaID, 
+//		V.Name as SubjectArea, 
+//		{statusSuffixColumnSql}
+//from	Artifact A 
+//		inner join ArtifactType T on T.ID = A.ArtifactTypeID
+//		inner join TaxonomyType V on V.ID = A.TaxonomyTypeID 
+//        {getStatsSuffixSql("Artifact")}";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
-                        #endregion
+//                        #endregion
 
-                        #region Model Missing Stats
+//                        #region Model Missing Stats
 
-                        objectName = $"{SCHEMA}.[Model_MissingItems_Count]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Model_MissingItems_Count]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = $@"
-select	A.ID as TaxonomyID, 
-		A.TextPath as TaxonomyName, 
-		[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
-		A.TaxonomyTypeID,
-		T.Name as TaxonomyTypeName,
-		{statusSuffixColumnSql}
-from	Taxonomy A 
-		inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
-        {getStatsSuffixSql("Taxonomy")}";
+//                        selectSql = $@"
+//select	A.ID as TaxonomyID, 
+//		A.TextPath as TaxonomyName, 
+//		[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+//		A.TaxonomyTypeID,
+//		T.Name as TaxonomyTypeName,
+//		{statusSuffixColumnSql}
+//from	Taxonomy A 
+//		inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+//        {getStatsSuffixSql("Taxonomy")}";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
-                        #endregion
+//                        #endregion
 
-                        #region Policy Missing Stats
+//                        #region Policy Missing Stats
 
-                        objectName = $"{SCHEMA}.[Policy_MissingItems_Count]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Policy_MissingItems_Count]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = $@"
-select	A.ID as PolicyID, 
-		A.TextPath as PolicyName, 
-		[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
-		A.PolicyTypeID,
-		T.Name as PolicyTypeName,
-		{statusSuffixColumnSql}
-from	[Policy] A 
-		inner join PolicyType T on T.ID = A.PolicyTypeID
-        {getStatsSuffixSql("Policy")}";
+//                        selectSql = $@"
+//select	A.ID as PolicyID, 
+//		A.TextPath as PolicyName, 
+//		[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
+//		A.PolicyTypeID,
+//		T.Name as PolicyTypeName,
+//		{statusSuffixColumnSql}
+//from	[Policy] A 
+//		inner join PolicyType T on T.ID = A.PolicyTypeID
+//        {getStatsSuffixSql("Policy")}";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
-                        #endregion
+//                        #endregion
 
                         #endregion
 
@@ -874,208 +874,208 @@ from	[Policy] A
 
                         #region Glossary Missing
 
-                        objectName = $"{SCHEMA}.[Glossary_MissingItems]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Glossary_MissingItems]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = @"
-select		A.ID as ArtifactID, 
-			A.TextPath as ArtifactName, 
-			A.Status, 
-			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
-			A.ArtifactTypeID,
-			T.Name as ArtifactTypeName,
-			V.ID as SubjectAreaID, 
-			V.Name as SubjectArea, 
-			'Attribute' as MissingObjectType,
-			[AT].Name as MissingObjectName
-from		Artifact A 
-			inner join ArtifactType T on T.ID = A.ArtifactTypeID
-			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
+//                        selectSql = @"
+//select		A.ID as ArtifactID, 
+//			A.TextPath as ArtifactName, 
+//			A.Status, 
+//			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+//			A.ArtifactTypeID,
+//			T.Name as ArtifactTypeName,
+//			V.ID as SubjectAreaID, 
+//			V.Name as SubjectArea, 
+//			'Attribute' as MissingObjectType,
+//			[AT].Name as MissingObjectName
+//from		Artifact A 
+//			inner join ArtifactType T on T.ID = A.ArtifactTypeID
+//			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
 			
-			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'ArtifactType' and ATR.ObjectID = T.ID
-			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
-			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Artifact' and ATTR.ObjectID = A.ID
+//			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'ArtifactType' and ATR.ObjectID = T.ID
+//			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
+//			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Artifact' and ATTR.ObjectID = A.ID
 
-where		ATTR.ID is null 
-group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [AT].Name
-union
-select		A.ID as ArtifactID, 
-			A.TextPath as ArtifactName, 
-			A.Status, 
-			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
-			A.ArtifactTypeID,
-			T.Name as ArtifactTypeName,
-			V.ID as SubjectAreaID, 
-			V.Name as SubjectArea, 
-			'Relationship' as MissingObjectType,
-			IT.Name as MissingObjectName
-from		Artifact A 
-			inner join ArtifactType T on T.ID = A.ArtifactTypeID
-			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
+//where		ATTR.ID is null 
+//group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [AT].Name
+//union
+//select		A.ID as ArtifactID, 
+//			A.TextPath as ArtifactName, 
+//			A.Status, 
+//			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+//			A.ArtifactTypeID,
+//			T.Name as ArtifactTypeName,
+//			V.ID as SubjectAreaID, 
+//			V.Name as SubjectArea, 
+//			'Relationship' as MissingObjectType,
+//			IT.Name as MissingObjectName
+//from		Artifact A 
+//			inner join ArtifactType T on T.ID = A.ArtifactTypeID
+//			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
 			
-			inner join IntersectType IT on ( (IT.Subject = 'ArtifactType' and IT.SubjectID = A.ArtifactTypeID) OR (IT.Subject = 'ArtifactType' and IT.SubjectID = A.ArtifactTypeID) )
-			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Artifact' and I.SubjectID = A.ID) OR (I.Object = 'Artifact' and I.ObjectID = A.ID) )
+//			inner join IntersectType IT on ( (IT.Subject = 'ArtifactType' and IT.SubjectID = A.ArtifactTypeID) OR (IT.Subject = 'ArtifactType' and IT.SubjectID = A.ArtifactTypeID) )
+//			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Artifact' and I.SubjectID = A.ID) OR (I.Object = 'Artifact' and I.ObjectID = A.ID) )
 
-where		I.ID is null
-group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [IT].Name
-union
-select		A.ID as ArtifactID, 
-			A.TextPath as ArtifactName, 
-			A.Status, 
-			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
-			A.ArtifactTypeID,
-			T.Name as ArtifactTypeName,
-			V.ID as SubjectAreaID, 
-			V.Name as SubjectArea, 
-			'Relationship' as MissingObjectType,
-			RT.Name as MissingObjectName
-from		Artifact A 
-			inner join ArtifactType T on T.ID = A.ArtifactTypeID
-			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
+//where		I.ID is null
+//group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [IT].Name
+//union
+//select		A.ID as ArtifactID, 
+//			A.TextPath as ArtifactName, 
+//			A.Status, 
+//			[dbo].GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as ArtifactUrl, 
+//			A.ArtifactTypeID,
+//			T.Name as ArtifactTypeName,
+//			V.ID as SubjectAreaID, 
+//			V.Name as SubjectArea, 
+//			'Relationship' as MissingObjectType,
+//			RT.Name as MissingObjectName
+//from		Artifact A 
+//			inner join ArtifactType T on T.ID = A.ArtifactTypeID
+//			inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
 			
-			inner join ResponsibilityTypeRelation R on R.ObjectType = 'ArtifactType' and R.ObjectID = A.ArtifactTypeID
-			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
-			left join [cache].[ResponsibilityItem] O on O.Object = 'Artifact' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
+//			inner join ResponsibilityTypeRelation R on R.ObjectType = 'ArtifactType' and R.ObjectID = A.ArtifactTypeID
+//			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
+//			left join [cache].[ResponsibilityItem] O on O.Object = 'Artifact' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
 
-where		O.ResponsibilityID is null
-group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [RT].Name";
+//where		O.ResponsibilityID is null
+//group by	A.ID, A.TextPath, A.Status, A.ArtifactTypeID, T.Name, V.ID, V.Name, [RT].Name";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
                         #region Policy Missing
 
-                        objectName = $"{SCHEMA}.[Policy_MissingItems]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Policy_MissingItems]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = @"
-select		A.ID as PolicyID, 
-			A.TextPath as PolicyName, 
-			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
-			A.PolicyTypeID,
-			T.Name as PolicyTypeName,
-			'Attribute' as MissingObjectType,
-			[AT].Name as MissingObjectName
-from		[Policy] A 
-			inner join PolicyType T on T.ID = A.PolicyTypeID
+//                        selectSql = @"
+//select		A.ID as PolicyID, 
+//			A.TextPath as PolicyName, 
+//			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
+//			A.PolicyTypeID,
+//			T.Name as PolicyTypeName,
+//			'Attribute' as MissingObjectType,
+//			[AT].Name as MissingObjectName
+//from		[Policy] A 
+//			inner join PolicyType T on T.ID = A.PolicyTypeID
 			
-			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'PolicyType' and ATR.ObjectID = T.ID
-			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
-			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Policy' and ATTR.ObjectID = A.ID
+//			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'PolicyType' and ATR.ObjectID = T.ID
+//			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
+//			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Policy' and ATTR.ObjectID = A.ID
 
-where		ATTR.ID is null 
-group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [AT].Name
-union
-select		A.ID as PolicyID, 
-			A.TextPath as PolicyName, 
-			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
-			A.PolicyTypeID,
-			T.Name as PolicyTypeName,
-			'Relationship' as MissingObjectType,
-			IT.Name as MissingObjectName
-from		[Policy] A 
-			inner join PolicyType T on T.ID = A.PolicyTypeID
+//where		ATTR.ID is null 
+//group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [AT].Name
+//union
+//select		A.ID as PolicyID, 
+//			A.TextPath as PolicyName, 
+//			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
+//			A.PolicyTypeID,
+//			T.Name as PolicyTypeName,
+//			'Relationship' as MissingObjectType,
+//			IT.Name as MissingObjectName
+//from		[Policy] A 
+//			inner join PolicyType T on T.ID = A.PolicyTypeID
 			
-			inner join IntersectType IT on ( (IT.Subject = 'PolicyType' and IT.SubjectID = A.PolicyTypeID) OR (IT.Subject = 'PolicyType' and IT.SubjectID = A.PolicyTypeID) )
-			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Policy' and I.SubjectID = A.ID) OR (I.Object = 'Policy' and I.ObjectID = A.ID) )
+//			inner join IntersectType IT on ( (IT.Subject = 'PolicyType' and IT.SubjectID = A.PolicyTypeID) OR (IT.Subject = 'PolicyType' and IT.SubjectID = A.PolicyTypeID) )
+//			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Policy' and I.SubjectID = A.ID) OR (I.Object = 'Policy' and I.ObjectID = A.ID) )
 
-where		I.ID is null
-group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [IT].Name
-union
-select		A.ID as PolicyID, 
-			A.TextPath as PolicyName, 
-			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
-			A.PolicyTypeID,
-			T.Name as PolicyTypeName,
-			'Relationship' as MissingObjectType,
-			RT.Name as MissingObjectName
-from		[Policy] A 
-			inner join PolicyType T on T.ID = A.PolicyTypeID
+//where		I.ID is null
+//group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [IT].Name
+//union
+//select		A.ID as PolicyID, 
+//			A.TextPath as PolicyName, 
+//			[dbo].GenerateObjectUrl('Policy', A.PolicyTypeID, A.ID) as PolicyUrl, 
+//			A.PolicyTypeID,
+//			T.Name as PolicyTypeName,
+//			'Relationship' as MissingObjectType,
+//			RT.Name as MissingObjectName
+//from		[Policy] A 
+//			inner join PolicyType T on T.ID = A.PolicyTypeID
 			
-			inner join ResponsibilityTypeRelation R on R.ObjectType = 'PolicyType' and R.ObjectID = A.PolicyTypeID
-			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
-			left join [cache].[ResponsibilityItem] O on O.Object = 'Policy' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
+//			inner join ResponsibilityTypeRelation R on R.ObjectType = 'PolicyType' and R.ObjectID = A.PolicyTypeID
+//			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
+//			left join [cache].[ResponsibilityItem] O on O.Object = 'Policy' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
 
-where		O.ResponsibilityID is null
-group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [RT].Name";
+//where		O.ResponsibilityID is null
+//group by	A.ID, A.TextPath, A.PolicyTypeID, T.Name, [RT].Name";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
                         #region Model Missing
 
-                        objectName = $"{SCHEMA}.[Model_MissingItems]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Model_MissingItems]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = @"
-select		A.ID as TaxonomyID, 
-			A.TextPath as TaxonomyName, 
-			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
-			A.TaxonomyTypeID,
-			T.Name as TaxonomyTypeName,
-			'Attribute' as MissingObjectType,
-			[AT].Name as MissingObjectName
-from		[Taxonomy] A 
-			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+//                        selectSql = @"
+//select		A.ID as TaxonomyID, 
+//			A.TextPath as TaxonomyName, 
+//			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+//			A.TaxonomyTypeID,
+//			T.Name as TaxonomyTypeName,
+//			'Attribute' as MissingObjectType,
+//			[AT].Name as MissingObjectName
+//from		[Taxonomy] A 
+//			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
 			
-			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'TaxonomyType' and ATR.ObjectID = T.ID
-			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
-			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Taxonomy' and ATTR.ObjectID = A.ID
+//			inner join AttributeTypeRelation ATR on ATR.ObjectType = 'TaxonomyType' and ATR.ObjectID = T.ID
+//			inner join AttributeType [AT] on [AT].ID = ATR.AttributeTypeID 
+//			left join Attribute ATTR on ATTR.AttributeTypeID = [AT].ID and ATTR.ObjectType = 'Taxonomy' and ATTR.ObjectID = A.ID
 
-where		ATTR.ID is null 
-group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [AT].Name
-union
-select		A.ID as TaxonomyID, 
-			A.TextPath as TaxonomyName, 
-			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
-			A.TaxonomyTypeID,
-			T.Name as TaxonomyTypeName,
-			'Relationship' as MissingObjectType,
-			IT.Name as MissingObjectName
-from		Taxonomy A 
-			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+//where		ATTR.ID is null 
+//group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [AT].Name
+//union
+//select		A.ID as TaxonomyID, 
+//			A.TextPath as TaxonomyName, 
+//			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+//			A.TaxonomyTypeID,
+//			T.Name as TaxonomyTypeName,
+//			'Relationship' as MissingObjectType,
+//			IT.Name as MissingObjectName
+//from		Taxonomy A 
+//			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
 			
-			inner join IntersectType IT on ( (IT.Subject = 'TaxonomyType' and IT.SubjectID = A.TaxonomyTypeID) OR (IT.Subject = 'TaxonomyType' and IT.SubjectID = A.TaxonomyTypeID) )
-			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Taxonomy' and I.SubjectID = A.ID) OR (I.Object = 'Taxonomy' and I.ObjectID = A.ID) )
+//			inner join IntersectType IT on ( (IT.Subject = 'TaxonomyType' and IT.SubjectID = A.TaxonomyTypeID) OR (IT.Subject = 'TaxonomyType' and IT.SubjectID = A.TaxonomyTypeID) )
+//			left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = 'Taxonomy' and I.SubjectID = A.ID) OR (I.Object = 'Taxonomy' and I.ObjectID = A.ID) )
 
-where		I.ID is null
-group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [IT].Name
-union
-select		A.ID as TaxonomyID, 
-			A.TextPath as TaxonomyName, 
-			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
-			A.TaxonomyTypeID,
-			T.Name as TaxonomyTypeName,
-			'Relationship' as MissingObjectType,
-			RT.Name as MissingObjectName
-from		Taxonomy A 
-			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+//where		I.ID is null
+//group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [IT].Name
+//union
+//select		A.ID as TaxonomyID, 
+//			A.TextPath as TaxonomyName, 
+//			[dbo].GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as TaxonomyUrl, 
+//			A.TaxonomyTypeID,
+//			T.Name as TaxonomyTypeName,
+//			'Relationship' as MissingObjectType,
+//			RT.Name as MissingObjectName
+//from		Taxonomy A 
+//			inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
 			
-			inner join ResponsibilityTypeRelation R on R.ObjectType = 'TaxonomyType' and R.ObjectID = A.TaxonomyTypeID 
-			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
-			left join [cache].[ResponsibilityItem] O on O.Object = 'Taxonomy' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
+//			inner join ResponsibilityTypeRelation R on R.ObjectType = 'TaxonomyType' and R.ObjectID = A.TaxonomyTypeID 
+//			inner join ResponsibilityType RT on R.ResponsibilityTypeID = RT.ID
+//			left join [cache].[ResponsibilityItem] O on O.Object = 'Taxonomy' and O.ObjectID = A.ID and O.ResponsibilityTypeID = RT.ID
 
-where		O.ResponsibilityID is null
-group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [RT].Name";
+//where		O.ResponsibilityID is null
+//group by	A.ID, A.TextPath, A.TaxonomyTypeID, T.Name, [RT].Name";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1129,6 +1129,59 @@ select  O.ID,
 from	FusionAttribute O 
 	inner join Field F on F.ObjectType = 'FusionAttribute' and F.ObjectID = O.ID
 	inner join FieldType FT on FT.ID = F.FieldTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region All Fusion Query Attributes
+
+                        objectName = $"{SCHEMA}.[FusionQuery_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	A.ID as FusionQueryAttributeID,
+		--A.DisplayValue as FusionQueryAttribute,
+		F.ID as ConfigurationID,
+		F.Name as [Configuration],
+		A.FusionQueryAttributeTypeID,
+		FAT.Name as FusionQueryAttributeType,
+		F.FusionTypeID,
+		FT.Name as FusionType
+from	FusionQueryAttribute A
+		inner join FusionQueryAttributeType FAT on FAT.ID = A.FusionQueryAttributeTypeID
+		inner join Fusion F on F.ID = FAT.FusionID
+		inner join FusionType FT on FT.ID = F.FusionTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region FusionQuery_Fields
+
+                        objectName = $"{SCHEMA}.[FusionQuery_Fields]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select  O.ID as FusionQueryAttributeID, 
+		O.FusionQueryAttributeTypeID, 
+		F.FieldTypeID, 
+		FT.Name as FieldName, 
+		FT.FriendlyName as FieldFriendlyName, 
+		F.FormattedValue as FieldValue 
+from	FusionQueryAttribute O 
+		inner join Field F on F.ObjectType = 'FusionQueryAttribute' and F.ObjectID = O.ID
+		inner join FieldType FT on FT.ID = F.FieldTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1453,70 +1506,67 @@ from	[Rule] R
 
                         executeSqlWithTry(companyConnection, viewSql);
 
-                        objectName = $"{SCHEMA}.[Rules_Results]";
-                        viewNames.Add(objectName);
+//                        objectName = $"{SCHEMA}.[Rules_Results]";
+//                        viewNames.Add(objectName);
 
-                        selectSql = @"
-select	RI.RuleID,
-	R.Name as RuleName,
-	R.RuleDimensionID,
-	D.Name as RuleDimensionName,
-    R.Status as RuleStatus,
-	R.Threshold,
-    RI.ID as RuleImplementationID,
-    RI.Name as RuleImplementationName,
-    RR.EffectiveDate,
-	RR.CreatedOn,
-    RR.RunDate,
-	RR.RowsPassed,
-	RR.RowsFailed,
-	RR.PassFraction,
-	RR.FailFraction,
-	RR.Passed,
-	Q.C as QualifierCount
-from	RuleResult RR
-	inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
-    inner join [Rule] R on R.ID = RI.RuleID
-    left join RuleDimension D on D.ID = R.RuleDimensionID
-	--left join FusionAttribute FA on Fa.ID = RR.FusionAttributeID
-	cross apply (
-				select	count(1) as C
-				from	RuleResultQualifier 
-				where	RuleResultID = RR.ID
-				) Q";
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        selectSql = @"
+//select	RI.RuleID,
+//	R.Name as RuleName,
+//	R.RuleDimensionID,
+//	D.Name as RuleDimensionName,
+//    R.Status as RuleStatus,
+//	R.Threshold,
+//    RI.ID as RuleImplementationID,
+//    RI.Name as RuleImplementationName,
+//    RR.EffectiveDate,
+//	RR.CreatedOn,
+//    RR.RunDate,
+//	RR.RowsPassed,
+//	RR.RowsFailed,
+//	RR.PassFraction,
+//	RR.FailFraction,
+//	RR.Passed,
+//	Q.C as QualifierCount
+//from	RuleResult RR
+//	inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
+//    inner join [Rule] R on R.ID = RI.RuleID
+//    left join RuleDimension D on D.ID = R.RuleDimensionID
+//	--left join FusionAttribute FA on Fa.ID = RR.FusionAttributeID
+//	cross apply (
+//				select	count(1) as C
+//				from	RuleResultQualifier 
+//				where	RuleResultID = RR.ID
+//				) Q";
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
+//                        objectName = $"{SCHEMA}.[Rules_ResultQualifiers]";
+//                        viewNames.Add(objectName);
 
+//                        selectSql = @"
+//select	rr.ID as RuleResultID
+//		, rr.RunDate
+//		, rr.EffectiveDate
+//		, rr.RowsPassed
+//		, rr.RowsFailed
+//		, rr.PassFraction
+//		, rr.FailFraction
+//		, rr.Passed
+//		, qt.Name as QualifierName
+//		, q.Value as QualifierValue
+//from	RuleResult rr
+//		inner Join RuleResultQualifier q on q.RuleResultID = rr.ID
+//		inner join RuleResultQualifierType qt on qt.ID = q.RuleResultQualifierTypeID";
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
 
-                        objectName = $"{SCHEMA}.[Rules_ResultQualifiers]";
-                        viewNames.Add(objectName);
-
-                        selectSql = @"
-select	rr.ID as RuleResultID
-		, rr.RunDate
-		, rr.EffectiveDate
-		, rr.RowsPassed
-		, rr.RowsFailed
-		, rr.PassFraction
-		, rr.FailFraction
-		, rr.Passed
-		, qt.Name as QualifierName
-		, q.Value as QualifierValue
-from	RuleResult rr
-		inner Join RuleResultQualifier q on q.RuleResultID = rr.ID
-		inner join RuleResultQualifierType qt on qt.ID = q.RuleResultQualifierTypeID";
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                        executeSqlWithTry(companyConnection, viewSql);
+//                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 
@@ -1545,46 +1595,41 @@ from	[Rule] O
 
                         #endregion
 
+                        #region RuleImplementations
 
-                        #region All Workflows
-
-                        objectName = $"{SCHEMA}.[Workflows_All]";
+                        objectName = $"{SCHEMA}.[RuleImplementations_All]";
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select	w.ID,
-	case w.WorkflowType
-		when 1 then 'Propose' 
-		when 2 then 'Certify' 
-		when 3 then 'Issue' 
-		when 4 then 'Challange' 
-		when 5 then 'Propose' 
-	end as [WorkflowTypeName],
-	right(convert(varchar(10),W.dateStarted,103),7) as MonYear,
-	case  
-		when cast(datename(dayofyear,GETDATE()) as int) - cast  (datename(dayofyear,W.[DateStarted]) as int) between -99999999 and 0 then 'Prior Yrs' 
-		when  cast(datename(dayofyear,GETDATE()) as int) - cast (datename(dayofyear,W.[DateStarted]) as int) between 0 and 60 then '0 - 60'
-		when  cast(datename(dayofyear,GETDATE()) as int) - cast (datename(dayofyear,W.[DateStarted]) as int) between 61 and 90 then '61 - 90'
-		else ' > 90 Days'
-	END as DaysElapsed, 
-	W.DateStarted,
-	CONVERT(varchar(8),CAST(W.[DateStarted] AS DATE),112) as DateStartedKey,
-	W.DateCompleted,
-	CONVERT(varchar(8),CAST(W.[DateCompleted] AS DATE),112) as DateCompletedKey,
-	case isNULL(W.DateCompleted,'') 
-		when ''  then 'False' 
-		else 'True' 
-	end as isCompleted,
-	coalesce(Ax.Name, A.ArtifactType) as ArtifactType,
-	coalesce(T.Name, A.taxonomyTypeName)  as TaxonomyTypeName,
-	'/Resource/' + cast(R.ResourceID as varchar(200)) as ResourceURI
-from	Workflow W
-	inner join [dbo].[WorkflowResource] r on R.WorkflowID = W.ID 
-	left join ArtifactType ax on ax.ID = w.data.value('(/fields/ArtifactTypeID)[1]', 'int') and w.data.value('(/fields/ArtifactTypeID)[1]', 'int') is not null
-	left join TaxonomyType T on T.ID = w.data.value('(/fields/VocabularyID)[1]', 'int') and w.data.value('(/fields/VocabularyID)[1]', 'int')  is not null
-	left join [CommentRelation] cr on CR.CommentID = w.data.value('(/fields/CommentID)[1]', 'int') and CR.ObjectType = 'Artifact' and w.data.value('(/fields/CommentID)[1]', 'int') is not null
-	left join [CommentRelation] cr1 on CR1.CommentID = w.data.value('(/fields/CommentID)[1]', 'int') and CR1.ObjectType = 'Resource' and w.data.value('(/fields/CommentID)[1]', 'int') is not null
-	left join [reporting].[Glossary_All] A on A.ID = coalesce(w.data.value('(/fields/ArtifactID)[1]', 'int'), CR.ObjectID)";
+select	R.RuleTypeID,
+		RT.Name as RuleType,
+		I.RuleID,
+		R.Name as [Rule],
+		I.ID as RuleImplementationID,
+		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)) as RuleImplementation,
+		I.SourceID,
+		I.SourceUri,
+		count(Q.ID) as QualifierCount,
+		I.CreatedOn,
+		I.CreatedBy,
+		I.UpdatedOn,
+		I.UpdatedBy
+from	RuleImplementation I
+		left join RuleResultQualifierType Q on Q.RuleImplementationID = I.ID
+		inner join [Rule] R on R.ID = I.RuleID
+		inner join RuleType RT on RT.ID = R.RuleTypeID 
+group by R.RuleTypeID,
+		RT.Name,
+		I.RuleID,
+		R.Name,
+		I.ID,
+		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)),
+		I.SourceID,
+		I.SourceUri,
+		I.CreatedOn,
+		I.CreatedBy,
+		I.UpdatedOn,
+		I.UpdatedBy";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1592,6 +1637,102 @@ from	Workflow W
                         viewSql += $@" VIEW {objectName} AS {selectSql}";
 
                         executeSqlWithTry(companyConnection, viewSql);
+
+                        objectName = $"{SCHEMA}.[RuleImplementations_Results]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	RI.RuleID,
+		R.Threshold,
+		RI.ID as RuleImplementationID,
+		coalesce(RI.Name, 'Implementation ' + cast(RI.ID as nvarchar)) as RuleImplementation,
+		RR.ID as RuleResultID,
+		RR.EffectiveDate,
+		RR.CreatedOn,
+		RR.RunDate,
+		RR.RowsPassed,
+		RR.RowsFailed,
+		RR.PassFraction,
+		RR.FailFraction,
+		RR.Passed
+from	RuleResult RR
+		inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
+		inner join [Rule] R on R.ID = RI.RuleID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+
+                        objectName = $"{SCHEMA}.[RuleImplementations_ResultQualifiers]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	q.RuleResultID, 
+		qt.Name as QualifierName, 
+		q.Value as QualifierValue--,
+		--q.[ResolvedObject],
+		--q.[ResolvedObjectID]
+from	RuleResultQualifier q
+		inner join RuleResultQualifierType qt on qt.ID = q.RuleResultQualifierTypeID";
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        executeSqlWithTry(companyConnection, viewSql);
+
+                        #endregion
+
+                        #region All Workflows
+
+                        //                        objectName = $"{SCHEMA}.[Workflows_All]";
+                        //                        viewNames.Add(objectName);
+
+                        //                        selectSql = @"
+                        //select	w.ID,
+                        //	case w.WorkflowType
+                        //		when 1 then 'Propose' 
+                        //		when 2 then 'Certify' 
+                        //		when 3 then 'Issue' 
+                        //		when 4 then 'Challange' 
+                        //		when 5 then 'Propose' 
+                        //	end as [WorkflowTypeName],
+                        //	right(convert(varchar(10),W.dateStarted,103),7) as MonYear,
+                        //	case  
+                        //		when cast(datename(dayofyear,GETDATE()) as int) - cast  (datename(dayofyear,W.[DateStarted]) as int) between -99999999 and 0 then 'Prior Yrs' 
+                        //		when  cast(datename(dayofyear,GETDATE()) as int) - cast (datename(dayofyear,W.[DateStarted]) as int) between 0 and 60 then '0 - 60'
+                        //		when  cast(datename(dayofyear,GETDATE()) as int) - cast (datename(dayofyear,W.[DateStarted]) as int) between 61 and 90 then '61 - 90'
+                        //		else ' > 90 Days'
+                        //	END as DaysElapsed, 
+                        //	W.DateStarted,
+                        //	CONVERT(varchar(8),CAST(W.[DateStarted] AS DATE),112) as DateStartedKey,
+                        //	W.DateCompleted,
+                        //	CONVERT(varchar(8),CAST(W.[DateCompleted] AS DATE),112) as DateCompletedKey,
+                        //	case isNULL(W.DateCompleted,'') 
+                        //		when ''  then 'False' 
+                        //		else 'True' 
+                        //	end as isCompleted,
+                        //	coalesce(Ax.Name, A.ArtifactType) as ArtifactType,
+                        //	coalesce(T.Name, A.taxonomyTypeName)  as TaxonomyTypeName,
+                        //	'/Resource/' + cast(R.ResourceID as varchar(200)) as ResourceURI
+                        //from	Workflow W
+                        //	inner join [dbo].[WorkflowResource] r on R.WorkflowID = W.ID 
+                        //	left join ArtifactType ax on ax.ID = w.data.value('(/fields/ArtifactTypeID)[1]', 'int') and w.data.value('(/fields/ArtifactTypeID)[1]', 'int') is not null
+                        //	left join TaxonomyType T on T.ID = w.data.value('(/fields/VocabularyID)[1]', 'int') and w.data.value('(/fields/VocabularyID)[1]', 'int')  is not null
+                        //	left join [CommentRelation] cr on CR.CommentID = w.data.value('(/fields/CommentID)[1]', 'int') and CR.ObjectType = 'Artifact' and w.data.value('(/fields/CommentID)[1]', 'int') is not null
+                        //	left join [CommentRelation] cr1 on CR1.CommentID = w.data.value('(/fields/CommentID)[1]', 'int') and CR1.ObjectType = 'Resource' and w.data.value('(/fields/CommentID)[1]', 'int') is not null
+                        //	left join [reporting].[Glossary_All] A on A.ID = coalesce(w.data.value('(/fields/ArtifactID)[1]', 'int'), CR.ObjectID)";
+
+                        //                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        //                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        //                        viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                        //                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 

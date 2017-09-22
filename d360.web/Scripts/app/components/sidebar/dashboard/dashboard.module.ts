@@ -41,6 +41,10 @@ import { SagacityViewerComponent } from './sagacity-viewer.component';
         PowerBIViewerComponent,
         SagacityViewerComponent,
     ],
+    exports: [
+        PowerBIViewerComponent,
+        SagacityViewerComponent,
+    ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]

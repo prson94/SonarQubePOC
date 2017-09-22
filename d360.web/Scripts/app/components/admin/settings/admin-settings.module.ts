@@ -27,6 +27,7 @@ import {
     InputTextModule,
     SharedModule,
     DataTableModule,
+    ColorPickerModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -42,14 +43,17 @@ import {
         InputTextModule,
         SharedModule,
         DataTableModule,
+        ColorPickerModule,
 
         //d3s        
         CoreModule,        
         SharedGridPagingInfoModule,        
         TilesModule,
-        ShortcutModule
+        ShortcutModule,
+        IconPickerModule,
     ],
     declarations: [
+//        IconPickerComponent,
         AdminSettingsComponent,
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,

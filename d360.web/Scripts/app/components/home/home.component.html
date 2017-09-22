@@ -1,9 +1,14 @@
-﻿<div *ngIf="showTitle">
+﻿<div *ngIf="showTitle && backgroundImage != '';else otherHeaders" style="width:100%; min-height:200px;padding:10px;background-position:center;" [style.background-image]="'url('+ backgroundImage + ')'">
     <div [style.color]="titleColor" [style.font-size]="titleSize" style="letter-spacing: 3px">{{title}}</div>
 </div>
-<div *ngIf="backgroundImage != ''">
-    <img [src]="backgroundImage" style="width:100%; position:absolute; left:0; top:0; z-index: -10000" />
-</div>
+<ng-template #otherHeaders>
+    <div *ngIf="showTitle">
+        <div [style.color]="titleColor" [style.font-size]="titleSize" style="letter-spacing: 3px">{{title}}</div>
+    </div>
+    <div *ngIf="backgroundImage != ''">
+        <img [src]="backgroundImage" style="width:100%; position:absolute; left:0; top:0; z-index: -10000" />
+    </div>
+</ng-template>
 <div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && numTiles > 0">
     <div [class]="'col s12 l' + colSize" *ngIf="showAssignmentTile">
         <d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
@@ -30,15 +35,13 @@
     </div>
 </div>
 
-<div style="position: relative;" [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null">
+<div style="padding-top:30px;" class="homeTileArea">
     <d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails" (resultsChange)="checkHasResults($event)"></d3s-home-search> 
+    <span style="padding-left:5px" [hidden]="hasResults"><d3s-shortcut-display></d3s-shortcut-display></span>
 </div>
 
-<div [hidden]="hasResults" style="position: relative;" [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null">
-    <d3s-shortcut-display></d3s-shortcut-display>
-</div>
-
-<!--<div *ngIf="dashboard != null" class="tile tile-detail" style="position: relative;" [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null">
+<div *ngIf="dashboard != null" class="tile tile-detail" style="position: relative;" [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null">
+    <d3s-powerbi-viewer *ngIf="dashboard.ReportType =='powerbi'" [dashboard]="dashboard"></d3s-powerbi-viewer>                        
     <d3s-sagacity-viewer *ngIf="dashboard.ReportType =='sagacity'" [dashboard]="dashboard"></d3s-sagacity-viewer>
-</div>-->
+</div>
    

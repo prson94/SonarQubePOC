@@ -88,6 +88,7 @@ namespace d360.core.entities
     {
         public int? CreatedBy { get; set; }
 
+        [DataMember]
         public DateTime? CreatedOn
         {
             get
@@ -104,6 +105,7 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
+        [DataMember]
         public DateTime? UpdatedOn
         {
             get

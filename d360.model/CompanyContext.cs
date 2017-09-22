@@ -372,6 +372,16 @@ namespace d360.model
             }
         }
 
+        public void Enqueue(string queueName, QueueObject item)
+        {
+            QueueSource.CreateMessage(queueName, item);
+        }
+
+        public void Enqueue(string queueName, List<QueueObject> items)
+        {
+            QueueSource.CreateMessages(queueName, items);
+        }
+
         public void Enqueue(QueueType type, QueueObject item)
         {
             QueueSource.CreateMessage(type, item);

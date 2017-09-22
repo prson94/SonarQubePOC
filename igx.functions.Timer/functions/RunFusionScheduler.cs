@@ -55,7 +55,7 @@ namespace igx.functions.Timer
 	while	@current <= @max
 	begin
 		select	@FusionID = F.ID,
-                @FullRefresh = F.ForceRefresh,
+                @FullRefresh = coalesce(F.ForceRefresh, 0),
 				@IntervalType = F.IntervalType,
 				@DateStarted = S.DateStarted,
 				@DateCompleted = C.DateCompleted,

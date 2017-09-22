@@ -45,10 +45,13 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.load();
         
         this.setCommonRightSideBar(true);
-        this.auditSidebar.hasDynamicUrl = true;
-        this.auditSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
-        });
+        if (this.ownershipSidebar) {
+            this.auditSidebar.hasDynamicUrl = true;
+            this.auditSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
+            });
+        }
+
     }
 
     ngOnDestroy() {

@@ -466,6 +466,29 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
         #region Json
 
+        [HttpGet, Route("HelpResources")]
+        public JsonNetResult GetHelpResources()
+        {
+            var showDefaultVideoSetting = Community.Filter<CompanySetting>(i => i.CompanyID == Community.CurrentCompanyID && i.SettingID == 35).FirstOrDefault();
+
+            var showDefaultVideo = (showDefaultVideoSetting != null) ? bool.Parse(showDefaultVideoSetting.Value) : true;
+
+            var resources = Community
+                .Filter<CompanyHelpResource>(
+                    i => i.CompanyID == Community.CurrentCompanyID || (showDefaultVideo && i.CompanyID == 0),
+                    i => i.HelpResource)
+                .OrderBy(i => i.HelpResource.Type)
+                .ThenBy(i => i.SortOrder)
+                .Select(i => i.HelpResource)
+                .ToList();
+
+            return new JsonNetResult
+            {
+                Data = resources,
+                Formatting = Formatting.None
+            };
+        }
+
         [HttpGet, Route("_GroupsByResourceID"), NonNullableParameters]
         public JsonResult _GroupsByResourceID(int id)
         {

@@ -48,6 +48,31 @@ export class NodeModel {
     other = null;
 }
 
+export class NodeModelV2 {
+    key: any;
+    object: string;
+    objectId: number;
+    name: string;
+    foreColor: string = '#000';
+    backColor: string = '#fff';
+    visible: boolean = true;
+
+    group: string;
+    isGroup: boolean = false;
+    category: string;
+    diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
+}
+
+export class LinkModelV2 {
+    from: string;
+    to: string;
+    intersectId: number;
+
+    category: string;
+    diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
+}
+
+
 export class MapItem {
     MapItemID;
     SourceType;

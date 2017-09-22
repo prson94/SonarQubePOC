@@ -45,7 +45,7 @@ import {
         TooltipModule,                     
         SharedModule,
 
-        //d3s        
+        //d3s
         CoreModule,
         SearchModule,
         SocialModule,
@@ -59,7 +59,7 @@ import {
         ActivityDetailsTile,
         ActivityTile,
         BoardTile,
-        HomeComponent,        
+        HomeComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

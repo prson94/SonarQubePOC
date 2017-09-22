@@ -16,6 +16,7 @@ import { ShortcutDisplayComponent } from './shortcut-display.component';
 
 
 import {
+    ColorPickerModule,
     DataTableModule,
     ButtonModule,
     SharedModule
@@ -34,6 +35,7 @@ import {
         IconPickerModule,
 
         //prime
+        ColorPickerModule,
         DataTableModule,
         ButtonModule,
         SharedModule,

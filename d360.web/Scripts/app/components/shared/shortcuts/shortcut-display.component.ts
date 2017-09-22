@@ -9,36 +9,22 @@ import * as _ from 'lodash';
     selector: 'd3s-shortcut-display',
     template: ` 
     <ul>
-        <li *ngFor="let s of shortcuts" (click)="navigate(s.Url)">
-            <div *ngIf="s.Icon != null" style="width: 72px; height: 72px; font-size:64px; text-align: center;">
+        <li *ngFor="let s of shortcuts" (click)="navigate(s.Url)" class="shortcut" [style.background-color]="s.BackgroundColor">
+            <div *ngIf="s.Icon != null" class="icon" [style.color]="s.IconColor">
                 <i [class]="'fa ' + s.Icon" style="display: block;"></i>
             </div>
-            <div *ngIf="s.IconUrl != null" style="width: 72px; height: 72px;">
+            <div *ngIf="s.IconUrl != null" class="custom-icon">
                 <img [src]="s.IconUrl" style="max-width: 72px; max-height: 72px; "/>
             </div>
-            <div class="shortcut-name" style="font-size: 1.25em; font-weight: 600; text-align: center; padding-top: 5px;">
+            <div class="shortcut-name" [title]="s.Name" [style.color]="s.TitleColor">
                 {{s.Name}}
+            </div>
+            <div class="shortcut-desc" [title]="s.Description">
+                {{s.Description}}
             </div>
         </li>
     </ul>
-                `,
-    styles: [
-        `
-        li {
-            display: inline-block; 
-            padding: 10px 30px 10px 30px;
-            cursor: pointer;
-            width: 135px;
-            vertical-align: top;
-            word-break: break-word;
-        }
-
-        li:hover {
-            background-color: #DCDBDB;
-        }
-`   
-    ]
-    , providers: [ShortcutService]
+    `, providers: [ShortcutService]
 })
 
 export class ShortcutDisplayComponent extends BaseComponent implements OnInit {

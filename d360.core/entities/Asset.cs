@@ -1,12 +1,7 @@
-﻿using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System;
-using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using d360.core.queue;
+﻿using d360.core.entities.Contracts;
 using d360.core.enums;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
@@ -19,9 +14,9 @@ namespace d360.core.entities
         [DataMember]
         public int AssetTypeID { get; set; }
 
-        [DataMember]
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string DisplayValue { get; set; }
-        
+
         [DataMember]
         public string Object { get; set; }
 
@@ -31,10 +26,10 @@ namespace d360.core.entities
         [DataMember]
         public State State { get; set; }
 
-        [IgnoreDataMember]
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string KeyHash { get; set; }
 
-        [IgnoreDataMember]
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string FieldHash { get; set; }
 
         [IgnoreDataMember]

@@ -18,11 +18,33 @@ namespace d360.core.entities
         [DataMember]
         public string Name { get; set; }
         [DataMember]
+        [Column(TypeName = "VARCHAR")]
+        [StringLength(50)]
         public string Icon { get; set; }
         [DataMember]
+        [Column(TypeName = "VARCHAR")]
+        [StringLength(250)]
         public string IconUrl { get; set; }
         [DataMember]
+        [Column(TypeName = "VARCHAR")]
+        [StringLength(250)]
         public string Url { get; set; }
+
+        [DataMember]        
+        [StringLength(500)]
+        public string Description { get; set; }
+
+        [DataMember]
+        [StringLength(100)]
+        public string IconColor { get; set; }
+
+        [DataMember]
+        [StringLength(100)]
+        public string TitleColor { get; set; }
+
+        [DataMember]
+        [StringLength(100)]
+        public string BackgroundColor { get; set; }
 
         [NotMapped, DataMember]
         public string IconPayload { get; set; }

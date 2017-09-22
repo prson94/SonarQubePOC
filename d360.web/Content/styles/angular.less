@@ -809,3 +809,69 @@ chart {
 .ui-datatable-scrollable-body {
     padding-bottom: 20px !important;
 }
+
+li.shortcut {
+    display: inline-block;    
+    cursor: pointer;
+    width: 150px;
+    vertical-align: top;
+    border: 1px solid @d3s-gray-8;
+    border-radius: 5px;
+    margin: 5px;
+    min-height: 120px;
+    max-height: 120px;
+}
+
+li.shortcut:hover {
+    background-color: #DCDBDB !important;
+}
+
+li.shortcut div.shortcut-name {
+    font-size: 1em;
+    font-weight: 600;
+    text-align: center;
+    padding-top: 5px;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    width:140px;
+    padding: 10px 10px 0 10px;
+}
+
+li.shortcut div.shortcut-desc {
+    font-size: .75em;    
+    text-align: center;    
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 140px;    
+}
+
+li.shortcut div.icon {
+    width: 72px;
+    height: 72px;
+    padding: 10px 30px 10px 30px;
+    font-size: 64px;
+    text-align: center;
+    margin-left: 10px;
+}
+
+li.shortcut div.custom-icon {
+    width: 72px;
+    height: 72px;
+    padding: 10px 30px 10px 30px;
+}
+
+div.home-image-holder{
+    min-height:200px;
+    background-position:center;
+    margin-left:-35px;
+    margin-top:-30px;
+    margin-right:-55px;
+    position:relative;
+}
+
+div.home-image-title-text {
+    letter-spacing: 3px;
+    padding: 40px;
+}

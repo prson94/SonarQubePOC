@@ -8,6 +8,15 @@ namespace d360.extensions.queue
 {
     public class DummyQueueSource: IQueueSource
     {
+        public void CreateMessage(string queueName, QueueObject item)
+        {
+        }
+
+        public void CreateMessages(string queueName, List<QueueObject> items)
+        {
+
+        }
+
         public void CreateMessage(QueueType type, QueueObject item)
         {
         }

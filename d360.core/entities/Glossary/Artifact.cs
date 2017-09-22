@@ -10,7 +10,7 @@ using d360.core.queue;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Artifact : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, ICreatedMetadata, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
+    public class Artifact : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, ICreatedMetadata, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity, IDisplayValueObject
     {
         public Artifact()
         {
@@ -48,11 +48,19 @@ namespace d360.core.entities
         public int TaxonomyTypeID { get; set; }
 
         [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "DateLastCertified_Name", Description = "DateLastCertified_Description")]
-        public DateTime? DateLastCertified { get; set; }
-
-        [DataMember]
         public string SourceID { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string DisplayValue { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string KeyHash { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string FieldHash { get; set; }
+
+        public bool Visible { get; set; }
+
 
         #region Navigation Properties
 
@@ -73,30 +81,6 @@ namespace d360.core.entities
 
         #endregion
 
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "UpdatedOn_Name", Description = "UpdatedOn_Description")]
-        [DataMember]
-        public DateTime? UpdatedOn { get; set; }
-        public int? UpdatedBy { get; set; }
-
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "CreatedOn_Name", Description = "CreatedOn_Description")]
-        [DataMember]
-        public DateTime CreatedOn
-        {
-            get
-            {
-                if (!this.createdon.HasValue)
-                {
-                    this.createdon = DateTime.UtcNow;
-                }
-                return this.createdon.GetValueOrDefault();
-            }
-
-            set { this.createdon = value; }
-        }
-
-        public bool Visible { get; set; }
-
-        private DateTime? createdon = null;
 
         public EventObjectInfo GetEventObjectInfo()
         {

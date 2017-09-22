@@ -24,6 +24,38 @@ namespace d360.extensions.queue
             return new StorageCredentials(acctName, keyValue);
         }
 
+        public void CreateMessage(string queueName, QueueObject item)
+        {
+            var list = new List<QueueObject>() { item };
+            CreateMessages(queueName, list);
+        }
+
+        public void CreateMessages(string queueName, List<QueueObject> items)
+        {            
+            try
+            {
+                var queueClient = new CloudQueueClient(
+                    new Uri($"https://{constants.AZURE_STORAGE_NAME}.queue.core.windows.net/"),
+                    getCredentials()
+                );
+
+                var queue = queueClient.GetQueueReference(queueName);
+
+                items.ForEach(item =>
+                {
+                    var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
+                    queue.AddMessage(msg);
+                });
+
+                queue = null;
+                queueClient = null;                
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
+            }
+        }
+
         public void CreateMessage(QueueType type, QueueObject item)
         {
             var list = new List<QueueObject>() { item };

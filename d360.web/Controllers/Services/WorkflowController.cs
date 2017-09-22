@@ -41,199 +41,76 @@ namespace d360.web.Controllers.Services
         }
 
         #endregion
-               
+
+        IEnumerable<dynamic> getIssues(int? resourceID)
+        {
+            var sql = string.Format(@"
+select		distinct
+            null as WorkflowID
+			,wi.ID as WorkflowItemID
+            ,c.Body
+		    ,I.CommentID as CommentID
+			,I.CreatedBy as RaisedByResourceID
+			,wi.StartedOn as DateStarted
+			,wi.CompletedOn as DateCompleted
+            ,case when wi.CompletedOn is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted
+			,'' as Step
+			,A.ObjectID
+			,A.Name
+			,A.[Object]
+			,A.Url
+			,R.FirstName + ' ' + R.LastName as RaisedBy			
+			,'' as Notes					
+			,IT.ID as IssueType
+            ,IT.Name as IssueTypeName
+			,I.ID as IssueID
+			,I.Criticality as Criticality
+			,case when I.Criticality = 0 then 'Negligible' when I.Criticality = 1 then 'Low' when I.Criticality = 2 then 'Medium' when I.Criticality = 3 then 'High'  when I.Criticality = 4 then 'Critical' else 'N/A' end as Criticality
+			,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
+	        ,case 
+                when wi.CompletedOn is not null then 'Closed'
+		        else
+			        case cast(coalesce(IA.ResourceObjectID, 0) as bit)
+
+                        when 1 then 'Pending'
+				        else 'Waiting on user(s)'
+
+                    end
+
+            end as ActivityName
+from	    Issue I
+			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
+			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
+			left outer join cache.ObjectDetails A on A.[Object] = I.[Object] and A.ObjectID = I.ObjectID            		
+			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
+			left outer join Comment C on C.ID = I.CommentID
+            left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
+order by wi.StartedOn desc", 
+            resourceID.HasValue ? $"and IA.ResourceObjectID = {resourceID.Value}" : ""
+            );
+
+            
+            return Company.Query<dynamic>(sql);
+        }
+
         
         [Route("all/issues"), HttpGet]
         public HttpResponseMessage GetIssuesForAllUsers()
         {
-            var sql = @"
-              select distinct
-                wi.WorkflowID
-                ,wi.WorkflowItemID
-	            ,c.Body
-	            ,wi.DateStarted
-	            ,wi.DateCompleted
-	            ,wi.IsCompleted
-	            ,wi.Name
-	            ,wi.Object
-	            ,cast(coalesce(wr.ResourceID, 0) as bit) as AllowAction
-	            ,wi.RaisedBy
-	            ,wi.ObjectID
-	            ,wi.CreatingResourceID as RaisedByResourceID
-	            ,wi.Url
-	            ,case wi.IsCompleted
-                    when 1 then 'Closed'
-		            else
-			            case cast(coalesce(wr.ResourceID, 0) as bit)
-
-                            when 1 then 'Pending'
-				            else 'Waiting on user(s)'
-
-                        end
-
-                end as ActivityName
-	            ,wi.Notes
-	            ,wi.Comments
-	            ,wi.IssueType
-	            ,wi.IssueTypeName
-	            ,wi.IssueID
-	            ,wi.CriticalityName as Criticality
-	            ,wi.EllapsedDays
-            from
-
-                WorkflowIssue wi
-
-                left outer join Comment c on wi.CommentID = c.ID
-
-                left outer join WorkflowResource wr on (wr.WorkflowID = wi.WorkflowID and wr.ResourceID = @r and wr.IsComplete = 0)
-            order by DateStarted desc";
-
-            var list = Company.Query<dynamic>(sql, new { r = Company.CurrentResourceID });
-
-            return Request.CreateResponse(HttpStatusCode.OK, list);
+            return Request.CreateResponse(HttpStatusCode.OK, getIssues(null));
         }
 
 
         [Route("my/issues"), HttpGet]
         public HttpResponseMessage GetIssuesForMyUser()
         {
-            var sql = @"
-              select distinct
-                wi.WorkflowID
-                ,wi.WorkflowItemID
-	            ,c.Body
-	            ,wi.DateStarted
-	            ,wi.DateCompleted
-	            ,wi.IsCompleted
-	            ,wi.Name
-	            ,wi.Object
-	            ,cast(coalesce(wr.ResourceID, 0) as bit) as AllowAction
-	            ,wi.RaisedBy
-	            ,wi.ObjectID
-	            ,wi.CreatingResourceID as RaisedByResourceID
-	            ,wi.Url
-	            ,case wi.IsCompleted
-                    when 1 then 'Closed'
-		            else
-			            case cast(coalesce(wr.ResourceID, 0) as bit)
-
-                            when 1 then 'Pending'
-				            else 'Waiting on user(s)'
-
-                        end
-
-                end as ActivityName
-	            ,wi.Notes
-	            ,wi.Comments
-	            ,wi.IssueType
-	            ,wi.IssueTypeName
-	            ,wi.IssueID
-	            ,wi.CriticalityName as Criticality
-	            ,wi.EllapsedDays
-            from
-                WorkflowIssue wi
-                left outer join Comment c on wi.CommentID = c.ID
-                inner join WorkflowResource wr on (wr.WorkflowID = wi.WorkflowID and wr.ResourceID = @r and wr.IsComplete = 0)
-            order by DateStarted desc";
-
-            var list = Company.Query<dynamic>(sql, new { r = Company.CurrentResourceID });
-
-            return Request.CreateResponse(HttpStatusCode.OK, list);
+            return Request.CreateResponse(HttpStatusCode.OK, getIssues(Company.CurrentResourceID));
         }
 
         [Route("all/issues/excel/excel.xls"), HttpGet]
         public HttpResponseMessage GetIssuesForAllUsersExcel(bool all = true)
-        {            
-            var sql = "";
-            if (all)
-            {
-                sql = @"
-                      select distinct
-                        wi.WorkflowID
-                        ,wi.WorkflowItemID
-	                    ,c.Body
-	                    ,wi.DateStarted
-	                    ,wi.DateCompleted
-	                    ,wi.IsCompleted
-	                    ,wi.Name
-	                    ,wi.Object
-	                    ,cast(coalesce(wr.ResourceID, 0) as bit) as AllowAction
-	                    ,wi.RaisedBy
-	                    ,wi.ObjectID
-	                    ,wi.CreatingResourceID as RaisedByResourceID
-	                    ,wi.Url
-	                    ,case wi.IsCompleted
-                            when 1 then 'Closed'
-		                    else
-			                    case cast(coalesce(wr.ResourceID, 0) as bit)
-
-                                    when 1 then 'Pending'
-				                    else 'Waiting on user(s)'
-
-                                end
-
-                        end as ActivityName
-	                    ,wi.Notes
-	                    ,wi.Comments
-	                    ,wi.IssueType
-	                    ,wi.IssueTypeName
-	                    ,wi.IssueID
-	                    ,wi.CriticalityName as Criticality
-	                    ,wi.EllapsedDays
-                    from
-
-                        WorkflowIssue wi
-
-                        left outer join Comment c on wi.CommentID = c.ID
-
-                        left outer join WorkflowResource wr on (wr.WorkflowID = wi.WorkflowID and wr.ResourceID = @r and wr.IsComplete = 0)
-                    order by DateStarted desc";
-            }
-            else
-            {
-                sql = @"
-                      select distinct
-                        wi.WorkflowID
-                        ,wi.WorkflowItemID
-	                    ,c.Body
-	                    ,wi.DateStarted
-	                    ,wi.DateCompleted
-	                    ,wi.IsCompleted
-	                    ,wi.Name
-	                    ,wi.Object
-	                    ,cast(coalesce(wr.ResourceID, 0) as bit) as AllowAction
-	                    ,wi.RaisedBy
-	                    ,wi.ObjectID
-	                    ,wi.CreatingResourceID as RaisedByResourceID
-	                    ,wi.Url
-	                    ,case wi.IsCompleted
-                            when 1 then 'Closed'
-		                    else
-			                    case cast(coalesce(wr.ResourceID, 0) as bit)
-
-                                    when 1 then 'Pending'
-				                    else 'Waiting on user(s)'
-
-                                end
-
-                        end as ActivityName
-	                    ,wi.Notes
-	                    ,wi.Comments
-	                    ,wi.IssueType
-	                    ,wi.IssueTypeName
-	                    ,wi.IssueID
-	                    ,wi.CriticalityName as Criticality
-	                    ,wi.EllapsedDays
-                    from
-
-                        WorkflowIssue wi
-
-                        left outer join Comment c on wi.CommentID = c.ID
-                        left outer join WorkflowResource wr on (wr.WorkflowID = wi.WorkflowID and (wr.ResourceID = @r or wi.CreatingResourceID = @r) and wr.IsComplete = 0)
-                    order by DateStarted desc";                     
-            }
-
-            var results = Company.Query<dynamic>(sql, new { r = Company.CurrentResourceID });
+        {    
+            var results = all ? getIssues(null) : getIssues(Company.CurrentResourceID);
             
             var document = new SLDocument();
             document.AddWorksheet("Items");
@@ -303,44 +180,49 @@ namespace d360.web.Controllers.Services
         public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype) 
         {
             var sql = @"
-              select distinct
-                wi.WorkflowID
-                ,wi.WorkflowItemID
-	            ,c.Body as Issue
-	            ,wi.DateStarted	            	            
-	            ,wi.Name	as ObjectName            
-	            ,wi.CreatingResourceID as ResourceID
-				,wi.RaisedBy as ResourceName
-	            ,dbo.GenerateObjectUrl('Resource', 0, wi.CreatingResourceID) as ResourceUrl           
-	            ,wi.IssueType
-	            ,wi.IssueTypeName
-	            ,wi.IssueID
-	            ,wi.CriticalityName
-	            ,wi.EllapsedDays
-				,wi.[Object]
-				,wi.[ObjectID]
-                ,wr.Activity
-				,case wi.IsCompleted
-                            when 1 then 'Closed'
-		                    else
-			                    case cast(coalesce(wr.ResourceID, 0) as bit)
+select		distinct 
+            null as WorkflowID
+			,wi.ID as WorkflowItemID
+            ,c.Body
+		    ,I.CommentID
+			,I.CreatedBy as RaisedByResourceID
+			,wi.StartedOn as DateStarted
+			,wi.CompletedOn as DateCompleted
+            ,case when wi.CompletedOn is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted
+			,'' as Step
+			,A.ObjectID
+			,A.Name
+			,A.[Object]
+			,A.Url
+			,R.FirstName + ' ' + R.LastName as RaisedBy			
+			,'' as Notes					
+			,IT.ID as IssueType
+            ,IT.Name as IssueTypeName
+			,I.ID as IssueID
+			--,I.Criticality as Criticality
+			,case when I.Criticality = 0 then 'Negligible' when I.Criticality = 1 then 'Low' when I.Criticality = 2 then 'Medium' when I.Criticality = 3 then 'High'  when I.Criticality = 4 then 'Critical' else 'N/A' end as Criticality
+			,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
+	        ,case 
+                when wi.CompletedOn is not null then 'Closed'
+		        else
+			        case cast(coalesce(IA.ResourceObjectID, 0) as bit)
 
-                                    when 1 then 'Pending'
-				                    else 'Waiting on user(s)'
+                        when 1 then 'Pending'
+				        else 'Waiting on user(s)'
 
-                                end
+                    end
 
-                        end as ActivityName
-            from
+            end as ActivityName
+from	    Issue I
+			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.[object] = @obj and I.[objectid] = @id
+			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
+			left outer join cache.ObjectDetails A on A.[Object] = I.[Object] and A.ObjectID = I.ObjectID            		
+			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
+			left outer join Comment C on C.ID = I.CommentID
+            left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource'
+order by wi.StartedOn desc";
 
-                WorkflowIssue wi				
-                left outer join Comment c on wi.CommentID = c.ID                
-				left outer join WorkflowResource wr on (wr.WorkflowID = wi.WorkflowID and wr.ResourceID = @r and wr.IsComplete = 0)
-			where 
-				wi.[object] = @obj and wi.[objectid] = @id and wi.iscompleted = 0
-            order by DateStarted desc";
-
-            var list = Company.Query<dynamic>(sql, new { r = Company.CurrentResourceID, id = objectid, obj = objecttype });
+            var list = Company.Query<dynamic>(sql, new { id = objectid, obj = objecttype });
 
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }

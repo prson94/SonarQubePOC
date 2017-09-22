@@ -640,7 +640,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return list;
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
+        internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
         {
             var row = startRow;
 
@@ -810,11 +810,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                                     #endregion sql
 
-                                    var intersectObj = fields[0].ObjectType;
-                                    var intersectObjID = fields[0].ObjectID;
                                     var intersect = Company.Filter<Intersect>(i => 
                                         i.IntersectTypeID == intersectType.ID && 
-                                        ( (isSubject && i.Subject == intersectObj && i.SubjectID == intersectObjID) || (!isSubject && i.Object == intersectObj && i.ObjectID == intersectObjID) )
+                                        ( (isSubject && i.Subject == @object && i.SubjectID == objectID) || (!isSubject && i.Object == @object && i.ObjectID == objectID) )
                                         ).FirstOrDefault();
 
                                     if (intersect != null)
@@ -1200,7 +1198,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         var typeIDColumnName = relationFieldInfo.Object + "ID";
 
                         if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-                        columns += (isReferenceItemType ? $"{name}_OT.Name" : $"{name}_OT.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
+                        //columns += (isReferenceItemType ? $"{name}_OT.Name" : $"{name}_OT.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
+                        columns += (isReferenceItemType ? $"{name}_OT.Name" : $"{name}_OT.Name") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
 
                         joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
                         joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = A.ID" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = A.ID";

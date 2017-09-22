@@ -21,6 +21,42 @@ import * as _ from 'lodash';
             <input type="text" [(ngModel)]="shortcut.Url" style="width: 98%" maxlength="250" />
         </div>
     </div>
+    <div class="row">
+        <div class="col s12 m6">
+            <div class="FieldName">Description</div>
+            <input type="text" [(ngModel)]="shortcut.Description" style="width: 98%" maxlength="500" />
+        </div>        
+    </div>
+    <div class="row">
+        <div class="col s12 m6">
+            <div class="FieldName">Override Icon Color</div>
+            <input type="checkbox" [ngModel]="showIconColor" (ngModelChange)="showIconColor=$event;(shortcut.IconColor = ($event ? '#FF0000' : null))"/>
+        </div>        
+        <div class="col s12 m6" *ngIf="showIconColor">
+            <div class="FieldName">Icon Color</div>
+            <p-colorPicker [(ngModel)]="shortcut.IconColor" name="iconColor"></p-colorPicker>                            
+        </div>        
+    </div>
+    <div class="row">
+        <div class="col s12 m6">
+            <div class="FieldName">Override Title Color</div>
+            <input type="checkbox" [ngModel]="showTitleColor" (ngModelChange)="showTitleColor=$event;(shortcut.TitleColor = ($event ? '#00FF00' : null))"/>
+        </div>        
+        <div class="col s12 m6" *ngIf="showTitleColor">
+            <div class="FieldName">Title Color</div>
+            <p-colorPicker [(ngModel)]="shortcut.TitleColor" name="titleColor"></p-colorPicker>                            
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 m6">
+            <div class="FieldName">Override Background Color</div>
+            <input type="checkbox" [ngModel]="showBackgroundColor" (ngModelChange)="showBackgroundColor=$event;(shortcut.BackgroundColor = ($event ? '#0000FF' : null))"/>
+        </div>        
+        <div class="col s12 m6" *ngIf="showBackgroundColor">
+            <div class="FieldName">Background Color</div>
+            <p-colorPicker [(ngModel)]="shortcut.BackgroundColor" name="backgroundColor"></p-colorPicker>                            
+        </div>
+    </div>
     <div class="row" style="padding-top:12px">
         <div class="col s12 m6">
             <div class="FieldName">Icon</div>
@@ -74,6 +110,10 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
     private iconImage: CompanyImage = new CompanyImage();
     private iconType = 'icon';
 
+    private showIconColor: boolean = false;
+    private showTitleColor: boolean = false;
+    private showBackgroundColor: boolean = false;
+
     constructor(private shortcutService: ShortcutService, private messagesService: MessagesService) {
         super();
     }
@@ -87,6 +127,10 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
                 this.iconType = 'image';
             else
                 this.iconType = 'icon';
+
+            this.showBackgroundColor = (this.shortcut.BackgroundColor != null);
+            this.showTitleColor = (this.shortcut.TitleColor != null);
+            this.showIconColor = (this.shortcut.IconColor != null);
         }
     }
 
@@ -101,6 +145,7 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
             this.iconImage = new CompanyImage();
         }
     }
+    
 
     clearIcon() {
         this.shortcut.IconUrl = null;

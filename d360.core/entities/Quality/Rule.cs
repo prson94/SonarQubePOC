@@ -85,6 +85,15 @@ namespace d360.core.entities
 
         public bool Visible { get; set; }
 
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string DisplayValue { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string KeyHash { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string FieldHash { get; set; }
+
         [ForeignKey("RuleID")]
         public virtual ICollection<RuleImplementation> RuleImplementations { get; set; }
 

@@ -62,11 +62,11 @@ namespace d360.core.entities
         [Column(TypeName = "nvarchar"), StringLength(500)]
         public string Url { get; set; }
 
-        [NotMapped,DataMember]
-        public string VisibleTo { get; set; }
-
         [DataMember]
         public bool ShowOnHomePage { get; set; }
+
+        [NotMapped,DataMember]
+        public string VisibleTo { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }

@@ -14,6 +14,9 @@ namespace d360.core.entities
         public string Name { get; set; }
 
         [DataMember]
+        public string DisplayFormat { get; set; }
+
+        [DataMember]
         public string Description { get; set; }
 
         [IgnoreDataMember, ForeignKey("RuleTypeID")]

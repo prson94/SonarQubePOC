@@ -95,6 +95,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -111,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="attributes\Attributes.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
     <Compile Include="entities\Asset.cs" />
@@ -324,6 +326,8 @@
     <Compile Include="entities\Workflow\Models.cs" />
     <Compile Include="entities\Workflow\WorkflowItemAssignment.cs" />
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
+    <Compile Include="enums\FusionRuleFindSearchType.cs" />
+    <Compile Include="enums\FusionRuleRelateSearchType.cs" />
     <Compile Include="enums\HelpResourceType.cs" />
     <Compile Include="enums\ExportView.cs" />
     <Compile Include="enums\MapClass.cs" />

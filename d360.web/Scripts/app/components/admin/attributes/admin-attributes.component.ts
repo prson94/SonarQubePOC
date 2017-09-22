@@ -79,10 +79,12 @@ export class AdminAttributesComponent extends AdminBaseComponent {
         this.areaName = "Attribute Groups";                
         this.setCommonItems();
         this.setCommonRightSideBar(true);
-        this.auditSidebar.hasDynamicUrl = true;
-        this.auditSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/audit/AttributeType/${this.selected.data.ID}`
-        });
+        if (this.auditSidebar) {
+            this.auditSidebar.hasDynamicUrl = true;
+            this.auditSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/audit/AttributeType/${this.selected.data.ID}`
+            });
+        }
         this.theDeleteCallback = this.deleteAttributeType.bind(this);        
     }
 

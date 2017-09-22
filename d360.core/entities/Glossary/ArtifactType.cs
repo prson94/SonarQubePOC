@@ -27,6 +27,9 @@ namespace d360.core.entities
         public string Description { get; set; }
         
         [DataMember]
+        public string DisplayFormat { get; set; }
+
+        [DataMember]
         public bool CanOwnFusion { get; set; }
 
         [DataMember]

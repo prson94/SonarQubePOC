@@ -45,6 +45,15 @@ namespace d360.core.entities
         [DataMember]
         public string SourceID { get; set; }
 
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string DisplayValue { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string KeyHash { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string FieldHash { get; set; }
+
         #region Navigation Properties
 
         [IgnoreDataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description")]

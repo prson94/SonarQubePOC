@@ -27,6 +27,9 @@ namespace d360.core.entities
         [DataMember]
         public int? LookupObjectID { get; set; }
 
+        [DataMember]
+        public bool? Success { get; set; }
+
         #endregion
 
         [IgnoreDataMember]

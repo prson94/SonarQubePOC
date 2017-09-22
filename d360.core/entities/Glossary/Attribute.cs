@@ -14,6 +14,10 @@ namespace d360.core.entities
         [DataMember]
         public int AttributeTypeID { get; set; }
 
+        [DataMember]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string DisplayValue { get; set; }
+
         public int ObjectID { get; set; }
 
         [Column(TypeName = "varchar"), StringLength(50)]
