@@ -468,7 +468,7 @@ namespace d360.web.Controllers
             switch ((objectType ?? "").ToUpper())
             {
                 case "INTERSECTTYPE":
-                    return Relationship_AddFields(objectID, targetType, targetID,true);                
+                    return Relationship_AddFields(objectID, targetType, targetID);                
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -12999,7 +12999,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         /// <param name="type">Object</param>
         /// <param name="id">ObjectID</param>
         [Route("Relationship_AddFields"), NonNullableParameters]
-        public JsonResult Relationship_AddFields(int it, SystemObjects type, int id, bool isNg = false)
+        public JsonResult Relationship_AddFields(int it, SystemObjects type, int id)
         {
             if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -13016,15 +13016,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             var targetType = "";
             var targetTypeID = 0;
+            var targetCardinality = Cardinality.Many;
             if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
             {
                 targetType = relationshipType.Object;
                 targetTypeID = relationshipType.ObjectID;
+                targetCardinality = relationshipType.ObjectCardinality;
             }
             else
             {
                 targetType = relationshipType.Subject;
                 targetTypeID = relationshipType.SubjectID;
+                targetCardinality = relationshipType.SubjectCardinality;
             }
 
             list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = it.ToString() });
@@ -13178,37 +13181,19 @@ order by D.TextPath";
 
             #endregion
 
-            if (isNg)
+            
+            list.Add(new EditableField
             {
-                list.Add(new EditableField
-                {
                     Row = 1,
                     Column = 1,
                     Required = true,
                     FieldName = "Items",
                     Name = "What Items Are You Relating?",                    
-                    MultiSelect = true,                    
+                    MultiSelect = (targetCardinality == Cardinality.Many),                    
                     FieldType = DataType.DataTableSelect.ToString(),
                     TypeaheadUri = $"/form/Relationship_DataTable?intersectTypeId={it}&type={type}&objectId={id}"
-                });
-            }
-            else
-            {
-                list.Add(new EditableField
-                {
-                    Row = 1,
-                    Column = 1,
-                    Required = true,
-                    FieldName = "Items",
-                    Name = "What Items Are You Relating?",
-                    //DataUri = $"",
-                    MultiSelect = true,
-                    //FieldDescription = Resources.FieldInfo.,
-                    FieldType = DataType.Lookup.ToString(),
-                    Items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id }).Select(i => new SelectListItem { Text = i.Name, Value = $"{i.Object}|{i.ObjectID}" }).ToList()
-                });
-            }
-
+            });
+            
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, it).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -13268,11 +13253,25 @@ order by D.TextPath";
 
                 if (relationshipType == null) throw new NotFoundException("relationship");
 
+                var targetCardinality = Cardinality.Many;
+                if (relationshipType.Subject == sourceObject.Type && relationshipType.SubjectID == sourceObject.TypeID)
+                {                    
+                    targetCardinality = relationshipType.ObjectCardinality;
+                }
+                else
+                {                    
+                    targetCardinality = relationshipType.SubjectCardinality;
+                }
+
+
                 var rawItems = parseTextField(form, "Items");
                 if (string.IsNullOrEmpty(rawItems))
                     return jsonException("No selected items", HttpStatusCode.BadRequest);
 
                 var items = rawItems.Split(',').ToList();
+
+                if((targetCardinality == Cardinality.One && items.Count > 1) || (targetCardinality == Cardinality.Zero && items.Count > 1))
+                    return jsonException("Invalid relationship cardinality for multiple items.", HttpStatusCode.BadRequest);
 
                 items.ForEach(item =>
                 {

@@ -17,8 +17,8 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading">
                     <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" (keypress)="ref.markForCheck()">
-                    <p-dataTable #dt [globalFilter]="gb" [value]="items" [selection]="selectedItems" (selectionChange)="selectedItems=$event;handleItemSelection($event);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
-                        <p-column [style]="{'width':'38px'}" selectionMode="multiple"></p-column>
+                    <p-dataTable #dt [globalFilter]="gb" [value]="items" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
+                        <p-column [style]="{'width':'38px'}" [selectionMode]="multiple ?'multiple' : 'single'"></p-column>
                         <p-column field="Text" header="Name">
                             <ng-template let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]" tooltipType="preview">{{item.Text}}</d3s-tooltip>
@@ -39,6 +39,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
 
 export class MultiSelectGridComponent extends BaseComponent implements OnInit, ControlValueAccessor  {   
     @Input() field: EditorField;
+    @Input() multiple: boolean = true;
 
     value: any; //stores the values array bound back to the ngform.
 
@@ -67,16 +68,28 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
             });
     }
 
-    private handleItemSelection(event) {        
-        var items = [];
-        for (let item of event) {
-            items.push(item.Value);
+    private handleItemSelection(event) {
+        if (this.multiple) {
+            this.selectedItems = event;
+            var items = [];
+            for (let item of event) {
+                items.push(item.Value);
+            }
+            this.value = _.cloneDeep(items);
+            this.onModelChange(this.value);
         }
-        this.value = _.cloneDeep(items);
-        this.onModelChange(this.value);
+        else {
+            var items = [];
+            items.push(event.Value);
+            var sel = [];
+            sel.push(event);
+            this.selectedItems = sel;
+            this.value = _.cloneDeep(items);
+            this.onModelChange(this.value);
+        }
     }
 
-    writeValue(value: any): void {
+    writeValue(value: any): void {        
         this.value = value;
     }
 

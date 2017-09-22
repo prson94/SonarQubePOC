@@ -98,7 +98,7 @@ declare var CompanySettings;
                                 <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
                             </select>                            
                         </div>
-                        <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [formControlName]="field.FieldName" ngDefaultControl [field]="field" [(ngModel)]="field.Value" ></d3s-multiselect-grid>
+                        <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field" [(ngModel)]="field.Value" ></d3s-multiselect-grid>
                     <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
                     
                   </div>                   

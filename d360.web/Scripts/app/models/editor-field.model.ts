@@ -26,6 +26,7 @@ export class EditorField {
     Validations: FieldValidation[];
     TypeaheadUri: string;
     Category: string;
+    MultiSelect: boolean;
 }
 
 export class EditorCategory {
