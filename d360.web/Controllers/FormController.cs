@@ -3104,10 +3104,10 @@ namespace d360.web.Controllers
 
             var sType = type.ToString();
             var cardinalRelationshipsList = Company.Filter<IntersectTypeDetail>(i =>
-                (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
-                (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+                (i.Subject == sType && i.SubjectID == id /*&& i.ObjectCardinality == Cardinality.One*/) ||
+                (i.Object == sType && i.ObjectID == id /*&& i.SubjectCardinality == Cardinality.One*/)
             ).ToList();
-
+            
             var cardinalRelationships = cardinalRelationshipsList
             .Select(i => new {
                 title = ((i.Subject == sType && i.SubjectID == id) ? $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" : $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),

@@ -9,6 +9,7 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 import {
     CalendarModule,
     ColorPickerModule,
+    DropdownModule,
     DataTableModule,
     EditorModule,
     MultiSelectModule,
@@ -49,6 +50,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
         //prime        
         CalendarModule,
         DataTableModule,
+        DropdownModule,
         EditorModule,
         MultiSelectModule,
         PipesModule,

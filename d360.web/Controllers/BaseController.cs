@@ -750,14 +750,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         #endregion Lookup
 
                         #region Relationship
-
+                        
                         if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
                         {
                             fld.FieldType = DataType.Relationship.ToString();
                             try
                             {
                                 fld.Items = new List<SelectListItem>();
-
+                                
                                 var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
                                 if (intersectType != null)
                                 {
@@ -767,6 +767,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                     var isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
                                     obj = isSubject ? intersectType.Object : intersectType.Subject;
                                     objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+                                    var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
                                     // Required relationship.
                                     if ( (isSubject && intersectType.ObjectCardinality != Cardinality.One) || (!isSubject && intersectType.SubjectCardinality != Cardinality.One))
@@ -810,14 +811,34 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                                     #endregion sql
 
-                                    var intersect = Company.Filter<Intersect>(i => 
-                                        i.IntersectTypeID == intersectType.ID && 
-                                        ( (isSubject && i.Subject == @object && i.SubjectID == objectID) || (!isSubject && i.Object == @object && i.ObjectID == objectID) )
+                                    if (cardinality != Cardinality.Many)
+                                    {
+                                        fld.MultiSelect = false;
+
+                                        var intersect = Company.Filter<Intersect>(i =>
+                                        i.IntersectTypeID == intersectType.ID &&
+                                        ((isSubject && i.Subject == @object && i.SubjectID == objectID) || (!isSubject && i.Object == @object && i.ObjectID == objectID))
                                         ).FirstOrDefault();
 
-                                    if (intersect != null)
+                                        if (intersect != null)
+                                        {
+                                            fld.Value = isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}";
+                                        }
+                                    }
+                                    else
                                     {
-                                        fld.Value = isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}";
+                                        fld.MultiSelect = true;
+
+                                        var intersects = Company.Filter<Intersect>(i =>
+                                        i.IntersectTypeID == intersectType.ID &&
+                                        ((isSubject && i.Subject == @object && i.SubjectID == objectID) || (!isSubject && i.Object == @object && i.ObjectID == objectID))
+                                        );
+
+                                        fld.MultipleValues = new List<string>();
+                                        foreach (var intersect in intersects)
+                                        {
+                                            fld.MultipleValues.Add(isSubject ? $"{intersect.ObjectID}" : $"{intersect.SubjectID}");
+                                        }
                                     }
 
                                     fld.Items.AddRange(
@@ -840,6 +861,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         {
                             fld.Value = ft.DefaultValue;
                         }
+                        
                         list.Add(fld);
 
                         row++;
@@ -870,59 +892,94 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 if (ft.Type == DataType.Relationship.ToString())
                 {
                     var value = form[ft.Name];
-                    if (!string.IsNullOrEmpty(value))
-                    {
+                    List<int> items = new List<int>();
                         var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
                         if (intersectType != null)
                         {
                             var isSubject = (intersectType.Subject == ot.ToString() && intersectType.SubjectID == otid);
-
-                            var obj = "";
-                            var sub = "";
-                            var objID = 0;
-                            var subID = 0;
-
-                            Intersect intersect = null;
-
+                            if(!string.IsNullOrEmpty(value))
+                                items =  value.Split(',').Select<string, int>(int.Parse).ToList();
+                            //delete any intersects for this object not in the list
+                            IQueryable<Intersect> intersects = null;
                             if (isSubject)
                             {
-                                sub = o.ToString();
-                                subID = oid;
-                                obj = intersectType.Object;
-                                obj = (obj == "ReferenceItemType" && intersectType.ObjectID == 0) ? obj : obj.Replace("Type", "");
-                                objID = int.Parse(value);
-
-                                intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == sub && i.SubjectID == subID).FirstOrDefault();
+                                intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == o.ToString() && i.SubjectID == oid);
+                                foreach (var intersect in intersects)
+                                {
+                                    //check if the object is in the value list if not delete the intersect
+                                    if(!items.Contains(intersect.ObjectID))
+                                    {
+                                        Company.Delete<Intersect>(intersect);
+                                    }
+                                }
                             }
                             else
                             {
-                                obj = o.ToString();
-                                objID = oid;
-                                sub = intersectType.Subject;
-                                sub = (obj == "ReferenceItemType" && intersectType.SubjectID == 0) ? obj : obj.Replace("Type", "");
-                                subID = int.Parse(value);
-
-                                intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == obj && i.ObjectID == objID).FirstOrDefault();
+                                intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == o.ToString() && i.ObjectID == oid);
+                                foreach (var intersect in intersects)
+                                {
+                                    //check if the object is in the value list if not delete the intersect
+                                    if (!items.Contains(intersect.SubjectID))
+                                    {
+                                        Company.Delete<Intersect>(intersect);
+                                    }
+                                }
                             }
 
-                            if (intersect != null)
+                        if (!string.IsNullOrEmpty(value))
+                        {
+
+                            //add / update the rest
+
+                            foreach (var val in items)
                             {
+                                var obj = "";
+                                var sub = "";
+                                var objID = 0;
+                                var subID = 0;
+
+                                Intersect intersect = null;
+
                                 if (isSubject)
                                 {
-                                    intersect.Object = obj;
-                                    intersect.ObjectID = objID;
+                                    sub = o.ToString();
+                                    subID = oid;
+                                    obj = intersectType.Object;
+                                    obj = (obj == "ReferenceItemType" && intersectType.ObjectID == 0) ? obj : obj.Replace("Type", "");
+                                    objID = val;
+
+                                    intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == sub && i.SubjectID == subID && i.ObjectID == val).FirstOrDefault();
                                 }
                                 else
                                 {
-                                    intersect.Subject = sub;
-                                    intersect.SubjectID = subID;
+                                    obj = o.ToString();
+                                    objID = oid;
+                                    sub = intersectType.Subject;
+                                    sub = (obj == "ReferenceItemType" && intersectType.SubjectID == 0) ? obj : obj.Replace("Type", "");
+                                    subID = val;
+
+                                    intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == obj && i.ObjectID == objID && i.SubjectID == val).FirstOrDefault();
                                 }
-                                Company.Update(intersect);
-                            }
-                            else
-                            {
-                                intersect = new Intersect { IntersectTypeID = intersectType.ID, Object = obj, ObjectID = objID, Subject = sub, SubjectID = subID, Visible = true };
-                                Company.Add(intersect);
+
+                                if (intersect != null)
+                                {
+                                    if (isSubject)
+                                    {
+                                        intersect.Object = obj;
+                                        intersect.ObjectID = objID;
+                                    }
+                                    else
+                                    {
+                                        intersect.Subject = sub;
+                                        intersect.SubjectID = subID;
+                                    }
+                                    Company.Update(intersect);
+                                }
+                                else
+                                {
+                                    intersect = new Intersect { IntersectTypeID = intersectType.ID, Object = obj, ObjectID = objID, Subject = sub, SubjectID = subID, Visible = true };
+                                    Company.Add(intersect);
+                                }
                             }
                         }
                     }

@@ -340,7 +340,7 @@
         <simple-accordion header="Relationship" active="true" *ngIf="model.FieldType.Type == 'Relationship'">
             <div class="row">
                 <div class="col s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldName">One-to-Many Relationship</div>
+                    <div class="FieldName">Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.CardinalRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
             </div>

@@ -27,6 +27,7 @@ export class EditorField {
     TypeaheadUri: string;
     Category: string;
     MultiSelect: boolean;
+    MultipleValues: string[];
 }
 
 export class EditorCategory {

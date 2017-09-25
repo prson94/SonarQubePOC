@@ -229,32 +229,30 @@ namespace d360.web.Controllers
                         {
                             var intersectTypeID = ft.LookupObjectID.Value;
                             var sType = type.ToString();
-                            var intersect = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).FirstOrDefault();
-                            if (intersect != null)
+                            var values = new List<ReadOnlyFieldValue>();
+                            var intersects = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id)));
+                            if (intersects != null)
                             {
-                                var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
-                                var intersectDisplayValue = isSubject ? intersect.ObjectName : intersect.SubjectName;
-                                var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
-                                var obj = isSubject ? intersect.Object : intersect.Subject;
-                                var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+                                foreach (var intersect in intersects)
+                                {
+                                    var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
+                                    var intersectDisplayValue = isSubject ? intersect.ObjectName : intersect.SubjectName;
+                                    var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
+                                    var obj = isSubject ? intersect.Object : intersect.Subject;
+                                    var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+                                                                        
+                                    values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });                                    
+                                }
 
                                 var ro = new ReadOnlyField
                                 {
                                     Name = ft.FriendlyName,
-                                    Value = intersectDisplayValue,
+                                    Value = values.Count > 0 ?"values" : "",
                                     FieldDescription = ft.DisplayDescription,
-                                    FieldName = ft.Name,
-                                    DataType = "Html",
-                                    TooltipID = objID,
-                                    TooltipType = obj,
-                                    TooltipContext = (obj == SystemObjects.ReferenceItem.ToString() || obj == SystemObjects.ReferenceItemType.ToString()) ? "LookupPreview" : "Preview",
+                                    FieldName = ft.Name,                                    
+                                    Values = values                                
                                 };
-
-                                if (obj == SystemObjects.ReferenceItem.ToString() || obj == SystemObjects.ReferenceItemType.ToString())
-                                {
-                                    ro.TooltipUrl = $"reference/{objID}";
-                                }
-
+                                
                                 list.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 1,
