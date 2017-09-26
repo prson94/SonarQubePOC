@@ -35,6 +35,7 @@ import * as _ from 'lodash';
         <div class="col s12 m6" *ngIf="showIconColor">
             <div class="FieldName">Icon Color</div>
             <p-colorPicker [(ngModel)]="shortcut.IconColor" name="iconColor"></p-colorPicker>                            
+            <input type="text" [(ngModel)]="shortcut.IconColor" name="iconColorText" style="padding:2px;" />
         </div>        
     </div>
     <div class="row">
@@ -44,7 +45,8 @@ import * as _ from 'lodash';
         </div>        
         <div class="col s12 m6" *ngIf="showTitleColor">
             <div class="FieldName">Title Color</div>
-            <p-colorPicker [(ngModel)]="shortcut.TitleColor" name="titleColor"></p-colorPicker>                            
+            <p-colorPicker [(ngModel)]="shortcut.TitleColor" name="titleColor"></p-colorPicker>       
+            <input type="text" [(ngModel)]="shortcut.TitleColor" name="titleColorText" style="padding:2px;" />
         </div>
     </div>
     <div class="row">
@@ -55,6 +57,7 @@ import * as _ from 'lodash';
         <div class="col s12 m6" *ngIf="showBackgroundColor">
             <div class="FieldName">Background Color</div>
             <p-colorPicker [(ngModel)]="shortcut.BackgroundColor" name="backgroundColor"></p-colorPicker>                            
+            <input type="text" [(ngModel)]="shortcut.BackgroundColor" name="backgroundColorText" style="padding:2px;" />
         </div>
     </div>
     <div class="row" style="padding-top:12px">
