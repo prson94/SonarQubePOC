@@ -41,10 +41,12 @@ import * as _ from 'lodash';
                     <div class="col l6 s12">
                         <div class="FieldName">Background Color</div>
                         <p-colorPicker [(ngModel)]="editedTaxonomy.IconBackColor" name="iconbackcolor"></p-colorPicker>                         
+                        <input type="text" [(ngModel)]="editedTaxonomy.IconBackColor" name="iconbackcolortext" style="padding:2px;" />
                     </div>
                     <div class="col l6 s12">
                         <div class="FieldName">Text Color</div>
-                        <p-colorPicker [(ngModel)]="editedTaxonomy.IconForeColor" name="iconforecolor"></p-colorPicker>                         
+                        <p-colorPicker [(ngModel)]="editedTaxonomy.IconForeColor" name="iconforecolor"></p-colorPicker>  
+                        <input type="text" [(ngModel)]="editedTaxonomy.IconForeColor" name="iconforecolor" style="padding:2px;" />
                     </div>
                     <div class="col s12">
                         <div *ngIf="editedTaxonomy.IconForeColor == editedTaxonomy.IconBackColor" class="errorMessage">Foreground and background color cannot be the same</div>

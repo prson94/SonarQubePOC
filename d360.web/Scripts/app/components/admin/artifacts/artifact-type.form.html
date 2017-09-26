@@ -50,6 +50,9 @@
                             <p-colorPicker [(ngModel)]="model.IconBackColor" name="iconbackcolor"></p-colorPicker>
                         </div>
                         <div class="col l11 m10 s12">
+                            <input type="text" [(ngModel)]="model.IconBackColor" name="iconbackcolortext" style="padding:2px;" />
+                        </div>
+                        <div class="col s12">
                             <div class="FieldInstructions">Sets the background color of icons representing items of this type within diagrams.</div>
                         </div>
                     </div>
@@ -60,6 +63,9 @@
                             <p-colorPicker [(ngModel)]="model.IconForeColor" name="iconforecolor"></p-colorPicker>
                         </div>
                         <div class="col l11 m10 s12">
+                            <input type="text" [(ngModel)]="model.IconForeColor" name="iconforecolortext"  style="padding:2px;"/>
+                        </div>
+                        <div class="col s12">
                             <div class="FieldInstructions">Sets the text color of icons representing items of this type within diagrams.</div>
                         </div>
                     </div>

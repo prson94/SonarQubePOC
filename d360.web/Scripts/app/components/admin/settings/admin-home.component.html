@@ -28,6 +28,7 @@
                     <div class="FieldName">Title color</div>
                     <div>
                         <p-colorPicker [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)"></p-colorPicker>
+                        <input type="text" [(ngModel)]="companySettings.HomePageTitleColor" name="titlebackcolortext" style="padding:2px;" />
                     </div>
                 </div>
             </div>
