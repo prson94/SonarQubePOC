@@ -572,6 +572,8 @@
     <None Include="dbo\Tables\OrganizationRegistration.sql" />
     <None Include="dbo\Tables\OrganizationResource.sql" />
     <None Include="dbo\Functions\GetOwnersListForWorkflow.sql" />
+    <None Include="utility\Functions\GenerateFormattedMultipleValue.sql" />
+    <None Include="utility\Functions\GetFormattedFieldLookupValueWithMultiple.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

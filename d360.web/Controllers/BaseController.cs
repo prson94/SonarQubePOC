@@ -554,8 +554,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             {
                                 fld.Items = new List<SelectListItem>();
 
-                                if (!f.IsRequired) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+                                if (!f.IsRequired && !f.AllowMultipleValues) fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
                                 if (f.AllowAllValue) fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
+
+                                fld.MultiSelect = f.AllowMultipleValues;
 
                                 fld.Items.AddRange(
                                     Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
@@ -690,7 +692,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             FieldType = ft.Type.ToString(),
                             FieldDescription = ft.FormDescription,
                             Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage),
-                            Category = ft.Category
+                            Category = ft.Category                            
                         };
 
                         #region FusionLookup
@@ -722,8 +724,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         #region Lookup
 
                         if (ft.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
-                        {
-                            //fld.FieldType = DataType.Lookup.ToString();
+                        {                            
                             try
                             {
                                 fld.Items = new List<SelectListItem>();
@@ -733,6 +734,19 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                                 if (ft.AllowAllValue)
                                     fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
+
+                                fld.MultiSelect = ft.AllowMultipleValues;
+
+                                if (ft.AllowMultipleValues)
+                                {
+                                    // selected items need to go into multiplevalues array
+                                    if (f!= null && !string.IsNullOrWhiteSpace(f.Value))
+                                        fld.MultipleValues = f.Value.Split(',').ToList();
+                                    else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+                                        fld.MultipleValues = ft.DefaultValue.Split(',').ToList();
+                                    else
+                                        fld.MultipleValues = new List<string>();
+                                }
 
                                 fld.Items.AddRange(
                                     Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)

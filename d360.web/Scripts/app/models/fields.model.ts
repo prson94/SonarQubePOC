@@ -104,6 +104,7 @@ export class FieldType {
     IsRequired: boolean;
     AllowAllValue: boolean;
     AllowAllLabel: string;
+    AllowMultipleValues: boolean;
     SortOrder: number;
     Fields: Field[];
     FieldTypeFusionLookupDefinitions: FieldTypeFusionLookupDefinition[];

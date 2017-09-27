@@ -3707,6 +3707,8 @@ namespace d360.web.Controllers
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
                 ft.ColumnWidth = model.FieldType.ColumnWidth;
+                ft.AllowMultipleValues = model.FieldType.AllowMultipleValues;
+
                 if (
                     (model.FieldType.Type == DataType.ComplexRelationLookup.ToString()) ||
                     (model.FieldType.Type == DataType.FilteredLookup.ToString()) ||

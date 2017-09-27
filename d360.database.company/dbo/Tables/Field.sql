@@ -29,6 +29,7 @@ GO
 
 
 GO
+
 CREATE TRIGGER [dbo].[Field_AfterUpsert]
 	ON [dbo].[Field]
 	FOR INSERT, UPDATE
@@ -37,17 +38,18 @@ AS
 
 	
 	UPDATE	T
-	SET		T.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value)
+	SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 	FROM	Field T 
 			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and F.ObjectType <> 'FusionAttribute' and F.ObjectType <> 'FusionQueryAttribute'
 			INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID
 
 
 	UPDATE	TF
-	SET		TF.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value)
+	SET		TF.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value, FT.AllowMultipleValues)
 	from	Field TF
 			inner join FieldType FT on FT.ID = TF.FieldTypeID
 			inner join	inserted SF on FT.LookupObjectType = SF.ObjectType and TF.Value = cast(SF.ObjectID as varchar(50)) and SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute'
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID]
     ON [dbo].[Field]([FieldTypeID] ASC)

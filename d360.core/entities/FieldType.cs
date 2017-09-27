@@ -102,6 +102,9 @@ namespace d360.core.entities
         [DataMember]
         public bool IsPrimaryFilter { get; set; }
 
+        [DataMember]
+        public bool AllowMultipleValues { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 

@@ -147,49 +147,79 @@ namespace d360.web.Controllers
                             };
                             if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                             {
-                                bool showPreviewLink = true;
-                                if (k != null)
+                                if(ft.AllowMultipleValues)
                                 {
-                                    if (k.Value == "0")
+                                    ro.Values = new List<ReadOnlyFieldValue>();
+                                    ro.Value = "values";
+
+                                    var items = k.Value.Split(',');
+                                    var itemNames = k.FormattedValue.Split(',');
+
+                                    for (int i = 0; i < items.Length; i++)
                                     {
-                                        showPreviewLink = false;
-                                    }
+                                        var item = items[i];
+                                        var name = (itemNames.Length >= i ? itemNames[i] : "(unknown)");
+                                        
+                                        if (!int.TryParse(item, out var itemId)) continue;
+
+                                        var detail = Company.GetObjectDetail(ft.LookupObjectType, id);
+
+                                        ro.Values.Add(new ReadOnlyFieldValue
+                                        {
+                                            TooltipContext = "Preview",
+                                            TooltipID = itemId,
+                                            Value = name,
+                                            TooltipType = ft.LookupObjectType,
+                                            TooltipUrl = (detail == null ? "" : detail.NgUrl)
+                                        });                                        
+                                    }                                    
                                 }
-
-                                if (showPreviewLink)
+                                else
                                 {
-                                    ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-
-                                    if (ft.LookupObjectType == "Lookup")
+                                   bool showPreviewLink = true;
+                                    if (k != null)
                                     {
-                                        if (ft.LookupObjectID.HasValue)
+                                        if (k.Value == "0")
                                         {
-                                            ro.TooltipID = ft.LookupObjectID;
-                                        }
-                                        else
-                                        {
-                                            ro.TooltipID = 0;
+                                            showPreviewLink = false;
                                         }
                                     }
-                                    else
+
+                                    if (showPreviewLink)
                                     {
-                                        if (string.IsNullOrEmpty(value))
+                                        ro.TooltipContext = TemplateAction.LookupPreview.ToString();
+
+                                        if (ft.LookupObjectType == "Lookup")
                                         {
-                                            ro.TooltipID = 0;
-                                        }
-                                        else
-                                        {
-                                            int textValue;
-                                            if (int.TryParse(value, out textValue))
+                                            if (ft.LookupObjectID.HasValue)
                                             {
-                                                ro.TooltipID = textValue;
+                                                ro.TooltipID = ft.LookupObjectID;
+                                            }
+                                            else
+                                            {
+                                                ro.TooltipID = 0;
                                             }
                                         }
-                                    }
+                                        else
+                                        {
+                                            if (string.IsNullOrEmpty(value))
+                                            {
+                                                ro.TooltipID = 0;
+                                            }
+                                            else
+                                            {
+                                                int textValue;
+                                                if (int.TryParse(value, out textValue))
+                                                {
+                                                    ro.TooltipID = textValue;
+                                                }
+                                            }
+                                        }
 
-                                    ro.TooltipType = ft.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : ft.LookupObjectType;
-                                    if (k != null)
-                                        ro.TooltipUrl = k.LookupUrl;
+                                        ro.TooltipType = ft.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : ft.LookupObjectType;
+                                        if (k != null)
+                                            ro.TooltipUrl = k.LookupUrl;
+                                    }
                                 }
                             }
 
