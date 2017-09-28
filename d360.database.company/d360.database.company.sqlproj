@@ -574,6 +574,7 @@
     <None Include="dbo\Functions\GetOwnersListForWorkflow.sql" />
     <None Include="utility\Functions\GenerateFormattedMultipleValue.sql" />
     <None Include="utility\Functions\GetFormattedFieldLookupValueWithMultiple.sql" />
+    <None Include="dbo\Tables\FieldValue.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

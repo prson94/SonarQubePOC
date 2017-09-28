@@ -39,7 +39,7 @@ export class UriBasedService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    saveItem(createUri: string, editUri: string, item: any): Promise<JsonResult> {
+    saveItem(createUri: string, editUri: string, item: any): Promise<JsonResult> {        
         if (item.ID == undefined || !item.ID) {
             return this.post(createUri, item);
         }

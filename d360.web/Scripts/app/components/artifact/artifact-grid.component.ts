@@ -241,7 +241,21 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true; 
         this.showEditor = false;              
-        this.artifactService.saveArtifact(event.item)
+        let values: any = {};
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in event.item) {            
+            if (event.item.hasOwnProperty(p)) {                
+                if (Array.isArray(event.item[p])) {                    
+                    values[p] = event.item[p].join();
+                }                
+                else {                                        
+                    values[p] = event.item[p];
+                }                
+            }
+        }
+
+        this.artifactService.saveArtifact(values)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);                
                 //reload grid for now as the name / id of the field differs in display mode / edit mode

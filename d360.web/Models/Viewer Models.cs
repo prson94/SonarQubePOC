@@ -308,16 +308,7 @@ namespace d360.web.Models
                                 break;
                             case "Relationship":
                                 //this will be handled differently.
-                                break;
-                            case "Lookup":
-                                value = form[ft.Name];
-                                if (ft.AllowMultipleValues)
-                                {
-                                    var arr= Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(value);
-
-                                    value = string.Join(",", arr);
-                                }
-                                break;
+                                break;                            
                             default:
                                 value = form[ft.Name];
                                 break;

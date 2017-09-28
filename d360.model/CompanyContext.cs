@@ -119,6 +119,8 @@ namespace d360.model
 
         public DbSet<Field> Fields { get; set; }
 
+        public DbSet<FieldValue> FieldValues { get; set; }
+
         public DbSet<FieldLookupValue> FieldLookupValues { get; set; }                          /* VIEW */
 
         public DbSet<FieldWithRelation> FieldWithRelations { get; set; }                        /* VIEW */
@@ -323,6 +325,7 @@ namespace d360.model
         #endregion
 
         #region Repository Methods
+        
 
         public void AddOrUpdateFields(List<Field> items)
         {
@@ -333,6 +336,7 @@ namespace d360.model
                 var existingFieldTypeIDs = Filter<Field>(i => i.ObjectID == oID && i.ObjectType == oType).Select(i => i.FieldTypeID).ToList();
                 items.ForEach(item =>
                 {
+                    //UPDATE
                     if (existingFieldTypeIDs.Any(i => item.FieldTypeID == i))
                     {
                         Set<Field>().Attach(item);
@@ -341,8 +345,9 @@ namespace d360.model
                         {
                             item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
                         }
+                        
                     }
-                    else
+                    else //ADD
                     {
                         if (!string.IsNullOrEmpty(item.Value))
                         {
@@ -359,9 +364,17 @@ namespace d360.model
                     var existingFields = Filter<Field>(i => i.ObjectID == oID && i.ObjectType == oType).ToList();
                     existingFields.ForEach(item =>
                     {
+                        //DELETE
                         if (items.Any(i => i.FieldTypeID == item.FieldTypeID && string.IsNullOrEmpty(i.Value)))
                         {
                             Set<Field>().Remove(item);
+
+                            if (item.FieldType != null && item.FieldType.AllowMultipleValues)
+                            {
+                                var sql = @"delete from [dbo].[fieldvalue] where objectID = @objectID and objectType = @objectType and fieldtypeid = @fieldTypeID";
+
+                                Execute(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
+                            }
                         }
                     });
                 }
@@ -369,6 +382,37 @@ namespace d360.model
                 {
                 }
                 SaveChanges();
+
+                items.ForEach(item =>
+                {
+                    if (item.FieldType != null && item.FieldType.AllowMultipleValues)
+                    {
+                        var sql = @" MERGE dbo.[FieldValue] AS T
+                                    USING(
+                                            SELECT
+                                                f.fieldtypeid as fieldtypeid,
+                                                f.objectid as objectid,
+                                                f.objecttype as objecttype,
+                                                V.value as id
+                                            FROM field f
+                                                CROSS APPLY STRING_SPLIT(f.[Value], ',') as V
+                                            where
+                                                objectid = @objectID and fieldtypeid = @fieldTypeID and objecttype = @objectType
+                                        ) as S
+                                    ON T.fieldtypeid = S.fieldtypeid
+                                            and T.objectid = S.objectid
+                                            and T.objecttype = S.objecttype
+                                            and T.[value] = S.id
+                                    WHEN NOT MATCHED BY TARGET THEN
+                                            INSERT(FieldTypeID, ObjectID, ObjectType, [Value])
+                                            VALUES(S.FieldTypeID, S.ObjectID, S.ObjectType, S.ID)
+                                    WHEN NOT MATCHED BY SOURCE AND T.FieldTypeID = @fieldTypeID and T.ObjectID = @objectID and T.ObjectType = @objectType
+                                        THEN DELETE;";
+                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
+
+
+                    }
+                });
             }
         }
 
@@ -1903,9 +1947,9 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             if (fields != null)
             {
                 fields.ForEach(i => {
-                    i.ObjectID = entity.ID;
+                    i.ObjectID = entity.ID;             
                 });
-                AddOrUpdateFields(fields);
+                AddOrUpdateFields(fields);                
             }
 
             return returnValue;
