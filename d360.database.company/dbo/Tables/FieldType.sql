@@ -35,12 +35,14 @@ CREATE NONCLUSTERED INDEX [IX_FieldType_Object]
 
 
 GO
+
+
 CREATE TRIGGER [dbo].[FieldType_AfterUpsert]
-   ON  dbo.FieldType 
+   ON  [dbo].[FieldType] 
    AFTER INSERT, UPDATE
 AS 
 	UPDATE	F
-	set		F.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value)
+	set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 	FROM	Field F
 			inner join inserted FT on FT.ID = F.FieldTypeID
 
