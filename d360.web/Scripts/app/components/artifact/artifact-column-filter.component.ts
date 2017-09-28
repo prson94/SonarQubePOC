@@ -234,7 +234,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
             filter.Type = FilterFieldType.Field;
-
+            
             if (target.Data.columntype == "dropdownlist")
                 filter.Data.condition = "EQUAL";
             else

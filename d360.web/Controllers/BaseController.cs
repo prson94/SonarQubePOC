@@ -1470,6 +1470,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
             }
 
+            if (ft.AllowMultipleValues) condition = "CONTAINS";
+
             var querySyntax = "";
             switch (condition)
             {
