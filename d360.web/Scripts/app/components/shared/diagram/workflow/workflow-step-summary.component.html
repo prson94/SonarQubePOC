@@ -1,0 +1,204 @@
+﻿<div *ngIf="step != null" style="padding:10px;">
+    <!--COMMON PROPERTIES-->
+    <div class="row">
+        <div class="col s6">
+            <div class="FieldName">
+                Name
+            </div>
+            <div>
+                {{step.name}}
+            </div>
+        </div>
+        <div class="col s6" *ngIf="step.activityType != null && step.activityType > 0">
+            <div class="FieldName">
+                Activity Type
+            </div>
+            <div>
+                {{step.activityDescription}}
+            </div>
+        </div>
+        <div class="col s6" *ngIf="step.stepType != StepType.Task">
+            <div class="FieldName">
+                Step Type
+            </div>
+            <div>
+                {{StepType[step.stepType]}}
+            </div>
+        </div>
+    </div>
+    <ng-container *ngIf="step.settings != null">
+        <ng-container [ngSwitch]="step.activityType">
+            <!--EMAIL NOTIFICATION-->
+            <div *ngSwitchCase="WorkflowActivityType.EmailNotification" class="row" style="padding-top:10px">
+                <div class="col s6">
+                    <div class="FieldName">
+                        Recipient Type
+                    </div>
+                    <div>
+                        {{step.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' : step.settings['MessageRecipientType']}}
+                    </div>
+                </div>
+                <div class="col s6" *ngIf="step.settings['MessageRecipientType'] == 'SpecificUser'">
+                    <div class="FieldName">
+                        Recipient
+                    </div>
+                    <div>
+                        {{step.settings['MessageToUser']}}
+                    </div>
+                </div>
+                <div class="col s6" *ngIf="step.settings['MessageRecipientType'] == 'Responsibility'">
+                    <div class="FieldName">
+                        Responsibility
+                    </div>
+                    <div>
+                        <ng-container *ngIf="step.settings['ResponsibilityTypeName'] != null; else block">
+                            {{step.settings['ResponsibilityTypeName']}}
+                        </ng-container>
+                        <ng-template #block>
+                            &nbsp;
+                        </ng-template>
+                    </div>
+                </div>
+                <div class="col s6">
+                    <div class="FieldName">
+                        Subject
+                    </div>
+                    <div>
+                        {{step.settings['MessageSubjectTemplate']}}
+                    </div>
+                </div>
+                <div class="col s12">
+                    <div class="FieldName">
+                        Body
+                    </div>
+                    <div [innerHtml]="step.settings['MessageBodyTemplate']">
+
+                    </div>
+                </div>
+                <div class="col s12" *ngIf="step.settings['IncludePreviousFormResponses'] != null">
+                    <div class="FieldName">Include previous form responses?</div>
+                    <div>
+                        {{step.settings['IncludePreviousFormResponses'].toString() == 'true' ? 'Yes' : 'No'}}
+                    </div>
+                </div>
+            </div>
+            <!--FORM-->
+            <div *ngSwitchCase="WorkflowActivityType.Form" class="row"  style="padding-top:10px">
+                <ng-container *ngIf="step != null && step.fields != null && step.fields.form != null">
+                    <div class="col s6" *ngIf="step.fields.form['@title'] != null">
+                        <div class="FieldName">
+                            Title
+                        </div>
+                        <div>
+                            {{step?.fields?.form['@title']}}
+                        </div>
+                    </div>
+                    <div class="col s12" *ngIf="step.fields.form['@description'] != null">
+                        <div class="FieldName">
+                            Description
+                        </div>
+                        <div [innerHTML]="step.fields.form['@description']">
+
+                        </div>
+                    </div>
+                </ng-container>           
+                <div class="col s6">
+                    <div class="FieldName">
+                        Response Type
+                    </div>
+                    <div>
+                        {{step?.settings?.FormResponseType == 'FirstResponse' ? 'First Response' : step?.settings?.FormResponseType}}
+                    </div>
+                </div>
+                <div class="col s6">
+                    <div class="FieldName">
+                        Recipient Type
+                    </div>
+                    <div>
+                        {{step?.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' : step?.settings['MessageRecipientType']}}
+                    </div>
+                </div>
+                <div class="col s6" *ngIf="step?.settings['MessageRecipientType'] == 'SpecificUser'">
+                    <div class="FieldName">
+                        Recipient
+                    </div>
+                    <div>
+                        {{step?.settings['MessageToUser']}}
+                    </div>
+                </div>
+                <div class="col s6" *ngIf="step.settings['MessageRecipientType'] == 'Responsibility'">
+                    <div class="FieldName">
+                        Responsibility
+                    </div>
+                    <div>
+                        <ng-container *ngIf="step.settings['ResponsibilityTypeName'] != null; else block">
+                            {{step?.settings['ResponsibilityTypeName']}}
+                        </ng-container>
+                        <ng-template #block>
+                            &nbsp;
+                        </ng-template>
+                    </div>
+                </div>
+                <div class="col s6" *ngIf="step.settings['SendFormEmail'] != null">
+                    <div class="FieldName">
+                        Send form email?
+                    </div>
+                    <div>
+                        {{step?.settings['SendFormEmail'].toString() == 'true' ? 'Yes' : 'No'}}
+                    </div>
+                </div>
+                <div class="col s12" *ngIf="step.settings['SendFormEmail'] != null && step.settings['SendFormEmail'].toString() == 'true'">
+                    <div class="FieldName">
+                        Body
+                    </div>
+                    <div [innerHTML]="step.settings['MessageBodyTemplate']">
+
+                    </div>
+                </div>
+                <div class="col s12">
+                    <div class="FieldName">
+                        Form Inputs
+                    </div>
+                    <ng-container *ngIf="step.fields.form != null && step.fields.form.field != null && step.fields.form.field.length > 0; else none">
+                        <p-dataTable [value]="step.fields.form.field" selectionMode="single">
+                            <p-column field="@id" header="Name"></p-column>
+                            <p-column field="@label" header="Label"></p-column>
+                            <p-column field="@type" header="Type"></p-column>
+                        </p-dataTable>
+                    </ng-container>
+                    <ng-template #none>
+                        No form inputs defined
+                    </ng-template>
+                </div>
+            </div>
+            <!--FIELD CHANGE-->
+            <div *ngSwitchCase="WorkflowActivityType.FieldChange" class="row"  style="padding-top:10px">
+                <div class="col s12" *ngIf="step?.settings?.FieldUpdate?.Field != null">
+                    <p-dataTable [value]="step.settings.FieldUpdate.Field" selectionMode="single">
+                        <p-column header="Field" field="@FieldName"></p-column>
+                        <p-column header="Value" field="@Value">
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <div *ngIf="item != null">
+                                    <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
+                                    <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
+                                    <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true'">[use value from form input {{item['@Formlabel']}}]</span>
+                                    <span *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
+                                        {{item['@Value']}}
+                                    </span>
+                                </div>
+                            </ng-template>
+                        </p-column>
+                    </p-dataTable>
+                </div>
+            </div>
+            <!--STORED PROCEDURE-->
+            <div *ngSwitchCase="WorkflowActivityType.Procedure" class="row">
+
+            </div>
+        </ng-container>
+    </ng-container>
+</div>
+<div *ngIf="step == null" style="text-align: center">
+    Nothing selected
+</div>
+
