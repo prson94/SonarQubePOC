@@ -402,11 +402,14 @@ order by wi.StartedOn desc";
                 
                 var obj = Company.GetObjectDetail(@object, item.ObjectID);
 
-                var type  = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj.Type);
+                var type = SystemObjects.IssueType;
+
+                if(obj != null) type  = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj.Type);
+
 
                 if (isCompleted)
                 {
-                    Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = obj.TypeID, ObjectType = type });
+                    Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null? obj.TypeID:-1), ObjectType = type });
                 }
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
