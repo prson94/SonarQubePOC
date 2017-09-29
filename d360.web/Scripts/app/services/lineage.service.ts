@@ -11,7 +11,7 @@ import {
     TechnicalRelation,
     SourceRule,
     RelationItem,
-    LineageEditorModel,
+    LineageEditorModelV2,
     LineageEditorTechnicalModel,
     LineagePreviewModel,
 } from '../models/lineage.model';
@@ -40,11 +40,17 @@ export class LineageService extends BaseService {
 
     public queryObjectTypes(type: string, id: number, query: string): Observable<any[]> {
         return this.http.get(`api/lineage/query/objects/${type}/${id}?query=${query}`)
-            .map(response => <any[]>response.json());       
+            .map(response => <any[]>response.json());
     }
 
-        public getLineageObjectDetail(type: string, id: number): Promise<any> {
+    public getLineageObjectDetail(type: string, id: number): Promise<any> {
         return this.http.get(`resources/${type}/${id}/templates/tooltip/preview?isNg=true`)
+            .toPromise()
+            .catch(err => this.handleError(err));
+    }
+
+    public postLineage(model: LineageEditorModelV2) {
+        return this.http.post('diagrams/lineage/save', model)
             .toPromise()
             .catch(err => this.handleError(err));
     }

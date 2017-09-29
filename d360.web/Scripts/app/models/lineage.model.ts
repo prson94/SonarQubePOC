@@ -48,12 +48,15 @@ export class NodeModel {
     other = null;
 }
 
+
+
 export class NodeModelV2 {
     key: any;
     object: string;
     objectId: number;
     objectType: string;
     objectTypeId: number;
+    objectTypeName: string;
     name: string;
     foreColor: string = '#000';
     backColor: string = '#fff';
@@ -76,6 +79,34 @@ export class LinkModelV2 {
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
 }
+
+
+export class LineageEditorModelV2 {
+    Focal: string;
+    FocalID: number;
+    Nodes: LineageNodeModel[] = [];
+    Links: LineageLinkModel[] = [];
+}
+
+export class LineageNodeModel {
+    Key: string;
+    Object: string;
+    ObjectID: number;
+    ObjectType: string;
+    ObjectTypeID: number;
+    Group: string;
+    IsGroup: boolean;
+    Category: string;
+}
+
+export class LineageLinkModel {
+    IntersectID: number;
+    From: string;
+    To: string;
+}
+
+
+
 
 
 export class MapItem {
@@ -300,7 +331,7 @@ export class LineageEditorTechnicalModel {
 export class IntersectDetail {
     ID: number;
     IntersectTypeID: number;
-    Classification: number; 
+    Classification: number;
     Description: string;
     Subject: string;
     SubjectID: number;

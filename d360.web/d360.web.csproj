@@ -1034,7 +1034,10 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu-permissions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\diagram-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
