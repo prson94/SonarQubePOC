@@ -838,7 +838,7 @@ namespace d360.web.Controllers
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(type.Parent.Name)}", FieldType = DataType.Lookup.ToString(), Value = (a.ParentID.HasValue ? a.ParentID.ToString() : ""), Items = parents });                
             }
 
-            list.AddRange(
+            list =(
                 loadDynamicFields(
                     SystemObjects.Artifact.ToString(),
                     id,
