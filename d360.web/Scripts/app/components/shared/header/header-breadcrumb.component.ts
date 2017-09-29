@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, Input } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { Subscription }   from 'rxjs/Subscription';
@@ -21,6 +21,7 @@ import { Subscription }   from 'rxjs/Subscription';
 })
 
 export class HeaderBreadcrumbComponent {
+    @Input() controlWidth: number;
     subscriptionPop: Subscription;
     subscriptionClear: Subscription;
     subscriptionAdd: Subscription;
@@ -68,7 +69,7 @@ export class HeaderBreadcrumbComponent {
             return;
         }
 
-        var controlsWidth = (windowWidth > 991) ? 360 : 0; // only visible medium and up
+        var controlsWidth = (windowWidth > 991) ? this.controlWidth : 0; // only visible medium and up
         var logoWidth = 200;
         var breadcrumbWidth = element.offsetWidth;        
 

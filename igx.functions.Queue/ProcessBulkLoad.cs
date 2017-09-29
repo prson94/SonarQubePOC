@@ -347,7 +347,7 @@ namespace igx.functions.Queue
                                         {
                                             verifiedItem = company.Filter<Artifact>(x =>
                                                 x.ArtifactTypeID == verifiedType.ID &&
-                                                x.TaxonomyTypeID == verifiedSubjectArea.ID &&
+                                                //x.TaxonomyTypeID == verifiedSubjectArea.ID &&
                                                 x.TextPath.ToLower() == rawItemPath
                                             )
                                             .Select(x => new SimpleTypeModel { Name = "Artifact", ID = x.ID })

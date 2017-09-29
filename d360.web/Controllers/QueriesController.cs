@@ -61,24 +61,6 @@ order by	AT.Name,
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
-
-        [Route("{id:int}/StatusBreakdownByArtifactType")]
-        public JsonNetResult StatusBreakdownByArtifactType(int id)
-        {
-            var query = Company.Query<dynamic>(@"select		Status, 
-			count(1) as [Count],
-			case Status 
-				when 'Certified' then '#3f9d40'
-				when 'Draft' then '#d32f2f'
-				else '#e2792a'
-			end as BackColor 
-from		Artifact 
-where		ArtifactTypeID = @id
-group by	Status
-order by	Status ", new { id = id });
-
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
         
         [Route("FollowingByResourceByType"), NonNullableParameters]
         public JsonNetResult GetFollowingByResourceByType(int resourceID, string type, int id)

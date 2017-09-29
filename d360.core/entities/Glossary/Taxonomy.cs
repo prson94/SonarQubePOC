@@ -9,7 +9,7 @@ using d360.core.queue;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Taxonomy : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity//, IDisplayValueObject
+    public class Taxonomy : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity, IDisplayValueObject
     {
         public Taxonomy()
         {
@@ -19,14 +19,8 @@ namespace d360.core.entities
         [DataMember]
         public int? ParentID { get; set; }
 
-        [
-        DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description"),
-        Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "Name_ErrorRequired"), StringLength(250)
-        ]
-        public string Name { get; set; }
-
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Definition_Name", Description = "Definition_Description")]
-        public string Description { get; set; }
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string DisplayValue { get; set; }
 
         [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
         public string TextPath { get; set; }
@@ -44,9 +38,6 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string DisplayValue { get; set; }
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string KeyHash { get; set; }

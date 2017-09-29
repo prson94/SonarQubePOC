@@ -247,6 +247,27 @@ namespace d360.web.Controllers
             };
         }
 
+
+        [HttpGet, Route("lineage/{type}/{id:int}")]
+        public JsonNetResult GetLineageByObjectV2(string type, int id)
+        {
+            var list = Company.Query<string>(@"exec GetLineageV2 @type, @id",
+                new
+                {
+                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
+                    id
+                }
+            ).ToList();
+
+            var json = string.Join("", list);
+            var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
+
+            return new JsonNetResult
+            {
+                Data = obj,
+                Formatting = Formatting.None
+            };
+        }
         #endregion
     }
 }

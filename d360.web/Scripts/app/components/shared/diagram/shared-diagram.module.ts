@@ -28,6 +28,11 @@ import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibili
 import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
 import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
 import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
+import { LineageInfoComponent } from './lineage/lineage-info.component';
+import { LineageEditorComponent } from './lineage/lineage-editor.component';
+
+import { LineageDiagramComponent } from './lineage/lineage-diagram.component';
+
 import { ModelDiagramComponent } from './model-diagram.component';
 import { D3SOverlayWindowModule } from '../overlay-window.component';
 
@@ -74,12 +79,18 @@ import { SharedFormMessageModule } from '../form-message.part'
         LineageSourceRuleEditorComponent,
         LineageSourceRulesComponent,
         LineageTechnicalRelationshipsComponent,
+        LineageInfoComponent,
+        LineageEditorComponent,
         ModelDiagramComponent,
+
+        LineageDiagramComponent,
     ],
     exports: [
         LineageComponent,
         ImpactComponent,  
-        ModelDiagramComponent,      
+        ModelDiagramComponent,  
+
+        LineageDiagramComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

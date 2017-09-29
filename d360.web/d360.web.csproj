@@ -72,8 +72,8 @@
     <Reference Include="HtmlAgilityPack, Version=1.5.5.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.5.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="IPAddressRange, Version=2.0.0.3, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\IPAddressRange.2.0.0.3\lib\net45\IPAddressRange.dll</HintPath>
+    <Reference Include="IPAddressRange, Version=2.0.0.4, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\IPAddressRange.2.0.0.4\lib\net45\IPAddressRange.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Activities.Extensions, Version=2.0.6.9, Culture=neutral, PublicKeyToken=23b0c89d0d5ad43f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -629,7 +629,9 @@
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-field-change.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-form-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-summary.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
@@ -823,6 +825,7 @@
     <Content Include="Content\styles\img\hue-horizontal.png" />
     <Content Include="Content\styles\img\hue.png" />
     <Content Include="Content\styles\img\saturation.png" />
+    <Content Include="Content\styles\materialize.less" />
     <None Include="Content\styles\Tooltip.less" />
     <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
@@ -1032,6 +1035,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-summary.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />

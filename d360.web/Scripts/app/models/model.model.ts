@@ -16,10 +16,9 @@ export class Model {
 export class ModelHierarchy {
     HasChildren: boolean;    
     ID: number;
-    Name: string;
+    DisplayValue: string;
     TextPath: string;
     ParentID: number;
-    Description: string;
     Level: number;
 }
 

@@ -83,7 +83,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             this.objectType = params['objectType'];
 
             this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
-                if (res) this.objectName = res.Name;                
+                if (res) this.objectName = res.DisplayValue;
             });
         });
     }

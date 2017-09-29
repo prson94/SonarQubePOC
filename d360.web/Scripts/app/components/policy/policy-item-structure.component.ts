@@ -31,11 +31,6 @@ import { LevelsService } from '../../services/levels.service';
                                 <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.Name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
                             </ng-template>
                         </p-column>                        
-                         <p-column field="Description" header="Description">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                               <div class="truncate" [title]="item.data.Description">{{item.data.Description}}</div>
-                            </ng-template>
-                        </p-column>
                         <p-column field="StatusName" header="Status" sortable="custom" [filter]="!showSimpleFilter" [style]="{width:'10%'}"></p-column>  
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()">
                             <ng-template let-item="rowData" pTemplate type="body">

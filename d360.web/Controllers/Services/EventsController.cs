@@ -112,31 +112,123 @@ namespace d360.web.Controllers.Services
         /// <summary>
         /// Add a policy to your environment.  Once created, this policy can hold child policies and rules.
         /// </summary>
+        /// <param name="id">The type ID</param>
         /// <param name="model">A policy</param>
         /// <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new policy is also returned.</returns>
-        [Route("policies"), HttpPost]
-        public HttpResponseMessage AddPolicy(PolicyModel model)
+        [Route("policies/{id:int}"), HttpPost]
+        public HttpResponseMessage AddPolicy(int id, Dictionary<string, string> model)
         {
-            if (!Company.CurrentResourceIsAdmin)
+            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Create, ClaimObject.Root))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a policy.");
 
-            if (model.ParentID.HasValue)
-            {
-                if (Company.GetById<Policy>(model.ParentID.Value) == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format("The Parent Policy does not exist for ID: {0}.", model.ParentID.Value));
-            }
+            Policy item = null;
 
             try
             {
-                var policy = new Policy
-                {
-                    Description = model.Description,
-                    Name = model.Name,
-                    ParentID = model.ParentID
-                };
+                var type = Company.GetById<PolicyType>(id);
 
-                Company.Add<Policy>(policy);
-                return Request.CreateResponse<Policy>(HttpStatusCode.Created, policy);
+                #region Check that PolicyType was found
+
+                if (type == null)
+                {
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+                }
+
+                #endregion
+
+                item.PolicyTypeID = id;
+
+                int parentID = 0;
+                if (model.ContainsKey("ParentID"))
+                {
+                    if (!int.TryParse(model["ParentID"], out parentID))
+                    {
+                        throw new MissingPropertiesException("ParentID");
+                    }
+                }
+                if (parentID > 0) item.ParentID = parentID;
+
+                
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, id).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
+
+                var fields = new List<Field>();
+                fieldTypes.ForEach(f =>
+                {
+                    if (model.ContainsKey(f.Name))
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Policy.ToString(), Value = model[f.Name].ToString() });
+                    else
+                    {
+                        if (f.IsRequired)
+                            throw new MissingPropertiesException("Policy");
+                    }
+                });
+
+                Company.SaveOrUpdate<Policy>(item, fields);
+                
+
+                return Request.CreateResponse<Policy>(HttpStatusCode.Created, item);
+            }
+            catch (BaseException ex)
+            {
+                return Request.CreateErrorResponse(ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Update a specific policy.
+        /// </summary>
+        /// <param name="typeID">The type ID</param>
+        /// <param name="id">The policy ID</param>
+        /// <param name="model">The policy fields</param>
+        /// <returns>Artifact</returns>
+        [Route("policies/{typeID:int}/{id:int}"), HttpPut]
+        public HttpResponseMessage EditPolicy(int typeID, int id, Dictionary<string, string> model)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update, ClaimObject.Root))
+                    return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this policy.");
+
+                var item = Company.GetById<Policy>(id);
+
+                if (item == null)
+                {
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+                }
+                else
+                {
+                    if (item.PolicyTypeID != typeID)
+                    {
+                        throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+                    }
+                }
+
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, typeID).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
+
+                int parentID = 0;
+                if (model.ContainsKey("ParentID"))
+                {
+                    if (!int.TryParse(model["ParentID"], out parentID))
+                    {
+                        throw new MissingPropertiesException("ParentID");
+                    }
+                }
+                if (parentID > 0) item.ParentID = parentID;
+
+                var fields = new List<Field>();
+                fieldTypes.ForEach(f =>
+                {
+                    if (model.ContainsKey(f.Name))
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Policy.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
+                });
+
+                Company.SaveOrUpdate<Policy>(item, fields);
+
+                return Request.CreateResponse(HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -152,22 +244,29 @@ namespace d360.web.Controllers.Services
         /// <summary>
         /// Add a rule to your environment.  Once created, this rule can hold events
         /// </summary>
+        /// <param name="id">The rule Type ID</param>
         /// <param name="model">A rule</param>
         /// <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new rule is also returned.</returns>
-        [Route("rules"), HttpPost]
-        public HttpResponseMessage AddRule(RuleModel model)
+        [Route("rules/{id:int}"), HttpPost]
+        public HttpResponseMessage AddRule(int id, RuleModel model)
         {
-            if (!Company.CurrentResourceIsAdmin)
+            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Create, ClaimObject.Root))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a rule.");
+
+            Rule item = null;
 
             try
             {
-                if (model == null)
+                var type = Company.GetById<RuleType>(id);
+
+                #region Check that RuleType was found
+
+                if (type == null)
                 {
-                    throw new MissingPropertiesException("Rule");
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
                 }
 
-                Rule rule = null;
+                #endregion
 
                 if (!string.IsNullOrEmpty(model.SourceID))
                 {
@@ -177,27 +276,38 @@ namespace d360.web.Controllers.Services
                     }
                 }
 
-                rule = new Rule
+                item = new Rule
                 {
-                    Description = model.Description,
-                    Measurement = model.Measurement,
-                    Purpose = model.Purpose,
-                    Resolution = model.Resolution,
                     Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M,
-                    Name = model.Name,
-                    RuleType = model.RuleType,
-                    Status = RuleStatus.Draft,
+                    RuleTypeID = id,
+                    Status = item.Status,
                     RuleDimensionID = model.RuleDimensionID
                 };
 
                 if (!string.IsNullOrEmpty(model.SourceID))
                 {
-                    rule.RuleImplementations = new List<RuleImplementation>();
-                    rule.RuleImplementations.Add(new RuleImplementation { SourceID = model.SourceID });
+                    item.RuleImplementations = new List<RuleImplementation>();
+                    item.RuleImplementations.Add(new RuleImplementation { SourceID = model.SourceID });
                 }
 
-                Company.Add<Rule>(rule);
-                return Request.CreateResponse<Rule>(HttpStatusCode.Created, rule);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, id).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
+
+                var fields = new List<Field>();
+                fieldTypes.ForEach(f =>
+                {
+                    if (model.ContainsKey(f.Name))
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Rule.ToString(), Value = model[f.Name].ToString() });
+                    else
+                    {
+                        if (f.IsRequired)
+                            throw new MissingPropertiesException("Rule");
+                    }
+                });
+
+                Company.SaveOrUpdate<Rule>(item, fields);
+
+
+                return Request.CreateResponse<Rule>(HttpStatusCode.Created, item);
             }
             catch (BaseException ex)
             {
@@ -205,9 +315,64 @@ namespace d360.web.Controllers.Services
             }
             catch (Exception ex)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
             }
+        }
 
+        /// <summary>
+        /// Update a specific rule.
+        /// </summary>
+        /// <param name="typeID">The type ID</param>
+        /// <param name="id">The rule ID</param>
+        /// <param name="model">The rule fields</param>
+        /// <returns>Artifact</returns>
+        [Route("rules/{typeID:int}/{id:int}"), HttpPut]
+        public HttpResponseMessage EditRule(int typeID, int id, RuleModel model)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
+                    return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this rule.");
+
+                var item = Company.GetById<Rule>(id);
+
+                if (item == null)
+                {
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+                }
+                else
+                {
+                    if (item.RuleTypeID != typeID)
+                    {
+                        throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+                    }
+                }
+
+                item.Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M;
+                item.Status = item.Status;
+                item.RuleDimensionID = model.RuleDimensionID;
+
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
+
+                var fields = new List<Field>();
+                fieldTypes.ForEach(f =>
+                {
+                    if (model.ContainsKey(f.Name))
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Rule.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
+                });
+
+                Company.SaveOrUpdate<Rule>(item, fields);
+
+                return Request.CreateResponse(HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return Request.CreateErrorResponse(ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
+            }
         }
 
 

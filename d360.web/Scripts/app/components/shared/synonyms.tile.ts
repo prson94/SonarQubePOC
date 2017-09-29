@@ -43,13 +43,6 @@ declare var CompanySettings: any;
                                 <a (click)="navigate(item.ParentUrl)">{{item.ParentName}}</a>
                             </d3s-tooltip>
                         </ng-template>
-                    </p-column>                
-                    <p-column field="SubjectArea" [header]="subjectAreaName" sortable="true">
-                        <ng-template pTemplate type="body" let-item="rowData">                        
-                            <d3s-tooltip *ngIf="item.TaxonomyTypeID != null" [objectType]="'TaxonomyType'" [objectId]="item.TaxonomyTypeID" [tooltipType]="'Preview'">
-                                <a (click)="navigateTaxonomy(item)">{{item.SubjectArea}}</a>
-                            </d3s-tooltip>
-                        </ng-template>
                     </p-column>
                     <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '48px' }">
                         <ng-template let-col let-item="rowData" pTemplate type="body">
@@ -136,7 +129,6 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     private selectedType: string = '';
     private synonymItems = [];
     private selectedSynonym: SynonymItem;
-    private subjectAreaName : string = 'SubjectArea';
     private areSynonymOptionsLoaded: boolean = false;
     private customSynonymName: string = '';
 
@@ -149,9 +141,6 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     }
 
     ngOnInit() {
-        if (CompanySettings != null && CompanySettings.ArtifactType_TaxonomyTypeID && CompanySettings.ArtifactType_TaxonomyTypeID != '') {
-            this.subjectAreaName = CompanySettings.ArtifactType_TaxonomyTypeID;
-        }
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {        

@@ -761,7 +761,7 @@ order by wi.StartedOn desc";
         public HttpResponseMessage GetFieldTypes(int id, string type)
         {
             var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
-            string[] excludedTypes = { "ComplexRelationLookup", "Password", "Html", "Link", "FilteredLookup", "FusionLookup", "OwnershipLookup" };
+            string[] excludedTypes = { "ComplexRelationLookup", "Password", "Html", "Link", "FilteredLookup", "FusionLookup", "OwnershipLookup", "RefListRelationship", "Relationship" };
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
 
@@ -1293,7 +1293,7 @@ order by wi.StartedOn desc";
         }
 
         [Route("typelist"), HttpGet]
-        public HttpResponseMessage GetWorkflowsByTypeList(string types)
+        public HttpResponseMessage GetWorkflowsByTypeList(string types, string filteredObject = null, int? filteredObjectId = null)
         {
             //should only ever be comma separated list of numbers, remove anything else
             types = Regex.Replace(types ?? "", "[^0123456789, ]", string.Empty);
@@ -1303,7 +1303,7 @@ order by wi.StartedOn desc";
             if (string.IsNullOrWhiteSpace(types))
                 types = "-1";
 
-            var results = Company.Query<dynamic>(string.Format(QueryConstants.WorkflowTypeList, types)).ToList();
+            var results = Company.Query<dynamic>(string.Format(QueryConstants.WorkflowTypeList, types), new { filteredObject, filteredObjectId }).ToList();
 
             #region parse XML
 
@@ -1382,9 +1382,20 @@ order by wi.StartedOn desc";
 
 
         [Route("versionstep/history/{id:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowVersionStepHistory(int id)
+        public HttpResponseMessage GetWorkflowVersionStepHistory(int id, string filteredObject = null, int? filteredObjectId = null)
         {
-            var results = Company.Query<dynamic>(QueryConstants.WorkflowVersionStepHistory, new { id }).ToList();
+            var sql = QueryConstants.WorkflowVersionStepHistory;
+
+            if (filteredObject != null && filteredObjectId != null)
+            {
+                sql = string.Format(sql, "inner join workflow.item m on m.id = i.itemid and m.object = @filteredObject and m.objectid = @filteredObjectId");
+            }
+            else
+            {
+                sql = string.Format(sql, "left join workflow.item m on m.id = i.itemid");
+            }
+
+            var results = Company.Query<dynamic>(sql, new { id, filteredObject, filteredObjectId }).ToList();
 
             results.ForEach(r =>
             {

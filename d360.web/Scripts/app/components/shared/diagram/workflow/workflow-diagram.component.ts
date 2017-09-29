@@ -13,9 +13,10 @@
     SimpleChanges
 } from '@angular/core';
 import { PermissionsService } from '../../../../services/permissions.service';
-import { BaseComponent } from '../../base.component';
+import { DiagramBaseComponent } from '../diagram-base.component';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
+import { ObjectDetailService } from '../../../../services/object-detail.service';
 import {
     WorkflowDiagramModel,
     WorkflowDiagramNode,
@@ -45,9 +46,9 @@ declare var window: any;
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [PermissionsService, WorkflowService]
+    providers: [PermissionsService, WorkflowService, ObjectDetailService]
 })
-export class WorkflowDiagramComponent extends BaseComponent implements OnInit, OnChanges {
+export class WorkflowDiagramComponent extends DiagramBaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
     @Input() model: WorkflowDiagramModel;
     @Input() version: number = null;
@@ -58,6 +59,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     @Input() selection: NodeModel | LinkModel;
     @Input() selectedStepId: string;
     @Input() monitorView: boolean = false;
+    @Input() filteredObject: string;
+    @Input() filteredObjectId: number;
     @Output() selectedStepIdChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
@@ -93,6 +96,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
     private overlayMaxHeight = 500;
     private overlayWidth = 500;
 
+    private objectTypeName = null;
+
     //hard-coded offsets for diagram and overlay. Avoids issues with rendering completing after ngAfterViewInit()
     private overlayOffset = 391;
     private diagramOffset = 291;
@@ -110,7 +115,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         protected permissionsService: PermissionsService,
         private renderer: Renderer,
         private workflowService: WorkflowService,
-        private workflowFieldsService: WorkflowFieldsService) {
+        private workflowFieldsService: WorkflowFieldsService,
+        private objectDetailService: ObjectDetailService) {
         super();
     }
 
@@ -123,6 +129,8 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             this.isWindowVisible = true;
         }
 
+        this.isLoading = true;
+        //console.log(this.model);
     }
 
     public ngOnChanges(changes: SimpleChanges) {
@@ -301,22 +309,26 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
         if (this.model != null) {
             if (this.model.Event == null || this.model.Event.Object == null || this.model.Event.ObjectID == null) {
                 console.warn('Model passed to workflow diagram with no Event Registration data.');
+                this.isLoading = false;
                 return Promise.resolve();
 
             }
 
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object)
                 .then(r => this.fieldTypes = r)
-                .then(() => this.parseData(this.model));
+                .then(() => this.parseData(this.model))
+                .then(() => this.isLoading = false);
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
-        if (this.id == null)
+        if (this.id == null) {
+            this.isLoading = false;
             return Promise.resolve();
+        }
 
         this.isLoading = true;
 
-        return this.workflowService.getWorkflowDiagram(this.id, this.version)
+        return this.workflowService.getWorkflowDiagram(this.id, this.version, this.filteredObject, this.filteredObjectId)
             .then(r => {
                 this.model = r;
                 if (this.model.Nodes != null)
@@ -430,13 +442,23 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             .then(() => this.populateDiagram())
             .then(() => this.initializePalette())
             .then(() => this.initializeFormFields())
+            .then(() => this.getObjectName())
             .then(() => this.isWindowVisible = (this.monitorView || !this.isReadOnly));
-        //.then(() => { this.resizeDiagram(); this.resizePalette(); });
     }
 
     //#endregion
 
     //#region helper methods
+
+    private getObjectName() {
+        if (this.objectTypeName != null || this.monitorView || !this.hasHeader)
+            return;
+
+        this.objectDetailService.getObject(this.model.Event.ObjectID, this.model.Event.Object)
+            .then(r => {
+                this.objectTypeName = r.TypeName + ' :: ' + r.Name;
+            });
+    }
 
     private getAvailableFormInputs(link: LinkModel): string[] {
         let links = [];
@@ -658,6 +680,7 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
             n.TransitionType = m.transitionType;
             n.Name = m.name;
 
+
             //clone conditions so we can remove field name and _$visited
             let cond = _.cloneDeep(m.condition);
             cond.forEach(c => {
@@ -688,6 +711,18 @@ export class WorkflowDiagramComponent extends BaseComponent implements OnInit, O
                         delete f['@FormLabel'];
                         delete f['_$visited'];
                     });
+                }
+            }
+
+            if (m.activityType == WorkflowActivityType.EmailNotification) {
+                if (m.settings['MessageRecipientType'] == 'Responsibility') {
+                    delete m.settings['ResponsibilityTypeName'];
+                }
+            }
+
+            if (m.activityType == WorkflowActivityType.Form) {
+                if (m.settings['SendFormEmail'].toString() == 'true' && m.settings['MessageRecipientType'] == 'Responsibility') {
+                    delete m.settings['ResponsibilityTypeName'];
                 }
             }
             

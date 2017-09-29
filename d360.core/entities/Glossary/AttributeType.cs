@@ -29,10 +29,6 @@ namespace d360.core.entities
         public string DisplayFormat { get; set; }
 
         [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "TextFormatString_Name", Description = "TextFormatString_Description")]
-        public string TextFormatString { get; set; }
-
-        [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "AttributeTypeCategory_Name", Description = "AttributeTypeCategory_Description")]
         public int? AttributeTypeCategoryID { get; set; }
 

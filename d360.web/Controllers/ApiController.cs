@@ -545,7 +545,6 @@ namespace d360.web.Controllers
 
                     settings = Community.GetCompanySettings();
 
-                    var taxonomyTypes = Company.Table<TaxonomyType>().Select(i => i.Name).ToList();
                     var artifactType = Company.GetById<ArtifactType>(id);
                     var hasParentType = false;
 
@@ -554,30 +553,20 @@ namespace d360.web.Controllers
 
                     staticFieldCount = hasParentType ? 4 : 3;
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
-
                     if (hasParentType)
                     {
-                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID).OrderBy(i => i.TextPath).Select(i => i.TextPath).ToList() });
+                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID).OrderBy(i => i.DisplayValue).Select(i => i.DisplayValue).ToList(), columnWidth = 200 });
                     }
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
-                    columns.Add(new GridColumn { text = settings["ArtifactType_TaxonomyTypeID"], datafield = "TaxonomyType", filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = taxonomyTypes });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Draft", "Under Review", "Certified" } });
-
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
                     if (hasParentType)
                     {
                         fields.Add(new GridField { name = "ParentID", type = "number" });
                         fields.Add(new GridField { name = "Parent", type = "string" });
                         fields.Add(new GridField { name = "ParentUrl", type = "string" });
                     }
-                    fields.Add(new GridField { name = "TaxonomyTypeID", type = "number" });
-                    fields.Add(new GridField { name = "TaxonomyType", type = "string" });
-                    fields.Add(new GridField { name = "Status", type = "string" });
-                    fields.Add(new GridField { name = "DateLastCertified", type = "date" });
                     fields.Add(new GridField { name = "Url", type = "string" });
 
 
@@ -588,8 +577,6 @@ namespace d360.web.Controllers
                     {
                         column.filteritems = new List<string>();
                     }
-
-                    filterColumns.Add(new GridFilterColumn { text = d360.core.resources.Fields.Description_Name, datafield = "Description" });
 
                     var hiddenItems = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
                     parseDynamicFilterFields(hiddenItems, filterColumns, 0, false, true);
@@ -609,7 +596,7 @@ namespace d360.web.Controllers
                         }
                     }
 
-                    filterColumns = filterColumns.OrderByDescending(x => x.datafield == "Name").ThenByDescending(x => x.datafield == "Description").ThenByDescending(x => x.datafield == "Status").ThenBy(x => x.text).ToList();
+                    filterColumns = filterColumns.OrderBy(x => x.text).ToList();
 
                     //Load any field types that are top level filter fields
                     var topFiltersHidden = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
@@ -632,31 +619,41 @@ namespace d360.web.Controllers
                     #region
 
                     var intersectType = Company.GetById<IntersectType>(id);
+                    var targetType = Request.GetQueryString("target");
+                    var targetTypeID = Request.GetQueryString("targetID");
 
-                    staticFieldCount = 2;
+                    if (!string.IsNullOrEmpty(targetType) && !string.IsNullOrEmpty(targetTypeID))
+                    {
+                        var ttID = int.Parse(targetTypeID);
+                        var targetKeyFields = Company.Filter<FieldType>(i => i.Object == targetType && i.ObjectID == ttID && i.IsPartOfKey).OrderBy(i => i.SortOrder).ToList();
+                        items.InsertRange(0, targetKeyFields);
+                    }
+
+                    if (targetType == SystemObjects.ReferenceItemType.ToString())
+                    {
+                        columns.Add(
+                            new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
+                        );
+                    }
+
+                    //var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == id && !i.AllowMultipleEntries).ToList();
+                    //foreach (var f in attributesTypes)
+                    //{
+                    //    var name = $"AttributeType{f.AttributeType.ID}";
+                    //    columns.Add(
+                    //        new GridColumn { text = f.AttributeType.Name, datafield = $"{name}", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
+                    //    );
+
+                    //    fields.Add(new GridField { name = $"{name}", type = "string" });
+                    //}
+
+                    staticFieldCount = columns.Count;
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
-                    var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == id && !i.AllowMultipleEntries).ToList();
-                    foreach (var f in attributesTypes)
-                    {
-                        var name = $"AttributeType{f.AttributeType.ID}";
-                        columns.Add(
-                            new GridColumn { text = f.AttributeType.Name, datafield = $"{name}", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
-                        );
-
-                        fields.Add(new GridField { name = $"{name}", type = "string" });
-                    }
-
                     fields.Add(new GridField { name = "ID", type = "number" });
-
-                    if (intersectType.Subject == "ArtifactType")
-                    {
-                        fields.Add(new GridField { name = "TaxonomyType", type = "string", });
-                    }
-
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "ObjectID", type = "number" });
                     fields.Add(new GridField { name = "Object", type = "string" });
@@ -689,13 +686,10 @@ namespace d360.web.Controllers
                     remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
-
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "ParentID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "PolicyTypeID", type = "number" });
                     break;
                 #endregion                                
@@ -730,7 +724,6 @@ namespace d360.web.Controllers
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Date", type = "date" });
                     fields.Add(new GridField { name = "Criticality", type = "string" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "SourceID", type = "string" });
                     fields.Add(new GridField { name = "Rule", type = "string" });
                     fields.Add(new GridField { name = "Status", type = "string" });
@@ -903,7 +896,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 case SystemObjects.TaxonomyType:
                     #region TaxonomyType
                     {
-                        //parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
                         var taxonomyFields = Company.Filter<FieldType>(i => i.Object == "TaxonomyType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.SortOrder).ToList();
 
                         foreach (var field in taxonomyFields)
@@ -1019,10 +1011,10 @@ where   h.ID <> @t order by h.[Level] desc;
 
             //Static fields
             model.Add("ID", a.ID);
-            model.Add("Name", a.Name);
-            model.Add("Description", a.Description);
+            model.Add("DisplayValue", a.DisplayValue);
+            //model.Add("Name", a.Name);
+            //model.Add("Description", a.Description);
             model.Add("TypeName", a.ArtifactType.Name);
-            model.Add("Status", a.Status);
 
             //check if this object has dashboards             
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "Artifact" && x.ObjectID == a.ArtifactTypeID && x.ReportType == "powerbi").Any();
@@ -1083,6 +1075,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("Description", artifactType.Description);
             model.Add("ParentID", artifactType.ParentID);
             model.Add("CanOwnFusion", artifactType.CanOwnFusion);
+            model.Add("HasCustomExportTemplates", Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == typeID).Any());
             model.Add("AutoDisplayDescription", artifactType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType == "powerbi").Any();
@@ -1096,6 +1089,11 @@ where   h.ID <> @t order by h.[Level] desc;
             return model;
         }
 
+        [Route("artifacttype/{id:int}/export/templates")]
+        public IEnumerable<ArtifactTypeExportTemplate> GetArtifactTypeExportTemplates(int id)
+        {
+            return Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == id);
+        }
 
         [Route("artifacttypes")]
         public IQueryable<ArtifactType> GetArtifactTypes()
@@ -1115,8 +1113,8 @@ where   h.ID <> @t order by h.[Level] desc;
                 prefix = qs.Single(i => i.Key == "prefix").Value;
             }
 
-            var items = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).OrderBy(i => i.Name).AsQueryable();
-            if (!string.IsNullOrEmpty(prefix)) items = items.Where(i => i.Name.StartsWith(prefix));
+            var items = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).AsQueryable();
+            //if (!string.IsNullOrEmpty(prefix)) items = items.Where(i => i.Name.StartsWith(prefix));
             var lItems = items.Take(take).ToList();
 
             var IDs = lItems.Select(i => i.ID).ToList();
@@ -1130,9 +1128,6 @@ where   h.ID <> @t order by h.[Level] desc;
 
                 //Static fields
                 listItem.Add("ID", item.ID);
-                listItem.Add("Name", item.Name);
-                listItem.Add("Description", item.Description);
-                listItem.Add("Status", item.Status);
 
                 // Dynamic fields
                 foreach (var f in values.Where(i => i.ObjectID == item.ID).OrderBy(i => i.Name))
@@ -1396,7 +1391,7 @@ with cte as (
 	select	a.ID,
 			a.ParentID,
 			a.ArtifactTypeID,
-			a.TextPath
+			a.DisplayValue
 	from	FusionOwner fo
 			inner join Artifact a on a.ID = fo.ArtifactID 
 	where	fo.fusionID = @fusionID
@@ -1404,14 +1399,14 @@ with cte as (
 	select	c.ID,
 			c.ParentID,
 			c.ArtifactTypeID,
-			c.TextPath
+			c.DisplayValue
 	from	Artifact c
 			inner join ArtifactType ct on ct.ID = c.ArtifactTypeID and ct.CanOwnFusion = 1
 			inner join cte p on p.ID = c.ParentID
 )
 
 select	a.ID,
-		t.Name + ': ' + a.TextPath as Name
+		t.Name + ': ' + a.DisplayValue as Name
 from	cte a
 		inner join ArtifactType t on t.ID = a.ArtifactTypeID";
 
@@ -1437,11 +1432,11 @@ from	cte a
             switch (type)
             {
                 case SystemObjects.ArtifactType:
-                    return Company.Filter<Artifact>(x => x.ArtifactTypeID == id).Select(x => new { Name = x.Name, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
+                    return Company.Filter<Artifact>(x => x.ArtifactTypeID == id).Select(x => new { Name = x.DisplayValue, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
                 case SystemObjects.FusionAttributeType:
                     return Company.Filter<FusionAttribute>(x => x.FusionAttributeTypeID == id).Select(x => new { Name = x.Name, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
                 case SystemObjects.TaxonomyType:
-                    return Company.Filter<Taxonomy>(x => x.TaxonomyTypeID == id).Select(x => new { Name = x.Name, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
+                    return Company.Filter<Taxonomy>(x => x.TaxonomyTypeID == id).Select(x => new { Name = x.DisplayValue, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
                 default:
                     return null;
             }
@@ -2379,6 +2374,28 @@ from    [Intersect] I
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }
 
+        [Route("lineage/objectTypes"), HttpGet]
+        public HttpResponseMessage GetLineageObjectTypes()
+        {
+            var sql = @"
+                select distinct
+	                i.[object], 
+	                i.objectId,
+	                d.name,
+	                d.IconForeColor as foreColor,
+	                d.IconBackColor as backColor 
+                from 
+	                intersectType i
+                inner join
+	                cache.objectDetails d on d.object = i.object and d.objectid = i.objectid
+                where 
+                    i.[subject] = 'MapType' and i.[object] != 'MapType'
+                order by [name]";
+
+            var list = Company.Query<dynamic>(sql);
+
+            return Request.CreateResponse(HttpStatusCode.OK, list);
+        }
         #endregion
 
         #region Complex Lookup Fields
@@ -2748,38 +2765,17 @@ end",
                                     urlfield = $"{dataField}_Url"
                                 };
 
+                                setColumnTypeInfo(ft, i, ac);
+                                ac.datafieldtype = "lookup"; //must be done after function call above.
+                                columnModels.Add(ac);
+                                // Add the fields that you need to create link in Angular component.
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Artifact'", datafield = $"{dataField}_Object" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Artifact', A{pos}.ArtifactTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
 
-                                //special case for subject area
-                                if (i.FieldTypeName == "SubjectArea")
-                                {
-                                    ac.DisplayColumn = $"T{pos}.Name";
-                                    ac.SortColumn = (i.SortOrder > 0) ? getFieldTypeColumnString(ft?.Type ?? "", $"T{pos}.Name") : string.Empty;
-                                    setColumnTypeInfo(ft, i, ac);
-                                    ac.datafieldtype = "lookup"; //must be done after function call above.
-                                    columnModels.Add(ac);
-                                    // Add the fields that you need to create link in Angular component.
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'TaxonomyType'", datafield = $"{dataField}_Object" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(T{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('TaxonomyType', 0, T{pos}.ID)", datafield = $"{dataField}_Url" });
-                                    join.JoinStatement += $" left join TaxonomyType T{pos} on T{pos}.ID = A{pos}.TaxonomyTypeID ";
-                                }
-                                else
-                                {
-
-                                    setColumnTypeInfo(ft, i, ac);
-                                    ac.datafieldtype = "lookup"; //must be done after function call above.
-                                    columnModels.Add(ac);
-                                    // Add the fields that you need to create link in Angular component.
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Artifact'", datafield = $"{dataField}_Object" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Artifact', A{pos}.ArtifactTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
-
-                                }
-
-                                #endregion
                                 break;
+                                #endregion
                             case "FusionAttributeType":
                                 #region FusionAttributeType
 
@@ -2894,41 +2890,17 @@ end",
                                     SortColumn = objectSortColumn,
                                     urlfield = $"{dataField}_Url"
                                 };
+                                setColumnTypeInfo(ft, i, rc);
+                                rc.datafieldtype = "lookup"; //must be done after function call above.
+                                columnModels.Add(rc);
 
-                                if (i.FieldTypeName == "Dimension")
-                                {
-                                    rc.DisplayColumn = $"D{pos}.Name";
-
-
-                                    setColumnTypeInfo(ft, i, rc);
-                                    rc.datafieldtype = "lookup"; //must be done after function call above.
-                                    columnModels.Add(rc);
-                                    // Add the fields that you need to create link in Angular component.
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'RuleDimension'", datafield = $"{dataField}_Object" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(D{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
-                                    join.JoinStatement += $" left join RuleDimension D{pos} on D{pos}.ID = A{pos}.RuleDimensionID";
-                                }
-                                else if (i.FieldTypeName == "Threshold")
-                                {
-                                    setColumnTypeInfo(ft, i, rc);
-                                    columnModels.Add(rc);
-                                }
-                                else
-                                {
-
-                                    setColumnTypeInfo(ft, i, rc);
-                                    rc.datafieldtype = "lookup"; //must be done after function call above.
-                                    columnModels.Add(rc);
-
-                                    // Add the fields that you need to create link in Angular component.
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Rule'", datafield = $"{dataField}_Object" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
-                                }
-                                break;
+                                // Add the fields that you need to create link in Angular component.
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Rule'", datafield = $"{dataField}_Object" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Rule', A{pos}.RuleTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                break;                                
+                                
                                 #endregion
                             case "TaxonomyType":
                                 #region TaxonomyType
@@ -3783,14 +3755,14 @@ where   Object = @type
             switch (type)
             {
                 case SystemObjects.ArtifactType:
-                    sql = @"select distinct A.TextPath as Name, A.ID, 'Artifact' as [Type] 
+                    sql = @"select distinct A.DisplayValue as Name, A.ID, 'Artifact' as [Type] 
                             from Artifact A 
                             inner join [Intersect] I on A.ArtifactTypeID = @id and ( (I.Subject = 'Artifact' and A.ID = I.SubjectID)) 
 							union
-							select distinct A.TextPath as Name, A.ID, 'Artifact' as [Type] 
+							select distinct A.DisplayValue as Name, A.ID, 'Artifact' as [Type] 
                             from Artifact A 
                             inner join [Intersect] I on A.ArtifactTypeID = @id and ( (I.Object = 'Artifact' and A.ID = I.ObjectID) ) 
-                            order by A.TextPath";
+                            order by A.DisplayValue";
                     break;
                 case SystemObjects.FusionAttributeType:                    
                     sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] 
@@ -3834,14 +3806,14 @@ where   Object = @type
                     break;
                 case SystemObjects.RuleType:
                 case SystemObjects.Rule:
-                    sql = @"select distinct A.Name, A.ID, 'Rule' as [Type] 
+                    sql = @"select distinct A.DisplayValue as Name, A.ID, 'Rule' as [Type] 
                             from [Rule] A 
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID)
                             union
-                            select distinct A.Name, A.ID, 'Rule' as [Type] 
+                            select distinct A.DisplayValue as Name, A.ID, 'Rule' as [Type] 
                             from [Rule] A 
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID)
-                            order by A.Name";
+                            order by A.DisplayValue";
                     break;
                 case SystemObjects.TaxonomyType:
                     sql = @"select distinct A.TextPath as Name, A.ID, 'Taxonomy' as [Type] 
@@ -4074,6 +4046,29 @@ order by C.TextPath";
                 );
         }
 
+        [Route("ownership/fusion/{id:int}/fusionresponsibilitytypes")]
+        public HttpResponseMessage GetFusionTypeResponsibilityByFusion(int id)
+        {
+            var fusion = Company.GetById<Fusion>(id);
+            if (fusion == null)
+                id = -1;
+            else
+                id = fusion.FusionTypeID;
+
+            return Request.CreateResponse(HttpStatusCode.OK,
+                Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectID == id && i.ObjectType == "FusionType", i => i.ResponsibilityType)
+                .Select(i => new
+                {
+                    ResponsibilityTypeGroup = i.ResponsibilityType.ResponsibilityTypeGroup,
+                    i.ResponsibilityTypeID,
+                    i.ObjectID,
+                    i.ObjectType,
+                    Name = i.ResponsibilityType.Name,
+                    Description = i.ResponsibilityType.Description
+                })
+                );
+        }
+
         #endregion
 
         #region Policies
@@ -4115,17 +4110,16 @@ order by C.TextPath";
         {
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(id, "Policy", out joins, out columns);
+            getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
-            var querySql = string.Format(@"select	A.ID,
+            var querySql = string.Format(@"select	top 100 percent A.ID,
         A.ParentID,
+        A.DisplayValue,
         {0}
-		A.Name,
-        A.Status,
-		A.Description,
-        A.Level
+        A.[Level]
 from	[Policy] A  {1} 
-where    A.PolicyTypeID = @id and A.[Visible] = 1", columns, joins);
+where    A.PolicyTypeID = @id and A.[Visible] = 1
+order by A.[Level], A.DisplayValue", columns, joins);
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -4133,12 +4127,12 @@ where    A.PolicyTypeID = @id and A.[Visible] = 1", columns, joins);
 
             var policies = Company.Query<dynamic>(sql, new { id = id }).ToList();
 
-            policies.ForEach(p =>
-            {
-                if (stripHtml)
-                    p.Description = System.Text.RegularExpressions.Regex.Replace(p.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty);
-                p.Description = HttpUtility.HtmlDecode(p.Description);
-            });
+            //policies.ForEach(p =>
+            //{
+            //    if (stripHtml)
+            //        p.Description = System.Text.RegularExpressions.Regex.Replace(p.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty);
+            //    p.Description = HttpUtility.HtmlDecode(p.Description);
+            //});
 
             return policies;
         }
@@ -4385,16 +4379,10 @@ from    (
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
                 var querySql = string.Format(@"select	A.ID,
-		A.Name,
-		A.Description,
-        A.Purpose,
-		A.Measurement,
-        A.Resolution,
         A.Threshold,
         A.RuleDimensionID,
         D.Name as Dimension,
         dbo.GenerateObjectUrl('Rule', A.RuleTypeID, A.ID) as Url,
-		A.Status,
         {0}
         A.RuleTypeID
 from	[Rule] A {1} 
@@ -4430,7 +4418,7 @@ where    A.RuleTypeID = @id and A.[Visible] = 1", columns, joins);
                     { "SourceID", row.SourceID },
                     { "SourceUri", row.SourceUri },
                     { "RuleID", row.RuleID },
-                    { "RuleName", row.Rule.Name },
+                    { "RuleName", row.Rule.DisplayValue },
                     { "RuleTypeID", row.Rule.RuleTypeID },
                     { "RuleTypeName", row.Rule.RuleType.Name },
                     { "CreatedOn", row.CreatedOn.GetValueOrDefault() },
@@ -4441,7 +4429,9 @@ where    A.RuleTypeID = @id and A.[Visible] = 1", columns, joins);
 
         [Route("rules/{id:int}/implementations")]
         public HttpResponseMessage GetRuleImplementations(int id)
-        {            
+        {
+            //return Company.Filter<Rule>(i => i.RuleTypeID == id, i => i.Dimension);
+
             try
             {
                 var query = Company.Query<dynamic>(@"
@@ -4492,11 +4482,9 @@ where    A.RuleID = @id", new { id });
 	                                c.Url, 
 	                                c.ObjectTypeName, 
 	                                c.IconForeColor, 
-	                                c.IconBackColor,
-	                                T.Name as GoverningDomain
+	                                c.IconBackColor
                                 from cache.ObjectDetails c
                                  left join Artifact A with(nolock) on c.[Object] = 'Artifact' and A.ID = c.ObjectID
-                                 left join TaxonomyType T with(nolock) on c.[Object] = 'Artifact' and A.TaxonomyTypeID = T.ID
                                 where c.[Object] not in ('Intersect') and (c.Name like @beginsWith or (len(@val) > 2 and c.Name like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
@@ -4530,15 +4518,11 @@ where    A.RuleID = @id", new { id });
             {
                 case SystemObjects.Artifact:
                     #region Fields
-                    var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType, i => i.TaxonomyType);
+                    var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
                     if (artifact != null)
                     {
                         list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = artifact.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = artifact.GetName(i => i.Name), Name = "Name", Value = artifact.Name });
-                        list.Add(new DisplayField { FriendlyName = artifact.GetName(i => i.Description), Name = "Description", Value = artifact.Description });
-                        list.Add(new DisplayField { FriendlyName = artifact.GetName(i => i.Status), Name = "Status", Value = artifact.Status });
                         list.Add(new DisplayField { FriendlyName = artifact.GetName(i => i.ArtifactTypeID), Name = "Type", Value = artifact.ArtifactType.Name });
-                        list.Add(new DisplayField { FriendlyName = artifact.GetName(i => i.TaxonomyTypeID), Name = "OwningModel", Value = artifact.TaxonomyType.Name });
                         loadDisplayFields(list, type, id);
                     }
                     artifact = null;
@@ -4573,8 +4557,6 @@ where    A.RuleID = @id", new { id });
                     if (policy != null)
                     {
                         list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = policy.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = policy.GetName(i => i.Name), Name = "Name", Value = policy.Name });
-                        list.Add(new DisplayField { FriendlyName = policy.GetName(i => i.Description), Name = "Description", Value = policy.Description });
                         list.Add(new DisplayField { FriendlyName = policy.GetName(i => i.TextPath), Name = "TextPath", Value = policy.TextPath });
                         loadDisplayFields(list, type, id);
                     }
@@ -4587,8 +4569,8 @@ where    A.RuleID = @id", new { id });
                     if (rule != null)
                     {
                         list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = rule.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Name_Name, Name = "Name", Value = rule.Name });
-                        list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Description_Name, Name = "Description", Value = rule.Description });
+                        //list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Name_Name, Name = "Name", Value = rule.Name });
+                        //list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.Description_Name, Name = "Description", Value = rule.Description });
                         list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.RuleType_Name, Name = "RuleTypeID", Value = rule.RuleType.Name });
                         loadDisplayFields(list, type, id);
                     }
@@ -4616,8 +4598,6 @@ where    A.RuleID = @id", new { id });
                         var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomy.TaxonomyTypeID && i.Level == taxonomy.Level).SingleOrDefault();
 
                         list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = taxonomy.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = taxonomy.GetName(i => i.Name), Name = "Name", Value = taxonomy.Name });
-                        list.Add(new DisplayField { FriendlyName = taxonomy.GetName(i => i.Description), Name = "Description", Value = taxonomy.Description });
                         list.Add(new DisplayField { FriendlyName = taxonomy.GetName(i => i.TaxonomyTypeID), Name = "TaxonomyType", Value = taxonomy.TaxonomyType.Name });
                         list.Add(new DisplayField { FriendlyName = taxonomy.GetName(i => i.TextPath), Name = "TextPath", Value = taxonomy.TextPath });
                         list.Add(new DisplayField { FriendlyName = "Level", Name = "Level", Value = levelInfo.Name });
@@ -4669,7 +4649,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.Artifact:
                     #region Fields
 
-                    var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType, i => i.TaxonomyType);
+                    var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
                     if (artifact != null)
                     {
                         if (artifact.Parent != null)
@@ -4678,76 +4658,12 @@ where    A.RuleID = @id", new { id });
 
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 2,
-                                FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Name), Value = $"<b>{artifact.Name}</b>" }
-                                },
-                                SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.ParentID), FieldName = "ArtifactParentName", FieldDescription = artifact.GetDescription(i => i.ParentID), Value = artifact.Parent.Name, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = artifact.Parent.ID }
-                                }
-                            });
-                        }
-                        else
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Name), Value = $"<b>{artifact.Name}</b>" }
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.ParentID), FieldName = "ArtifactParentName", FieldDescription = artifact.GetDescription(i => i.ParentID), Value = artifact.Parent.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = artifact.Parent.ID }
                                 }
                             });
                         }
-
-                        if (!string.IsNullOrEmpty(artifact.Description))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.Description), FieldName = "ArtifactDescription", FieldDescription = artifact.GetDescription(i => i.Description), Value = artifact.Description }
-                                }
-                            });
-                        }
-                        
-                        var nodes = "None assigned";
-                        var values = new List<ReadOnlyFieldValue>();
-
-                        var owningModels = Company.Query<dynamic>(
-                            QueryConstants.ObjectRelationships,
-                            new { type = type.ToString(), id }
-                        ).Where(i => i.Type == "TaxonomyType" && i.TypeID == artifact.TaxonomyTypeID)
-                        .Select(i => new
-                        {
-                            i.Url,
-                            i.Name,
-                            i.ObjectID
-                        }).OrderBy(i => i.Name).ToList();
-
-                        if (owningModels.Count > 0)
-                        {
-                            //   nodes = "";
-                            owningModels.ForEach(i =>
-                            {
-                                string displayName = (i.Name ?? string.Empty);
-                                displayName = displayName.ReplaceFirst($"{artifact.TaxonomyType.Name}/", "");
-
-                                values.Add(new ReadOnlyFieldValue { Value = displayName, TooltipContext = "Preview", TooltipID = i.ObjectID, TooltipType = "Taxonomy", TooltipUrl = i.Url });
-                                //     nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.Url, displayName, i.ObjectID);
-                            });
-                        }
-
-                        var taxonomyDetails = GetObjectDetail(SystemObjects.TaxonomyType, artifact.TaxonomyType.ID);
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name, TooltipContext = "Preview", TooltipType="TaxonomyType", TooltipUrl = taxonomyDetails.Url, TooltipID = artifact.TaxonomyType.ID }
-                                },
-                            SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = ((values.Count > 0) ? "values": nodes), Values = values  }
-                                }
-                        });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
@@ -4757,7 +4673,7 @@ where    A.RuleID = @id", new { id });
                             {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = artifact.CreatedOn.GetValueOrDefault().ToString("o"), DataType = "date" }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = artifact.CreatedOn.HasValue ? artifact.CreatedOn.Value.ToString("o") : "", DataType = "date" }
                                 },
                                 SecondColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = artifact.UpdatedOn.GetValueOrDefault().ToString("o"), DataType = "date" }
@@ -4770,18 +4686,10 @@ where    A.RuleID = @id", new { id });
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = artifact.CreatedOn.GetValueOrDefault().ToString("o"), DataType = "date" }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = artifact.CreatedOn.HasValue ? artifact.CreatedOn.Value.ToString("o") : "", DataType = "date" }
                                 }
                             });
                         }
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.ID), FieldName = "ArtifactID", FieldDescription = artifact.GetDescription(i => i.ID), Value = $"{artifact.ID}" }
-                                }
-                        });
                     }
                     artifact = null;
                     break;
@@ -4858,7 +4766,7 @@ where    A.RuleID = @id", new { id });
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = attributeType.GetName(i => i.TextFormatString), FieldName = "AttributeTypeTextFormatString", FieldDescription = attributeType.GetDescription(i => i.TextFormatString), Value = attributeType.TextFormatString }
+                                new ReadOnlyField { Name = attributeType.GetName(i => i.DisplayFormat), FieldName = "AttributeTypeDisplayFormat", FieldDescription = attributeType.GetDescription(i => i.DisplayFormat), Value = attributeType.DisplayFormat }
                             }
                         });
 
@@ -5369,15 +5277,6 @@ where    A.RuleID = @id", new { id });
                     var policy = Company.GetById<Policy>(id, i => i.Children);
                     if (policy != null)
                     {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = policy.GetName(i => i.Name), FieldName = "PolicyName", FieldDescription = policy.GetDescription(i => i.Description), Value = $"<b>{policy.Name}</b>" }
-                            }
-                        });
-
                         var policyLevelInfo = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == policy.PolicyTypeID && i.Level == policy.Level).SingleOrDefault();
 
                         if (policyLevelInfo != null)
@@ -5405,14 +5304,6 @@ where    A.RuleID = @id", new { id });
                             }
                         });
 
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = policy.GetName(i => i.Description), FieldName = "PolicyDescription", FieldDescription = policy.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policy.Description) ? "None provided" : policy.Description }
-                            }
-                        });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
@@ -5438,7 +5329,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = $"<b>{rule.Name}</b>" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = $"<b>{rule.DisplayValue}</b>" }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
@@ -5459,53 +5350,53 @@ where    A.RuleID = @id", new { id });
                             }
                         });
 
-                        if (!string.IsNullOrEmpty(rule.Description))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleDescription_Name, FieldName = "RuleDescription", FieldDescription = Resources.FieldInfo.RuleDescription_Description, Value = rule.Description }
-                                }
-                            });
-                        }
+                        //if (!string.IsNullOrEmpty(rule.Description))
+                        //{
+                        //    model.rows.Add(new DetailReadOnlyRowModel
+                        //    {
+                        //        columns = 1,
+                        //        FirstColumnFields = new List<ReadOnlyField>
+                        //        {
+                        //            new ReadOnlyField { Name = Resources.FieldInfo.RuleDescription_Name, FieldName = "RuleDescription", FieldDescription = Resources.FieldInfo.RuleDescription_Description, Value = rule.Description }
+                        //        }
+                        //    });
+                        //}
 
-                        if (!string.IsNullOrEmpty(rule.Measurement))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleMeasurement_Name, FieldName = "RuleMeasurement", FieldDescription = Resources.FieldInfo.RuleMeasurement_Description, Value = rule.Measurement }
-                                }
-                            });
-                        }
+                        //if (!string.IsNullOrEmpty(rule.Measurement))
+                        //{
+                        //    model.rows.Add(new DetailReadOnlyRowModel
+                        //    {
+                        //        columns = 1,
+                        //        FirstColumnFields = new List<ReadOnlyField>
+                        //        {
+                        //            new ReadOnlyField { Name = Resources.FieldInfo.RuleMeasurement_Name, FieldName = "RuleMeasurement", FieldDescription = Resources.FieldInfo.RuleMeasurement_Description, Value = rule.Measurement }
+                        //        }
+                        //    });
+                        //}
 
-                        if (!string.IsNullOrEmpty(rule.Purpose))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.RulePurpose_Name, FieldName = "RulePurpose", FieldDescription = Resources.FieldInfo.RulePurpose_Description, Value = rule.Purpose }
-                                }
-                            });
-                        }
+                        //if (!string.IsNullOrEmpty(rule.Purpose))
+                        //{
+                        //    model.rows.Add(new DetailReadOnlyRowModel
+                        //    {
+                        //        columns = 1,
+                        //        FirstColumnFields = new List<ReadOnlyField>
+                        //        {
+                        //            new ReadOnlyField { Name = Resources.FieldInfo.RulePurpose_Name, FieldName = "RulePurpose", FieldDescription = Resources.FieldInfo.RulePurpose_Description, Value = rule.Purpose }
+                        //        }
+                        //    });
+                        //}
 
-                        if (!string.IsNullOrEmpty(rule.Resolution))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleResolution_Name, FieldName = "RuleResolution", FieldDescription = Resources.FieldInfo.RuleResolution_Description, Value = rule.Resolution }
-                                }
-                            });
-                        }
+                        //if (!string.IsNullOrEmpty(rule.Resolution))
+                        //{
+                        //    model.rows.Add(new DetailReadOnlyRowModel
+                        //    {
+                        //        columns = 1,
+                        //        FirstColumnFields = new List<ReadOnlyField>
+                        //        {
+                        //            new ReadOnlyField { Name = Resources.FieldInfo.RuleResolution_Name, FieldName = "RuleResolution", FieldDescription = Resources.FieldInfo.RuleResolution_Description, Value = rule.Resolution }
+                        //        }
+                        //    });
+                        //}
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
@@ -5577,7 +5468,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = impl.Rule.Name }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = impl.Rule.DisplayValue }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
@@ -6276,20 +6167,18 @@ where    A.RuleID = @id", new { id });
                     var taxonomy = Company.GetById<Taxonomy>(id, i => i.TaxonomyType.TaxonomyTypeClass);
                     if (taxonomy != null)
                     {
-                        var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomy.TaxonomyTypeID && i.Level == taxonomy.Level).SingleOrDefault();
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 2,
+                            columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = taxonomy.GetName(i => i.Name), FieldName = "TaxonomyName", FieldDescription = taxonomy.GetDescription(i => i.Name), Value = $"<b>{taxonomy.Name}</b>" }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = taxonomy.GetName(i => i.TaxonomyType.TaxonomyTypeClassID), FieldName = "TaxonomyTypeClass", FieldDescription = taxonomy.GetDescription(i => i.TaxonomyType.TaxonomyTypeClassID), Value = taxonomy.TaxonomyType.TaxonomyTypeClass.Name }
+                                new ReadOnlyField { Name = taxonomy.GetName(i => i.TextPath), FieldName = "TaxonomyTextPath", FieldDescription = taxonomy.GetDescription(i => i.TextPath), Value = taxonomy.TextPath }
                             }
                         });
+
+                        var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomy.TaxonomyTypeID && i.Level == taxonomy.Level).SingleOrDefault();
 
                         if (levelInfo != null)
                         {
@@ -6306,27 +6195,6 @@ where    A.RuleID = @id", new { id });
                                 }
                             });
                         }
-
-                        if (!string.IsNullOrEmpty(taxonomy.Description))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = taxonomy.GetName(i => i.Description), FieldName = "TaxonomyDescription", FieldDescription = taxonomy.GetDescription(i => i.Description), Value = taxonomy.Description }
-                                }
-                            });
-                        }
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = taxonomy.GetName(i => i.TextPath), FieldName = "TaxonomyTextPath", FieldDescription = taxonomy.GetDescription(i => i.TextPath), Value = taxonomy.TextPath }
-                            }
-                        });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
@@ -6455,7 +6323,7 @@ where    A.RuleID = @id", new { id });
                     var aItems = Company.Filter<Artifact>(i => i.ArtifactTypeID == id);
                     if (!string.IsNullOrEmpty(prefix))
                     {
-                        aItems = aItems.Where(i => i.Name.StartsWith(prefix));
+                        aItems = aItems.Where(i => i.DisplayValue.StartsWith(prefix));
                     }
                     else
                     {
@@ -6465,7 +6333,7 @@ where    A.RuleID = @id", new { id });
                     {
                         var ei = new EditableFieldLookupItem();
                         ei.Add("ID", item.ID);
-                        ei.Add("Name", item.Name);
+                        ei.Add("Name", item.DisplayValue);
                         list.Add(ei);
                     }
                     break;
@@ -6524,11 +6392,6 @@ where    A.RuleID = @id", new { id });
 
             switch (type)
             {
-                case SystemObjects.ArtifactType:
-                    list.Add(new EditableFieldItem { Text = "Name", Value = "{Name}" });
-                    list.Add(new EditableFieldItem { Text = "Status", Value = "{Status}" });
-                    list.Add(new EditableFieldItem { Text = "Description", Value = "{Description}" });
-                    break;
                 case SystemObjects.ReferenceItem:
                 case SystemObjects.ReferenceItemType:
                     list.Add(new EditableFieldItem { Text = "Code", Value = "{Code}" });
@@ -6700,12 +6563,6 @@ where    A.RuleID = @id", new { id });
             return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id });
         }
 
-        //[Route("{type}/{id:int}/relations/critical")]
-        //public IQueryable<CriticalRelationshipsByObject> GetCriticalRelations(SystemObjects type, int id)
-        //{
-        //    return Company.GetCriticalRelationshipsByObject(type, id);
-        //}
-
         [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}"), HttpGet]
         public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID)
         {
@@ -6728,13 +6585,6 @@ where    A.RuleID = @id", new { id });
                 var name = $"AttributeType{f.AttributeType.ID}";
                 columns += $"{name}_T.FormattedValue as [{name}], ";
                 joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
-            }
-
-            if (targetType == SystemObjects.ArtifactType)
-            {
-                var name = $"{targetID}";
-                columns += $"TAX_{name}.Name as 'TaxonomyType', ";
-                joins += $" left join Artifact ART_{name} on A.ObjectID = ART_{name}.ID left join TaxonomyType TAX_{name} on TAX_{name}.ID = ART_{name}.TaxonomyTypeId ";
             }
 
             var querySql = $@"
@@ -7498,16 +7348,16 @@ SELECT (
             {
                 case SystemObjects.Artifact:
                     return (from artifact in Company.Artifacts
-                            where artifact.Name.StartsWith(q) && artifact.ArtifactTypeID == objectId
-                            select artifact).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("artifact/{0}/{1}", x.ArtifactTypeID, x.ID) });
+                            where artifact.DisplayValue.StartsWith(q) && artifact.ArtifactTypeID == objectId
+                            select artifact).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.DisplayValue, Url = string.Format("artifact/{0}/{1}", x.ArtifactTypeID, x.ID) });
                 case SystemObjects.TaxonomyType:
                     return (from taxonomyType in Company.TaxonomyTypes
                             where taxonomyType.Name.StartsWith(q)
                             select taxonomyType).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("model/{0}", x.ID) });
                 case SystemObjects.Rule:
                     return (from rule in Company.Rules
-                            where rule.Name.StartsWith(q)
-                            select rule).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("rule/{0}", x.ID) });
+                            where rule.DisplayValue.StartsWith(q)
+                            select rule).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.DisplayValue, Url = string.Format("rule/{0}", x.ID) });
                 default:
                     break;
             }

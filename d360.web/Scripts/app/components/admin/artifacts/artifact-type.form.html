@@ -15,6 +15,10 @@
                     <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                 </div>
                 <div class="row">
+                    <div class="FieldName">Display Format</div>
+                    <input maxlength="250" pInputText name="displayFormat" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.ArtifactType.DisplayFormat" />
+                </div>
+                <div class="row">
                     <div class="FieldName">Description</div>
                     <p-editor name="Description" [(ngModel)]="model.ArtifactType.Description" [style]="{'height':'150px'}"></p-editor>
                 </div>

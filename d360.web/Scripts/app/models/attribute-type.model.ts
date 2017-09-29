@@ -4,7 +4,7 @@
     ParentID: number;
     ShowNameInTree: boolean;
     AttributeTypeCategoryID: number;
-    TextFormatString: string;
+    DisplayFormat: string;
 }
 
 export class AttributeTypeAllocation {

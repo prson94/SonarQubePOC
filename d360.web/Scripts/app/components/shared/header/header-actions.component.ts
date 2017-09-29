@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, Output, EventEmitter } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -30,6 +30,7 @@ declare var CompanySettings;
 })
 
 export class HeaderActionsComponent {
+    @Output() controlWidthChange = new EventEmitter();
     private resourceId: number = CurrentResourceID;
     private isAdminUrl = false;
     private uri = "";
@@ -43,6 +44,8 @@ export class HeaderActionsComponent {
     private favItems: Favorite[] = [];
     private currentObject: string;
     private currentObjectId: number;
+
+    private controlWidth = 0;
 
     constructor(
         private headerActionsService: HeaderActionsService,
@@ -59,6 +62,7 @@ export class HeaderActionsComponent {
                 //dont show raise issue button on raise issue screen or any admin screens            
                 this.hasRaiseIssueButton = (!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && (e.urlAfterRedirects.toLowerCase().indexOf('/admin/') == -1) && CompanySettings.DisableIssueManagement != 'true');
 
+                this.calculateControlWidth();
             }
         });
 
@@ -84,10 +88,25 @@ export class HeaderActionsComponent {
         if (CompanySettings != null && CompanySettings.EnableShoppingCart.toString() === 'true') {
             this.showShoppingCart = true;
         }
+
     }
 
     private resourceUrl() {
         return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);
+    }
+
+    private calculateControlWidth() {
+        this.controlWidth = 55 + 45; //user image and logout
+        this.controlWidth += this.headerActionsService.showNotifications ? 45 : 0;
+        this.controlWidth += this.headerActionsService.showSearch ? 45 : 0;
+        this.controlWidth += this.headerActionsService.showHelp ? 45 : 0;
+        this.controlWidth += this.headerActionsService.showFollow ? 45 : 0;
+        this.controlWidth += this.headerActionsService.showFavorite ? 45 * 2 : 0; //x2 for fav and home buttons
+        this.controlWidth += this.hasRaiseIssueButton ? 115 : 0;
+
+        this.controlWidth += 10; //small buffer zone to avoid wrapping
+
+        this.controlWidthChange.emit(this.controlWidth);
     }
 
     ngOnDestroy() {

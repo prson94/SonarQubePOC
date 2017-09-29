@@ -1994,19 +1994,39 @@
             </summary>
             <returns>A list of rules.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddPolicy(d360.core.entities.PolicyModel)">
+        <member name="M:d360.web.Controllers.Services.EventsController.AddPolicy(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
             <summary>
             Add a policy to your environment.  Once created, this policy can hold child policies and rules.
             </summary>
+            <param name="id">The type ID</param>
             <param name="model">A policy</param>
             <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new policy is also returned.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddRule(d360.core.entities.RuleModel)">
+        <member name="M:d360.web.Controllers.Services.EventsController.EditPolicy(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Update a specific policy.
+            </summary>
+            <param name="typeID">The type ID</param>
+            <param name="id">The policy ID</param>
+            <param name="model">The policy fields</param>
+            <returns>Artifact</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddRule(System.Int32,d360.core.entities.RuleModel)">
             <summary>
             Add a rule to your environment.  Once created, this rule can hold events
             </summary>
+            <param name="id">The rule Type ID</param>
             <param name="model">A rule</param>
             <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new rule is also returned.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.EditRule(System.Int32,System.Int32,d360.core.entities.RuleModel)">
+            <summary>
+            Update a specific rule.
+            </summary>
+            <param name="typeID">The type ID</param>
+            <param name="id">The rule ID</param>
+            <param name="model">The rule fields</param>
+            <returns>Artifact</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.EventsController.AddSourceRuleEvents(System.String,System.Collections.Generic.List{d360.web.Controllers.Services.EventsController.ResultModel})">
             <summary>
@@ -2619,7 +2639,7 @@
         <member name="M:d360.web.Controllers.FormController.ReferenceItem_EditFields(System.Int32)">
             <param name="id">LookupID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Relationship_AddFields(System.Int32,d360.core.SystemObjects,System.Int32,System.Boolean)">
+        <member name="M:d360.web.Controllers.FormController.Relationship_AddFields(System.Int32,d360.core.SystemObjects,System.Int32)">
             <param name="it">IntersectTypeID</param>
             <param name="type">Object</param>
             <param name="id">ObjectID</param>

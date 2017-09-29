@@ -111,11 +111,11 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     else
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));
                 }
-                this.setBrowserTitle(this.titleService, this.artifact.Name);
+                this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
                                 
-                this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.Name);
+                this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.DisplayValue);
                 this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true, true);
-                if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-bars'], `/sidebar/children${this.objectContextUrl()}`));
+                if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap'], `/sidebar/children${this.objectContextUrl()}`));
                                 
                 this.loadItemSurvey(id);                
             });

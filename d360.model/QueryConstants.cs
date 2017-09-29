@@ -156,27 +156,14 @@ select		T.ID,
 			T.Name,
 			T.Description,
             cast(1 as bit) as expanded,
-			AC.*,
-			BC.*
+			AC.*
 from		ArtifactType T
 			cross apply (
 						select	count(1) AS [Total]
 						from	Artifact
 						where	ArtifactTypeID = T.ID
-								and Status in ('Draft', 'Under Review', 'Certified')
+								and Visible = 1
 						) AC
-			cross apply (
-						select	[Draft], [Under Review] as UnderReview, [Certified]
-						from	(
-								select		Status
-								from		Artifact
-								where		ArtifactTypeID = T.ID
-											and Status in ('Draft', 'Under Review', 'Certified')
-								) S
-						pivot	(
-								count(Total) for Status in ([Draft], [Under Review], [Certified])
-								) as pt
-						) BC
 order by	T.ParentID,
 			T.Name";
              
@@ -294,7 +281,7 @@ select		T.ID,
 from		AttributeTypeRelation ATR
 			inner join relations R on R.[Type] = ATR.ObjectType and R.ID = ATR.ObjectID
 			inner join AttributeType T on T.ID = ATR.AttributeTypeID
-where       T.ID not in (select ObjectID from FieldType where [Object] = 'AttributeType' and ObjectID = T.ID and [Type] in ('Html', 'Link', 'UncLink') and CHARINDEX(Name, T.TextFormatString) > 0)
+where       T.ID not in (select ObjectID from FieldType where [Object] = 'AttributeType' and ObjectID = T.ID and [Type] in ('Html', 'Link', 'UncLink') and CHARINDEX(Name, T.DisplayFormat) > 0)
 group by	T.ID,
 			T.Name
 order by	T.Name";
@@ -502,7 +489,7 @@ with h as (
 select		top 100 percent	
 			T.ID,
 			0 as ParentID,
-			T.Name,
+			T.DisplayValue as Name,
             dbo.GenerateObjectUrl('Taxonomy', T.TaxonomyTypeID, T.ID) as Url
 from		Taxonomy T
 where	    T.TaxonomyTypeID = @id
@@ -512,7 +499,7 @@ union all
 select		top 100 percent	
 			C.ID,
 			C.ParentID,
-			C.Name,
+			C.DisplayValue as Name,
             dbo.GenerateObjectUrl('Taxonomy', C.TaxonomyTypeID, C.ID) as Url
 from		Taxonomy C
 			inner join h on h.ID = C.ParentID
@@ -974,11 +961,9 @@ order by	D.ObjectTypeName,
 select	I.ID as IntersectID,
 		D.Object,
 		D.ObjectID,
-		TT.Name as SubjectArea,
-        TT.ID as TaxonomyTypeID,
 		AP.ID as ParentID,
         dbo.GenerateObjectUrl('Artifact', AP.ArtifactTypeID, AP.ID) as ParentUrl,
-        AP.Name as ParentName,
+        AP.DisplayValue as ParentName,
 		D.Name,
         D.ObjectTypeName,
 		D.Description,
@@ -996,15 +981,12 @@ from	[Intersect] I
 															 end
         left join Artifact A on A.ID = D.ObjectID
         left join Artifact AP on AP.ID = A.ParentID
-		left join TaxonomyType TT on TT.ID = A.TaxonomyTypeID
 where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id) and I.visible = 1
 union
 select 
 	null as IntersectID
 	,null as 'Object'
 	,-1 as 'ObjectID'
-	,null as SubjectArea
-	,null as TaxonomyTypeID
 	,null as ParentID
 	,null as ParentUrl
 	,null as ParentName
@@ -1323,7 +1305,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             inner join workflow.[version] v on v.typeid = t.id
             inner join workflow.[versionstep] vs on vs.versionid = v.id
 			left join (
-				select stepid, count(stepid) as RunCount from workflow.itemstep
+				select stepid, count(stepid) as RunCount from workflow.itemstep p
+                {0}
 				group by stepid
 			) i on i.stepid = vs.id
             where t.id = @id and vs.[State] = 1 and v.id = coalesce((select top 1 id from workflow.version where typeid = @id and version = @version), (select top 1 id from workflow.version where typeid = @id order by [version] desc))
@@ -1491,7 +1474,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 					'In Progress'
 				end as [Status], null as SettingsObject, null as FieldsObject
             from workflow.itemstep i
-            left join workflow.item m on m.id = i.itemid
+            {0}
 			left join workflow.itemassignment a on a.itemid = m.id
 			left join workflow.versionstep vs on vs.id = i.stepid
             left join cache.objectdetails d on d.object = m.object and d.objectid = m.objectid
@@ -1523,8 +1506,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            d.ObjectTypeID, 
 	            d.NgUrl, 
 	            v.id as VersionID,
-	            string_agg(cast(d2.Name as varchar(max)), ', ') as ObjectNames, 
-				string_agg(cast(d2.Object as varchar(max)) + '|' + cast(d2.ObjectID as varchar(max)),', ') as [Objects],
+	            dbo.GetWorkflowObjectsSummary(v.id, @filteredObject, @filteredObjectId) as ObjectNames, 
  	            null as Responsibility, 
 	            null as SpecificUser,
 	            case when count(s.StepID) > 0 then

@@ -1,34 +1,18 @@
 ﻿using d360.core.entities.Contracts;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    public class RuleModel : BaseIntObject, IIntObject
+    public class RuleModel : Dictionary<string, string>
     {
-        [DataMember, StringLength(250)]
-        public string Name { get; set; }
-
         [DataMember]
-        public string Description { get; set; }
-
-        [DataMember]
-        public string Purpose { get; set; }
-
-        [DataMember]
-        public string Measurement { get; set; }
-
-        [DataMember]
-        public string Resolution { get; set; }
+        public int ID { get; set; }
 
         [DataMember]
         public enums.RuleStatus Status { get; set; }
-
-        [DataMember]
-        public RuleType RuleType { get; set; }
 
         [DataMember]
         public decimal? Threshold { get; set; }
@@ -42,28 +26,22 @@ namespace d360.core.entities
     }
 
 
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Rule, "Rule")]
-    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
+    [DataContract(Namespace = NAMESPACE)]
+    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata, IDisplayValueObject
     {
         public Rule()
         {
             Visible = true;
         }
 
-        [DataMember, StringLength(250), DisplayName("Name")]
-        public string Name { get; set; }
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string DisplayValue { get; set; }
 
-        [DataMember, DisplayName("Description")]
-        public string Description { get; set; }
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string KeyHash { get; set; }
 
-        [DataMember]
-        public string Purpose { get; set; }
-
-        [DataMember]
-        public string Measurement { get; set; }
-
-        [DataMember]
-        public string Resolution { get; set; }
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string FieldHash { get; set; }
 
         [DataMember]
         public enums.RuleStatus Status { get; set; }
@@ -84,15 +62,6 @@ namespace d360.core.entities
         public RuleDimension Dimension { get; set; }
 
         public bool Visible { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string DisplayValue { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string KeyHash { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string FieldHash { get; set; }
 
         [ForeignKey("RuleID")]
         public virtual ICollection<RuleImplementation> RuleImplementations { get; set; }

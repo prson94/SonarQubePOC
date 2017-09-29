@@ -173,4 +173,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         toLinks.forEach(l => this.traverseDiagram(l.from, upstreamSteps));
         
     }
+
+    changeResponsiblity(e: any) {
+        this.step.settings.ResponsibilityTypeID = e;
+        let rt = this.responsibilities.find(r => r.ResponsibilityTypeID == e);
+        if (rt)
+            this.step.settings.ResponsiblityTypeName = rt.Name;
+        this.stepChange.emit(this.step)
+    }
 }

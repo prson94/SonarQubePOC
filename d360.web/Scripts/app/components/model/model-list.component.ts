@@ -63,14 +63,20 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
         this.rightSidebarService = rightSidebarService;
         this.setObjectInfo('TaxonomyType', -1);
         this.setCommonRightSideBar(true, true);
-        this.auditSidebar.hasDynamicUrl = true;
-        this.auditSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/audit/TaxonomyType/${this.selected.ID}`
-        });
-        this.ownershipSidebar.hasDynamicUrl = true;
-        this.ownershipSidebar.dynamicUrlCallback = (() => {
-            return `/sidebar/ownership/TaxonomyType/${this.selected.ID}`
-        });
+
+        if (this.auditSidebar) {
+            this.auditSidebar.hasDynamicUrl = true;
+            this.auditSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/audit/TaxonomyType/${this.selected.ID}`
+            });
+        }
+
+        if (this.ownershipSidebar) {
+            this.ownershipSidebar.hasDynamicUrl = true;
+            this.ownershipSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/ownership/TaxonomyType/${this.selected.ID}`
+            });
+        }
     }
 
     ngOnInit() {

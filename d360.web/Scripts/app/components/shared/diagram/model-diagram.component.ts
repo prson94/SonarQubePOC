@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
-import { BaseComponent } from '../base.component';
+import { DiagramBaseComponent } from './diagram-base.component';
 import { DiagramService } from '../../../services/diagram.service';
 import { HierarchyDiagramModel } from '../../../models/model.model';
 import { MenuItem } from 'primeng/primeng';
@@ -54,7 +54,7 @@ declare var window: any;
     providers: [DiagramService]
 })
 
-export class ModelDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ModelDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() id: number = 0;
     @ViewChild('diagram') diagramRef;
 

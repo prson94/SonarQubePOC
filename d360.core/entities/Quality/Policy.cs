@@ -16,12 +16,6 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Status_Name", Description = "Status_Description")]
         public PolicyStatus Status { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
-        public string Description { get; set; }
-
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
-        public string Name { get; set; }
-
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
         public int? ParentID { get; set; }
 
@@ -32,28 +26,12 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class Policy : PolicyModel, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata
+    public class Policy : PolicyModel, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata, IDisplayValueObject
     {
         public Policy()
         {
             Visible = true;
         }
-
-        [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
-        public string TextPath { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Level_Name", Description = "Level_Description")]
-        public int Level { get; set; }
-
-        public DateTime? UpdatedOn { get; set; }
-
-        public int? UpdatedBy { get; set; }
-
-        public bool Visible { get; set; }
-
-        [DataMember]
-        public string SourceID { get; set; }
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string DisplayValue { get; set; }
@@ -63,6 +41,22 @@ namespace d360.core.entities
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string FieldHash { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Level_Name", Description = "Level_Description")]
+        public int Level { get; set; }
+
+        [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
+        public string TextPath { get; set; }
+
+        public DateTime? UpdatedOn { get; set; }
+
+        public int? UpdatedBy { get; set; }
+
+        public bool Visible { get; set; }
+
+        [DataMember]
+        public string SourceID { get; set; }
 
         [IgnoreDataMember]
         public virtual Policy Parent { get; set; }

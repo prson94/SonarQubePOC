@@ -55,6 +55,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     @Input() objectId: number;
     @Output() filteredTypes = new EventEmitter();
 
+    useFilteredObject: boolean = false;
     workflowItems: any[];
 
     constructor(protected workflowService: WorkflowService, protected router: Router) {
@@ -72,16 +73,20 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     private load() {
         if (this.workflowTypes == null || this.workflowTypes.length < 1) {
             this.workflowItems = [];
+            this.useFilteredObject = false;
             this.selection = null;
             this.selectionChange.emit(null);
             this.filteredTypes.emit(null);
             return;
         }
 
+        this.useFilteredObject = (this.objectType != null && this.objectId != null && !this.objectType.toLowerCase().endsWith('type'));
+
+
         this.isLoading = true;
         let typeList = "";
         this.workflowTypes.forEach(s => typeList += s.toString() + ',');
-        this.workflowService.getWorkflowsByTypeList(typeList)
+        this.workflowService.getWorkflowsByTypeList(typeList, this.useFilteredObject ? this.objectType : null, this.useFilteredObject ? this.objectId : null)
             .then(r => {
                 this.workflowItems = r;
                 r.forEach(i => {
@@ -95,10 +100,9 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
                     //artifact type
                     if (this.objectType.toLowerCase().endsWith('type')) {
                         this.workflowItems = this.workflowItems.filter(i => i.ObjectType == this.objectType && i.ObjectTypeID == this.objectId);
-                    } else {
-                        //artifact
-                        let item = this.objectType + '|' + this.objectId.toString();
-                        this.workflowItems = this.workflowItems.filter(i => i.Objects != null && i.Objects.indexOf(item) > -1);
+                    } else if (this.useFilteredObject) {
+                        //filtering is done on the server for specific objects. If the list comes back null, the specific object is not present
+                        this.workflowItems = this.workflowItems.filter(i => i.ObjectNames != null);
                     }
                 }
             })

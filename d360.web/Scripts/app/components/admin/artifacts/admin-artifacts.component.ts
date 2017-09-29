@@ -43,7 +43,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.areaName = "Artifacts";
         this.setCommonItems();        
         this.load();
-        
+        this.setObjectInfo('ArtifactType', -1);
         this.setCommonRightSideBar(true);
         if (this.ownershipSidebar) {
             this.auditSidebar.hasDynamicUrl = true;

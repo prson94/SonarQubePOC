@@ -596,7 +596,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                     switch (obj)
                                     {
                                         case "ArtifactType":
-                                            sql = $"select ID as Value, TextPath as Text from Artifact where ArtifactTypeID = {objID} order by DisplayValue";
+                                            sql = $"select ID as Value, DisplayValue as Text from Artifact where ArtifactTypeID = {objID} order by DisplayValue";
                                             break;
                                         case "FusionAttributeType":
                                             sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
@@ -611,7 +611,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                             sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
                                             break;
                                         case "RuleType":
-                                            sql = $"select ID as Value, Name as Text from [Rule] where RuleTypeID = {objID} order by DisplayValue";
+                                            sql = $"select ID as Value, DisplayValue as Text from [Rule] where RuleTypeID = {objID} order by DisplayValue";
                                             break;
                                         case "TaxonomyType":
                                             sql = $"select ID as Value, TextPath as Text from Taxonomy where TaxonomyTypeID = {objID} order by TextPath";
@@ -794,7 +794,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                     switch (obj)
                                     {
                                         case "ArtifactType":
-                                            sql = $"select ID as Value, TextPath as Text from Artifact where ArtifactTypeID = {objID} order by DisplayValue";
+                                            sql = $"select ID as Value, DisplayValue as Text from Artifact where ArtifactTypeID = {objID} order by DisplayValue";
                                             break;
                                         case "FusionAttributeType":
                                             sql = $"select ID as Value, TextPath as Text from FusionAttribute where FusionAttributeTypeID = {objID} order by TextPath";
@@ -816,7 +816,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                             sql = $"select ID as Value, LastName + ', ' + FirstName as Text from reporting.[Global_Resource] order by LastName + ', ' + FirstName";
                                             break;
                                         case "RuleType":
-                                            sql = $"select ID as Value, Name as Text from [Rule] where RuleTypeID = {objID} order by DisplayValue";
+                                            sql = $"select ID as Value, DisplayValue as Text from [Rule] where RuleTypeID = {objID} order by DisplayValue";
                                             break;
                                         case "TaxonomyType":
                                             sql = $"select ID as Value, TextPath as Text from Taxonomy where TaxonomyTypeID = {objID} order by TextPath";
@@ -1073,7 +1073,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             bool listableOnly, string sortDataField, string sortOrder, int pagenum, int pagesize,
             string[] staticFields,
             string filter = "", string ownerUsers = "", string ownerGroups = "",
-            string sortDefaultField = "Name", string sortDefaultDirection = "asc",
+            string sortDefaultField = "DisplayValue", string sortDefaultDirection = "asc",
             Dictionary<string, object> extraParams = null,
             bool applyHiddenFilters = false, bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false)
         {
@@ -1122,7 +1122,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             // If simple filter specified add that criteria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" }, obj, objectTypeID, filter, dbArgs, fields)}";
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.DisplayValue", "P.DisplayValue" }, obj, objectTypeID, filter, dbArgs, fields)}";
             }
 
             var querySql = $@"select * from ({sql}) A";
@@ -1159,7 +1159,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                 if (string.IsNullOrEmpty(sortSql))
                 {
-                    sortSql = "Name";
+                    sortSql = "DisplayValue";
                 }
 
                 querySql += " ORDER BY " + sortSql;
@@ -1269,8 +1269,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         var typeIDColumnName = relationFieldInfo.Object + "ID";
 
                         if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-                        //columns += (isReferenceItemType ? $"{name}_OT.Name" : $"{name}_OT.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
-                        columns += (isReferenceItemType ? $"{name}_OT.Name" : $"{name}_OT.Name") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
+                        columns += (isReferenceItemType ? $"{name}_OT.Name" : $"{name}_OT.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
 
                         joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
                         joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = A.ID" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = A.ID";

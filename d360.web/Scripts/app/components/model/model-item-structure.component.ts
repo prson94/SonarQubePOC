@@ -24,20 +24,15 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
     template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading">                            
-                    <header *ngIf="!showDelete && !showEditor">{{model.Name}}
+                    <header *ngIf="!showDelete && !showEditor">{{model.DisplayValue}}
                         <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                                                
                     <div *ngIf="!showDelete && !showEditor && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
-                        <p-column field="Name" header="Name">
+                        <p-column field="displayValue" header="Item">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.Name}} <i *ngIf="item.data?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>
-                            </ng-template>
-                        </p-column>                        
-                        <p-column field="description" header="Description">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                               <div class="truncate" [title]="item.data.Description">{{item.data.Description}}</div>
+                                <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.DisplayValue}} <i *ngIf="item.data?.HasChildren" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>
                             </ng-template>
                         </p-column>
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
@@ -71,7 +66,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                         [callback]="theDeleteCallback"
                         [itemId]="selected?.data?.ID"
                         [method]="'callback'"
-                        [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.Name] + ']?'"                                         
+                        [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.DisplayValue] + ']?'"                                         
                         (onCancel)="showDelete=false;"
                     ></d3s-delete-form>
                     <d3s-dynamic-editor rowID="ID" *ngIf="showEditor" [objectID]="model.ID" [objectType]="'Taxonomy'" [parentID]="selectedParentID" [title]="modelTaxonomyTitle()" [selection]="selected?.data" (saveClick)="saveTaxonomy($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>              
@@ -169,9 +164,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     private loadModelHierarchy(modelId: number) {
         this.modelsService.getModelHierarchy(modelId, true, true)
             .then(result => {
-                result.forEach(function (part, index, theArray) {
-                    theArray[index].Description = theArray[index].Description ? String(theArray[index].Description).replace(/<[^>]+>/gm, '') : '';
-                });
+                //result.forEach(function (part, index, theArray) {
+                //    theArray[index].Description = theArray[index].Description ? String(theArray[index].Description).replace(/<[^>]+>/gm, '') : '';
+                //});
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
@@ -191,15 +186,15 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
                         
             if (thisLevel && thisLevel.length > 0)
-                return thisLevel[0].Name;
+                return thisLevel[0].DisplayValue;
             else
                 return `(Level ${this.selectedLevel + 1}) Item`;
         }
 
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.level);
 
-        if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
-        return `(Level ${this.selected.data.Level + 1}) Item`;       
+        if (thisLevel && thisLevel.length > 0) return thisLevel[0].DisplayValue;
+        return `(Level ${this.selected.data.level + 1}) Item`;       
     }
     
     private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number): TreeNode[] {
@@ -213,9 +208,15 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
         for (let root of rootNodes) {
             res.push({
-                label: root.Name,
-                expanded: false,
-                data: root,
+                label: root.DisplayValue,
+                expanded: false,//true,
+                data: {
+                    ID: root.ID, 
+                    HasChildren: root.HasChildren, 
+                    DisplayValue: root.DisplayValue, 
+                    TextPath: root.TextPath, 
+                    Level: root.Level
+                },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
         }
@@ -255,7 +256,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
         // add root nodes
         for (var i = 0; i < this.treeNodeArray.length; i++) {
-            if (this.treeNodeArray[i].data.ID && this.treeNodeArray[i].data.ID == id) {
+            if (this.treeNodeArray[i].data.id && this.treeNodeArray[i].data.ID == id) {
                 this.treeNodeArray.splice(i, 1);
                 return
             }
@@ -269,14 +270,15 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         let node = nodes[0];
 
         while (node) {
-            if (node.data.ID && node.data.ID == id) {
+            if (node.data.id && node.data.ID == id) {
+
                 return node;
             }
 
             //push children
             if (node.children) {
                 for (var i = 0; i < node.children.length; i++) {                    
-                    if (node.children[i].data.ID && node.children[i].data.ID == id) {
+                    if (node.children[i].data.id && node.children[i].data.ID == id) {
                         node.children.splice(i, 1);
                         return
                     }

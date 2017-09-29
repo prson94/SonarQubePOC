@@ -1,8 +1,25 @@
-﻿<!--<div class="tile tile-detail">
-    <div [hidden]="diagramMode != DiagramMode.Diagram">
-        <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
-    </div>
-</div>-->
+﻿<div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 30px; z-index: 999">
+    <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''" [overflowScroll]="'visible'">
+        <div *ngIf="!showNodeTabs && !showLinkTabs" style="padding:10px;">Nothing selected</div>
+        <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs">
+            <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showNodeTabs">
+                <i class="fa fa-info-circle fa-2x"></i>
+            </li>
+            <li (click)="selectTab('edit')" class="tab-item" [class.selected]="tab == 'edit'" *ngIf="showNodeTabs">
+                <i class="fa fa-pencil fa-2x"></i>
+            </li>
+        </ul>
+        <div *ngIf="showNodeTabs || showLinkTabs" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
+            <div *ngSwitchCase="'info'">
+                <d3s-lineage-info [node]="selectedData" [diagram]="myDiagram"></d3s-lineage-info>
+            </div>
+            <div *ngSwitchCase="'edit'">
+                <d3s-lineage-editor [node]="selectedData" (nodeChange)="changeNode($event)"></d3s-lineage-editor>
+            </div>
+        </div>
+    </d3s-overlay-window>
+</div>
+
 
 <div class="tile tile-detail" [hidden]="isLoading">
     <header>

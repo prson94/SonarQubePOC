@@ -9,25 +9,6 @@ namespace d360.core.entities
     public abstract class BaseObject
     {
         internal const string NAMESPACE = constants.NAMESPACE;
-
-        public string GetObjectType()
-        {
-            ObjectTypeAttribute attr;
-
-            try
-            {
-                attr = (ObjectTypeAttribute)System.Attribute.GetCustomAttribute(this.GetType(), typeof(ObjectTypeAttribute));
-                return attr.ObjectType;
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
-            finally 
-            {
-                attr = null;
-            }
-        }
     }
 
     [Serializable, DataContract(Namespace = NAMESPACE)]

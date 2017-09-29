@@ -1,8 +1,10 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
+import { DiagramBaseComponent } from '../diagram-base.component';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { DiagramService } from '../../../../services/diagram.service';
 import { LineageService } from '../../../../services/lineage.service';
-import { BaseComponent } from '../../base.component';
+import { MessagesService } from '../../../../services/messages.service';
+//import { JsonResult } from '
 import {
     DiagramObjectType,
     LinkModelV2,
@@ -26,7 +28,7 @@ declare var window: any;
     providers: [PermissionsService, DiagramService, LineageService]
 })
 
-export class LineageDiagramComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class LineageDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() readonly: boolean = true;
@@ -75,21 +77,25 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
         protected permissionsService: PermissionsService,
         private diagramService: DiagramService,
         private lineageService: LineageService,
+        private messagesService: MessagesService,
         private renderer: Renderer) {
         super();
     }
 
     public ngOnInit() {
         this.readonly = this.readonly.toString() == 'true' ? true : false;
-
+        
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
-        this.initializeDiagram();
-        if (!this.readonly) this.initializePalette();
+        //this.initializeDiagram();
+        //if (!this.readonly) this.initializePalette();
     }
 
     public ngOnChanges() {
-        if (!this.readonly && this.myPalette == null)
-            this.initializePalette();
+
+        this.initializeDiagram()
+            .then(() => this.toggleReadOnly())
+            .then(() => this.initializePalette());
+
     }
 
     public ngAfterViewInit() {
@@ -102,32 +108,55 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
             this.myDiagram.div = null;
         if (this.myPalette != null)
             this.myPalette.div = null;
+
+        
     }
 
     //#region helper methods
 
-    private initializeDiagram() {
+    private initializeDiagram(): Promise<any> {
+        if (this.myDiagram != null) {
+            return Promise.resolve();
+        }
+
         this.myDiagram = this.createDiagram();
 
-        this.myDiagram.nodeTemplateMap.add('map', this.createMapNode());
+        this.myDiagram.groupTemplateMap.add('map', this.createMapGroup());
+        this.myDiagram.groupTemplateMap.add('transform', this.createTransformationGroup());
+
         this.myDiagram.nodeTemplateMap.add('object', this.createObjectNode());
+        this.myDiagram.nodeTemplateMap.add('focal', this.createFocalNode());
         this.myDiagram.nodeTemplateMap.add('palette', this.createPaletteNode());
 
         this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        //this.myDiagram.addDiagramListener('ExternalObjectsDropped', e => this.ExternalObjectsDropped(e));
 
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-        this.populateDiagram();
+        this.myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
+        this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
+        this.myDiagram.toolManager.linkingTool.isEnabled = !this.readonly;
+        this.myDiagram.toolManager.linkingTool.archetypeLinkData = new LinkModelV2();
+
+        this.myDiagram.allowDrop = true;
+        this.myDiagram.mouseDrop = e => this.finishDrop(e, null);
+
+        return this.populateDiagram();
     }
 
-    private initializePalette() {
-        this.lineageService.getLineageObjectTypes()
+    private initializePalette(): Promise<any> {
+        if (this.myPalette != null) {
+            this.myPalette.layout.invalidateLayout();
+            return Promise.resolve();
+        }
+
+        return this.lineageService.getLineageObjectTypes()
             .then(r => {
                 this.objectTypes = r;
             })
@@ -171,15 +200,22 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
                 model.key = d.key;
                 model.object = d.object;
                 model.objectId = d.objectId;
-                model.name = d.object == 'Map' ? d.objectId : d.name;
+                model.name = d.name;
                 model.foreColor = d.foreColor;
                 model.backColor = d.backColor;
 
                 model.category = (d.object == 'Map' ? 'map' : 'object');
-                
+
+                if (model.object == this.objectType && model.objectId == this.objectID) {
+                    model.category = 'focal';
+                }
+
+
+                model.isGroup = d.isGroup
+                model.group = d.group;
 
                 //if (model.category == 'map')
-                    modelList.push(model);
+                modelList.push(model);
             }
         }
 
@@ -233,6 +269,27 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
         }
     }
 
+    private toggleReadOnly(readonly?: boolean) {
+        if (readonly != null) this.readonly = readonly;
+
+        //this.myDiagram.isReadOnly = this.readonly;
+
+        let dt = this.myDiagram.toolManager.diagram
+        dt.allowDelete = !this.readonly;
+        dt.allowClipboard = !this.readonly;
+        dt.allowCopy = !this.readonly;
+        dt.allowInsert = !this.readonly;
+        dt.allowLink = !this.readonly;
+        dt.allowRelink = !this.readonly;
+        dt.allowGroup = !this.readonly;
+        dt.allowTextEdit = !this.readonly;
+
+        this.myDiagram.toolManager.linkingTool.isEnabled = !this.readonly;
+
+
+        //this.myDiagram.model.isReadOnly = this.readonly;
+    }
+
     private loadMenuItems() {
         this.menuItems = [];
 
@@ -248,6 +305,11 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
 
         this.menuItems.push({
             icon: 'fa-object-ungroup',
+            items: null
+        });
+
+        this.menuItems.push({
+            icon: 'fa-info-circle',
             items: null
         });
         
@@ -303,9 +365,55 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
         this.tab = val;
     }
 
+    private validateNode(n: NodeModelV2) {
+        let valid = true;
+
+        //n.valid = true;
+
+        switch (n.category) {
+            case 'object':
+            case 'focal':
+                if (n.object == null || n.objectId == null)
+                    valid = false;
+                if (n.group == null)
+                    valid = false;
+                if (n.isGroup)
+                    valid = false;
+                break;
+            case 'map':
+                if (!n.isGroup || n.group != null)
+                    valid = false;
+                if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 1)
+                    valid = false;
+                break;
+            case 'transform':
+                if (!n.isGroup || n.group == null)
+                    valid = false;
+                if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 1)
+                    valid = false;
+                break;
+        }
+
+        let node = this.myDiagram.model.findNodeDataForKey(n.key);
+        this.myDiagram.model.setDataProperty(node, 'valid', valid);
+        //console.log('validateNode', n.valid, n);
+
+    }
+
     //#endregion
 
     //#region events
+
+    private changeNode(e: NodeModelV2) {
+        let node: NodeModelV2 = this.myDiagram.model.findNodeDataForKey(e.key);
+
+        node.object = e.object;
+        node.objectId = e.objectId;
+
+        this.myDiagram.model.setDataProperty(node, 'name', e.name);
+        //this.myDiagram.model.setDataProperty(node, 'valid', true);
+        this.validateNode(node);
+    }
 
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
@@ -352,12 +460,19 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
         }
     }
 
+    private ExternalObjectsDropped(e: any) {
+        console.log(e, this.myDiagram.selection);
+    }
+
     private menuClick(e: MenuItem) {
         //TODO: this is a hack, need a better way to handle these clicks
         if (e.icon == 'fa-pencil') {
             this.readonly = !this.readonly;
-            if (!this.readonly && this.myPalette == null)
-                this.initializePalette();
+            this.toggleReadOnly();
+
+            //console.log('menuClick', this.myPalette, this.readonly);
+
+            this.initializePalette();
             this.resizeDiagram();
         }
         else if (e.icon == 'fa-object-group') {
@@ -365,6 +480,9 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
         }
         else if (e.icon == 'fa-object-ungroup') {
             this.ungroupSelection();
+        }
+        else if (e.icon == 'fa-info-circle') {
+            this.isWindowVisible = !this.isWindowVisible;
         }
     }
 
@@ -376,14 +494,25 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
 
     private ungroupSelection() {
         let selection = this.myDiagram.selection;
+        let nodes = [];
         let maps = [];
 
         selection.each(s => {
             let data = s.data;
-            if (data.category == 'map' && data.isGroup == false && data.group != null) {
-                this.myDiagram.model.setDataProperty(data, 'group', null);
-                maps.push(data);
+
+            if ((data.category == 'object' || data.category == 'focal') && maps.filter(g => g.key == data.group).length < 1) {
+                let grp = this.myDiagram.model.findNodeDataForKey(data.group);
+                if (grp != null && grp.category != 'map')
+                    maps.push(grp);
             }
+        });
+
+        maps.forEach(m => {
+            let mapNodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).group == m.key);
+
+            mapNodes.forEach(n => {
+                this.myDiagram.model.setDataProperty(n, 'group', m.group);
+            });
         });
 
         this.removeEmptyGroups()
@@ -391,25 +520,42 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
     }
 
     private groupSelection() {
-        let group = new NodeModelV2();
+        //let group = new NodeModelV2();
         let selection = this.myDiagram.selection;
+        let nodes = [];
         let maps = [];
 
+        //find all maps and nodes
         selection.each(s => {
             let data = s.data;
-            if (data.category == 'map')
-                maps.push(data);
+            let grp = this.myDiagram.findNodeForKey(s.data.group);
+
+            if ((data.category == 'object' || data.category == 'focal') && (grp == null || grp.category == 'map'))
+                nodes.push(data);
+            if (data.group != null && maps.filter(m => data.group).length < 1) {
+                maps.push(data.group);
+            }
         });
 
-        if (maps.length > 1) {
+        //console.log('groupSelection', selection, nodes, maps);
 
-            group.isGroup = true;
-            this.myDiagram.model.addNodeData(group); //generates a temp group key
-            this.myDiagram.model.setDataProperty(group, 'name', 'New Group');
-
+        //if at least 2 nodes were selected
+        if (nodes.length > 1) {
+            //for each map, operate on the selected nodes in that map
             maps.forEach(m => {
-                let groupKey = m.group == null ? group.key : null;
-                this.myDiagram.model.setDataProperty(m, 'group', group.key);
+                let mapNodes = nodes.filter(n => n.group == m);
+                let group = new NodeModelV2();
+
+                if (mapNodes.length > 1) {
+                    group.isGroup = true;
+                    group.group = m;
+                    group.category = 'transform';
+                    this.myDiagram.model.addNodeData(group); //generates a temp group key
+                    this.myDiagram.model.setDataProperty(group, 'name', '');
+
+                    mapNodes.forEach(n => { this.myDiagram.model.setDataProperty(n, 'group', group.key); });
+                }
+
             });
 
             this.removeEmptyGroups();
@@ -421,16 +567,67 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
     }
 
     private removeEmptyGroups() {
-        //remove any groups which are empty or contain only 1 item
         let removes = [];
-        this.myDiagram.findTopLevelGroups().each(g => {
-            let nodes = this.myDiagram.model.nodeDataArray;
-            if (nodes.filter(n => (<any>n).group == g.key && (<any>n).isGroup == false).length < 2) {
-                removes.push(g.data);
+
+        this.myDiagram.model.nodeDataArray.forEach(n => {
+            let node = <NodeModelV2>n;
+
+            if (node.isGroup && node.category == 'transform') {
+                let children = this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == node.key);
+                if (children.length < 2) {
+                    removes.push(node);
+                }
             }
         });
 
         removes.forEach(r => this.myDiagram.model.removeNodeData(r));
+    }
+
+    private highlightGroup(e, grp: go.Group, show) {
+        //console.log('highlightGroup', e, grp, show);
+
+        if (!grp) return;
+        e.handled = true;
+        if (show) {
+            
+            // cannot depend on the grp.diagram.selection in the case of external drag-and-drops;
+            // instead depend on the DraggingTool.draggedParts or .copiedParts
+            var tool = grp.diagram.toolManager.draggingTool;
+            var map = tool.draggedParts || tool.copiedParts;  // this is a Map
+            // now we can check to see if the Group will accept membership of the dragged Parts
+            if (grp.canAddMembers(map.toKeySet())) {
+                grp.isHighlighted = true;
+                return;
+            }
+        }
+        grp.isHighlighted = false;
+    }
+
+    private finishDrop(e, grp: go.Group) {
+        let node = e.diagram.selection.first().data;
+
+        //console.log('finishDrop', e, grp, node);
+
+        if (node != null) {
+            if (node.isGroup) {
+                e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true);
+                if (node.name == 'Map')
+                    this.myDiagram.model.setDataProperty(node, 'name', '<drop objects here>');
+            } else {
+                if (grp == null) {
+                    e.diagram.currentTool.doCancel();
+                    this.messagesService.showError('Error', 'This item can only be added to maps');
+                } else {
+                    grp.addMembers(grp.diagram.selection, true);
+                    if (grp.data.name == '<drop objects here>') {
+                        this.myDiagram.model.setDataProperty(grp.data, 'name', node.name);
+                    }
+                }
+            }
+            this.validateNode(node);
+        } else {
+            e.diagram.currentTool.doCancel();
+        }
     }
 
     //#endregion
@@ -441,12 +638,16 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
 
 
         let dg = this.g(go.Diagram, 'LineageDiagram', {
-            initialContentAlignment: go.Spot.Left,
+            initialContentAlignment: go.Spot.Center,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
-            initialPosition: new go.Point(125, 125),
-            layout: this.g(go.ForceDirectedLayout, { arrangementSpacing: new go.Size(50, 50) }),
+            initialPosition: new go.Point(go.Spot.Center.x, go.Spot.Center.y),
+            layout: this.g(go.TreeLayout, {
+                angle: 0,
+                layerSpacing: 50,
+                rowSpacing: 50
+            }),
             "undoManager.isEnabled": true
         });
 
@@ -458,7 +659,19 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
         dg.model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
         dg.toolManager.linkingTool.isEnabled = !this.readonly;
-        dg.model.isReadOnly = this.readonly;
+        
+        //dg.isReadOnly = this.readonly;
+
+        //the readonly property disallows dragging and expand/collapse, so we need to manually disable everything else here instead to prevent keyboard shortcuts
+        let dt = dg.toolManager.diagram;
+        dt.allowDelete = !this.readonly;
+        dt.allowClipboard = !this.readonly;
+        dt.allowCopy = !this.readonly;
+        dt.allowInsert = !this.readonly;
+        dt.allowLink = !this.readonly;
+        dt.allowRelink = !this.readonly;
+        dt.allowGroup = !this.readonly;
+        dt.allowTextEdit = !this.readonly;
 
         return dg;
     }
@@ -466,23 +679,41 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
     private createPalette(): go.Palette {
         let paletteModel = [];
 
+        paletteModel.push({
+            category: 'map',
+            name: 'Map',
+            object: null,
+            objectId: null,
+            foreColor: '#000',
+            backColor: '#ddd',
+            isGroup: true,
+            diagramObjectType: DiagramObjectType.Node,
+            visible: true
+        });
+
         this.objectTypes.forEach(o => {
             paletteModel.push({
-                category: 'palette',
+                category: 'object',
                 name: o.name,
-                object: o.object,
-                objectId: o.objectId,
+                objectType: o.object,
+                objectTypeId: o.objectId,
                 foreColor: o.foreColor,
-                backColor: o.backColor
+                backColor: o.backColor,
+                isGroup: false,
+                diagramObjectType: DiagramObjectType.Node,
+                visible: true
             });
         });
 
-        let pt = this.g(go.Palette, "LineagePalette",
+
+
+        let pt: go.Palette = this.g(go.Palette, "LineagePalette",
             {
                 "animationManager.duration": 400,
                 nodeTemplateMap: this.myDiagram.nodeTemplateMap,
+                groupTemplateMap: this.myDiagram.groupTemplateMap,
                 model: new go.GraphLinksModel(paletteModel),
-                layout: this.g(go.GridLayout, { alignment: go.GridLayout.Location })
+                layout: this.g(go.GridLayout, { alignment: go.GridLayout.Forward }) //GridLayout.Forward preserves order
             });
 
         return pt;
@@ -490,9 +721,9 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
 
     private createObjectNode(): go.Node {
         let nodeWidth = 150;
-        let nodeHeight = 70;
+        let nodeHeight = 50;
         let nodeBorderColor = 'transparent';
-        let nodeFontSize = 10;
+        let nodeFontSize = 8;
 
         return this.g(go.Node, "Spot",
             this.g(go.Panel, "Auto", {
@@ -506,7 +737,8 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
                     spot2: go.Spot.BottomRight,
                     name: "NodeShape"
                 },
-                    new go.Binding("fill", "backColor").makeTwoWay()
+                    new go.Binding("fill", "backColor"),
+                    new go.Binding("stroke", "valid", v => { return v ? 'transparent' : '#f00'})
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -518,30 +750,30 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
                         font: "bold " + nodeFontSize + "pt sans-serif"
                     },
                         new go.Binding("text", "name").makeTwoWay(),
-                        new go.Binding("stroke", "foreColor").makeTwoWay()
+                        new go.Binding("stroke", "foreColor")
                     ))
             ));
     }
 
-    private createMapNode(): go.Node {
-        let nodeWidth = 50;
-        let nodeHeight = 50;
+    private createFocalNode(): go.Node {
+        let nodeWidth = 150;
+        let nodeHeight = 75;
         let nodeBorderColor = '#000';
-        let nodeFontSize = 12;
+        let nodeFontSize = 8;
 
         return this.g(go.Node, "Spot",
             this.g(go.Panel, "Auto", {
                 width: nodeWidth,
                 height: nodeHeight
             },
-                this.g(go.Shape, "Circle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 2,
+                this.g(go.Shape, "RoundedRectangle", {
+                    strokeWidth: 3,
                     spot1: go.Spot.TopLeft,
                     spot2: go.Spot.BottomRight,
                     name: "NodeShape"
                 },
-                    new go.Binding("fill", "backColor").makeTwoWay()
+                    new go.Binding("fill", "backColor"),
+                    new go.Binding("stroke", "valid", v => { return v ? 'transparent' : '#f00' })
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -558,14 +790,61 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
             ));
     }
 
+    private createMapGroup(): go.Group {
+        return this.g(go.Group, "Auto",
+            { // define the group's internal layout
+                background: '#eee',
+                mouseDragEnter: (e, grp, prev) => this.highlightGroup(e, grp, true),
+                mouseDragLeave: (e, grp, next) => this.highlightGroup(e, grp, false),
+                mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
+                mouseLeave: (e, obj) => { this.showPorts(obj.part, false); },
+                computesBoundsAfterDrag: true,
+                // when the selection is dropped into a Group, add the selected Parts into that Group;
+                // if it fails, cancel the tool, rolling back any changes
+                mouseDrop: (e, grp) => this.finishDrop(e, grp),
+                handlesDragDropForMembers: true,  // don't need to define handlers on member Nodes and Links
+                // Groups containing Groups lay out their members horizontally
+                layout:
+                this.g(go.GridLayout,
+                    {
+                        wrappingColumn: 1, alignment: go.GridLayout.Location
+                        //,cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                    }),
+                isSubGraphExpanded: false
+            },
+            new go.Binding("background", "isHighlighted", (h, p) => { return h ? "#faffad" : '#eee' }).ofObject(),
+            this.g(go.Shape, "RoundedRectangle",
+                { fill: null, stroke: "gray", strokeWidth: 2 }),
+            this.g(go.Panel, "Vertical",
+                { defaultAlignment: go.Spot.Left, margin: 4 },
+                this.g(go.Panel, "Horizontal",
+                    { defaultAlignment: go.Spot.Top },
+                    // the SubGraphExpanderButton is a panel that functions as a button to expand or collapse the subGraph
+                    this.g("SubGraphExpanderButton"),
+                    this.g(go.TextBlock,
+                        { font: "Bold 18px Sans-Serif", margin: 4 },
+                        new go.Binding("text", "name"),
+                        new go.Binding("visible", "isSubGraphExpanded", o => { return !o }).ofObject()
+                    )
+                ),
+                // create a placeholder to represent the area where the contents of the group are
+                this.g(go.Placeholder,
+                    { padding: new go.Margin(0, 10) })
+            )  // end Vertical Panel
+            //,this.g(go.Panel, "Horizontal", { defaultAlignment: go.Spot.TopRight }, this.g("SubGraphExpanderButton"))
+            ,this.makePort('L', go.Spot.Left, false, true),
+            this.makePort('R', go.Spot.Right, true, false)
+        );  // end Group
+    }
+
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
-                routing: go.Link.Normal,
-                corner: 10,
+                routing: go.Link.AvoidsNodes,
+                corner: 20,
                 relinkableFrom: false,
                 relinkableTo: false,
-                curve: go.Link.Bezier
+                //curve: go.Link.Bezier
             }, // the whole link panel
             this.g(go.Shape, {
                 stroke: "gray", strokeWidth: 2
@@ -630,7 +909,8 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
 
     private createDefaultGroup(): go.Group {
          return this.g(go.Group, "Auto",
-          { // define the group's internal layout
+             { // define the group's internal layout
+
               layout: this.g(go.TreeLayout,
                       { angle: 90, arrangement: go.TreeLayout.ArrangementHorizontal, isRealtime: false }),
             // the group begins unexpanded;
@@ -644,10 +924,10 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
             this.g(go.Panel, "Horizontal",
               { defaultAlignment: go.Spot.Top },
               // the SubGraphExpanderButton is a panel that functions as a button to expand or collapse the subGraph
-              this.g("SubGraphExpanderButton"),
-              this.g(go.TextBlock,
-                { font: "Bold 18px Sans-Serif", margin: 4 },
-                new go.Binding("text", "name"))
+              this.g("SubGraphExpanderButton")
+              //,this.g(go.TextBlock,
+              //  { font: "Bold 18px Sans-Serif", margin: 4 },
+              //  new go.Binding("text", "name"))
             ),
             // create a placeholder to represent the area where the contents of the group are
             this.g(go.Placeholder,
@@ -655,6 +935,74 @@ export class LineageDiagramComponent extends BaseComponent implements OnInit, Af
           )  // end Vertical Panel
         );  // end Group
     }
+
+    private createTransformationGroup(): go.Group {
+        return this.g(go.Group, "Auto",
+            { // define the group's internal layout
+                background: '#82D6A9',
+                mouseDragEnter: (e, grp, prev) => this.highlightGroup(e, grp, true),
+                mouseDragLeave: (e, grp, next) => this.highlightGroup(e, grp, false),
+                computesBoundsAfterDrag: true,
+                // when the selection is dropped into a Group, add the selected Parts into that Group;
+                // if it fails, cancel the tool, rolling back any changes
+                mouseDrop: (e, grp) => this.finishDrop(e, grp),
+                handlesDragDropForMembers: true,  // don't need to define handlers on member Nodes and Links
+                // Groups containing Groups lay out their members horizontally
+                layout:
+                this.g(go.GridLayout,
+                    {
+                        wrappingColumn: 1, alignment: go.GridLayout.Location
+                        //,cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                    }),
+                // the group begins unexpanded;
+                // upon expansion, a Diagram Listener will generate contents for the group
+                isSubGraphExpanded: true
+            },
+            new go.Binding("background", "isHighlighted", (h) => { return h ? "#faffad" : "#82D6A9"; }).ofObject(),
+            this.g(go.Shape, "Rectangle",
+                { fill: null, stroke: "#286337", strokeWidth: 2 }),
+            this.g(go.Panel, "Vertical",
+                { defaultAlignment: go.Spot.Center, margin: 5 },
+                this.g(go.Panel, "Horizontal",
+                    { defaultAlignment: go.Spot.Top },
+                    // the SubGraphExpanderButton is a panel that functions as a button to expand or collapse the subGraph
+                    //this.g("SubGraphExpanderButton"),
+                    this.g(go.TextBlock,
+                        { font: "bold 13px Sans-Serif", margin: 3 },
+                        new go.Binding("text", "name", n => { return (n.length > 25) ? n.substring(0, 23) + '...' : n } ),
+                        new go.Binding("visible", "name", n => { return (n == null || n == '') ? false : true })
+                    )
+                )
+                ,
+                // create a placeholder to represent the area where the contents of the group are
+                this.g(go.Placeholder,
+                    { padding: new go.Margin(0, 5) })
+            )  // end Vertical Panel
+        );  // end Group
+    }
+
+    private makePort(name, spot, output, input) {
+        return this.g(go.Shape, "Circle",
+            {
+                fill: "transparent",
+                stroke: null,
+                desiredSize: new go.Size(9, 9),
+                alignment: spot, alignmentFocus: spot,
+                portId: name,
+                fromSpot: spot, toSpot: spot,
+                fromLinkable: output, toLinkable: input,
+                cursor: "pointer"
+            });
+    }
+
+    private showPorts(node, show) {
+        let diagram = node.diagram;
+        if (!diagram || diagram.isReadOnly || !diagram.allowLink) return;
+        node.ports.each((port) => {
+            port.stroke = (show ? "#000" : null);
+        });
+    }
+
     //#endregion
 }
 

@@ -123,26 +123,4 @@ namespace d360.core
             Enabled = enabled;
         }
     }
-
-    public class ObjectTypeAttribute : Attribute
-    {
-        public int ObjectTypeID { get; set; }
-        public string ObjectType { get; set; }
-
-        public ObjectTypeAttribute(int objectTypeID, string objectType)
-        {
-            ObjectTypeID = objectTypeID;
-            ObjectType = objectType;
-        }
-    }
-
-    public class AssignableTypesAttribute : Attribute
-    {
-        public SystemObjects[] Values { get; set; }
-
-        public AssignableTypesAttribute(params SystemObjects[] values)
-        {
-            this.Values = values;
-        }
-    }
 }

@@ -359,11 +359,11 @@ order by	ColumnIndex", new { id });
                                         case "ArtifactType":
                                             resolvedRelatableObjects = Filter<Artifact>(o =>
                                                 o.ArtifactTypeID == objIDToGet &&
-                                                uniqueLoadItemValues.Contains(o.Name)
+                                                uniqueLoadItemValues.Contains(o.DisplayValue)
                                                 )
                                                 .Select(o => new BulkLoadRelationModel
                                                 {
-                                                    DisplayValue = o.Name,
+                                                    DisplayValue = o.DisplayValue,
                                                     Object = "Artifact",
                                                     ObjectID = o.ID
                                                 })

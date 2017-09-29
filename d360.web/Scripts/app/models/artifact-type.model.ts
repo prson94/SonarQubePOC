@@ -10,6 +10,7 @@ export class ArtifactType {
     ID: number;
     ParentID: number;
     Name: string;
+    DisplayFormat: string;
     Description: string;
     AllowHierarchy: boolean;
     AllowRelatedArtifacts: boolean;
@@ -28,13 +29,10 @@ export class ArtifactTypeExportTemplate {
 
 export class ArtifactTypeSummary {
     ID: number;
-    Certified: number;
     Description: string;
-    Draft: number;
     Name: string;
     ParentID: number;
     Total: number;
-    UnderReview: number;
     expanded: boolean;
 }
 

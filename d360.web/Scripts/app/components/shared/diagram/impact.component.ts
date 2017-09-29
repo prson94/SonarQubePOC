@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
-import { BaseComponent } from '../base.component';
+import { DiagramBaseComponent } from './diagram-base.component';
 import { PermissionsService } from '../../../services/permissions.service';
 import { DiagramService } from '../../../services/diagram.service';
 import { Permission } from '../../../models/permission.model';
@@ -18,7 +18,7 @@ declare var window: any;
     providers: [ PermissionsService, DiagramService ]
 })
 
-export class ImpactComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ImpactComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;

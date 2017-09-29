@@ -18,7 +18,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
             <div class="col s10 offset-s1">
                 <div class="tile tile-detail">
                     <header>
-                        Tutorials
+                        Help
                     </header>
 
                     <div>

@@ -706,11 +706,11 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             return Database.Connection.Query<FusionOwnerOption>(@"
 	select	T.Name as [Type],
 			A.ID,
-			T.Name + ' : ' + A.TextPath as Name
+			T.Name + ' : ' + A.DisplayValue as Name
 	from	Artifact A 
 			inner join ArtifactType T	on T.ID = A.ArtifactTypeID 
 										and T.CanOwnFusion = 1
-	order by	T.Name + ' : ' + A.TextPath").ToList();
+	order by	T.Name + ' : ' + A.DisplayValue").ToList();
         }
 
         public List<FusionPromotionOption> GetFusionPromotionOptions()
@@ -1358,11 +1358,11 @@ where	R.SourceObject = 'FusionAttribute'
 						'RuleType' AS Type
 				FROM	RuleType
                 UNION
-				/*SELECT	ID,
-						'Rule Implementation :: ' + Name as Name,
+				SELECT	ID,
+						'Rule Implementation :: ' + DisplayValue as Name,
 						'RuleImplementationType' as Type
                 FROM    [Rule]
-				UNION*/
+				UNION
 				SELECT	ID,
 						'Reference :: Item :: ' + Name AS Name,
 						'ReferenceItemType' AS Type
@@ -1931,25 +1931,35 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             return (SaveChanges() > 0);
         }
 
-        public bool SaveOrUpdate<T>(T entity, List<Field> fields) where T : BaseIntObject
+        public bool SaveOrUpdate<T>(T entity, List<Field> fields) where T : BaseIntObject, IFieldsObject
         {
-            var returnValue = false;
+            var isUpdate = IsPersistent(entity);
+            
+            var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
+            var attr = entity.GetFieldsObjectInfo();
+            bool exists = (isUpdate) ? 
+                Query<bool>("select dbo.CheckIfObjectExists(@t, @tid, @oid, @f) as Val", new { t = attr.Type, tid = attr.TypeID, oid = entity.ID,  f = fieldsJson }).First() :
+                Query<bool>("select dbo.CheckIfObjectExists(@t, @tid, null, @f) as Val", new { t = attr.Type, tid = attr.TypeID, f = fieldsJson }).First();
 
-            if (IsPersistent(entity))
+            if (exists)
             {
-                returnValue = Update<T>(entity);
-            }
-            else
-            {
-                returnValue = Add<T>(entity);
+                throw new ApplicationException($"{attr.Object} already exists.");
             }
 
+            var returnValue = (isUpdate) ? Update<T>(entity) : Add<T>(entity);
+            
             if (fields != null)
             {
                 fields.ForEach(i => {
-                    i.ObjectID = entity.ID;             
+                    i.ObjectID = entity.ID;
                 });
-                AddOrUpdateFields(fields);                
+                AddOrUpdateFields(fields);
+            }
+
+            if (entity is IFieldsObject && entity is IDisplayValueObject)
+            {
+                (entity as IDisplayValueObject).DisplayValue = getObjectDisplayValue((entity as IFieldsObject), entity.ID);
+                SaveChanges();
             }
 
             return returnValue;
@@ -1969,9 +1979,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
         public override int SaveChanges()
         {
             int returnValue = 0;
-
-            var changedFields = new List<Field>(); 
-
+            
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
             {
                 #region Business logic : ICreatedMetadata
@@ -2018,9 +2026,9 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
 
                     switch (entry.State)
                     { 
-                        case EntityState.Added:
-                            if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);                            
-                            break;
+                        //case EntityState.Added:
+                        //    if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);                            
+                        //    break;
                         case EntityState.Deleted:
                             var any = false;
                             any = Any<Intersect>(i => (i.Subject == "Artifact" && i.SubjectID == o.ID) || (i.Object == "Artifact" && i.ObjectID == o.ID));
@@ -2029,9 +2037,9 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                             any = Any<Artifact>(i => i.ParentID == o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);                            
                             break;
-                        case EntityState.Modified:
-                            if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);                            
-                            break;
+                        //case EntityState.Modified:
+                        //    if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);                            
+                        //    break;
                     }
 
                     Caching.RemoveItem(key(ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY, o.ArtifactTypeID));
@@ -2553,11 +2561,11 @@ select @err";
 
                     switch (entry.State)
                     {
-                        case EntityState.Added:
-                            if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) 
-                                throw new ArgumentException(Messages.Error_NameTaken);
+                        //case EntityState.Added:
+                        //    if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) 
+                        //        throw new ArgumentException(Messages.Error_NameTaken);
                             
-                            break;
+                        //    break;
                         case EntityState.Deleted:
                             var any = Any<Field>(f => f.FieldType.LookupObjectType == "Taxonomy" && f.FieldType.LookupObjectID == taxonomyTypeID && f.Value == id);
                             if (any) 
@@ -2572,11 +2580,11 @@ select @err";
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_PeopleResponsibilitiesExist);
                             
                             break;
-                        case EntityState.Modified:
-                            if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID && i.ID != o.ID)) 
-                                throw new ArgumentException(Messages.Error_NameTaken);
+                        //case EntityState.Modified:
+                        //    if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID && i.ID != o.ID)) 
+                        //        throw new ArgumentException(Messages.Error_NameTaken);
                             
-                            break;
+                        //    break;
                     }
 
                     Caching.RemoveItem(key(TAXONOMY_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
@@ -2600,11 +2608,6 @@ select @err";
                         case EntityState.Modified:
                             if (Any<TaxonomyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
-                            break;
-                        case EntityState.Deleted:
-                            if (Any<Artifact>(i => i.TaxonomyTypeID == o.ID))
-                                throw new ArgumentException(Messages.TaxonomyType_Assigned);
                             
                             break;
                     }
@@ -2659,44 +2662,16 @@ select @err";
             }
             
             // create events for the objects this needs to be done after save changes so we have new objects id's
-            if(IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
+            if(IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities);
 
             return returnValue;
         }
 
-        private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
+        private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities)
         {
             //get any objects that implement EventTrackedEntity so we can add messages for them
             var events = new List<EventInfo>();
-            var fieldEvents = new List<EventObjectInfo>();
             
-            //we need to create event objects for field changes. Add them here
-            foreach(var field in changedFields)
-            {
-                var fieldType = FieldTypes.AsNoTracking().FirstOrDefault(f => f.ID == field.FieldTypeID);
-                var eventInfo = fieldEvents.FirstOrDefault(f => f.Object.ToString() == field.ObjectType && f.ObjectID == field.ObjectID);
-                if (eventInfo != null)
-                {
-                    eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
-                }
-                else
-                {
-                    eventInfo = new EventObjectInfo();
-                    eventInfo.Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), field.ObjectType);
-                    eventInfo.ObjectID = field.ObjectID;
-                    eventInfo.ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldType.Object);
-                    eventInfo.ObjectTypeID = fieldType.ObjectID;
-                    eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
-                    fieldEvents.Add(eventInfo);
-                }
-
-            }
-
-            foreach(var fieldEvent in fieldEvents)
-            {
-                addQE(events, ChangeType.Update, fieldEvent);
-            }
-
             foreach (var modified in modifiedEntities)
             {
                 addQE(events, ChangeType.Update, modified.GetEventObjectInfo());

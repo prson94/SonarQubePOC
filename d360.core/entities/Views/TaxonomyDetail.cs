@@ -11,10 +11,7 @@ namespace d360.core.entities
         public int? ParentID { get; set; }
 
         [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Description { get; set; }
+        public string DisplayValue { get; set; }
 
         [DataMember]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]

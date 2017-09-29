@@ -52,6 +52,8 @@ export class NodeModelV2 {
     key: any;
     object: string;
     objectId: number;
+    objectType: string;
+    objectTypeId: number;
     name: string;
     foreColor: string = '#000';
     backColor: string = '#fff';
@@ -61,6 +63,9 @@ export class NodeModelV2 {
     isGroup: boolean = false;
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
+
+    valid: boolean = true;
+    errors = [];
 }
 
 export class LinkModelV2 {

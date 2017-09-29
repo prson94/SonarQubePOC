@@ -18,6 +18,7 @@ import {
 import { ImpactDiagramModel } from '../models/impact.model';
 import { HierarchyDiagramModel } from '../models/model.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class LineageService extends BaseService {
@@ -37,6 +38,17 @@ export class LineageService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    public queryObjectTypes(type: string, id: number, query: string): Observable<any[]> {
+        return this.http.get(`api/lineage/query/objects/${type}/${id}?query=${query}`)
+            .map(response => <any[]>response.json());       
+    }
+
+        public getLineageObjectDetail(type: string, id: number): Promise<any> {
+        return this.http.get(`resources/${type}/${id}/templates/tooltip/preview?isNg=true`)
+            .toPromise()
+            .catch(err => this.handleError(err));
+    }
+
     //public getLineageSourceRules(source: string, sourceId: number, target: string, targetId: number): Promise<SourceRule[]> {
     //    return this.http.get(`api/${source}/${sourceId}/sources/${target}/${targetId}/rules`)
     //        .toPromise()
@@ -51,11 +63,7 @@ export class LineageService extends BaseService {
     //        .catch(err => this.handleError(err));
     //}
 
-    //public getLineageObjectDetail(type: string, id: number): Promise<any> {
-    //    return this.http.get(`resources/${type}/${id}/templates/tooltip/preview?isNg=true`)
-    //        .toPromise()
-    //        .catch(err => this.handleError(err));
-    //}
+
 
     //public getLineageTechnicalRelationships(source: string, sourceId: number, target: string, targetId: number): Promise<TechnicalRelation[]> {
     //    return this.http.get(`relations/ChildRelationshipsBySourceAndTarget?s=${source}&sid=${sourceId}&t=${target}&tid=${targetId}`)

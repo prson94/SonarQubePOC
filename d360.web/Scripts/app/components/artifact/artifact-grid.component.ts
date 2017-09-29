@@ -48,33 +48,21 @@ import { StringConstants } from '../../static/string-constants';
                     <div class="col s12" [hidden]="showCustomExport">                
                        <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="Name" header="Name" sortable="true">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <a (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)">{{item.Name}}</a>                                    
-                                </ng-template>
-                            </p-column>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{width:column.columnWidth ? column.columnWidth + 'px' : ''}">                                                                
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
                                 </ng-template>
                             </p-column>
-                            <p-column [style]="{width:'30px'}">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools" style="color:red;">
-                                            <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="certificate" icon="certificate" [class]="certificateColor(item)"></d3s-tooltip>                                            
-                                        </div>
-                                    </ng-template>
-                            </p-column>
                             <p-column [style]="{width:'30px'}" *ngIf="showEditButton">
                                     <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">
+                                        <div class="RowTools" *ngIf="item.P_CanEdit">
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </ng-template>
                             </p-column>                            
                             <p-column  [style]="{width:'35px'}" *ngIf="showDeleteButton">
                                     <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">
+                                        <div class="RowTools" *ngIf="item.P_CanDelete">
                                             <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
                                     </ng-template>
@@ -94,7 +82,7 @@ import { StringConstants } from '../../static/string-constants';
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
                             method="callback"
-                            [prompt]="'Are you sure you want to delete ['+ selected?.Name + ']?'"                                         
+                            [prompt]="'Are you sure you want to delete ['+ (selected?.DisplayValue ? selected?.DisplayValue : 'Artifact') + ']?'"                                         
                             (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
                 `,    
@@ -304,7 +292,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         }
         this.isGridFilterLoading = true;
         if (dt) dt.reset();
-        this.getData();
+        //this.getData();  
     }
 
     protected certificateColor(item) {

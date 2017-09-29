@@ -28,10 +28,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <span [innerHtml]="item.data.Description"></span>
                                 </ng-template>
-                            </p-column>                            
-                            <p-column field="Draft" header="Draft" [style]="{width:'100px'}"></p-column>
-                            <p-column field="UnderReview" header="Under Review" [style]="{width:'100px'}"></p-column>
-                            <p-column field="Certified" header="Certified" [style]="{width:'100px'}"></p-column>
+                            </p-column>
                             <p-column field="Total" header="Total" [style]="{width:'100px'}"></p-column>
                             <p-column  [style]="{width:'40px'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
@@ -98,10 +95,7 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                     ID: root.ID,
                     Name: root.Name,
                     Description: root.Description,
-                    Certified: root.Certified,
-                    Draft: root.Draft,
-                    Total: root.Total,
-                    UnderReview: root.UnderReview
+                    Total: root.Total
                 },
                 children: (this.buildTreeNodeArray(artifactTypeSummary, root.ID)) //recursively find its children
             });

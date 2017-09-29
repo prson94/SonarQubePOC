@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 <div *ngIf="!isLoading">
     <div class="tile tile-detail">
         <header>
-            Your Workflow Assignments
+            My Assignments
             <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              

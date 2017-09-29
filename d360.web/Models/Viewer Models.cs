@@ -308,7 +308,7 @@ namespace d360.web.Models
                                 break;
                             case "Relationship":
                                 //this will be handled differently.
-                                break;                            
+                                break;
                             default:
                                 value = form[ft.Name];
                                 break;
@@ -876,9 +876,6 @@ namespace d360.web.Models
 
         [DataMember]
         public string IconBackColor { get; set; }
-
-        [DataMember]
-        public string GoverningDomain { get; set; }
     }
 
     public class PowerBIReportViewModel

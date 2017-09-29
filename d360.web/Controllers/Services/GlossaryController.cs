@@ -1,7 +1,6 @@
 ﻿using d360.core.entities;
 using d360.model;
 using d360.core;
-using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +12,6 @@ using d360.core.enums;
 using System.Collections;
 using System.Text;
 using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using Newtonsoft.Json;
-using System.Data.SqlClient;
 
 namespace d360.web.Controllers.Services
 {
@@ -324,38 +319,7 @@ where A.ArtifactTypeID = @id", columns, joins);
 
                 #endregion
 
-
-                if (!model.ContainsKey("Name"))
-                    throw new MissingPropertiesException("Artifact.Name");
-
-                if (!model.ContainsKey("Description"))
-                    throw new MissingPropertiesException("Artifact.Description");
-
-                if (!model.ContainsKey("TaxonomyTypeID"))
-                    throw new MissingPropertiesException("Artifact.TaxonomyTypeID");
-
-                if (model.ContainsKey("SourceID"))
-                {
-                    var sourceID = model["SourceID"].ToString();
-                    if (!string.IsNullOrEmpty(sourceID))
-                    {
-                        item = Company.Filter<Artifact>(i => i.ArtifactTypeID == id && i.SourceID == sourceID).FirstOrDefault();
-                        if (item == null)
-                        {
-                            item = new Artifact { SourceID = sourceID };
-                        }
-                    }
-                }
-                else
-                {
-                    item = new Artifact();
-                }
-
-                item.Name = model["Name"].ToString();
-                item.Description = model["Description"].ToString();
                 item.ArtifactTypeID = id;
-                item.TaxonomyTypeID = int.Parse(model["TaxonomyTypeID"].ToString());
-                item.Status = "Draft";
 
                 int parentID = 0;
                 if (model.ContainsKey("ParentID"))
@@ -367,7 +331,7 @@ where A.ArtifactTypeID = @id", columns, joins);
                 }
                 if (parentID > 0) item.ParentID = parentID;
 
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, id).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, id).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
@@ -381,13 +345,7 @@ where A.ArtifactTypeID = @id", columns, joins);
                     }
                 });
 
-                Company.SaveOrUpdate<Artifact>(item);
-
-                fields.ForEach(f => {
-                    f.ObjectID = item.ID;
-                });
-
-                Company.AddOrUpdateFields(fields);
+                Company.SaveOrUpdate<Artifact>(item, fields);
 
                 return Request.CreateResponse<Artifact>(HttpStatusCode.Created, item);
             }
@@ -430,17 +388,14 @@ where A.ArtifactTypeID = @id", columns, joins);
                     }
                 }
 
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList();
-
-                if (model.ContainsKey("Name")) item.Name = model["Name"].ToString();
-                if (model.ContainsKey("Description")) item.Description = model["Description"].ToString();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
 
                 int parentID = 0;
                 if (model.ContainsKey("ParentID"))
                 {
                     if (!int.TryParse(model["ParentID"], out parentID))
                     {
-                        throw new MissingPropertiesException("Model");
+                        throw new MissingPropertiesException("ParentID");
                     }
                 }
                 if (parentID > 0) item.ParentID = parentID;
@@ -452,8 +407,7 @@ where A.ArtifactTypeID = @id", columns, joins);
                         fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Artifact.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
                 });
 
-                Company.SaveOrUpdate<Artifact>(item);
-                Company.AddOrUpdateFields(fields);
+                Company.SaveOrUpdate<Artifact>(item, fields);
 
                 return Request.CreateResponse(HttpStatusCode.OK);
             }
@@ -550,16 +504,6 @@ where A.TaxonomyTypeID = @id ", columns, joins);
 
                 item.TaxonomyTypeID = id;
 
-                if (model.ContainsKey("Name"))
-                    item.Description = model["Name"].ToString();
-                else
-                    throw new MissingPropertiesException("Model");
-
-                if (model.ContainsKey("Description"))
-                    item.Description = model["Description"].ToString();
-                else
-                    throw new MissingPropertiesException("Model");
-
                 int parentID = 0;
                 if (model.ContainsKey("ParentID"))
                 {
@@ -570,7 +514,7 @@ where A.TaxonomyTypeID = @id ", columns, joins);
                 }
                 if (parentID > 0) item.ParentID = parentID;
 
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, id).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, id).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
@@ -584,14 +528,7 @@ where A.TaxonomyTypeID = @id ", columns, joins);
                     }
                 });
 
-                Company.SaveOrUpdate<Taxonomy>(item);
-
-                fields.ForEach(f =>
-                {
-                    f.ObjectID = item.ID;
-                });
-
-                Company.AddOrUpdateFields(fields);
+                Company.SaveOrUpdate<Taxonomy>(item, fields);
 
                 return Request.CreateResponse<Taxonomy>(HttpStatusCode.Created, item);
             }
@@ -634,10 +571,7 @@ where A.TaxonomyTypeID = @id ", columns, joins);
                     }
                 }
 
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList();
-
-                if (model.ContainsKey("Name")) item.Name = model["Name"].ToString();
-                if (model.ContainsKey("Description")) item.Description = model["Description"].ToString();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
 
                 int parentID = 0;
                 if (model.ContainsKey("ParentID"))
@@ -656,8 +590,7 @@ where A.TaxonomyTypeID = @id ", columns, joins);
                         fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Taxonomy.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
                 });
 
-                Company.SaveOrUpdate<Taxonomy>(item);
-                Company.AddOrUpdateFields(fields);
+                Company.SaveOrUpdate<Taxonomy>(item, fields);
 
                 return Request.CreateResponse(HttpStatusCode.OK);
             }

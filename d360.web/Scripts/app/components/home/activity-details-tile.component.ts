@@ -19,9 +19,9 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                         <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                            <p-column field="Name" header="Name" sortable="true" [filter]="!showSimpleFilter">
+                            <p-column field="DisplayValue" header="Name" sortable="true" [filter]="!showSimpleFilter">
                                 <ng-template let-col let-item="rowData" pTemplate type="body">
-                                    <a (click)="artifactLink(item.ArtifactTypeID, item.ID)">{{item.Name}}</a>
+                                    <a (click)="artifactLink(item.ArtifactTypeID, item.ID)">{{item.DisplayValue}}</a>
                                 </ng-template>
                             </p-column>                                                                                                   
                             <p-column field="CreatedOn" header="Created" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}">
@@ -33,8 +33,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <ng-template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.UpdatedOn | date: 'short'}}</span>
                                 </ng-template>
-                            </p-column>
-                            <p-column field="Status" header="Status" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}"></p-column>
+                            </p-column>                            
                             <p-column [style]="{width:'40px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">

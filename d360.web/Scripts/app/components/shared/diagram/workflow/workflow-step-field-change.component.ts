@@ -58,7 +58,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     ngOnInit() {
-        //console.log(_.cloneDeep(this.fieldUpdate));
+        //console.log(_.cloneDeep(this.formFields));
     }
 
     ngOnChanges() {
@@ -118,7 +118,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     select(e: any, clear: boolean = true) {
         this.field = null;
         this.selectedField['@FieldId'] = e;
-
         if (clear)
             delete this.selectedField['@Value'];
 
@@ -174,7 +173,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     add() {
         this.selectedField = {};
         this.initField(this.selectedField);
-
+        this.select(null);
+        this.setValueType();
+        this.selectedFormFieldId = null;
         this.formMode = FormMode.Adding;
     }
 
@@ -236,8 +237,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     edit(i: any) {
+        //console.log('edit', this.valueType, i);
         this.selectedFieldIndex = i;
         this.selectedField = _.cloneDeep(this.fieldUpdate.Field[i]);
+        this.selectedFormFieldId = null;
 
         //free up the field so it can be selected and changed
         let usedFieldIndex = this.usedFields.findIndex(f => f.ID.toString() == this.selectedField['@FieldId'].toString());
@@ -245,6 +248,11 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             this.fields.push(this.usedFields[usedFieldIndex]);
             this.usedFields.splice(usedFieldIndex, 1);
         }
+
+        this.setValueType();
+
+        if (this.valueType == 'form')
+            this.selectedFormFieldId = this.selectedField['@FormFieldId'] + '|' + this.selectedField['@FormStepId'];
 
         this.select(this.selectedField['@FieldId'], false);
         this.formMode = FormMode.Editing;
@@ -269,6 +277,14 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.formMode = FormMode.Default;
     }
 
+    cancel() {
+        this.selectedField = null;
+        this.formMode = FormMode.Default;
+        this.valueType = null;
+        this.field = null;
+        this.selectedFormFieldId = null;
+    }
+
     valid() {
 
         //TODO: enforce single Field item per field
@@ -286,8 +302,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
 
         if (!useCurrentDate && !clearValue && !useFormValue) {
-            if (this.selectedField['@Value'] == null)
+            if (this.selectedField['@Value'] == null || this.selectedField['@Value'] == '')
                 return false;
+
         }
 
         //console.log(this.selectedField);
@@ -321,6 +338,19 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 this.selectedField['@UseCurrentDate'] = true;
                 break;
         }
+    }
+
+    setValueType() {
+        if (this.selectedField == null)
+            this.valueType = null;
+        else if (this.selectedField['@UseFormValue'] != null)
+            this.valueType = 'form';
+        else if (this.selectedField['@ClearValue'] != null)
+            this.valueType = 'clear';
+        else if (this.selectedField['@UseCurrentDate'] != null)
+            this.valueType = 'timestamp';
+        else
+            this.valueType = 'manual';
     }
 }
 

@@ -143,6 +143,7 @@ export class ToolbarItemNg {
 export class ObjectDetail {
     ID: number;
     Name: string;
+    DisplayValue: string;
     TextPath: string;
     Description: string;
     ParentID: number;

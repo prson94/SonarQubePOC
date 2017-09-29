@@ -25,7 +25,7 @@ namespace d360.core.entities
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Description { get; set; }
-        
+
         [DataMember]
         public string DisplayFormat { get; set; }
 

@@ -35,7 +35,7 @@ declare var CompanySettings;
                         <div class="row" *ngIf="showSocialScoreBar">
                             <div class="col s12">
                                  <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                    <d3s-object-governance [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-governance>
+                                    <d3s-object-governance [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.DisplayValue"></d3s-object-governance>
                                 </div>
                             </div>
                         </div>
@@ -106,7 +106,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.headerBreadcrumbService.popLastBreadcrumb();
                 this.selectModelHierarchy(hierarchyId);
                 this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
+                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
             }
             
         });
@@ -135,7 +135,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.setBrowserTitle(this.titleService, this.model.Name);
 
                 this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
+                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
             });
     }
 
@@ -155,7 +155,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
         this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID);
 
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.Name, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.DisplayValue, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
     }
 
     private loadModelHierarchy(modelId: number, selectedHierarchyId: number) {
@@ -213,7 +213,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
         for (let root of rootNodes) {
             res.push({
-                label: root.Name,
+                label: root.DisplayValue,
                 expanded: true,
                 data: {
                     id: root.ID, hasRelations: root.HasChildren

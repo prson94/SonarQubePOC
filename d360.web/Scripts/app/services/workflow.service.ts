@@ -112,8 +112,13 @@ export class WorkflowService extends BaseService {
 
     //#region diagram
 
-    public getWorkflowDiagram(id: number, version?: number): Promise<WorkflowDiagramModel> {
-        return this.http.get(`services/workflow/diagram/${id}${version != null ? '?version=' + version : ''}`)
+    public getWorkflowDiagram(id: number, version?: number, filteredObject?: string, filteredObjectId?: number): Promise<WorkflowDiagramModel> {
+        let uri = `services/workflow/diagram/${id}${version != null ? '?version=' + version : ''}`
+
+        if (filteredObject != null && filteredObjectId != null)
+            uri += `${version == null ? '?' : '&'}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`
+
+        return this.http.get(uri)
             .toPromise()
             .then(response => <WorkflowDiagramModel>response.json())
             .catch(err => this.handleError(err));
@@ -281,16 +286,28 @@ export class WorkflowService extends BaseService {
     }
 
 
-    getWorkflowsByTypeList(types: string) {
-        return this.http.get(`services/workflow/typelist?types=${types}`)
+    getWorkflowsByTypeList(types: string, filteredObject?: string, filteredObjectId?: number) {
+        let uri = `services/workflow/typelist?types=${types}`;
+
+        if (filteredObject != null && filteredObjectId != null) {
+            uri += `&filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+        }
+
+        return this.http.get(uri)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
 
     }
 
-    getWorkflowVersionStepHistory(id: number) {
-        return this.http.get(`services/workflow/versionstep/history/${id}`)
+    getWorkflowVersionStepHistory(id: number, filteredObject?: string, filteredObjectId?: number) {
+        let uri = `services/workflow/versionstep/history/${id}`;
+
+        if (filteredObject != null && filteredObjectId != null) {
+            uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+        }
+
+        return this.http.get(uri)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

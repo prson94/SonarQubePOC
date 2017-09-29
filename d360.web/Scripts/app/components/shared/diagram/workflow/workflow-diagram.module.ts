@@ -35,6 +35,8 @@ import { WorkflowTemplateToolComponent } from './workflow-template-tool.componen
 import { WorkflowHistoryComponent } from './workflow-history.component';
 import { WorkflowFormHistoryComponent } from './workflow-form-history.component';
 import { WorkflowStepFieldChangeComponent } from './workflow-step-field-change.component';
+import { WorkflowStepSummaryComponent } from './workflow-step-summary.component'
+import { WorkflowTransitionSummaryComponent } from './workflow-transition-summary.component';
 
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
@@ -74,6 +76,8 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         WorkflowHistoryComponent,
         WorkflowFormHistoryComponent,
         WorkflowStepFieldChangeComponent,
+        WorkflowStepSummaryComponent,
+        WorkflowTransitionSummaryComponent,
     ],
     exports: [
         WorkflowDiagramComponent,

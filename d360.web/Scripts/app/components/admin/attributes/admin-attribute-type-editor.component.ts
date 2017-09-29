@@ -35,7 +35,7 @@ import * as _ from 'lodash';
                         </div>                           
                         <div *ngIf="attribute" class="col l6 s12">
                             <div class="FieldName">Text Format</div>
-                            <div><input style="width: 100%;" name="textFormat" type="string" [(ngModel)]="editedAttribute.TextFormatString"></div>                                        
+                            <div><input style="width: 100%;" name="textFormat" type="string" [(ngModel)]="editedAttribute.DisplayFormat"></div>                                        
                         </div>                                                
                         <div *ngIf="attribute" class="col l6 s12">
                             <div class="FieldName">Field Tokens</div>
@@ -82,14 +82,14 @@ export class AdminAttributeTypeEditor {
     ngOnInit() {        
         if (this.attribute != undefined) {
             this.editedAttribute = _.cloneDeep(this.attribute);
-            if (this.editedAttribute.TextFormatString == null) this.editedAttribute.TextFormatString = "";          
+            if (this.editedAttribute.DisplayFormat == null) this.editedAttribute.DisplayFormat = "";          
             this.loadAttributeFields();
         }
         else {
             this.editedAttribute = new AttributeType();
             this.editedAttribute.ParentID = this.parentID;
             this.editedAttribute.ShowNameInTree = true;
-            this.editedAttribute.TextFormatString = "";
+            this.editedAttribute.DisplayFormat = "";
             this.editedAttribute.AttributeTypeCategoryID = 0;
             this.action = "Add";
         }
@@ -121,6 +121,6 @@ export class AdminAttributeTypeEditor {
     }
 
     private fieldTokenSelect(item) {
-        this.editedAttribute.TextFormatString += item.value;
+        this.editedAttribute.DisplayFormat += item.value;
     }
 };

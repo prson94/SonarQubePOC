@@ -194,7 +194,7 @@ namespace d360.web.Controllers
                 case "ArtifactType":
                     return new JsonNetResult
                     {
-                        Data = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).OrderBy(i => i.Name).ToList().Select(i => new { i.Name, i.ID }),
+                        Data = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).OrderBy(i => i.DisplayValue).ToList().Select(i => new { Name = i.DisplayValue, i.ID }),
                         Formatting = Newtonsoft.Json.Formatting.None
                     };
                 case "TaxonomyType":

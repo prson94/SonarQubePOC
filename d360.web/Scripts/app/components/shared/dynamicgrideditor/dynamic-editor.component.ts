@@ -242,11 +242,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         //takes the form and convert any array values to , separated string values
         for (var p in this.form.value) {            
-            if (this.form.value.hasOwnProperty(p)) {                
-                if (Array.isArray(this.form.value[p])) {                    
+            if (this.form.value.hasOwnProperty(p)) {
+                if (Array.isArray(this.form.value[p])) {
                     values[p] = this.form.value[p].join();
                 }                
-                else {                                        
+                else {
                     values[p] = this.form.value[p];
                 }                
             }

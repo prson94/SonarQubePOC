@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.model;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -32,7 +33,15 @@ namespace d360.web.Controllers
             var joins = "";
             var columns = "";
 
-            var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly);
+            var typesToAvoid = new List<string>() {
+                DataType.Attribute.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.FilteredLookup.ToString(),
+                DataType.FusionLookup.ToString(),
+                DataType.OwnershipLookup.ToString()
+            };
+            var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
 
             getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, true, false, listableOnly, fields);
 
@@ -46,16 +55,12 @@ namespace d360.web.Controllers
 
             var sql = string.Format(@"
 select	A.ID,
-		A.Name,
-		A.Description,
         A.ParentID,
-		P.TextPath as Parent,
-		A.TextPath,
-		A.Status,
-		V.Name as TaxonomyType,
+		A.DisplayValue,
+        P.DisplayValue as Parent,
         {0}
-		'artifact/' + cast(A.ArtifactTypeID as varchar) + '/' + cast(A.ID as varchar) as Url
-from	Artifact A inner join TaxonomyType V on (V.ID = A.TaxonomyTypeID)
+		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+from	Artifact A 
         left join Artifact P on P.ID = A.ParentID 
         {1}
 where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
@@ -65,44 +70,198 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             //if simple filter specified add that citeria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name", "A.Status", "V.Name", "A.TextPath" }, "Artifact", id, filter, dbArgs)}";
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.DisplayValue" }, "Artifact", id, filter, dbArgs)}";
             }
 
             var type = Company.GetById<ArtifactType>(id);
-
-            var document = new SLDocument();
-            document.AddWorksheet("Items");
-
+            
             sql = string.Format(@"select * from ({0}) A", sql);
 
             sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: fields);
-            sql = applySortSuffix(sql, sortDataField, sortOrder, isNumericString: isSortColumnNumber(sortDataField, fields));
+            
+            if (string.IsNullOrEmpty(sortDataField))
+            {
+                var sortSql = "";
 
-            fields = fields.Where(x => (x.Type != "FilteredLookup" && x.Type != "FusionLookup" && x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup")).ToList();
+                foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
+                {
+                    var columnName = $"Field{field.ID}";
+                    if (field.Type == "Number")
+                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST([{columnName}] AS int)";
+                    else
+                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
+                }
+
+                sql += " ORDER BY " + sortSql;
+            }
+            else
+            {
+                //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.                
+                sql = applySortSuffix(sql, sortDataField, sortOrder, isNumericString: isSortColumnNumber(sortDataField, fields));
+            }
+
+            if (type.ParentID.HasValue)
+                fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
+
+            fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+
+            var results = Company.Query<dynamic>(sql, dbArgs);            
+            var document = GenerateDefaultSpreadsheet(fields, results);
+            
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Filtered {type.Name} List for {DateTime.Now.ToShortDateString()}.xlsx");
+        }
+
+        [Route("download/customexcel/{templateId:int}/{artifactTypeId:int}.xls"), FileDownload, HttpGet]
+        public FileResult ToCustomExcel(int templateId, int artifactTypeId, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "", bool listableOnly = false)
+        {
+            var joins = "";
+            var columns = "";
+
+            var typesToAvoid = new List<string>() {
+                DataType.Attribute.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.FilteredLookup.ToString(),
+                DataType.FusionLookup.ToString(),
+                DataType.OwnershipLookup.ToString()
+            };
+            
+            var dbArgs = new Dapper.DynamicParameters();
+
+            dbArgs.Add("id", artifactTypeId);
+
+            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
+
+            var template = Company.ArtifactTypeExportTemplates.Where(x => x.ID == templateId).FirstOrDefault();
+
+            if(template == null)
+            {
+                throw new Exception("INVALID TEMPLATE ID SPECIFIED.");
+            }
                         
-            var results = Company.Query<dynamic>(sql, dbArgs);
-            var settings = Community.GetCompanySettings();
+            var fields = getFieldTypesByObjectType("ArtifactType", artifactTypeId, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
 
-            #region Create the list sheet
+            getDynamicFieldJoinStatements(artifactTypeId, "Artifact", out joins, out columns, true, false, listableOnly, fields);
+            
+            var oldFields = new List<FieldType>(fields);
+            //if include fields is specified only include field ids from list
+            if (!string.IsNullOrEmpty(template.IncludeFields))
+            {
+                var fieldIdList = template.IncludeFields.Split(',').Select(int.Parse);
+
+                fields.Clear();
+
+                //done this way to set order of fields in spreadsheet to the order specified in include fields.
+                foreach (var fieldId in fieldIdList)
+                {
+                    var field = oldFields.Find(x => x.ID == fieldId);
+                    if (field != null) fields.Add(field);
+                }                
+            }
+
+            #region Sql
+
+            var sql = string.Format(@"
+select	A.ID,
+        A.ParentID,
+		A.DisplayValue,
+        P.DisplayValue as Parent,
+        {0}
+		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+from	Artifact A 
+        left join Artifact P on P.ID = A.ParentID 
+        {1}
+where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
+
+            #endregion
+
+            //if simple filter specified add that citeria to the sql
+            if (!string.IsNullOrEmpty(filter))
+            {
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.DisplayValue" }, "Artifact", artifactTypeId, filter, dbArgs)}";
+            }
+
+            var type = Company.GetById<ArtifactType>(artifactTypeId);
+
+            sql = string.Format(@"select * from ({0}) A", sql);
+
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: oldFields);
+                        
+            if (string.IsNullOrEmpty(sortDataField))
+            {
+                var sortSql = "";
+
+                foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
+                {
+                    var columnName = $"Field{field.ID}";
+                    if(field.Type == "Number")                        
+                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST([{columnName}] AS int)";
+                    else
+                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
+                }
+
+                
+                sql += " ORDER BY " + sortSql;
+            }
+            else
+            {
+                //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.                
+                sql = applySortSuffix(sql, sortDataField, sortOrder, isNumericString: isSortColumnNumber(sortDataField, oldFields));
+            }
+
+
+            var results = Company.Query<dynamic>(sql, dbArgs);
+                                    
+            SLDocument document = null;
+            if (template.IncludeParent && type.ParentID > 0) fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
+            if (template.IncludeUrl) fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+
+            var styles = template.ArtifactTypeExportTemplateStyles;
+
+            switch (template.ExportViewType)
+            {
+                case core.enums.ExportView.None:
+                    document = GenerateDefaultSpreadsheet(fields,results, template, "Items");
+                    break;
+                case core.enums.ExportView.Pivot:
+                    document = GeneratePivotedSpreadsheet(fields, results, template, "Items");
+                    break;
+                case core.enums.ExportView.Grouped:
+                    document = GenerateGroupedSpreadsheet(fields, results, template, "Items");
+                    break;
+                default:
+                    throw new Exception("INVALID EXPORT VIEW TYPE SPECIFIED");
+            }
+
+            // Select the first worksheet as the active one.
+            var firstSheet = document.GetWorksheetNames()[0];
+            document.SelectWorksheet(firstSheet);
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{template.Name} for {DateTime.Now.ToShortDateString()}.xlsx");
+        }
+
+        private SLDocument GenerateDefaultSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, ArtifactTypeExportTemplate template = null, string worksheetName = "Items")
+        {
+            ICollection<ArtifactTypeExportTemplateStyle> styles = null;
+            if (template != null)
+            {
+                styles = template.ArtifactTypeExportTemplateStyles;
+            }
+
+            int index = 1;
+            var document = createExcelBaseDocument(template, worksheetName);
 
             #region Header
 
-            int index = 1;
-            document.SetCellValue(1, index++, "Name");
-            document.SetCellValue(1, index++, "Description");
-            document.SetCellValue(1, index++, "TextPath");
-            if(type.ParentID > 0)
-            {
-                document.SetCellValue(1, index++, "Parent");
-            }
             foreach (var field in fields)
             {
-                document.SetCellValue(1, index++, (string)field.FriendlyName);
+                SetColumnStyles(document, index, styles);
+                document.SetCellValue(1, index++, (string)field.FriendlyName);                
             }
-
-            document.SetCellValue(1, index++, settings["ArtifactType_TaxonomyTypeID"]);
-            document.SetCellValue(1, index++, "Status");
-            document.SetCellValue(1, index++, "Url");
 
             #endregion
 
@@ -111,60 +270,248 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, (string)row.Name);
-
-                if ((((string)row.Description) ??"").Contains("\u001A"))
-                {
-                    row.Description = (string)row.Description.Replace("\u001A", "");
-                }
-                document.SetCellValue(rowNumber, index++, (string)row.Description);
-                document.SetCellValue(rowNumber, index++, (string)row.TextPath);
-                if (type.ParentID > 0)
-                {
-                    document.SetCellValue(rowNumber, index++, (string)row.Parent);
-                }
-
+                
                 foreach (var field in fields)
-                {                    
-                    switch ((field.Type ?? "").ToUpper())
-                    {
-                        case "DECIMAL":
-                            double dVal = 0;
-                            var decVal = (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]);
-                            if (double.TryParse(decVal, out dVal))
-                                document.SetCellValue(rowNumber, index++, dVal);
-                            else
-                                document.SetCellValue(rowNumber, index++, decVal);                                                        
-                            break;
-                        case "NUMBER":
-                            int intVal = 0;
-                            var val = (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]);
-                            if (int.TryParse(val, out intVal))
-                                document.SetCellValue(rowNumber, index++, intVal);
-                            else
-                                document.SetCellValue(rowNumber, index++, val);
-                            break;
-                        default:                            
-                            document.SetCellValue(rowNumber, index++, (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]));
-                            break;
-                    }
-                    
-                }
-
-                document.SetCellValue(rowNumber, index++, (string)row.TaxonomyType);
-                document.SetCellValue(rowNumber, index++, (string)row.Status);                
-                document.SetCellValue(rowNumber, index++, (string)row.Url);
+                {
+                    var val = getRowFieldValue(row, field);
+                    SetSpreadsheetValueFromField(document, rowNumber, index, field, val);                    
+                    index++;
+                }                
             }
 
-            //only do autofit if less than 1000 items it takes a long time with large amounts of data
-            if(rowNumber < 1000)
-                document.AutoFitColumn(1, index);
-            
-            #endregion
+            SetExcelColumnWidths(document, fields);
 
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Filtered {type.Name} List for {DateTime.Now.ToShortDateString()}.xlsx");
+            return document;
+        }
+
+        private SLDocument GenerateGroupedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, ArtifactTypeExportTemplate template, string worksheetName = "Items")
+        {
+            var styles = template.ArtifactTypeExportTemplateStyles;
+
+            int index = 1;
+            var document = createExcelBaseDocument(template, worksheetName);
+
+            #region Header
+
+            foreach (var field in fields)
+            {
+                SetColumnStyles(document, index, styles);
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+            #endregion
+            
+            int rowNumber = 1;
+            dynamic previousRow = null;
+
+            foreach (var row in results)
+            {
+                bool rowSameAsPrevious = true;
+
+                if (previousRow == null) rowSameAsPrevious = false;
+                
+                index = 1;
+                rowNumber++;
+                
+                foreach (var field in fields)
+                {
+                    var val = getRowFieldValue(row, field);
+                    var previousVal = previousRow != null ? getRowFieldValue(previousRow, field) :"";
+
+                    rowSameAsPrevious = rowSameAsPrevious && (val == previousVal);
+
+                    if (!rowSameAsPrevious)
+                    {
+                        SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
+                        index++;                        
+                    }
+                    else
+                    {
+                        document.SetCellValue(rowNumber, index++, "");
+                    }
+                }
+                
+                previousRow = row;
+            }
+
+            SetExcelColumnWidths(document, fields);
+
+            return document;
+        }
+
+        private SLDocument GeneratePivotedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, ArtifactTypeExportTemplate template, string worksheetName = "Items")
+        {
+            var styles = template.ArtifactTypeExportTemplateStyles;
+
+            int index = 1;
+
+            var document = createExcelBaseDocument(template, worksheetName);
+
+            var uniques = new List<string>();
+
+            int columnNumber = 0;
+            foreach (var row in results)
+            {                
+                var concatenatedValue = "";
+                foreach (var field in fields)
+                {
+                    concatenatedValue += getRowFieldValue(row, field);
+                }
+                if (!uniques.Contains(concatenatedValue))
+                {
+                    index = 1;
+                    columnNumber++;
+
+                    uniques.Add(concatenatedValue);
+                    foreach (var field in fields)
+                    {
+                        var val = getRowFieldValue(row, field);
+                        SetSpreadsheetValueFromField(document, index, columnNumber, field, val);
+                        index++;
+                    }
+                }
+            }
+
+            for(int i = 1; i < index; i++)
+            {
+                SetRowStyles(document, i, styles);
+            }
+
+            document.AutoFitColumn(1, columnNumber);
+
+            return document;
+        }
+
+        private SLDocument createExcelBaseDocument(ArtifactTypeExportTemplate template, string worksheetName)
+        {
+            SLDocument document = null;
+
+            if (template == null)
+            {
+                template = new ArtifactTypeExportTemplate();
+            }
+
+            if (template.TemplateFile != null)
+            {
+                document = new SLDocument(new MemoryStream(template.TemplateFile));
+                document.AddWorksheet(worksheetName);
+            }
+            else
+            {
+                document = new SLDocument();
+                document.RenameWorksheet("Sheet1", worksheetName);
+
+                if (!string.IsNullOrEmpty(template.UsageNotes))
+                {
+                    var wk = "Usage Notes";
+                    document.AddWorksheet(wk);
+                    document.MoveWorksheet(wk, 0);
+                    document.SelectWorksheet(wk);
+
+                    document.SetCellValue("A1", "Usage Notes");
+                    document.SetCellValue("A2", template.UsageNotes);
+                    document.SetColumnWidth(0, 600);
+                }
+
+                document.SelectWorksheet(worksheetName);
+            }
+
+            return document;
+        }
+
+        private void SetColumnStyles(SLDocument document, int column, ICollection<ArtifactTypeExportTemplateStyle> styles)
+        {
+            if (styles == null) return;
+
+            var columnStyle = styles.Where(x => x.Row == -1 && x.Column == column).FirstOrDefault();
+
+            if (columnStyle == null) return;
+                        
+            document.SetColumnStyle(column, CreateStyle(columnStyle));            
+        }
+
+        private void SetRowStyles(SLDocument document, int row, ICollection<ArtifactTypeExportTemplateStyle> styles)
+        {
+            if (styles == null) return;
+
+            var columnStyle = styles.Where(x => x.Row == row && x.Column == -1).FirstOrDefault();
+
+            if (columnStyle == null) return;
+
+            document.SetRowStyle(row, CreateStyle(columnStyle));
+        }
+
+        private SLStyle CreateStyle(ArtifactTypeExportTemplateStyle columnStyle)
+        {
+            SLStyle style = new SLStyle();
+
+            if (columnStyle.BackgroundColor.HasValue)
+            {
+                style.Fill.SetPatternType(DocumentFormat.OpenXml.Spreadsheet.PatternValues.Solid);
+                style.Fill.SetPatternForegroundColor(System.Drawing.Color.FromArgb(columnStyle.BackgroundColor.Value));
+            }
+
+            if (columnStyle.Color.HasValue)
+                style.SetFontColor(System.Drawing.Color.FromArgb(columnStyle.Color.Value));
+
+            style.SetFontBold(columnStyle.IsBold);
+
+            return style;
+        }
+
+        private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
+        {
+            int index = 1;
+            foreach (var field in fields)
+            {
+                if (field.ColumnWidth.HasValue)
+                {
+                    int width = field.ColumnWidth.Value > 0 ? field.ColumnWidth.Value / 10 : 0;
+                    document.SetColumnWidth(index, width);                    
+                }
+                else
+                {
+                    document.AutoFitColumn(index);
+                }
+                index++;
+            }
+        }
+        
+        private void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
+        {
+            switch ((field.Type ?? "").ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(value, out dVal))
+                        document.SetCellValue(rowIndex, columnIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(value, out intVal))
+                        document.SetCellValue(rowIndex, columnIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                default:
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value+"");
+                    document.SetCellValue(rowIndex, columnIndex, doc.DocumentNode.InnerText);
+                    break;
+            }
+        }
+
+        private string getRowFieldValue(dynamic row, FieldType field)
+        {
+            if(field != null && field.ID > 0)
+                return (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]);
+            else if(field != null && field.Name == "Parent")
+                return (string)((row as IDictionary<string, object>)["Parent"]);
+            else if (field != null && field.Name == "Url")
+                return (string)((row as IDictionary<string, object>)["Url"]);
+            return "";
         }
 
         #endregion
@@ -183,20 +530,16 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             var d = new Dictionary<string, object>();
             d.Add("p", parentID);
 
-            var sql = @"select	A.ID,
-		A.Name,
-		A.Description,
+            var sql = @"
+select	A.ID,
         A.ParentID,
-		P.TextPath as Parent,
+		A.DisplayValue,
+        P.DisplayValue as Parent,
         dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
-		A.Status,
-        A.DateLastCertified,
         {0}
-		T.Name as TaxonomyType,
-        A.TaxonomyTypeID,
         dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
-        inner join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
+        {1} 
         left join Artifact P on P.ID = A.ParentID 
         where A.ArtifactTypeID = @id and A.ParentID = @p and A.[Visible] = 1";
             var model = processDynamicResults(
@@ -204,7 +547,7 @@ from	Artifact A
                 "ArtifactType", childArtifactTypeID,
                 true,
                 sortDataField, sortOrder, pagenum, pagesize,
-                new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" },
+                new string[] { "A.DisplayValue", "P.DisplayValue" },
                 filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false);
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -220,20 +563,16 @@ from	Artifact A
         {
             try
             {               
-                var sql = @"select	A.ID,
-		    A.Name,
-		    A.Description,
+                var sql = @"
+    select	A.ID,
             A.ParentID,
-		    P.TextPath as Parent,
+		    A.DisplayValue,
+            P.DisplayValue as Parent,
             dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
-		    A.Status,
-            A.DateLastCertified,
             {0}
-		    T.Name as TaxonomyType,
-            A.TaxonomyTypeID,
-            dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+            dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url            
     from	Artifact A 
-            left join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
+            {1} 
             left join Artifact P on P.ID = A.ParentID 
     where    A.ArtifactTypeID = @id and A.[Visible] = 1";
                 var model = processDynamicResults(
@@ -241,8 +580,8 @@ from	Artifact A
                     "ArtifactType", id, 
                     true, 
                     sortDataField, sortOrder, pagenum, pagesize, 
-                    new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" }, 
-                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false);
+                    new string[] { "A.DisplayValue", "P.DisplayValue" }, 
+                    filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true);
                 return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
             }
             catch (Exception ex)

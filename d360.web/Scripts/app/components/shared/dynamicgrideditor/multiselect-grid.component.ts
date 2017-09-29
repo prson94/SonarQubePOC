@@ -89,7 +89,7 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
         }
     }
 
-    writeValue(value: any): void {        
+    writeValue(value: any): void {
         this.value = value;
     }
 

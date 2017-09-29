@@ -27,9 +27,14 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
         <d3s-monitor-assignments *ngIf="!isFiltered" [workflowTypes]="filteredTypes" [objectId]="objectId" [objectType]="objectType"></d3s-monitor-assignments>
     </div>
     <div class="col s12 m6">
-        <d3s-workflow-diagram 
+        <div *ngIf="selectedWorkflowType == null" class="tile tile-detail">
+            <d3s-loading [isLoading]="true"></d3s-loading>
+        </div>
+        <d3s-workflow-diagram  *ngIf="selectedWorkflowType != null"
             [id]="selectedWorkflowType?.TypeID" 
             [version]="selectedWorkflowType?.Version" 
+            [filteredObject]="objectType"
+            [filteredObjectId]="objectId"
             [readonly]="true" 
             [hasHeader]="false"
             [selectedStepId]="selectedWorkflowItem?.VersionStepID"

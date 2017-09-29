@@ -65,20 +65,6 @@ namespace d360.model
             if(!string.IsNullOrEmpty(registration.Settings))
             {
                 var settingsModel = WorkflowRegistrationSettingsModel.parseXml(XElement.Parse(registration.Settings));
-
-                if(settingsModel.TaxonomyTypeID > 0)
-                {
-                    Console.WriteLine("DEBUG - CURRENT WORKFLOW IS SPECIFIC TO A PARTICULAR TAXONOMY TYPE. CHECKING INPUT OBJECT AGAINST TAXONOMY TYPE ID");
-
-                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-
-                    if(artifact != null && artifact.TaxonomyTypeID != settingsModel.TaxonomyTypeID)
-                    {
-                        Console.WriteLine($"DEBUG - OBJECT TAXONOMY TYPE ID {artifact.TaxonomyTypeID} DOES NOT MATCH {settingsModel.TaxonomyTypeID}");
-
-                        return false;
-                    }
-                }
             }
             
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
@@ -188,7 +174,7 @@ namespace d360.model
                                     registration,
                                     0)) {
                                 matchingItems++;
-                                items.Add(artifact.Name);
+                                items.Add(artifact.DisplayValue);
                             }
                         }
                         break;
@@ -208,7 +194,7 @@ namespace d360.model
                                     0))
                             {
                                 matchingItems++;
-                                items.Add(taxonomy.Name);
+                                items.Add(taxonomy.DisplayValue);
                             }
                         }
                         break;
@@ -734,7 +720,7 @@ namespace d360.model
             {
                 case core.SystemObjects.Artifact:
                     var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    artifact.Status = statusModel.Status;
+                    //artifact.Status = statusModel.Status;
                     SaveChanges();
                     break;
             }
@@ -1157,18 +1143,18 @@ namespace d360.model
                 result = result.Replace("[OBJECT_NAME]", itemLink);
             }
 
-            if (result.Contains("[OBJECT_TAXONOMY]") && objectInfo.Object == core.SystemObjects.Artifact)
-            {
-                //get the objects name
-                var artifact = Artifacts.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.TaxonomyType).FirstOrDefault();
+            //if (result.Contains("[OBJECT_TAXONOMY]") && objectInfo.Object == core.SystemObjects.Artifact)
+            //{
+            //    //get the objects name
+            //    var artifact = Artifacts.Where(i => i.ID == objectInfo.ObjectID).Include(x => x.TaxonomyType).FirstOrDefault();
                 
-                var taxonomy = "(unknown)";
+            //    var taxonomy = "(unknown)";
 
-                if (artifact != null)
-                    taxonomy = artifact.TaxonomyType.Name;
+            //    if (artifact != null)
+            //        taxonomy = artifact.TaxonomyType.Name;
 
-                result = result.Replace("[OBJECT_TAXONOMY]", taxonomy);
-            }
+            //    result = result.Replace("[OBJECT_TAXONOMY]", taxonomy);
+            //}
 
             if (result.Contains("[ACTION_DETAILS]"))
             {

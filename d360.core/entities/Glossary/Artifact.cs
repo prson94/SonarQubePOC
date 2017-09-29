@@ -20,55 +20,16 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ArtifactType_Name", Description = "ArtifactType_Description")]
         public int ArtifactTypeID { get; set; }
 
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Definition_Name", Description = "Definition_Description")]
-        public string Description { get; set; }
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "Name_ErrorRequired")]
-        [StringLength(250)]
-        public string Name { get; set; }
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
-        public int? ParentID { get; set; }
-
-        [DataMember]
-        [ReadOnly(true)]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
-        public string TextPath { get; set; }
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Status_Name", Description = "Status_Description")]
-        public string Status { get; set; }
-
-        [DataMember]
-        public int TaxonomyTypeID { get; set; }
-
-        [DataMember]
-        public string SourceID { get; set; }
-
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string DisplayValue { get; set; }
 
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string KeyHash { get; set; }
-
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string FieldHash { get; set; }
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
+        public int? ParentID { get; set; }
 
         public bool Visible { get; set; }
 
-
-        #region Navigation Properties
-
         [IgnoreDataMember]
         public virtual ArtifactType ArtifactType { get; set; }
-
-        [IgnoreDataMember]
-        public virtual TaxonomyType TaxonomyType { get; set; }
 
         [IgnoreDataMember]
         public virtual Artifact Parent { get; set; }
@@ -78,9 +39,6 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual ICollection<Fusion> OwnedFusions { get; set; }
-
-        #endregion
-
 
         public EventObjectInfo GetEventObjectInfo()
         {

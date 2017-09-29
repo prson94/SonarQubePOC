@@ -40,11 +40,6 @@ declare var CompanySettings;
                                     </div>
                                 </ng-template>
                         </p-column>   
-                        <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}" [filter]="!simpleFilter" >
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview"><a (click)="selectObject(item)">{{item.Name}}</a></d3s-tooltip>
-                            </ng-template> 
-                        </p-column>
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="true" [style]="{'width':'250px'}"  [filter]="!simpleFilter">
                             <ng-template let-item="rowData" pTemplate type="body">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
@@ -114,6 +109,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
     
     getFieldsDefinition() {
+
         this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType', this.targetTypeID, this.targetType)
             .then(result => {
                 this.columns = result.Columns;
@@ -142,6 +138,14 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             });
     }
     
+    private findItemIndex(id: number) {
+        var index: number = -1;
+        for (var item of this.relations) {
+            index++;
+            if (item.ID == id) return index;
+        }
+    }
+
     private shouldShowEditor(): boolean {
         return (this.addRelationship || this.showEditor) && !this.showTechnical;
     }
@@ -173,8 +177,9 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     deleteItem(item) {
-        this.relationshipsService.deleteRelationshipItem(item.ID).then(res => {            
-            this.relations = this.relations.filter(x => x.ID != item.ID);
+        this.relationshipsService.deleteRelationshipItem(item.ID).then(res => {
+            this.relations.splice(this.findItemIndex(item.ID), 1);
+
             this.relationshipRemoved.emit();
         });
     }
