@@ -11564,7 +11564,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
 
-            list.AddRange(
+            list = (
                 loadDynamicFields(
                     SystemObjects.Policy.ToString(),
                     id,
@@ -11746,6 +11746,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.PolicyTypeClassID), FieldDescription = a.GetDescription(i => i.PolicyTypeClassID), FieldType = DataType.Lookup.ToString(), Items = classes });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MaximumDepth", Name = a.GetName(i => i.MaximumDepth), RangeMin = 1, RangeMax = 25, FieldDescription = a.GetDescription(i => i.MaximumDepth), FieldType = DataType.Number.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "DisplayFormat", Name = "Display Format", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.DisplayFormat, Validations = checkAndAddValidation("Text", "Display Format", true, "", 1, 250) });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
             loadIconFields(list, 4);
 
@@ -11784,6 +11785,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.PolicyTypeClassID), FieldDescription = a.GetDescription(i => i.PolicyTypeClassID), FieldType = DataType.Lookup.ToString(), Value = a.PolicyTypeClassID.ToString(), Items = classes });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MaximumDepth", Name = a.GetName(i => i.MaximumDepth), RangeMin = 1, RangeMax = 25, FieldDescription = a.GetDescription(i => i.MaximumDepth), FieldType = DataType.Number.ToString(), Value = ((a.MaximumDepth.HasValue) ? a.MaximumDepth.Value.ToString() : "1") });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "DisplayFormat", Name = "Display Format", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.DisplayFormat, Validations = checkAndAddValidation("Text", "Display Format", true, "", 1, 250) });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
             loadIconFields(list, 4, style);
 
@@ -11809,7 +11811,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     MaximumDepth = parseIntField(form, "MaximumDepth"),
-                    PolicyTypeClassID = parseIntField(form, "Class")
+                    PolicyTypeClassID = parseIntField(form, "Class"),
+                    DisplayFormat = parseTextField(form, "DisplayFormat")
                 };
 
                 if (a.MaximumDepth <= 0 || a.MaximumDepth > 10) return jsonException("Invalid Maximum Policy level specified must be a value between 1 and 10", HttpStatusCode.InternalServerError);
@@ -11886,6 +11889,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 model.Description = parseTextField(form, "Description");
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.PolicyTypeClassID = parseIntField(form, "Class");
+                model.DisplayFormat = parseTextField(form, "DisplayFormat");
 
                 if (model.MaximumDepth <= 0 || model.MaximumDepth > 10) return jsonException("Invalid Maximum Policy level specified must be a value between 1 and 10", HttpStatusCode.InternalServerError);
 
@@ -17922,7 +17926,7 @@ order by TextPath
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = Resources.FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parents, Value = ((a.ParentID.HasValue) ? a.ParentID.Value.ToString() : "0") });
-            list.AddRange(
+            list =(
                 loadDynamicFields(
                     SystemObjects.Taxonomy.ToString(),
                     id,

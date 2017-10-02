@@ -50,7 +50,10 @@ import { StringConstants } from '../../static/string-constants';
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{width:column.columnWidth ? column.columnWidth + 'px' : ''}">                                                                
                                 <ng-template let-item="rowData" pTemplate type="body">
-                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
+                                    <a *ngIf="column.text == 'Name';else showField" (contextmenu)="onRightClick($event,rightMenu,item,dt)" (click)="selectArtifact(item)">{{item[column.datafield]}}</a>     
+                                    <ng-template #showField>
+                                        <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
+                                    </ng-template>
                                 </ng-template>
                             </p-column>
                             <p-column [style]="{width:'30px'}" *ngIf="showEditButton">
