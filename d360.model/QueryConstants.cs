@@ -1305,8 +1305,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             inner join workflow.[version] v on v.typeid = t.id
             inner join workflow.[versionstep] vs on vs.versionid = v.id
 			left join (
-				select stepid, count(stepid) as RunCount from workflow.itemstep p
-                {0}
+				select stepid, count(stepid) as RunCount from workflow.itemstep
 				group by stepid
 			) i on i.stepid = vs.id
             where t.id = @id and vs.[State] = 1 and v.id = coalesce((select top 1 id from workflow.version where typeid = @id and version = @version), (select top 1 id from workflow.version where typeid = @id order by [version] desc))

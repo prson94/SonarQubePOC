@@ -121,8 +121,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.isLoading = true;
         this.objectDetailService.getObject(objectId, objectType).then(
             res => {
-                this.objectDetail = res;
-                console.log(res);
+                this.objectDetail = res;                
                 this.selectedOption = 'current';
                 this.selectedObjectId = this.objectID;
                 this.selectedObjectType = this.objectType;
