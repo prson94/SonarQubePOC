@@ -1016,6 +1016,34 @@ namespace d360.web.Models
         public List<LineageEditorRow> Deletes { get; set; }
     }
 
+    public class LineageEditorModelV2
+    {
+        public string Focal { get; set; }
+        public int FocalID { get; set; }
+
+        public List<LineageNodeModel> Nodes { get; set; }
+        public List<LineageLinkModel> Links { get; set; }
+    }
+
+    public class LineageNodeModel
+    {
+        public string Key { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public string ObjectType { get; set; }
+        public int ObjectTypeID { get; set; }
+        public string Group { get; set; }
+        public bool IsGroup { get; set; }
+        public string Category { get; set; }
+    }
+
+    public class LineageLinkModel
+    {
+        public int IntersectID { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
+    }
+
     public class LineageEditorTechnicalModel
     {
         public SystemObjects Focal { get; set; }

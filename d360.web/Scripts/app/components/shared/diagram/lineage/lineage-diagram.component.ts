@@ -432,6 +432,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         let model: LineageEditorModelV2 = new LineageEditorModelV2();
         model.Focal = this.objectType;
         model.FocalID = this.objectID;
+        let valid = true;
 
         this.myDiagram.model.nodeDataArray.forEach(n => {
             let node = (<any>n);
@@ -445,6 +446,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             nodeModel.ObjectTypeID = node.objectTypeId;
             nodeModel.Category = node.category;
 
+            if (node.valid == false)
+                valid = false;
+
             model.Nodes.push(nodeModel);
         });
 
@@ -457,6 +461,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
             model.Links.push(linkModel);
         });
+
+        if (!valid) {
+            this.messagesService.showError('Error', 'One or more nodes on the diagram have validation issues');
+            return;
+        }
 
         this.isLoading = true;
         console.log('save model', model);

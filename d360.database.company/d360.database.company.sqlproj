@@ -518,6 +518,7 @@
     <Build Include="fusion\Stored Procedures\GenerateMarkitMapLineageData.sql" />
     <None Include="fusion\Stored Procedures\GenerateEagleLineageData.sql" />
     <Build Include="utility\Stored Procedures\CalculateScores.sql" />
+    <Build Include="dbo\Stored Procedures\GetLineageV2.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

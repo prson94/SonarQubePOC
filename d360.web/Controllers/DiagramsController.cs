@@ -268,6 +268,102 @@ namespace d360.web.Controllers
                 Formatting = Formatting.None
             };
         }
+
+        [HttpPost, Route("lineage/save")]
+        public JsonNetResult PostLineage(LineageEditorModelV2 model)
+        {
+
+            //create new maps
+            var maps = model.Nodes.Where(n => n.IsGroup && n.Category == "map" && n.Key.StartsWith("-")).ToList();
+            var mapMappings = new Dictionary<string, int>();
+
+            maps.ForEach(m =>
+            {
+                var map = new Map
+                {
+                    MapTypeID = 1
+                };
+
+                Company.Maps.Add(map);
+                Company.SaveChanges();
+
+                //var node = model.Nodes.Find(n => n.Key == m.Key);
+                //node.Key = "Map|" + map.ID.ToString();
+                mapMappings.Add(m.Key, map.ID);
+            });
+
+            //create new intersects to nodes
+            var nodes = model.Nodes.Where(n => (n.Category == "focal" || n.Category == "object") && n.Key.StartsWith("-")).ToList();
+            var nodeMappings = new Dictionary<string, int>();
+
+            nodes.ForEach(n =>
+            {
+                var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == 1 && i.Object == n.ObjectType && i.ObjectID == n.ObjectTypeID).FirstOrDefault();
+
+                if (intersectType != null)
+                {
+                    var intersect = new Intersect
+                    {
+                        IntersectTypeID = intersectType.ID,
+                        Subject = "Map",
+                        SubjectID = mapMappings[n.Group],
+                        Object = n.Object,
+                        ObjectID = n.ObjectID,
+                        CreatedBy = Company.CurrentResourceID,
+                        Deleted = false
+                    };
+
+                    Company.Intersects.Add(intersect);
+                    Company.SaveChanges();
+                }
+            });
+
+
+            //create new intersects between maps
+            var links = model.Links.Where(l => l.IntersectID == 0).ToList();
+
+            links.ForEach(l =>
+            {
+                if (l.From.StartsWith("-"))
+                    l.From = mapMappings[l.From].ToString();
+                else
+                    l.From = l.From.Split('|').Last();
+
+                if (l.To.StartsWith("-"))
+                    l.To = mapMappings[l.To].ToString();
+                else
+                    l.To = l.To.Split('|').Last();
+
+                var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == 1 && i.Object == "MapType" && i.ObjectID == 1).FirstOrDefault();
+                int from = -1, to = -1;
+
+                int.TryParse(l.From, out from);
+                int.TryParse(l.To, out to);
+
+                if (intersectType != null && from > -1 && to > -1)
+                {
+                    var intersect = new Intersect
+                    {
+                        IntersectTypeID = intersectType.ID,
+                        Subject = "Map",
+                        SubjectID = from,
+                        Object = "Map",
+                        ObjectID = to,
+                        CreatedBy = Company.CurrentResourceID,
+                        Deleted = false
+                    };
+
+                    Company.Intersects.Add(intersect);
+                    Company.SaveChanges();
+                }
+            });
+
+            return new JsonNetResult
+            {
+                Data = "success",
+                Formatting = Formatting.None
+            };
+        }
         #endregion
     }
 }
