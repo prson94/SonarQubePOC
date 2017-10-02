@@ -57,7 +57,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
                     this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
                     this.setObjectInfo('ArtifactType', this.artifactType.ID);
-                    if (CompanySettings.ShowMetricsSidebar != 'false') this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o'], `/artifact/type/metrics/${this.artifactType.ID}`));
+                    //if (CompanySettings.ShowMetricsSidebar != 'false') this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o'], `/artifact/type/metrics/${this.artifactType.ID}`));
 
                     if (this.artifactType.HasV2Workflows) this.rightSidebarService.showItem(new RightSidebarItem('Workflow Monitor', 'workflowmonitor', ['fa-television'], `/sidebar/workflowmonitor${this.objectContextUrl()}`));
 
