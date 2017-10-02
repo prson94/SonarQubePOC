@@ -5,7 +5,7 @@
 	@LookupObjectType varchar(25),
 	@LookupObjectID int,
 	@Value nvarchar(max),
-	@SupportsMultipleValues bit
+	@SupportsMultipleValues bit	
 )
 RETURNS nvarchar(max)
 AS
@@ -141,15 +141,13 @@ BEGIN
 									FROM	(
 											SELECT	ID as AID,
 													CAST(ID as nvarchar(max)) as ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description,
-													CAST(TextPath as nvarchar(max)) as TextPath
+													CAST(DisplayValue as nvarchar(max)) as TextPath
 											FROM	Artifact A
 											WHERE	A.ID = CAST(@Value as int)
 													and L.ObjectType = 'Artifact'
 											) A
 											unpivot	(
-													FieldValue for FieldName in (ID, Name, Description, TextPath)
+													FieldValue for FieldName in (ID, TextPath)
 													) p
 
 									UNION
@@ -161,15 +159,13 @@ BEGIN
 											NULL as LookupDisplayFormat
 									FROM	(
 											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description,
 													CAST(TextPath as nvarchar(max)) as TextPath
 											FROM	Taxonomy A
 											WHERE	A.ID = CAST(@Value as int)
 													and L.ObjectType = 'Taxonomy'
 											) A
 											unpivot	(
-													FieldValue for FieldName in (Name, Description, TextPath)
+													FieldValue for FieldName in (TextPath)
 													) p
 
 									UNION
