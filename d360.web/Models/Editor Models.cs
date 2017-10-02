@@ -1021,8 +1021,8 @@ namespace d360.web.Models
         public string Focal { get; set; }
         public int FocalID { get; set; }
 
-        public List<LineageNodeModel> Nodes { get; set; }
-        public List<LineageLinkModel> Links { get; set; }
+        public List<LineageNodeModel> Nodes { get; set; } = new List<LineageNodeModel>();
+        public List<LineageLinkModel> Links { get; set; } = new List<LineageLinkModel>();
     }
 
     public class LineageNodeModel

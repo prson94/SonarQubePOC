@@ -273,56 +273,113 @@ namespace d360.web.Controllers
         public JsonNetResult PostLineage(LineageEditorModelV2 model)
         {
             var nodeMappings = new Dictionary<string, int>();
-            //var existing = Company.Query<string>(@"exec GetLineageV2 @type, @id", new { type = model.Focal, id = model.FocalID }).ToList();
-            //var json = string.Join("", existing);
-            //if (!string.IsNullOrEmpty(json))
-            //{
-            //    dynamic obj = JsonConvert.DeserializeObject(json);
-                
-            //    for(int i = 0; i < obj.nodes.Count; i++)
-            //    {
-            //        var existingNode = obj.nodes[i];
-            //        var modelNode = model.Nodes.Where(n => n.Group == existingNode.group && n.Object == existingNode["object"] && n.ObjectID == existingNode.objectId).FirstOrDefault();
-            //        if (modelNode != null)
-            //        {
-            //            if (modelNode.Key.StartsWith("-"))
-            //                nodeMappings.Add(modelNode.Key, existingNode.key);
+            var existingJson = Company.Query<string>(@"exec GetLineageV2 @type, @id", new { type = model.Focal, id = model.FocalID }).ToList();
+            var json = string.Join("", existingJson);
+            var existing = new LineageEditorModelV2();
+            var maps = model.Nodes.Where(n => n.IsGroup && n.Category == "map").ToList();
 
-            //            model.Nodes.Remove(modelNode);
-            //            existingNode.category = "remove";
-            //        }
-            //    }
-            //}
+            //build existing lineage model so we can compare
+            if (!string.IsNullOrEmpty(json))
+            {
+                dynamic obj = JsonConvert.DeserializeObject(json);
 
+                for (int i = 0; i < obj.nodes.Count; i++)
+                {
+                    var n = obj.nodes[i];
+                    existing.Nodes.Add(new LineageNodeModel
+                    {
+                        Key = n.key,
+                        Group = n.group,
+                        IsGroup = n.isGroup,
+                        Object = n["object"],
+                        ObjectID = n.objectId,
+                        Category = n.category,
+                    });
+                }
+
+                for(int i =0; i < obj.links.Count; i++)
+                {
+                    var l = obj.links[i];
+                    existing.Links.Add(new LineageLinkModel
+                    {
+                        From = l.from,
+                        To = l.to,
+                        IntersectID = l.intersectId
+                    });
+                }
+            }
+
+            //remove matched nodes from posted model
+            var matchedExistingNodes = new List<LineageNodeModel>();
+            existing.Nodes.ForEach(n =>
+            {
+                var node = model.Nodes.Where(m => m.Object == n.Object && m.ObjectID == n.ObjectID && m.Group == n.Group && m.IsGroup == n.IsGroup).FirstOrDefault();
+
+                if (node != null)
+                {
+                    int k;
+                    if (node.Key.StartsWith("-") && int.TryParse(n.Key, out k))
+                        nodeMappings.Add(node.Key, k);
+                    model.Nodes.Remove(node);
+                    matchedExistingNodes.Add(n);
+                }
+            });
+
+            var matchedExistingLinks = new List<LineageLinkModel>();
+            existing.Links.ForEach(l =>
+            {
+                var link = model.Links.Where(k => k.To == l.To && k.From == l.From).FirstOrDefault();
+
+                if (link != null)
+                {
+                    model.Links.Remove(link);
+                    matchedExistingLinks.Add(l);
+                }
+            });
+
+            //remove matched from existing model
+            matchedExistingNodes.ForEach(n => existing.Nodes.Remove(n));
+            matchedExistingLinks.ForEach(l => existing.Links.Remove(l));
             
-
-            //var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
+            //now anything left in model is an Add
+            //and anything left in exsiting is a Delete
 
             //create new maps
-            var maps = model.Nodes.Where(n => n.IsGroup && n.Category == "map" && n.Key.StartsWith("-")).ToList();
+
             var mapMappings = new Dictionary<string, int>();
 
             maps.ForEach(m =>
             {
-                var map = new Map
+                //if it's still in the Nodes list, we need to add it
+                int mapId = -1;
+                int.TryParse(m.Key.Split('|').Last(), out mapId);
+                var oldMap = model.Nodes.Where(n => n.Key == m.Key).FirstOrDefault();
+                if (oldMap != null)
                 {
-                    MapTypeID = 1
-                };
+                    var map = new Map
+                    {
+                        MapTypeID = 1
+                    };
 
-                Company.Maps.Add(map);
-                Company.SaveChanges();
+                    Company.Maps.Add(map);
+                    Company.SaveChanges();
+                    mapId = map.ID;
+                }
 
                 //var node = model.Nodes.Find(n => n.Key == m.Key);
                 //node.Key = "Map|" + map.ID.ToString();
-                mapMappings.Add(m.Key, map.ID);
+                mapMappings.Add(m.Key, mapId);
             });
 
             //create new intersects to nodes
             var nodes = model.Nodes.Where(n => (n.Category == "focal" || n.Category == "object") && n.Key.StartsWith("-")).ToList();
-            //var nodeMappings = new Dictionary<string, int>();
 
             nodes.ForEach(n =>
             {
+                //
+                if (n.Key.StartsWith("-") && nodeMappings.ContainsKey(n.Key))
+                    n.Key = nodeMappings[n.Key].ToString();
+
                 var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == 1 && i.Object == n.ObjectType && i.ObjectID == n.ObjectTypeID).FirstOrDefault();
 
                 if (intersectType != null)
@@ -342,7 +399,6 @@ namespace d360.web.Controllers
                     Company.SaveChanges();
                 }
             });
-
 
             //create new intersects between maps
             var links = model.Links.Where(l => l.IntersectID == 0).ToList();
@@ -381,6 +437,39 @@ namespace d360.web.Controllers
                     Company.Intersects.Add(intersect);
                     Company.SaveChanges();
                 }
+            });
+
+
+            //now delete anything left in the existing model
+            var existingMaps = existing.Nodes.Where(n => n.IsGroup && n.Key.StartsWith("Map|")).Select(n => int.Parse(n.Key.Split('|').Last())).ToList();
+            existingMaps.ForEach(e =>
+            {
+                //delete any groups
+                //NYI
+
+                //delete any intersects to the map
+                //delete any intersects between other maps
+
+                var intersects = Company.Intersects.Where(i => i.Subject == "Map" && i.SubjectID == e).ToList();
+                Company.Intersects.RemoveRange(intersects);
+                Company.SaveChanges();
+
+
+                //delete the map record
+                var map = Company.Maps.Find(e);
+                if (map != null)
+                {
+                    Company.Maps.Remove(map);
+                    Company.SaveChanges();
+                }
+            });
+
+            var existingNodes = existing.Nodes.Where(n => !n.IsGroup && n.Group != null && !n.Key.StartsWith("Map|")).ToList();
+            existingNodes.ForEach(n =>
+            {
+                var intersects = Company.Intersects.Where(i => i.Subject == "Map" && i.Object == n.Object && i.ObjectID == n.ObjectID).ToList();
+                Company.Intersects.RemoveRange(intersects);
+                Company.SaveChanges();
             });
 
             return new JsonNetResult
