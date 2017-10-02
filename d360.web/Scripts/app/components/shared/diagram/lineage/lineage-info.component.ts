@@ -140,7 +140,7 @@ export class LineageInfoComponent implements OnInit, OnChanges {
         }
 
 
-       
+
     }
 
     select(c: any, expand = false) {

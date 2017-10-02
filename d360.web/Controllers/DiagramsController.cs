@@ -272,6 +272,31 @@ namespace d360.web.Controllers
         [HttpPost, Route("lineage/save")]
         public JsonNetResult PostLineage(LineageEditorModelV2 model)
         {
+            var nodeMappings = new Dictionary<string, int>();
+            //var existing = Company.Query<string>(@"exec GetLineageV2 @type, @id", new { type = model.Focal, id = model.FocalID }).ToList();
+            //var json = string.Join("", existing);
+            //if (!string.IsNullOrEmpty(json))
+            //{
+            //    dynamic obj = JsonConvert.DeserializeObject(json);
+                
+            //    for(int i = 0; i < obj.nodes.Count; i++)
+            //    {
+            //        var existingNode = obj.nodes[i];
+            //        var modelNode = model.Nodes.Where(n => n.Group == existingNode.group && n.Object == existingNode["object"] && n.ObjectID == existingNode.objectId).FirstOrDefault();
+            //        if (modelNode != null)
+            //        {
+            //            if (modelNode.Key.StartsWith("-"))
+            //                nodeMappings.Add(modelNode.Key, existingNode.key);
+
+            //            model.Nodes.Remove(modelNode);
+            //            existingNode.category = "remove";
+            //        }
+            //    }
+            //}
+
+            
+
+            //var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
 
             //create new maps
             var maps = model.Nodes.Where(n => n.IsGroup && n.Category == "map" && n.Key.StartsWith("-")).ToList();
@@ -294,7 +319,7 @@ namespace d360.web.Controllers
 
             //create new intersects to nodes
             var nodes = model.Nodes.Where(n => (n.Category == "focal" || n.Category == "object") && n.Key.StartsWith("-")).ToList();
-            var nodeMappings = new Dictionary<string, int>();
+            //var nodeMappings = new Dictionary<string, int>();
 
             nodes.ForEach(n =>
             {

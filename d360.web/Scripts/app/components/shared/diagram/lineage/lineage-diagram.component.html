@@ -11,7 +11,7 @@
         </ul>
         <div *ngIf="showNodeTabs || showLinkTabs" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
             <div *ngSwitchCase="'info'">
-                <d3s-lineage-info [node]="selectedData" [diagram]="myDiagram"></d3s-lineage-info>
+                <d3s-lineage-info [node]="selectedData" [diagram]="myDiagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>
             </div>
             <div *ngSwitchCase="'edit'">
                 <d3s-lineage-editor [node]="selectedData" (nodeChange)="changeNode($event)"></d3s-lineage-editor>

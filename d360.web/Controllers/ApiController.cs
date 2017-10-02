@@ -2303,21 +2303,24 @@ from    [Intersect] I
                 return Request.CreateResponse(HttpStatusCode.OK, "");
             query = sanitizeQueryString(query);
 
-            var objects = Company.Query<dynamic>($@"select top {maxResults} 
-	                [Object],
+            var sql = $@"select top {maxResults} 
+	                [Object] + '|' + cast(ObjectID as varchar) as ID,
+                    [Object],
 	                ObjectID,
-	                TextPath,
+	                [Name],
 	                ObjectTypeName,
 	                IconBackColor,
 	                IconForeColor,
-                    case when Textpath like @query + '%' then
+                    case when [Name] like '{query}%' then
                         1
                     else
                         10
                     end as rnk
                  from cache.ObjectDetails
-                where [ObjectType] = @type and ObjectTypeId=@id and TextPath like '%' + @query + '%'
-                order by rnk, TextPath", new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id, query });
+                where [ObjectType] = @type and ObjectTypeId = @id and [Name] like '%{query}%'
+                order by rnk, [Name]";
+
+            var objects = Company.Query<dynamic>(sql, new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id });
 
             return Request.CreateResponse(HttpStatusCode.OK, objects);
         }

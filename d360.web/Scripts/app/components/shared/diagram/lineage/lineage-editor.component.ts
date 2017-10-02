@@ -71,7 +71,7 @@ export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
         });
     }
 
-    selectObject() {       
+    selectObject() {
         this.node.object = this.selected.Object;
         this.node.objectId = this.selected.ObjectID;
         this.node.name = this.selected.Name;

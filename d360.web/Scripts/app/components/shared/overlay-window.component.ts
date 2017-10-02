@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, NgModule, OnChanges} from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, NgModule, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { XHRBackend } from '@angular/http';
 import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
@@ -14,7 +14,7 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
     [style.max-height.px]="maxHeight" 
     [style.max-width]="maxWidth + 'px'" 
     [style.padding]="padding + 'px'"
-    [style.overflow-y]="overflowScroll ? 'auto' : 'hidden'">
+    [style.overflow-y]="overflowScroll">
     <header style="background-color: #f9f9f9 !important; min-height: 2em">
         {{headerText}}
         <span *ngIf="hasCloseButton" style="float:right;cursor: pointer; margin-right: 7px; font-size:1.1em;"><a style="color:#000;" (click)="visibleChange.emit(!visible)"><i class='fa fa-close'></i></a></span>
@@ -47,7 +47,7 @@ export class OverlayWindowComponent implements OnChanges {
     @Input() hasCloseButton: boolean = true;
     @Input() padding: number = 15;
     @Input() headerText: string = '';
-    @Input() overflowScroll: boolean = true;
+    @Input() overflowScroll: string = 'auto';
     @Input() visible: boolean = true;
     @Input() draggable: boolean = false;
     @Output() visibleChange = new EventEmitter();
