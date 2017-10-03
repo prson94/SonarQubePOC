@@ -38,36 +38,38 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <d3s-search-autocomplete-list *ngIf="!isAdvancedMode" [searchText]="searchText" [element]="search" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>            
                 </div>
                 <div *ngIf="isAdvancedMode" class="tile tile-detail">                             
-                    <header>Advanced Search <d3s-tile-actions [hasAdd]="false" [hasClose]="true" (closeClick)="handleAdvancedClick()"></d3s-tile-actions></header>
-                    <div *ngFor="let filter of advancedFilters; let last=last" class="row advSearchRow">
-                        <div class="col s1 center-align">Field</div>
-                        <div class="col s3">
-                            <select [(ngModel)]="filter.field" style="width:100%;">
-                                    <option value="" disabled selected>Please Choose...</option>
-                                    <option *ngFor="let p of fields" [value]="p.value">{{p.title}}</option>
-                            </select>
+                    <form (ngSubmit)="triggerAdvancedSearch()" #advSearchForm="ngForm">
+                        <header>Advanced Search <d3s-tile-actions [hasAdd]="false" [hasClose]="true" (closeClick)="handleAdvancedClick()"></d3s-tile-actions></header>
+                        <div *ngFor="let filter of advancedFilters; let last=last; let idx = index" class="row advSearchRow">
+                            <div class="col s1 center-align">Field</div>
+                            <div class="col s3">
+                                <select [(ngModel)]="filter.field" [name]="'field'+idx" style="width:100%;" required>
+                                        <option value="" disabled selected>Please Choose...</option>
+                                        <option *ngFor="let p of fields" [value]="p.value">{{p.title}}</option>
+                                </select>
+                            </div>
+                            <div class="col s3" *ngIf="filter.field != '_type'">
+                                <input type="text" [(ngModel)]="filter.value" [name]="'input'+idx" style="width:100%" required placeholder="Enter a value" (keyup)="checkAdvSearchKey($event);">
+                            </div>
+                            <div class="col s3" *ngIf="filter.field == '_type'">
+                                <select [(ngModel)]="filter.value" [name]="'inp'+idx"style="width:100%;" placeholder="Choose a type" required>
+                                        <option value="" disabled selected>Please Choose...</option>
+                                        <option *ngFor="let p of types" [value]="p.value">{{p.title}}</option>
+                                </select>
+                            </div>
+                            <div class="col s1" *ngIf="filter.field != '_type'">
+                                    <label><input type="checkbox" [(ngModel)]="filter.exact" [name]="'exm'+idx">Exact match</label>
+                            </div>
+                            <div class="col s1" *ngIf="filter.field == '_type'">&nbsp;</div>
+                            <div class="col s1" *ngIf="last" (click)="addFilter()" style="cursor:pointer"><i class="fa fa-plus" aria-hidden="true" title="add filter" style="font-size:1.5em"></i></div>
+                            <div class="col s1" *ngIf="!last" (click)="removeFilter(filter)"  style="cursor:pointer"><i class="fa fa-minus" aria-hidden="true" title="remove filter" style="font-size:1.5em"></i></div>
                         </div>
-                        <div class="col s3" *ngIf="filter.field != '_type'">
-                            <input type="text" [(ngModel)]="filter.value" style="width:100%" placeholder="Enter a value" (keyup)="checkAdvSearchKey($event);">
+                        <div class="row">
+                            <div class="col s1 offset-s1">
+                                <button pButton [disabled]="!advSearchForm.form.valid" type="submit" label="Search" style="width:150px;"></button>                            
+                            </div>
                         </div>
-                        <div class="col s3" *ngIf="filter.field == '_type'">
-                            <select [(ngModel)]="filter.value" style="width:100%;" placeholder="Choose a type">
-                                    <option value="" disabled selected>Please Choose...</option>
-                                    <option *ngFor="let p of types" [value]="p.value">{{p.title}}</option>
-                            </select>
-                        </div>
-                        <div class="col s1" *ngIf="filter.field != '_type'">
-                                <label><input type="checkbox" [(ngModel)]="filter.exact">Exact match</label>
-                        </div>
-                        <div class="col s1" *ngIf="filter.field == '_type'">&nbsp;</div>
-                        <div class="col s1" *ngIf="last" (click)="addFilter()" style="cursor:pointer"><i class="fa fa-plus" aria-hidden="true" title="add filter" style="font-size:1.5em"></i></div>
-                        <div class="col s1" *ngIf="!last" (click)="removeFilter(filter)"  style="cursor:pointer"><i class="fa fa-minus" aria-hidden="true" title="remove filter" style="font-size:1.5em"></i></div>
-                    </div>
-                    <div class="row">
-                        <div class="col s1 offset-s1">
-                            <button pButton type="button" (click)="triggerAdvancedSearch()" label="Search" style="width:150px;"></button>
-                        </div>
-                    </div>
+                    </form>
                 </div>                     
                 `,
     providers: [SearchService, TypeaheadSearchService],
