@@ -12,6 +12,7 @@ import {
     SharedModule,
     AutoCompleteModule,
     ButtonModule,
+    InputTextareaModule,
 
 } from 'primeng/primeng';
 
@@ -63,6 +64,7 @@ import { SharedFormMessageModule } from '../form-message.part'
         SharedModule,
         AutoCompleteModule,
         ButtonModule,
+        InputTextareaModule,
 
     ],
     declarations: [

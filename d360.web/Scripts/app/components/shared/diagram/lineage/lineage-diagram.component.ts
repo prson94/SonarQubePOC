@@ -215,6 +215,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.name = d.name;
                 model.foreColor = d.foreColor;
                 model.backColor = d.backColor;
+                model.transformations = { business: '', technical: '' };
 
                 model.category = (d.object == 'Map' ? 'map' : 'object');
 
@@ -637,6 +638,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     group.isGroup = true;
                     group.group = m;
                     group.category = 'transform';
+                    group.transformations = { business: '', technical: '' };
                     this.myDiagram.model.addNodeData(group); //generates a temp group key
                     this.myDiagram.model.setDataProperty(group, 'name', '');
 
@@ -1050,7 +1052,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private createTransformationGroup(): go.Group {
         return this.g(go.Group, "Auto",
             { // define the group's internal layout
-                background: '#82D6A9',
+                background: '#ddd',
                 mouseDragEnter: (e, grp, prev) => this.highlightGroup(e, grp, true),
                 mouseDragLeave: (e, grp, next) => this.highlightGroup(e, grp, false),
                 computesBoundsAfterDrag: true,
@@ -1069,9 +1071,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 // upon expansion, a Diagram Listener will generate contents for the group
                 isSubGraphExpanded: true
             },
-            new go.Binding("background", "isHighlighted", (h) => { return h ? "#faffad" : "#82D6A9"; }).ofObject(),
+            new go.Binding("background", "isHighlighted", (h) => { return h ? "#faffad" : "#ddd"; }).ofObject(),
             this.g(go.Shape, "Rectangle",
-                { fill: null, stroke: "#286337", strokeWidth: 2 }),
+                { fill: null, stroke: "#000", strokeWidth: 1, strokeDashArray: [4,2] }),
             this.g(go.Panel, "Vertical",
                 { defaultAlignment: go.Spot.Center, margin: 5 },
                 this.g(go.Panel, "Horizontal",
