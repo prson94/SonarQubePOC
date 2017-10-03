@@ -12,10 +12,7 @@ namespace d360.core.entities
     public class PolicyModel : BaseIntObject
     {
         #region Properties
-
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Status_Name", Description = "Status_Description")]
-        public PolicyStatus Status { get; set; }
-
+        
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
         public int? ParentID { get; set; }
 

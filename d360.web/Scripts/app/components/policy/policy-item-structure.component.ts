@@ -28,7 +28,7 @@ import { LevelsService } from '../../services/levels.service';
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="Name" header="Name">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.Name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
+                                <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.DisplayValue}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
                             </ng-template>
                         </p-column>                                                
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()">
@@ -57,7 +57,7 @@ import { LevelsService } from '../../services/levels.service';
                         [callback]="theDeleteCallback"
                         [itemId]="selected?.data?.ID"
                         [method]="'callback'"
-                        [prompt]="'Are you sure you want to delete the policy item [' + [selected?.data?.Name] + ']?'"                                         
+                        [prompt]="'Are you sure you want to delete the policy item [' + [selected?.data?.DisplayValue] + ']?'"                                         
                         (onCancel)="showDelete=false;"
                     ></d3s-delete-form>        
                     <d3s-dynamic-editor *ngIf="showEditor" [objectID]="policyType.ID" objectType="Policy" [parentID]="selectedParentID" [title]="policyEditorTitle()" [selection]="selected?.data" (saveClick)="savePolicy($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
@@ -163,10 +163,10 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
         for (let root of rootNodes) {
             res.push({
-                label: root.Name,
+                label: root.DisplayValue,
                 expanded: true,
                 data: {
-                    ID: root.ID, Name: root.Name, Description: root.Description, ParentID: root.ParentID, StatusName: root.StatusName, Level: root.Level
+                    ID: root.ID, DisplayValue: root.DisplayValue, Description: root.Description, ParentID: root.ParentID, StatusName: root.StatusName, Level: root.Level
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });

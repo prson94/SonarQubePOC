@@ -1337,7 +1337,7 @@ namespace d360.web.Controllers
             var a = Company.GetById<d360.core.entities.Attribute>(id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.AddRange(
+            list =(
                 loadDynamicFields(
                     SystemObjects.Attribute.ToString(),
                     id,
@@ -6996,7 +6996,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             //list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             
-            list.AddRange(
+            list = (
                 loadDynamicFields(
                     SystemObjects.FusionAttribute.ToString(),
                     id,
@@ -10011,7 +10011,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.AddRange(
+            list =(
                 loadDynamicFields(
                     SystemObjects.Lookup.ToString(),
                     id,
@@ -11532,9 +11532,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "PolicyTypeID", FieldType = DataType.Hidden.ToString(), Value = typeID.ToString() });
             if (parentID.HasValue) list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = parentID.Value.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString() });
-
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.PolicyType, typeID).ToList(), 2);
+            
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.PolicyType, typeID).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -11571,7 +11570,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     list, 
                     Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), 
                     Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 
-                    2, 
+                    1, 
                     true
                 )
             );
@@ -11607,7 +11606,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var model = new Policy
                 {
-                    Status = (PolicyStatus)Enum.Parse(typeof(PolicyStatus), form["Status"]),
+                    //Status = (PolicyStatus)Enum.Parse(typeof(PolicyStatus), form["Status"]),
                     PolicyTypeID = parseIntField(form, "PolicyTypeID")
                 };
 
@@ -11698,9 +11697,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Status = (PolicyStatus)Enum.Parse(typeof(PolicyStatus), form["Status"]);
-
+                                
                 Company.Update<Policy>(model);
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server, false);
@@ -15049,7 +15046,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString(), Value = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID).IsAdministrator.ToString() });
             list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Status", Name = "Active?", FieldType = DataType.Boolean.ToString(), Value = (a.Status == "Active").ToString() });
 
-            list.AddRange(
+            list =(
                 loadDynamicFields(
                     SystemObjects.Resource.ToString(),
                     id,
@@ -15073,7 +15070,7 @@ order by	T.Name, I.DisplayValue";
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Value = a.FirstName, Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Value = a.LastName, Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
 
-            list.AddRange(
+            list= (
                 loadDynamicFields(
                     SystemObjects.Resource.ToString(),
                     id,
@@ -15735,7 +15732,7 @@ order by	T.Name, I.DisplayValue";
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString(), Value = model.Threshold.ToString() });
 
-            list.AddRange(
+            list = (
                 loadDynamicFields(
                     SystemObjects.Rule.ToString(),
                     id,

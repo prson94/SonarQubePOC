@@ -162,7 +162,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
         for (let root of rootNodes) {
             res.push({
-                label: root.Name,
+                label: root.DisplayValue,
                 expanded: true,
                 data: {
                     id: root.ID
@@ -190,7 +190,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
         this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID);
 
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.Name, undefined, true, 'Policy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.DisplayValue, undefined, true, 'Policy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
     }
 
     private findSelectedTreeNode(id: number): TreeNode {
