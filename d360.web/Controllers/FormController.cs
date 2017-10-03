@@ -18117,6 +18117,7 @@ order by TextPath
             public string IconBackColor { get; set; }
             public string IconForeColor { get; set; }
             public string ID { get; set; }
+            public string DisplayFormat { get; set; }
         }
 
         #region Field Generation
@@ -18133,6 +18134,7 @@ order by TextPath
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.TaxonomyTypeClassID), FieldDescription = a.GetDescription(i => i.TaxonomyTypeClassID), FieldType = DataType.Lookup.ToString(), Items = classes });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MaximumDepth", Name = a.GetName(i => i.MaximumDepth), RangeMin = 1, RangeMax = 25, FieldDescription = a.GetDescription(i => i.MaximumDepth), FieldType = DataType.Number.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "DisplayFormat", Name = "Display Format", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.DisplayFormat, Validations = checkAndAddValidation("Text", "Display Format", true, "", 1, 250) });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
             loadIconFields(list, 4);
 
@@ -18174,6 +18176,7 @@ order by TextPath
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.TaxonomyTypeClassID), FieldDescription = a.GetDescription(i => i.TaxonomyTypeClassID), FieldType = DataType.Lookup.ToString(), Value = a.TaxonomyTypeClassID.ToString(), Items = classes });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MaximumDepth", Name = a.GetName(i => i.MaximumDepth), RangeMin = maxLevel, RangeMax = 25, FieldDescription = a.GetDescription(i => i.MaximumDepth) + maxDepthNotification, FieldType = DataType.Number.ToString(), Value = a.MaximumDepth.HasValue ? a.MaximumDepth.Value.ToString() : "5" });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "DisplayFormat", Name = "Display Format", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.DisplayFormat, Validations = checkAndAddValidation("Text", "Display Format", true, "", 1, 250) });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
             loadIconFields(list, 4, style);
 
@@ -18193,7 +18196,8 @@ order by TextPath
             form.Add("Class", taxonomyType.Class);
             form.Add("MaximumDepth", taxonomyType.MaximumDepth);
             form.Add("IconBackColor", taxonomyType.IconBackColor);
-            form.Add("IconForeColor", taxonomyType.IconForeColor);            
+            form.Add("IconForeColor", taxonomyType.IconForeColor);
+            form.Add("DisplayFormat", taxonomyType.DisplayFormat);
 
             return AddTaxonomyType(form);            
         }
@@ -18213,7 +18217,8 @@ order by TextPath
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     TaxonomyTypeClassID = parseIntField(form, "Class"),
-                    MaximumDepth = parseIntField(form, "MaximumDepth")
+                    MaximumDepth = parseIntField(form, "MaximumDepth"),
+                    DisplayFormat = parseTextField(form, "DisplayFormat")
                 };
 
                 if (a.MaximumDepth <= 0 || a.MaximumDepth > 10) return jsonException("Invalid Maximum Model level specified must be a value between 1 and 10", HttpStatusCode.InternalServerError);
@@ -18283,6 +18288,7 @@ order by TextPath
             form.Add("IconBackColor", taxonomyType.IconBackColor);
             form.Add("IconForeColor", taxonomyType.IconForeColor);
             form.Add("ID", taxonomyType.ID);
+            form.Add("DisplayFormat", taxonomyType.DisplayFormat);
 
             return EditTaxonomyType(form);
         }
@@ -18307,6 +18313,7 @@ order by TextPath
                 model.Description = parseTextField(form, "Description");
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.TaxonomyTypeClassID = parseIntField(form, "Class");
+                model.DisplayFormat = parseTextField(form, "DisplayFormat");
 
                 if (model.MaximumDepth <= 0 || model.MaximumDepth > 10) return jsonException("Invalid Maximum Model level specified must be a value between 1 and 10", HttpStatusCode.InternalServerError);
 

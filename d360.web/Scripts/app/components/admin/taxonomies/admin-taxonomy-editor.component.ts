@@ -30,9 +30,13 @@ import * as _ from 'lodash';
                         <div><p-dropdown required name="classification" [options]="classifications" [(ngModel)]="editedTaxonomy.Class" [style]="{width:'100%'}" #classification="ngModel"></p-dropdown></div>
                         <div [hidden]="classification.valid || classification.pristine" style="color: maroon">Model classification is required</div>
                     </div>
-                    <div class="col l12 s12">
+                    <div class="col l6 s12">
                         <div class="FieldName">Maximum Depth</div>
                         <div><input type="number" name="depth" [(ngModel)]="editedTaxonomy.MaximumDepth"  style="width:25%; height: 25px" /></div>
+                    </div>                    
+                    <div class="col l6 s12">
+                        <div class="FieldName">Display Format</div>
+                        <div><input type="text" name="format" [(ngModel)]="editedTaxonomy.DisplayFormat"  style="width:25%; height: 25px" /></div>
                     </div>                    
                     <div class="col s12">
                         <div class="FieldName">Description</div>
