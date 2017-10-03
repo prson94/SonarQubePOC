@@ -51,7 +51,7 @@
     "raw-loader": "^0.5.1",
     "to-string-loader": "^1.1.4",
     "typescript": "2.3.4",
-    "webpack": "3.5.1",
+    "webpack": "3.6.0",
     "webpack-dev-server": "^2.7.1",
     "webpack-merge": "4.1.0"
   }
