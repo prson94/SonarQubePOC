@@ -714,6 +714,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     if (grp.data.name == '<drop objects here>') {
                         this.myDiagram.model.setDataProperty(grp.data, 'name', node.name);
                     }
+                    //revalidate the group 
+                    this.validateNode(this.myDiagram.model.findNodeDataForKey(grp.data.key));
                 }
             }
             this.validateNode(node);
