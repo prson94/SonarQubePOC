@@ -19,19 +19,19 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <span *ngIf="!data.WorkflowItemID || data.WorkflowItemID <= 0">{{data.ActivityName}}</span>
                             </ng-template>
                         </p-column>
-                        <p-column field="CriticalityName" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="Criticality" header="Criticality" sortable="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="IssueTypeName" header="Type" sortable="true" [style]="{'width':'150px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Issue" header="Description" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="Body" header="Description" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <ng-template let-col let-issue="rowData" pTemplate type="body">
-                                <span [innerHtml]="issue?.Issue"></span>
+                                <span [innerHtml]="issue?.Body"></span>
                             </ng-template>
                         </p-column>             
-                        <p-column field="ObjectName" header="Item Name">
+                        <p-column field="Name" header="Item Name">
                             <ng-template let-col let-issue="rowData" pTemplate type="body">
-                                <d3s-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID" tooltipType="preview">{{issue.ObjectName}}</d3s-tooltip>
+                                <d3s-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID" tooltipType="preview">{{issue.Name}}</d3s-tooltip>
                             </ng-template>
                         </p-column>           
-                        <p-column field="ResourceName" header="Reported By" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="RaisedBy" header="Reported By" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="DateStarted" header="Created" sortable="true"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <ng-template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DateStarted | date: 'shortDate'}}</span>
