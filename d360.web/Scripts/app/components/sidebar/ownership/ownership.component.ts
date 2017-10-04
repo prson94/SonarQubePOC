@@ -42,7 +42,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
             }
             else {
                 this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
-                    this.objectName = res.Name;
+                    this.objectName = res.DisplayValue;
                 });
             }
         });
