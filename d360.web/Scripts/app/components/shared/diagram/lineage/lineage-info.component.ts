@@ -117,7 +117,7 @@ export class LineageInfoComponent implements OnInit, OnChanges {
     ngOnInit() { }
 
     load() {
-        if (this.node == null || this.node.objectId == null)
+        if (this.node == null || this.node.objectId == null || this.node.object == 'MapGroup')
             return;
 
         if (this.node.category == 'map') {

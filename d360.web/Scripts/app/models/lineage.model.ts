@@ -100,6 +100,8 @@ export class LineageNodeModel {
     Group: string;
     IsGroup: boolean;
     Category: string;
+    BusinessTransformation: string;
+    TechnicalTransformation: string;
 }
 
 export class LineageLinkModel {

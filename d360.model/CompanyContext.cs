@@ -199,6 +199,10 @@ namespace d360.model
 
         public DbSet<Map> Maps { get; set; }
 
+        public DbSet<MapGroup> MapGroups { get; set; }
+
+        public DbSet<MapGroupItem> MapGroupItems { get; set; }
+
         public DbSet<MapItem> MapItems { get; set; }
 
         public DbSet<MapRule> MapRules { get; set; }

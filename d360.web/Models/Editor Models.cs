@@ -1035,6 +1035,8 @@ namespace d360.web.Models
         public string Group { get; set; }
         public bool IsGroup { get; set; }
         public string Category { get; set; }
+        public string BusinessTransformation { get; set; }
+        public string TechnicalTransformation { get; set; }
     }
 
     public class LineageLinkModel

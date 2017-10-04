@@ -22,6 +22,7 @@ BEGIN
 		visited bit not null default 0
 	);
 
+
 	--get any maps related directly to the object
 	insert into #maps (id, mapId)
 	select id, subjectid 
@@ -53,7 +54,6 @@ BEGIN
 	end
 
 	--now that we have all relevant maps, we can form our link/node data
-
 	declare @links table 
 	(
 		intersectId int, 
@@ -73,7 +73,10 @@ BEGIN
 		foreColor varchar(10),
 		[name] varchar(150),
 		isGroup bit,
-		[group] varchar(150)
+		[group] varchar(150),
+		businessTransformation nvarchar(max),
+		technicalTransformation nvarchar(max),
+		category varchar(50)
 	);
 
 	--links
@@ -84,6 +87,27 @@ BEGIN
 	union
 	select i.id as intersectId, i.subject + '|' + cast(i.subjectid as varchar) as [from], i.object + '|' + cast(i.objectid as varchar) as 'to'  from #maps m
 	inner join [intersect] i on i.id = m.id;
+
+
+	--insert nodes for the transformations
+	insert into @nodes
+	select 
+		 'MapGroup|' + cast(g.ID as varchar) as [key]
+		,'MapGroup' as object
+		,g.ID as objectId
+		,null as objectType
+		,null as objectTypeId
+		,null as objectTypeName
+		,null as backColor
+		,null as foreColor
+		,coalesce(g.BusinessTransformation, g.TechnicalTransformation) as name
+		,1 as isGroup
+		,'Map|' + cast(g.MapID as varchar) as [group]
+		,g.BusinessTransformation as businessTransformation
+		,g.TechnicalTransformation as technicalTransformation
+		,'transform' as category
+	from MapGroup g
+	inner join #maps m on m.mapId = g.MapID;
 
 
 	--nodes
@@ -100,6 +124,9 @@ BEGIN
 		,d.[Name] as [name]
 		,0 as isGroup
 		,null as [group]
+		,null as businessTransformation
+		,null as technicalTransformation
+		,case when i.subject = 'Map' then 'map' else 'object' end as category
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join cache.ObjectDetails d on d.[object] = i.[subject] and d.objectid = i.subjectid
@@ -120,15 +147,21 @@ BEGIN
 		else
 			null
 		end as [group]
+		,null as businessTransformation
+		,null as technicalTransformation
+		,case when i.[object] = 'Map' then 'map' else 'object' end as category
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join cache.ObjectDetails d on d.[object] = i.object and d.objectid = i.objectid;
 
+
+	--we don't need links to the individual objects since they live in the maps
 	delete l
 	from @links l
 	inner join [intersect] i on i.id = l.intersectId
 	where i.subject = 'Map' and i.object != 'Map';
 
+	--top 1 node in each map becomes the map's title object
 	update n
 	set 
 		n.[name] = m.name,
@@ -138,9 +171,26 @@ BEGIN
 	from @nodes n
 	cross apply (
 		select top 1 * from @nodes n2
-		where n2.[group] = n.[key]
+		where n2.[group] = n.[key] and n2.category != 'transform'
 		) m
 	where n.[object] = 'Map';
+
+	--associate nodes with their transformations
+	update n
+	set
+		[group] = 'MapGroup|' + cast(i.MapGroupID as varchar)
+	from @nodes n
+	inner join
+	(
+		select m.* from MapGroupItem m
+		inner join @nodes n2 on n2.category = 'transform' and n2.[object] = 'MapGroup' and n2.objectId = m.MapGroupID
+	) i on i.[object] = n.[object] and i.objectid = n.objectid
+	where n.category in ('object', 'focal');
+
+	--set focal nodes
+	update @nodes
+	set category = 'focal'
+	where category = 'object' and [object] = @objectType and objectId = @objectId
 
 	--TESTING------------
 	--select * from @links;

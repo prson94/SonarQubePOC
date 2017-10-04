@@ -215,13 +215,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.name = d.name;
                 model.foreColor = d.foreColor;
                 model.backColor = d.backColor;
-
-                model.category = (d.object == 'Map' ? 'map' : 'object');
-
-                if (model.object == this.objectType && model.objectId == this.objectID) {
-                    model.category = 'focal';
-                }
-
+                model.category = d.category;
+                model.businessTransformation = d.businessTransformation;
+                model.technicalTransformation = d.technicalTransformation;
 
                 model.isGroup = d.isGroup
                 model.group = d.group;
@@ -445,6 +441,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             nodeModel.ObjectType = node.objectType;
             nodeModel.ObjectTypeID = node.objectTypeId;
             nodeModel.Category = node.category;
+            nodeModel.BusinessTransformation = node.businessTransformation;
+            nodeModel.TechnicalTransformation = node.technicalTransformation;
 
             if (node.valid == false)
                 valid = false;
