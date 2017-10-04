@@ -8,6 +8,35 @@ import * as go from 'gojs';
     selector: 'd3s-lineage-info',
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div *ngIf="node.category == 'transform'">
+            <div class="row" *ngIf="node.businessTransformation != null">
+                <div class="col s12">
+                    <div class="FieldName">
+                        Business Transformation
+                    </div>
+                    <div>
+                        {{node.businessTransformation}}
+                    </div>
+                </div>
+            </div>
+            <div class="row" *ngIf="node.technicalTransformation != null">
+                <div class="col s12">
+                    <div class="FieldName">
+                        Technical Transformation
+                    </div>
+                    <div>
+                        {{node.technicalTransformation}}
+                    </div>
+                </div>
+            </div>
+            <div class="row" *ngIf="node.technicalTransformation == null && node.businessTransformation == null">
+                <div class="col s12">
+                    <div>
+                        No transformations defined
+                    </div>
+                </div>
+            </div>
+        </div>
         <div #target [hidden]="isLoading && (node != null && node.category != 'map')"></div>
         <div *ngIf="!isLoading && node != null && node.category == 'map'">
             <div class="row">

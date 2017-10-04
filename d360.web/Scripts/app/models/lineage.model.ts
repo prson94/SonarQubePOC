@@ -62,10 +62,8 @@ export class NodeModelV2 {
     backColor: string = '#fff';
     visible: boolean = true;
 
-    transformations: {
-        business: string;
-        technical: string;
-    }
+    businessTransformation: string;
+    technicalTransformation: string;
 
     group: string;
     isGroup: boolean = false;

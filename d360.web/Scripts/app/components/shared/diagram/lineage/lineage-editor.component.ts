@@ -37,18 +37,18 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
             </div>
         </ng-template>
     </div>
-    <div *ngIf="node.category == 'transform' && node.transformations != null">
+    <div *ngIf="node.category == 'transform'">
         <div class="FieldName">
             Business Transformation
         </div>
         <div>
-            <textarea pInputTextarea [(ngModel)]="node.transformations.business"></textarea>
+            <textarea pInputTextarea [ngModel]="node.businessTransformation" (ngModelChange)="node.businessTransformation = $event; nodeChange.emit(node)"></textarea>
         </div>
         <div class="FieldName">
             Technical Transformation
         </div>
         <div>
-            <textarea pInputTextarea [(ngModel)]="node.transformations.technical"></textarea>
+            <textarea pInputTextarea [ngModel]="node.technicalTransformation" (ngModelChange)="node.technicalTransformation = $event; nodeChange.emit(node)"></textarea>
         </div>
     </div>
 </div>

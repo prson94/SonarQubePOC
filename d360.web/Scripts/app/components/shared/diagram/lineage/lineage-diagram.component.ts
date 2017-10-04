@@ -215,7 +215,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.name = d.name;
                 model.foreColor = d.foreColor;
                 model.backColor = d.backColor;
-                model.transformations = { business: '', technical: '' };
 
                 model.category = (d.object == 'Map' ? 'map' : 'object');
 
@@ -485,7 +484,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         node.object = e.object;
         node.objectId = e.objectId;
+        node.technicalTransformation = e.technicalTransformation;
 
+        this.myDiagram.model.setDataProperty(node, 'businessTransformation', e.businessTransformation);
         this.myDiagram.model.setDataProperty(node, 'name', e.name);
         //this.myDiagram.model.setDataProperty(node, 'valid', true);
         this.validateNode(node);
@@ -638,7 +639,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     group.isGroup = true;
                     group.group = m;
                     group.category = 'transform';
-                    group.transformations = { business: '', technical: '' };
                     this.myDiagram.model.addNodeData(group); //generates a temp group key
                     this.myDiagram.model.setDataProperty(group, 'name', '');
 
@@ -707,6 +707,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     e.diagram.currentTool.doCancel();
                     this.messagesService.showError('Error', 'This item can only be added to maps');
                 } else {
+                    //if this is a new object, change the name/objName for display purposes
+                    if (node.object == null && node.objectId == null && node.name != '<choose an object>') {
+                        this.myDiagram.model.setDataProperty(node, 'objectTypeName', node.name);
+                        this.myDiagram.model.setDataProperty(node, 'name', '<choose an object>');
+                    }
                     grp.addMembers(grp.diagram.selection, true);
                     if (grp.data.name == '<drop objects here>') {
                         this.myDiagram.model.setDataProperty(grp.data, 'name', node.name);
@@ -786,6 +791,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 name: o.name,
                 objectType: o.object,
                 objectTypeId: o.objectId,
+                //objectTypeName: o.name,
                 foreColor: o.foreColor,
                 backColor: o.backColor,
                 isGroup: false,
@@ -1081,9 +1087,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     // the SubGraphExpanderButton is a panel that functions as a button to expand or collapse the subGraph
                     //this.g("SubGraphExpanderButton"),
                     this.g(go.TextBlock,
-                        { font: "bold 13px Sans-Serif", margin: 3 },
-                        new go.Binding("text", "name", n => { return (n.length > 25) ? n.substring(0, 23) + '...' : n }),
-                        new go.Binding("visible", "name", n => { return (n == null || n == '') ? false : true })
+                        { font: "bold 10px Sans-Serif", margin: 2 },
+                        new go.Binding("text", "businessTransformation", n => { return (n.length > 25) ? n.substring(0, 23) + '...' : n }),
+                        new go.Binding("visible", "businessTransformation", n => { return (n == null || n == '') ? false : true })
                     )
                 )
                 ,
