@@ -13,7 +13,7 @@ namespace igx.functions.FusionRules
     public static class FusionRulesFunction
     {
         const string functionName = "FusionRules";
-        const string timing = /*"0 * * * * *";*/"0 */30 * * * *";
+        const string timing = "0 * * * * *";//"0 */30 * * * *";
 
 
         [FunctionName(functionName)]
@@ -28,11 +28,11 @@ namespace igx.functions.FusionRules
 #if DEBUG
                 var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
 
-                companies = companies.Where(i => i.CompanyID == 5).ToList();
+                companies = companies.Where(i => i.CompanyID == 4).ToList();
 
                 if(companies.Count == 0)
                 {
-                    companies.Add(new d360.core.entities.CompanyWithDatabaseServerSettings { CompanyID = 5 });
+                    companies.Add(new d360.core.entities.CompanyWithDatabaseServerSettings { CompanyID = 4 });
                 }
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
