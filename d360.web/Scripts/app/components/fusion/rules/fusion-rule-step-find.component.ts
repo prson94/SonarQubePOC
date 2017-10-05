@@ -162,28 +162,19 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     }
 
     changeGlossaryTypeFields(): Promise<any> {
-        //let item = this.findObjects.find(i => i.ID == this.selectedFindObject);
-
+        
         this.targetFields = [];
         if (this.settings.Object == 'ArtifactType') {
             return this.fusionService.getFindSourceFields('ArtifactType', this.settings.ObjectID)
                 .then(r => {
-                    this.targetFields = r;
-                    this.targetFields.push({
-                        ID: 0,
-                        FriendlyName: 'Name'
-                    });
+                    this.targetFields = r;                    
                     this.showTargetField = true;
                     this.validate();
                 });
         } else if (this.settings.Object == 'TaxonomyType') {
             return this.fusionService.getFindSourceFields('TaxonomyType', this.settings.ObjectID)
                 .then(r => {
-                    this.targetFields = r;
-                    this.targetFields.push({
-                        ID: 0,
-                        FriendlyName: 'Name'
-                    });
+                    this.targetFields = r;                    
                     this.showTargetField = true;
                     this.validate();
                 });
