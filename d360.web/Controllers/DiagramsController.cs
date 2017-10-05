@@ -374,43 +374,43 @@ namespace d360.web.Controllers
 
             var transformMappings = new Dictionary<string, int>();
 
-            transforms.ForEach(t =>
-            {
-                if (t.Key.StartsWith("-"))
-                {
-                    var transform = new MapGroup();
-                    transform.BusinessTransformation = t.BusinessTransformation;
-                    transform.TechnicalTransformation = t.TechnicalTransformation;
+            //transforms.ForEach(t =>
+            //{
+            //    if (t.Key.StartsWith("-"))
+            //    {
+            //        var transform = new MapGroup();
+            //        transform.BusinessTransformation = t.BusinessTransformation;
+            //        transform.TechnicalTransformation = t.TechnicalTransformation;
 
-                    int mapId = -1;
-                    if (t.Group.StartsWith("-") && mapMappings.ContainsKey(t.Group))
-                        mapId = mapMappings[t.Group];
-                    else
-                        int.TryParse(t.Group.Split('|').Last(), out mapId);
+            //        int mapId = -1;
+            //        if (t.Group.StartsWith("-") && mapMappings.ContainsKey(t.Group))
+            //            mapId = mapMappings[t.Group];
+            //        else
+            //            int.TryParse(t.Group.Split('|').Last(), out mapId);
 
-                    if (mapId > -1)
-                    {
-                        transform.MapID = mapId;
-                        Company.Add(transform);
-                        Company.SaveChanges();
-                        transformMappings.Add(t.Key, transform.ID);
-                    }
+            //        if (mapId > -1)
+            //        {
+            //            transform.MapID = mapId;
+            //            Company.Add(transform);
+            //            Company.SaveChanges();
+            //            transformMappings.Add(t.Key, transform.ID);
+            //        }
 
-                }
-                else
-                {
-                    if (int.TryParse(t.Key.Split('|').Last(), out int mapGroupId))
-                    {
-                        var transform = Company.GetById<MapGroup>(mapGroupId);
-                        if (transform != null)
-                        {
-                            transform.BusinessTransformation = t.BusinessTransformation;
-                            transform.TechnicalTransformation = t.TechnicalTransformation;
-                            Company.SaveOrUpdate(transform);
-                        }
-                    }
-                }
-            });
+            //    }
+            //    else
+            //    {
+            //        if (int.TryParse(t.Key.Split('|').Last(), out int mapGroupId))
+            //        {
+            //            var transform = Company.GetById<MapGroup>(mapGroupId);
+            //            if (transform != null)
+            //            {
+            //                transform.BusinessTransformation = t.BusinessTransformation;
+            //                transform.TechnicalTransformation = t.TechnicalTransformation;
+            //                Company.SaveOrUpdate(transform);
+            //            }
+            //        }
+            //    }
+            //});
 
 
             //create new intersects to nodes
@@ -443,26 +443,26 @@ namespace d360.web.Controllers
                     }
                 }
 
-                if (n.Group.StartsWith("-") && transformMappings.ContainsKey(n.Group))
-                {
-                    var transform = Company.GetById<MapGroup>(transformMappings[n.Group]);
-                    if (transform != null)
-                    {
-                        var item = Company.MapGroupItems.Where(i => i.MapGroupID == transform.ID && i.Object == n.Object && i.ObjectID == n.ObjectID).FirstOrDefault();
-                        //var item = Company.Query<MapGroupItem>(@"select * from MapGroupItem where MapGroupID = @mapGroupId and Object = @object and ObjectID = @objectId", new { mapGroupId = transform.ID, @object = n.Object, @objectId = n.ObjectID }).FirstOrDefault();
+                //if (n.Group.StartsWith("-") && transformMappings.ContainsKey(n.Group))
+                //{
+                //    var transform = Company.GetById<MapGroup>(transformMappings[n.Group]);
+                //    if (transform != null)
+                //    {
+                //        var item = Company.MapGroupItems.Where(i => i.MapGroupID == transform.ID && i.Object == n.Object && i.ObjectID == n.ObjectID).FirstOrDefault();
+                //        //var item = Company.Query<MapGroupItem>(@"select * from MapGroupItem where MapGroupID = @mapGroupId and Object = @object and ObjectID = @objectId", new { mapGroupId = transform.ID, @object = n.Object, @objectId = n.ObjectID }).FirstOrDefault();
 
-                        if (item == null)
+                //        if (item == null)
 
-                            Company.MapGroupItems.Add(new MapGroupItem
-                            {
-                                MapGroupID = transform.ID,
-                                IntersectID = 0,
-                                Object = n.Object,
-                                ObjectID = n.ObjectID
-                            });
-                        Company.SaveChanges();
-                    }
-                }
+                //            Company.MapGroupItems.Add(new MapGroupItem
+                //            {
+                //                MapGroupID = transform.ID,
+                //                IntersectID = 0,
+                //                Object = n.Object,
+                //                ObjectID = n.ObjectID
+                //            });
+                //        Company.SaveChanges();
+                //    }
+                //}
             });
 
             //create new intersects between maps

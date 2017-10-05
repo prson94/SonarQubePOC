@@ -31,6 +31,7 @@ export class SiteUrlHelpers {
     static SITE_URL_CHILDREN_ROOT = 'sidebar/children';
     static SITE_URL_WORKFLOW_MONITOR_ROOT = 'sidebar/workflowmonitor';
     static SITE_URL_SHOPPING_CART_ROOT = 'cart';
+    
 
     //model child routes
     static SITE_URL_MODEL_CLASSIFICATION = 'classification';
@@ -76,6 +77,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
+    static SITE_URL_ADMIN_MAPS = 'maps';
 
     static getDefaultRoute() {
         if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {
