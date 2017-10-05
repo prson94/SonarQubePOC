@@ -185,8 +185,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
             }            
-            else if (field.FieldType == "Date" || field.FieldType == "DateTime") {                
-                field.Value = field.Value === null ? '' : new Date(field.Value);
+            else if (field.FieldType == "Date" || field.FieldType == "DateTime") {
+                if (field.Value != null)
+                    field.Value =  new Date(field.Value);                
                 group[field.FieldName] = new FormControl({ value: (field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
                                 
             }
@@ -251,6 +252,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }                
             }
         }
+
+        //adjust any dates to utc
+        for (var p in this.form.value) {
+            if (this.form.value.hasOwnProperty(p) && this.form.value[p] instanceof Date) {
+                this.form.value[p] = this.getUTCDate(this.form.value[p]);
+            }
+        }
         
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
             this.isLoading = true;
@@ -263,5 +271,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         } else {            
             this.saveClick.emit({ item: this.form.value, action: action });     
         }
+    }
+
+    getUTCDate(date: Date): Date {        
+        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+        return date;
     }
 };
