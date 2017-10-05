@@ -29,7 +29,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                             <div class="row">
                                 <div class="col s12">
                                     <div class="FieldName">What item would you like to report a problem with?</div>
-                                    <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectID;selectedObjectType=objectType;" value="current">{{objectDetail.DisplayValue}}</label></div>
+                                    <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectID;selectedObjectType=objectType;" value="current">{{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</label></div>
                                     <div>
                                         <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption">Other item</label>
                                         <div *ngIf="selectedOption=='other'" style="padding-left:40px"><p-autoComplete size="100"                                                
