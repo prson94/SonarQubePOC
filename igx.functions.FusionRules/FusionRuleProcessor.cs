@@ -241,8 +241,9 @@ namespace igx.functions.FusionRules
                 {
 
                     await company.ExecuteAsync(@"insert into #fields
-			                    select  RS.RuleID,
+			                    select  FA.ID,                                        
                                         'FusionQueryAttribute',
+                                        RS.RuleID,
 					                    M.RuleStepID,
 					                    M.SourceFieldName,
 					                    M.SourceFieldTypeID,
@@ -258,8 +259,9 @@ namespace igx.functions.FusionRules
                                 where RS.RuleID = @id", new { id = rule.ID }, transaction:transaction);
 
                     await company.ExecuteAsync(@"insert into #fields
-			                    select RS.RuleID,
+			                    select FA.ID,                                        
                                         'FusionQueryAttribute',
+                                        RS.RuleID,
 					                    M.RuleStepID,
 					                    M.SourceFieldName,
 					                    M.SourceFieldTypeID,
@@ -268,9 +270,9 @@ namespace igx.functions.FusionRules
 					                    F.FormattedValue
                                 from[fusion].[RuleStepMapping] M
                                     inner join[fusion].[RuleStep] RS on M.RuleStepID = RS.ID and(M.SourceFieldName<> 'ID' AND M.IsConstantValue = 0)                                        
-					                    inner join Field F on F.ObjectType = 'FusionQueryAttribute' and F.ObjectID = FA.ID
-                                        inner join FieldType FT on FT.ID = F.FieldTypeID and M.SourceFieldName = FT.Name
                                         inner join FusionQueryAttribute FA on FA.ID in (select id from #items) and FA.Deleted = 0
+					                    inner join Field F on F.ObjectType = 'FusionQueryAttribute' and F.ObjectID = FA.ID
+                                        inner join FieldType FT on FT.ID = F.FieldTypeID and M.SourceFieldName = FT.Name                                        
                                 where RS.RuleID = @id", new { id = rule.ID }, transaction:transaction);
                 }
 
