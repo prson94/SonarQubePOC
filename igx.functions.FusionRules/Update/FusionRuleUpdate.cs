@@ -13,8 +13,6 @@ namespace igx.functions.FusionRules
 {
     public class FusionRuleUpdate : FusionActionBase, IFusionRuleAction
     {
-        public FusionRuleStepStatistics Stats { get; set; }
-
         public FusionRuleUpdate(FusionRuleStepModel step, TraceWriter log, int companyId, FusionRule rule)
         {
             Step = step;
@@ -86,9 +84,9 @@ namespace igx.functions.FusionRules
                         update fTarget
                         set fTarget.value = fSource.value
                         from field fTarget
-                        join #fields fSource on (fSource.SourceFieldTypeID = fTarget.TargetFieldTypeID)
-                        join #updateItems upd on (fSource.ID =upd.AttributeID and fSource.ObjectType = updAttributeType and fTarget.ObjectType = upd.ObjectType and fTarget.ObjectID = upd.ObjectID)                        
-                    ");
+                        join #fields fSource on (fSource.SourceFieldTypeID = fTarget.FieldTypeID)
+                        join #updateItems upd on (fSource.ID =upd.AttributeID and fSource.ObjectType = @updAttributeType and fTarget.ObjectType = upd.ObjectType and fTarget.ObjectID = upd.ObjectID)                        
+                    ", new { updAttributeType = Rule.ObjectType.Replace("Type", "") });
         }
 
         private async Task LoadItemsForUpdate(int fromStepID, List<int> itemsToPromote, SqlConnection company)
@@ -106,7 +104,7 @@ namespace igx.functions.FusionRules
 
 
             await company.ExecuteAsync(@"
-                        insert into #findrelations
+                        insert into #updateItems
                         select
                             ObjectID,
                             ObjectType,

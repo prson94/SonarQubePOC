@@ -29,13 +29,7 @@ namespace igx.functions.FusionRules
             CompanyId = companyId;
             Rule = rule;
         }
-
-        public FusionRuleStepStatistics Stats
-        {
-            get;
-            set;
-        }
-
+        
         public async Task Execute(List<int> itemsToPromote, SqlConnection company)
         {
             if (!LoadRelateSettings())
