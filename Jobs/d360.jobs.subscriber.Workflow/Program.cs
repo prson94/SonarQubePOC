@@ -72,10 +72,7 @@ namespace d360.jobs.subscriber.Workflow
                     foreach (var registration in registrations)
                     {
                         // if the registration applies fire of the workflow and break if not go to the next one.
-                        if (await company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID))
-                        {                            
-                            return;
-                        }
+                        await company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID);                        
                     }
                     
                 }
