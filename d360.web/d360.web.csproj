@@ -1018,6 +1018,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\maps\admin-maps-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\maps\admin-maps-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\maps\admin-maps.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\maps\admin-maps.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\maps\admin-maps.routes.ts" />
@@ -1243,6 +1245,7 @@
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\map.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\organization.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shopping-cart.model.ts" />
@@ -1471,6 +1474,7 @@
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\maps.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />

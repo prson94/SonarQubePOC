@@ -4,23 +4,28 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { StateService } from '../../../services/state.service';
 import { MessagesService } from '../../../services/messages.service';
+import { MapsService } from '../../../services/maps.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-
+import { FormMode } from '../../../models/form.model';
+import { MapType } from '../../../models/map.model';
 
 @Component({
     selector: 'd3s-admin-maps',
-    providers: [],
+    providers: [MapsService],
     templateUrl: './admin-maps.component.html',
 })
 
 export class AdminMapsComponent extends AdminBaseComponent implements OnDestroy {
-    searchFilter: string = "";
-    objectType: string = "MapType";
+    mapType: MapType;
+    formMode: FormMode = FormMode.Default;
+    FormMode = FormMode;
 
-    constructor(private stateService: StateService,
+    constructor(
+        private mapsService: MapsService,
+        private stateService: StateService,
         rightSidebarService: RightSidebarService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
@@ -29,7 +34,6 @@ export class AdminMapsComponent extends AdminBaseComponent implements OnDestroy 
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Maps";
         this.setCommonItems();
-        this.load();
         this.setObjectInfo('MapType', -1);
 
     }
@@ -38,13 +42,33 @@ export class AdminMapsComponent extends AdminBaseComponent implements OnDestroy 
         this.clearSidebar();
     }
 
-    load() {
-        this.isLoading = true;
+    add() {
+        this.mapType = null;
+        this.formMode = FormMode.Adding;
     }
 
-    navigate(item: any) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('MapType', item.ID));
+    edit(mapType: MapType) {
+        this.mapType = mapType;
+        this.formMode = FormMode.Editing;
     }
+
+    delete(mapType: MapType) {
+        this.mapType = mapType;
+        this.formMode = FormMode.Deleting;
+    }
+
+    deleteMapType() {
+        if (this.mapType == null)
+            return;
+        this.isLoading = true;
+        this.mapsService.deleteMapType(this.mapType.ID)
+            .then(r => {
+                this.showMessageForResult(this.messagesService, r);
+                this.isLoading = false;
+                this.formMode = FormMode.Default;
+            })
+    }
+
 }
 
 

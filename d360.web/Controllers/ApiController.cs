@@ -2401,6 +2401,78 @@ from    [Intersect] I
         }
         #endregion
 
+        #region Maps
+
+        [Route("map/types"), HttpGet]
+        public HttpResponseMessage GetMapTypes()
+        {
+
+            var sql = @"
+			    select 
+				    M.ID
+                    ,M.[Name]
+				    ,M.MapClass
+				    ,M.[Description]
+				    ,M.CreatedOn
+				    ,M.CreatedBy 
+				    ,M.UpdatedOn 
+				    ,M.UpdatedBy 
+			    from 
+				    MapType M";
+
+            var list = Company.Query<dynamic>(sql);
+
+
+            return Request.CreateResponse(HttpStatusCode.OK, list);
+        }
+
+        [Route("map/type/{id:int}"), HttpGet]
+        public HttpResponseMessage GetMapType(int id)
+        {
+            var sql = @"select 
+				    M.ID
+                    ,M.[Name]
+				    ,M.MapClass
+				    ,M.[Description]
+				    ,M.CreatedOn
+				    ,M.CreatedBy 
+				    ,M.UpdatedOn 
+				    ,M.UpdatedBy 
+			    from 
+				    MapType M
+				where
+					M.ID = @id";
+
+            var mapType = Company.Query<dynamic>(sql, new { id });
+
+            return Request.CreateResponse(HttpStatusCode.OK, mapType);
+        }
+
+        [Route("map/type/{id:int}/intersecttypes"), HttpGet]
+        public HttpResponseMessage GetMapTypeIntersects(int id )
+        {
+            var sql = @"
+                select 
+				  coalesce(o.[Order],99999) as [Order],
+				  i.ID,
+				  i.[Name] as IntersectTypeName,
+				  i.[Object],
+				  i.ObjectID,				  
+				  d.Name as ObjectName
+			    from 
+				    IntersectType i
+				left join maptypeorder o on o.intersecttypeid = i.id
+				inner join cache.ObjectDetails d on d.Object = i.Object and d.ObjectID = i.ObjectID
+				where [subject] = 'MapType' and subjectId = @id
+				order by 1 asc";
+
+            var results = Company.Query<dynamic>(sql, new { id });
+
+
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+        }
+        #endregion
+
         #region Complex Lookup Fields
 
         private List<DetailReadOnlyRowModel> RenderComplexLookupField(string type, int id, int fieldTypeID)

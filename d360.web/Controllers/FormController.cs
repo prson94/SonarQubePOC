@@ -10468,6 +10468,75 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
+        #region MapType
+
+        [HttpPost, Route("AddMapType")]
+        public JsonResult AddMapType(MapType model)
+        {
+            if (string.IsNullOrEmpty(model.Name))
+                return jsonException("The map type requires a name", HttpStatusCode.BadRequest);
+
+            Company.Add(model);
+            Company.SaveChanges();
+
+            if (model.MapTypeOrders != null && model.MapTypeOrders.Count > 0)
+            {
+                model.MapTypeOrders.ForEach(m => m.MapTypeID = model.ID);
+                Company.MapTypeOrders.AddRange(model.MapTypeOrders);
+            }
+
+            Company.SaveChanges();
+            return jsonSuccess("Map type added successfully", model.ID.ToString(), "add", HttpStatusCode.OK);
+
+        }
+
+        [HttpPost, Route("EditMapType")]
+        public JsonResult EditMapType(MapType model)
+        {
+            if (string.IsNullOrEmpty(model.Name))
+                return jsonException("The map type requires a name", HttpStatusCode.BadRequest);
+
+            var existing = Company.GetById<MapType>(model.ID);
+
+            if (existing == null)
+                return jsonException($"The map type with id {model.ID} could not be found", HttpStatusCode.BadRequest);
+
+
+            var intersectTypes = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == model.ID).ToList();
+            existing.MapTypeOrders = Company.MapTypeOrders.Where(o => o.MapTypeID == model.ID).ToList();
+
+
+            Company.MapTypeOrders.RemoveRange(existing.MapTypeOrders);
+            Company.MapTypeOrders.AddRange(model.MapTypeOrders);
+            Company.SaveChanges();
+
+
+            existing.Name = model.Name;
+            existing.Description = model.Description;
+            Company.SaveOrUpdate(existing);
+            return jsonSuccess("Map type edited successfully", model.ID.ToString(), "edit", HttpStatusCode.OK);
+
+        }
+
+        [HttpDelete, Route("DeleteMapType/{id:int}")]
+        public JsonResult DeleteMapType(int id)
+        {
+            var mapType = Company.GetById<MapType>(id);
+
+            if (mapType == null)
+                return jsonException($"The map type with {id} does not exist", HttpStatusCode.BadRequest);
+
+            var mapTypeOrders = Company.MapTypeOrders.Where(i => i.MapTypeID == id).ToList();
+
+            Company.MapTypeOrders.RemoveRange(mapTypeOrders);
+            Company.MapTypes.Remove(mapType);
+            Company.SaveChanges();
+            return jsonSuccess("Map type deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
+
+        }
+
+        #endregion
+
         #region MapRule
 
         #region Field Generation

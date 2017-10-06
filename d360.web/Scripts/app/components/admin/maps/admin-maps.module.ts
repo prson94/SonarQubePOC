@@ -14,6 +14,8 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 
 
 import { AdminMapsComponent } from './admin-maps.component';
+import { AdminMapsEditorComponent } from './admin-maps-editor.component';
+import { AdminMapsListComponent } from './admin-maps-list.component';
 import { AdminMapsRoutingComponent } from './admin-maps.routes';
 
 
@@ -24,6 +26,8 @@ import {
     EditorModule,
     InputTextModule,
     SharedModule,
+    DataTableModule,
+    OrderListModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -39,6 +43,8 @@ import {
         EditorModule,
         InputTextModule,
         SharedModule,
+        DataTableModule,
+        OrderListModule,
 
         //color picker 
         ColorPickerModule,
@@ -53,6 +59,8 @@ import {
     ],
     declarations: [
         AdminMapsComponent,
+        AdminMapsEditorComponent,
+        AdminMapsListComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

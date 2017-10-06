@@ -1,4 +1,35 @@
-﻿--BEGIN: Migrate Score Metric relationship XML--------------------------------------------------------------------------------------------------------------
+﻿--MapType needs an identity on ID------------
+ALTER TABLE MapType NOCHECK CONSTRAINT ALL;
+ALTER TABLE MapGroup NOCHECK CONSTRAINT ALL;
+ALTER TABLE MapTypeOrder NOCHECK CONSTRAINT ALL;
+ALTER TABLE Map NOCHECK CONSTRAINT ALL;
+
+alter table MapTypeOrder drop constraint FK_MapTypeObject_MapType;
+alter table Map drop constraint FK_Map_MapType
+
+alter table MapType add ID2 int identity not null;
+alter table MapType drop constraint PK_MapType;
+alter table MapType drop column ID;
+
+EXEC sp_rename 'dbo.MapType.ID2', 'ID', 'COLUMN'; 
+go
+ALTER TABLE [dbo].[MapType] ADD  CONSTRAINT [PK_MapType] PRIMARY KEY (ID);
+go
+
+ALTER TABLE [dbo].[MapTypeOrder]  WITH NOCHECK ADD  CONSTRAINT [FK_MapTypeObject_MapType] FOREIGN KEY([MapTypeID])
+REFERENCES [dbo].[MapType] ([ID]);
+
+ALTER TABLE [dbo].[Map]  WITH NOCHECK ADD  CONSTRAINT [FK_Map_MapType] FOREIGN KEY([MapTypeID])
+REFERENCES [dbo].[MapType] ([ID]);
+
+ALTER TABLE MapType CHECK CONSTRAINT ALL;
+ALTER TABLE MapGroup CHECK CONSTRAINT ALL;
+ALTER TABLE MapTypeOrder CHECK CONSTRAINT ALL;
+ALTER TABLE Map CHECK CONSTRAINT ALL;
+---------------------------------------------------------------
+
+
+--BEGIN: Migrate Score Metric relationship XML--------------------------------------------------------------------------------------------------------------
 
 if OBJECT_ID('tempdb..#tempScoreMetric') IS NOT NULL DROP TABLE #tempScoreMetric;
 go
