@@ -132,10 +132,12 @@ export class AdminAttributesComponent extends AdminBaseComponent {
 
 
     deleteAttributeType(id: number) {
-        this.attributeTypeService.deleteAttributeType(id);
-        this.showDelete = false;
-        this.selected = this.attributes.length > 0 ? this.attributes[0] : null;
-        this.getAttributes();
+        this.attributeTypeService.deleteAttributeType(id).then(res => {
+            this.showMessageForResult(this.messagesService, res);
+            this.showDelete = false;
+            this.selected = this.attributes.length > 0 ? this.attributes[0] : null;
+            this.getAttributes();
+        });
     }
 
     saveAttributeType(event) {

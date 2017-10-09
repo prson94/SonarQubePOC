@@ -86,8 +86,8 @@ export class AttributeTypeService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteAttributeType(id: number) {
-        return this.deleteDynamic(this.http, 'attributetype', id);
+    deleteAttributeType(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'attributetype', id);
     }
 
     saveAttributeType(attributeType: AttributeType): Promise<JsonResult> {
