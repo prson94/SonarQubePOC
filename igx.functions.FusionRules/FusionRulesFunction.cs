@@ -13,7 +13,7 @@ namespace igx.functions.FusionRules
     public static class FusionRulesFunction
     {
         const string functionName = "FusionRules";
-        const string timing = "0 * * * * *";//"0 */30 * * * *";
+        const string timing = /*"0 * * * * *";*/"0 */30 * * * *";
 
 
         [FunctionName(functionName)]

@@ -54,7 +54,27 @@ namespace d360.model
 
             Console.WriteLine($"DEBUG - TESTING TO SEE IF ${objectInfo.Object} - {objectInfo.ObjectID} IS VALID FOR WORKFLOW {workflowName}");
 
-            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, (objectInfo.Score.HasValue ? objectInfo.Score.Value : -1), objectInfo.ChangedFieldIds ))
+            string issueObject = "";
+            int issueObjectId = -1;
+
+            if(objectInfo.Object == SystemObjects.Issue)
+            {
+                Console.WriteLine($"DEBUG - WORKFLOW IS AN ISSUE.  DETERMINING WHAT OBJECT THE ISSUE WITH ID {objectInfo.ObjectID} WAS RAISED ON.");
+
+                var issueDetail = Issues.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
+
+                if(issueDetail == null)
+                {
+                    Console.WriteLine("ERROR - ISSUE RAISED BUT DOESNT HAVE CORRESPONDING ISSUE RECORD.");
+
+                    return false;
+                }
+
+                issueObject = issueDetail.Object;
+                issueObjectId = issueDetail.ObjectID;
+            }
+
+            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, (objectInfo.Score.HasValue ? objectInfo.Score.Value : -1), objectInfo.ChangedFieldIds, issueObject, issueObjectId))
             {
                 Console.WriteLine("DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 

@@ -13,7 +13,7 @@ namespace d360.model.workflow
         internal static bool hasChangeCondition = false;
         internal static List<int> changedFields = new List<int>();
 
-        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1, List<int> changedFields = null)
+        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -26,7 +26,7 @@ namespace d360.model.workflow
             WorkflowRegistrationCriteriaProcessor.hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
 
             //load the values for each of the fields for the given object
-            return EvaluateObject(context, @object, objectId, itemId, score);            
+            return EvaluateObject(context, @object, objectId, itemId, score, issueObject, issueObjectId);            
         }
 
         public static string ToPlainText(CompanyContext context, string criteria)
@@ -54,7 +54,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(CompanyContext context, string @object, int objectId, long itemId, int score = -1)
+        private static bool EvaluateObject(CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObject = "", int issueObjectId = -1)
         {
             //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
             //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
@@ -96,6 +96,14 @@ namespace d360.model.workflow
                 {
                     var description = context.GetObjectDetail(@object, objectId).Description;
                     if (!item.IsValueMatch(description?.ToString() ?? "")) return false;
+                }
+                else if((item.ContextualFieldID ?? "").ToLower() == "issueobject")
+                {
+                    if (!item.IsValueMatch(issueObject)) return false;
+                }
+                else if ((item.ContextualFieldID ?? "").ToLower() == "issueobjectid")
+                {
+                    if (!item.IsValueMatch(issueObjectId.ToString())) return false;
                 }
                 else if(item.VersionStepId > 0)
                 {
