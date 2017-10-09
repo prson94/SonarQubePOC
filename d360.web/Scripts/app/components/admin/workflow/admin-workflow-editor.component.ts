@@ -10,12 +10,10 @@ import {
     WorkflowDiagramModel,
     EmailTaskRecipientType,
 } from '../../../models/workflow.model';
-import { Taxonomy } from '../../../models/taxonomy.model';
 import { FieldType } from '../../../models/fields.model';
 import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
-import { TaxonomiesService } from '../../../services/taxonomies.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
@@ -24,7 +22,7 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-admin-workflow-editor',
-    providers: [WorkflowService, TaxonomiesService, ResponsibilityTypeService],
+    providers: [WorkflowService, ResponsibilityTypeService],
     templateUrl: './admin-workflow-editor.component.html'
 })
 
@@ -45,7 +43,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private hideObject: boolean = false;
 
     private subjectAreaName: string;
-    private taxonomies: Taxonomy[] = [];
 
     private SCHEDULE_OBJECT_LIMIT = 2000;
     private isValid = false;
@@ -64,7 +61,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     constructor(
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
-        private taxonomyService: TaxonomiesService,
         private responsibilityService: ResponsibilityTypeService) {
         super();
     }
@@ -137,8 +133,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             this.objectID = this.model.Event.ObjectID;
                             this.objectType = this.model.Event.Object;
 
-                            if (this.objectType == 'ArtifactType')
-                                this.loadTaxonomies();
+
                             if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
                                 let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
                                 this.conditions = [];
@@ -206,9 +201,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             this.objectType = e.split('|')[0];
             this.objectID = +e.split('|')[1];
 
-            if (this.objectType == 'ArtifactType')
-                this.loadTaxonomies();
-            else if (this.model.Event.SettingsObject.Settings.TaxonomyTypeID != null) {
+
+            if (this.model.Event.SettingsObject.Settings.TaxonomyTypeID != null && this.objectType != 'ArtifactType') {
                 delete this.model.Event.SettingsObject.Settings.TaxonomyTypeID;
             }
 
@@ -223,11 +217,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         }
 
 
-    }
-
-    loadTaxonomies(): Promise<any> {
-        return this.taxonomyService.getTaxonomies()
-            .then(r => this.taxonomies = r);
     }
 
     loadResponsibilities(): Promise<any> {

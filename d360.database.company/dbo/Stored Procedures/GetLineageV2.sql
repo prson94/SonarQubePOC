@@ -170,8 +170,16 @@ BEGIN
 		n.isGroup = 1
 	from @nodes n
 	cross apply (
-		select top 1 * from @nodes n2
-		where n2.[group] = n.[key] and n2.category != 'transform'
+		select top 1 
+			coalesce(o.[Order],99999) as [order],
+			n2.*
+		from 
+			@nodes n2
+		left join intersectType t on t.Subject = 'MapType' and t.SubjectID = n.objectTypeId and t.Object = n2.objectType and t.ObjectID = n2.objectTypeId
+		left join  mapTypeOrder o on o.intersectTypeID = t.ID 
+		where 
+			n2.[group] = n.[key] and n2.category != 'transform'
+		order by 1 asc
 		) m
 	where n.[object] = 'Map';
 

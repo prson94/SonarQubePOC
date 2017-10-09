@@ -35,21 +35,6 @@
                             filterPlaceholder="Choose a value"
                             [filter]="true">
                 </p-dropdown>
-                <!--<select style="width:95%;" placeholder="Choose a value" [ngModel]="selectedObjectType" (ngModelChange)="selectObjectType($event)" [disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0">
-                    <option></option>
-                    <option *ngFor="let i of workflowObjectTypes" [value]="i.value">{{i.label}}</option>
-                </select>-->
-            </div>
-            <div *ngIf="objectType == 'ArtifactType'">
-                <div class="FieldName">
-                    {{subjectAreaName}}
-                </div>
-                <div>
-                    <select style="width:95%" [(ngModel)]="model.Event.SettingsObject.Settings.TaxonomyTypeID">
-                        <option></option>
-                        <option *ngFor="let t of taxonomies" [value]="t.ID">{{t.Name}}</option>
-                    </select>
-                </div>
             </div>
             <div *ngIf="model.Event.ChangeType == WorkflowChangeType.Schedule">
                 <div class="FieldName">
