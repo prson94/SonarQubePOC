@@ -631,6 +631,13 @@ namespace d360.model
                     }
                     else
                     {
+                        if (item.AppendValue)
+                        {
+                            if (field.Value.EndsWith(","))
+                                field.Value += val.Trim(',');
+                            else
+                                field.Value += ("," + val.Trim(','));                            
+                        }
                         //update
                         field.Value = val;
 

@@ -16,6 +16,7 @@ namespace d360.model.workflow
         private static string USEFORM_VALUE = "UseFormValue";
         private static string FORM_FIELD_ID = "FormFieldId";
         private static string FORM_STEP_ID = "FormStepId";
+        private static string APPEND_VALUE = "AppendValue";
 
         public int FieldID { get; set; }
 
@@ -23,6 +24,8 @@ namespace d360.model.workflow
 
         public bool CurrentDate { get; set; }
         public bool ClearValue { get; set; }
+
+        public bool AppendValue { get; set; }
 
         public bool UseFormValue { get; set; }
         public string FormField { get; set; }
@@ -38,6 +41,7 @@ namespace d360.model.workflow
             bool isCurrentDate = false;
             bool isClearValue = false;
             bool useFormValue = false;
+            bool isAppendValue = false;
             int formStepId = 0;
             string formField = "";
 
@@ -76,6 +80,11 @@ namespace d360.model.workflow
                 int.TryParse(xml.Attribute(FORM_STEP_ID).Value, out formStepId);
             }
 
+            if(xml.Attribute(APPEND_VALUE) != null)
+            {
+                bool.TryParse(xml.Attribute(APPEND_VALUE).Value, out isAppendValue);
+            }
+
             model.CurrentDate = isCurrentDate;
             model.FieldID = fieldId;
             model.Value = value;
@@ -83,6 +92,7 @@ namespace d360.model.workflow
             model.UseFormValue = useFormValue;
             model.FormField = formField;
             model.FormStepID = formStepId;
+            model.AppendValue = isAppendValue;
 
             return model;
         }
