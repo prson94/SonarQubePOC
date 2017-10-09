@@ -10065,6 +10065,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
 
+        [HttpDelete, Route("DeleteLookupByIdRaw")]
+        public ActionResult DeleteLookupByIdRaw(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteLookup(form);
+        }
+
         [HttpDelete, Route("DeleteLookup")]
         public JsonResult DeleteLookup(FormCollection form)
         {
