@@ -402,7 +402,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         }
 
         [HttpGet, Route("{type}/{itemid}/templates/tooltip/{templateAction}")]
-        public ContentResult _RenderTooltip(SystemObjects type, string itemid, string templateAction, bool isNg = false)
+        public ContentResult _RenderTooltip(SystemObjects type, string itemid, string templateAction)
         {
             string html = "";
 

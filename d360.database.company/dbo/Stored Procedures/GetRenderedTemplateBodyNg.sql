@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
+﻿CREATE PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
 --declare
 	@TemplateType varchar(25),
 	@Type varchar(50),
@@ -28,14 +28,6 @@ BEGIN
 			@value nvarchar(max);
 
 	declare @tbl table (ID int identity, Name nvarchar(250), Value nvarchar(max));
-
-	if @TemplateType = 'Email'
-	begin
-		select	@html = TemplateBody
-		from	EmailTemplate
-		where	Name = @Type
-				and [Action] = @Action
-	end
 
 	if @TemplateType = 'Tooltip'
 	begin
@@ -91,105 +83,7 @@ BEGIN
 		set @html = '<h3>{Name}</h3>'
 	end
 
-	if @Action = 'Certificate'
-	begin
-		set @html = '<h3>{Name}</h3>'
-
-		declare @workflowID bigint,
-				@dateCertifiedOn varchar(10),
-				@certifiers nvarchar(2500),
-				@status varchar(50),
-				@certIconColor varchar(10)
-
-		select	@dateCertifiedOn = CONVERT(VARCHAR(10), DateLastCertified, 101),
-				@status = Status
-		from	Artifact A
-		where	A.ID = @ID
-
-		/*SELECT	@workflowID = W.ID,
-				@certifiers = COALESCE(@certifiers + ', ', '') + R.FirstName + ' ' + R.LastName 
-		from	(
-				select		top 1
-							ID,
-							Data.value('(/fields/ArtifactID)[1]', 'int') as ArtifactID,
-							DateCompleted
-				from		Workflow
-				where		WorkflowType = 2
-							and Data.exist('/fields/ArtifactID[text() = sql:variable("@ID")]') = 1
-				order by	DateCompleted desc
-				) W
-				inner join WorkflowResource WR on WR.WorkflowID = W.ID
-				inner join reporting.Global_Resource R on R.ResourceID = WR.ResourceID*/
-		select 
-			@workflowID = wi.id
-		from 
-			workflow.eventregistration we
-			inner join workflow.type wt on we.typeid = wt.id
-			inner join workflow.version wv on wt.id = wv.typeid
-			inner join workflow.item wi on wi.versionid = wv.id and (wi.[object] = 'Artifact' and wi.objectid = @ID )
-		where
-			we.changetype = 8;
-
-		if @dateCertifiedOn is null and @status != 'Certified'
-			begin
-				set @showIcon = 0
-
-				set @html = @html + '<div><b>Not yet certified</b></div>'
-				if @certifiers is not null
-				begin
-					set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
-				end
-				if @workflowID is not null
-				begin
-					set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/details/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
-				end
-			end
-		else
-			begin
-				if @status = 'Certified'
-					begin
-						set @certIconColor = '#EFC43D'
-					end
-				else 
-					begin
-						set @certIconColor = '#FFE183'
-					end
-				select	@icon = '<div style="background-color: transparent; color: ' + @certIconColor + '"><i class="fa fa-2x fa-certificate"></i></div>'
-				set @html = @html + '<div>Last Certified On: ';
-				if @dateCertifiedOn is null
-					begin
-						set @html = @html + 'Manually Certified';
-					end
-				else
-					begin
-						set @html = @html + '{CertifiedOn}';
-					end
-				set @html = @html + '</div>';
-				if @status = 'Certified'
-					begin
-						if @Certifiers is not null
-						begin
-							set @html = @html + '<div>Certified By: {Certifiers}</div>'
-						end
-					end
-				else 
-					begin
-						set @html = @html + '<div>Currently Under Certification Review</div>'
-						--set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
-						if @workflowID is not null
-						begin
-							set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/details/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
-						end
-					end
-			end
-
-		insert into @tbl values ('CertifiedOn', @dateCertifiedOn)
-		insert into @tbl values ('Certifiers', @certifiers)
-	end
-	if @Action = 'JoinRequest'
-	begin
-		set @html = ''
-	end
+	
 	if @Action = 'LookupPreview'
 	begin
 		set @html = '{Items}'
@@ -331,7 +225,7 @@ BEGIN
 				end
 
 			insert into @refs 
-				select top 50 ID from [ReferenceItem] where ReferenceItemTypeID = @MyRefTypeID order by DisplayValue desc
+				select top 500 ID from [ReferenceItem] where ReferenceItemTypeID = @MyRefTypeID order by DisplayValue asc
 		
 			declare @refFieldTypes table (ID int identity, Name nvarchar(250))
 			insert into @refFieldTypes values ('Code')
@@ -415,11 +309,17 @@ BEGIN
 
 				set @current = @current + 1
 			end
+						
 			-----------------------------------------
 
 			set @refHtml = @refHtml + '</tbody>'
 
 			set @refHtml = @refHtml + '</table>'
+
+			if @max >= 500
+			begin
+				set @refHtml = @refHtml + '<div style="font-weight:bold;padding-top:10px">Showing top 500 items</div>'	
+			end
 
 			insert into @tbl values ('Items', @refHtml)
 			------------------------------------------------------------------
@@ -521,12 +421,12 @@ BEGIN
 		if @Type = 'Artifact'
 		begin
 			declare @artifactPathHtml nvarchar(2500) = '<table>';
-			declare @artLevelResult table(ID int identity, LevelName nvarchar(250), Name nvarchar(250), Url varchar(1000));
+			declare @artLevelResult table(ID int identity, LevelName nvarchar(250), DisplayValue nvarchar(250), Url varchar(1000));
 
 			with ap as (
 				select	O.ID,
 						O.ParentID,
-						O.Name,
+						O.DisplayValue,
 						L.Name as LevelName,
 						dbo.GenerateNgObjectUrl('Artifact', L.ID, O.ID) as Url,
 						1 as [Level]
@@ -536,7 +436,7 @@ BEGIN
 				union all
 				select	O.ID,
 						O.ParentID,
-						O.Name,
+						O.DisplayValue,
 						L.Name as LevelName,
 						dbo.GenerateNgObjectUrl('Artifact', L.ID, O.ID) as Url,
 						C.[Level] + 1 as [Level]
@@ -546,29 +446,14 @@ BEGIN
 			)
 
 			insert into @artLevelResult
-				select LevelName, Name, Url from ap order by [Level] desc
+				select LevelName, DisplayValue, Url from ap order by [Level] desc
 
-			select		@artifactPathHtml = coalesce(@artifactPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast([ID] as varchar) + '</td><td>' +  LevelName + '</td><td><b><a href="' + Url + '">' + Name + '</a></b>' + '</td></tr>'
+			select		@artifactPathHtml = coalesce(@artifactPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast([ID] as varchar) + '</td><td>' +  LevelName + '</td><td><b><a href="' + Url + '">' + DisplayValue + '</a></b>' + '</td></tr>'
 			from		@artLevelResult
 			
 			set @artifactPathHtml =  @artifactPathHtml + '</table>'
 
-			insert into @tbl
-			select	'Status', [Status]
-			from	Artifact
-			where	ID = @ID
-
 			set @html = @html + '<div><b>Path:</b></div><div>' + coalesce(@artifactPathHtml,'') + '</div>'
-
-			insert into @tbl 
-				select 'GoverningDomain', tt.name
-				from
-					artifact a
-					inner join taxonomytype tt on (a.taxonomytypeid = tt.id and a.id = @ID)
-
-			set @html = @html + '<div><b>' + @SubjectName + ':</b> {GoverningDomain}</div>'
-			set @html = @html + '<div><b>Status:</b> {Status}</div>'
-			--set @html = @html + '<div><b>Path:</b> {Path}</div>'
 
 			set @hasDynamicFields = 1
 		end;
@@ -701,11 +586,7 @@ BEGIN
 		if @Type = 'Rule'
 		begin
 			insert into @tbl
-				select	'Name', Name
-				from	[Rule] O
-				where	ID = @ID
-			insert into @tbl
-				select	'Description', Description
+				select	'Name', DisplayValue
 				from	[Rule] O
 				where	ID = @ID
 
@@ -734,7 +615,7 @@ BEGIN
 			with tp as (
 				select	O.ID,
 						O.ParentID,
-						O.Name,
+						O.DisplayValue,
 						coalesce(L.Name, 'Level ' + cast(O.[Level] as varchar)) as LevelName,
 						O.[Level]
 				from	[Taxonomy] O
@@ -743,7 +624,7 @@ BEGIN
 				union all
 				select	O.ID,
 						O.ParentID,
-						O.Name,
+						O.DisplayValue,
 						coalesce(L.Name, 'Level ' + cast(O.[Level] as varchar)) as LevelName,
 						O.[Level]
 				from	[Taxonomy] O
@@ -754,17 +635,12 @@ BEGIN
 						inner join tp as C on C.ParentID = O.ID
 			)
 
-			select		@taxonomyPathHtml = coalesce(@taxonomyPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast([Level] as varchar) + '</td><td>' +  LevelName + '</td><td><b>' + Name + '</b>' + '</td></tr>'
+			select		@taxonomyPathHtml = coalesce(@taxonomyPathHtml + '', '') + '<tr><td style="width: 15px">' +  cast([Level] as varchar) + '</td><td>' +  LevelName + '</td><td><b>' + DisplayValue + '</b>' + '</td></tr>'
 			from		tp
 			order by	[Level]
 			
 			set @taxonomyPathHtml =  @taxonomyPathHtml + '</table>'
-			--insert into @tbl
-			--	select	'TextPath', TextPath
-			--	from	Taxonomy O
-			--	where	ID = @ID
 
-			--set @html = @html + '<div><b>Path:</b> {TextPath}</div>'
 			set @html = @html + '<div><b>Path:</b></div><div>' + coalesce(@taxonomyPathHtml,'') + '</div>'
 
 			set @hasDynamicFields = 1

@@ -44,7 +44,7 @@ export class LineageService extends BaseService {
     }
 
     public getLineageObjectDetail(type: string, id: number): Promise<any> {
-        return this.http.get(`resources/${type}/${id}/templates/tooltip/preview?isNg=true`)
+        return this.http.get(`resources/${type}/${id}/templates/tooltip/preview`)
             .toPromise()
             .catch(err => this.handleError(err));
     }

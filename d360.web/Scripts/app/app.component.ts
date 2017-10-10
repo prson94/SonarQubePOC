@@ -79,7 +79,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                         //api.set('content.text','<i class="fa fa-spinner fa-spin fa-4x"></i>');
                         // This time, we return the deferred object, not a 'Loading...' message.
                         $.ajax({
-                            url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context") + "?isNg=true" // Use data-url attribute for the URL
+                            url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context") // Use data-url attribute for the URL
                         })
                             .then(function (data) {
                                 // Return the content instead of using .set(). If you're wanting to select
