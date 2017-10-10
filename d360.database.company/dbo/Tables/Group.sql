@@ -9,9 +9,10 @@
     CONSTRAINT [PK_Group] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
+go
 
-
-
+ALTER TABLE dbo.[Group] ADD CONSTRAINT ucGroupName UNIQUE (Name)
+go
 
 
 GO
