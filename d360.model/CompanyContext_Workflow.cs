@@ -92,6 +92,33 @@ namespace d360.model
             return true;
         }
 
+        public bool AssignWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, SystemObjects @object, int objectTypeId, SystemObjects objectType)
+        {
+            //add new event
+            var events = new List<EventInfo>();
+
+            
+
+            events.Add(new EventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                DomainPrefix = CurrentCompanyDomain,
+                ResourceID = CurrentResourceID,
+                Action = reg.ChangeType,
+                Object = new EventObjectInfo
+                {
+                    Object = @object,
+                    ObjectID = objectId,
+                    ObjectType = objectType,
+                    ObjectTypeID = objectTypeId
+                }
+            });
+
+            QueueSource.CreateTopicMessages(events);
+
+            return true;
+            
+        }
         public bool ExecuteTimerSteps()
         {
             var sql = @"select

@@ -23,7 +23,7 @@ import { WorkflowRoutingModule } from './workflow.routes';
 
 import {
     GrowlModule,
-    CalendarModule,
+    CalendarModule,    
     InputTextModule,
     ToggleButtonModule,
     DataTableModule,

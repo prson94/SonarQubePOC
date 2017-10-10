@@ -271,6 +271,47 @@ order by wi.StartedOn desc";
             };
         }
 
+        [HttpPost, Route("ReassignWorkflowObject/{itemId:int}/{workflowId:int}/{objectId:int}/{objectType}")]
+        public HttpResponseMessage ReassignWorkflowObject(int itemId, int workflowId, int objectId, string objectType)
+        {
+            try
+            {
+                //look up change type
+                var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == workflowId).FirstOrDefault();
+
+                if(reg == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow registration is missing or invalid");
+
+                //add new event for the requested object and change type
+
+                var det = Company.GetObjectDetail(objectType, objectId);
+
+                if(det == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Object details not found to reassign.");
+                }
+                
+
+                if (!Enum.TryParse<SystemObjects>(objectType, true, out SystemObjects objectTypeEnum))
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Object Type.");
+                }
+
+                if (!Enum.TryParse<SystemObjects>(det.Type, true, out SystemObjects typeEnum))
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Object Type.");
+                }
+
+                Company.AssignWorkflowToNewObject(reg, itemId, workflowId, objectId, objectTypeEnum, det.TypeID, typeEnum);
+
+
+                return Request.CreateResponse(HttpStatusCode.Accepted, -1);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
         [HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{itemStepId:int}")]
         public HttpResponseMessage SubmitWorkflowForm(int itemId, int itemStepId, List<WorkflowFormModelField> model)
         {
@@ -447,8 +488,10 @@ order by wi.StartedOn desc";
             
             var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
             var title = (string)XElement.Parse(xml).Element("form").Attribute("title");
-
-            if(string.IsNullOrEmpty(xml))
+            bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignResource"), out bool allowReassignResource);
+            bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignObject"), out bool allowReassignObject);
+            
+            if (string.IsNullOrEmpty(xml))
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow with specified version step id not found");
                 
             List<WorkflowFormModelField> properties = (
@@ -556,7 +599,9 @@ order by wi.StartedOn desc";
                 IssueObject = issueObjectType,
                 IssueObjectID = issueItemDetails != null ? issueItemDetails.ID : 0,
                 IssueObjectName = issueItemDetails != null ? issueItemDetails.Name : "",
-                IssueTypeName = issueTypeName
+                IssueTypeName = issueTypeName,
+                AllowReassignObject = allowReassignObject,
+                AllowReassignResource = allowReassignResource
             });
         }
 

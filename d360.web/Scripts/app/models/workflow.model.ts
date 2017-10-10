@@ -289,6 +289,8 @@ export class WorkflowForm {
     IssueObjectName: string;
     IssueTypeName: string;
     TypeName: string;
+    AllowReassignObject: boolean;
+    AllowReassignResource: boolean;
 }
 
 export class WorkflowListItem {

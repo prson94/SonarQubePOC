@@ -9,6 +9,9 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { Tag } from '../../models/tag.model';
+import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
+import { TagService } from '../../services/tag.service';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -21,8 +24,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <div class="form-instructions" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{typeName}}</b>] named [<b><d3s-tooltip [objectType]="objectType" [objectId]="objectID" tooltipType="preview"><a [routerLink]="objectUrl">{{objectName}}</a></d3s-tooltip></b>].  <span [innerHtml]="description"></span></div>                                            
                                 <div class="form-instructions" *ngIf="objectType == 'Issue'">The following form is for the [<b><d3s-tooltip [objectType]="objectType" [objectId]="objectID" tooltipType="preview">{{issueTypeName}}</d3s-tooltip></b>] action raised on [<b><d3s-tooltip [objectType]="issueObject" [objectId]="issueObjectID" tooltipType="preview">{{issueObjectName}}</d3s-tooltip></b>].  <span [innerHtml]="description"></span></div>
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
-                                    <div class="row">
-                                        <div *ngFor="let field of fields;let indx=index" class="row">
+                                    <div class="row">                                                                                                                        
+                                        <div *ngFor="let field of fields;let indx=index" class="col l6 s12">                                            
                                             <div [ngSwitch]="field.FieldType" class="col s12">
                                                 <div class="FieldName" [innerHtml]="field.Label"></div>
                                                 <input *ngSwitchCase="fieldType.Text" [name]="'input_'+indx" style="width: 100%;" type="string" [(ngModel)]="field.Value" >  
@@ -37,13 +40,48 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                                     </select>                                                    
                                                 </div>
                                             </div>
-                                            <div class="col s12">&nbsp;</div>
-                                        </div>                                        
+                                            <div class="col s12">&nbsp;</div>                                                                                        
+                                        </div>                                                                          
+                                        <div class="col s12" *ngIf="hasObjectReassign">
+                                                <p-checkbox [(ngModel)]="isReassignEnabled" name="reassign" binary="true" label="Check here to re-assign this action."></p-checkbox>
+                                        </div>
+                                        <div class="col s12" *ngIf="isReassignEnabled">
+                                            <div class="row">
+                                                <div class="col l3 s4">
+                                                    <div class="FieldName">Re-assign to:</div>
+                                                    <select name="reassignType" [(ngModel)]="reassignType" style="height:auto;width:100%;">
+                                                        <option *ngFor="let opt of reassignAvailableTypes" [value]="opt.value">{{opt.text}}</option>                                                        
+                                                    </select>
+                                                </div>
+                                                <div class="col l3 s4" *ngIf="reassignType == 'object'">   
+                                                    <div class="FieldName">Select object:</div>
+                                                    <p-autoComplete size="100"                                                
+                                                            scrollHeight="400px"
+                                                            name="other"
+                                                            [inputStyle]="{width:'100%'}"
+                                                            [(ngModel)]="term" 
+                                                            [suggestions]="terms" 
+                                                            (completeMethod)="search($event)"                                                 
+                                                            placeholder="Select an item"
+                                                            field="TextPath" 
+                                                            (onSelect)="selectItem()">     
+                                                        <ng-template let-item>
+                                                            <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
+                                                        </ng-template>                  
+                                                    </p-autoComplete>                                         
+                                                </div>
+                                                <div class="col l1 s4" *ngIf="reassignType">
+                                                    <div class="FieldName">&nbsp;</div>
+                                                    <button pButton type="button" (click)="reassign()" style="width: 150px;" label="Assign"></button>                                    
+                                                </div>
+                                            </div>                                            
+                                        </div>
+                                        <div class="col s12">&nbsp;</div>                                                                                        
                                         <div class="col s12">
                                                 <button pButton type="submit" [disabled]="!workflowForm.valid" style="width: 150px;" label="Submit"></button>                                    
                                                 <button pButton *ngIf="hasCloseButton" type="button" (click)="close();" label="Close" style="width: 150px;"></button>
                                         </div>
-                                    </div>                                        
+                                    </div>                                       
                                 </form>                                                                                     
                             </div>
                             <div *ngIf="isCompleted" class="tile tile-detail">
@@ -69,7 +107,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         </div>
                     </div>                                               
                 `,
-    providers: [WorkflowService]
+    providers: [WorkflowService, TagService]
 })
 
 export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDestroy {    
@@ -86,10 +124,19 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private issueTypeName: string;
     private objectTypeID: number;
     private typeName: string;
+    private hasObjectReassign: boolean = true;
     
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
     private isUserAllowedToComplete: boolean = false;
+    private isReassignEnabled: boolean = false;
+    private reassignType: string;
+    private reassignAvailableTypes = [];
+    private term: Tag;
+    private terms: Tag[] = [];
+
+    private selectedReassignObjectId: number;
+    private selectedReassignObjectType: string;
 
     @Input() hasCloseButton: boolean = true;
 
@@ -98,7 +145,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             private router: Router,
             protected titleService: Title,
             protected headerBreadcrumbService: HeaderBreadcrumbService,
-            protected workflowService: WorkflowService
+            protected workflowService: WorkflowService,
+            protected tagService: TagService
         )
     {
         super();
@@ -151,10 +199,35 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.issueTypeName = res.IssueTypeName;
                 this.objectTypeID = res.ObjectTypeID;
                 this.typeName = res.TypeName;
+                if (res.AllowReassignObject)
+                    this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
+                if (res.AllowReassignResource)
+                    this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
+                this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);                
             });
     }
 
     private close() {        
         this.location.back();
+    }
+    
+    private reassign() {
+        this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignObjectId, this.selectedReassignObjectType);
+        this.close();
+    }
+
+    private search(event) {
+        this.tagService.getTags(event.query).then(data => {
+            this.terms = data;
+        });
+    }
+
+    private userFriendlyObjectName(objectType: string) {
+        return D3SObjectHelpers.getObjectTypeFriendlyName(objectType);
+    }
+
+    private selectItem() {
+        this.selectedReassignObjectType = this.term.Object;
+        this.selectedReassignObjectId = this.term.ObjectID;
     }
 };
