@@ -200,9 +200,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.NavigationItems.push(securityMenu);
 
         this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, IsHomePage: false });
-
-        this.adminMenu.NavigationItems.push({ Name: 'Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES}`, IsLink: false, IsHomePage: false });        
-
+                
         let metricsMenu = new SiteMenuItem();
         metricsMenu.Name = "Metrics";
         metricsMenu.Items = [];

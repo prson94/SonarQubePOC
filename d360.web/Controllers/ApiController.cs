@@ -3995,23 +3995,7 @@ order by C.TextPath";
 
 
         #endregion
-
-        #region Template Logic
-
-        //[Route("templates/email")]
-        //public List<EmailTemplate> GetEmailTemplates()
-        //{
-        //    return Company.Table<EmailTemplate>().OrderBy(i => i.Name).ToList();
-        //}
-
-        //[Route("templates/tooltip")]
-        //public List<TooltipTemplate> GetTooltipTemplates()
-        //{
-        //    return Company.Table<TooltipTemplate>().OrderBy(i => i.Name).ToList();
-        //}
-
-        #endregion
-
+        
         #region Governance/Ownership/Responsibility
 
         [Route("groups/{id:int}/ownership")]

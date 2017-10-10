@@ -71,8 +71,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_GROUPS = 'groups';
     static SITE_URL_ADMIN_RESPONSIBILITIES = 'responsibilities';
     static SITE_URL_ADMIN_RESOURCES = 'resources';
-    static SITE_URL_ADMIN_SETTINGS = 'settings';
-    static SITE_URL_ADMIN_TEMPLATES = 'templates';
+    static SITE_URL_ADMIN_SETTINGS = 'settings';    
     static SITE_URL_ADMIN_WORKFLOW = 'workflow';    
     static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
