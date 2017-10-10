@@ -67,6 +67,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private showNodeTabs = false;
     private showLinkTabs = false;
     private menuItems: MenuItem[] = [];
+    private editorMenuItems: MenuItem[] = [];
     private tab: string = 'info';
     private headerText = 'Info';
 
@@ -294,30 +295,35 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.readonly;
 
+        this.loadMenuItems();
+
 
         //this.myDiagram.model.isReadOnly = this.readonly;
     }
 
     private loadMenuItems() {
         this.menuItems = [];
+        this.editorMenuItems = [];
+        
 
-        this.menuItems.push({
+        this.editorMenuItems.push({
             icon: 'fa-floppy-o',
+            items: null
+        });
+
+
+        this.editorMenuItems.push({
+            icon: 'fa-object-group',
+            items: null
+        });
+
+        this.editorMenuItems.push({
+            icon: 'fa-object-ungroup',
             items: null
         });
 
         this.menuItems.push({
             icon: 'fa-pencil',
-            items: null
-        });
-
-        this.menuItems.push({
-            icon: 'fa-object-group',
-            items: null
-        });
-
-        this.menuItems.push({
-            icon: 'fa-object-ungroup',
             items: null
         });
 
@@ -335,6 +341,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             icon: 'fa-info-circle',
             items: null
         });
+
+        if (!this.readonly)
+            this.editorMenuItems.forEach(e => {
+                this.menuItems.push(e);
+            });
 
     }
 
@@ -587,18 +598,17 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         selection.each(s => {
             let data = s.data;
 
-            if ((data.category == 'object' || data.category == 'focal') && maps.filter(g => g.key == data.group).length < 1) {
-                let grp = this.myDiagram.model.findNodeDataForKey(data.group);
-                if (grp != null && grp.category != 'map')
-                    maps.push(grp);
+            if (data.category == 'map') {
+                maps.push(data);
             }
+
         });
 
         maps.forEach(m => {
-            let mapNodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).group == m.key);
+            let mapNodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).group == m.group);
 
             mapNodes.forEach(n => {
-                this.myDiagram.model.setDataProperty(n, 'group', m.group);
+                this.myDiagram.model.setDataProperty(n, 'group', null);
             });
         });
 
@@ -607,50 +617,34 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private groupSelection() {
-        //let group = new NodeModelV2();
         let selection = this.myDiagram.selection;
-        let nodes = [];
         let maps = [];
 
-        //find all maps and nodes
+        //console.log('groupSelection',selection);
+
+        //find all selected maps
         selection.each(s => {
             let data = s.data;
-            let grp = this.myDiagram.findNodeForKey(s.data.group);
 
-            if ((data.category == 'object' || data.category == 'focal') && (grp == null || grp.category == 'map'))
-                nodes.push(data);
-            if (data.group != null && maps.filter(m => data.group).length < 1) {
-                maps.push(data.group);
+            if (data.category == 'map') {
+                maps.push(data);
             }
         });
 
-        //console.log('groupSelection', selection, nodes, maps);
 
-        //if at least 2 nodes were selected
-        if (nodes.length > 1) {
-            //for each map, operate on the selected nodes in that map
+        if (maps.length > 1) {
+            let group = new NodeModelV2();
+            group.category = 'transform';
+            group.isGroup = true;
+            this.myDiagram.model.addNodeData(group);
+            this.myDiagram.model.setDataProperty(group, 'name', '');
+
             maps.forEach(m => {
-                let mapNodes = nodes.filter(n => n.group == m);
-                let group = new NodeModelV2();
-
-                if (mapNodes.length > 1) {
-                    group.isGroup = true;
-                    group.group = m;
-                    group.category = 'transform';
-                    this.myDiagram.model.addNodeData(group); //generates a temp group key
-                    this.myDiagram.model.setDataProperty(group, 'name', '');
-
-                    mapNodes.forEach(n => { this.myDiagram.model.setDataProperty(n, 'group', group.key); });
-                }
-
+                this.myDiagram.model.setDataProperty(m, 'group', group.key);
             });
-
-            this.removeEmptyGroups();
-            this.reOrderLayout();
         }
 
-
-        //console.log(maps, group);
+        //console.log(maps);
     }
 
     private removeEmptyGroups() {
@@ -737,10 +731,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
             initialPosition: new go.Point(go.Spot.Center.x, go.Spot.Center.y),
-            layout: this.g(go.TreeLayout, {
-                angle: 0,
-                layerSpacing: 50,
-                rowSpacing: 50
+            layout: this.g(go.LayeredDigraphLayout, {
+                //angle: 0,
+                layerSpacing: 1,
+                columnSpacing: 1
+                //rowSpacing: 10
             }),
             "undoManager.isEnabled": true
         });
@@ -959,8 +954,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
-                routing: go.Link.AvoidsNodes,
-                corner: 20,
+                routing: go.Link.Orthogonal,
+                corner: 10,
                 relinkableFrom: false,
                 relinkableTo: false,
                 //curve: go.Link.Bezier
@@ -1058,7 +1053,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private createTransformationGroup(): go.Group {
         return this.g(go.Group, "Auto",
             { // define the group's internal layout
-                background: '#ddd',
+                background: '#f9f9f9',
                 mouseDragEnter: (e, grp, prev) => this.highlightGroup(e, grp, true),
                 mouseDragLeave: (e, grp, next) => this.highlightGroup(e, grp, false),
                 computesBoundsAfterDrag: true,
@@ -1077,7 +1072,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 // upon expansion, a Diagram Listener will generate contents for the group
                 isSubGraphExpanded: true
             },
-            new go.Binding("background", "isHighlighted", (h) => { return h ? "#faffad" : "#ddd"; }).ofObject(),
+            new go.Binding("background", "isHighlighted", (h) => { return h ? "#faffad" : "#f9f9f9"; }).ofObject(),
             this.g(go.Shape, "Rectangle",
                 { fill: null, stroke: "#000", strokeWidth: 1, strokeDashArray: [4,2] }),
             this.g(go.Panel, "Vertical",

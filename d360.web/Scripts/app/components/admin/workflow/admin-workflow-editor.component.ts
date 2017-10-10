@@ -42,8 +42,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private showAddCondition: boolean = false;
     private hideObject: boolean = false;
 
-    private subjectAreaName: string;
-
     private SCHEDULE_OBJECT_LIMIT = 2000;
     private isValid = false;
     private errorMessage = "";
@@ -66,12 +64,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     ngOnInit() {
-
-        if (CompanySettings.ArtifactType_TaxonomyTypeID != null && CompanySettings.ArtifactType_TaxonomyTypeID != '') {
-            this.subjectAreaName = CompanySettings.ArtifactType_TaxonomyTypeID;
-        } else {
-            this.subjectAreaName = 'Subject Area';
-        }
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true') {
             this.hideShoppingCart = false;
         }

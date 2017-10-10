@@ -9143,7 +9143,7 @@ for json path");
                     }
                     else
                     {
-                        var newMap = new Map { Transformation = model.Transformation };
+                        var newMap = new Map(); // { Transformation = model.Transformation };
                         newMap.MapItems = new List<MapItem>();
                         newMap.MapItems.Add(new MapItem { SourceIntersectID = model.SourceIntersectID, TargetIntersectID = model.TargetIntersectID });
                         Company.Add<Map>(newMap);
@@ -9198,7 +9198,7 @@ for json path");
                     }
                     else
                     {
-                        o.Transformation = model.Transformation;
+                        //o.Transformation = model.Transformation;
                         Company.Update(o);
                     }
                 }
@@ -10364,8 +10364,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = a.Transformation });
+            //list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name });
+            //list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = a.Transformation });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes, Value = a.MapTypeID.ToString() });            
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -10384,8 +10384,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var map = new Map
                 {
-                    Name = parseTextField(form,"Name"),
-                    Transformation= parseTextField(form, "Transform"),
+                    //Name = parseTextField(form,"Name"),
+                   // Transformation= parseTextField(form, "Transform"),
                     MapTypeID = parseIntField(form, "MapType"),
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
@@ -10422,8 +10422,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.HasPermission(SystemObjects.Map, 0, Claim.Update, ClaimObject.Root))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
                 
-                model.Name = parseTextField(form, "Name");
-                model.Transformation = parseTextField(form, "Transform");                
+               // model.Name = parseTextField(form, "Name");
+               // model.Transformation = parseTextField(form, "Transform");                
                 model.MapTypeID = parseIntField(form, "MapType");                
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;

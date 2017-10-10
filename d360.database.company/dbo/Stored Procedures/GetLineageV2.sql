@@ -12,7 +12,7 @@ BEGIN
 	--declare @objectType varchar(50);
 	--declare @objectId int;
 
-	--select @objectType = 'Artifact', @objectId = 733;
+	--select @objectType = 'Artifact', @objectId = 972074;
 	-----------------
 
 	create table #maps
@@ -22,12 +22,11 @@ BEGIN
 		visited bit not null default 0
 	);
 
-
 	--get any maps related directly to the object
 	insert into #maps (id, mapId)
 	select id, subjectid 
 	from [intersect] where [object] = @objectType and objectId = @objectId and [subject] = 'Map';
-
+	
 	declare @i int;
 	select @i = count(*) from #maps where visited = 0;
 
@@ -91,8 +90,8 @@ BEGIN
 
 	--insert nodes for the transformations
 	insert into @nodes
-	select 
-		 'MapGroup|' + cast(g.ID as varchar) as [key]
+	select
+		'MapGroup|' + cast(g.ID as varchar) as [key]
 		,'MapGroup' as object
 		,g.ID as objectId
 		,null as objectType
@@ -102,12 +101,15 @@ BEGIN
 		,null as foreColor
 		,coalesce(g.BusinessTransformation, g.TechnicalTransformation) as name
 		,1 as isGroup
-		,'Map|' + cast(g.MapID as varchar) as [group]
+		,null as [group]
 		,g.BusinessTransformation as businessTransformation
 		,g.TechnicalTransformation as technicalTransformation
-		,'transform' as category
-	from MapGroup g
-	inner join #maps m on m.mapId = g.MapID;
+		,'transform' as category 
+	from 
+		MapGroup g
+	inner join MapGroupItem i on i.MapGroupID = g.ID
+	inner join #maps m on m.MapID = i.ObjectID
+
 
 
 	--nodes
@@ -186,14 +188,12 @@ BEGIN
 	--associate nodes with their transformations
 	update n
 	set
-		[group] = 'MapGroup|' + cast(i.MapGroupID as varchar)
+		n.[group] = n2.[key]
 	from @nodes n
-	inner join
-	(
-		select m.* from MapGroupItem m
-		inner join @nodes n2 on n2.category = 'transform' and n2.[object] = 'MapGroup' and n2.objectId = m.MapGroupID
-	) i on i.[object] = n.[object] and i.objectid = n.objectid
-	where n.category in ('object', 'focal');
+	inner join MapGroupItem i on i.ObjectID = n.objectId
+	inner join @nodes n2 on n2.category = 'transform' and n2.[key] = 'MapGroup|' + cast(i.MapGroupID as varchar)
+	where n.category = 'map';
+
 
 	--set focal nodes
 	update @nodes

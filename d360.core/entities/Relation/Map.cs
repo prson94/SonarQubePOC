@@ -12,12 +12,6 @@ namespace d360.core.entities
         public int MapTypeID { get; set; }
 
         [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Transformation { get; set; }
-
-        [DataMember]
         public DateTime? CreatedOn { get; set; }
 
         [DataMember]

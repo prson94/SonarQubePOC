@@ -284,30 +284,32 @@ namespace d360.web.Controllers
             {
                 dynamic obj = JsonConvert.DeserializeObject(json);
 
-                for (int i = 0; i < obj.nodes.Count; i++)
-                {
-                    var n = obj.nodes[i];
-                    existing.Nodes.Add(new LineageNodeModel
+                if (obj.nodes != null)
+                    for (int i = 0; i < obj.nodes.Count; i++)
                     {
-                        Key = n.key,
-                        Group = n.group,
-                        IsGroup = n.isGroup,
-                        Object = n["object"],
-                        ObjectID = n.objectId,
-                        Category = n.category,
-                    });
-                }
+                        var n = obj.nodes[i];
+                        existing.Nodes.Add(new LineageNodeModel
+                        {
+                            Key = n.key,
+                            Group = n.group,
+                            IsGroup = n.isGroup,
+                            Object = n["object"],
+                            ObjectID = n.objectId,
+                            Category = n.category,
+                        });
+                    }
 
-                for(int i =0; i < obj.links.Count; i++)
-                {
-                    var l = obj.links[i];
-                    existing.Links.Add(new LineageLinkModel
+                if (obj.links != null)
+                    for(int i =0; i < obj.links.Count; i++)
                     {
-                        From = l.from,
-                        To = l.to,
-                        IntersectID = l.intersectId
-                    });
-                }
+                        var l = obj.links[i];
+                        existing.Links.Add(new LineageLinkModel
+                        {
+                            From = l.from,
+                            To = l.to,
+                            IntersectID = l.intersectId
+                        });
+                    }
             }
 
             //remove matched nodes from posted model
