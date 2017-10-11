@@ -61,6 +61,8 @@ export class NodeModelV2 {
     foreColor: string = '#000';
     backColor: string = '#fff';
     visible: boolean = true;
+    order: number;
+    intersectTypeId: number;
 
     businessTransformation: string;
     technicalTransformation: string;
@@ -102,6 +104,8 @@ export class LineageNodeModel {
     Category: string;
     BusinessTransformation: string;
     TechnicalTransformation: string;
+    Order: number;
+    IntersectTypeID: number;
 }
 
 export class LineageLinkModel {

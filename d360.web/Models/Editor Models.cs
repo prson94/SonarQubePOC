@@ -1034,6 +1034,8 @@ namespace d360.web.Models
         public int ObjectTypeID { get; set; }
         public string Group { get; set; }
         public bool IsGroup { get; set; }
+        public int Order { get; set; }
+        public int IntersectTypeID { get; set; }
         public string Category { get; set; }
         public string BusinessTransformation { get; set; }
         public string TechnicalTransformation { get; set; }

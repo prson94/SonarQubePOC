@@ -73,6 +73,8 @@ BEGIN
 		[name] varchar(150),
 		isGroup bit,
 		[group] varchar(150),
+		[order] int,
+		intersectTypeId int,
 		businessTransformation nvarchar(max),
 		technicalTransformation nvarchar(max),
 		category varchar(50)
@@ -102,6 +104,8 @@ BEGIN
 		,coalesce(g.BusinessTransformation, g.TechnicalTransformation) as name
 		,1 as isGroup
 		,null as [group]
+		,null as [order]
+		,null as intersectTypeId
 		,g.BusinessTransformation as businessTransformation
 		,g.TechnicalTransformation as technicalTransformation
 		,'transform' as category 
@@ -126,13 +130,16 @@ BEGIN
 		,d.[Name] as [name]
 		,case when i.subject = 'Map' then 1 else 0 end as isGroup
 		,null as [group]
+		,case when i.subject = 'Map' then null else coalesce(o.[Order],99999) end as [order]
+		,case when i.subject = 'Map' then null else t.ID end as intersectTypeId
 		,null as businessTransformation
 		,null as technicalTransformation
 		,case when i.subject = 'Map' then 'map' else 'object' end as category
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join cache.ObjectDetails d on d.[object] = i.[subject] and d.objectid = i.subjectid
-	left join IntersectType T on T.ID = i.IntersectTypeID
+	left join IntersectType t on t.ID = i.IntersectTypeID
+	left join MapTypeOrder o on o.IntersectTypeID = t.ID
 	union
 	select 
 		 i.object + '|' + cast(i.objectid as varchar) as [key]
@@ -150,13 +157,16 @@ BEGIN
 		else
 			null
 		end as [group]
+		,case when i.object = 'Map' then null else coalesce(o.[Order],99999) end as [order]
+		,case when i.object = 'Map' then null else t.ID end  as intersectTypeId
 		,null as businessTransformation
 		,null as technicalTransformation
 		,case when i.[object] = 'Map' then 'map' else 'object' end as category
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join cache.ObjectDetails d on d.[object] = i.object and d.objectid = i.objectid
-		left join IntersectType T on T.ID = i.IntersectTypeID;
+	left join IntersectType t on t.ID = i.IntersectTypeID
+	left join MapTypeOrder o on o.IntersectTypeID = t.ID;
 
 	--we don't need links to the individual objects since they live in the maps
 	delete l
@@ -166,24 +176,24 @@ BEGIN
 
 	--top 1 node in each map becomes the map's title object
 	update n
-	set 
-		n.[name] = m.name,
-		n.backColor = m.backColor,
-		n.foreColor = m.foreColor,
-		n.isGroup = 1
+		set
+		n.[name] = coalesce(t.[name],''),
+		n.backColor = t.backColor,
+		n.foreColor = t.foreColor
 	from @nodes n
 	cross apply (
 		select top 1 
-			coalesce(o.[Order],99999) as [order],
-			n2.*
+			min(coalesce(n2.[order],99999)) as ord, 
+			n2.[group] 
 		from 
 			@nodes n2
-		left join intersectType t on t.Subject = 'MapType' and t.SubjectID = n.objectTypeId and t.Object = n2.objectType and t.ObjectID = n2.objectTypeId
-		left join  mapTypeOrder o on o.intersectTypeID = t.ID 
 		where 
-			n2.[group] = n.[key] and n2.category != 'transform'
-		order by 1 asc
-		) m
+			n2.category != 'transform' and n2.[group] = n.[key]
+		group by 
+			[group]
+		) r
+	left join @nodes t on t.[key] = (select top 1 n3.[key] from @nodes n3 where n3.[group] = r.[group] and n3.[order] = r.ord and n3.category = 'object')
+		and t.[group] = n.[key]
 	where n.[object] = 'Map';
 
 	--associate nodes with their transformations

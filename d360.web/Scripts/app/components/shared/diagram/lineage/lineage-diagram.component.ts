@@ -219,6 +219,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.category = d.category;
                 model.businessTransformation = d.businessTransformation;
                 model.technicalTransformation = d.technicalTransformation;
+                model.order = d.order;
+                model.intersectTypeId = d.intersectTypeId;
 
                 model.isGroup = d.isGroup
                 model.group = d.group;
@@ -454,6 +456,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             nodeModel.Category = node.category;
             nodeModel.BusinessTransformation = node.businessTransformation;
             nodeModel.TechnicalTransformation = node.technicalTransformation;
+            nodeModel.IntersectTypeID = node.intersectTypeId;
+            nodeModel.Order = node.order;
 
             if (node.valid == false)
                 valid = false;
