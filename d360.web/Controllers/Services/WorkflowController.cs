@@ -303,6 +303,19 @@ order by wi.StartedOn desc";
 
                 Company.AssignWorkflowToNewObject(reg, itemId, workflowId, objectId, objectTypeEnum, det.TypeID, typeEnum);
 
+                //terminate current workflow
+
+                var workflowItem = Company.WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
+
+                if(workflowItem == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item id.");
+                }
+
+                workflowItem.CompletedBy = Company.CurrentResourceID;
+                workflowItem.CompletedOn = DateTime.UtcNow;
+
+                Company.SaveChanges();
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, -1);
             }
