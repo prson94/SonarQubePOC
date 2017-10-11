@@ -353,66 +353,89 @@ namespace d360.web.Controllers
 
             maps.ForEach(m =>
             {
-                //if it's still in the Nodes list, we need to add it
                 int mapId = -1;
-                int.TryParse(m.Key.Split('|').Last(), out mapId);
-                var oldMap = model.Nodes.Where(n => n.Key == m.Key).FirstOrDefault();
-                if (oldMap != null)
+                if (m.Key.StartsWith("-"))
                 {
+                    //add
                     var map = new Map
                     {
-                        MapTypeID = 1
+                        MapTypeID = m.ObjectTypeID
                     };
 
                     Company.Maps.Add(map);
                     Company.SaveChanges();
                     mapId = map.ID;
                 }
+                else
+                {
+                    int.TryParse(m.Key.Split('|').Last(), out mapId);
+                }
 
-                //var node = model.Nodes.Find(n => n.Key == m.Key);
-                //node.Key = "Map|" + map.ID.ToString();
                 mapMappings.Add(m.Key, mapId);
             });
 
             var transformMappings = new Dictionary<string, int>();
 
-            //transforms.ForEach(t =>
-            //{
-            //    if (t.Key.StartsWith("-"))
-            //    {
-            //        var transform = new MapGroup();
-            //        transform.BusinessTransformation = t.BusinessTransformation;
-            //        transform.TechnicalTransformation = t.TechnicalTransformation;
+            transforms.ForEach(t =>
+            {
+                var transform = new MapGroup();
 
-            //        int mapId = -1;
-            //        if (t.Group.StartsWith("-") && mapMappings.ContainsKey(t.Group))
-            //            mapId = mapMappings[t.Group];
-            //        else
-            //            int.TryParse(t.Group.Split('|').Last(), out mapId);
+                if (t.Key.StartsWith("-")) //new
+                {
+                    transform.BusinessTransformation = t.BusinessTransformation;
+                    transform.TechnicalTransformation = t.TechnicalTransformation;
 
-            //        if (mapId > -1)
-            //        {
-            //            transform.MapID = mapId;
-            //            Company.Add(transform);
-            //            Company.SaveChanges();
-            //            transformMappings.Add(t.Key, transform.ID);
-            //        }
+                    Company.SaveOrUpdate(transform);
+                    transformMappings.Add(t.Key, transform.ID);
 
-            //    }
-            //    else
-            //    {
-            //        if (int.TryParse(t.Key.Split('|').Last(), out int mapGroupId))
-            //        {
-            //            var transform = Company.GetById<MapGroup>(mapGroupId);
-            //            if (transform != null)
-            //            {
-            //                transform.BusinessTransformation = t.BusinessTransformation;
-            //                transform.TechnicalTransformation = t.TechnicalTransformation;
-            //                Company.SaveOrUpdate(transform);
-            //            }
-            //        }
-            //    }
-            //});
+                    var children = maps.Where(m => m.Group == t.Key).ToList();
+
+                    children.ForEach(c =>
+                    {
+                        var groupItem = new MapGroupItem();
+                        groupItem.MapGroupID = transform.ID;
+                        groupItem.Object = c.Object;
+                        groupItem.ObjectID = c.ObjectID;
+                        groupItem.IntersectID = 0;
+
+                        Company.Add(groupItem);
+                    });
+
+                    Company.SaveChanges();
+                }
+                else if (int.TryParse(t.Key.Split('|').Last(), out int key)) //existing
+                {
+                    transform = Company.GetById<MapGroup>(key);
+                    transform.BusinessTransformation = t.BusinessTransformation;
+                    transform.TechnicalTransformation = t.TechnicalTransformation;
+
+                    var addChildren = maps.Where(m => m.Group == t.Key).Select(c => new MapGroupItem() { MapGroupID = transform.ID, Object = c.ObjectType, ObjectID = c.ObjectID, IntersectID = 0 }).ToList();
+                    var existingChildren = Company.MapGroupItems.Where(i => i.MapGroupID == transform.ID).ToList();
+                    var removeChildren = existingChildren.ToList();
+
+                    if (existingChildren.Count > 0)
+                    {
+
+                        existingChildren.ForEach(c =>
+                        {
+                            var addChild = addChildren.Where(i => i.MapGroupID == c.MapGroupID && i.Object == c.Object && i.ObjectID == c.ObjectID).FirstOrDefault();
+                            var removeChild = removeChildren.Where(i => i.MapGroupID == c.MapGroupID && i.Object == c.Object && i.ObjectID == c.ObjectID).FirstOrDefault();
+                            if (addChild != null)
+                            {
+                                addChildren.Remove(addChild);
+                                removeChildren.Remove(removeChild);
+                            }
+                        });
+
+                    }
+
+                    Company.MapGroupItems.AddRange(addChildren);
+                    Company.MapGroupItems.RemoveRange(removeChildren);
+                    Company.SaveChanges();
+                }            
+
+
+            });
 
 
             //create new intersects to nodes
@@ -444,27 +467,6 @@ namespace d360.web.Controllers
                         Company.SaveChanges();
                     }
                 }
-
-                //if (n.Group.StartsWith("-") && transformMappings.ContainsKey(n.Group))
-                //{
-                //    var transform = Company.GetById<MapGroup>(transformMappings[n.Group]);
-                //    if (transform != null)
-                //    {
-                //        var item = Company.MapGroupItems.Where(i => i.MapGroupID == transform.ID && i.Object == n.Object && i.ObjectID == n.ObjectID).FirstOrDefault();
-                //        //var item = Company.Query<MapGroupItem>(@"select * from MapGroupItem where MapGroupID = @mapGroupId and Object = @object and ObjectID = @objectId", new { mapGroupId = transform.ID, @object = n.Object, @objectId = n.ObjectID }).FirstOrDefault();
-
-                //        if (item == null)
-
-                //            Company.MapGroupItems.Add(new MapGroupItem
-                //            {
-                //                MapGroupID = transform.ID,
-                //                IntersectID = 0,
-                //                Object = n.Object,
-                //                ObjectID = n.ObjectID
-                //            });
-                //        Company.SaveChanges();
-                //    }
-                //}
             });
 
             //create new intersects between maps

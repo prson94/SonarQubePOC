@@ -415,13 +415,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     valid = false;
                 break;
             case 'map':
-                if (!n.isGroup || n.group != null)
+                if (!n.isGroup)
                     valid = false;
                 if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 1)
                     valid = false;
                 break;
             case 'transform':
-                if (!n.isGroup || n.group == null)
+                if (!n.isGroup || n.group != null)
                     valid = false;
                 if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 1)
                     valid = false;
@@ -733,8 +733,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             initialPosition: new go.Point(go.Spot.Center.x, go.Spot.Center.y),
             layout: this.g(go.LayeredDigraphLayout, {
                 //angle: 0,
-                layerSpacing: 1,
-                columnSpacing: 1
+                layerSpacing: 7,
+                columnSpacing: 7
                 //rowSpacing: 10
             }),
             "undoManager.isEnabled": true

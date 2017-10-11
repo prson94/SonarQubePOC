@@ -26,7 +26,7 @@ BEGIN
 	insert into #maps (id, mapId)
 	select id, subjectid 
 	from [intersect] where [object] = @objectType and objectId = @objectId and [subject] = 'Map';
-	
+
 	declare @i int;
 	select @i = count(*) from #maps where visited = 0;
 
@@ -118,13 +118,13 @@ BEGIN
 		 i.subject + '|' + cast(i.subjectId as varchar) as [key]
 		,i.subject as [object]
 		,i.subjectid as [objectid]
-		,d.ObjectType as objectType
-		,d.ObjectTypeID as objectTypeId
+		,case when i.subject = 'Map' then 'MapType' else d.ObjectType end as objectType
+		,case when i.subject = 'Map' then T.SubjectID else d.ObjectTypeID end as objectTypeId
 		,d.ObjectTypeName as objectTypeName
 		,d.IconBackColor as backColor
 		,d.IconForeColor as foreColor
 		,d.[Name] as [name]
-		,0 as isGroup
+		,case when i.subject = 'Map' then 1 else 0 end as isGroup
 		,null as [group]
 		,null as businessTransformation
 		,null as technicalTransformation
@@ -132,18 +132,19 @@ BEGIN
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join cache.ObjectDetails d on d.[object] = i.[subject] and d.objectid = i.subjectid
+	left join IntersectType T on T.ID = i.IntersectTypeID
 	union
 	select 
 		 i.object + '|' + cast(i.objectid as varchar) as [key]
 		,i.object as [object]
 		,i.objectid as [objectid] 
-		,d.ObjectType as objectType
-		,d.ObjectTypeID as objectTypeId
+		,case when i.object = 'Map' then 'MapType' else d.ObjectType end as objectType
+		,case when i.object = 'Map' then T.ObjectID else d.ObjectTypeID end as objectTypeId
 		,d.ObjectTypeName as objectTypeName
 		,d.IconBackColor as backColor
 		,d.IconForeColor as foreColor
 		,d.[Name] as [name]
-		,0 as isGroup
+		,case when i.object = 'Map' then 1 else 0 end as isGroup
 		,case when i.object != 'Map' and i.subject = 'Map' then
 			'Map|' + cast(i.subjectid as varchar)
 		else
@@ -154,8 +155,8 @@ BEGIN
 		,case when i.[object] = 'Map' then 'map' else 'object' end as category
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
-	left join cache.ObjectDetails d on d.[object] = i.object and d.objectid = i.objectid;
-
+	left join cache.ObjectDetails d on d.[object] = i.object and d.objectid = i.objectid
+		left join IntersectType T on T.ID = i.IntersectTypeID;
 
 	--we don't need links to the individual objects since they live in the maps
 	delete l
