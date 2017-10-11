@@ -271,37 +271,58 @@ order by wi.StartedOn desc";
             };
         }
 
+        [HttpPost, Route("ReassignWorkflowResource/{itemId:int}/{resourceId:int}")]
+        public HttpResponseMessage ReassignWorkflowResource(int itemId, int resourceId)
+        {
+            try
+            {
+                //remove all the current version step items assignments
+                var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId);
+
+                if(currentAssignments != null)
+                {
+                    Company.WorkflowItemAssignments.RemoveRange(currentAssignments);
+
+                    Company.SaveChanges();
+                }
+
+                // add an assignment for the specified user
+
+                var assignment = new WorkflowItemAssignment
+                {
+                    ItemID = itemId,
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    ResourceObject = "Resource",
+                    ResourceObjectID = resourceId,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                };
+
+                Company.WorkflowItemAssignments.Add(assignment);
+
+                Company.SaveChanges();
+
+                return Request.CreateResponse(HttpStatusCode.Accepted, -1);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
         [HttpPost, Route("ReassignWorkflowObject/{itemId:int}/{workflowId:int}/{objectId:int}/{objectType}")]
         public HttpResponseMessage ReassignWorkflowObject(int itemId, int workflowId, int objectId, string objectType)
         {
             try
             {
-                //look up change type
+                //look up change event registration
                 var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == workflowId).FirstOrDefault();
 
                 if(reg == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow registration is missing or invalid");
 
-                //add new event for the requested object and change type
-
-                var det = Company.GetObjectDetail(objectType, objectId);
-
-                if(det == null)
-                {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Object details not found to reassign.");
-                }
-                
-
-                if (!Enum.TryParse<SystemObjects>(objectType, true, out SystemObjects objectTypeEnum))
-                {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Object Type.");
-                }
-
-                if (!Enum.TryParse<SystemObjects>(det.Type, true, out SystemObjects typeEnum))
-                {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Object Type.");
-                }
-
-                Company.AssignWorkflowToNewObject(reg, itemId, workflowId, objectId, objectTypeEnum, det.TypeID, typeEnum);
+                //add new event for the requested object and change type                
+                Company.AssignActivityWorkflowToNewObject(reg, itemId, workflowId, objectId, objectType);
 
                 //terminate current workflow
 

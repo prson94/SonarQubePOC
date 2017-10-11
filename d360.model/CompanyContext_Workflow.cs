@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.core.entities;
 using d360.core.entities.Workflow;
 using d360.core.enums.Workflow;
 using d360.core.queue;
@@ -91,28 +92,55 @@ namespace d360.model
 
             return true;
         }
-
-        public bool AssignWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, SystemObjects @object, int objectTypeId, SystemObjects objectType)
+        
+        public bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)
         {
-            //add new event
-            var events = new List<EventInfo>();
+            var item = WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
 
-            
+            if (item == null) throw new Exception("invalid workflow item");
 
-            events.Add(new EventInfo
+            var orgIssue = Issues.Where(x => x.ID == item.ObjectID).FirstOrDefault();
+
+            if (orgIssue == null) throw new Exception("invalid workflow issue");
+
+            //add new issue record
+            var issue = new Issue
             {
-                CompanyID = CurrentCompanyID,
-                DomainPrefix = CurrentCompanyDomain,
-                ResourceID = CurrentResourceID,
-                Action = reg.ChangeType,
-                Object = new EventObjectInfo
+                Object = @object,
+                ObjectID = objectId,
+                ObjectType = "IssueType",
+                ObjectTypeID = reg.TypeID,
+                CreatedBy = CurrentResourceID,
+                CreatedOn = DateTime.UtcNow,
+                UpdatedBy = CurrentResourceID,
+                UpdatedOn = DateTime.UtcNow,
+                IssueTypeID = orgIssue.IssueTypeID,
+                CommentID =orgIssue.CommentID,
+                Criticality = orgIssue.Criticality
+            };
+
+            Issues.Add(issue);
+
+            SaveChanges();
+
+            //add new event
+            var events = new List<EventInfo>
+            {
+                new EventInfo
                 {
-                    Object = @object,
-                    ObjectID = objectId,
-                    ObjectType = objectType,
-                    ObjectTypeID = objectTypeId
+                    CompanyID = CurrentCompanyID,
+                    DomainPrefix = CurrentCompanyDomain,
+                    ResourceID = CurrentResourceID,
+                    Action = ChangeType.Add,
+                    Object = new EventObjectInfo
+                    {
+                        Object = SystemObjects.Issue,
+                        ObjectID = issue.ID,
+                        ObjectType = SystemObjects.IssueType,
+                        ObjectTypeID = orgIssue.IssueTypeID
+                    }
                 }
-            });
+            };
 
             QueueSource.CreateTopicMessages(events);
 

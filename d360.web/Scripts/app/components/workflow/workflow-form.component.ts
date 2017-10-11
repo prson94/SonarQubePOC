@@ -12,6 +12,9 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Tag } from '../../models/tag.model';
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 import { TagService } from '../../services/tag.service';
+import { ResourcesService } from '../../services/resources.service';
+import { Resource } from '../../models/resource.model';
+import { MessagesService } from '../../services/messages.service';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -70,6 +73,12 @@ import { TagService } from '../../services/tag.service';
                                                         </ng-template>                  
                                                     </p-autoComplete>                                         
                                                 </div>
+                                                <div class="col l3 s4" *ngIf="reassignType == 'resource'"> 
+                                                    <div class="FieldName">Select user:</div>
+                                                    <select name="reassignResources" [(ngModel)]="selectedReassignResource" style="height:auto;width:100%;">
+                                                        <option *ngFor="let opt of resources" [value]="opt.ResourceID">{{opt.FirstName}} {{opt.LastName}}</option>                                                        
+                                                    </select>
+                                                </div>
                                                 <div class="col l1 s4" *ngIf="reassignType">
                                                     <div class="FieldName">&nbsp;</div>
                                                     <button pButton type="button" (click)="reassign()" style="width: 150px;" label="Assign"></button>                                    
@@ -107,7 +116,7 @@ import { TagService } from '../../services/tag.service';
                         </div>
                     </div>                                               
                 `,
-    providers: [WorkflowService, TagService]
+    providers: [WorkflowService, ResourcesService, TagService]
 })
 
 export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDestroy {    
@@ -134,9 +143,11 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private reassignAvailableTypes = [];
     private term: Tag;
     private terms: Tag[] = [];
+    private resources: Resource[] = [];
 
     private selectedReassignObjectId: number;
     private selectedReassignObjectType: string;
+    private selectedReassignResource: number;
 
     @Input() hasCloseButton: boolean = true;
 
@@ -146,7 +157,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             protected titleService: Title,
             protected headerBreadcrumbService: HeaderBreadcrumbService,
             protected workflowService: WorkflowService,
-            protected tagService: TagService
+            protected tagService: TagService,
+            protected resourcesService: ResourcesService,
+            protected messagesService: MessagesService
         )
     {
         super();
@@ -202,7 +215,10 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 if (res.AllowReassignObject)
                     this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
                 if (res.AllowReassignResource)
+                {
                     this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
+                    this.loadResources();
+                }
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);                
             });
     }
@@ -212,8 +228,18 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
     
     private reassign() {
-        this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignObjectId, this.selectedReassignObjectType);
-        this.close();
+        if (this.reassignType == 'object') {
+            this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignObjectId, this.selectedReassignObjectType).then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.close();
+            });
+        }
+        else if (this.reassignType == 'resource') {
+            this.workflowService.reassignUser(this.workflowItemId, this.selectedReassignResource).then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.close();
+            });
+        }
     }
 
     private search(event) {
@@ -229,5 +255,11 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private selectItem() {
         this.selectedReassignObjectType = this.term.Object;
         this.selectedReassignObjectId = this.term.ObjectID;
+    }
+
+    private loadResources() {
+        this.resourcesService.getResources().then(result => {
+            this.resources = result;
+        });
     }
 };
