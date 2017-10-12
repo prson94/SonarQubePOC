@@ -14219,7 +14219,7 @@ order by	T.Name, I.DisplayValue";
         List<SelectListItem> getResponsibilityResources(string selectedID = "")
         {
             var list = GetCompanyResources()
-                .Where(i => i.ResourceID > 0)
+                .Where(i => i.ResourceID > 0 && !i.Status.ToLower().Equals("inactive"))
                 .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName })
                 .ToList()
                 .Select(i => new SelectListItem

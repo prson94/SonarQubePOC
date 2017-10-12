@@ -433,7 +433,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
         {
             var hideData3SixtyUsers = HideData3SixtyUsers();
             var query = Company.Table<GlobalReportingResource>();
-            return ((HideData3SixtyUsers()) ? query.Where(i => !i.Email.Contains("data3sixty.com")) : query);
+            return (hideData3SixtyUsers ? query.Where(i => !i.Email.Contains("data3sixty.com")) : query);
         }
 
         internal bool HideData3SixtyUsers()
