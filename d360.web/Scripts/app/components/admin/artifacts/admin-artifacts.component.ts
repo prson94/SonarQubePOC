@@ -30,7 +30,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     isEditingFieldType = false;
     isAddingFieldType = false;
     ArtifactTypes: TreeNode[];
-    
+    theDeleteCallback: Function;
 
     constructor(private stateService: StateService,
         rightSidebarService: RightSidebarService,
@@ -51,7 +51,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
                 return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
             });
         }
-
+        this.theDeleteCallback = this.deleteArtifactType.bind(this);
     }
 
     ngOnDestroy() {
@@ -126,6 +126,14 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
 
     navigate(item: any) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', item.ID));
+    }
+
+    private deleteArtifactType(id: number) {        
+        this.artifactsService.deleteArtifactType(id).then(result => {            
+            this.showMessageForResult(this.messagesService, result);    
+            this.isDeleting = false;
+            this.load();    
+        })
     }
 }
 

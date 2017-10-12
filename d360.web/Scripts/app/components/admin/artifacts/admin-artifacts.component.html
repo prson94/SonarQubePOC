@@ -31,14 +31,8 @@
         </div>
     </div>    
     <div *ngIf="isDeleting" class="col s12 m7 l8">
-        <div class="tile tile-detail">
-            <d3s-delete-form [uri]="'/form/ArtifactType?id=' + selectedRow.data.ID"
-                         [method]="'delete'"
-                         [prompt]="'Are you sure you want to delete this artifact type?'"
-                         (onDeleteSuccess)="actionComplete($event,'success')"
-                         (onDeleteFail)="actionComplete($event,'error')"
-                         (onCancel)="cancel()">
-            </d3s-delete-form>
+        <div class="tile tile-detail">            
+            <d3s-artifact-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID"></d3s-artifact-type-delete>
         </div>
     </div>
     <div *ngIf="!isEditing && !isAdding && !isDeleting" class="col s12 m7 l8">

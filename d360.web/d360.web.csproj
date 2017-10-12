@@ -1009,6 +1009,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-scoretype-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.module.ts" />

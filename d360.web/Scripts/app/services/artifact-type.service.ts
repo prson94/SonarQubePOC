@@ -4,6 +4,7 @@ import { TreeNode } from 'primeng/primeng';
 import { ArtifactTypeEditorModel, ArtifactType, ArtifactTypeSummary, ArtifactTypeStatusCount, ArtifactTypeUsedVsUnusedResponsibility } from '../models/artifact-type.model';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class ArtifactTypeService extends BaseService {
@@ -106,5 +107,9 @@ export class ArtifactTypeService extends BaseService {
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    public deleteArtifactType(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'artifacttype', id);
     }
 }

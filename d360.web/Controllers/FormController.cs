@@ -583,6 +583,8 @@ namespace d360.web.Controllers
             {
                 case "ARTIFACT":
                     return DeleteArtifact(form);
+                case "ARTIFACTTYPE":
+                    return DeleteArtifactType(objectID);
                 case "ATTRIBUTETYPE":
                     return DeleteAttributeType(form);
                 case "CONTRACT":

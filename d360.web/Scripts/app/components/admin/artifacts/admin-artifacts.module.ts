@@ -4,8 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-//import { ColorPickerModule } from 'angular2-color-picker';
-
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import { AdminModule } from '../admin.module';
@@ -26,9 +24,11 @@ import { ArtifactTypeForm } from './artifact-type.form';
 import { AdminArtifactsRoutingModule } from './admin-artifacts.routes';
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
+import { ArtifactTypeDeleteComponent } from './artifact-type-delete.component';
 
 import {
     ButtonModule,
+    CheckboxModule,
     ColorPickerModule,
     DropdownModule,
     EditorModule,
@@ -47,6 +47,7 @@ import {
 
         //prime
         ButtonModule,
+        CheckboxModule,
         DropdownModule,
         EditorModule,
         InputTextModule,
@@ -74,6 +75,7 @@ import {
     declarations: [
         AdminArtifactsComponent,
         ArtifactTypeForm,
+        ArtifactTypeDeleteComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
