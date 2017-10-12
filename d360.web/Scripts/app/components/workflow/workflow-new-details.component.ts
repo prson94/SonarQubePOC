@@ -35,6 +35,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     </ng-template>
                                 </p-column>
                                 <p-column field="StartedBy" header="Started By" sortable="true"></p-column>                                
+                                <p-column  [style]="{width:'35px'}">
+                                    <ng-template let-item="rowData" pTemplate type="body">
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="open(item)" title="Complete Form"><i class="fa fa-check-square-o"></i></a>                                    
+                                        </div>
+                                    </ng-template>
+                                </p-column> 
                             </p-dataTable>       
                             <div style="padding:10px">
                                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
