@@ -9,8 +9,11 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
 <div *ngIf="!isLoading && node != null">
     <div *ngIf="node.category == 'object' || node.category == 'focal'">
         <ng-container *ngIf="node.object != null && node.objectId != null; else chooseObject">
-            <div>
+            <div style="font-weight: bold">
                 {{node.name}}
+            </div>
+            <div>
+                <button pButton type="button" label="Change Object" (click)="edit()"></button>
             </div>
         </ng-container>
         <ng-template #chooseObject>
@@ -90,5 +93,10 @@ export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
         this.node.objectId = this.selected.ObjectID;
         this.node.name = this.selected.Name;
         this.nodeChange.emit(this.node);
+    }
+
+    edit() {
+        this.node.object = null;
+        this.node.objectId = null;
     }
 }

@@ -2386,11 +2386,13 @@ from    [Intersect] I
 	                i.objectId,
 	                d.name,
 	                d.IconForeColor as foreColor,
-	                d.IconBackColor as backColor 
+	                d.IconBackColor as backColor,
+					coalesce(o.[Order], 99999) as [order]
                 from 
 	                intersectType i
                 inner join
 	                cache.objectDetails d on d.object = i.object and d.objectid = i.objectid
+				left join MapTypeOrder o on o.IntersectTypeID = i.ID
                 where 
                     i.[subject] = 'MapType' and i.[object] != 'MapType'
                 order by [name]";
