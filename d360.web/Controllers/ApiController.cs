@@ -2395,7 +2395,15 @@ from    [Intersect] I
 				left join MapTypeOrder o on o.IntersectTypeID = i.ID
                 where 
                     i.[subject] = 'MapType' and i.[object] != 'MapType'
-                order by [name]";
+				union all
+				select distinct
+					'MapType' as [object],
+					m.ID as objectId,
+					m.[Name],
+					null as foreColor,
+					null as backColor,
+					-1 as [order]
+				from maptype m";
 
             var list = Company.Query<dynamic>(sql);
 

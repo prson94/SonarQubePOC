@@ -278,8 +278,12 @@ namespace d360.web.Controllers
             var existing = new LineageEditorModelV2();
             var maps = model.Nodes.Where(n => n.IsGroup && n.Category == "map").ToList();
             var transforms = model.Nodes.Where(n => n.IsGroup && n.Category == "transform").ToList();
+            var objects = model.Nodes.Where(n => n.Group != null && (n.Category == "object" || n.Category == "focal")).ToList();
 
-            //build existing lineage model so we can compare
+            List<string> errors = new List<string>();
+
+
+            ////build existing lineage model so we can compare
             if (!string.IsNullOrEmpty(json))
             {
                 dynamic obj = JsonConvert.DeserializeObject(json);
@@ -296,11 +300,12 @@ namespace d360.web.Controllers
                             Object = n["object"],
                             ObjectID = n.objectId,
                             Category = n.category,
+                            IntersectTypeID = n.intersectTypeId == null ? 0 : n.intersectTypeId
                         });
                     }
 
                 if (obj.links != null)
-                    for(int i =0; i < obj.links.Count; i++)
+                    for (int i = 0; i < obj.links.Count; i++)
                     {
                         var l = obj.links[i];
                         existing.Links.Add(new LineageLinkModel
@@ -312,234 +317,670 @@ namespace d360.web.Controllers
                     }
             }
 
-            //remove matched nodes from posted model
-            var matchedExistingNodes = new List<LineageNodeModel>();
-            existing.Nodes.ForEach(n =>
-            {
-                var node = model.Nodes.Where(m => m.Object == n.Object && m.ObjectID == n.ObjectID && m.Group == n.Group && m.IsGroup == n.IsGroup).FirstOrDefault();
-
-                if (node != null)
-                {
-                    int k;
-                    if (node.Key.StartsWith("-") && int.TryParse(n.Key, out k))
-                        nodeMappings.Add(node.Key, k);
-                    model.Nodes.Remove(node);
-                    matchedExistingNodes.Add(n);
-                }
-            });
-
-            var matchedExistingLinks = new List<LineageLinkModel>();
-            existing.Links.ForEach(l =>
-            {
-                var link = model.Links.Where(k => k.To == l.To && k.From == l.From).FirstOrDefault();
-
-                if (link != null)
-                {
-                    model.Links.Remove(link);
-                    matchedExistingLinks.Add(l);
-                }
-            });
-
-            //remove matched from existing model
-            matchedExistingNodes.ForEach(n => existing.Nodes.Remove(n));
-            matchedExistingLinks.ForEach(l => existing.Links.Remove(l));
-            
-            //now anything left in model is an Add
-            //and anything left in exsiting is a Delete
-
-            //create new maps
-
+            //add maps
             var mapMappings = new Dictionary<string, int>();
-
             maps.ForEach(m =>
             {
+                if (m.Key.StartsWith("-"))
+                {
+                    var map = new Map();
+                    map.MapTypeID = m.ObjectTypeID;
+                    Company.Add(map);
+                    Company.SaveChanges();
+                    mapMappings.Add(m.Key, map.ID);
+                }
+            });
+
+            //add objects
+            objects.ForEach(n =>
+            {
+                if (n.Key.StartsWith("-"))
+                {
+                    int mapId = -1;
+                    Map map;
+
+                    if (n.Group.StartsWith("-"))
+                    {
+                        if (mapMappings.ContainsKey(n.Group))
+                        {
+                            mapId = mapMappings[n.Group];
+                        }
+                        else
+                        {
+                            errors.Add($"Map not found for node with key {n.Key}");
+                            //exception map not found
+                            return;
+                        }
+
+                    }
+                    else if (n.Group.Contains("|"))
+                    {
+                        int.TryParse(n.Group.Split('|').Last(), out mapId);
+                    }
+                   
+                    if (mapId > -1)
+                    {
+                        map = Company.GetById<Map>(mapId);
+                        var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == map.MapTypeID && i.Object == n.ObjectType && i.ObjectID == n.ObjectTypeID).FirstOrDefault();
+
+                        if (intersectType != null)
+                        {
+                            var intersect = new Intersect();
+                            intersect.IntersectTypeID = intersectType.ID;
+                            intersect.Subject = "Map";
+                            intersect.SubjectID = map.ID;
+                            intersect.Object = n.Object;
+                            intersect.ObjectID = n.ObjectID;
+
+                            Company.Add(intersect);
+                            Company.SaveChanges();
+                        }
+                        else
+                        {
+                            errors.Add($"Intersect type not found for node with key {n.Key}");
+                            //exception intersecttype not found
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        errors.Add($"Map not found for node with key {n.Key}");
+                        //exception map not found
+                        return;
+                    }
+
+                }
+            });
+
+            //add transforms
+            var transformMappings = new Dictionary<string, int>();
+            transforms.ForEach(t =>
+            {
+                if (t.Key.StartsWith("-"))
+                {
+                    var transform = new MapGroup();
+                    transform.BusinessTransformation = t.BusinessTransformation;
+                    transform.TechnicalTransformation = t.TechnicalTransformation;
+                    transform.MapID = 0;
+
+                    Company.Add(transform);
+                    Company.SaveChanges();
+                    transformMappings.Add(t.Key, transform.ID);
+
+                    //find associated children
+                    var children = maps.Where(m => transformMappings.ContainsKey(m.Group) && transform.ID == transformMappings[m.Group]).ToList();
+
+                    children.ForEach(c =>
+                    {
+                        int mapId = -1;
+                        if (c.Key.StartsWith("-"))
+                        {
+                            if (mapMappings.ContainsKey(c.Key))
+                            {
+                                mapId = mapMappings[c.Key];
+                            }
+                            else
+                            {
+                                errors.Add($"Could not find mapping for child map {c.Key}");
+                                return;
+                            }
+                        }
+                        else if (c.Key.Contains("|"))
+                        {
+                            int.TryParse(c.Key.Split('|').Last(), out mapId);
+                        }
+                        else
+                        {
+                            //error child key not found
+                            errors.Add($"Could not find key for child map {c.Key}");
+                            return;
+                        }
+
+                        if (mapId > -1)
+                        {
+                            var map = Company.GetById<Map>(mapId);
+                            var groupItem = new MapGroupItem();
+                            groupItem.MapGroupID = transform.ID;
+                            groupItem.Object = "Map";
+                            groupItem.ObjectID = map.ID;
+                            groupItem.IntersectID = 0;
+
+                            Company.Add(groupItem);
+                            Company.SaveChanges();
+                        }
+                        else
+                        {
+                            errors.Add("Map not found");
+                            return;
+                        }
+
+                    });
+                }
+            });
+
+            //find any extra objects and remove them
+            var removingIntersectIds = new List<int>();
+            var removingMapIds = new List<int>();
+            var removingGroupIds = new List<int>();
+            var removingGroupItems = new List<MapGroupItem>();
+
+            existing.Nodes.Where(n => !n.Key.StartsWith("-") && (n.Category == "object" || n.Category == "focal")).ToList().ForEach(n =>
+            {
+                var node = model.Nodes.Where(m => m.Key == n.Key).FirstOrDefault();
+
+                if (node != null)
+                    return;
+
+                //if we got this far the intersect needs to be removed
+                //first we find the map
+
+                int mapId = -1;
+                Map map;
+
+                if (n.Group.StartsWith("-"))
+                {
+                    if (mapMappings.ContainsKey(n.Group))
+                    {
+                        mapId = mapMappings[n.Group];
+                    }
+                    else
+                    {
+                        errors.Add($"Map not found for node with key {n.Key}");
+                        //exception map not found
+                        return;
+                    }
+
+                }
+                else if (n.Group.Contains("|"))
+                {
+                    int.TryParse(n.Group.Split('|').Last(), out mapId);
+                }
+
+                if (mapId > -1)
+                {
+                    map = Company.GetById<Map>(mapId);
+                    var intersect = Company.Intersects.Where(i => i.IntersectTypeID == n.IntersectTypeID && i.Subject == "Map" && i.SubjectID == map.ID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        removingIntersectIds.Add(intersect.ID);
+                        return;
+                    }
+                    else
+                    {
+                        //could not find intersect
+                        errors.Add($"Intersect not found for node with key {n.Key}");
+                        return;
+                    }
+                }
+                else
+                {
+                    //could not find map
+                    errors.Add($"Map not found for node with key {n.Key}");
+                    return;
+                }
+                    
+            });
+
+            //find any extra maps and remove them
+            existing.Nodes.Where(n => !n.Key.StartsWith("-") && n.Category == "map").ToList().ForEach(m =>
+            {
+                var map = model.Nodes.Where(n => m.Key == n.Key).FirstOrDefault();
+
+                if (map != null)
+                    return;
+
+                //we need to remove the map
+                //first make sure there are no relationships to it
+
+                //get the map id
                 int mapId = -1;
                 if (m.Key.StartsWith("-"))
                 {
-                    //add
-                    var map = new Map
+                    if (mapMappings.ContainsKey(m.Key))
                     {
-                        MapTypeID = m.ObjectTypeID
-                    };
+                        mapId = mapMappings[m.Key];
+                    }
+                    else
+                    {
+                        errors.Add($"Map not found for node with key {m.Key}");
+                        //exception map not found
+                        return;
+                    }
 
-                    Company.Maps.Add(map);
-                    Company.SaveChanges();
-                    mapId = map.ID;
                 }
-                else
+                else if (m.Key.Contains("|"))
                 {
                     int.TryParse(m.Key.Split('|').Last(), out mapId);
                 }
 
-                mapMappings.Add(m.Key, mapId);
+                if (mapId > -1)
+                {
+                    var intersects = Company.Intersects.Where(i => i.Subject == "Map" && i.SubjectID == mapId).ToList();
+                    removingIntersectIds.AddRange(intersects.Select(i => i.ID));
+                    removingMapIds.Add(mapId);
+                }
+
             });
 
-            var transformMappings = new Dictionary<string, int>();
-
-            transforms.ForEach(t =>
+            //find any extra transform and remove them
+            existing.Nodes.Where(n => !n.Key.StartsWith("-") && n.Category == "transform").ToList().ForEach(t =>
             {
-                var transform = new MapGroup();
+                var transform = model.Nodes.Where(n => n.Key == t.Key).FirstOrDefault();
 
-                if (t.Key.StartsWith("-")) //new
+                if (transform != null)
                 {
-                    transform.BusinessTransformation = t.BusinessTransformation;
-                    transform.TechnicalTransformation = t.TechnicalTransformation;
-
-                    Company.SaveOrUpdate(transform);
-                    transformMappings.Add(t.Key, transform.ID);
-
-                    var children = maps.Where(m => m.Group == t.Key).ToList();
-
-                    children.ForEach(c =>
+                    //the transform does not need to be deleted but we still need to check the items
+                    if (int.TryParse(transform.Key.Split('|').Last(), out int id))
                     {
-                        var groupItem = new MapGroupItem();
-                        groupItem.MapGroupID = transform.ID;
-                        groupItem.Object = c.Object;
-                        groupItem.ObjectID = c.ObjectID;
-                        groupItem.IntersectID = 0;
-
-                        Company.Add(groupItem);
-                    });
-
-                    Company.SaveChanges();
-                }
-                else if (int.TryParse(t.Key.Split('|').Last(), out int key)) //existing
-                {
-                    transform = Company.GetById<MapGroup>(key);
-                    transform.BusinessTransformation = t.BusinessTransformation;
-                    transform.TechnicalTransformation = t.TechnicalTransformation;
-
-                    var addChildren = maps.Where(m => m.Group == t.Key).Select(c => new MapGroupItem() { MapGroupID = transform.ID, Object = c.ObjectType, ObjectID = c.ObjectID, IntersectID = 0 }).ToList();
-                    var existingChildren = Company.MapGroupItems.Where(i => i.MapGroupID == transform.ID).ToList();
-                    var removeChildren = existingChildren.ToList();
-
-                    if (existingChildren.Count > 0)
-                    {
-
-                        existingChildren.ForEach(c =>
+                        var mapGroupItems = Company.MapGroupItems.Where(i => i.MapGroupID == id).ToList();
+                        var mapGroupModelItems = model.Nodes.Where(n => n.Category == "map" && n.Group != null).ToList();
+                        
+                        if (mapGroupModelItems.Count < 1)
                         {
-                            var addChild = addChildren.Where(i => i.MapGroupID == c.MapGroupID && i.Object == c.Object && i.ObjectID == c.ObjectID).FirstOrDefault();
-                            var removeChild = removeChildren.Where(i => i.MapGroupID == c.MapGroupID && i.Object == c.Object && i.ObjectID == c.ObjectID).FirstOrDefault();
-                            if (addChild != null)
-                            {
-                                addChildren.Remove(addChild);
-                                removeChildren.Remove(removeChild);
-                            }
+                            removingGroupIds.Add(id);
+                        }
+
+                        mapGroupItems.ForEach(m =>
+                        {
+                            var mapGroupItem = mapGroupModelItems.Where(i => i.Object == m.Object && i.ObjectID == m.ObjectID).FirstOrDefault();
+                            if (mapGroupItem != null)
+                                return;
+
+                            removingGroupItems.Add(m);
+
                         });
 
                     }
 
-                    Company.MapGroupItems.AddRange(addChildren);
-                    Company.MapGroupItems.RemoveRange(removeChildren);
-                    Company.SaveChanges();
-                }            
+                    return;
 
+                }
+
+                int transformId = -1;
+
+                if (t.Key.StartsWith("-"))
+                {
+                    if (transformMappings.ContainsKey(t.Key))
+                    {
+                        transformId = mapMappings[t.Key];
+                    }
+                    else
+                    {
+                        errors.Add($"Transform not found for node with key {t.Key}");
+                        //exception map not found
+                        return;
+                    }
+
+                }
+                else if (t.Key.Contains("|"))
+                {
+                    int.TryParse(t.Key.Split('|').Last(), out transformId);
+                }
+
+                if (transformId > -1)
+                {
+                    var mapGroup = Company.GetById<MapGroup>(transformId);
+                    removingGroupIds.Add(mapGroup.ID);
+                }
 
             });
 
 
-            //create new intersects to nodes
-            var nodes = model.Nodes.Where(n => (n.Category == "focal" || n.Category == "object") && (n.Key.StartsWith("-") || n.Group.StartsWith("-"))).ToList();
+            Company.MapGroupItems.RemoveRange(removingGroupItems);
+            Company.SaveChanges();
 
-            nodes.ForEach(n =>
+            removingGroupIds.ForEach(i =>
             {
-                var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == 1 && i.Object == n.ObjectType && i.ObjectID == n.ObjectTypeID).FirstOrDefault();
+                var mapGroup = Company.GetById<MapGroup>(i);
+                if (mapGroup != null)
+                    Company.MapGroups.Remove(mapGroup);
+            });
 
-                if (n.Key.StartsWith("-"))
+            Company.SaveChanges();
+
+            removingIntersectIds.ForEach(i =>
+            {
+                var intersect = Company.GetById<Intersect>(i);
+                if (intersect != null)
+                    Company.Intersects.Remove(intersect);
+            });
+
+            Company.SaveChanges();
+
+            removingMapIds.ForEach(i =>
+            {
+                var map = Company.GetById<Map>(i);
+                if (map != null)
+                    Company.Maps.Remove(map);
+            });
+
+            Company.SaveChanges();
+
+            model.Links.Where(l => l.IntersectID == 0).ToList().ForEach(l =>
+            {
+                int fromId = -1;
+                int toId = -1;
+
+                if (l.From.StartsWith("-"))
                 {
-                    if (n.Key.StartsWith("-") && nodeMappings.ContainsKey(n.Key))
-                        n.Key = nodeMappings[n.Key].ToString();
-
-                    if (intersectType != null)
+                    if (mapMappings.ContainsKey(l.From))
                     {
-                        var intersect = new Intersect
-                        {
-                            IntersectTypeID = intersectType.ID,
-                            Subject = "Map",
-                            SubjectID = mapMappings[n.Group],
-                            Object = n.Object,
-                            ObjectID = n.ObjectID,
-                            CreatedBy = Company.CurrentResourceID,
-                            Deleted = false
-                        };
-
-                        Company.Intersects.Add(intersect);
-                        Company.SaveChanges();
+                        fromId = mapMappings[l.From];
+                    }
+                    else
+                    {
+                        errors.Add($"Could not find source item for link {l.From}");
+                        return;
                     }
                 }
-            });
-
-            //create new intersects between maps
-            var links = model.Links.Where(l => l.IntersectID == 0).ToList();
-
-            links.ForEach(l =>
-            {
-                if (l.From.StartsWith("-"))
-                    l.From = mapMappings[l.From].ToString();
+                else if (l.From.Contains("|") && int.TryParse(l.From.Split('|').Last(), out fromId))
+                {
+                    
+                }
                 else
-                    l.From = l.From.Split('|').Last();
+                {
+                    errors.Add($"Could not find source item for link {l.From}");
+                    return;
+                }
 
                 if (l.To.StartsWith("-"))
-                    l.To = mapMappings[l.To].ToString();
-                else
-                    l.To = l.To.Split('|').Last();
-
-                var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == 1 && i.Object == "MapType" && i.ObjectID == 1).FirstOrDefault();
-                int from = -1, to = -1;
-
-                int.TryParse(l.From, out from);
-                int.TryParse(l.To, out to);
-
-                if (intersectType != null && from > -1 && to > -1)
                 {
-                    var intersect = new Intersect
+                    if (mapMappings.ContainsKey(l.To))
                     {
-                        IntersectTypeID = intersectType.ID,
-                        Subject = "Map",
-                        SubjectID = from,
-                        Object = "Map",
-                        ObjectID = to,
-                        CreatedBy = Company.CurrentResourceID,
-                        Deleted = false
-                    };
-
-                    Company.Intersects.Add(intersect);
-                    Company.SaveChanges();
+                        toId = mapMappings[l.To];
+                    }
+                    else
+                    {
+                        errors.Add($"Could not find source item for link {l.To}");
+                        return;
+                    }
                 }
-            });
-
-
-            //now delete anything left in the existing model
-            var existingMaps = existing.Nodes.Where(n => n.IsGroup && n.Key.StartsWith("Map|")).Select(n => int.Parse(n.Key.Split('|').Last())).ToList();
-            existingMaps.ForEach(e =>
-            {
-                //delete any groups
-                //NYI
-
-                //delete any intersects to the map
-                //delete any intersects between other maps
-
-                var intersects = Company.Intersects.Where(i => i.Subject == "Map" && i.SubjectID == e).ToList();
-                Company.Intersects.RemoveRange(intersects);
-                Company.SaveChanges();
-
-
-                //delete the map record
-                var map = Company.Maps.Find(e);
-                if (map != null)
+                else if (l.To.Contains("|") && int.TryParse(l.To.Split('|').Last(), out toId))
                 {
-                    Company.Maps.Remove(map);
+
+                }
+                else
+                {
+                    errors.Add($"Could not find source item for link {l.To}");
+                    return;
+                }
+
+
+                if (fromId > -1 && toId > -1)
+                {
+                    var intersect = new Intersect();
+                    //TODO: don't hardcode maptype 1
+                    var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.Object == "MapType" && i.SubjectID == 1 && i.ObjectID == 1).FirstOrDefault();
+
+                    if(intersectType == null)
+                    {
+                        errors.Add($"Could not find a MapType to MapType intersect for ids {fromId} and {toId}");
+                        return;
+                    }
+
+                    intersect.IntersectTypeID = intersectType.ID;
+                    intersect.Subject = "Map";
+                    intersect.Object = "Map";
+                    intersect.SubjectID = fromId;
+                    intersect.ObjectID = toId;
+
+                    Company.Add(intersect);
                     Company.SaveChanges();
                 }
             });
 
-            var existingNodes = existing.Nodes.Where(n => !n.IsGroup && n.Group != null && !n.Key.StartsWith("Map|")).ToList();
-            existingNodes.ForEach(n =>
+            existing.Links.Where(l => !l.From.StartsWith("-") && !l.To.StartsWith("-") && l.IntersectID > 0).ToList().ForEach(l =>
             {
-                var intersects = Company.Intersects.Where(i => i.Subject == "Map" && i.Object == n.Object && i.ObjectID == n.ObjectID).ToList();
-                Company.Intersects.RemoveRange(intersects);
-                Company.SaveChanges();
+                var link = model.Links.Where(i => i.IntersectID == l.IntersectID).FirstOrDefault();
+
+                if (link != null)
+                    return;
+
+                var intersect = Company.GetById<Intersect>(l.IntersectID);
+
+                if (intersect != null)
+                {
+                    Company.Intersects.Remove(intersect);
+                }
             });
+
+            Company.SaveChanges();
+
+            #region old
+
+
+            ////remove matched nodes from posted model
+            //var matchedExistingNodes = new List<LineageNodeModel>();
+            //existing.Nodes.ForEach(n =>
+            //{
+            //    var node = model.Nodes.Where(m => m.Object == n.Object && m.ObjectID == n.ObjectID && m.Group == n.Group && m.IsGroup == n.IsGroup).FirstOrDefault();
+
+            //    if (node != null)
+            //    {
+            //        int k;
+            //        if (node.Key.StartsWith("-") && int.TryParse(n.Key, out k))
+            //            nodeMappings.Add(node.Key, k);
+            //        model.Nodes.Remove(node);
+            //        matchedExistingNodes.Add(n);
+            //    }
+            //});
+
+            //var matchedExistingLinks = new List<LineageLinkModel>();
+            //existing.Links.ForEach(l =>
+            //{
+            //    var link = model.Links.Where(k => k.To == l.To && k.From == l.From).FirstOrDefault();
+
+            //    if (link != null)
+            //    {
+            //        model.Links.Remove(link);
+            //        matchedExistingLinks.Add(l);
+            //    }
+            //});
+
+            ////remove matched from existing model
+            //matchedExistingNodes.ForEach(n => existing.Nodes.Remove(n));
+            //matchedExistingLinks.ForEach(l => existing.Links.Remove(l));
+
+            ////now anything left in model is an Add
+            ////and anything left in exsiting is a Delete
+
+            ////create new maps
+
+
+
+            //maps.ForEach(m =>
+            //{
+            //    int mapId = -1;
+            //    if (m.Key.StartsWith("-"))
+            //    {
+            //        //add
+            //        var map = new Map
+            //        {
+            //            MapTypeID = m.ObjectTypeID
+            //        };
+
+            //        Company.Maps.Add(map);
+            //        Company.SaveChanges();
+            //        mapId = map.ID;
+            //    }
+            //    else
+            //    {
+            //        int.TryParse(m.Key.Split('|').Last(), out mapId);
+            //    }
+
+            //    mapMappings.Add(m.Key, mapId);
+            //});
+
+            //var transformMappings = new Dictionary<string, int>();
+
+            //transforms.ForEach(t =>
+            //{
+            //    var transform = new MapGroup();
+
+            //    if (t.Key.StartsWith("-")) //new
+            //    {
+            //        transform.BusinessTransformation = t.BusinessTransformation;
+            //        transform.TechnicalTransformation = t.TechnicalTransformation;
+
+            //        Company.SaveOrUpdate(transform);
+            //        transformMappings.Add(t.Key, transform.ID);
+
+            //        var children = maps.Where(m => m.Group == t.Key).ToList();
+
+            //        children.ForEach(c =>
+            //        {
+            //            var groupItem = new MapGroupItem();
+            //            groupItem.MapGroupID = transform.ID;
+            //            groupItem.Object = c.Object;
+            //            groupItem.ObjectID = c.ObjectID;
+            //            groupItem.IntersectID = 0;
+
+            //            Company.Add(groupItem);
+            //        });
+
+            //        Company.SaveChanges();
+            //    }
+            //    else if (int.TryParse(t.Key.Split('|').Last(), out int key)) //existing
+            //    {
+            //        transform = Company.GetById<MapGroup>(key);
+            //        transform.BusinessTransformation = t.BusinessTransformation;
+            //        transform.TechnicalTransformation = t.TechnicalTransformation;
+
+            //        var addChildren = maps.Where(m => m.Group == t.Key).Select(c => new MapGroupItem() { MapGroupID = transform.ID, Object = c.ObjectType, ObjectID = c.ObjectID, IntersectID = 0 }).ToList();
+            //        var existingChildren = Company.MapGroupItems.Where(i => i.MapGroupID == transform.ID).ToList();
+            //        var removeChildren = existingChildren.ToList();
+
+            //        if (existingChildren.Count > 0)
+            //        {
+
+            //            existingChildren.ForEach(c =>
+            //            {
+            //                var addChild = addChildren.Where(i => i.MapGroupID == c.MapGroupID && i.Object == c.Object && i.ObjectID == c.ObjectID).FirstOrDefault();
+            //                var removeChild = removeChildren.Where(i => i.MapGroupID == c.MapGroupID && i.Object == c.Object && i.ObjectID == c.ObjectID).FirstOrDefault();
+            //                if (addChild != null)
+            //                {
+            //                    addChildren.Remove(addChild);
+            //                    removeChildren.Remove(removeChild);
+            //                }
+            //            });
+
+            //        }
+
+            //        Company.MapGroupItems.AddRange(addChildren);
+            //        Company.MapGroupItems.RemoveRange(removeChildren);
+            //        Company.SaveChanges();
+            //    }            
+
+
+            //});
+
+
+            ////create new intersects to nodes
+            //var nodes = model.Nodes.Where(n => (n.Category == "focal" || n.Category == "object") && (n.Key.StartsWith("-") || n.Group.StartsWith("-"))).ToList();
+
+            //nodes.ForEach(n =>
+            //{
+            //    var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == 1 && i.Object == n.ObjectType && i.ObjectID == n.ObjectTypeID).FirstOrDefault();
+
+            //    if (n.Key.StartsWith("-"))
+            //    {
+            //        if (n.Key.StartsWith("-") && nodeMappings.ContainsKey(n.Key))
+            //            n.Key = nodeMappings[n.Key].ToString();
+
+            //        if (intersectType != null)
+            //        {
+            //            var intersect = new Intersect
+            //            {
+            //                IntersectTypeID = intersectType.ID,
+            //                Subject = "Map",
+            //                SubjectID = mapMappings[n.Group],
+            //                Object = n.Object,
+            //                ObjectID = n.ObjectID,
+            //                CreatedBy = Company.CurrentResourceID,
+            //                Deleted = false
+            //            };
+
+            //            Company.Intersects.Add(intersect);
+            //            Company.SaveChanges();
+            //        }
+            //    }
+            //});
+
+            ////create new intersects between maps
+            //var links = model.Links.Where(l => l.IntersectID == 0).ToList();
+
+            //links.ForEach(l =>
+            //{
+            //    if (l.From.StartsWith("-"))
+            //        l.From = mapMappings[l.From].ToString();
+            //    else
+            //        l.From = l.From.Split('|').Last();
+
+            //    if (l.To.StartsWith("-"))
+            //        l.To = mapMappings[l.To].ToString();
+            //    else
+            //        l.To = l.To.Split('|').Last();
+
+            //    var intersectType = Company.IntersectTypes.Where(i => i.Subject == "MapType" && i.SubjectID == 1 && i.Object == "MapType" && i.ObjectID == 1).FirstOrDefault();
+            //    int from = -1, to = -1;
+
+            //    int.TryParse(l.From, out from);
+            //    int.TryParse(l.To, out to);
+
+            //    if (intersectType != null && from > -1 && to > -1)
+            //    {
+            //        var intersect = new Intersect
+            //        {
+            //            IntersectTypeID = intersectType.ID,
+            //            Subject = "Map",
+            //            SubjectID = from,
+            //            Object = "Map",
+            //            ObjectID = to,
+            //            CreatedBy = Company.CurrentResourceID,
+            //            Deleted = false
+            //        };
+
+            //        Company.Intersects.Add(intersect);
+            //        Company.SaveChanges();
+            //    }
+            //});
+
+
+            ////now delete anything left in the existing model
+            //var existingMaps = existing.Nodes.Where(n => n.IsGroup && n.Key.StartsWith("Map|")).Select(n => int.Parse(n.Key.Split('|').Last())).ToList();
+            //existingMaps.ForEach(e =>
+            //{
+            //    //delete any groups
+            //    //NYI
+
+            //    //delete any intersects to the map
+            //    //delete any intersects between other maps
+
+            //    var intersects = Company.Intersects.Where(i => i.Subject == "Map" && i.SubjectID == e).ToList();
+            //    Company.Intersects.RemoveRange(intersects);
+            //    Company.SaveChanges();
+
+
+            //    //delete the map record
+            //    var map = Company.Maps.Find(e);
+            //    if (map != null)
+            //    {
+            //        Company.Maps.Remove(map);
+            //        Company.SaveChanges();
+            //    }
+            //});
+
+            //var existingNodes = existing.Nodes.Where(n => !n.IsGroup && n.Group != null && !n.Key.StartsWith("Map|")).ToList();
+            //existingNodes.ForEach(n =>
+            //{
+            //    var intersects = Company.Intersects.Where(i => i.Subject == "Map" && i.Object == n.Object && i.ObjectID == n.ObjectID).ToList();
+            //    Company.Intersects.RemoveRange(intersects);
+            //    Company.SaveChanges();
+            //});
+
+            #endregion
+
 
             return new JsonNetResult
             {

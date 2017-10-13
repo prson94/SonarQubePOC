@@ -354,6 +354,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             items: null
         });
 
+        this.editorMenuItems.push({
+            icon: 'fa-plus',
+            items: null
+        });
+
         this.menuItems.push({
             icon: 'fa-pencil',
             items: null
@@ -667,6 +672,26 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.myDiagram.model.nodeDataArray.filter(n => (<any>n).isGroup && (<any>n).category == 'map').forEach(n => {
                 (<any>n).isSubGraphExpanded = false;
             });
+        } else if (e.icon == 'fa-plus') {
+            let newMap = new NodeModelV2();
+            let map = this.objectTypes.find(o => o.order == -1);
+            if (map != null) {
+                newMap.backColor = map.backColor;
+                newMap.foreColor = map.foreColor;
+                newMap.name = '<drop objects here>';
+                newMap.category = 'map'
+                newMap.object = map.object;
+                newMap.objectId = map.objectId;
+                newMap.objectTypeId = 1
+                newMap.objectType = map.objectType;
+                newMap.order = null;
+                newMap.diagramObjectType = DiagramObjectType.Node;
+                newMap.visible = true;
+                newMap.isGroup = true;
+
+                this.myDiagram.model.addNodeData(newMap);
+                this.messagesService.showInfoMessage('Mapping added', 'A new mapping has been added to the diagram.');
+            }
         }
     }
 
@@ -778,7 +803,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (node != null) {
             if (node.isGroup) {
                 e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true);
-                if (node.name == 'Map') {
+                if (node.category == 'map' && node.order < 0) {
                     this.myDiagram.model.setDataProperty(node, 'name', '<drop objects here>');
                     this.myDiagram.model.setDataProperty(node, 'order', null);
                 }
@@ -862,20 +887,24 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private createPalette(): go.Palette {
         let paletteModel = [];
 
-        paletteModel.push({
-            category: 'map',
-            name: 'Map',
-            object: null,
-            objectId: null,
-            foreColor: '#000',
-            backColor: '#ddd',
-            isGroup: true,
-            diagramObjectType: DiagramObjectType.Node,
-            visible: true,
-            order: -1
-        });
+        //let map = this.objectTypes.find(o => o.object == 'MapType');
 
-        this.objectTypes.forEach(o => {
+        //paletteModel.push({
+        //    category: 'map',
+        //    name: map != null ? map.name : 'Map',
+        //    object: null,
+        //    objectId: null,
+        //    objectType: 'MapType',
+        //    objectTypeId: 1,
+        //    foreColor: '#000',
+        //    backColor: '#ddd',
+        //    isGroup: true,
+        //    diagramObjectType: DiagramObjectType.Node,
+        //    visible: true,
+        //    order: -1
+        //});
+
+        this.objectTypes.filter(o => o.order > -1).forEach(o => {
             paletteModel.push({
                 category: 'object',
                 name: o.name,
