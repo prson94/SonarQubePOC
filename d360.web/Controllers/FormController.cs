@@ -1151,7 +1151,7 @@ namespace d360.web.Controllers
                         FormDescription = Resources.FormInfo.Add_ArtifactType_Directions,
                         FormUri = "/form/AddArtifactType",
                         FormMethod = "POST",
-                        ArtifactType = new ArtifactType { ParentID = parentID, CanOwnFusion = false },
+                        ArtifactType = new ArtifactType { ParentID = parentID, CanOwnFusion = false, DisplayFormat = "{Name}" },
                         IconBackColor = "#000",
                         IconForeColor = "#FFF"
                     };
@@ -1203,7 +1203,26 @@ namespace d360.web.Controllers
                     action = "add"
                 };
 
-                
+                if (a.ID > 0)
+                {
+                    Company.Add<FieldType>(new FieldType
+                    {
+                        ObjectID = a.ID,
+                        Object = SystemObjects.ArtifactType.ToString(),
+                        IsListable = true,
+                        IsRequired = true,
+                        IsEditable = true,
+                        FriendlyName = "Name",
+                        Name = "Name",
+                        MaximumLength = 500,
+                        MinimumLength = 1,
+                        SortOrder = 1,
+                        Type = DataType.Text.ToString(),
+                        IsDisplayable = true,
+                        IsPartOfKey = true
+                    });
+                }
+
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }

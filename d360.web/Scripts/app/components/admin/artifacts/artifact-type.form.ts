@@ -26,17 +26,18 @@ export class ArtifactTypeForm implements OnInit, OnChanges {
     constructor(private artifactTypeService: ArtifactTypeService) {
         this.model = new ArtifactTypeEditorModel();
         this.model.ArtifactType = new ArtifactType();
+        this.model.ArtifactType.DisplayFormat = "{Name}";
     }
 
     ngOnInit() {
-        this.initialItem = _.cloneDeep(this.model);
+        this.initialItem = _.cloneDeep(this.model);        
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'id' || p == 'parentID') {
                 this.load();
-                this.initialItem = _.cloneDeep(this.model);
+                this.initialItem = _.cloneDeep(this.model);                
             }
         }
     }

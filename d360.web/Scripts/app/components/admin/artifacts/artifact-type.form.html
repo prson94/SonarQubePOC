@@ -16,7 +16,8 @@
                 </div>
                 <div class="row">
                     <div class="FieldName">Display Format</div>
-                    <input maxlength="250" pInputText name="displayFormat" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.ArtifactType.DisplayFormat" />
+                    <input maxlength="250" pInputText name="displayFormat" #displayformat="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.ArtifactType.DisplayFormat" required [disabled]="!id" />
+                    <div [hidden]="displayformat.valid || displayformat.pristine" class="validation-text">Display format is required</div>
                 </div>
                 <div class="row">
                     <div class="FieldName">Description</div>
