@@ -17328,6 +17328,8 @@ from    [IntersectType] RT
                     }
                 }
 
+                shortcut.DisplayOrder = 100;
+
                 Company.Add(shortcut);
             }
             catch(Exception ex)

@@ -46,6 +46,9 @@ namespace d360.core.entities
         [StringLength(100)]
         public string BackgroundColor { get; set; }
 
+        [DataMember]        
+        public int DisplayOrder { get; set; }
+
         [NotMapped, DataMember]
         public string IconPayload { get; set; }
     }
