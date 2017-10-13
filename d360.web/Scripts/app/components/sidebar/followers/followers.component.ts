@@ -68,7 +68,9 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
     load() {
         this.isLoading = true;
         this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
-            this.objectName = res.DisplayValue;
+            console.log(res);
+            if (res.Name) this.objectName = res.Name;
+            else this.objectName = res.DisplayValue;
         });
 
         this.followerService.getFollowers(this.objectType, this.objectID)
