@@ -63,7 +63,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     DiagramMode = DiagramMode;
 
     //control properties
-    private isWindowVisible = true;
+    private isWindowVisible = false;
     private showNodeTabs = false;
     private showLinkTabs = false;
     private showEditTab = false;
@@ -313,6 +313,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private toggleReadOnly(readonly?: boolean) {
         if (readonly != null) this.readonly = readonly;
 
+
+
         //this.myDiagram.isReadOnly = this.readonly;
 
         let dt = this.myDiagram.toolManager.diagram
@@ -328,6 +330,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.readonly;
 
         this.loadMenuItems();
+
+        //if (!this.readonly)
+        //    this.createDiagram();
 
 
         //this.myDiagram.model.isReadOnly = this.readonly;
@@ -432,6 +437,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private validateNode(n: NodeModelV2) {
         let valid = true;
 
+        if (n == null) {
+            console.warn('NULL passed to validateNode()');
+            return;
+        }
         //n.valid = true;
 
         switch (n.category) {
@@ -468,10 +477,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         let node = this.myDiagram.model.findNodeDataForKey(n.key);
-        this.myDiagram.model.setDataProperty(node, 'valid', valid);
+        if (node != null) {
+            this.myDiagram.model.setDataProperty(node, 'valid', valid);
+            if (node.group != null)
+                this.validateNode(this.myDiagram.model.findNodeDataForKey(node.group));
+        }
 
-        if (node.group != null)
-            this.validateNode(this.myDiagram.model.findNodeDataForKey(node.group));
         //console.log('validateNode', n.valid, n);
 
     }
@@ -552,11 +563,14 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             return;
         }
 
+        let windowState = this.isWindowVisible;
         this.isLoading = true;
+        this.isWindowVisible = false;
         console.log('save model', model);
         this.lineageService.postLineage(model)
             .then(() => {
                 this.isLoading = false;
+                this.isWindowVisible = windowState;
                 //console.log('save complete');
             });
     }
@@ -808,9 +822,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     this.myDiagram.model.setDataProperty(node, 'order', null);
                 }
             } else {
-                if (grp == null) {
+                if (grp == null || (grp != null && grp.data != null && grp.data.category == 'transform')) {
                     e.diagram.currentTool.doCancel();
                     this.messagesService.showError('Error', 'This item can only be added to maps');
+                    this.selectedData = null;
+                    this.selectTab('info');
+                    this.isWindowVisible = false;
+                    return;
                 } else {
                     //if this is a new object, change the name/objName for display purposes
                     if (node.object == null && node.objectId == null && node.name != '<choose an object>') {
@@ -908,6 +926,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             paletteModel.push({
                 category: 'object',
                 name: o.name,
+                objectTypeName: o.objectTypeName,
                 objectType: o.object,
                 objectTypeId: o.objectId,
                 foreColor: o.foreColor,

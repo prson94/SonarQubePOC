@@ -2385,6 +2385,7 @@ from    [Intersect] I
 	                i.[object], 
 	                i.objectId,
 	                d.name,
+					case when d.parentID is not null and d.textpath != d.name then d.textpath else null end as objectTypeName,
 	                d.IconForeColor as foreColor,
 	                d.IconBackColor as backColor,
 					coalesce(o.[Order], 99999) as [order]
@@ -2399,7 +2400,8 @@ from    [Intersect] I
 				select distinct
 					'MapType' as [object],
 					m.ID as objectId,
-					m.[Name],
+					m.[name],
+                    null as objectTypeName,
 					null as foreColor,
 					null as backColor,
 					-1 as [order]

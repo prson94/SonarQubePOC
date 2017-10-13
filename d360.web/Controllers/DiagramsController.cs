@@ -408,7 +408,7 @@ namespace d360.web.Controllers
                     transformMappings.Add(t.Key, transform.ID);
 
                     //find associated children
-                    var children = maps.Where(m => transformMappings.ContainsKey(m.Group) && transform.ID == transformMappings[m.Group]).ToList();
+                    var children = maps.Where(m => m.Group != null && transformMappings.ContainsKey(m.Group) && transform.ID == transformMappings[m.Group]).ToList();
 
                     children.ForEach(c =>
                     {

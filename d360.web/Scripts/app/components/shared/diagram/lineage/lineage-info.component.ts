@@ -8,7 +8,7 @@ import * as go from 'gojs';
     selector: 'd3s-lineage-info',
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div *ngIf="node.category == 'transform'">
+        <div *ngIf="node != null && node.category == 'transform'">
             <div class="row" *ngIf="node.businessTransformation != null">
                 <div class="col s12">
                     <div class="FieldName">
