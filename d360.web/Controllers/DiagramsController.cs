@@ -247,6 +247,27 @@ namespace d360.web.Controllers
             };
         }
 
+        [HttpGet, Route("{type}/{id:int}/lineagenode")]
+        public JsonNetResult GetLineageNodeDataForObject(string type, int id)
+        {
+            var sql = @"	select 
+		                [name],
+		                IconForeColor as foreColor,
+		                IconBackColor as backColor,
+		                [object],
+		                objectId,
+		                objectType,
+		                objectTypeId,
+		                objectTypeName
+	                from cache.ObjectDetails
+	                where [object] = @type and objectid = @id";
+
+            return new JsonNetResult
+            {
+                Data = Company.Query<dynamic>(sql, new { type, id }).FirstOrDefault(),
+                Formatting = Formatting.None
+            };
+        }
 
         [HttpGet, Route("lineage/{type}/{id:int}")]
         public JsonNetResult GetLineageByObjectV2(string type, int id)
@@ -401,7 +422,6 @@ namespace d360.web.Controllers
                     var transform = new MapGroup();
                     transform.BusinessTransformation = t.BusinessTransformation;
                     transform.TechnicalTransformation = t.TechnicalTransformation;
-                    transform.MapID = 0;
 
                     Company.Add(transform);
                     Company.SaveChanges();
@@ -443,7 +463,6 @@ namespace d360.web.Controllers
                             groupItem.MapGroupID = transform.ID;
                             groupItem.Object = "Map";
                             groupItem.ObjectID = map.ID;
-                            groupItem.IntersectID = 0;
 
                             Company.Add(groupItem);
                             Company.SaveChanges();

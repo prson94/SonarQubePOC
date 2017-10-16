@@ -1,6 +1,5 @@
 ﻿CREATE TABLE [dbo].[MapGroup](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
-	[MapID] [int] NOT NULL,
 	[BusinessTransformation] [nvarchar](max) NULL,
 	[TechnicalTransformation] [nvarchar](max) NULL,
  CONSTRAINT [PK_MapGroup] PRIMARY KEY CLUSTERED 
@@ -10,9 +9,4 @@
 )
 GO
 
-ALTER TABLE [dbo].[MapGroup]  WITH CHECK ADD  CONSTRAINT [FK_MapGroup_Map] FOREIGN KEY([MapID])
-REFERENCES [dbo].[Map] ([ID])
-GO
 
-ALTER TABLE [dbo].[MapGroup] CHECK CONSTRAINT [FK_MapGroup_Map]
-GO

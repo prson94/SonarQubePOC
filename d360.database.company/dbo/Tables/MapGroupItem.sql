@@ -1,6 +1,5 @@
 CREATE TABLE [dbo].[MapGroupItem](
 	[MapGroupID] [int] NOT NULL,
-	[IntersectID] [int] NOT NULL,
 	[Object] [varchar](50) NULL,
 	[ObjectID] [int] NULL,
 	[ID] [int] IDENTITY(1,1) NOT NULL,

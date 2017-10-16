@@ -10,9 +10,6 @@ namespace d360.core.entities
     public class MapGroup : BaseIntObject, IIntObject, ICreatedObject
     {
         [DataMember]
-        public int MapID { get; set; }
-
-        [DataMember]
         public string BusinessTransformation { get; set; }
 
         [DataMember]

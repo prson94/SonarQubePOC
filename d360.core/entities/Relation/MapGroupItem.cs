@@ -14,8 +14,6 @@ namespace d360.core.entities
         public int MapGroupID { get; set; }
 
         [DataMember]
-        public int IntersectID { get; set; }
-        [DataMember]
         public string Object { get; set; }
 
         [DataMember]

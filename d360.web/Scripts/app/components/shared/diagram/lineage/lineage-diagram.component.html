@@ -1,4 +1,74 @@
-﻿<div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 30px; z-index: 999">
+﻿<div class="tile tile-detail" style="max-height: 125px; height: 125px;" *ngIf="hasHeader">
+    <!--<div class="row" *ngIf="!isLoading">
+        <div class="col s12 m6">
+            <header>{{model?.Type?.Name}}</header>
+        </div>
+        <div class="col s12 m2" style="padding-top: 10px">
+            <div class="FieldName">
+                Published Version
+            </div>
+            <div>
+                {{ (model?.PublishedVersion < 1) ? 'Unpublished' : model?.PublishedVersion }}
+            </div>
+        </div>
+        <div class="col s12 m2" style="padding-top: 10px">
+            <div class="FieldName">
+                Current Version
+            </div>
+            <div>
+                {{ (model?.CurrentVersion == null) ? '' : model?.CurrentVersion }}
+            </div>
+        </div>
+        <div class="col s2" style="padding-top: 10px">
+            <div class="FieldName">Last Executed</div>
+            <div>
+                <ng-container *ngIf="model != null && model.Event != null && model.Event.LastExecuted != null; else never">
+                    {{model.Event.LastExecuted | date:'short'}}
+                </ng-container>
+                <ng-template #never>
+                    Never
+                </ng-template>
+            </div>
+        </div>
+    </div>-->
+    <div class="row" *ngIf="isLoading">
+        <div class="col s12">
+            <d3s-loading [isLoading]="true"></d3s-loading>
+        </div>
+    </div>
+    <div class="row" *ngIf="!isLoading">
+        <div class="col s6" *ngIf="!isReadOnly" style="max-height: 50px; overflow-y: auto">
+            <div *ngFor="let e of errors" class="errorMessage">&bull; {{e}}</div>
+        </div>
+        <!--<div class="col s2" [class.offset-s6]="(!isReadOnly && errors != null && errors.length < 1) || isReadOnly">
+            <div class="FieldName">
+                Type Name
+            </div>
+            <div>
+                {{objectTypeName}}
+            </div>
+        </div>
+        <div class="col s12 m2">
+            <div class="FieldName">
+                Change Type
+            </div>
+            <div>
+                {{WorkflowChangeType[model?.Event?.ChangeType]}}
+            </div>
+        </div>-->
+    </div>
+    <div class="row" *ngIf="!isReadOnly" style="position: absolute; top: 97px; width: 100%;">
+        <div class="col s6">
+            <div>
+                <button pButton type="button" label="Cancel" (click)="toggleReadOnly(true)"></button>
+                <button pButton type="button" label="Save" (click)="save()" [disabled]="!isValid"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="diagramMode == DiagramMode.Diagram" style="position:relative;left: 100%; display: inline; width: 1px; top: 43px; z-index: 900">
     <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isWindowVisible" [headerText]="(showNodeTabs || showLinkTabs) ? headerText : ''" [overflowScroll]="'visible'">
         <div *ngIf="!showNodeTabs && !showLinkTabs" style="padding:10px;">Nothing selected</div>
         <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs">

@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener, SimpleChanges } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { DiagramService } from '../../../../services/diagram.service';
@@ -72,6 +72,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private editorMenuItems: MenuItem[] = [];
     private tab: string = 'info';
     private headerText = '';
+    private diagramOffset = 291;
+    private overlayOffset = 391;
+    private overlayMaxHeight = 500;
+    private hasHeader = false;
 
     //diagram properties
     private g = go.GraphObject.make;
@@ -90,18 +94,30 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     public ngOnInit() {
         this.readonly = this.readonly.toString() == 'true' ? true : false;
+        this.hasHeader = false;// !this.readonly;
 
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
         //this.initializeDiagram();
         //if (!this.readonly) this.initializePalette();
     }
 
-    public ngOnChanges() {
+    public ngOnChanges(changes: SimpleChanges) {
+        if ((changes['objectId'] != null && changes['objectId'].currentValue != changes['objectId'].previousValue) ||
+            (changes['objectType'] != null && changes['objectType'].currentValue != changes['objectType'].previousValue)) {
+            if (this.myDiagram != null && this.myDiagram.div != null)
+                this.myDiagram.div = null;
+            if (this.myPalette != null && this.myPalette.div != null)
+                this.myPalette.div = null;
 
-        this.initializeDiagram()
-            .then(() => this.toggleReadOnly())
-            .then(() => this.initializePalette());
+            this.selectedData = null;
+            this.initializeDiagram();
+            this.resizeDiagram();
 
+        }
+
+        if (changes['readonly'] != null && changes['readonly'].currentValue != changes['readonly'].previousValue) {
+            this.toggleReadOnly();
+        }
     }
 
     public ngAfterViewInit() {
@@ -273,7 +289,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (data) {
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
             this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
-            this.showEditTab = (data.category == 'object' || data.category == 'focal' || data.category == 'transform');
+            this.showEditTab = (data != null && (data.category == 'object' || data.category == 'focal' || data.category == 'transform') && ( this.showLinkTabs || (<any>data).key.toString().indexOf('-') > -1));
             this.showInfoTab = (this.showLinkTabs || ((<any>data).object != null && (<any>data).objectId != null));
 
             if (this.tab != 'info' && this.tab != 'edit')
@@ -313,7 +329,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private toggleReadOnly(readonly?: boolean) {
         if (readonly != null) this.readonly = readonly;
 
-
+        //this.hasHeader = !this.readonly;
 
         //this.myDiagram.isReadOnly = this.readonly;
 
@@ -340,34 +356,64 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private loadMenuItems() {
         this.menuItems = [];
-        this.editorMenuItems = [];
+        this.editorMenuItems = [];   
         
+
+        let add = {
+            icon: 'fa-plus',
+            items: []
+        };
+
+        this.editorMenuItems.push(add);
+
+        add.items.push({
+            icon: 'fa-plus',
+            label: 'Add mapping',
+            items: null
+        });
+
+        if (this.selectedData != null && this.selectedData.category == 'map')
+            add.items.push({
+                icon: 'fa-plus',
+                label: 'Add focal object to selected mapping',
+                items: null
+            });
 
         this.editorMenuItems.push({
             icon: 'fa-floppy-o',
             items: null
         });
 
+        let mapCount = 0;
+        if (this.selection != null)
+            this.selection.each(s => {
+                if (s.category == 'map')
+                    mapCount++;
+            });
 
+        if (this.selection != null && mapCount > 1)
         this.editorMenuItems.push({
             icon: 'fa-object-group',
             items: null
         });
 
-        this.editorMenuItems.push({
-            icon: 'fa-object-ungroup',
-            items: null
-        });
+        if (this.selectedData != null)
+            this.editorMenuItems.push({
+                icon: 'fa-object-ungroup',
+                items: null
+            });
 
-        this.editorMenuItems.push({
-            icon: 'fa-plus',
-            items: null
-        });
+        if (this.readonly)
+            this.menuItems.push({
+                icon: 'fa-pencil',
+                items: null
+            });
 
-        this.menuItems.push({
-            icon: 'fa-pencil',
-            items: null
-        });
+        if (!this.readonly)
+            this.menuItems.push({
+                icon: 'fa-close',
+                items: null
+            });
 
         this.menuItems.push({
             icon: 'fa-plus-square-o',
@@ -608,6 +654,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagramRef.nativeElement.style.height = (window.innerHeight - 142) + 'px';
         this.paletteRef.nativeElement.style.height = (window.innerHeight - 142) + 'px';
         //this.overlayMaxHeight = window.innerHeight - oOffset;
+
+        let dOffset = (this.hasHeader ? this.diagramOffset : this.diagramOffset - 125);
+        let oOffset = (this.hasHeader ? this.overlayOffset : this.overlayOffset - 125);
+        this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
+        this.paletteRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
+        this.overlayMaxHeight = window.innerHeight - oOffset;
+
     }
 
     private zoomDiagram(v: number) {
@@ -664,6 +717,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
             this.initializePalette();
             this.resizeDiagram();
+        } else if (e.icon == 'fa-close') {
+            this.readonly = true;
+            this.toggleReadOnly();
+            this.populateDiagram();
         }
         else if (e.icon == 'fa-object-group') {
             this.groupSelection();
@@ -678,33 +735,88 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.save();
         }
         else if (e.icon == 'fa-plus-square-o') {
-            this.myDiagram.model.nodeDataArray.filter(n => (<any>n).isGroup && (<any>n).category == 'map').forEach(n => {
-                (<any>n).isSubGraphExpanded = true;
+            this.myDiagram.nodes.each(n => {
+                let g = n.containingGroup;
+                if (g != null && (n.data.category == 'object' || n.data.category == 'focal')) {
+                    g.isSubGraphExpanded = true;
+                   // console.log(n, n.data, n.data.category);
+                }
             });
         }
         else if (e.icon == 'fa-minus-square-o') {
-            this.myDiagram.model.nodeDataArray.filter(n => (<any>n).isGroup && (<any>n).category == 'map').forEach(n => {
-                (<any>n).isSubGraphExpanded = false;
+            this.myDiagram.nodes.each(n => {
+                let g = n.containingGroup;
+                if (g != null && (n.data.category == 'object' || n.data.category == 'focal')) {
+                    g.isSubGraphExpanded = false;
+                   // console.log(n, n.data, n.data.category);
+
+                }
             });
         } else if (e.icon == 'fa-plus') {
-            let newMap = new NodeModelV2();
-            let map = this.objectTypes.find(o => o.order == -1);
-            if (map != null) {
-                newMap.backColor = map.backColor;
-                newMap.foreColor = map.foreColor;
-                newMap.name = '<drop objects here>';
-                newMap.category = 'map'
-                newMap.object = map.object;
-                newMap.objectId = map.objectId;
-                newMap.objectTypeId = 1
-                newMap.objectType = map.objectType;
-                newMap.order = null;
-                newMap.diagramObjectType = DiagramObjectType.Node;
-                newMap.visible = true;
-                newMap.isGroup = true;
+            //console.log('add node', e, this.selectedData, this.selection, this.myDiagram.selection);
+            if (e.label.toLowerCase().indexOf('focal') > -1) {
+                let mapKey = this.selectedData == null ? null : this.selectedData.key;
 
-                this.myDiagram.model.addNodeData(newMap);
-                this.messagesService.showInfoMessage('Mapping added', 'A new mapping has been added to the diagram.');
+                if (mapKey != null) {
+                    let focal = null;
+                    let newFocal = new NodeModelV2();
+                    let focalIndex = this.myDiagram.model.nodeDataArray.findIndex(f => (<any>f).category == 'focal');
+                    let promises = [];
+
+                    if (focalIndex > -1) {
+                        focal = this.myDiagram.model.nodeDataArray[focalIndex];
+                    } else {
+                        //we many not have the focal info on new lineage, get it here
+                        promises.push(this.lineageService.getLineageNodeDataForObject(this.objectType, this.objectID)
+                            .then(r => {
+                                focal = r;
+                            }));
+                    }
+
+                    Promise.all(promises).then(() => {
+                        if (focal != null) {
+                            let objType = this.objectTypes.find(o => o.object == focal.objectType && o.objectId == focal.objectTypeId);
+                            newFocal.name = focal.name;
+                            newFocal.backColor = focal.backColor;
+                            newFocal.foreColor = focal.foreColor;
+                            newFocal.category = 'focal';
+                            newFocal.object = focal.object;
+                            newFocal.objectId = focal.objectId;
+                            newFocal.objectType = focal.objectType;
+                            newFocal.objectTypeId = focal.objectTypeId;
+                            newFocal.objectTypeName = focal.objectTypeName;
+                            newFocal.order = (objType == null ? null : objType.order);
+                            newFocal.diagramObjectType = DiagramObjectType.Node;
+                            newFocal.visible = true;
+                            newFocal.isGroup = false;
+                            newFocal.group = mapKey;
+
+                            this.myDiagram.model.addNodeData(newFocal);
+                            this.messagesService.showInfoMessage('Focal object added', 'The focal object has been added to the mapping.');
+                        }
+                    });
+
+                }
+            } else {
+                let newMap = new NodeModelV2();
+                let map = this.objectTypes.find(o => o.order == -1);
+                if (map != null) {
+                    newMap.backColor = map.backColor;
+                    newMap.foreColor = map.foreColor;
+                    newMap.name = '<drop objects here>';
+                    newMap.category = 'map'
+                    newMap.object = map.object;
+                    newMap.objectId = map.objectId;
+                    newMap.objectTypeId = 1
+                    newMap.objectType = map.objectType;
+                    newMap.order = null;
+                    newMap.diagramObjectType = DiagramObjectType.Node;
+                    newMap.visible = true;
+                    newMap.isGroup = true;
+
+                    this.myDiagram.model.addNodeData(newMap);
+                    this.messagesService.showInfoMessage('Mapping added', 'A new mapping has been added to the diagram.');
+                }
             }
         }
     }
@@ -836,6 +948,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                         this.myDiagram.model.setDataProperty(node, 'name', '<choose an object>');
                     }
                     grp.addMembers(grp.diagram.selection, true);
+                    grp.isSubGraphExpanded = true;
                     if (grp.data.name == '<drop objects here>') {
                         this.myDiagram.model.setDataProperty(grp.data, 'name', node.name);
                     }
