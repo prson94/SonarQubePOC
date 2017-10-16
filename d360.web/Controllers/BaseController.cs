@@ -1467,9 +1467,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     allItemsBind = $"{prefix}{filterNumber}val_all";
                     allValueBind = $"{ft.AllowAllLabel.Replace("'", "''")}";
                 }
-            }
 
-            if (ft.AllowMultipleValues) condition = "CONTAINS";
+                if (ft.AllowMultipleValues) condition = "CONTAINS";
+            }            
 
             var querySyntax = "";
             switch (condition)
