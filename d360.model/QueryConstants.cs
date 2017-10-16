@@ -1231,11 +1231,11 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 	P.ObjectType as [Object],
 	P.ObjectID,
 	D.Name as ObjectName,
-	D.NgUrl as ObjectUrl,
+	D.Url as ObjectUrl,
 	P.CreatedOn,
 	P.UpdatedOn
 from fusion.RulePromotion P
-join cache.ObjectDetails D on D.Object = P.ObjectType and D.ObjectID = P.ObjectID
+Cross apply utility.objectdetail(P.ObjectType,  P.ObjectID) D
 join FusionAttribute FA ON P.AttributeID = FA.ID and P.AttributeType = 'FusionAttribute'
 where P.RuleStepID = @id
 union all

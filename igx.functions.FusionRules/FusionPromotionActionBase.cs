@@ -93,7 +93,7 @@ namespace igx.functions.FusionRules
             ");
         }
 
-        private static async Task MergePromotionResults(SqlConnection company, FusionRuleStepModel step, FusionRule rule)
+        private async Task MergePromotionResults(SqlConnection company, FusionRuleStepModel step, FusionRule rule)
         {
             await company.ExecuteAsync(@"
                                 MERGE	[fusion].[RulePromotion] AS T
@@ -103,7 +103,7 @@ namespace igx.functions.FusionRules
 									ObjectType as ObjectType, 
 									ObjectID as ObjectID, 
 									@RuleID as RuleID,
-									0 as PromotedObjectTypeID,
+									@ObjectTypeID as PromotedObjectTypeID,
 									@RuleStepID as RuleStepID
                             from #promotedItems 
 							) as S
@@ -120,7 +120,7 @@ namespace igx.functions.FusionRules
 					WHEN	NOT MATCHED THEN
 							INSERT (AttributeID, AttributeType, ObjectType, ObjectID, RuleID, RuleStepID, ObjectTypeID, CreatedOn, UpdatedOn) 
 							VALUES (S.AttributeID, S.AttributeType, S.ObjectType, S.ObjectID, S.RuleID, S.RuleStepID, S.PromotedObjectTypeID, getutcdate(), getutcdate());    
-                        ", new { RuleID = rule.ID, RuleStepID = step.ID });
+                        ", new { RuleID = rule.ID, RuleStepID = step.ID, ObjectTypeID = PromoteToObjectID });
         }
 
         protected void LoadParentSearchOptions()
