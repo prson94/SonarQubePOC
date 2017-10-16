@@ -56,7 +56,7 @@ namespace igx.functions.FusionRules
 	                            f.ObjectType = @objectParentType
                         ";
 
-            await company.ExecuteAsync(sql, new { objectParentType = Rule.ObjectType.Replace("Type", ""), targetType = promoteToObject, objectParentId = promoteToObjectID });
+            await company.ExecuteAsync(sql, new { objectParentType = Rule.ObjectType.Replace("Type", ""), targetType = promoteToObject, objectParentId = promoteToObjectID }, commandTimeout: EXECUTION_TIMEOUT);
 
 #if DEBUG
             await PrintTempTableContents(company, Log, "fieldvalues");
@@ -90,7 +90,7 @@ namespace igx.functions.FusionRules
 					update set T.Value = S.Value
 			when	not matched then
 					insert (ObjectType, ObjectID, FieldTypeID, Value) values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
-            ");
+            ", commandTimeout: EXECUTION_TIMEOUT);
         }
 
         private async Task MergePromotionResults(SqlConnection company, FusionRuleStepModel step, FusionRule rule)
@@ -120,7 +120,7 @@ namespace igx.functions.FusionRules
 					WHEN	NOT MATCHED THEN
 							INSERT (AttributeID, AttributeType, ObjectType, ObjectID, RuleID, RuleStepID, ObjectTypeID, CreatedOn, UpdatedOn) 
 							VALUES (S.AttributeID, S.AttributeType, S.ObjectType, S.ObjectID, S.RuleID, S.RuleStepID, S.PromotedObjectTypeID, getutcdate(), getutcdate());    
-                        ", new { RuleID = rule.ID, RuleStepID = step.ID, ObjectTypeID = PromoteToObjectID });
+                        ", new { RuleID = rule.ID, RuleStepID = step.ID, ObjectTypeID = PromoteToObjectID }, commandTimeout: EXECUTION_TIMEOUT);
         }
 
         protected void LoadParentSearchOptions()
@@ -154,7 +154,7 @@ namespace igx.functions.FusionRules
 		                                );
 
 		                                CREATE UNIQUE CLUSTERED INDEX PK_tempfieldValues ON #fieldValues ([ObjectType] ASC,[ObjectID] ASC,[FieldTypeID] ASC);
-                                ");
+                                ", commandTimeout: EXECUTION_TIMEOUT);
         }
 
         protected async Task<IEnumerable<string>> GetKeyFields(SqlConnection company)
@@ -187,7 +187,7 @@ namespace igx.functions.FusionRules
                             where
 	                            ftemp.TargetFieldName in @keyFields;";
 
-            await company.ExecuteAsync(sql, new { keyFields = keyFields });
+            await company.ExecuteAsync(sql, new { keyFields = keyFields }, commandTimeout: EXECUTION_TIMEOUT);
         }
 
         protected async Task<int> GetNewItemCount(SqlConnection company)

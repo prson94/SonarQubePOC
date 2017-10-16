@@ -17,6 +17,8 @@ namespace igx.functions.FusionRules
         {
             Stats = new FusionRuleStepStatistics();
         }
+
+        protected int EXECUTION_TIMEOUT = 120;
         public FusionRuleStepModel Step { get; set; }
         public int CompanyId { get; set; }
         public FusionRule Rule { get; set; }

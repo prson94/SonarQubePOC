@@ -196,30 +196,5 @@ namespace igx.functions.FusionRules
                         output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;";
             await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact" });
         }
-
-        private void LoadResultFromStepParentObjectInfo(SqlConnection company)
-        {
-            // need to load each items parent info based on the run items
-            /*
-             * select	@ParentObject = ObjectType,
-										@ParentObjectID = ObjectID
-								from	[fusion].[RulePromotion]
-								where	@ParentSearchObject = 'Step'
-										and RuleID = @RuleID
-										and RuleStepID = @ParentSearchObjectID
-										and AttributeID = @AttributeID
-										and AttributeType = @AttributeType*/
-            /*
-                        var sql = @"select	ObjectType,
-                                            ObjectID
-                                    from	[fusion].[RulePromotion]
-                                    where	@ParentSearchObject = 'Step'
-                                        and RuleID = @RuleID
-                                        and RuleStepID = @ParentSearchObjectID
-                                        and AttributeID = @AttributeID
-                                        and AttributeType = @AttributeType";
-
-                        company.QueryAsync(sql, new {RuleID = Rule.ID, ParentSearchObjectID = ParentObjectID, AttributeID);*/
-        }
     }
 }
