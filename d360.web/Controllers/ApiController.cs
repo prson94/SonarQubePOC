@@ -76,26 +76,11 @@ namespace d360.web.Controllers
         {
             var list = new List<DetailReadOnlyRowModel>();
 
-
-            var typeCheckSql = "";
-            switch (type)
-            {
-                case SystemObjects.Attribute:
-                    typeCheckSql = $"select 'AttributeType' as [Type], AttributeTypeID as ID from [Attribute] where ID = {id}";
-                    break;
-                case SystemObjects.FusionAttribute:
-                    typeCheckSql = $"select 'FusionAttributeType' as [Type], FusionAttributeTypeID as ID from [FusionAttribute] where ID = {id}";
-                    break;
-                default:
-                    typeCheckSql = $"select ObjectType as [Type], ObjectTypeID as ID from cache.Object where Object = '{type.ToString()}' and ObjectID = {id}";
-                    break;
-            }
-
-            var typeCheck = Company.Query<TypeCheckModel>(typeCheckSql).FirstOrDefault();
-            if (typeCheck != null)
+            var details = Company.GetObjectDetail(type, id);
+            if (details != null)
             {
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
-                var fieldTypes = Company.Filter<FieldType>(i => i.Object == typeCheck.Type && i.ObjectID == typeCheck.ID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
+                var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
                 fieldTypes.ForEach(ft =>
                 {
@@ -152,8 +137,9 @@ namespace d360.web.Controllers
                                     ro.Values = new List<ReadOnlyFieldValue>();
                                     ro.Value = "values";
 
-                                    var items = k.Value.Split(',');
-                                    var itemNames = k.FormattedValue.Split(',');
+                                    
+                                    var items = ((k != null) ? k.Value.Split(',') : new string[] { });
+                                    var itemNames = (k!= null) ?  k.FormattedValue.Split(',') : new string[] { };
 
                                     for (int i = 0; i < items.Length; i++)
                                     {
