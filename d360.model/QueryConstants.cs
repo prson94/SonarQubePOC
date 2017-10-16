@@ -1438,7 +1438,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             where p.SiteNavID = @id";
 
         public static string WorkflowVersionStepHistory = @"
-			select 
+	select 
 	            i.ID as ItemStepID, convert(varchar(max),i.Fields) as Fields, i.StartedOn, i.CompletedOn, r.FirstName + ' ' + r.LastName as StartedBy,
 	            r2.FirstName + ' ' + r2.LastName as CompletedBy, m.Object, m.ObjectID, d.Name, d.ObjectTypeName,
 	            d.NgUrl, d.TextPath,vs.Name as StepName, string_agg(r3.FirstName + ' ' + r3.LastName, ', ') as Assignments, convert(varchar(max),vs.Settings) as Settings, vs.StepType as StepType, vs.ActivityType
@@ -1446,7 +1446,12 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 					case when vs.ActivityType = 2 then
 						'Status was changed to '  + convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/Status[1]/text()[1]','varchar(max)')
 					when vs.ActivityType = 3 then
-						'Form completed by ' + coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
+						'Form completed by ' + 
+							case when i.CompletedBy is not null and convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/FormResponseType[1]/text()[1]', 'varchar(max)') = 'FirstResponse'  then
+								coalesce(max(r2.FirstName + ' ' + r2.LastName), '[unknown]')
+							else
+								coalesce(string_agg(r3.FirstName + ' ' + r3.LastName, ', '), '[unknown]')
+							end
 					when vs.ActivityType = 1 then
 						case when convert(xml,convert(varchar(max),vs.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
 							'Email sent to ' + r.FirstName + ' ' + r.LastName
@@ -1473,7 +1478,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 					'In Progress'
 				end as [Status], null as SettingsObject, null as FieldsObject
             from workflow.itemstep i
-            {0}
+			{0}
 			left join workflow.itemassignment a on a.itemid = m.id
 			left join workflow.versionstep vs on vs.id = i.stepid
             left join cache.objectdetails d on d.object = m.object and d.objectid = m.objectid
@@ -1483,8 +1488,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 			left join workflow.version v on v.id = vs.versionid
 			left join workflow.type t on t.id = v.typeid
             where vs.id = @id
-			group by i.id, i.startedon, i.completedon, r.FirstName, r.LastName, r2.FirstName, r2.LastName, m.Object, m.ObjectID, d.Name,
-				d.ObjectTypeName, d.NgUrl, d.TextPath, vs.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType, vs.id, t.id, convert(varchar(max),i.Fields)";
+			group by i.id, i.startedon, i.completedon, i.completedby, r.FirstName, r.LastName, r2.FirstName, r2.LastName, m.Object, m.ObjectID, d.Name,
+				d.ObjectTypeName, d.NgUrl, d.TextPath, vs.Name, convert(varchar(max),vs.Settings), vs.StepType, vs.ActivityType, vs.id, t.id, convert(varchar(max),i.Fields)
+";
 
         public static string WorkflowTypeList = @"
             with a as
