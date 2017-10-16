@@ -641,6 +641,8 @@ namespace d360.web.Controllers
                 {
                     var mapGroup = Company.GetById<MapGroup>(transformId);
                     removingGroupIds.Add(mapGroup.ID);
+                    var groupItems = Company.MapGroupItems.Where(i => i.MapGroupID == transformId).ToList();
+                    removingGroupItems.AddRange(groupItems);
                 }
 
             });

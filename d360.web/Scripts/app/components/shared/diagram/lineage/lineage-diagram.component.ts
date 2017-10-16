@@ -934,7 +934,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     this.myDiagram.model.setDataProperty(node, 'order', null);
                 }
             } else {
-                if (grp == null || (grp != null && grp.data != null && grp.data.category == 'transform')) {
+                if (grp == null || (grp != null && grp.data != null && (node.category != 'map' && grp.data.category == 'transform'))) {
                     e.diagram.currentTool.doCancel();
                     this.messagesService.showError('Error', 'This item can only be added to maps');
                     this.selectedData = null;

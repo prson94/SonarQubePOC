@@ -12,7 +12,7 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
             <div style="font-weight: bold">
                 {{node.name}}
             </div>
-            <div *ngIf="node != null && node.key != null && node.key.indexOf('-') == 0">
+            <div *ngIf="node != null && node.key != null && node.key.toString().indexOf('-') == 0">
                 <button pButton type="button" label="Change Object" (click)="edit()"></button>
             </div>
         </ng-container>
