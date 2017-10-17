@@ -24,7 +24,7 @@ namespace igx.functions.FusionRules
 
         public static async void Process(int companyId, TraceWriter log)
         {
-            DateTime startTime = DateTime.UtcNow;
+            
             using (var company = CompanyConnectionUtils.GetCompanyConnection(companyId))
             {
                 company.OpenWithRetry(RetryPolicy.DefaultFixed);
@@ -59,12 +59,18 @@ namespace igx.functions.FusionRules
                     return;
                 }
 
+                //add a record to the fusion.rulelog table so that these rules doent run another instance while it is running
+                int ruleLogId = await CreateFusionRuleLogRecord(company);
+
+                log.Info($"Company ID[{companyId}] Created Fusion Rule Log ID [{ruleLogId}]");
+
                 List<FusionRuleStepStatistics> stats = new List<FusionRuleStepStatistics>();
 
                 foreach (var rule in fusionRulesToRun)
                 {
                     //print the details of this fusion rule
                     log.Info($"Company ID[{companyId}] running fusion rule [{rule.Description}] rule ID [{rule.ID}], fusion ID [{rule.FusionID}], object type [{rule.ObjectType}], object id [{rule.ObjectID}]");
+
                     
                     // get the filter items
                     var items = await GetRuleItems(rule.ID, company, companyId, log);
@@ -119,12 +125,26 @@ namespace igx.functions.FusionRules
                 // log the statistics for this fusion rule run things like how many promotions etc
 
                 // also send app insights message.
-                await CreateRuleExecutionLogRecord(company, fusionRulesToRun, startTime,DateTime.UtcNow, stats);
+                await CreateRuleExecutionLogRecord(company, fusionRulesToRun, stats, ruleLogId);
             }            
         }
 
-        private static async Task CreateRuleExecutionLogRecord(SqlConnection company, IEnumerable<FusionRule> fusionRulesToRun, DateTime start, DateTime end, List<FusionRuleStepStatistics> stepStats)
+        private static async Task<int> CreateFusionRuleLogRecord(SqlConnection company)
         {
+            return (await company.QueryAsync<int>(@"
+                    begin
+                        insert into [fusion].[RuleLog] ( DateStarted ) values ( CURRENT_TIMESTAMP)
+		                select cast(SCOPE_IDENTITY() as int);
+                    end
+                ")).Single();
+        }
+
+        private static async Task CreateRuleExecutionLogRecord(SqlConnection company, IEnumerable<FusionRule> fusionRulesToRun, List<FusionRuleStepStatistics> stepStats, int ruleLogId)
+        {
+            if(ruleLogId <= 0)
+            {
+                throw new Exception("Error Invalid rule log id cannot properly update execution log.");
+            }
             int promotedArtifacts = 0;
             int promotedTaxonomies = 0;
 
@@ -134,7 +154,11 @@ namespace igx.functions.FusionRules
                 promotedTaxonomies += stat.PromotedTaxonomies;
             }
 
-            await company.ExecuteAsync(@"insert into fusion.[rulelog] (DateStarted, DateCompleted, PromotedTaxonomies, PromotedDomainItems, PromotedDomains, PromotedArtifacts, TotalNewPromotions, AttributesConsidered, NumberOfRules) values(@start,@end,@promoTaxonomy,0,0,@promoArtifacts,@promoTotal,0,@ruleCount) ", new { ruleCount = fusionRulesToRun.Count(), start = start, end = end, promoArtifacts = promotedArtifacts, promoTaxonomy = promotedTaxonomies, promoTotal = promotedArtifacts + promotedTaxonomies });
+            await company.ExecuteAsync(@"update 
+                                            fusion.[rulelog] 
+                                        set DateCompleted = @end, PromotedTaxonomies = @promoTaxonomy, PromotedArtifacts = @promoArtifacts, TotalNewPromotions = @promoTotal, NumberOfRules = @ruleCount 
+                                        where id = @ruleLogId                
+                ", new { ruleCount = fusionRulesToRun.Count(), end = DateTime.UtcNow, promoArtifacts = promotedArtifacts, promoTaxonomy = promotedTaxonomies, promoTotal = promotedArtifacts + promotedTaxonomies, ruleLogId = ruleLogId });
         }
         
         private static async Task CreateFusionRuleFieldsTempTable(FusionRule rule, List<int> items, SqlConnection company, int companyId, TraceWriter log)
