@@ -74,6 +74,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
             .then(r => {
                 this.fields = r;
+                //console.log(this.fields);
             })
             .then(() => {
 
@@ -113,6 +114,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     selectField(i: number) {
         this.selectedFieldIndex = i;
         this.selectedField = this.fieldUpdate.Field[i];
+        console.log(this.selectedField);
     }
 
     select(e: any, clear: boolean = true) {
@@ -183,6 +185,18 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         let field = _.cloneDeep(this.selectedField);
         let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
 
+        //console.log('save', field);
+
+        //join multiselect value into a comma delimited string
+        if (this.field.AllowMultipleValues && this.field.Type.toLowerCase() == 'lookup') {
+            //primeng junk value
+            delete field['@Value']._$visited;
+
+            field['@Value'] = field['@Value'].join();
+        } else {
+            delete field['@AppendValue'];
+        }
+
         if (fieldTypeIndex > -1) {
             this.usedFields.push(this.fields[fieldTypeIndex]);
             this.fields.splice(fieldTypeIndex, 1);
@@ -247,6 +261,14 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         if (usedFieldIndex > -1) {
             this.fields.push(this.usedFields[usedFieldIndex]);
             this.usedFields.splice(usedFieldIndex, 1);
+        }
+
+        let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
+        if (field != null) {
+            //for multiselect we need to split the value back into an array
+            if (field.Type.toLowerCase() == 'lookup' && field.AllowMultipleValues == true) {
+                this.selectedField['@Value'] = this.selectedField['@Value'].split(',');
+            }
         }
 
         this.setValueType();

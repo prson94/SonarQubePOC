@@ -17,6 +17,7 @@ import {
     InputMaskModule,
     DataListModule,
     ToggleButtonModule,
+    MultiSelectModule,
 } from 'primeng/primeng';
 
 import { CoreModule } from '../../core.module';
@@ -64,6 +65,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         InputMaskModule,
         DataListModule,
         AutoCompleteModule,
+        MultiSelectModule,
 
     ],
     declarations: [
