@@ -4596,8 +4596,9 @@ namespace d360.web.Controllers
             var a = Company.GetById<FusionRule>(id);
             if (a == null) return null;
 
-            var attributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).Select(i => new { i.ID, i.Name, @Type = "FusionAttributeType" }).ToList();
+            var attributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).OrderBy(x=>x.TextPath).Select(i => new { i.ID, Name = i.TextPath, @Type = "FusionAttributeType" }).ToList();
             attributeTypes.AddRange(Company.Filter<FusionQueryAttributeType>(i => i.FusionID == a.FusionID).Select(i => new { i.ID, Name = "Query :: " + i.Name, @Type = "FusionQueryAttributeType" }).ToList());
+
 
             var model = new FusionRuleEditorModel
             {
