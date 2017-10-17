@@ -1370,6 +1370,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 			select 'ReferenceItemType|' + cast(t.id as varchar) as value, t.id, 'ReferenceItemType' as [type], 'Reference List :: ' + t.Name as [label], 1 as [count]
 			from referenceitemtype t
 			group by t.id, t.name
+            order by label
 ";
 
         public static string WorkflowList = @"

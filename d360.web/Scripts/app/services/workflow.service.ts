@@ -356,4 +356,11 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getIssueObjectSuggestions(phrase: string) {
+        return this.http.get(`api/tagsuggestions?phrase=${phrase}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

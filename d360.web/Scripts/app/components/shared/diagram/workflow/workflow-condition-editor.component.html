@@ -9,14 +9,16 @@
                 <option *ngFor="let i of fieldList" [value]="i.value">{{i.label}}</option>
             </select>
         </div>
-        <div class="FieldName">
-            Operator
-        </div>
-        <div>
-            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] != '')">
-                <option></option>
-                <option *ngFor="let i of operators" [value]="i.value">{{i.label}}</option>
-            </select>
+        <div *ngIf="selectedType != 'control'">
+            <div class="FieldName">
+                Operator
+            </div>
+            <div>
+                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] != '')">
+                    <option></option>
+                    <option *ngFor="let i of operators" [value]="i.value">{{i.label}}</option>
+                </select>
+            </div>
         </div>
         <div *ngIf="condition['@FieldTypeID'] != '' && condition['@Operator'] != 'C'">
             <div *ngIf="selectedType == 'boolean' || selectedType == 'bool'">
@@ -69,7 +71,6 @@
                     <input type="text" [(ngModel)]="condition['@Value']" style="width: 95%" />
                 </div>
             </div>
-
         </div>
     </div>
 </div>

@@ -63,6 +63,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         CalendarModule,
         InputMaskModule,
         DataListModule,
+        AutoCompleteModule,
 
     ],
     declarations: [

@@ -35,6 +35,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     private fieldList: any[] = [];
     private contextualFields: any[] = [];
 
+    private selectedIssueObject = null;
+    private suggestions = [];
+
     private operators = [
         { value: '=', label: '=' },
         { value: '!=', label: '!=' },
@@ -162,7 +165,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     selectField(e: any) {
         this.selectedField = e;
-        
+        this.selectedIssueObject = null;
+
+        //console.log('selectField: ', e);
 
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
@@ -234,6 +239,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@ContextualFieldID'] = this.selectedField.split('|')[1];
             this.condition['@FieldName'] = special.label;
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
+
+            console.log('selectField: ', e, special, this.selectedType, this.selectedField);
 
         }
     }
@@ -308,4 +315,18 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         return true;
     }
 
+    selectIssueObject(e: any) {
+        console.log(e);
+        this.condition['@Object'] = e.Object;
+        this.condition['@ObjectID'] = e.ObjectID;
+        this.condition['@Value'] = e.TextPath;
+        this.condition['@Operator'] = '=';
+    }
+
+    search(e: any) {
+        this.workflowService.getIssueObjectSuggestions(e.query)
+            .then(r => {
+                this.suggestions = r;
+            });
+    }
 }
