@@ -212,6 +212,7 @@ export class AdminStatisticsComponent extends AdminBaseComponent implements OnIn
         this.statisticService.saveScoreType(event.scoretype)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
+                event.scoretype.Description = event.scoretype.Description == "null" ? "" : String(event.scoretype.Description).replace(/<(?:.|\n)*?>/gm, '');
                 if (event.scoretype.ID == undefined) {
                     event.scoretype.ID = Number(result.id);
                     this.scoretypes[this.scoretypes.length] = event.scoretype;
