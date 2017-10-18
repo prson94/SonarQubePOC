@@ -5,6 +5,8 @@ import '@angular/common';
 import '@angular/forms';
 import '@angular/http';
 import '@angular/router';
+import '@angular/platform-browser/animations';
+
 import 'rxjs/Rx';
 
 import 'primeng/primeng';

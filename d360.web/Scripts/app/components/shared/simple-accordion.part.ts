@@ -1,5 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
-import { NgModule, Input, Component, Output, EventEmitter, transition, animate, style, trigger, state } from '@angular/core';
+import { NgModule, Input, Component, Output, EventEmitter } from '@angular/core';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
     selector: 'simple-accordion',
