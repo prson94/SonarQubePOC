@@ -1,4 +1,5 @@
-﻿import {
+﻿
+-import {
     Component,
     Input,
     OnInit,
@@ -212,6 +213,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
+        this.myDiagram.toolManager.linkingTool.linkValidation = (a,b,c,d) => this.canLink(a,b,c,d);
+
         this.myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.myDiagram.toolManager.linkingTool.isEnabled = !this.isReadOnly;
@@ -221,7 +224,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         //console.log('init diagram', this.isReadOnly);
 
-        this.myDiagram.validCycle = go.Diagram.CycleNotDirected; //disallow cycles
+        this.myDiagram.validCycle = go.Diagram.CycleAll; //disallow cycles
         this.myDiagram.maxSelectionCount = 1; //only select 1 item at a time, this makes handling selections a lot easier
     }
 
@@ -449,6 +452,44 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#endregion
 
     //#region helper methods
+
+    private canLink(fromNode: any, fromPort: any, toNode: any, toPort: any) {
+        //console.log('canLink', fromNode, fromPort, toNode, toPort);
+        return true;
+        //can't link to self
+        //if (fromNode.data.key == toNode.data.key) 
+        //    return false;
+        ////forms can always link, even backwards creating a cycle
+        //if (fromNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
+        //    return true;
+        ////now we have to check for cycles
+        ////let links = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == toNode.data.key);
+        ////let nodeKeys = [];
+        ////while (links != null && links.length > 0) {
+        ////    let nodes = [];
+        ////    let newNodeKeys = [];
+        ////    links.forEach(l => {
+        ////        let node = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from);
+        ////        if (node != null && node.length > 0) {
+        ////            newNodeKeys.push((<any>n).key);
+        ////            node.forEach(n => {
+        ////                if (nodeKeys.indexOf(k => k == (<any>n).key) > -1)
+        ////                    return false;
+        ////                else
+        ////                    nodeKeys.push((<any>n).key)
+        ////            });
+        ////        }
+        ////    });
+
+        ////    links = [];
+        ////    newNodeKeys.forEach(k => {
+        ////        let link = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == k); 
+        ////        links.concat(link);
+        ////    });
+        ////}
+
+        //return true;
+    }
 
     private getObjectName() {
         if (this.objectTypeName != null || this.monitorView || !this.hasHeader)

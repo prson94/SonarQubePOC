@@ -48,6 +48,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private destination = [];
     private lookups = [];
 
+    private allowReassignResource = false;
+    private allowReassignObject = false;
+
     private types = [
         { value: WorkflowFormFieldType.Boolean, label: 'boolean' },
         { value: WorkflowFormFieldType.Integer, label: 'integer' },
@@ -142,18 +145,28 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         if (this.step.settings == null)
             this.step.settings = {};
 
+        //parse bool fields
         if (this.step.settings.SendFormEmail == null)
             this.step.settings.SendFormEmail = false;
         else
-            //convert to bool
             this.step.settings.SendFormEmail = this.step.settings.SendFormEmail.toString().toLowerCase() === 'true' ? true : false;
-        
+
+        if (this.step.fields.form['@allowReassignObject'] != null)
+            this.allowReassignObject = this.step.fields.form['@allowReassignObject'].toString().toLowerCase() === 'true' ? true : false;
+
+        if (this.step.fields.form['@allowReassignResource'] != null)
+            this.allowReassignResource = this.step.fields.form['@allowReassignResource'].toString().toLowerCase() === 'true' ? true : false;
+
+
+
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
         this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId)
             .then(r => {
                 this.lookups = r;
             });
+
+        //console.log('initFields', this.step.fields.form);
     }
 
     add() {

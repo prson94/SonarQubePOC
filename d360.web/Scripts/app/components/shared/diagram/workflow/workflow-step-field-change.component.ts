@@ -190,9 +190,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         //join multiselect value into a comma delimited string
         if (this.field.AllowMultipleValues && this.field.Type.toLowerCase() == 'lookup') {
             //primeng junk value
-            delete field['@Value']._$visited;
-
-            field['@Value'] = field['@Value'].join();
+            if (field['@Value'] != null && field['@Value']._$visited != null)
+                delete field['@Value']._$visited;
+            if (field['@Value'] != null && Array.isArray(field['@Value']))
+                field['@Value'] = field['@Value'].join();
         } else {
             delete field['@AppendValue'];
         }

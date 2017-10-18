@@ -66,6 +66,12 @@
     <div class="row" style="padding-top: 8px">
         <div class="col s12">
             <div>
+                <input type="checkbox" [ngModel]="allowReassignResource" (ngModelChange)="allowReassignResource = $event; step.fields.form['@allowReassignResource'] = $event; stepChange.emit(step);" /> Allow resource reassignment?
+            </div>
+            <div>
+                <input type="checkbox" [ngModel]="allowReassignObject" (ngModelChange)="allowReassignObject = $event; step.fields.form['@allowReassignObject'] = $event; stepChange.emit(step);" /> Allow object reassignment?
+            </div>
+            <div>
                 <input type="checkbox" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);" /> Send form email?
             </div>
         </div>
