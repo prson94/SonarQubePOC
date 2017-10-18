@@ -12,7 +12,8 @@ import {
     NodeModel,
     WorkflowActivityType,
     WorkflowTaskProcedure,
-    EmailTaskRecipientType
+    EmailTaskRecipientType,
+    StepType,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { Column, Header, Editor } from 'primeng/primeng';
@@ -39,6 +40,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     WorkflowActivityType = WorkflowActivityType;
     EmailTaskRecipientType = EmailTaskRecipientType;
+    StepType = StepType;
 
     private originalStep: NodeModel;
     private status = [

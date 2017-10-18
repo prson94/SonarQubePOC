@@ -104,6 +104,9 @@
                                             (fieldUpdateChange)="step.settings.FieldUpdate = $event; stepChange.emit(step)">
             </d3s-workflow-step-field-change>
         </div>
+        <ng-container  *ngSwitchCase="WorkflowActivityType.None">
+                <!-- for terminal steps -->
+        </ng-container>
     </div>
     <div *ngIf="step.hasMultipleInputs" class="col s12" style="padding-top: 8px">
         <input type="checkbox" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)" /> Wait for all transitions to complete?
