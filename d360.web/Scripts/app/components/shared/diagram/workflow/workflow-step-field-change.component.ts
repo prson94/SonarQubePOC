@@ -268,7 +268,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         if (field != null) {
             //for multiselect we need to split the value back into an array
             if (field.Type.toLowerCase() == 'lookup' && field.AllowMultipleValues == true) {
-                this.selectedField['@Value'] = this.selectedField['@Value'].split(',');
+                if (this.selectedField['@Value'] != null && !Array.isArray(this.selectedField['@Value'])) {
+                    this.selectedField['@Value'] = this.selectedField['@Value'].split(',');
+                }
             }
         }
 

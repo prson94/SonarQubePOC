@@ -58,7 +58,7 @@
             </div>
         </div>
     </div>
-    <div class="row" *ngIf="!isReadOnly" style="position: absolute; top: 97px; width: 100%;">
+    <div class="row" *ngIf="!isReadOnly && !isLoading" style="position: absolute; top: 97px; width: 100%;">
         <div class="col s6">
             <div>
                 <button pButton type="button" label="Back" (click)="backClick()"></button>
