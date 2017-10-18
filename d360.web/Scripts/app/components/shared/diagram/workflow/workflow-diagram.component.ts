@@ -454,40 +454,49 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private canLink(fromNode: any, fromPort: any, toNode: any, toPort: any) {
         //console.log('canLink', fromNode, fromPort, toNode, toPort);
-        return true;
+
         //can't link to self
-        //if (fromNode.data.key == toNode.data.key) 
-        //    return false;
-        ////forms can always link, even backwards creating a cycle
-        //if (fromNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
-        //    return true;
-        ////now we have to check for cycles
-        ////let links = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == toNode.data.key);
-        ////let nodeKeys = [];
-        ////while (links != null && links.length > 0) {
-        ////    let nodes = [];
-        ////    let newNodeKeys = [];
-        ////    links.forEach(l => {
-        ////        let node = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from);
-        ////        if (node != null && node.length > 0) {
-        ////            newNodeKeys.push((<any>n).key);
-        ////            node.forEach(n => {
-        ////                if (nodeKeys.indexOf(k => k == (<any>n).key) > -1)
-        ////                    return false;
-        ////                else
-        ////                    nodeKeys.push((<any>n).key)
-        ////            });
-        ////        }
-        ////    });
+        if (fromNode.data.key == toNode.data.key) 
+            return false;
+        //forms can always link, even backwards creating a cycle
+        if (fromNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
+            return true;
 
-        ////    links = [];
-        ////    newNodeKeys.forEach(k => {
-        ////        let link = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == k); 
-        ////        links.concat(link);
-        ////    });
-        ////}
+        //console.log(`from node ${fromNode.data.key} to node ${toNode.data.key}`);
 
-        //return true;
+        //starting with the toNode, is there a way to traverse back to the fromNode?
+        //if so we have a cycle and need to abort
+        let links = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == toNode.data.key);
+        let visitedNodeKeys = [];
+        let panic = 0;
+        let hasCycle = false;
+        while (links != null && links.length > 0) {
+            let nodes = [];
+            links.forEach(l => {
+                let node = this.myDiagram.model.findNodeDataForKey((<any>l).to);
+                //console.log(`link from ${(<any>l).from} to ${(<any>l).to}`, node);
+                if (node.key == fromNode.data.key) { //we found a cycle
+                    hasCycle = true;
+                    return;
+                }
+                if (visitedNodeKeys.indexOf(node.key) > -1)
+                    return;
+                visitedNodeKeys.push(node.key);
+                nodes.push(node);
+            });
+
+            if (hasCycle)
+                return false;
+
+            links = [];
+            nodes.forEach(n => {
+                let newLinks = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.filter(l => (<any>l).from == n.key);
+                links = links.concat(newLinks);
+                //console.log(`new links for node ${n.key}`, newLinks, links);
+            });
+        }
+
+        return true;
     }
 
     private getObjectName() {

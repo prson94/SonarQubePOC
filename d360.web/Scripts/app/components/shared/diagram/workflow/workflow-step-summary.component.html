@@ -139,7 +139,7 @@
                         </ng-template>
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step?.fields?.form['@allowReassignResource'] != null">
+                <div class="col s6" *ngIf="step?.fields?.form != null && step?.fields?.form['@allowReassignResource'] != null">
                     <div class="FieldName">
                         Allow resource reassignment?
                     </div>
@@ -155,7 +155,7 @@
                         {{step?.settings['SendFormEmail'].toString() == 'true' ? 'Yes' : 'No'}}
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step?.fields?.form['@allowReassignObject'] != null">
+                <div class="col s6" *ngIf="step?.fields?.form != null && step?.fields?.form['@allowReassignObject'] != null">
                     <div class="FieldName">
                         Allow object reassignment?
                     </div>
