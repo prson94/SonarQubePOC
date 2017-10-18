@@ -33,7 +33,7 @@ declare var CompanySettings;
                     <div class="row" *ngIf="showSocialScoreBar">
                         <div class="col s12">
                              <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                <d3s-object-governance [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [status]="artifact?.Status" [isWorkflowEnabled]="artifact?.HasWorkflow"></d3s-object-governance>
+                                <d3s-object-governance [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.DisplayValue" [status]="artifact?.Status" [isWorkflowEnabled]="artifact?.HasWorkflow"></d3s-object-governance>
                             </div>
                         </div>
                     </div>
