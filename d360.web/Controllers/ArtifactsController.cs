@@ -531,6 +531,9 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             var d = new Dictionary<string, object>();
             d.Add("p", parentID);
 
+            var type = Company.ArtifactTypes.Where(x => x.ID == parentID).Single();
+            if (type == null) throw new Exception("Artifact Type Not found");
+
             var sql = @"
 select	A.ID,
         A.ParentID,
@@ -548,7 +551,7 @@ from	Artifact A
                 "ArtifactType", childArtifactTypeID,
                 true,
                 sortDataField, sortOrder, pagenum, pagesize,
-                new string[] { "A.DisplayValue", "P.DisplayValue" },
+                (type.ParentID > 0 ? new string[] { "P.DisplayValue" } : new string[] { }),
                 filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false);
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -563,7 +566,9 @@ from	Artifact A
         public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter, string ownerUsers = "", string ownerGroups = "")
         {
             try
-            {               
+            {
+                var type = Company.ArtifactTypes.Where(x => x.ID == id).Single();
+                if (type == null) throw new Exception("Artifact Type Not found");
                 var sql = @"
     select	A.ID,
             A.ParentID,
@@ -580,8 +585,8 @@ from	Artifact A
                     sql, Request, 
                     "ArtifactType", id, 
                     true, 
-                    sortDataField, sortOrder, pagenum, pagesize, 
-                    new string[] { "A.DisplayValue", "P.DisplayValue" }, 
+                    sortDataField, sortOrder, pagenum, pagesize,
+                    (type.ParentID > 0 ? new string[] { "P.DisplayValue" } : new string[] {  }), 
                     filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true);
                 return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
             }

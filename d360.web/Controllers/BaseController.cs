@@ -1122,7 +1122,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             // If simple filter specified add that criteria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.DisplayValue", "P.DisplayValue" }, obj, objectTypeID, filter, dbArgs, fields)}";
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(staticFields, obj, objectTypeID, filter, dbArgs, fields)}";                
             }
 
             var querySql = $@"select * from ({sql}) A";
