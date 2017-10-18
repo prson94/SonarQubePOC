@@ -1,5 +1,4 @@
-﻿
--import {
+﻿import {
     Component,
     Input,
     OnInit,
@@ -636,7 +635,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             n.category = 'task';
             n.fields = m.FieldsObject;
             n.runCount = m.RunCount || 0;
-
+            
             //special case for Form to deal with XML returning an object when field count = 1 instead of an array
             if (n.activityType == WorkflowActivityType.Form) {
 
