@@ -55,8 +55,7 @@ namespace d360.web.Controllers
 
             var sql = string.Format(@"
 select	A.ID,
-        A.ParentID,
-		A.DisplayValue,
+        A.ParentID,		
         P.DisplayValue as Parent,
         {0}
 		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
@@ -70,7 +69,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             //if simple filter specified add that citeria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.DisplayValue" }, "Artifact", id, filter, dbArgs)}";
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] {  }, "Artifact", id, filter, dbArgs)}";
             }
 
             var type = Company.GetById<ArtifactType>(id);
