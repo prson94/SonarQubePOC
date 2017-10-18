@@ -50,13 +50,9 @@ export class AdminScoreTypeEditorComponent {
         
     }
 
-    ngOnInit() { 
-        this.scoretype.Description = this.scoretype.Description == "null"? "" : String(this.scoretype.Description).replace(/<(?:.|\n)*?>/gm, '');
-        if (this.scoretype != undefined) {
+    ngOnInit() {        
+        if (this.scoretype != undefined)
             this.editedScoreType = _.cloneDeep(this.scoretype);
-            this.editedScoreType.Description = this.scoretype.Description == "null" ? "" : String(this.editedScoreType.Description).replace(/<(?:.|\n)*?>/gm, '');
-        }
-           
         else {
             this.editedScoreType = new ScoreType();
             this.action = "New";
@@ -64,12 +60,10 @@ export class AdminScoreTypeEditorComponent {
     }
 
     onSubmit() {
-        this.editedScoreType.Description = this.scoretype.Description == "null" ? "" : String(this.editedScoreType.Description).replace(/<(?:.|\n)*?>/gm, '');
         this.saveClick.emit({ scoretype: this.editedScoreType, action: this.editedScoreType.ID == undefined ? "new" : "edit" });
     }
 
     close() {
-        this.editedScoreType.Description = this.scoretype.Description == "null" ? "" : String(this.editedScoreType.Description).replace(/<(?:.|\n)*?>/gm, '');
         this.closeClick.emit({ scoreTypeId: (this.scoretype ? this.scoretype.ID : -1) });
     }
 

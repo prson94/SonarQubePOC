@@ -47,8 +47,7 @@ export class StatisticService extends BaseService {
     }
 
     saveScoreType(scoreType: ScoreType): Promise<JsonResult> {
-        scoreType.Description = String(scoreType.Description).replace(/<(?:.|\n)*?>/gm, '');
-       if (scoreType.ID == undefined || !scoreType.ID) {
+        if (scoreType.ID == undefined || !scoreType.ID) {
             return this.postDynamic(this.http, 'scoretype', scoreType);
         }
         return this.putDynamic(this.http, 'scoretype', scoreType);
