@@ -49,7 +49,11 @@ namespace d360.core.entities
         [DataMember]        
         public int DisplayOrder { get; set; }
 
+        [DataMember]
+        public LinkTarget LinkTarget { get; set; }
+
         [NotMapped, DataMember]
         public string IconPayload { get; set; }
+
     }
 }

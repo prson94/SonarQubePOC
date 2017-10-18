@@ -334,6 +334,7 @@
     <Compile Include="enums\FusionRuleRelateSearchType.cs" />
     <Compile Include="enums\HelpResourceType.cs" />
     <Compile Include="enums\ExportView.cs" />
+    <Compile Include="enums\LinkTarget.cs" />
     <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\RegisterStep.cs" />
     <Compile Include="enums\Cardinality.cs" />

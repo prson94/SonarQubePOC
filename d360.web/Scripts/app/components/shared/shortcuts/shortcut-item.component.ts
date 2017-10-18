@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { Shortcut } from '../../../models/shortcuts.model';
+import { Shortcut, LinkTarget } from '../../../models/shortcuts.model';
 import { CompanyImage } from '../../../models/settings.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
 import { MessagesService } from '../../../services/messages.service';
@@ -26,6 +26,14 @@ import * as _ from 'lodash';
             <div class="FieldName">Description</div>
             <input type="text" [(ngModel)]="shortcut.Description" style="width: 98%" maxlength="500" />
         </div>        
+        <div class="col s12 m6">
+            <div class="FieldName">Link Opens In</div>
+            <div><select [(ngModel)]="shortcut.LinkTarget" style="width:98%">
+                <option value="0">New Tab</option>
+                <option value="1">Current Tab - Reload</option>
+                <option value="2">Current Tab - Within D3S</option>
+            </select></div>
+        </div>     
     </div>
     <div class="row">
         <div class="col s12 m6">
@@ -77,7 +85,7 @@ import * as _ from 'lodash';
                     <input #imageUpload type="file" (change)="onFileChange($event)" accept="image/gif,image/jpeg,image/png" />
                 </div>
             </div>
-        </div>
+        </div>        
         <div class="col s12 m6">
             <div class="FieldName">Preview</div>
             <div *ngIf="iconType == 'icon'" style="padding:10px">
@@ -125,6 +133,7 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
         if (this.shortcut == null) {
             this.isAdding = true;
             this.shortcut = new Shortcut();
+            this.shortcut.LinkTarget = LinkTarget.NewWindow;
         } else {
             if (this.shortcut.IconUrl != null)
                 this.iconType = 'image';

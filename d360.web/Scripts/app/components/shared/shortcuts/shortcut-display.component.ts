@@ -1,7 +1,7 @@
 ﻿import { Input, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
-import { Shortcut } from '../../../models/shortcuts.model';
+import { Shortcut, LinkTarget } from '../../../models/shortcuts.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
 import * as _ from 'lodash';
 
@@ -9,7 +9,7 @@ import * as _ from 'lodash';
     selector: 'd3s-shortcut-display',
     template: ` 
     <ul>
-        <li *ngFor="let s of shortcuts" (click)="navigate(s.Url)" class="shortcut" [style.background-color]="s.BackgroundColor">
+        <li *ngFor="let s of shortcuts" (click)="navigate(s)" class="shortcut" [style.background-color]="s.BackgroundColor">
             <div *ngIf="s.Icon != null" class="icon" [style.color]="s.IconColor">
                 <i [class]="'fa ' + s.Icon" style="display: block;"></i>
             </div>
@@ -41,7 +41,15 @@ export class ShortcutDisplayComponent extends BaseComponent implements OnInit {
             });
     }
 
-    navigate(url: string) {
-        window.open(url, "_blank");
+    navigate(shortcut: Shortcut) {
+        if (shortcut.LinkTarget == LinkTarget.NewWindow) {
+            window.open(shortcut.Url, "_blank");
+        }
+        else if (shortcut.LinkTarget == LinkTarget.Self) {
+            window.open(shortcut.Url, "_self");
+        }
+        else if (shortcut.LinkTarget == LinkTarget.RouterLink) {
+            this.router.navigateByUrl(shortcut.Url);
+        }
     }
 }

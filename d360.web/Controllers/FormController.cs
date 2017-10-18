@@ -17407,6 +17407,7 @@ from    [IntersectType] RT
                 existing.IconColor = shortcut.IconColor;
                 existing.TitleColor = shortcut.TitleColor;
                 existing.BackgroundColor = shortcut.BackgroundColor;
+                existing.LinkTarget = shortcut.LinkTarget;
 
                 Company.Update(existing);
                

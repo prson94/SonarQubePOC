@@ -1,4 +1,10 @@
-﻿export class Shortcut {
+﻿export enum LinkTarget {
+    NewWindow = 0,
+    Self = 1,
+    RouterLink = 2
+}
+
+export class Shortcut {
     ID: number;
     Name: string;
     Icon: string;
@@ -9,4 +15,5 @@
     IconColor: string;
     TitleColor: string;
     BackgroundColor: string;
+    LinkTarget: LinkTarget;
 }
