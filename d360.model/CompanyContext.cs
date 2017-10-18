@@ -1943,9 +1943,12 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
             
             var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
             var attr = entity.GetFieldsObjectInfo();
-            bool exists = (isUpdate) ? 
-                Query<bool>("select dbo.CheckIfObjectExists(@t, @tid, @oid, @f) as Val", new { t = attr.Type, tid = attr.TypeID, oid = entity.ID,  f = fieldsJson }).First() :
-                Query<bool>("select dbo.CheckIfObjectExists(@t, @tid, null, @f) as Val", new { t = attr.Type, tid = attr.TypeID, f = fieldsJson }).First();
+            bool exists = false;
+
+            if (isUpdate)
+                exists = Query<bool>("select dbo.CheckIfObjectExists(@t, @tid, @oid, @f) as Val", new { t = attr.Type.ToString(), tid = attr.TypeID, oid = entity.ID, f = fieldsJson }).First();
+            else
+                exists = Query<bool>("select dbo.CheckIfObjectExists(@t, @tid, null, @f) as Val", new { t = attr.Type.ToString(), tid = attr.TypeID, f = fieldsJson }).First();
 
             if (exists)
             {
