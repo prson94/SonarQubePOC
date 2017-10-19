@@ -24,7 +24,7 @@ import { Title } from '@angular/platform-browser';
                                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="reports" selectionMode="single" [rows]="20" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
                                     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
-                                    <p-column field="ReportType" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
+                                    <p-column field="DisplayType" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column [style]="{width:'40px'}">
                                         <ng-template let-report="rowData" pTemplate type="body">
                                             <div class="RowTools">
@@ -129,7 +129,11 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.isLoading = true;
         this.reportsService.getReports().then(result => {
             this.isLoading = false;
-            this.reports = result;
+            for (var report of result) {
+                if (report.ReportType == 'sagacity') report.DisplayType = 'Data3Sixty Analyze';
+                else report.DisplayType = report.ReportType;
+            }
+            this.reports = result;            
             this.selected = (this.reports.length > 0 ? this.reports[0] : null);
         });
     }

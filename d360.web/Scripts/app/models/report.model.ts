@@ -16,6 +16,7 @@ export class Report {
     VisibleToRoles: string[];
     VisibleTo: string;
     Url: string;
+    DisplayType: string;
 }
 
 export class ReportTile {

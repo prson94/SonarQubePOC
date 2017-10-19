@@ -109,7 +109,7 @@ export class AdminDashboardsEditor {
     }
 
     ngOnInit() {
-        if (CompanySettings.EnableSagacity == "true") this.reportTypes.push({ value: "sagacity", title: "Sagacity" });
+        if (CompanySettings.EnableSagacity == "true") this.reportTypes.push({ value: "sagacity", title: "Data3Sixty Analyze" });
         if (this.report != undefined) {
             this.editedReport = _.cloneDeep(this.report);
             this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();            
