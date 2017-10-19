@@ -146,6 +146,8 @@
     <Compile Include="entities\Relation\MapGroupItem.cs" />
     <Compile Include="entities\Relation\MapType.cs" />
     <Compile Include="entities\Relation\MapTypeOrder.cs" />
+    <Compile Include="entities\Relation\MapTypeTemplate.cs" />
+    <Compile Include="entities\Relation\MapTypeTemplateItem.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
     <Compile Include="entities\Score\ScoreTypeMetricVersion.cs" />

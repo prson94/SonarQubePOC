@@ -220,7 +220,11 @@ namespace d360.model
         public DbSet<MapType> MapTypes { get; set; }
 
         public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
- 
+
+        public DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
+
+        public DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
+
         public DbSet<Nym> Nyms { get; set; }
 
         public DbSet<NymRelation> NymRelations { get; set; }

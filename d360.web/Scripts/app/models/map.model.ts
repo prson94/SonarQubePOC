@@ -18,3 +18,17 @@ export class MapTypeOrder {
     IntersectTypeID: number;
     Order: number;
 }
+
+export class MapTypeTemplate {
+    ID: number;
+    MapTypeID: number;
+    Name: string;
+
+    items: MapTypeTemplateItem[] = [];
+}
+
+export class MapTypeTemplateItem {
+    MapTypeTemplateID: number;
+    IntersectTypeID: number;
+    IsRequired: boolean = false;
+}

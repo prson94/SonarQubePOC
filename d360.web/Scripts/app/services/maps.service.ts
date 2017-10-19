@@ -53,5 +53,12 @@ export class MapsService extends BaseService {
             .then(response => <any>response.json())
             .catch(err => this.handleError(err));
     }
+
+    public getMapTypeTemplates(mapTypeId: number): Promise<any[]> {
+        return this.http.get(`api/map/type/${mapTypeId}/templates`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
   
 }

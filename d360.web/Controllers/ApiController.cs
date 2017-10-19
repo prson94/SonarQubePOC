@@ -2469,6 +2469,19 @@ from    [Intersect] I
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
+
+        [Route("map/type/{id:int}/templates"), HttpGet]
+        public HttpResponseMessage GetMapTypeTemplates(int id)
+        {
+            var results = Company.MapTypeTemplates.Where(t => t.MapTypeID == id).ToList();
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+        }
+
+        [Route("map/type/template/{id:int}"), HttpGet]
+        public HttpResponseMessage GetMapTypeTemplate(int id)
+        {
+            return Request.CreateResponse(HttpStatusCode.OK, Company.GetById<MapTypeTemplate>(id));
+        }
         #endregion
 
         #region Complex Lookup Fields

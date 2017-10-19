@@ -16,6 +16,8 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 import { AdminMapsComponent } from './admin-maps.component';
 import { AdminMapsEditorComponent } from './admin-maps-editor.component';
 import { AdminMapsListComponent } from './admin-maps-list.component';
+import { AdminMapsTemplateListComponent } from './admin-maps-template-list.component';
+import { AdminMapsTemplateEditorComponent } from './admin-maps-template-editor.component';
 import { AdminMapsRoutingComponent } from './admin-maps.routes';
 
 
@@ -61,6 +63,8 @@ import {
         AdminMapsComponent,
         AdminMapsEditorComponent,
         AdminMapsListComponent,
+        AdminMapsTemplateListComponent,
+        AdminMapsTemplateEditorComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

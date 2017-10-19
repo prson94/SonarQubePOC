@@ -5,18 +5,17 @@
                 <div *ngSwitchCase="FormMode.Default">
                     <d3s-admin-maps-list (onAddClick)="add()"
                                          (onEditClick)="edit($event)"
-                                         (onDeleteClick)="delete($event)">
+                                         (onDeleteClick)="delete($event)"
+                                         (onSelectionChange)="mapType = $event">
                     </d3s-admin-maps-list>
                 </div>
                 <div *ngSwitchCase="FormMode.Adding">
-                    <d3s-admin-maps-editor 
-                                           (onCancel)="formMode = FormMode.Default;"
+                    <d3s-admin-maps-editor (onCancel)="formMode = FormMode.Default;"
                                            (onSave)="formMode = FormMode.Default">
                     </d3s-admin-maps-editor>
                 </div>
                 <div *ngSwitchCase="FormMode.Editing">
-                    <d3s-admin-maps-editor
-                                           [mapTypeId]="mapType.ID"
+                    <d3s-admin-maps-editor [mapTypeId]="mapType.ID"
                                            (onCancel)="formMode = FormMode.Default;"
                                            (onSave)="formMode = FormMode.Default">
                     </d3s-admin-maps-editor>
@@ -33,6 +32,11 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="col s12 m5">
+        <div class="tile tile-detail">
+            <d3s-admin-maps-template-list [mapTypeId]="mapType?.ID"></d3s-admin-maps-template-list>
         </div>
     </div>
 </div>

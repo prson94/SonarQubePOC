@@ -10567,6 +10567,26 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #endregion
 
+        #region MapTypeTemplate
+        [HttpPost, Route("AddMapTypeTemplate")]
+        public JsonResult AddMapTypeTemplate(MapTypeTemplate model)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpPost, Route("EditMapTypeTemplate")]
+        public JsonResult EditMapTypeTemplate(MapTypeTemplate model)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpDelete, Route("DeleteMapTypeTemplate/{id:int}")]
+        public JsonResult DeleteMapTypeTemplate(int id)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
         #region MapRule
 
         #region Field Generation

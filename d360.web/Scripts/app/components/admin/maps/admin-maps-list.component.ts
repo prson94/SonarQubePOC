@@ -17,7 +17,7 @@ import { MapsService } from '../../../services/maps.service';
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-        <p-dataTable #dt [globalFilter]="gb" [value]="mapTypes" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="edit($event.data.ID)" [(selection)]="selection" >                                                        
+        <p-dataTable #dt [globalFilter]="gb" [value]="mapTypes" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="edit($event.data.ID)" [selection]="selection" (selectionChange)="selection = $event; onSelectionChange.emit(selection)" >                                                        
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>                                                        
             <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
             <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">
@@ -71,6 +71,10 @@ export class AdminMapsListComponent extends BaseComponent implements OnInit {
         this.mapsService.getMapTypes()
             .then(r => {
                 this.mapTypes = r;
+                if (this.mapTypes != null && this.mapTypes.length > 0) {
+                    this.selection = this.mapTypes[0];
+                    this.onSelectionChange.emit(this.selection);
+                }
                 this.isLoading = false;
             })
     }
