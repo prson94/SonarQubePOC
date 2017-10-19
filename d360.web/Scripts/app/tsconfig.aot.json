@@ -28,6 +28,7 @@
   },
   "angularCompilerOptions": {
     "genDir": "./app/ngfactory",
-    "entryModule": "app/app.module#AppModule"
+    "entryModule": "app/app.module#AppModule",
+    "preserveWhitespaces": false
   } 
 }

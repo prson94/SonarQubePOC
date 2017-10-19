@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-right-sidebar',      
     template: ` <div *ngIf="items && items.length > 0" class="hide-on-small-only right-sidebar">                
-                    <div *ngFor="let item of items">
+                    <div *ngFor="let item of items; trackBy: trackById">
                         <d3s-right-sidebar-item [active]="item.active" (activeChange)="item.active=$event;itemClicked(item)" [title]="item.title" [activeIcons]="item.icons"></d3s-right-sidebar-item>
                     </div>
                 </div>
@@ -45,6 +45,10 @@ export class RightSidebarComponent {
         // prevent memory leak when component destroyed
         this.subscription.unsubscribe();
         this.subscriptionClear.unsubscribe();
+    }
+
+    trackById(index, item) {        
+        return item.tag;
     }
     
     itemClicked(item: RightSidebarItem) {   
