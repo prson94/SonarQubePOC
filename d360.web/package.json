@@ -44,14 +44,14 @@
     "angular2-router-loader": "^0.3.5",
     "angular2-template-loader": "^0.6.2",
     "awesome-typescript-loader": "^3.2.3",
-    "@ngtools/webpack": "^1.2.10",
+    "@ngtools/webpack": "^1.7.4",
     "@angular/compiler-cli": "~4.4",
     "css-loader": "^0.23.1",
     "del": "^2.2.0",
     "raw-loader": "^0.5.1",
     "to-string-loader": "^1.1.4",
     "typescript": "2.3.4",
-    "webpack": "3.7.1",
+    "webpack": "3.8.1",
     "webpack-dev-server": "^2.7.1",
     "webpack-merge": "4.1.0"
   }
