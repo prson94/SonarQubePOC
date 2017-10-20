@@ -18,7 +18,7 @@ namespace igx.functions.FusionRules
             Stats = new FusionRuleStepStatistics();
         }
 
-        protected int EXECUTION_TIMEOUT = 120;
+        protected int EXECUTION_TIMEOUT = 300;
         public FusionRuleStepModel Step { get; set; }
         public int CompanyId { get; set; }
         public FusionRule Rule { get; set; }
@@ -31,7 +31,7 @@ namespace igx.functions.FusionRules
         }
 
         public static async Task PrintTempTableContents(SqlConnection company, TraceWriter log, string tempTableName)
-        {
+        {            
             log.Info($"====================DEBUG  {tempTableName.ToUpper()} PRINTING VALUES================================");
 
             var items = await company.QueryAsync($"select * from #{tempTableName}");
