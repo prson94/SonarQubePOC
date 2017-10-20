@@ -523,6 +523,8 @@
     <Build Include="dbo\Tables\MapGroupItem.sql" />
     <Build Include="dbo\Tables\MapType.sql" />
     <Build Include="dbo\Tables\MapTypeOrder.sql" />
+    <Build Include="dbo\Tables\MapTypeTemplate.sql" />
+    <Build Include="dbo\Tables\MapTypeTemplateItem.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

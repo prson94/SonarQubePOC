@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System;
 using d360.core.enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -15,6 +16,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string Name { get; set; }
+
+        [DataMember, NotMapped]
+        public List<MapTypeTemplateItem> Items { get; set; } = new List<MapTypeTemplateItem>();
 
     }
 }

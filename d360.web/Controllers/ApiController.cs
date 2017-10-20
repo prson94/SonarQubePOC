@@ -2456,11 +2456,11 @@ from    [Intersect] I
 				  i.[Name] as IntersectTypeName,
 				  i.[Object],
 				  i.ObjectID,				  
-				  d.Name as ObjectName
+				  coalesce(d.[Name], i.[Name]) as ObjectName
 			    from 
 				    IntersectType i
 				left join maptypeorder o on o.intersecttypeid = i.id
-				inner join cache.ObjectDetails d on d.Object = i.Object and d.ObjectID = i.ObjectID
+				left join cache.ObjectDetails d on d.Object = i.Object and d.ObjectID = i.ObjectID
 				where [subject] = 'MapType' and subjectId = @id
 				order by 1 asc";
 
@@ -2480,7 +2480,9 @@ from    [Intersect] I
         [Route("map/type/template/{id:int}"), HttpGet]
         public HttpResponseMessage GetMapTypeTemplate(int id)
         {
-            return Request.CreateResponse(HttpStatusCode.OK, Company.GetById<MapTypeTemplate>(id));
+            var template = Company.GetById<MapTypeTemplate>(id);
+            template.Items = Company.MapTypeTemplateItems.Where(t => t.MapTypeTemplateID == id).ToList();
+            return Request.CreateResponse(HttpStatusCode.OK, template);
         }
         #endregion
 

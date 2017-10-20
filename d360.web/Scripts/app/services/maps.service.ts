@@ -4,7 +4,7 @@ import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs/Observable';
-import { MapType } from '../models/map.model';
+import { MapType, MapTypeTemplate } from '../models/map.model';
 
 @Injectable()
 export class MapsService extends BaseService {
@@ -60,5 +60,34 @@ export class MapsService extends BaseService {
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    public getMapTypeTemplate(mapTypeTemplateId: number): Promise<MapTypeTemplate> {
+        return this.http.get(`api/map/type/template/${mapTypeTemplateId}`)
+            .toPromise()
+            .then(response => <MapTypeTemplate>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public addMapTypeTemplate(model: MapTypeTemplate) {
+        return this.http.post('form/AddMapTypeTemplate', model)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public editMapTypeTemplate(model: MapTypeTemplate) {
+        return this.http.post('form/EditMapTypeTemplate', model)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public deleteMapTypeTemplate(mapTypeTemplateId: number) {
+        return this.http.delete(`form/DeleteMapTypeTemplate/${mapTypeTemplateId}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
   
 }

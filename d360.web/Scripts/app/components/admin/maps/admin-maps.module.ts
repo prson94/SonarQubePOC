@@ -30,6 +30,7 @@ import {
     SharedModule,
     DataTableModule,
     OrderListModule,
+    PickListModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -47,6 +48,7 @@ import {
         SharedModule,
         DataTableModule,
         OrderListModule,
+        PickListModule,
 
         //color picker 
         ColorPickerModule,

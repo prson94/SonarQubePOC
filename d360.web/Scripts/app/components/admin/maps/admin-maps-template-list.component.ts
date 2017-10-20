@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnInit, OnChanges, Input, Output, SimpleChanges } from '@angular/core';
+﻿import { Component, NgZone, OnInit, OnChanges, Input, Output, SimpleChanges, EventEmitter } from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
@@ -48,10 +48,15 @@ import { MapTypeTemplate, MapTypeTemplateItem } from '../../../models/map.model'
 
 export class AdminMapsTemplateListComponent extends BaseComponent {
     @Input() mapTypeId: number = null;
+    @Output() onSelectionChange = new EventEmitter();
+    @Output() onEditClick = new EventEmitter();
+    @Output() onDeleteClick = new EventEmitter();
+    @Output() onAddClick = new EventEmitter();
     mapTypeTemplate: MapTypeTemplate;
     formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
 
+    selection: MapTypeTemplate;
     mapTypeTemplates: MapTypeTemplate[] = [];
 
     constructor(private mapsService: MapsService) {
@@ -75,6 +80,20 @@ export class AdminMapsTemplateListComponent extends BaseComponent {
                 this.mapTypeTemplates = r;
                 this.isLoading = false;
             });
+    }
+
+    add() {
+        this.onAddClick.emit();
+    }
+
+    edit(id: number) {
+        this.selection = this.mapTypeTemplates.find(m => m.ID == id);
+        this.onEditClick.emit(this.selection);
+    }
+
+    delete(id: number) {
+        this.selection = this.mapTypeTemplates.find(m => m.ID == id);
+        this.onDeleteClick.emit(this.selection);
     }
 }
 

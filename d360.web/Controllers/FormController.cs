@@ -10423,19 +10423,86 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [HttpPost, Route("AddMapTypeTemplate")]
         public JsonResult AddMapTypeTemplate(MapTypeTemplate model)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(model.Name))
+                return jsonException("The template is missing a name", HttpStatusCode.BadRequest);
+            if (model.MapTypeID < 1)
+                return jsonException($"The map type id {model.MapTypeID} is not valid", HttpStatusCode.BadRequest);
+
+            try
+            {
+                if (model.Items.Count > 0)
+                    Company.MapTypeTemplateItems.AddRange(model.Items);
+                Company.Add(model);
+                Company.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+
+            return jsonSuccess("Template created", model.ID.ToString(), "add", HttpStatusCode.OK);
+
         }
 
         [HttpPost, Route("EditMapTypeTemplate")]
         public JsonResult EditMapTypeTemplate(MapTypeTemplate model)
         {
-            throw new NotImplementedException();
+
+            if (model == null || model.ID < 1)
+                return jsonException($"The template id {model?.ID} is not valid", HttpStatusCode.BadRequest);
+
+            try
+            {
+                var existing = Company.GetById<MapTypeTemplate>(model.ID);
+
+                existing.Name = model.Name;
+
+                var existingItems = Company.MapTypeTemplateItems.Where(i => i.MapTypeTemplateID == existing.ID).ToList();
+                var newItems = new List<MapTypeTemplateItem>();
+                Company.MapTypeTemplateItems.RemoveRange(existingItems);
+
+                if (model.Items.Count > 0)
+                    Company.MapTypeTemplateItems.AddRange(model.Items);
+
+                Company.SaveChanges();
+
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+
+            }
+
+            return jsonSuccess("Template edited", model.ID.ToString(), "edit", HttpStatusCode.OK);
         }
 
         [HttpDelete, Route("DeleteMapTypeTemplate/{id:int}")]
         public JsonResult DeleteMapTypeTemplate(int id)
         {
-            throw new NotImplementedException();
+            if (id < 1)
+                return jsonException($"The map type template id {id} is not valid", HttpStatusCode.BadRequest);
+
+            try
+            {
+                var existing = Company.GetById<MapTypeTemplate>(id);
+                if (existing == null)
+                    return jsonException($"The map type template for {id} does not exist", HttpStatusCode.BadRequest);
+
+                var items = Company.MapTypeTemplateItems.Where(i => i.MapTypeTemplateID == id).ToList();
+                Company.MapTypeTemplateItems.RemoveRange(items);
+                Company.MapTypeTemplates.Remove(existing);
+                Company.SaveChanges();
+
+
+            }
+            catch (Exception ex)
+            {
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+
+            }
+
+            return jsonSuccess("Template deleted", id.ToString(), "delete", HttpStatusCode.OK);
+
         }
         #endregion
 

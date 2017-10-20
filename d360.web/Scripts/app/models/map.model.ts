@@ -24,10 +24,11 @@ export class MapTypeTemplate {
     MapTypeID: number;
     Name: string;
 
-    items: MapTypeTemplateItem[] = [];
+    Items: MapTypeTemplateItem[] = [];
 }
 
 export class MapTypeTemplateItem {
+    ID: number;
     MapTypeTemplateID: number;
     IntersectTypeID: number;
     IsRequired: boolean = false;

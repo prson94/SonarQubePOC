@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { FormMode } from '../../../models/form.model';
-import { MapType } from '../../../models/map.model';
+import { MapType, MapTypeTemplate } from '../../../models/map.model';
 
 @Component({
     selector: 'd3s-admin-maps',
@@ -20,7 +20,11 @@ import { MapType } from '../../../models/map.model';
 
 export class AdminMapsComponent extends AdminBaseComponent implements OnDestroy {
     mapType: MapType;
-    formMode: FormMode = FormMode.Default;
+    mapTypeTemplate: MapTypeTemplate;
+
+    mapFormMode: FormMode = FormMode.Default;
+    templateFormMode: FormMode = FormMode.Default;
+
     FormMode = FormMode;
 
     constructor(
@@ -42,22 +46,22 @@ export class AdminMapsComponent extends AdminBaseComponent implements OnDestroy 
         this.clearSidebar();
     }
 
-    add() {
+    addMap() {
         this.mapType = null;
-        this.formMode = FormMode.Adding;
+        this.mapFormMode = FormMode.Adding;
     }
 
-    edit(mapType: MapType) {
+    editMap(mapType: MapType) {
         this.mapType = mapType;
-        this.formMode = FormMode.Editing;
+        this.mapFormMode = FormMode.Editing;
     }
 
-    delete(mapType: MapType) {
+    deleteMap(mapType: MapType) {
         this.mapType = mapType;
-        this.formMode = FormMode.Deleting;
+        this.mapFormMode = FormMode.Deleting;
     }
 
-    deleteMapType() {
+    deleteMapConfirm() {
         if (this.mapType == null)
             return;
         this.isLoading = true;
@@ -65,8 +69,35 @@ export class AdminMapsComponent extends AdminBaseComponent implements OnDestroy 
             .then(r => {
                 this.showMessageForResult(this.messagesService, r);
                 this.isLoading = false;
-                this.formMode = FormMode.Default;
+                this.mapFormMode = FormMode.Default;
             })
+    }
+
+    addTemplate() {
+        this.mapTypeTemplate = null;
+        this.templateFormMode = FormMode.Adding;
+    }
+
+    editTemplate(template: MapTypeTemplate) {
+        this.mapTypeTemplate = template;
+        this.templateFormMode = FormMode.Editing;
+    }
+
+    deleteTemplate(template: MapTypeTemplate) {
+        this.mapTypeTemplate = template;
+        this.templateFormMode = FormMode.Deleting;
+    }
+
+    deleteTemplateConfirm() {
+            if (this.mapTypeTemplate == null)
+                return;
+            this.isLoading = true;
+            this.mapsService.deleteMapTypeTemplate(this.mapTypeTemplate.ID)
+                .then(r => {
+                    this.showMessageForResult(this.messagesService, r);
+                    this.isLoading = false;
+                    this.templateFormMode = FormMode.Default;
+                })
     }
 
 }
