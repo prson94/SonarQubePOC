@@ -1309,14 +1309,14 @@ where   h.ID <> @t order by h.[Level] desc;
 	                    r.objecttype as ObjectType,
 	                    r.objectid as ObjectID,
 						case when r.objecttype = 'FusionQueryAttributeType' then
-							'Query :: ' + od.textpath
+							'Query :: ' + fqat.Name
 						else
-							od.textpath
+							fat.Textpath
 						end as ObjectName
                     from[fusion].[Rule]
                             r
-                       left outer join[cache].[objectdetails]
-                            od on(r.objecttype = od.[object] and r.objectid = od.objectid)
+                        left outer join [dbo].fusionattributetype fat on (r.objectid = fat.id and r.objecttype ='FusionAttributeType')
+                        left outer join [dbo].fusionqueryattributetype fqat on (r.objectid = fqat.id and r.objecttype ='FusionQueryAttributeType')                       
                     where r.fusionid = @fid";
 
 
