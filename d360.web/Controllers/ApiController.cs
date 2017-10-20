@@ -2456,12 +2456,12 @@ from    [Intersect] I
 				  i.[Name] as IntersectTypeName,
 				  i.[Object],
 				  i.ObjectID,				  
-				  coalesce(d.[Name], i.[Name]) as ObjectName
+				  a.[Name] as ObjectName
 			    from 
 				    IntersectType i
 				left join maptypeorder o on o.intersecttypeid = i.id
-				left join cache.ObjectDetails d on d.Object = i.Object and d.ObjectID = i.ObjectID
-				where [subject] = 'MapType' and subjectId = @id
+				inner join AssetType a on a.Object = i.Object and a.ObjectID = i.ObjectID
+				where i.[subject] = 'MapType' and subjectId = @id and i.[object] != 'MapType'
 				order by 1 asc";
 
             var results = Company.Query<dynamic>(sql, new { id });

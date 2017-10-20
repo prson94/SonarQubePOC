@@ -10409,8 +10409,16 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException($"The map type with {id} does not exist", HttpStatusCode.BadRequest);
 
             var mapTypeOrders = Company.MapTypeOrders.Where(i => i.MapTypeID == id).ToList();
+            var mapTypeTemplates = Company.MapTypeTemplates.Where(i => i.MapTypeID == id).ToList();
+            var mapTypetemplateItems = new List<MapTypeTemplateItem>();
 
+            mapTypeTemplates.ForEach(t => { mapTypetemplateItems.AddRange(Company.MapTypeTemplateItems.Where(i => i.MapTypeTemplateID == t.ID)); });
+
+            Company.MapTypeTemplateItems.RemoveRange(mapTypetemplateItems);
+            Company.SaveChanges();
+            Company.MapTypeTemplates.RemoveRange(mapTypeTemplates);
             Company.MapTypeOrders.RemoveRange(mapTypeOrders);
+            Company.SaveChanges();
             Company.MapTypes.Remove(mapType);
             Company.SaveChanges();
             return jsonSuccess("Map type deleted successfully", id.ToString(), "delete", HttpStatusCode.OK);
@@ -10430,10 +10438,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             try
             {
-                if (model.Items.Count > 0)
-                    Company.MapTypeTemplateItems.AddRange(model.Items);
                 Company.Add(model);
-                Company.SaveChanges();
+                if (model.Items.Count > 0)
+                {
+                    model.Items.ForEach(i => { i.MapTypeTemplateID = model.ID; });
+                    Company.MapTypeTemplateItems.AddRange(model.Items);
+                    Company.SaveChanges();
+                }
+
             }
             catch(Exception ex)
             {
@@ -10460,6 +10472,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var existingItems = Company.MapTypeTemplateItems.Where(i => i.MapTypeTemplateID == existing.ID).ToList();
                 var newItems = new List<MapTypeTemplateItem>();
                 Company.MapTypeTemplateItems.RemoveRange(existingItems);
+                Company.SaveChanges();
 
                 if (model.Items.Count > 0)
                     Company.MapTypeTemplateItems.AddRange(model.Items);
@@ -10490,6 +10503,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var items = Company.MapTypeTemplateItems.Where(i => i.MapTypeTemplateID == id).ToList();
                 Company.MapTypeTemplateItems.RemoveRange(items);
+                Company.SaveChanges();
                 Company.MapTypeTemplates.Remove(existing);
                 Company.SaveChanges();
 

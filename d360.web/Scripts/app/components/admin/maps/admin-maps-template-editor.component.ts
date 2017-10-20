@@ -33,10 +33,10 @@ import * as _ from 'lodash';
         <div class="col s12" style="padding-top: 15px">
             <p-pickList [source]="availableIntersects" [target]="selectedIntersects" [showSourceControls]="false" [showTargetControls]="false" sourceHeader="Available Types" targetHeader="Template Types" (onMoveToTarget)="onMove()" (onMoveToSource)="onMove()" [responsive]="true">
                 <ng-template let-item pTemplate="item">
-                    <div style="border-bottom:1px solid gray">
+                    <div style="border-bottom:1px solid gray; user-select: none;">
                         {{item.ObjectName}}
                         <ng-container *ngIf="item.isTarget != null && item.isTarget == true">
-                            <input type="checkbox"  [(ngModel)]="item.isRequired"/> Required?
+                            <span style="float: right"><input type="checkbox"  [(ngModel)]="item.isRequired"/> Required?</span>
                         </ng-container>
                     </div>
                 </ng-template>
@@ -88,6 +88,7 @@ export class AdminMapsTemplateEditorComponent extends BaseComponent implements O
                     this.intersectTypes = r;
                     this.availableIntersects = _.cloneDeep(this.intersectTypes);
                     this.selectedIntersects = [];
+                    this.onMove();
                     this.isLoading = false;
                 });
         } else {
@@ -104,6 +105,7 @@ export class AdminMapsTemplateEditorComponent extends BaseComponent implements O
                     this.template.Items.forEach(i => {
                         let intersect = this.intersectTypes.find(t => t.ID == i.IntersectTypeID);
                         if (intersect != null) {
+                            intersect.isRequired = i.IsRequired;
                             this.selectedIntersects.push(intersect);
                             let x = this.availableIntersects.findIndex(a => a.ID == intersect.ID);
                             if (x > -1) {
@@ -111,7 +113,8 @@ export class AdminMapsTemplateEditorComponent extends BaseComponent implements O
                             }
                         }
                     });
-                    console.log(this.intersectTypes, this.availableIntersects, this.selectedIntersects, this.template);
+                    //console.log(this.intersectTypes, this.availableIntersects, this.selectedIntersects, this.template);
+                    this.onMove();
                     this.isLoading = false;
                 });
         }
@@ -152,7 +155,8 @@ export class AdminMapsTemplateEditorComponent extends BaseComponent implements O
     valid() {
         if (this.template.Name == null || this.template.Name.length < 1)
             return false;
-
+        if (this.selectedIntersects.length < 1)
+            return false;
         return true;
     }
 
