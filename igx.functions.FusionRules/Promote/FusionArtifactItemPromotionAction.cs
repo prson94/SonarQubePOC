@@ -62,7 +62,7 @@ namespace igx.functions.FusionRules
             await DetermineExisting(company, keyFields);
 
             // add new records for any items that havent already been promoted to the artifact table
-            await CreateNewArtifacts(company);
+            await CreateNewArtifacts(company, Rule.ID, Step.ID);
 
             Stats.PromotedArtifacts = await GetNewItemCount(company);
                         
@@ -173,7 +173,7 @@ namespace igx.functions.FusionRules
 
         }
 
-        private async Task CreateNewArtifacts(SqlConnection company)
+        private async Task CreateNewArtifacts(SqlConnection company, int ruleId, int ruleStepId)
         {
             // merge
             var sql = @"MERGE
@@ -187,14 +187,14 @@ namespace igx.functions.FusionRules
 									#fields ftemp
                                     left join #promotionParents pp on (pp.ObjectID = ftemp.ID)
                                 where
-                                    not exists(select 1 from #promotedItems tmp where tmp.attributeID = ftemp.ID)									
+                                    not exists(select 1 from #promotedItems tmp where tmp.attributeID = ftemp.ID) and not exists(select 1 from [fusion].rulepromotion where ruleid = @ruleid and rulestepid = @rulestepid and attributeid = ftemp.ID)									
 			                    ) S
 	                    ON      (1 != 1)
 	                    WHEN NOT MATCHED THEN
 	                        INSERT  (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy, Visible, ParentID)
 	                        VALUES  (@promoteToId, getutcdate(), 0, getutcdate(), 0, 1, S.ParentID)                        
                         output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;";
-            await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact" });
+            await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId });
         }
     }
 }
