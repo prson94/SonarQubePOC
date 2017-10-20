@@ -15369,6 +15369,9 @@ order by	T.Name, I.DisplayValue";
                 if (!form.HasKeys()) throw new NoFormDataException("resource");
 
                 var id = parseIntField(form, "ID");
+
+                if (id <= 0) throw new NotFoundException("Resource with ID less than or equal to 0 cannot be removed.");
+
                 var model = Community.Filter<CompanyResource>(i => i.ResourceID == id && i.CompanyID == Company.CurrentCompanyID).SingleOrDefault();
                 if (model == null) throw new NotFoundException("resource");
 
@@ -15406,6 +15409,8 @@ order by	T.Name, I.DisplayValue";
                 var model = Community.GetById<Resource>(id);
 
                 if (model == null) throw new NotFoundException("resource");
+
+                if (id <= 0) throw new NotFoundException("Resource with ID less than or equal to 0 cannot be removed.");
 
                 // Static fields
                 model.FirstName = parseNameField(form, "FirstName");

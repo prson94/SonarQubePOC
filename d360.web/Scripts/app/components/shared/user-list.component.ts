@@ -37,14 +37,14 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         </p-column>
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
                             <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
+                                <div class="RowTools" *ngIf="item.ResourceID > 0">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </ng-template>
                         </p-column>                            
                         <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
                                <ng-template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">                                
+                                <div class="RowTools" *ngIf="item.ResourceID > 0">                                
                                     <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                                </ng-template>
