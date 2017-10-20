@@ -105,15 +105,11 @@ namespace d360.model
 
         public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
 
-        public DbSet<BulkLoadQueue> BulkLoadQueues { get; set; }
-
         public DbSet<CacheObject> CacheObjects { get; set; }
 
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
-
-        //public DbSet<EmailTemplate> EmailTemplates { get; set; }
 
         public DbSet<Favorite> Favorites { get; set; }
 
@@ -128,8 +124,6 @@ namespace d360.model
         public DbSet<FieldType> FieldTypes { get; set; }
 
         public DbSet<FieldTypeLookupValue> FieldTypeLookupValues { get; set; }                  /* VIEW */
-
-        //public DbSet<FieldTypeWithRelation> FieldTypeWithRelations { get; set; }                /* VIEW */
 
         public DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
 
@@ -203,20 +197,6 @@ namespace d360.model
 
         public DbSet<MapGroupItem> MapGroupItems { get; set; }
 
-        public DbSet<MapItem> MapItems { get; set; }
-
-        public DbSet<MapRule> MapRules { get; set; }
-
-        public DbSet<MapRuleItem> MapRuleItems { get; set; }
-
-        public DbSet<MapRuleItemDetail> MapRuleItemDetails { get; set; }        /* VIEW */
-
-        public DbSet<MapRuleItemMapItem> MapRuleItemMapItems { get; set; }
-
-        public DbSet<MapSequence> MapSequences { get; set; }
-
-        public DbSet<MapSequenceContext> MapSequenceContexts { get; set; }
-
         public DbSet<MapType> MapTypes { get; set; }
 
         public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
@@ -283,6 +263,8 @@ namespace d360.model
 
         public DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
 
+        public DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
+
         public DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
 
         public DbSet<ResponsibilityTypeObjectClaimDetail> ResponsibilityTypeObjectClaimDetail { get; set; } /* VIEW */
@@ -327,9 +309,8 @@ namespace d360.model
 
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
-        //public DbSet<TooltipTemplate> TooltipTemplates { get; set; }     
-        
         public DbSet<AuditField> AuditFields { get; set; }
+
         public DbSet<Audit> Audits { get; set; }
 
         #endregion
@@ -449,17 +430,20 @@ namespace d360.model
         public List<AllocationPossibility> GetTypes()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
-			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
-			union
-			select	'TaxonomyType' as ObjectType, T.ID as ObjectTypeID, 'Models :: ' + C.Name  +' :: ' + T.Name as Name from TaxonomyType T inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
-			union
-			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
-			union
-            select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name 
-			union
-			select	'RuleType' as ObjectType, ID as ObjectTypeID, 'Rules :: ' + Name as Name from RuleType
-			union
-			select	'GroupType' as ObjectType, 1 as ObjectTypeID, 'Group' as Name").ToList();
+select	Object as ObjectType, 
+		ObjectID as ObjectTypeID, 
+		case Object
+			when 'ArtifactType' then 'Artifacts :: '
+			when 'TaxonomyType' then 'Models :: '
+			when 'PolicyType' then 'Policies :: '
+			when 'RuleType' then 'Rules :: '
+		end + Name as Name
+from	AssetType
+where	Class in (1,2,6,7)
+union
+select	'GroupType' as ObjectType, 1 as ObjectTypeID, 'Group' as Name
+union
+select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name ").ToList();
 
             list = list.OrderBy(i => i.Name).ToList();
 
@@ -469,22 +453,22 @@ namespace d360.model
         public List<AllocationPossibility> GetAllocationOptions()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
-			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
-			union
-			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Models :: ' + Name as Name from TaxonomyType
-			union
-			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
-			union
-			select	'RuleType' as ObjectType, ID as ObjectTypeID, 'Rules :: ' + Name as Name from RuleType
-			union
-            select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
-			union
-			select	'FusionType' as ObjectType, ID as ObjectTypeID, 'Fusion Types :: ' + Name as Name from FusionType
-			union
-			select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
-            union
-			select	'ReferenceItemType' as ObjectType, ID as ObjectTypeID, 'Reference Item Type :: ' + Name as Name from ReferenceItemType
-").ToList();
+select	Object as ObjectType, 
+		ObjectID as ObjectTypeID, 
+		case Object
+			when 'ArtifactType' then 'Artifacts :: '
+			when 'TaxonomyType' then 'Models :: '
+			when 'PolicyType' then 'Policies :: '
+			when 'RuleType' then 'Rules :: '
+			when 'FusionType' then 'Fusion Types :: '
+			when 'ReferenceItemType' then 'Reference Item Type :: '
+		end + Name as Name
+from	AssetType
+where	Class in (1,2,3,6,7,9)
+union
+select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
+union
+select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType").ToList();
 
             list = list.OrderBy(i => i.Name).ToList();
 
@@ -495,19 +479,20 @@ namespace d360.model
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
 select A.* from (
-			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
-			union
-			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Models :: ' + Name as Name from TaxonomyType
-			union
-			select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
-			union
-			select	'FusionType' as ObjectType, ID as ObjectTypeID, 'Fusion Types :: ' + Name as Name from FusionType
-			union
-			select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
-			union
-			select	'RuleType' as ObjectType, ID as ObjectTypeID, 'Rules :: ' + Name as Name from RuleType
-			union
-			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
+select	Object as ObjectType, 
+		ObjectID as ObjectTypeID, 
+		case Object
+			when 'ArtifactType' then 'Artifacts :: '
+			when 'TaxonomyType' then 'Models :: '
+			when 'PolicyType' then 'Policies :: '
+			when 'RuleType' then 'Rules :: '
+			when 'FusionType' then 'Fusion Types :: '
+			when 'ReferenceItemType' then 'Reference Item Type :: '
+		end + Name as Name
+from	AssetType
+where	Class in (1,2,3,6,7,9)
+union
+select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
 ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
 where R.ObjectID is null", new { id = attributeTypeID }).ToList();
 
@@ -2113,26 +2098,6 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                             break;
                     }
                 }
-                #endregion
-
-                #region Business logic : EmailTemplate
-                //if (entry.Entity is EmailTemplate)
-                //{
-                //    var o = entry.Entity as EmailTemplate;
-                //    var id = o.ID.ToString();
-
-                //    switch (entry.State)
-                //    {
-                //        case EntityState.Added:
-                //            if (Any<EmailTemplate>(i => i.Name == o.Name && i.Action == o.Action))
-                //                throw new ArgumentException(Messages.Error_NameTaken);
-                //            break;
-                //        case EntityState.Modified:
-                //            if (Any<EmailTemplate>(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
-                //                throw new ArgumentException(Messages.Error_NameTaken);
-                //            break;
-                //    }
-                //}
                 #endregion
 
                 #region Business logic : FieldType

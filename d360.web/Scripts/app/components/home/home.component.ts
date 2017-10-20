@@ -77,7 +77,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.title = CompanySettings.BrowserTitlePrefix;
         this.titleSize = CompanySettings.HomePageTitleSize;
         this.titleColor = CompanySettings.HomePageTitleColor;
-        
+
         this.backgroundImage = CompanySettings.HomePageBackgroundImage;
 
         this.numTiles = (this.showAssignmentTile ? 1 : 0)

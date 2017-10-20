@@ -346,7 +346,6 @@
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\PartsController.cs" />
-    <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\CommunityController.cs" />
     <Compile Include="Controllers\Services\AssetsController.cs" />
     <Compile Include="Controllers\Services\ReferenceController.cs" />
@@ -355,7 +354,6 @@
     <Compile Include="Controllers\Services\ScoringController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\AgentController.cs" />
-    <Compile Include="Controllers\Services\DomainsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
     <Compile Include="Controllers\Services\GlossaryController.cs" />
@@ -620,6 +618,8 @@
     <Content Include="Scripts\app\8.chunk.js" />
     <Content Include="Scripts\app\9.chunk.js" />
     <Content Include="Scripts\app\components\admin\maps\admin-maps.component.html" />
+    <Content Include="Scripts\app\components\admin\responsibilities\responsibility-rules.component.html" />
+    <Content Include="Scripts\app\components\admin\responsibilities\responsibility-rule.form.html" />
     <Content Include="Scripts\app\components\admin\settings\admin-home.component.html" />
     <Content Include="Scripts\app\components\admin\settings\admin-site-menu.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow-editor.component.html" />
@@ -987,10 +987,6 @@
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.fusion\d360.fusion.csproj">
-      <Project>{0373748f-2bce-4c69-8031-7d7907282b60}</Project>
-      <Name>d360.fusion</Name>
-    </ProjectReference>
     <ProjectReference Include="..\d360.model\d360.model.csproj">
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>
@@ -1014,6 +1010,9 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attribute-type-custom-query-editor.component.ts" />
@@ -1052,6 +1051,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-rules.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-rule.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-image-upload.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-ip-restriction.component.ts" />
@@ -1646,8 +1647,6 @@
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://demo.dev.data3sixty.local</IISUrl>
-          <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
-          <IISAppRootUrl>http://client.dev.data3sixty.local/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

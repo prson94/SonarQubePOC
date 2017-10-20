@@ -18,8 +18,11 @@ import { AdminModule } from '../admin.module';
 
 import { AdminGovernanceComponent } from './admin-governance.component';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
-
+import { ResponsibilityRulesComponent } from './responsibility-rules.component';
+import { ResponsibilityRuleForm } from './responsibility-rule.form';
 import { AdminResponsibilitiesRoutingModule } from './admin-responsibilities.routes';
+
+import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 
 import {
     ButtonModule,
@@ -54,13 +57,16 @@ import {
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
         SharedResponsibilitiesModule,
-        
+
+        SimpleAccordionModule,
         TilesModule,
         AdminModule,
     ],
     declarations: [
         AdminGovernanceComponent,
         ResponsibilityTypeForm,
+        ResponsibilityRulesComponent,
+        ResponsibilityRuleForm
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

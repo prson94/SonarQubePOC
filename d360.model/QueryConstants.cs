@@ -720,30 +720,31 @@ order by case
         public static string ObjectRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[Object]
+			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[Object]
 			else IT.[Subject]
 		end as [Object],
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectID]
+			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectID]
 			else IT.[SubjectID]
 		end as [ObjectID],		
 		I.[Count],
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
+			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectName] 
 			else IT.SubjectName
 		end + 
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = T.Object and IT.ObjectID = T.ObjectID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
 		end as [Name],
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectCardinality] 
+			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
 		end as Cardinality
-from	cache.[Object] CO	
+from	Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID	
 		inner join IntersectTypeDetail IT on ( 
-										(IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) OR 
-										(IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) 
+										(IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR 
+										(IT.Object = T.Object and IT.ObjectID = T.ObjectID) 
 									   )
 		cross apply (
 					select	count(1) as [Count]
@@ -754,14 +755,14 @@ from	cache.[Object] CO
 								(Object = @obj and ObjectID = @objId)
 								)
 					) I
-where	CO.[Object] = @obj and CO.ObjectID = @objId
+where	A.[Object] = @obj and A.ObjectID = @objId
 order by case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
+			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectName] 
 			else IT.SubjectName
 		end + 
 		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-			when (IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
+			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
+			when (IT.Object = T.Object and IT.ObjectID = T.ObjectID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
 		end";
 
         
@@ -891,11 +892,10 @@ order by D.Name, S.Name";
         declare	@ot varchar(50),
 		        @otid int
 
-        select	@ot = ObjectType,
-		        @otid = ObjectTypeID
-        from	cache.Object 
-        where	Object = @type 
-                and ObjectID = @id
+        select	@ot = T.Object,
+		        @otid = T.ObjectID
+        from	Asset A 
+                inner join AssetType T on T.ID = A.AssetTypeID  and A.Object = @type and A.ObjectID = @id 
 
 
         select 
@@ -917,13 +917,12 @@ order by D.Name, S.Name";
 
         public static string SynonymOptions = @"
 declare	@ot varchar(50),
-		@otid int
+		@otid int 
 
-select	@ot = ObjectType,
-		@otid = ObjectTypeID
-from	cache.Object 
-where	Object = @object 
-        and ObjectID = @objectId
+select	@ot = T.Object,
+		@otid = T.ObjectID
+from	Asset A 
+        inner join AssetType T on T.ID = A.AssetTypeID  and A.Object = @object and A.ObjectID = @objectId 
 
 select		D.Object + '|' + cast(D.ObjectID as varchar) + '|' + cast(P.ID as varchar) as ID,
 			D.ObjectTypeName + ' :: ' + D.TextPath as Name,
@@ -1083,13 +1082,13 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 		select	D.Object + cast(D.ObjectID as varchar),
 				D.Object,
 				D.ObjectID,
-				D.ObjectTypeName,
-				D.ObjectTypeName,
-				D.ObjectType,
-				D.ObjectTypeID,
-				D.TextPath,
-				D.IconBackColor,
-				D.IconForeColor,
+				DT.Name as ObjectTypeName,
+				DT.Name as ObjectTypeName,
+				DT.Object as ObjectType,
+				DT.ObjectID as ObjectTypeID,
+				utility.GetAssetDisplayValueWrapper(D.ID),
+				coalesce(S.IconBackColor, '#000') as IconBackColor,
+				coalesce(S.IconForeColor, '#fff') as IconForeColor,
 				case 
 					when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
 					else coalesce(P.Inverse, 'used in')
@@ -1098,7 +1097,7 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 				I.ID,
 				1 as isLeaf
 		from	[Intersect] I
-				inner join cache.ObjectDetails D on 
+				inner join Asset D on 
 									D.Object = case 
 												when I.Subject = @type and I.SubjectID = @id then I.Object
 												else I.Subject
@@ -1108,6 +1107,8 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 												when I.Subject = @type and I.SubjectID = @id then I.ObjectID
 												else I.SubjectID
 											   end
+				inner join AssetType DT on DT.ID = D.AssetTypeID
+				left join ObjectStyle S on S.ObjectType = DT.Object and S.ObjectID = DT.ObjectID
 				inner join IntersectType T on T.ID = I.IntersectTypeID
 				left join [Predicate] P on P.ID = T.PredicateID
 		where	( 
@@ -1129,19 +1130,21 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 		select	D.Object + cast(D.ObjectID as varchar),
 				D.Object,
 				D.ObjectID,
-				D.ObjectTypeName,
-				D.ObjectTypeName,
-				D.ObjectType,
-				D.ObjectTypeID,
-				D.TextPath,
-				D.IconBackColor,
-				D.IconForeColor,
+				DT.Name as ObjectTypeName,
+				DT.Name as ObjectTypeName,
+				DT.Object as ObjectType,
+				DT.ObjectID as ObjectTypeID,
+			    utility.GetAssetDisplayValueWrapper(D.ID) as TextPath,
+				coalesce(S.IconBackColor, '#000') as IconBackColor,
+				coalesce(S.IconForeColor, '#fff') as IconForeColor,
 				null,
 				null,
 				null,
 				1 as isLeaf
-		from	cache.ObjectDetails D
-		where	Object = @type and ObjectID = @id
+		from	Asset D
+				inner join AssetType DT on DT.ID = D.AssetTypeID
+				left join ObjectStyle S on S.ObjectType = DT.Object and S.ObjectID = DT.ObjectID
+		where	D.Object = @type and D.ObjectID = @id
 
 		--check for downstream relationships to pre-emptively show/hide expander button
 		update n
@@ -1154,6 +1157,7 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 		update @nodes
 		set isLeaf = 0
 		where intersectid is null;
+
 
 	select	(
 			select * from @links for json path			
@@ -1410,7 +1414,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 					end as [Type]
                 from workflow.type t
                 inner join workflow.eventregistration e on e.typeid = t.id
-                left join cache.objectdetails d on d.object = e.object and d.objectid = e.objectid 
+                left join AssetType d on d.object = e.object and d.objectid = e.objectid 
                 left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy

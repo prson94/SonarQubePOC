@@ -81,9 +81,9 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             if (string.IsNullOrEmpty(sortDataField))
             {
                 var sortSql = "";
-                                
+
                 foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
-                {                    
+                {
                     var columnName = $"Field{field.ID}";
                     if (field.Type == "Number")
                         sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST([{columnName}] AS int)";

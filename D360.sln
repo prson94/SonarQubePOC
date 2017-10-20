@@ -64,8 +64,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.functions.Topic", "igx.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.functions.Timer", "igx.functions.Timer\igx.functions.Timer.csproj", "{3D020915-FFBB-4474-8389-B9F76A7627B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.fusion", "d360.fusion\d360.fusion.csproj", "{0373748F-2BCE-4C69-8031-7D7907282B60}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.FusionRules", "igx.functions.FusionRules\igx.functions.FusionRules.csproj", "{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8}"
 EndProject
 Global
@@ -613,36 +611,6 @@ Global
 		{3D020915-FFBB-4474-8389-B9F76A7627B0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3D020915-FFBB-4474-8389-B9F76A7627B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{3D020915-FFBB-4474-8389-B9F76A7627B0}.Release|x86.Build.0 = Release|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Client Development|Any CPU.ActiveCfg = Client Development|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Client Development|Any CPU.Build.0 = Client Development|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Client Development|Mixed Platforms.ActiveCfg = Client Development|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Client Development|Mixed Platforms.Build.0 = Client Development|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Client Development|x86.ActiveCfg = Client Development|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Client Development|x86.Build.0 = Client Development|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|x86.Build.0 = Debug|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Nightly|Any CPU.ActiveCfg = Nightly|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Nightly|Any CPU.Build.0 = Nightly|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Nightly|Mixed Platforms.ActiveCfg = Nightly|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Nightly|Mixed Platforms.Build.0 = Nightly|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Nightly|x86.ActiveCfg = Nightly|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Nightly|x86.Build.0 = Nightly|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Production|Any CPU.ActiveCfg = Production|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Production|Any CPU.Build.0 = Production|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Production|Mixed Platforms.ActiveCfg = Production|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Production|Mixed Platforms.Build.0 = Production|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Production|x86.ActiveCfg = Production|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Production|x86.Build.0 = Production|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|x86.ActiveCfg = Release|Any CPU
-		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|x86.Build.0 = Release|Any CPU
 		{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8}.Client Development|Any CPU.ActiveCfg = Debug|Any CPU
 		{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8}.Client Development|Any CPU.Build.0 = Debug|Any CPU
 		{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8}.Client Development|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -696,7 +664,6 @@ Global
 		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
 		{96B838B1-2975-4328-B55C-ACF57C017A15} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
 		{3D020915-FFBB-4474-8389-B9F76A7627B0} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
-		{0373748F-2BCE-4C69-8031-7D7907282B60} = {DF896E70-6A4C-4E11-B0AF-0780094E0BEF}
 		{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
@@ -705,7 +672,7 @@ Global
 		SolutionGuid = {128F1A7E-2BC3-4035-9F04-0517583746B0}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 20
+		SccNumberOfProjects = 19
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/
 		SccLocalPath0 = .
@@ -777,14 +744,10 @@ Global
 		SccProjectTopLevelParentUniqueName17 = D360.sln
 		SccProjectName17 = igx.functions.Timer
 		SccLocalPath17 = igx.functions.Timer
-		SccProjectUniqueName18 = d360.fusion\\d360.fusion.csproj
+		SccProjectUniqueName18 = igx.functions.FusionRules\\igx.functions.FusionRules.csproj
 		SccProjectTopLevelParentUniqueName18 = D360.sln
-		SccProjectName18 = d360.fusion
-		SccLocalPath18 = d360.fusion
-		SccProjectUniqueName19 = igx.functions.FusionRules\\igx.functions.FusionRules.csproj
-		SccProjectTopLevelParentUniqueName19 = D360.sln
-		SccProjectName19 = igx.functions.FusionRules
-		SccLocalPath19 = igx.functions.FusionRules
+		SccProjectName18 = igx.functions.FusionRules
+		SccLocalPath18 = igx.functions.FusionRules
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi

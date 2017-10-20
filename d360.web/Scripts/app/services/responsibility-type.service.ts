@@ -1,8 +1,23 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { IResponsibilityTypeService, ResponsibilityType, ResponsibilityTypeGroup, ResponsibilityTypeRelation, ResponsibilityTypeCount, ResourceResponsibilityTypeCount } from '../models/responsibility-type.model';
+import {
+    IResponsibilityTypeService,
+    ResponsibilityType,
+    ResponsibilityTypeGroup,
+    ResponsibilityTypeRelation,
+    ResponsibilityTypeCount,
+    ResourceResponsibilityTypeCount,
+    ResponsibilityTypeRelationRule,
+    ResponsibilityTypeRelationRuleSummary,
+    ResponsibilityTypeRelationRuleFormData,
+    ResponsibilityTypeRelationRuleDefinitionWhenItem,
+    ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
+    ResponsibilityTypeRelationRuleDefinitionThenItem,
+    ResponsibilityTypeRelationRuleDefinitionThenTestRow
+} from '../models/responsibility-type.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
+import { SelectItem } from "primeng/primeng";
 
 @Injectable()
 export class ResponsibilityTypeService extends BaseService implements IResponsibilityTypeService {
@@ -76,6 +91,76 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
         return this.http.get(uri)
             .toPromise()
             .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getResponsibilityTypeRelationRule(id: number): Promise<ResponsibilityTypeRelationRule> {
+        return this.http.get(`form/ResponsibilityTypeRelationRule?id=${id}`)
+            .toPromise()
+            .then(r => <ResponsibilityTypeRelationRule>r.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelationOptionsByResponsibilityType(id: number): Promise<SelectItem[]> {
+        return this.http.get(`form/RelationsByResponsibilityType?id=${id}`)
+            .toPromise()
+            .then(response => <SelectItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelationRuleFormData(type: string, id: number): Promise<ResponsibilityTypeRelationRuleFormData> {
+        return this.http.get(`form/ResponsibilityTypeRelationRule_FormData?type=${type}&id=${id}`)
+            .toPromise()
+            .then(response => <ResponsibilityTypeRelationRuleFormData>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelationRuleFormDataRelationshipsForDropdown(type: string, id: number, intersectTypeId: number): Promise<SelectItem[]> {
+        return this.http.get(`form/ResponsibilityTypeRelationRuleRelationships_FormData?type=${type}&id=${id}&intersectTypeID=${intersectTypeId}`)
+            .toPromise()
+            .then(response => <SelectItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelationRulesByResponsibilityType(id: number): Promise<ResponsibilityTypeRelationRuleSummary[]> {
+        return this.http.get(`api/ownership/types/${id}/rules`)
+            .toPromise()
+            .then(response => <ResponsibilityTypeRelationRuleSummary[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    putRule(rule: ResponsibilityTypeRelationRule): Promise<any> {
+        return this.http.put(`form/ResponsibilityTypeRelationRule`, rule)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postRule(rule: ResponsibilityTypeRelationRule): Promise<any> {
+        return this.http.post(`form/ResponsibilityTypeRelationRule`, rule)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteRule(id: number): Promise<any> {
+        return this.http.delete(`form/DeleteResponsibilityTypeRelationRuleByID?id=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    testWhen(rule: ResponsibilityTypeRelationRule): Promise<ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]> {
+        return this.http.post(`form/ResponsibilityTypeRelationRule_WhenTest`, rule)
+            .toPromise()
+            .then(response => <ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    testThen(rule: ResponsibilityTypeRelationRule): Promise<ResponsibilityTypeRelationRuleDefinitionThenTestRow[]> {
+        return this.http.post(`form/ResponsibilityTypeRelationRule_ThenTest`, rule)
+            .toPromise()
+            .then(response => <ResponsibilityTypeRelationRuleDefinitionThenTestRow[]>response.json())
             .catch(err => this.handleError(err));
     }
 }

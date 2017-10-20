@@ -25,8 +25,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 89; //10
-            var fusionTypeID = 28;//13;
+            var companyID = 98; //10
+            var fusionTypeID = 3;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -117,8 +117,8 @@ END",
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("acidev2017.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "ACI Dev - 2017", File = bytes };
+            var bytes = File.ReadAllBytes("citizens.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Citizens - 2017", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

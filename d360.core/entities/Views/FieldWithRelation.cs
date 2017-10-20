@@ -39,6 +39,7 @@ namespace d360.core.entities
         public bool IsListable { get; set; }
         public bool IsRequired { get; set; }
         public int SortOrder { get; set; }
+        public bool AllowMultipleValues { get; set; }
 
         /* Field Properties */
         [Key, Column(Order = 2, TypeName = "varchar"), StringLength(25)]

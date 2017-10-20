@@ -204,6 +204,38 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
     }
 
+    #region ResponsibilityRule Models
+
+    public class ObjectResult
+    {
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class SecurityResult
+    {
+        public int ResourceID { get; set; }
+        public string ResourceName { get; set; }
+        public int? GroupID { get; set; }
+        public string GroupName { get; set; }
+    }
+
+    public class EndResult
+    {
+        public int RuleID { get; set; }
+
+        public int ResponsibilityTypeID { get; set; }
+
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+
+        public int ResourceID { get; set; }
+        public int? GroupID { get; set; }
+    }
+
+    #endregion
+
     [DataContract(Namespace = NAMESPACE)]
     public class PermissionModel : BaseObject
     {

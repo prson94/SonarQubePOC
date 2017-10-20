@@ -9,9 +9,13 @@ namespace d360.extensions
 {
     public interface IQueueSource
     {
-        void CreateMessage(string queueName, QueueObject item);
+        void CreateMessage<T>(string queueName, T item);
 
-        void CreateMessages(string queueName, List<QueueObject> items);
+        void CreateMessages<T>(string queueName, List<T> items);
+
+        Task CreateMessageAsync<T>(string queueName, T item);
+
+        Task CreateMessagesAsync<T>(string queueName, List<T> items);
 
         void CreateMessage(QueueType type, QueueObject item);
 

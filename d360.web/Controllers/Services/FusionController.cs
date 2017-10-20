@@ -1,27 +1,24 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.api;
+using d360.core.entities.Views;
 using d360.extensions;
 using d360.model;
-using d360.core;
+using d360.web.Models;
+using Newtonsoft.Json;
+using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
 using System.Runtime.Serialization;
-using System.Diagnostics;
-using System.Xml.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using d360.core.entities.api;
 using System.Text.RegularExpressions;
-using d360.core.exceptions;
-using d360.core.entities.Views;
-using d360.fusion;
-using SpreadsheetLight;
-using System.IO;
-using System.Data.SqlClient;
-using d360.web.Models;
+using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace d360.web.Controllers.Services
 {
@@ -903,9 +900,7 @@ from    Fusion C
 
                 Trace.TraceInformation("Fusion queue name is: {0}, Company ID: {1}", db.FusionQueue, Company.CurrentCompanyID);
 
-                var fusionQueue = new FusionQueueManager(db.FusionQueue);
-
-                await fusionQueue.SendMessageAsync(new FusionProcessingData
+                await Queue.CreateMessageAsync(db.FusionQueue, new FusionProcessingData
                 {
                     CompanyID = Company.CurrentCompanyID,
                     FusionID = fusionID,

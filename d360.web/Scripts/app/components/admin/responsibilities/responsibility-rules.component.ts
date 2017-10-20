@@ -1,0 +1,123 @@
+﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
+import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelationRule, ResponsibilityTypeRelationRuleSummary } from '../../../models/responsibility-type.model';
+import { MessagesService } from '../../../services/messages.service';
+import { BaseComponent } from '../../shared/base.component';
+
+@Component({
+    selector: 'd3s-responsibility-rules',
+    templateUrl: './responsibility-rules.component.html',
+    providers: [ResponsibilityTypeService ]
+})
+
+export class ResponsibilityRulesComponent extends BaseComponent implements OnChanges {
+    @Input() id: number;
+    @Input() title: string = 'Rules';
+
+    @Input() showAddButton: boolean = true;
+    @Input() showEditButton: boolean = true;
+    @Input() showDeleteButton: boolean = true;
+
+    @Output() onEdit = new EventEmitter();
+    @Output() onAdd = new EventEmitter();
+    @Output() onDelete = new EventEmitter();
+    @Output() onCancel = new EventEmitter();
+    @Output() onFieldsChanged = new EventEmitter();
+
+    @Input() isEditing = false;
+    @Input() isAdding = false;
+    @Input() isDeleting = false;
+
+    private rows = new Array<ResponsibilityTypeRelationRuleSummary>();
+    private selectedRow = new ResponsibilityTypeRelationRuleSummary();
+
+    private theDeleteCallback: Function;
+
+    
+    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesService) {
+        super();
+
+        this.theDeleteCallback = this.deleteRule.bind(this);
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        for (let p in changes) {
+            if (p == 'id') {
+                this.id = changes['id'].currentValue;
+                this.isEditing = false;
+                this.isAdding = false;
+                this.isDeleting = false;
+            }
+        }
+        this.load();
+    }
+
+    load(): void {
+
+        if (this.id == null)
+            return;
+
+        this.isLoading = true;
+
+        this.responsibilityTypeService.getRelationRulesByResponsibilityType(this.id)
+            .then(data => {
+                this.rows = data;
+                //this.fieldDefinitions.forEach(d => {
+                //    if (d.Type == 'ComplexRelationLookup') d.Type = 'Relation Lookup';
+                //    if (d.Type == 'RelationLookup') d.Type = 'Relation Lookup';
+                //    if (d.Type == 'FusionLookup') d.Type = 'Fusion Lookup';
+                //    if (d.Type == 'DateTime') d.Type = 'Date Time';
+                //    if (d.Type == 'FilteredLookup') d.Type = 'Filtered Lookup';
+                //});
+                this.selectedRow = null;
+                this.isLoading = false;
+            });
+
+    }
+
+    edit(id: number): void {
+        this.selectedRow = this.rows.find(f => f.ID == id);
+        this.isEditing = true;
+        this.isDeleting = false;
+        this.isAdding = false;       
+        this.onEdit.emit(); 
+    }
+
+    add(): void {
+        this.selectedRow = null;
+        this.isEditing = true;
+        this.isDeleting = false;  
+        this.onAdd.emit();      
+    }
+
+    delete(id: number): void {
+        this.selectedRow = this.rows.find(f => f.ID == id);
+        this.isEditing = false;
+        this.isDeleting = true;
+        this.isAdding = false;
+        this.onDelete.emit();
+    }
+    
+    editComplete(event) {
+        this.isEditing = false;
+        this.onCancel.emit();
+        this.load();
+        this.onFieldsChanged.emit();
+    }
+
+    deleteRule(id: number) {
+        this.responsibilityTypeService.deleteRule(id).then(res => {
+            this.showMessageForResult(this.messagesService, res);
+            if (!res.isError) {            
+                this.isDeleting = false;                
+                let index = this.rows.findIndex(f => f.ID == id);
+                if (index >= 0 && index < this.rows.length)
+                    this.rows.splice(index, 1);
+                this.onFieldsChanged.emit();
+            }
+        });
+        
+    }
+}
+
+

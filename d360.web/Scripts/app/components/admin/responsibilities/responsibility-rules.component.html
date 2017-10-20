@@ -1,0 +1,42 @@
+﻿<div *ngIf="id">
+    <div *ngIf="!isLoading && !isEditing && !isDeleting">
+        <header>
+            {{title}}            
+            <d3s-tile-actions *ngIf="!isLoading && !isEditing && !isDeleting" [hasAdd]="showAddButton" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+        </header>
+    </div>
+    <div *ngIf="isLoading" style="width:100%; text-align:center;">
+        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+    </div>
+    <div *ngIf="isEditing">
+        <d3s-responsibility-rule-form [ruleId]="id" [id]="selectedRow?.ID" (onCancel)="isEditing = false; onCancel.emit()" (onComplete)="editComplete($event)"></d3s-responsibility-rule-form>
+    </div>    
+    <d3s-delete-form *ngIf="isDeleting"
+                     [callback]="theDeleteCallback"
+                     [itemId]="selectedRow?.ID"
+                     [method]="'callback'"
+                     [prompt]="'Are you sure you want to delete the rule [' + [selectedRow?.Name] + ']?'"
+                     (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
+    <div *ngIf="!isLoading && !isEditing && !isDeleting">
+        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             
+        <p-dataTable #dt [globalFilter]="gb" [value]="rows" selectionMode="single" [(selection)]="selectedRow" (onRowDblclick)="isEditing=showEditButton;" scrollable="true"  scrollHeight="200px">
+            <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
+            <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
+            <p-column field="ObjectName" header="Type" sortable="true" [style]="{ 'width': '15%' }" [filter]="!showSimpleFilter"></p-column>
+            <p-column [style]="{ 'width': '30px' }" *ngIf="showEditButton">
+                <ng-template let-col let-item="rowData" pTemplate type="body">
+                    <div class="RowTools">
+                        <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                        
+                    </div>
+                </ng-template>
+            </p-column>
+            <p-column [style]="{ 'width': '30px' }" *ngIf="showDeleteButton">
+                <ng-template let-col let-item="rowData" pTemplate type="body">
+                    <div class="RowTools">                        
+                        <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                    </div>
+                </ng-template>
+            </p-column>
+        </p-dataTable>
+    </div>
+</div>

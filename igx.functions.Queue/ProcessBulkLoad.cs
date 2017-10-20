@@ -36,7 +36,7 @@ namespace igx.functions.Queue
         const string functionName = "ProcessBulkLoad";
 
         [FunctionName(functionName)]
-        public static void Run([QueueTrigger("d3s-bulkload-debug", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log) //%BulkLoadQueueName%
+        public static void Run([QueueTrigger("%BulkLoadQueue%", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log) //%BulkLoadQueueName%
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(myQueueItem);
 
@@ -346,9 +346,9 @@ namespace igx.functions.Queue
                                         if (verifiedSubjectArea != null)
                                         {
                                             verifiedItem = company.Filter<Artifact>(x =>
-                                                x.ArtifactTypeID == verifiedType.ID &&
+                                                x.ArtifactTypeID == verifiedType.ID //&&
                                                 //x.TaxonomyTypeID == verifiedSubjectArea.ID &&
-                                                x.TextPath.ToLower() == rawItemPath
+                                                //x.TextPath.ToLower() == rawItemPath
                                             )
                                             .Select(x => new SimpleTypeModel { Name = "Artifact", ID = x.ID })
                                             .FirstOrDefault();
@@ -505,30 +505,22 @@ namespace igx.functions.Queue
 
                         break;
                         #endregion
-                    case "P":
-                        #region Promotions
+                    case "P":   // Promotions
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
                         break;
-                        #endregion
-                    case "R":
-                        #region Relations
+                    case "R":   // Relations
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.Relationships {load.ID}", loadInfo.CompanyID, 2400);
                         break;
-                        #endregion
-                    case "U":
-                        #region Unrelate
+                    case "U":   // Unrelate
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.Unrelate {load.ID}", loadInfo.CompanyID, 2400);
                         break;
-                        #endregion
                     case "B":
-                    case "BL":
-                        #region Business Lineage
+                    case "BL":  // Business Lineage
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.BusinessLineage {load.ID}", loadInfo.CompanyID, 2400);
                         break;
-                        #endregion
                     case "T":
-                    case "TL":
-                        #region Technical Lineage
+                    case "TL":  // Technical Lineage
+                        #region 
 
                         #region
                         /*

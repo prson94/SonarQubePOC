@@ -1,21 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Web.Mvc;
+﻿using d360.core;
 using d360.core.entities;
-using d360.model;
-using d360.core;
-using Newtonsoft.Json;
-using d360.extensions;
-using d360.web.Models.Attributes;
-using SpreadsheetLight;
-using System.IO;
-using System.Xml.Linq;
-using System;
 using d360.core.exceptions;
-using System.Net;
-using d360.fusion;
-using System.Threading.Tasks;
+using d360.extensions;
+using d360.model;
+using d360.web.Models.Attributes;
+using Newtonsoft.Json;
+using SpreadsheetLight;
+using System;
+using System.Collections.Generic;
 using System.Data.Entity.Design.PluralizationServices;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.Mvc;
+using System.Xml.Linq;
 
 namespace d360.web.Controllers
 {
@@ -24,11 +23,13 @@ namespace d360.web.Controllers
     {
         #region DI
 
+        IQueueSource Queue;
         IStorageProvider Storage;
 
-        public FusionController(CommunityContext community, CompanyContext company, IStorageProvider storage)
+        public FusionController(CommunityContext community, CompanyContext company, IStorageProvider storage, IQueueSource queue)
             : base(community, company)
         {
+            Queue = queue;
             Storage = storage;
         }
 
@@ -290,15 +291,21 @@ namespace d360.web.Controllers
 #if DEBUG
                         fusionQueueName = "fusion-queue-debug";
 #endif
-
-                        var fusionQueue = new FusionQueueManager(fusionQueueName);
-
-                        await fusionQueue.SendMessageAsync(new FusionProcessingData
+                        await Queue.CreateMessageAsync(fusionQueueName, new FusionProcessingData
                         {
                             CompanyID = Company.CurrentCompanyID,
                             FusionID = id,
                             LogFileName = fileName
                         });
+
+                        //var fusionQueue = new FusionQueueManager(fusionQueueName);
+
+                        //await fusionQueue.SendMessageAsync(new FusionProcessingData
+                        //{
+                        //    CompanyID = Company.CurrentCompanyID,
+                        //    FusionID = id,
+                        //    LogFileName = fileName
+                        //});
 
                         #endregion
                     }

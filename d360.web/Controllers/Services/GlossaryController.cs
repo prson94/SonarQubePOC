@@ -88,7 +88,7 @@ namespace d360.web.Controllers.Services
                                         
 
                                         //joinSql.Add($"inner join FieldType {selectTypePrefix} on {selectTypePrefix}.ID = {df.FieldTypeID}");
-                                        joinSql.Add($"left join FieldWithRelation {selectPrefix} on {selectPrefix}.FieldTypeID = {df.FieldTypeID} and {selectPrefix}.ObjectType = 'Lookup' and {selectPrefix}.ObjectID = L.ID");
+                                        joinSql.Add($"left join Field {selectPrefix} on {selectPrefix}.FieldTypeID = {df.FieldTypeID} and {selectPrefix}.ObjectType = 'Lookup' and {selectPrefix}.ObjectID = L.ID");
 
                                         //Build where
                                         if (df.Filter)
@@ -168,7 +168,7 @@ namespace d360.web.Controllers.Services
                         break;
                     default:
                         columns += $"T{f.ID}.FormattedValue as [{name}], ";
-                        joins += $" left join FieldWithRelation T{f.ID} on T{f.ID}.ObjectType = 'Artifact' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
+                        joins += $" left join Field T{f.ID} on T{f.ID}.ObjectType = 'Artifact' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
                         break;
                 }
             }
@@ -177,10 +177,6 @@ namespace d360.web.Controllers.Services
 
             var querySql = $@"
 select	A.ID,
-		A.Name,
-		A.Description,
-		A.Status,
-        A.DateLastCertified,
         {columns}
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
@@ -216,6 +212,187 @@ from    FieldWithRelation F
             response.Content = new StringContent(
                 arr.ToString(Newtonsoft.Json.Formatting.None), 
                 Encoding.UTF8, 
+                "application/json");
+            return response;
+        }
+
+        /// <summary>
+        /// Gets an artifact based on a given ID.
+        /// </summary>
+        /// <returns>An instance of an artifact.</returns>
+        [Route("artifacts/{typeID:int}/{id:int}")]
+        public HttpResponseMessage GetArtifact(int typeID, int id)
+        {
+            var joins = "";
+            var columns = "";
+
+            var artifact = Company.Filter<Artifact>(i => i.ArtifactTypeID == typeID && i.ID == id).SingleOrDefault();
+
+            if (artifact == null)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Artifact with Type of {typeID} and ID of {id} could not be located.");
+            }
+
+            var fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == typeID).ToList();
+            var fieldTypeIDs = fields.Select(i => i.ID).ToList();
+            var filteredLookupDefinitions = Company.Filter<FieldTypeFilteredLookupDefinition>(i => fieldTypeIDs.Contains(i.FieldTypeID), i => i.FieldTypeFilteredLookupDisplayFields).ToList();
+
+            foreach (var f in fields)
+            {
+                var name = f.Name.Replace("'", "''").Replace("--", "");
+
+                switch (f.Type)
+                {
+                    case "FilteredLookup":
+                        var fld = filteredLookupDefinitions.SingleOrDefault(i => i.FieldTypeID == f.ID);
+                        if (fld != null)
+                        {
+                            if (fld.FieldTypeFilteredLookupDisplayFields != null)
+                            {
+                                var where = string.Empty;
+                                var orderBy = string.Empty;
+
+                                #region Build sub-select
+
+                                if (fld.FieldTypeFilteredLookupDisplayFields.Count > 0)
+                                {
+                                    var columnSql = new List<string>();
+                                    var joinSql = new List<string>();
+
+                                    foreach (var df in fld.FieldTypeFilteredLookupDisplayFields.OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
+                                    {
+                                        var selectPrefix = $"{name}_{df.FieldTypeID}_FLF_{df.ID}";
+                                        var selectTypePrefix = $"{name}_{df.FieldTypeID}_FLFT_{df.ID}";
+
+                                        columnSql.Add($"{selectPrefix}.FormattedValue as [{df.FieldTypeName}]");
+                                        columnSql.Add($"{selectPrefix}.LookupUrl as [{df.FieldTypeName}Uri]");
+
+
+                                        //joinSql.Add($"inner join FieldType {selectTypePrefix} on {selectTypePrefix}.ID = {df.FieldTypeID}");
+                                        joinSql.Add($"left join Field {selectPrefix} on {selectPrefix}.FieldTypeID = {df.FieldTypeID} and {selectPrefix}.ObjectType = 'Lookup' and {selectPrefix}.ObjectID = L.ID");
+
+                                        //Build where
+                                        if (df.Filter)
+                                        {
+                                            where += (string.IsNullOrEmpty(where) ? "" : "AND ");
+                                            where += $" {selectPrefix}.Value = A.ID";
+                                        }
+
+                                        #region Build order by
+
+                                        if (df.SortOrder.HasValue)
+                                        {
+                                            orderBy += (string.IsNullOrEmpty(orderBy) ? "" : ", ");
+                                            if (df.FieldTypeID > 0)
+                                            {
+                                                var fieldTypeInfo = Company.Filter<FieldType>(i => i.ID == df.FieldTypeID).SingleOrDefault();
+                                                if (fieldTypeInfo != null)
+                                                {
+                                                    switch (fieldTypeInfo.Type)
+                                                    {
+                                                        case "Date":
+                                                        case "DateTime":
+                                                            orderBy += $" cast({selectPrefix}.FormattedValue as datetime) asc";
+                                                            break;
+                                                        case "Decimal":
+                                                        case "Number":
+                                                            orderBy += $" cast({selectPrefix}.FormattedValue as decimal) asc";
+                                                            break;
+                                                        default:
+                                                            orderBy += $" {selectPrefix}.FormattedValue asc";
+                                                            break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    orderBy += $" {selectPrefix}.FormattedValue asc";
+                                                }
+                                            }
+                                            else
+                                            {
+                                                orderBy += $" D_{fld.ID}.[{df.FieldTypeName}] asc";
+                                            }
+                                        }
+
+                                        #endregion
+                                    }
+
+                                    columns += "(select  ";
+                                    columns += string.Join(", ", columnSql);
+
+                                    columns += $@" from [Lookup] L ";
+
+                                    columns += string.Join(" ", joinSql);
+
+                                    if (!string.IsNullOrEmpty(where))
+                                    {
+                                        where = $" where {where}";
+                                        columns += where;
+                                    }
+
+                                    if (!string.IsNullOrEmpty(orderBy))
+                                    {
+                                        orderBy = $" order by {orderBy}";
+                                        columns += orderBy;
+                                    }
+
+                                    columns += $" for json path) as [{name}], ";
+                                }
+
+                                #endregion Build sub-select
+                            }
+                        }
+                        break;
+                    case "FusionLookup":
+                        //columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
+                        //joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = 'Artifact' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID);
+                        break;
+                    default:
+                        columns += $"T{f.ID}.FormattedValue as [{name}], ";
+                        joins += $" left join Field T{f.ID} on T{f.ID}.ObjectType = 'Artifact' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
+                        break;
+                }
+            }
+
+            fields = null;
+
+            var querySql = $@"
+select	A.ID,
+        {columns}
+		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+from	Artifact A 
+        {joins}
+where   A.ID = @id 
+for json path";
+
+            var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
+
+            var json = string.Join("", jsonResults);
+            var arr = JArray.Parse(json);
+
+            var attributes = Company.Query<AttributeDetail>($@"
+select  A.* 
+from    AttributeDetail A 
+        inner join Artifact AR on A.ObjectType = 'Artifact' and AR.ID = A.ObjectID and AR.ArtifactTypeID = {typeID}").ToList();
+
+            var attributeFields = Company.Query<FieldWithRelation>($@"
+select  F.* 
+from    FieldWithRelation F
+        inner join Attribute A on F.ObjectType = 'Attribute' and F.ObjectID = A.ID
+        inner join Artifact AR on A.ObjectType = 'Artifact' and AR.ID = A.ObjectID and AR.ArtifactTypeID = {typeID}").ToList();
+
+            foreach (JObject o in arr)
+            {
+                var artifactID = o.GetValue("ID").Value<int>();
+                var children = GetAttributesProperty(attributes.Where(i => i.ObjectID == artifactID).ToList(), attributeFields, null);
+                if (children != null)
+                    o.Add("Attributes", children);
+            }
+
+            var response = this.Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StringContent(
+                arr.ToString(Newtonsoft.Json.Formatting.None),
+                Encoding.UTF8,
                 "application/json");
             return response;
         }
@@ -453,10 +630,8 @@ where A.ArtifactTypeID = @id", columns, joins);
             getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns);
 
             var querySql = string.Format(@"select	A.ID,
-		A.Name,
-		A.Description,
         A.ParentID,
-		P.Name as Parent,
+		P.DisplayValue as Parent,
         dbo.GenerateObjectUrl('Taxonomy', P.TaxonomyTypeID, P.ID) as ParentUrl,
         {0}
 		dbo.GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as Url

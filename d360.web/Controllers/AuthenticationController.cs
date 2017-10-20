@@ -518,7 +518,7 @@ namespace d360.web.Controllers
 
                         // Send the logout response over HTTP redirect.
                         //X509Certificate2 x509Certificate = (X509Certificate2)Community.CurrentCompanySsoModel.IdpCertificateFile;
-                        SingleLogoutService.SendLogoutResponseByHTTPRedirect(Response, sloEndpoint, lrXml, null, null);
+                        SingleLogoutService.SendLogoutRequestByHTTPRedirect(Response, sloEndpoint, lrXml, null, null);
                         //SAMLServiceProvider.InitiateSLO(Response, null);
                     }
                     break;
@@ -829,7 +829,7 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-                                    ModelState.AddModelError("Unauthorized", "Your organisation is not yet registered with the Market Business Glossary or you details are invalid. Please contact <a href='mailto:glossary@londonmarketgroup.co.uk'>glossary@londonmarketgroup.co.uk</a> for assistance.");
+                                    ModelState.AddModelError("Unauthorized", "Your organisation is not yet registered with the Market Business Glossary or you details are invalid. Please contact <a href='mailto:datasupport@londonmarketgroup.co.uk'>datasupport@londonmarketgroup.co.uk</a> for assistance.");
                                     return View(model);
                                 }
 

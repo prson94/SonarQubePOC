@@ -1725,20 +1725,12 @@
               Looks up a localized string similar to Please provide a value..
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.CustomController.GetAttributesByAttributeType(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="id">The ID of the rule to retrieve attributes for.</param>
-            <param name="typeID">The ID of the attribute type to get.</param>
-            <returns></returns>
-        </member>
         <member name="T:d360.web.Controllers.Services.AssetsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.Services.AssetsController.PostBulkAssetsAsync(System.String,System.Int32)">
+        <member name="M:d360.web.Controllers.Services.AssetsController.PostBulkAssetsAsync(d360.core.SystemObjects,System.Int32)">
             <summary>
             Takes a given set of assets and bulk inserts/updates them.
             </summary>
@@ -1759,7 +1751,7 @@
             <param name="model">The item to add to the specified list, in the form of name/value pairs.</param>
             <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.AddReferenceList(d360.core.entities.LookupType)">
+        <member name="M:d360.web.Controllers.Services.ReferenceController.AddReferenceList(d360.core.entities.ReferenceItemType)">
             <summary>
             Adds a reference list.
             </summary>
@@ -1790,7 +1782,7 @@
             <param name="model">The item to update, in name/value pair format.</param>
             <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.PutReferenceList(System.Int32,d360.core.entities.LookupType)">
+        <member name="M:d360.web.Controllers.Services.ReferenceController.PutReferenceList(System.Int32,d360.core.entities.ReferenceItemType)">
             <summary>
             Updates a list, based on its ID.
             </summary>
@@ -1906,49 +1898,6 @@
             </summary>
             <param name="id">The package ID</param>
             <returns>Artifact</returns>
-        </member>
-        <member name="T:d360.web.Controllers.Services.DomainsController">
-            <summary>
-            This services houses all endpoints handling reference lists, and items.
-            </summary>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.AddItemToList(System.Int32,d360.core.entities.ReferenceItem)">
-            <summary>
-            Adds an item to a specified reference.
-            </summary>
-            <param name="typeID">The ID of the reference type the reference belongs to.</param>
-            <param name="item">The item to add to the specified list.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.DeleteItemFromList(System.Int32,System.Int32)">
-            <summary>
-            Removes an item from a specified reference, based on its ID.
-            </summary>
-            <param name="typeID">The ID of the reference type the reference belongs to.</param>
-            <param name="id">The ID of the item to remove.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.PutItemInList(System.Int32,System.Int32,d360.core.entities.ReferenceItem)">
-            <summary>
-            Updates an item in the specified domain, based on its ID.
-            </summary>
-            <param name="typeID">The ID of the list.</param>
-            <param name="id">The ID of the item to update.</param>
-            <param name="item">The item to update</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.GetLists">
-            <summary>
-            Gets an OData-queryable list of reference types. 
-            </summary>
-            <returns>A list of reference types.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.GetItemsByList(System.Int32)">
-            <summary>
-            Gets an OData-queryable list of items within a specified reference.
-            </summary>
-            <param name="typeID">The ID of the reference type the reference belongs to.</param>
-            <returns>A list of items.</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.WorkflowController.GetWorkflowDiagram(System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -2076,6 +2025,12 @@
             Gets all artifacts based on a given type ID.
             </summary>
             <returns>A list of artifacts.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifact(System.Int32,System.Int32)">
+            <summary>
+            Gets an artifact based on a given ID.
+            </summary>
+            <returns>An instance of an artifact.</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactsByTypeAndSearchModel(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
             <summary>
@@ -2664,6 +2619,12 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.ResponsibilityType_EditFields(System.Int32)">
             <param name="id">ResponsibilityTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponsibilityTypeRelationRule_DeleteFields(System.Int32)">
+            <param name="id">ResponsibilityTypeRelationRuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponsibilityTypeRelationRule_EditFields(System.Int32)">
+            <param name="id">ResponsibilityTypeRelationRuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Resource_AddFields(System.Int32)">
             <param name="id">ResourceTypeID</param>

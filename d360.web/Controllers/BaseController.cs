@@ -368,6 +368,16 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
         internal CompanyContext Company;
         internal CommunityContext Community;
 
+        internal List<string> limitedFieldTypes = new List<string> {
+            DataType.Attribute.ToString(),
+            DataType.FilteredLookup.ToString(),
+            DataType.ComplexRelationLookup.ToString(),
+            DataType.FieldFromRelationship.ToString(),
+            DataType.DataTableSelect.ToString(),
+            DataType.OwnershipLookup.ToString(),
+            DataType.RefListRelationship.ToString()
+        };
+
         public BaseController(CommunityContext community, CompanyContext company)
         {
             Community = community;
@@ -479,15 +489,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     #region Is Editable
 
-                    if (
-                        f.Type != DataType.Attribute.ToString() && 
-                        f.Type != DataType.FilteredLookup.ToString() && 
-                        f.Type != DataType.ComplexRelationLookup.ToString() && 
-                        f.Type != DataType.FieldFromRelationship.ToString() &&
-                        f.Type != DataType.DataTableSelect.ToString() &&
-                        f.Type != DataType.OwnershipLookup.ToString() &&
-                        f.Type != DataType.RefListRelationship.ToString()
-                       )
+                    if (!limitedFieldTypes.Contains(f.Type))
                     {
                         var patternMessage = "";
 
@@ -652,15 +654,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     #region Is Editable
 
-                    if (
-                        ft.Type != DataType.FilteredLookup.ToString() && 
-                        ft.Type != DataType.Attribute.ToString() && 
-                        ft.Type != DataType.ComplexRelationLookup.ToString() &&
-                        ft.Type != DataType.FieldFromRelationship.ToString() &&
-                        ft.Type != DataType.DataTableSelect.ToString() &&
-                        ft.Type != DataType.OwnershipLookup.ToString() &&
-                        ft.Type != DataType.RefListRelationship.ToString()
-                       )
+                    if (!limitedFieldTypes.Contains(ft.Type))
                     {
                         var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
 
@@ -692,7 +686,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             FieldType = ft.Type.ToString(),
                             FieldDescription = ft.FormDescription,
                             Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage),
-                            Category = ft.Category                            
+                            Category = ft.Category
                         };
 
                         #region FusionLookup
@@ -764,14 +758,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         #endregion Lookup
 
                         #region Relationship
-                        
+
                         if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
                         {
                             fld.FieldType = DataType.Relationship.ToString();
                             try
                             {
                                 fld.Items = new List<SelectListItem>();
-                                
+
                                 var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
                                 if (intersectType != null)
                                 {

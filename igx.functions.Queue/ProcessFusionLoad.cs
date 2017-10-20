@@ -1,27 +1,15 @@
-using System;
+using d360.core;
+using d360.core.entities;
+using Dapper;
+using igx.functions.Core;
+using igx.functions.Queue.fusion;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Newtonsoft.Json;
-using d360.extensions.info;
-using d360.extensions.caching;
-using d360.extensions.queue;
-using d360.model;
-using System.Linq;
-using d360.utils.company;
-using d360.core.queue;
-using Dapper;
-using System.IO;
-using SpreadsheetLight;
-using d360.core.entities;
-using System.Collections.Generic;
+using System;
 using System.Data.SqlClient;
-using d360.core.exceptions;
-using d360.core;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-using igx.functions.Core;
-using System.Threading.Tasks;
 using System.Diagnostics;
-using igx.functions.Queue.fusion;
+using System.Threading.Tasks;
 
 namespace igx.functions.Queue
 {
@@ -30,7 +18,7 @@ namespace igx.functions.Queue
         const string functionName = "ProcessFusionLoad";
 
         [FunctionName(functionName)]
-        public static void Run([QueueTrigger("fusion-queue-debug", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log)
+        public static void Run([QueueTrigger("%FusionLoadQueue%", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log)
         {
             var fusion = JsonConvert.DeserializeObject<FusionProcessingData>(myQueueItem);
             var fp = new FusionProcessor();

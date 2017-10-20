@@ -100,6 +100,7 @@ namespace igx.functions.Core
                 switch (environment)
                 {
                     case "NIGHTLY":
+                        //companies = companies.Where(i => i.CompanyID == 65 || i.CompanyID == 72 || i.CompanyID == 74).ToList();
                         companies = companies.Where(i => i.CompanyID == 4).ToList();
                         break;
                     case "CLIENTDEV":

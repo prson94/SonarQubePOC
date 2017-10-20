@@ -256,6 +256,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="citizens.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Pictet.cer" />
+    <None Include="pictet2017.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="acidev2017.cer">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

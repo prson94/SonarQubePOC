@@ -1513,38 +1513,38 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
             }
         }
 
-        private async Task DoFusionAttributeCache(SqlConnection companyConnection)
-        {
-            Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE IDs TO cache.Object TABLE.", _workArea.FusionAttributeTempValues.Count);
+//        private async Task DoFusionAttributeCache(SqlConnection companyConnection)
+//        {
+//            Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE IDs TO cache.Object TABLE.", _workArea.FusionAttributeTempValues.Count);
 
-            using (var trans = companyConnection.BeginTransaction())
-            {
-                //merge temp table with fusion attributes table
-                await companyConnection.ExecuteAsync(@"
-merge	cache.[Object] as T
-using	(
-		SELECT	'FusionAttribute' as [Object],
-				ID as ObjectID,
-				'FusionAttributeType' as ObjectType,
-				FusionAttributeTypeID as ObjectTypeID
-		FROM	FusionAttribute
-		where	FusionID = @id
-		) as S
-on		(
-			T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-		)
-when matched then
-		update	
-		set		T.ObjectType = S.ObjectType,
-				T.ObjectTypeID = S.ObjectTypeID
-when not matched then
-		insert ( [Object], ObjectID, ObjectType, ObjectTypeID )
-		values ( S.[Object], S.ObjectID, S.ObjectType, S.ObjectTypeID );",
-        new { id = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
+//            using (var trans = companyConnection.BeginTransaction())
+//            {
+//                //merge temp table with fusion attributes table
+//                await companyConnection.ExecuteAsync(@"
+//merge	cache.[Object] as T
+//using	(
+//		SELECT	'FusionAttribute' as [Object],
+//				ID as ObjectID,
+//				'FusionAttributeType' as ObjectType,
+//				FusionAttributeTypeID as ObjectTypeID
+//		FROM	FusionAttribute
+//		where	FusionID = @id
+//		) as S
+//on		(
+//			T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+//		)
+//when matched then
+//		update	
+//		set		T.ObjectType = S.ObjectType,
+//				T.ObjectTypeID = S.ObjectTypeID
+//when not matched then
+//		insert ( [Object], ObjectID, ObjectType, ObjectTypeID )
+//		values ( S.[Object], S.ObjectID, S.ObjectType, S.ObjectTypeID );",
+//        new { id = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                trans.Commit();
-            }
-        }
+//                trans.Commit();
+//            }
+//        }
 
         private void GenerateFusionAttributeTableValues(List<Dictionary<string, string>> models)
         {

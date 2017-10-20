@@ -132,6 +132,14 @@
     <Compile Include="entities\Glossary\ArtifactTypeExportTemplateStyle.cs" />
     <Compile Include="entities\Issue.cs" />
     <Compile Include="entities\IssueType.cs" />
+    <Compile Include="entities\Metric\MetricConditionValue.cs" />
+    <Compile Include="entities\Metric\MetricCondition.cs" />
+    <Compile Include="entities\Metric\MetricStagingResult.cs" />
+    <Compile Include="entities\Metric\MetricScore.cs" />
+    <Compile Include="entities\Metric\MetricMapResult.cs" />
+    <Compile Include="entities\Metric\MetricMap.cs" />
+    <Compile Include="entities\Metric\MetricGroup.cs" />
+    <Compile Include="entities\Metric\MetricItem.cs" />
     <Compile Include="entities\Organization\OrganizationRegistration.cs" />
     <Compile Include="entities\Organization\OrganizationInvitation.cs" />
     <Compile Include="entities\Organization\OrganizationResource.cs" />
@@ -151,6 +159,7 @@
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
     <Compile Include="entities\Score\ScoreTypeMetricVersion.cs" />
+    <Compile Include="entities\Security\ResponsibilityTypeRelationRule.cs" />
     <Compile Include="entities\ShoppingCart.cs" />
     <Compile Include="entities\ShoppingCartItem.cs" />
     <Compile Include="entities\ShoppingCartType.cs" />
@@ -336,6 +345,7 @@
     <Compile Include="enums\FusionRuleRelateSearchType.cs" />
     <Compile Include="enums\HelpResourceType.cs" />
     <Compile Include="enums\ExportView.cs" />
+    <Compile Include="enums\AssetTypeClass.cs" />
     <Compile Include="enums\LinkTarget.cs" />
     <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\RegisterStep.cs" />

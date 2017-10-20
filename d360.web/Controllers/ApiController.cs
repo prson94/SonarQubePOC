@@ -4089,6 +4089,20 @@ order by C.TextPath";
             return Company.GetResponsibilitiesByType(id);
         }
 
+        [Route("ownership/types/{id:int}/rules")]
+        public IEnumerable<dynamic> GetRulesByResponsibilityType(int id)
+        {
+            return Company.Query<dynamic>(@"
+select  R.ID, 
+        R.ResponsibilityTypeID, 
+        R.Name, 
+        O.Name as ResponsibilityType 
+from    ResponsibilityTypeRelationRule R 
+        inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
+            and O.ID = @id", 
+            new { id });
+        }
+
         [Route("ownership/{type}/{id:int}/claims")]
         public IQueryable<ResponsibilityTypeObjectClaimDetail> GetClaimsByObject(SystemObjects type, int id)
         {

@@ -8,13 +8,23 @@ namespace d360.extensions.queue
 {
     public class DummyQueueSource: IQueueSource
     {
-        public void CreateMessage(string queueName, QueueObject item)
+        public void CreateMessage<T>(string queueName, T item)
         {
         }
 
-        public void CreateMessages(string queueName, List<QueueObject> items)
+        public void CreateMessages<T>(string queueName, List<T> items)
         {
 
+        }
+
+        public async Task CreateMessageAsync<T>(string queueName, T item)
+        {
+            await Task.Run(() => { });
+        }
+
+        public async Task CreateMessagesAsync<T>(string queueName, List<T> items)
+        {
+            await Task.Run(() => { });
         }
 
         public void CreateMessage(QueueType type, QueueObject item)

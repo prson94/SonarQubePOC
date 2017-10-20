@@ -39,8 +39,8 @@ namespace d360.core
         //[Description("Dom ain Type")]
         //public const int Do mainType = 10;
 
-        [Description("Email Template")]
-        public const int EmailTemplate = 11;
+        //[Description("Email Template")]
+        //public const int Email Template = 11;
 
         [Description("Event")]
         public const int Event = 12;

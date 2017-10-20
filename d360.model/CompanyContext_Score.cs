@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Metric;
 using d360.core.entities.Views;
 using Dapper;
 using System.Collections.Generic;
@@ -13,7 +14,25 @@ namespace d360.model
     {
         #region DbSets
 
-        public DbSet<Score> Score { get; set; }
+        public DbSet<MetricCondition> MetricConditions { get; set; }
+
+        public DbSet<MetricConditionValue> MetricConditionValues { get; set; }
+
+        public DbSet<MetricGroup> MetricGroups { get; set; }
+
+        public DbSet<MetricItem> MetricItems { get; set; }
+
+        public DbSet<MetricMap> MetricMaps { get; set; }
+
+        public DbSet<MetricMapResult> MetricMapResults { get; set; }
+
+        public DbSet<MetricScore> MetricScores { get; set; }
+
+        public DbSet<MetricStagingResult> MetricStagingResults { get; set; }
+
+
+
+        public DbSet<Score> Scores { get; set; }
 
         public DbSet<ScoreMetric> ScoreMetrics { get; set; }
 

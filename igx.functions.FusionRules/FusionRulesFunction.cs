@@ -16,7 +16,7 @@ namespace igx.functions.FusionRules
         //const string timing = "0 * * * * *";
         const string timing = "0 */30 * * * *";
 
-        [FunctionName(functionName)]
+        [FunctionName(functionName), Disable("FusionRules_Disabled")]
         public static void Run([TimerTrigger(timing)]TimerInfo myTimer, TraceWriter log)
         {
             log.Info($"C# Fusion Rule trigger function executed at: {DateTime.Now}");
@@ -24,20 +24,8 @@ namespace igx.functions.FusionRules
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
-                
-#if DEBUG
-                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
 
-                companies = companies.Where(i => i.CompanyID == 4).ToList();
-
-                if(companies.Count == 0)
-                {
-                    companies.Add(new d360.core.entities.CompanyWithDatabaseServerSettings { CompanyID = 4 });
-                }
-#else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-#endif
-
 
                 companies.ForEach(c =>
                 {                    

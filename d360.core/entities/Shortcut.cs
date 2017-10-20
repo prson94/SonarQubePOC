@@ -14,8 +14,6 @@ namespace d360.core.entities
     public class Shortcut : BaseIntObject
     {
         [DataMember]
-        public int ID { get; set; }
-        [DataMember]
         public string Name { get; set; }
         [DataMember]
         [Column(TypeName = "VARCHAR")]

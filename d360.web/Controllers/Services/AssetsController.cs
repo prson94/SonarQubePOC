@@ -44,9 +44,9 @@ namespace d360.web.Controllers.Services
         /// <param name="otid">The Object Type ID of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
         [HttpPost, Route("{ot}/{otid:int}/bulk")]
-        public async Task<HttpResponseMessage> PostBulkAssetsAsync(string ot, int otid)
+        public async Task<HttpResponseMessage> PostBulkAssetsAsync(SystemObjects ot, int otid)
         {
-            if (!Company.HasPermission(SystemObjects.ArtifactType, otid, Claim.Update, ClaimObject.Root))
+            if (!Company.HasPermission(ot, otid, Claim.Update, ClaimObject.Root))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update assets of this type.");
 
             var prefix = "Assets.PostBulkAssetsAsync => ";
@@ -71,7 +71,7 @@ namespace d360.web.Controllers.Services
                 var artifactType = Company.GetById<ArtifactType>(otid, i => i.Parent);
 
                 if (artifactType == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Artifact Type with ID {otid} could not be found.");
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with ID {otid} could not be found.");
 
                 var import = JsonConvert.DeserializeObject<BulkAssetImport>(json);
                 var results = new List<AssetImportResult>();

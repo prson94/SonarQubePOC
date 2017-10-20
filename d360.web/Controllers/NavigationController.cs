@@ -632,34 +632,31 @@ namespace d360.web.Controllers
         [Authorize, HttpGet, Route("GetFavorites")]
         public JsonNetResult GetFavorites(bool adminOnly = false)
         {
-            var sql = @"select 
-	                    od.Name as Name,	
-	                    fav.Route as [Route],
-	                    fav.[Object],
-	                    fav.[ObjectId],
-	                    fav.SortOrder,
-	                    fav.Id,
-                        fav.ResourceId,
-                        fav.IsHomePage
-                    from
-	                    [dbo].[favorite] fav
-	                    inner join [cache].[objectdetails] od on ( fav.[Object] = od.[Object] and fav.[ObjectId] = od.[ObjectId])
-                    where 
-	                    fav.objectid > 0 and fav.resourceid = @resId  
-                    union
-                    select 
-	                    fav.Name as Name,	
-	                    fav.Route as [Route],
-	                    fav.[Object],
-	                    fav.[ObjectId],
-	                    fav.SortOrder,
-	                    fav.Id,
-                        fav.ResourceId,
-                        fav.IsHomePage
-                    from
-	                    [dbo].[favorite] fav	
-                    where 
-	                    fav.objectid is null and fav.resourceid = @resId  order by fav.sortorder";
+            var sql = @"
+select	utility.GetAssetDisplayValueWrapper(a.ID) as Name,
+		f.Route as [Route],
+		f.[Object],
+		f.[ObjectId],
+		f.SortOrder,
+		f.Id,
+		f.ResourceId,
+		f.IsHomePage
+from	Favorite f
+		inner join Asset a on a.[Object] = f.[Object] and a.[ObjectID] = f.[ObjectID]
+where	f.ObjectID > 0 and f.ResourceID = @resId
+union
+select		f.Name as Name,	
+			f.Route as [Route],
+			f.[Object],
+			f.[ObjectId],
+			f.SortOrder,
+			f.Id,
+			f.ResourceId,
+			f.IsHomePage
+from		Favorite f	
+where		f.ObjectID is null 
+			and f.ResourceID = @resId
+order by	f.SortOrder";
 
             var favorites = Company.Query<Favorite>(sql, new { resId = Company.CurrentResourceID }).ToList();
 

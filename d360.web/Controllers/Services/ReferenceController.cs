@@ -38,16 +38,16 @@ namespace d360.web.Controllers.Services
         [Route("{typeID:int}/items"), HttpPost]
         public HttpResponseMessage AddItemToList(int typeID, Dictionary<string, string> model)
         {
-            if (!Company.HasPermission(SystemObjects.LookupType, typeID, Claim.Create, ClaimObject.Root))
+            if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Create, ClaimObject.Root))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add an item to this list.");
 
-            Lookup item = null;
+            ReferenceItem item = null;
 
             try
             {
-                var type = Company.GetById<LookupType>(typeID);
+                var type = Company.GetById<ReferenceItemType>(typeID);
 
-                #region Check that LookupType was found
+                #region Check that ReferenceItemType was found
 
                 if (type == null)
                 {
@@ -56,23 +56,23 @@ namespace d360.web.Controllers.Services
 
                 #endregion
 
-                item.LookupTypeID = typeID;
+                item.ReferenceItemTypeID = typeID;
 
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.LookupType, typeID).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList();
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
                 {
                     if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Lookup.ToString(), Value = model[f.Name].ToString() });
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.ReferenceItem.ToString(), Value = model[f.Name].ToString() });
                     else
                     {
                         if (f.IsRequired)
-                            throw new MissingPropertiesException("Lookup");
+                            throw new MissingPropertiesException("Reference Item");
                     }
                 });
 
-                Company.SaveOrUpdate<Lookup>(item);
+                Company.SaveOrUpdate<ReferenceItem>(item);
 
                 fields.ForEach(f => {
                     f.ObjectID = item.ID;
@@ -80,7 +80,7 @@ namespace d360.web.Controllers.Services
 
                 Company.AddOrUpdateFields(fields);
 
-                return Request.CreateResponse<Lookup>(HttpStatusCode.Created, item);
+                return Request.CreateResponse<ReferenceItem>(HttpStatusCode.Created, item);
             }
             catch (BaseException ex)
             {
@@ -98,15 +98,15 @@ namespace d360.web.Controllers.Services
         /// <param name="list">The list to add, as name/value properties.</param>
         /// <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
         [Route(""), HttpPost]
-        public HttpResponseMessage AddReferenceList(LookupType list)
+        public HttpResponseMessage AddReferenceList(ReferenceItemType list)
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.LookupType, 0, Claim.Update, ClaimObject.Root))
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Update, ClaimObject.Root))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add this reference list.");
 
-                return (Company.SaveOrUpdate<LookupType>(list) > 0) ?
-                    Request.CreateResponse<LookupType>(HttpStatusCode.Created, list) :
+                return (Company.SaveOrUpdate(list) > 0) ?
+                    Request.CreateResponse(HttpStatusCode.Created, list) :
                     Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An error occured while attempting to add the reference list.");
             }
             catch (BaseException ex)
@@ -130,17 +130,17 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.LookupType, typeID, Claim.Update, ClaimObject.Root))
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Update, ClaimObject.Root))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this item.");
 
-                var itemToRemove = Company.GetById<Lookup>(id);
-                if (itemToRemove.LookupTypeID == typeID)
+                var itemToRemove = Company.GetById<ReferenceItem>(id);
+                if (itemToRemove.ReferenceItemTypeID == typeID)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format("The assigned list for this item does not match the list ID {0}", typeID));
                 }
                 else
                 {
-                    return (Company.Delete<Lookup>(itemToRemove)) ?
+                    return (Company.Delete(itemToRemove)) ?
                         Request.CreateResponse(HttpStatusCode.OK) :
                         Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An error occured while attempting to remove the item.");
                 }
@@ -165,17 +165,17 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Delete, ClaimObject.Root))
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Delete, ClaimObject.Root))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this reference list.");
 
-                var listToRemove = Company.GetById<LookupType>(id);
+                var listToRemove = Company.GetById<ReferenceItemType>(id);
                 if (listToRemove == null)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format("The list could not be found that matches the ID {0}", id));
                 }
                 else
                 {
-                    return (Company.Delete<LookupType>(listToRemove)) ?
+                    return (Company.Delete(listToRemove)) ?
                         Request.CreateResponse(HttpStatusCode.OK) :
                         Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An error occured while attempting to remove the reference list.");
                 }
@@ -202,10 +202,10 @@ namespace d360.web.Controllers.Services
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.LookupType, typeID, Claim.Update, ClaimObject.Root))
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Update, ClaimObject.Root))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this item.");
 
-                var item = Company.GetById<Lookup>(id);
+                var item = Company.GetById<ReferenceItem>(id);
 
                 if (item == null)
                 {
@@ -213,23 +213,22 @@ namespace d360.web.Controllers.Services
                 }
                 else
                 {
-                    if (item.LookupTypeID != typeID)
+                    if (item.ReferenceItemTypeID != typeID)
                     {
                         throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
                     }
                 }
 
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.LookupType, typeID).ToList();
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList();
 
                 var fields = new List<Field>();
                 fieldTypes.ForEach(f =>
                 {
                     if (model.ContainsKey(f.Name))
-                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.Lookup.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
+                        fields.Add(new Field { FieldTypeID = f.ID, ObjectType = SystemObjects.ReferenceItem.ToString(), ObjectID = item.ID, Value = model[f.Name].ToString() });
                 });
 
-                Company.SaveOrUpdate<Lookup>(item);
-                Company.AddOrUpdateFields(fields);
+                Company.SaveOrUpdate(item, fields);
 
                 return Request.CreateResponse(HttpStatusCode.OK);
             }
@@ -250,14 +249,14 @@ namespace d360.web.Controllers.Services
         /// <param name="list">The list to update</param>
         /// <returns></returns>
         [Route("{id:int}"), HttpPut]
-        public HttpResponseMessage PutReferenceList(int id, LookupType list)
+        public HttpResponseMessage PutReferenceList(int id, ReferenceItemType list)
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Update, ClaimObject.Root))
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Update, ClaimObject.Root))
                     return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update this list.");
 
-                var listToUpdate = Company.GetById<LookupType>(id);
+                var listToUpdate = Company.GetById<ReferenceItemType>(id);
                 if (listToUpdate == null)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"The list could not be found that matches the ID {id}");
@@ -265,8 +264,10 @@ namespace d360.web.Controllers.Services
                 else 
                 {
                     listToUpdate.Name = list.Name;
+                    listToUpdate.Description = list.Description;
+                    listToUpdate.DisplayFormat = list.DisplayFormat;
 
-                    return (Company.Update<LookupType>(listToUpdate)) ?
+                    return (Company.Update(listToUpdate)) ?
                         Request.CreateResponse(HttpStatusCode.OK) :
                         Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An error occured while attempting to update the reference list.");
                 }
@@ -292,7 +293,7 @@ namespace d360.web.Controllers.Services
             var joins = "";
             var columns = "";
 
-            var fields = Company.Filter<FieldType>(i => i.Object == "LookupType" && i.ObjectID == typeID).ToList();
+            var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList();
             var fieldTypeIDs = fields.Select(i => i.ID).ToList();
 
             foreach (var f in fields)
@@ -303,18 +304,19 @@ namespace d360.web.Controllers.Services
                 {
                     columns += $"T{f.ID}.LookupUrl as [{name}Uri], ";
                 }
-                joins += $" left join FieldWithRelation T{f.ID} on T{f.ID}.ObjectType = 'Lookup' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
+                joins += $" left join Field T{f.ID} on T{f.ID}.ObjectType = 'Lookup' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
             }
 
             fields = null;
 
             var querySql = $@"
 select	A.ID,
+        A.Code,
         {columns}
-		dbo.GenerateObjectUrl('Lookup', A.LookupTypeID, A.ID) as Url
-from	Lookup A 
+		dbo.GenerateObjectUrl('Lookup', A.ReferenceItemTypeID, A.ID) as Url
+from	ReferenceItem A 
         {joins}
-where   A.LookupTypeID = @id 
+where   A.ReferenceItemTypeID = @id 
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id = typeID }).ToList();
@@ -331,7 +333,7 @@ for json path";
         }
 
         [Route("{typeID:int}/responsibilities"), HttpGet]
-        public IQueryable<dynamic> GetResponsibilitiesForDomainType(int typeID)
+        public IQueryable<dynamic> GetResponsibilitiesForReferenceItemType(int typeID)
         {
             return GetResponsibilities(SystemObjects.ReferenceItemType, typeID);
         }
@@ -341,9 +343,15 @@ for json path";
         /// </summary>
         /// <returns>A list of reference lists.</returns>
         [Route(""), HttpGet]
-        public IQueryable<LookupType> GetReferenceLists()
+        public IQueryable<ReferenceItemType> GetReferenceLists()
         {
-            return Company.Table<LookupType>();
+            return Company.Table<ReferenceItemType>();
+        }
+
+        [Route("languages"), HttpGet]
+        public IQueryable<Language> GetLanguages()
+        {
+            return Company.Languages.AsQueryable();
         }
     }
 }

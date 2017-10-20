@@ -200,8 +200,8 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
             return false;
         if (this.shortcut.Name == null)
             return false;
-        if (this.shortcut.Url == null)
-            return false;
+        //if (this.shortcut.Url == null)
+        //    return false;
         if (this.shortcut.Icon == null && this.shortcut.IconUrl == null && this.shortcut.IconPayload == null && (this.iconImage.dataUrl == null || this.iconImage.dataUrl == ''))
             return false;
 

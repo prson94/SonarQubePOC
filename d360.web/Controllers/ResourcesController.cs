@@ -273,31 +273,10 @@ from	Taxonomy A
 
         #region Partials
 
-        [HttpGet, Route("templates/email")]
-        public ActionResult _EmailTemplates()
-        {
-            return PartialView();
-        }
-
         string buttonHtml(string buttonType, string context, string uri, string icon, string title, string method = "")
         {
             string methodAttribute = string.IsNullOrEmpty(method) ? "" : string.Format(" data-method='{0}'", method);
             return string.Format("<button type='button' data-{0} data-context='{1}' data-uri='{2}'{5} class='btn btn-default' title='{4}'><i class='fa fa-{3}'></i></button>", buttonType, context, uri, icon, title, methodAttribute);
-        }
-
-        [HttpGet, Route("{type}/{id:int}/flags")]
-        public ContentResult RenderFlagsTooltip(SystemObjects type, int id)
-        {
-            string html = "The red Flag comment thread will appear here in the coming iteration.";
-
-            return Content(html, "text/html");
-        }
-
-        [HttpGet, Route("{type}/{id:int}/templates/email/{templateAction}")]
-        public ContentResult RenderEmail(SystemObjects type, int id, string templateAction)
-        {
-            string html = Company.RenderEmail(templateAction, type, id);
-            return Content(html, "text/html");
         }
 
         [HttpGet, Route("complexvalue/{id:int}/{attribute:int}/templates/tooltip/preview")]
@@ -454,12 +433,6 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             html = (html ?? "").Replace('{', '(').Replace('}', ')');
 
             return Content(html, "text/html");
-        }
-
-        [HttpGet, Route("templates/tooltip")]
-        public ActionResult _TooltipTemplates()
-        {
-            return PartialView();
         }
 
         #endregion
