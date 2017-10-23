@@ -354,6 +354,9 @@
   <data name="FusionType_Remove" xml:space="preserve">
     <value>You may not remove this fusion type as there are existing attribute types based on it.</value>
   </data>
+  <data name="InUse_Error_Delete" xml:space="preserve">
+    <value>The relationship type you are trying to delete has established relationships.  Please delete these prior to deleting the relationship type.</value>
+  </data>
   <data name="NoFormData_AttributeType" xml:space="preserve">
     <value>attribute group</value>
   </data>
