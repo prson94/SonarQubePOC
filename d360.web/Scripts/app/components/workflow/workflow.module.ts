@@ -10,6 +10,7 @@ import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { PipesModule } from '../../pipes/pipes.module';
 
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
@@ -62,6 +63,7 @@ import {
         //d3s
         
         CoreModule,
+        PipesModule,
         TilesModule,
         SharedGridPagingInfoModule,
         SharedDynamicGridEditorModule,

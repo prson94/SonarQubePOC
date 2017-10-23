@@ -272,6 +272,8 @@ export class WorkflowFormField {
     FieldType: WorkflowFormFieldType;   
     Value: any;
     ID: string;
+    AllowMultipleValues: boolean;
+
 }
 
 export class WorkflowForm {

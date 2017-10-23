@@ -17,8 +17,6 @@ import {
     TooltipModule,
 } from 'primeng/primeng';
 
-//import { ColorPickerModule } from 'ngx-color-picker';
-
 import { CoreModule } from '../core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedDeleteFormModule } from '../delete.form';

@@ -33,6 +33,9 @@ namespace d360.web.Models
         public string ReferenceFieldID { get; set; }
 
         public List<SelectListItem> Values { get; set; }
+
+        public bool AllowMultipleValues { get; set; }
+
     }
     
 }

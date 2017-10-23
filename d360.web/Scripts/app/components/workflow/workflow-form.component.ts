@@ -37,10 +37,11 @@ import { MessagesService } from '../../services/messages.service';
                                                 <textarea *ngSwitchCase="fieldType.TextArea" [name]="'input_'+indx" style="width: 100%;" [(ngModel)]="field.Value" ></textarea>
                                                 <p-calendar *ngSwitchCase="fieldType.Date" [(ngModel)]="field.Value" [name]="'input_'+indx"></p-calendar>
                                                 <div *ngSwitchCase="fieldType.List">
-                                                    <select [name]="'input_'+indx" style="height:auto;width:100%;" [(ngModel)]="field.Value">
+                                                    <select *ngIf="!field.AllowMultipleValues" [name]="'input_'+indx" style="height:auto;width:100%;" [(ngModel)]="field.Value">
                                                         <option></option>
                                                         <option *ngFor="let opt of field.Values" [value]="opt.Value">{{opt.Text}}</option>
-                                                    </select>                                                    
+                                                    </select>    
+                                                    <p-multiSelect *ngIf="field.AllowMultipleValues" [name]="'input_'+indx" [(ngModel)]="field.Value" [options]="field.Values | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
                                                 </div>
                                             </div>
                                             <div class="col s12">&nbsp;</div>                                                                                        
@@ -187,6 +188,11 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private onSubmit() {
+        for (var i = 0; i < this.fields.length;i++) {
+            if (Array.isArray(this.fields[i].Value)) {
+                this.fields[i].Value = this.fields[i].Value.join();
+            }            
+        }
         //save form values with stepid and itemid
         this.workflowService.submitWorkflowForm(this.workflowItemId, this.workflowItemStepId, this.fields);
 

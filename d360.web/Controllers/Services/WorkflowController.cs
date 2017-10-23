@@ -406,13 +406,36 @@ order by wi.StartedOn desc";
                         var fieldType = Company.FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
                         int intVal = 0;
 
-                        if (fieldType != null && int.TryParse(val, out intVal)) {
+                        if (field.AllowMultipleValues)
+                        {
+                            var values = val.Split(',');
 
-                            var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == intVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
-
-                            if(lookup != null)
+                            foreach (var v in values)
                             {
-                                displayVal = lookup.Text;
+                                if (fieldType != null && int.TryParse(v, out intVal))
+                                {
+                                    var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == intVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
+
+                                    if (!string.IsNullOrEmpty(displayVal)) displayVal += ",";
+
+                                    if (lookup != null)
+                                    {
+                                        displayVal += lookup.Text;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {                            
+                            if (fieldType != null && int.TryParse(val, out intVal))
+                            {
+
+                                var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == intVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
+
+                                if (lookup != null)
+                                {
+                                    displayVal = lookup.Text;
+                                }
                             }
                         }
                     }
@@ -555,6 +578,7 @@ order by wi.StartedOn desc";
                 {                    
                     try
                     {
+                        item.AllowMultipleValues = fieldType.AllowMultipleValues;
                         item.Values = new List<System.Web.Mvc.SelectListItem>();
 
                         item.Values.AddRange(
@@ -1543,11 +1567,11 @@ order by wi.StartedOn desc";
         [Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId)
         {
-            var sql = @" select ft.ID as value, coalesce( ri.Name, lt.Name) as [label] from cache.ObjectDetails d
-                 join FieldType ft on ft.Object = d.ObjectType and ft.ObjectID = d.ObjectTypeID
+            var sql = @"select ft.ID as value, coalesce( ri.Name, lt.Name) as [label] from 
+                 FieldType ft
                  left join ReferenceItemType ri on ri.id = lookupobjectid and ft.lookupobjecttype = 'ReferenceItem'
                  left join LookupType lt on lt.id = lookupobjectid and ft.lookupobjecttype = 'Lookup'
-                 where d.Object = @objectType and d.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
+                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
 
             var results = Company.Query<dynamic>(sql, new { objectType = objectType, objectId = objectId });
 
