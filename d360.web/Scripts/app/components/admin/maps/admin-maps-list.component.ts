@@ -34,7 +34,7 @@ import { MapsService } from '../../../services/maps.service';
             </p-column>                            
             <p-column  [style]="{width:'40px'}">
                 <ng-template let-item="rowData" pTemplate type="body">
-                    <div class="RowTools">                                
+                    <div class="RowTools" *ngIf="item.ID > 1">                                
                         <a style="cursor:pointer;" (click)="selection = item; delete(item.ID);"><i class="fa fa-trash-o"></i></a>                                    
                     </div>
                 </ng-template>

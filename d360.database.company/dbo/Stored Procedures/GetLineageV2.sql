@@ -114,20 +114,18 @@ BEGIN
 	inner join MapGroupItem i on i.MapGroupID = g.ID
 	inner join #maps m on m.MapID = i.ObjectID
 
-
-
 	--nodes
 	insert into @nodes
 	select 
 		 i.subject + '|' + cast(i.subjectId as varchar) as [key]
 		,i.subject as [object]
 		,i.subjectid as [objectid]
-		,case when i.subject = 'Map' then 'MapType' else d.ObjectType end as objectType
-		,case when i.subject = 'Map' then T.SubjectID else d.ObjectTypeID end as objectTypeId
-		,d.ObjectTypeName as objectTypeName
-		,d.IconBackColor as backColor
-		,d.IconForeColor as foreColor
-		,d.[Name] as [name]
+		,case when i.subject = 'Map' then 'MapType' else ta.Object end as objectType
+		,case when i.subject = 'Map' then T.SubjectID else ta.ObjectID end as objectTypeId
+		,ta.Name as objectTypeName
+		,s.IconBackColor as backColor
+		,s.IconForeColor as foreColor
+		,utility.GetAssetDisplayValue(a.ID) as [name]
 		,case when i.subject = 'Map' then 1 else 0 end as isGroup
 		,null as [group]
 		,case when i.subject = 'Map' then null else coalesce(o.[Order],99999) end as [order]
@@ -137,7 +135,9 @@ BEGIN
 		,case when i.subject = 'Map' then 'map' else 'object' end as category
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
-	left join cache.ObjectDetails d on d.[object] = i.[subject] and d.objectid = i.subjectid
+	left join Asset a on a.[object] = i.subject and a.objectId = i.subjectid
+	left join AssetType ta on ta.ID = a.AssetTypeID
+	left join ObjectStyle s on s.[objecttype] = ta.[object] and s.objectid = ta.objectid
 	left join IntersectType t on t.ID = i.IntersectTypeID
 	left join MapTypeOrder o on o.IntersectTypeID = t.ID
 	union
@@ -145,12 +145,12 @@ BEGIN
 		 i.object + '|' + cast(i.objectid as varchar) as [key]
 		,i.object as [object]
 		,i.objectid as [objectid] 
-		,case when i.object = 'Map' then 'MapType' else d.ObjectType end as objectType
-		,case when i.object = 'Map' then T.ObjectID else d.ObjectTypeID end as objectTypeId
-		,d.ObjectTypeName as objectTypeName
-		,d.IconBackColor as backColor
-		,d.IconForeColor as foreColor
-		,d.[Name] as [name]
+		,case when i.object = 'Map' then 'MapType' else ta.Object end as objectType
+		,case when i.object = 'Map' then T.ObjectID else ta.ObjectID end as objectTypeId
+		,ta.Name as objectTypeName
+		,s.IconBackColor as backColor
+		,s.IconForeColor as foreColor
+		,utility.GetAssetDisplayValue(a.ID) as [name]
 		,case when i.object = 'Map' then 1 else 0 end as isGroup
 		,case when i.object != 'Map' and i.subject = 'Map' then
 			'Map|' + cast(i.subjectid as varchar)
@@ -164,7 +164,9 @@ BEGIN
 		,case when i.[object] = 'Map' then 'map' else 'object' end as category
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
-	left join cache.ObjectDetails d on d.[object] = i.object and d.objectid = i.objectid
+	left join Asset a on a.[object] = i.[object] and a.objectId = i.objectId
+	left join AssetType ta on ta.ID = a.AssetTypeID
+	left join ObjectStyle s on s.[objecttype] = ta.[object] and s.objectid = ta.objectid
 	left join IntersectType t on t.ID = i.IntersectTypeID
 	left join MapTypeOrder o on o.IntersectTypeID = t.ID;
 
@@ -231,3 +233,4 @@ BEGIN
 			for json path, WITHOUT_ARRAY_WRAPPER;
 
 END
+

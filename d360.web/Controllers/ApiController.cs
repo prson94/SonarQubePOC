@@ -2224,42 +2224,7 @@ from    [Intersect] I
 
         #region Lineage
 
-        public class MapItemDetail
-        {
-            public int MapID { get; set; }
-            public int SourceID { get; set; }
-            public int TargetID { get; set; }
 
-            public int SourceIntersectID { get; set; }
-
-            public string SourceSubjectName { get; set; }
-            public string SourceSubjectIconHtml { get; set; }
-            public string SourceSubject { get; set; }
-            public int SourceSubjectID { get; set; }
-            public string SourceSubjectUrl { get; set; }
-
-            public string SourceObjectName { get; set; }
-            public string SourceObjectIconHtml { get; set; }
-            public string SourceObject { get; set; }
-            public int SourceObjectID { get; set; }
-            public string SourceObjectUrl { get; set; }
-
-            public int TargetIntersectID { get; set; }
-
-            public string TargetSubjectName { get; set; }
-            public string TargetSubjectIconHtml { get; set; }
-            public string TargetSubject { get; set; }
-            public int TargetSubjectID { get; set; }
-            public string TargetSubjectUrl { get; set; }
-
-            public string TargetObjectName { get; set; }
-            public string TargetObjectIconHtml { get; set; }
-            public string TargetObject { get; set; }
-            public int TargetObjectID { get; set; }
-            public string TargetObjectUrl { get; set; }
-
-            public string Transformation { get; set; }
-        }
 
         [HttpGet, Route("maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems")]
         public HttpResponseMessage MapItems(string source, int sourceID, string target, int targetID)
@@ -2370,15 +2335,15 @@ from    [Intersect] I
                 select distinct
 	                i.[object], 
 	                i.objectId,
-	                d.name,
-					case when d.parentID is not null and d.textpath != d.name then d.textpath else null end as objectTypeName,
-	                d.IconForeColor as foreColor,
-	                d.IconBackColor as backColor,
+	                t.name,
+					null as objectTypeName,
+	                coalesce(s.IconForeColor, '#fff') as foreColor,
+	                coalesce(s.IconBackColor, '#000') as backColor,
 					coalesce(o.[Order], 99999) as [order]
                 from 
 	                intersectType i
-                inner join
-	                cache.objectDetails d on d.object = i.object and d.objectid = i.objectid
+                inner join AssetType t on t.object = i.object and t.objectid = i.objectid
+				left join ObjectStyle s on s.ObjectType = i.object and s.ObjectID = i.objectId
 				left join MapTypeOrder o on o.IntersectTypeID = i.ID
                 where 
                     i.[subject] = 'MapType' and i.[object] != 'MapType'
