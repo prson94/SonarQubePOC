@@ -409,7 +409,7 @@ order by wi.StartedOn desc";
                         if (field.AllowMultipleValues)
                         {
                             var values = val.Split(',');
-
+                            displayVal = "";
                             foreach (var v in values)
                             {
                                 if (fieldType != null && int.TryParse(v, out intVal))
