@@ -8,6 +8,11 @@ import * as go from 'gojs';
     selector: 'd3s-lineage-info',
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div *ngIf="node != null && node.errors != null && node.errors.length != null && node.errors.length > 0">
+            <div *ngFor="let e of node.errors" class="errorMessage">
+                &bull; {{e}}
+            </div>
+        </div>
         <div *ngIf="node != null && node.category == 'transform'">
             <div class="row" *ngIf="node.businessTransformation != null">
                 <div class="col s12">
@@ -104,6 +109,7 @@ export class LineageInfoComponent implements OnInit, OnChanges {
     constructor(private lineageService: LineageService, protected typeBuilder: DynamicTypeBuilder, public componentFactoryResolver: ComponentFactoryResolver) { }
 
     ngOnChanges() {
+        //console.log(this.node);
         this.data = null;
         if (this.componentRef) {
             this.componentRef.destroy();

@@ -154,6 +154,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.myDiagram.addDiagramListener('SelectionDeleted', e => this.SelectionDeleted(e));
         //this.myDiagram.addDiagramListener('ExternalObjectsDropped', e => this.ExternalObjectsDropped(e));
 
         this.myDiagram.grid.visible = false;
@@ -293,13 +294,17 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //console.log(this.tab, data);
         if (data) {
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
-            this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
-            this.showEditTab = (data != null && (data.category == 'object' || data.category == 'focal' || data.category == 'transform') && ( this.showLinkTabs || (<any>data).key.toString().indexOf('-') > -1));
-            this.showInfoTab = (this.showLinkTabs || ((<any>data).object != null && (<any>data).objectId != null));
+            this.showLinkTabs = false; // there's nothing to show currently
+            this.showEditTab = (data != null && (data.category == 'transform' || ((data.category == 'object' || data.category == 'focal') && (<any>data).key.toString().indexOf('-') > -1)));
+            this.showInfoTab = (this.showLinkTabs || ((<any>data).object != null && (<any>data).objectId != null) || (data.category == 'map' && (<any>data).template != null));
 
             if (this.tab != 'info' && this.tab != 'edit')
                 this.tab = 'info';
 
+            if (!this.showNodeTabs) {
+                this.isWindowVisible = false;
+                return;
+            }
 
             if (this.tab == 'edit' && !this.showEditTab) {
                 if (this.showInfoTab) {
@@ -317,10 +322,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 }
             }
 
-
-
             if (this.showEditTab || this.showInfoTab)
                 this.isWindowVisible = true;
+
         } else {
             this.showNodeTabs = false;
             this.showLinkTabs = false;
@@ -371,11 +375,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.editorMenuItems.push(add);
 
-        add.items.push({
-            icon: 'fa-plus',
-            label: 'Add mapping',
-            items: null
-        });
 
         if (this.selectedData != null && this.selectedData.category == 'map')
             add.items.push({
@@ -492,38 +491,75 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             console.warn('NULL passed to validateNode()');
             return;
         }
-        //n.valid = true;
+
+        n.errors = [];
 
         switch (n.category) {
             case 'object':
             case 'focal':
-                if (n.object == null || n.objectId == null)
+                if (n.object == null || n.objectId == null) {
                     valid = false;
-                if (n.group == null)
+                    n.errors.push('No object has been chosen for this item');
+                }
+                if (n.group == null) {
                     valid = false;
-                if (n.isGroup)
+                    n.errors.push('This item must be inside a map');
+
+                }
+                if (n.isGroup) {
                     valid = false;
+                    n.errors.push(`This item's template is incorrect`);
+
+                }
                 //invalidate the map too
                 if (!valid && n.group != null) {
                     let map = this.myDiagram.model.findNodeDataForKey(n.group);
                     if (map != null) {
                         this.myDiagram.model.setDataProperty(map, 'valid', false);
+                        map.errors = [];
+                        map.errors.push('One or more items in this map has validation issues');
                     }
                 }
                 break;
             case 'map':
-                if (!n.isGroup)
+                let items = this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key);
+                if (!n.isGroup) {
                     valid = false;
-                if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 1)
+                    n.errors.push(`This item's template is incorrect`);
+                }
+                if (items.length < 1) {
                     valid = false;
-                if (valid && this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key && (<any>c).valid == false).length > 0)
+                    n.errors.push(`This map must contain at least one object`);
+                }
+                if (valid && this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key && (<any>c).valid == false).length > 0) {
                     valid = false;
+                    n.errors.push('One or more items in this map has validation issues');
+                }
+                if (n.template != null) { //check for required template items
+                    n.template.filter(t => t.isRequired).forEach(t => {
+                        let i = items.find(i => (<any>i).objectType == t.object && (<any>i).objectTypeId == t.objectId);
+                        let o = this.objectTypes.find(o => o.object == t.object && o.objectId == t.objectId);
+                        if (i == null) {
+                            valid = false;
+                            if (o == null) {
+                                n.errors.push(`This map template is missing a required object`);
+                            } else
+                                n.errors.push(`This map template requires a ${o.name} object`);
+
+                        }
+                    });
+                }
                 break;
             case 'transform':
-                if (!n.isGroup || n.group != null)
+                if (!n.isGroup || n.group != null) {
                     valid = false;
-                if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 2)
+                    n.errors.push(`This item's template is incorrect`);
+                }
+                if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 2) {
                     valid = false;
+                    n.errors.push(`The transformation must contain at least 2 map items`);
+
+                }
                 break;
         }
 
@@ -706,6 +742,23 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //        this.populateDiagram();
         //    }
         //}
+    }
+
+    private SelectionDeleted(e: any) {
+        //console.log('SelectionDeleted', e);
+
+        //re-validate parent on delete
+        e.subject.each(s => {
+            let data = s.data;
+
+            if (data.group != null) { 
+                let grp = this.myDiagram.model.findNodeDataForKey(data.group);
+                if (grp != null) {
+                    this.validateNode(grp);
+                }
+            }
+        });
+
     }
 
     private ExternalObjectsDropped(e: any) {
@@ -959,8 +1012,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                             item.name = '<choose an object>';
                             item.group = node.key;
                             this.myDiagram.model.addNodeData(item);
+                            this.validateNode(item);
                         });
                     }
+                    this.validateNode(node);
                 }
             } else {
                 if (grp == null || (grp != null && grp.data != null && (node.category != 'map' && grp.data.category == 'transform'))) {

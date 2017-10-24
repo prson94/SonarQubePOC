@@ -54,6 +54,9 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
             <textarea pInputTextarea [ngModel]="node.technicalTransformation" (ngModelChange)="node.technicalTransformation = $event; nodeChange.emit(node)"></textarea>
         </div>
     </div>
+    <div *ngIf="node.category == 'map'">
+        
+    </div>
 </div>
     `,
     providers: [LineageService]
@@ -62,6 +65,8 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
 export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
     @Input() node: NodeModelV2 = null;
     @Output() nodeChange = new EventEmitter();
+
+
 
     private suggestions = [];
     private objects = [];
