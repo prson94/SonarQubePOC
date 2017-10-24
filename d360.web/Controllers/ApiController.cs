@@ -615,7 +615,7 @@ namespace d360.web.Controllers
                         items.InsertRange(0, targetKeyFields);
                     }
 
-                    if (targetType == SystemObjects.ReferenceItemType.ToString())
+                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString())
                     {
                         columns.Add(
                             new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
