@@ -38,7 +38,11 @@ import { Title } from '@angular/platform-browser';
                                 <p-dataTable #dt [globalFilter]="gb" sortField="Name" [sortOrder]="1" [value]="scoretypes" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selectedType"  (onRowDblclick)="selectedType=$event.data;showEditor=true;" (onRowSelect)="selectedType=$event.data;getScoreMetrics(selectedType.ID);" >
                                     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter"></p-column>
+                                    <p-column field="Description" header="Description" [sortable]="false" [filter]="!showSimpleFilter">
+                                        <ng-template pTemplate type="body" let-item="rowData">
+                                            <span [innerHTML]="item?.Description"></span>
+                                        </ng-template>
+                                    </p-column>
                                     <p-column [style]="{width:'40px'}">
                                         <ng-template let-analytic="rowData" pTemplate type="body">
                                             <div class="RowTools">
