@@ -1668,14 +1668,26 @@ order by wi.StartedOn desc";
                 if (settings.FieldUpdate != null && settings.FieldUpdate.Field != null)
                 {
                     var fields = settings.FieldUpdate.Field;
+                    var count = fields.Count == null ? 1 : fields.Count;
 
-                    for(var i = 0; i < fields.Count; i++)
+                    
+                    if (fields.Count == null)
                     {
-                        var field = fields[i];
+                        var field = fields;
 
                         if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true" && mappings.ContainsKey((int)field["@FormStepId"]))
                             field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
                     }
+                    else {
+                        for (var i = 0; i < count; i++)
+                        {
+                            var field = fields[i];
+
+                            if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true" && mappings.ContainsKey((int)field["@FormStepId"]))
+                                field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
+                        }
+                    }
+
                 }
                 
                 return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
