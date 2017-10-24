@@ -36,7 +36,7 @@ export class AdminMapsComponent extends AdminBaseComponent implements OnDestroy 
         protected messagesService: MessagesService,
         private router: Router) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Maps";
+        this.areaName = "Mappings";
         this.setCommonItems();
         this.setObjectInfo('MapType', -1);
 

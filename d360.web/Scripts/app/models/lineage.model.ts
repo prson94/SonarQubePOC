@@ -1,4 +1,6 @@
-﻿export class LinkModel {
+﻿import { MapTypeTemplate, MapTypeTemplateItem } from './map.model';
+
+export class LinkModel {
     id: number = null;
     key = null;
     Category: string = '';
@@ -71,6 +73,7 @@ export class NodeModelV2 {
     isGroup: boolean = false;
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
+    template: any = null;
 
     valid: boolean = true;
     errors = [];

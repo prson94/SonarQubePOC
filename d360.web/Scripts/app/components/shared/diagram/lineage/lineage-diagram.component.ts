@@ -185,6 +185,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         return this.lineageService.getLineageObjectTypes()
             .then(r => {
                 this.objectTypes = r;
+                this.objectTypes.forEach(o => {
+                    if (o.template != null) {
+                        o.template = JSON.parse(o.template);
+                    }
+                })
             })
             .then(() => {
                 this.myPalette = this.createPalette();
@@ -932,6 +937,30 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 if (node.category == 'map' && node.order < 0) {
                     this.myDiagram.model.setDataProperty(node, 'name', '<drop objects here>');
                     this.myDiagram.model.setDataProperty(node, 'order', null);
+                    if (node.template != null) {
+                        //console.log('finishDrop- template', node);
+                        node.template.forEach(i => {
+                            let item = new NodeModelV2();
+                            let type = this.objectTypes.find(o => o.object == i.object && o.objectId == i.objectId);
+                            if (type == null)
+                                return;
+                            item.category = 'object';
+                            item.backColor = type.backColor;
+                            item.foreColor = type.foreColor;
+                            item.isGroup = false;
+                            item.visible = true;
+                            item.diagramObjectType = DiagramObjectType.Node;
+                            item.objectType = type.object;
+                            item.objectTypeId = type.objectId;
+                            item.object = null;
+                            item.objectId = null;
+                            item.order = type.order;
+                            item.objectTypeName = type.name;
+                            item.name = '<choose an object>';
+                            item.group = node.key;
+                            this.myDiagram.model.addNodeData(item);
+                        });
+                    }
                 }
             } else {
                 if (grp == null || (grp != null && grp.data != null && (node.category != 'map' && grp.data.category == 'transform'))) {
@@ -1018,7 +1047,24 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private createPalette(): go.Palette {
         let paletteModel = [];
 
-        //let map = this.objectTypes.find(o => o.object == 'MapType');
+        this.objectTypes.forEach(o => {
+            let isMap = (o.object == 'MapType');
+
+            paletteModel.push({
+                category: isMap ? 'map' : 'object',
+                name: o.name,
+                objectTypeName: o.objectTypeName,
+                objectType: o.object,
+                objectTypeId: o.objectId,
+                foreColor: o.foreColor,
+                backColor: o.backColor,
+                isGroup: isMap,
+                diagramObjectType: DiagramObjectType.Node,
+                visible: true,
+                order: o.order,
+                template: o.template
+            });
+        });
 
         //paletteModel.push({
         //    category: 'map',
@@ -1035,21 +1081,21 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //    order: -1
         //});
 
-        this.objectTypes.filter(o => o.order > -1).forEach(o => {
-            paletteModel.push({
-                category: 'object',
-                name: o.name,
-                objectTypeName: o.objectTypeName,
-                objectType: o.object,
-                objectTypeId: o.objectId,
-                foreColor: o.foreColor,
-                backColor: o.backColor,
-                isGroup: false,
-                diagramObjectType: DiagramObjectType.Node,
-                visible: true,
-                order: o.order
-            });
-        });
+        //this.objectTypes.filter(o => o.order > -1).forEach(o => {
+        //    paletteModel.push({
+        //        category: 'object',
+        //        name: o.name,
+        //        objectTypeName: o.objectTypeName,
+        //        objectType: o.object,
+        //        objectTypeId: o.objectId,
+        //        foreColor: o.foreColor,
+        //        backColor: o.backColor,
+        //        isGroup: false,
+        //        diagramObjectType: DiagramObjectType.Node,
+        //        visible: true,
+        //        order: o.order
+        //    });
+        //});
 
 
 

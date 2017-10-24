@@ -2332,10 +2332,11 @@ from    [Intersect] I
         public HttpResponseMessage GetLineageObjectTypes()
         {
             var sql = @"
-                select distinct
+                 select distinct
 	                i.[object], 
 	                i.objectId,
 	                t.name,
+					null as template,
 					null as objectTypeName,
 	                coalesce(s.IconForeColor, '#fff') as foreColor,
 	                coalesce(s.IconBackColor, '#000') as backColor,
@@ -2350,13 +2351,31 @@ from    [Intersect] I
 				union all
 				select distinct
 					'MapType' as [object],
-					m.ID as objectId,
-					m.[name],
-                    null as objectTypeName,
+					t.maptypeid as objectId,
+					t.[name],
+					(
+						select 
+							i.ID as id,
+							i.IsRequired as isRequired,
+							coalesce(o.[order], 99999) as [order],
+							it.[Object] as [object],
+							it.ObjectID as objectId,
+							it.id as intersectTypeId
+						from 
+							maptypetemplateitem i
+						inner join maptypetemplate t2 on t2.id = i.maptypetemplateid
+						left join maptypeorder o on o.intersecttypeid = i.intersecttypeid and o.maptypeid = t2.maptypeid
+						inner join intersecttype it on it.id = i.intersecttypeid
+						where i.maptypetemplateid = t.id 
+						for json path
+					) as template,
+                    m.[name] as objectTypeName,
 					null as foreColor,
 					null as backColor,
 					-1 as [order]
-				from maptype m";
+				from maptypetemplate t
+				inner join maptype m on m.id = t.maptypeid
+				where t.maptypeid = 1";
 
             var list = Company.Query<dynamic>(sql);
 
