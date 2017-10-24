@@ -17710,7 +17710,11 @@ from    [IntersectType] RT
                 }
                 else if (!string.IsNullOrEmpty(existing.IconUrl) && string.IsNullOrEmpty(shortcut.IconUrl))
                 {
-                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                    try
+                    {
+                        Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                    }
+                    catch { }
                 }
 
                 existing.Name = shortcut.Name;
