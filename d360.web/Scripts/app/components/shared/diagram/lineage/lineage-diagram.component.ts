@@ -581,7 +581,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (items.length < 1) {
             if (map != null) {
                 this.myDiagram.model.setDataProperty(map, 'name', '<drop objects here>');
-                this.myDiagram.model.setDataProperty(map, 'isSubGraphExpanded', false);
                 this.validateNode(map);
             }
             return;
@@ -989,7 +988,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private finishDrop(e, grp: go.Group) {
         let node = e.diagram.selection.first().data;
 
-        //console.log('finishDrop', e, grp, node);
+        if (e.diagram.div.id == 'LineagePalette') { //prevent drop into palette
+            e.diagram.currentTool.doCancel();
+            return;
+        }
+
+        //console.log('finishDrop', e, grp, node, this.myDiagram);
 
         if (node != null) {
             if (node.isGroup) {
@@ -1024,6 +1028,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                         });
                     }
                     this.validateNode(node);
+                    let p = this.myDiagram.findPartForData(node);
+                    if (p != null) (<any>p).isSubGraphExpanded = true;
                 }
             } else {
                 if (grp == null || (grp != null && grp.data != null && (node.category != 'map' && grp.data.category == 'transform'))) {
@@ -1043,6 +1049,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     grp.isSubGraphExpanded = true;
                     if (grp.data.name == '<drop objects here>') {
                         this.myDiagram.model.setDataProperty(grp.data, 'name', node.name);
+                    }
+                    if (grp.data.template != null) {
+                        grp.data.template.forEach(t => {
+                            if (t.object == node.objectType && t.objectId == node.objectTypeId) {
+                                this.myDiagram.model.setDataProperty(node, 'isRequired', t.isRequired);
+                            }
+                        })
                     }
                     //revalidate the group 
                     this.validateNode(this.myDiagram.model.findNodeDataForKey(grp.data.key));

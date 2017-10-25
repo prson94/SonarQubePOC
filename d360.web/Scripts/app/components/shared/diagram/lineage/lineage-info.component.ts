@@ -8,8 +8,8 @@ import * as go from 'gojs';
     selector: 'd3s-lineage-info',
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div *ngIf="node != null && node.errors != null && node.errors.length != null && node.errors.length > 0">
-            <div *ngFor="let e of node.errors" class="errorMessage">
+        <div *ngIf="node != null && node.errors != null && node.errors.length != null && node.errors.length > 0" class="row">
+            <div *ngFor="let e of node.errors" class="errorMessage col s12" style="padding-bottom: 10px">
                 &bull; {{e}}
             </div>
         </div>
