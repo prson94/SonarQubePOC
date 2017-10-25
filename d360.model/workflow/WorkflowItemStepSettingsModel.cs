@@ -42,6 +42,8 @@ namespace d360.model.workflow
 
         public List<WorkflowFieldUpdateSettings> FieldUpdateSettings { get; set; }
 
+        public List<WorkflowRelationshipUpdateSettings> RelationshipUpdateSettings { get; set; }
+
         public static WorkflowItemStepSettingModel ParseXml(string root)
         {
             XElement xml = null;

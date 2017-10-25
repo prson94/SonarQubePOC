@@ -167,6 +167,7 @@
     <Compile Include="workflow\WorkflowItemStepSettingsModel.cs" />
     <Compile Include="workflow\WorkflowRegistrationCriteriaProcessor.cs" />
     <Compile Include="workflow\WorkflowRegistrationSettingsModel.cs" />
+    <Compile Include="workflow\WorkflowRelationshipUpdateSettings.cs" />
     <Compile Include="workflow\WorkflowStatusModel.cs" />
   </ItemGroup>
   <ItemGroup>

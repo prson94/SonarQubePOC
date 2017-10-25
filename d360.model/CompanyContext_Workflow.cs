@@ -605,6 +605,10 @@ namespace d360.model
                         UpdateItemField(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.RelationshipChange:
+                        UpdateItemRelationship(itemStep, objectInfo, stepSettings);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -634,6 +638,42 @@ namespace d360.model
             if (isStepCompleted)
             {
                 await MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
+            }
+        }
+
+        private void UpdateItemRelationship(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
+        {
+            if (!settings.RelationshipUpdateSettings.Any())
+                throw new Exception($"ERROR - INVALID RELATIONSHIP UPDATE SETTINGS SPECIFIED.");
+
+            foreach (var item in settings.RelationshipUpdateSettings)
+            {
+                //get intersect type info
+                var intersectType = IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
+
+                if (intersectType == null)
+                    throw new Exception($"ERROR - INVALID INTERSECT TYPE ID SPECIFIED.  PLEASE CHECK THE SETTINGS ASSOCIATED WITH THE RELATIONSHIP UPDATE ACTION OF THE CURRENT WORKFLOW. INTERSECT TYPE ID IS [{item.IntersectTypeID}]");
+
+                if (item.ClearValue)
+                {
+                    //delete intersects with the given intersect type id for the current object
+
+                    var isSubject = intersectType.SubjectID == objectInfo.ObjectID && intersectType.Subject == objectInfo.Object.ToString();
+                    var sql = "";
+
+                    if (isSubject)
+                        sql = "delete intersect where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
+                    else
+                        sql = "delete intersect where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
+
+                    Query<int>(sql, new { obj = objectInfo.Object.ToString(), objectid = objectInfo.ObjectID, intersectTypeId = item.IntersectTypeID });
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(item.FormField) || item.FormStepID <= 0)
+                        throw new Exception($"ERROR - INVALID FORM FIELD OR FORM STEP ID SPECIFIED FOR RELATIONSHIP UPDATE STEP.  FORM FIELD IS : [{item.FormField}] FORM STEP IS : [{item.FormStepID}]");
+
+                }               
             }
         }
 

@@ -22,6 +22,8 @@ namespace d360.core.enums.Workflow
         Procedure = 4,
         [Name("Field Change"), Description("Field Change"), BackColor("#ff6600"), ForeColor("#fff"), Icon("\uf2c2")]
         FieldChange = 5,
+        [Name("Relationship Change"), Description("Relationship Change"), BackColor("#0066CC"), ForeColor("#fff"), Icon("\uf0c0")]
+        RelationshipChange = 6,
     }
 
     public class ActivityTypeInfo
