@@ -38,10 +38,7 @@ namespace d360.web.Controllers.Services
                 }
                 else
                     comment.Tags = new List<CommentTag>();
-
-                //var test = dtl.DateCreated.Subtract(DateTime.UtcNow);
-                //var test2 = (dtl.DateCreated.Subtract(DateTime.UtcNow).Duration() < TimeSpan.FromMinutes(5));
-
+                                
                 if ((dtl.Body != comment.Comment.Body || comment.Tags.Count() != dtl.Tags.Count())
                     && !string.IsNullOrWhiteSpace(comment.Comment.Body)
                     && dtl.CreatingResourceID == Company.CurrentResourceID
@@ -225,7 +222,7 @@ namespace d360.web.Controllers.Services
                 {
                     if (!string.IsNullOrEmpty(c.TagsXml))
                     {
-                        c.ParseTagXml(isNg);
+                        c.ParseTagXml();
                     }
                     if (!string.IsNullOrEmpty(c.VotesXml))
                     {

@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [dbo].[GetCommentDetailsByType]
+﻿CREATE PROCEDURE [dbo].[GetCommentDetailsByType]
 --declare
 	@type varchar(50), 
 	@id int,
@@ -39,16 +38,17 @@ BEGIN
 					coalesce(C.OwnerObjectType, CR.ObjectType) as ObjectType,
 					coalesce(C.OwnerObjectID, CR.ObjectID) as ObjectID,
 					(
-					select	CRD.Object,
-							CRD.ObjectID,
-							CRD.TextPath,
-							CRD.ObjectTypeName,
-							CRD.Url,
-							CRD.IconForeColor,
-							CRD.IconBackColor,
-							CRD.NgUrl
+					select	a.[Object],
+							a.ObjectID,
+							utility.getassetdisplayvalue(a.id) as TextPath,
+							ast.Name as ObjectTypeName,							
+							os.IconForeColor,
+							os.IconBackColor,
+							dbo.generatengobjecturl(a.[object],ast.[objectid],a.objectid) as Url
 					from	CommentRelation CR
-							inner join cache.ObjectDetails CRD on CR.CommentID = C.ID and CR.ObjectType = CRD.[Object] and CR.ObjectID = CRD.ObjectID
+							inner join asset a on (CR.CommentID = C.ID and a.[object] = CR.[ObjectType] and a.objectid = CR.ObjectID)
+							inner join assettype ast on ( a.assettypeid = ast.id)
+							inner join objectstyle os on (ast.[object] = os.[objecttype] and ast.[objectid] = os.[objectid])							
 					for xml path('tag'), root('tags'), type
 					) as TagsXml
 		FROM		Comment C
@@ -84,8 +84,8 @@ BEGIN
 	select	P.*,
 			R.FirstName + ' ' + R.LastName as ResourceName,
 			R.Email as ResourceEmail,
-			D.Name as ObjectName,
-			D.Url as ObjectUrl,
+			utility.getassetdisplayvalue(a.id),
+			dbo.generatengobjecturl(a.[object],ast.[objectid],a.objectid) as ObjectUrl,
 			(
 				select CommentID,
 						ResourceID,
@@ -95,23 +95,11 @@ BEGIN
 					for xml path('vote'), root('votes'), type
 			) as VotesXML
 	from	P
-			left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID
-			left join cache.ObjectDetails D on D.[Object] = P.ObjectType and D.ObjectID = P.ObjectID
+			left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID			
+			left join asset a on a.[object] = p.objecttype and a.objectid = p.objectid
+			left join assettype ast on a.assettypeid = ast.id
 	where
 		isdeleted = 0;
 END
 
-/*
-select * from Comment where ownerobjectid = 971882 
-
-
-select	*, 'Comments', '/overlays/Artifact/' + cast(971882 as varchar(10)) + '/comments'
-		from	Comment C
-				inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
-												and R.ObjectType = 'Artifact' and R.ObjectID = 971882
-                                                and C.ParentID is null
-												and C.IsDeleted = 0
-
-
-exec [GetCommentDetailsByType] 'Artifact',971882,0,5*/
 
