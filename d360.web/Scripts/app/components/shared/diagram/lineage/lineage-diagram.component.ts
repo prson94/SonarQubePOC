@@ -576,11 +576,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private updateMapName(key: string) {
         let map = this.myDiagram.model.findNodeDataForKey(key);
-        let items = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).group == key && (<any>n).object != null && (<any>n).objectId != null);
+        let items = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).group == key);
 
         if (items.length < 1) {
             if (map != null) {
                 this.myDiagram.model.setDataProperty(map, 'name', '<drop objects here>');
+                this.myDiagram.model.setDataProperty(map, 'foreColor', '#000');
+                this.myDiagram.model.setDataProperty(map, 'backColor', '#eee');
                 this.validateNode(map);
             }
             return;
@@ -589,6 +591,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         items.sort((a, b) => this.compareObjects(a, b));
 
         this.myDiagram.model.setDataProperty(map, 'name', (<any>items[0]).name);
+        this.myDiagram.model.setDataProperty(map, 'foreColor', (<any>items[0]).foreColor);
+        this.myDiagram.model.setDataProperty(map, 'backColor', (<any>items[0]).backColor);
     }
 
     private compareObjects(a: any, b: any): number {
@@ -655,8 +659,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         console.log('save model', model);
         this.lineageService.postLineage(model)
             .then(() => {
-                this.isLoading = false;
+                this.populateDiagram();
                 this.isWindowVisible = windowState;
+                this.toggleReadOnly(false);
                 //console.log('save complete');
             });
     }
@@ -761,6 +766,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 let grp = this.myDiagram.model.findNodeDataForKey(data.group);
                 if (grp != null) {
                     this.validateNode(grp);
+                    this.updateMapName(grp.key);
                 }
             }
         });
@@ -1209,7 +1215,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     name: "NodeShape"
                 },
                     new go.Binding("fill", "backColor"),
-                    new go.Binding("stroke", "valid", v => { return v ? 'transparent' : '#f00' })
+                    new go.Binding("stroke", "valid", (v, m) => {
+                        let data = m.panel.panel.data;
+                        if (data == null) return 'transparent';
+                        if (data.valid == false) return '#f00';
+                        return data.foreColor;
+                    })
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -1288,7 +1299,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private createMapGroup(): go.Group {
         return this.g(go.Group, "Auto",
             { // define the group's internal layout
-                background: '#eee',
+                background: 'transparent',
                 mouseDragEnter: (e, grp, prev) => this.highlightGroup(e, grp, true),
                 mouseDragLeave: (e, grp, next) => this.highlightGroup(e, grp, false),
                 mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
@@ -1308,10 +1319,22 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     }),
                 isSubGraphExpanded: false
             },
-            new go.Binding("background", "isHighlighted", (h, p) => { return h ? "#faffad" : '#eee' }).ofObject(),
             this.g(go.Shape, "RoundedRectangle",
                 { fill: null, stroke: "gray", strokeWidth: 2 }
-                , new go.Binding("stroke", "valid", v => { return v ? 'gray' : '#f00' })),
+                , new go.Binding("stroke", "valid", (v, o) => {
+                    if (v == false) return '#f00';
+                    let data = o.panel.data;
+                    if (data == null || data.foreColor == null) return 'gray';
+                    return data.foreColor;
+                }),
+                new go.Binding("fill", "backColor", o => {
+                    return o == null ? '#eee' : o;
+                }),
+                new go.Binding("fill", "isHighlighted", (o, x) => {
+                    let data = x.panel.data;
+                    return o ? '#eac925' : (data.backColor || '#eee');
+                }).ofObject()
+            ),
             this.g(go.Panel, "Vertical",
                 { defaultAlignment: go.Spot.Left, margin: 4 },
                 this.g(go.Panel, "Horizontal",
@@ -1321,7 +1344,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     this.g(go.TextBlock,
                         { font: "Bold 18px Sans-Serif", margin: 4 },
                         new go.Binding("text", "name"),
-                        new go.Binding("visible", "isSubGraphExpanded", o => { return !o }).ofObject()
+                        new go.Binding("stroke", "foreColor", o => { return o == null ? '#000' : o; }),
+                        new go.Binding("visible", "isSubGraphExpanded", o => {
+                            return !o;
+                        }).ofObject()
                     )
                 ),
                 // create a placeholder to represent the area where the contents of the group are

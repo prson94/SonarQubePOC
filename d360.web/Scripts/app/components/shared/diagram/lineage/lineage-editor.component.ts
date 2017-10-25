@@ -14,7 +14,9 @@ import * as _ from 'lodash';
             <div class="row" style="padding-bottom: 10px;">
                     <div class="col s12">
                         <div style="font-weight: bold; display: inline-block">
-                            {{node.name}} <span style="font-size: .7rem; font-weight: normal">({{node.objectTypeName}})</span>
+                            {{node.name}} 
+                            <span style="font-size: .7rem; font-weight: normal">{{node.objectTypeName}}</span> 
+                            <span *ngIf="node.isRequired == true" style="font-size: .7rem; font-weight: normal"> (Required)</span>
                         </div>
                         <div *ngIf="node != null && node.key != null && node.key.toString().indexOf('-') == 0" style="float: right">
                             <button pButton type="button" label="Change Object" (click)="edit(node)"></button>
@@ -26,7 +28,7 @@ import * as _ from 'lodash';
             <div class="row" style="padding-bottom: 10px;">
                 <div class="col s12">
                     <div class="FieldName">
-                        Choose {{node.objectTypeName}}
+                        Choose {{node.objectTypeName}}  {{(node.isRequired != null && node.isRequired == true) ? '(Required)' : ''}}
                     </div>
                     <div>
                         <p-autoComplete 
@@ -66,7 +68,9 @@ import * as _ from 'lodash';
                 <div class="row" style="padding-bottom: 10px;">
                     <div class="col s12">
                         <div style="font-weight: bold; display: inline-block">
-                            {{o.name}} <span style="font-size: .7rem; font-weight: normal">({{o.objectTypeName}})</span>
+                            {{o.name}} 
+                            <span style="font-size: .7rem; font-weight: normal">{{o.objectTypeName}}</span>
+                            <span *ngIf="o.isRequired == true" style="font-size: .7rem; font-weight: normal"> (Required)</span>
                         </div>
                         <div *ngIf="o != null && o.key != null && o.key.toString().indexOf('-') == 0" style="float: right">
                             <button pButton type="button" label="Change Object" (click)="edit(o)"></button>
