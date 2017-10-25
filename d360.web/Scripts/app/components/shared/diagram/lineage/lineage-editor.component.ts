@@ -1,6 +1,8 @@
 ﻿import { Component, Input, OnInit, OnChanges, EventEmitter, Output, OnDestroy } from '@angular/core';
 import { LineageService } from '../../../../services/lineage.service';
 import { NodeModelV2 } from '../../../../models/lineage.model';
+import * as go from 'gojs';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-lineage-editor',
@@ -9,24 +11,28 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
 <div *ngIf="!isLoading && node != null">
     <div *ngIf="node.category == 'object' || node.category == 'focal'">
         <ng-container *ngIf="node.object != null && node.objectId != null; else chooseObject">
-            <div style="font-weight: bold">
-                {{node.name}}
-            </div>
-            <div *ngIf="node != null && node.key != null && node.key.toString().indexOf('-') == 0">
-                <button pButton type="button" label="Change Object" (click)="edit()"></button>
-            </div>
+            <div class="row" style="padding-bottom: 10px;">
+                    <div class="col s12">
+                        <div style="font-weight: bold; display: inline-block">
+                            {{node.name}} <span style="font-size: .7rem; font-weight: normal">({{node.objectTypeName}})</span>
+                        </div>
+                        <div *ngIf="node != null && node.key != null && node.key.toString().indexOf('-') == 0" style="float: right">
+                            <button pButton type="button" label="Change Object" (click)="edit(node)"></button>
+                        </div>
+                    </div>
+                </div>
         </ng-container>
         <ng-template #chooseObject>
-            <div class="row">
+            <div class="row" style="padding-bottom: 10px;">
                 <div class="col s12">
                     <div class="FieldName">
-                        Choose an object
+                        Choose {{node.objectTypeName}}
                     </div>
                     <div>
                         <p-autoComplete 
                             field="Name"  
                             dataKey="ID" 
-                            (completeMethod)="search($event)" 
+                            (completeMethod)="search($event, node.objectType, node.objectTypeId)" 
                             [suggestions]="suggestions"
                             forceSelection="true"
                             (onSelect)="selected = $event"
@@ -34,7 +40,7 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
                             [inputStyle]="{'width':'100%'}">
                         </p-autoComplete>
                         
-                        <button pButton type="button" label="Choose" (click)="selectObject()"></button>
+                        <button pButton type="button" label="Choose" (click)="selectObject(node)"></button>
                     </div>
                 </div>
             </div>
@@ -55,7 +61,43 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
         </div>
     </div>
     <div *ngIf="node.category == 'map'">
-        
+        <div *ngFor="let o of objects">
+            <ng-container *ngIf="o.object != null && o.objectId != null; else chooseObjectMulti">
+                <div class="row" style="padding-bottom: 10px;">
+                    <div class="col s12">
+                        <div style="font-weight: bold; display: inline-block">
+                            {{o.name}} <span style="font-size: .7rem; font-weight: normal">({{o.objectTypeName}})</span>
+                        </div>
+                        <div *ngIf="o != null && o.key != null && o.key.toString().indexOf('-') == 0" style="float: right">
+                            <button pButton type="button" label="Change Object" (click)="edit(o)"></button>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-template #chooseObjectMulti>
+                        <div class="row" style="padding-bottom: 10px;">
+                            <div class="col s12">
+                                <div class="FieldName">
+                                    Choose {{o.objectTypeName}} {{(o.isRequired != null && o.isRequired == true) ? '(Required)' : ''}}
+                                </div>
+                                <div>
+                                    <p-autoComplete 
+                                        field="Name"  
+                                        dataKey="ID" 
+                                        (completeMethod)="search($event, o.objectType, o.objectTypeId)" 
+                                        [suggestions]="suggestions"
+                                        forceSelection="true"
+                                        (onSelect)="selected = $event"
+                                        [style]="{'width':'80%'}"
+                                        [inputStyle]="{'width':'100%'}">
+                                    </p-autoComplete>
+                        
+                                    <button pButton type="button" label="Choose" (click)="selectObject(o)"></button>
+                                </div>
+                            </div>
+                        </div>
+            </ng-template>
+        </div>
     </div>
 </div>
     `,
@@ -63,6 +105,7 @@ import { NodeModelV2 } from '../../../../models/lineage.model';
 })
 
 export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
+    @Input() diagram: go.Diagram = null;
     @Input() node: NodeModelV2 = null;
     @Output() nodeChange = new EventEmitter();
 
@@ -76,7 +119,15 @@ export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
     constructor(private lineageService: LineageService) { }
 
     ngOnChanges() {
-
+        if (this.node != null) {
+            if (this.node.category == 'map' && this.node.isGroup) {
+                if (this.diagram != null) {
+                    //if we don't clone here we would need to handle change logic in this component
+                    //this allows us to keep it in the changeNode method of the diagram component instead
+                    this.objects = _.cloneDeep(this.diagram.model.nodeDataArray.filter(n => (<any>n).group == this.node.key));
+                }
+            }
+        }
     }
 
     ngOnInit() {
@@ -87,21 +138,22 @@ export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
     }
 
 
-    search(e: any) {
-        this.lineageService.queryObjectTypes(this.node.objectType, this.node.objectTypeId, e.query).subscribe(s => {
+    search(e: any, objectType: string, objectTypeId: number) {
+        this.lineageService.queryObjectTypes(objectType, objectTypeId, e.query).subscribe(s => {
             this.suggestions = s;
         });
     }
 
-    selectObject() {
-        this.node.object = this.selected.Object;
-        this.node.objectId = this.selected.ObjectID;
-        this.node.name = this.selected.Name;
-        this.nodeChange.emit(this.node);
+    selectObject(node: NodeModelV2) {
+        node.object = this.selected.Object;
+        node.objectId = this.selected.ObjectID;
+        node.name = this.selected.Name;
+        this.nodeChange.emit(node);
     }
 
-    edit() {
-        this.node.object = null;
-        this.node.objectId = null;
+    edit(node: NodeModelV2) {
+        node.object = null;
+        node.objectId = null;
+        this.nodeChange.emit(node);
     }
 }

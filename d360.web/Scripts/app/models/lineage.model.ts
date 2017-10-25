@@ -74,6 +74,7 @@ export class NodeModelV2 {
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
     template: any = null;
+    isRequired: boolean = null;
 
     valid: boolean = true;
     errors = [];

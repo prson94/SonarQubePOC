@@ -295,7 +295,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (data) {
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
             this.showLinkTabs = false; // there's nothing to show currently
-            this.showEditTab = (data != null && (data.category == 'transform' || ((data.category == 'object' || data.category == 'focal') && (<any>data).key.toString().indexOf('-') > -1)));
+            this.showEditTab = (data != null && (<any>data).key != null && (<any>data).key.toString().indexOf('-') > -1);
             this.showInfoTab = (this.showLinkTabs || ((<any>data).object != null && (<any>data).objectId != null) || (data.category == 'map' && (<any>data).template != null));
 
             if (this.tab != 'info' && this.tab != 'edit')
@@ -368,20 +368,20 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.editorMenuItems = [];   
         
 
-        let add = {
-            icon: 'fa-plus',
-            items: []
-        };
+        //let add = {
+        //    icon: 'fa-plus',
+        //    items: []
+        //};
 
-        this.editorMenuItems.push(add);
+        //this.editorMenuItems.push(add);
 
 
-        if (this.selectedData != null && this.selectedData.category == 'map')
-            add.items.push({
-                icon: 'fa-plus',
-                label: 'Add focal object to selected mapping',
-                items: null
-            });
+        //if (this.selectedData != null && this.selectedData.category == 'map')
+        //    add.items.push({
+        //        icon: 'fa-plus',
+        //        label: 'Add focal object to selected mapping',
+        //        items: null
+        //    });
 
         this.editorMenuItems.push({
             icon: 'fa-floppy-o',
@@ -666,24 +666,31 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     //#region events
 
     private changeNode(e: NodeModelV2) {
+        
         let node: NodeModelV2 = this.myDiagram.model.findNodeDataForKey(e.key);
-
+        //console.log('changeNode', e, node, this.myDiagram);
         if (node == null)
             return;
 
+        this.myDiagram.startTransaction('changeNode');
+
         let objChanged = (node.object != e.object || node.objectId != e.objectId);
         //console.log('changeNode', objChanged);
-
+        //node.name = null; //force name update
         node.object = e.object;
         node.objectId = e.objectId;
         node.technicalTransformation = e.technicalTransformation;
 
         this.myDiagram.model.setDataProperty(node, 'businessTransformation', e.businessTransformation);
+
         this.myDiagram.model.setDataProperty(node, 'name', e.name);
         this.validateNode(node);
 
-        if (objChanged)
+        if (!node.isGroup && node.group != null)
             this.updateMapName(node.group);
+        //console.log('changeNode', node);
+
+        this.myDiagram.commitTransaction('changeNode');
     }
 
     @HostListener('window:resize', ['$event'])
@@ -1009,6 +1016,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                             item.objectId = null;
                             item.order = type.order;
                             item.objectTypeName = type.name;
+                            item.isRequired = (i.isRequired.toString() == 'true' ? true : false);
                             item.name = '<choose an object>';
                             item.group = node.key;
                             this.myDiagram.model.addNodeData(item);
