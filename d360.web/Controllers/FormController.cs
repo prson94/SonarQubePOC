@@ -353,11 +353,7 @@ namespace d360.web.Controllers
                 case "LOOKUPTYPE":
                     return Lookup_EditFields(oid);
                 case "MAP":
-                    return Map_EditFields(oid);
-                //case "MAPRULE":
-                //    return MapRule_EditFields(oid);
-                //case "MAPRULEITEM":
-                //    return MapRuleItem_EditFields(oid);
+                    return Map_EditFields(oid);                
                 case "ORGANIZATION":
                     return Organization_EditFields(oid);
                 case "ORGANIZATIONDOMAIN":
@@ -420,11 +416,7 @@ namespace d360.web.Controllers
                 case "LOOKUPTYPE":
                     return Lookup_AddFields(objectID.GetValueOrDefault());
                 case "MAP":
-                    return Map_AddFields();
-                //case "MAPRULE":
-                //    return MapRule_AddFields();
-                //case "MAPRULEITEM":
-                //    return MapRuleItem_AddFields(objectID.GetValueOrDefault());
+                    return Map_AddFields();                
                 case "ORGANIZATION":
                     return Organization_AddFields();
                 case "ORGANIZATIONDOMAIN":
@@ -513,11 +505,7 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return EditLookup(form);
                 case "MAP":
-                    return EditMap(form);
-                //case "MAPRULE":
-                //    return EditMapRule(form);
-                //case "MAPRULEITEM":
-                //    return EditMapRuleItem(form);
+                    return EditMap(form);                
                 case "ORGANIZATION":
                     return PutOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -606,11 +594,7 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return DeleteLookup(form);
                 case "LOOKUPTYPE":
-                    return DeleteLookupType(form);
-                //case "MAPRULE":
-                //    return DeleteMapRule(form);
-                //case "MAPRULEITEM":
-                //    return DeleteMapRuleItem(form);
+                    return DeleteLookupType(form);                
                 case "ORGANIZATION":
                     return DeleteOrganization(objectID);
                 case "ORGANIZATIONDOMAIN":
@@ -708,11 +692,7 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return AddLookup(form);
                 case "MAP":
-                    return AddMap(form);
-                //case "MAPRULE":
-                //    return AddMapRule(form);
-                //case "MAPRULEITEM":
-                //    return AddMapRuleItem(form);
+                    return AddMap(form);                
                 case "ORGANIZATION":
                     return PostOrganization(form);
                 case "ORGANIZATIONDOMAIN":
@@ -977,30 +957,7 @@ namespace d360.web.Controllers
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server, false);
                 Company.SaveOrUpdate<Artifact>(model, fields);
                 processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.ArtifactTypeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
-
-                //#region Add Comment
-
-                //try
-                //{
-                //    var comment = new Comment
-                //    {
-                //        Body = $"I updated the definition.",
-                //        CreatingResourceID = model.UpdatedBy.HasValue ? model.UpdatedBy.Value : Company.CurrentResourceID,
-                //        OwnerObjectType = "Artifact",
-                //        OwnerObjectID = model.ID,
-                //        CommentTypeID = CommentType.Governance,
-                //        DateCreated = DateTime.UtcNow,
-                //        Relations = new List<CommentRelation>()
-                //    };
-                //    comment.Relations.Add(new CommentRelation { ObjectType = "Artifact", ObjectID = model.ID, Date = DateTime.UtcNow });
-                //    comment.Relations.Add(new CommentRelation { ObjectType = "Resource", ObjectID = Company.CurrentResourceID, Date = DateTime.UtcNow });
-                //    Company.Add<Comment>(comment);
-                //}
-                //catch (Exception ex)
-                //{
-                //}
-
-                //#endregion
+                               
 
                 #region Create Certify Workflow
 
@@ -17222,10 +17179,7 @@ from    [IntersectType] RT
                     break;
                 case StatisticCheckType.ScoreRollupViaOwnership:
                     models.AddRange(Company.GetStatisticTypeRollupCheckOptions().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));
-                    break;
-                //case StatisticCheckType.EventMetric:
-                //    models.AddRange(Company.GetStatisticTypeCountCheckOptions().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));
-                //    break;
+                    break;                
                 case StatisticCheckType.PredicateMetric:
                     models.AddRange(Company.Table<Predicate>().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));
                     break;
@@ -17272,12 +17226,7 @@ from    [IntersectType] RT
                         });
                         fields.Add(checksElement);
                     }
-                    break;
-                //case StatisticCheckType.EventMetric:
-                //    fields.Add(new XElement("ValidField", form["ValidField"]));
-                //    fields.Add(new XElement("InvalidField", form["InvalidField"]));
-                //    fields.Add(new XElement("Threshold", decimal.Parse(form["Threshold"])));
-                //    break;
+                    break;                
                 case StatisticCheckType.PredicateMetric:
                     fields.Add(new XElement("Predicate", form["Predicate"]));
                     break;
@@ -17613,9 +17562,7 @@ from    [IntersectType] RT
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
             if (string.IsNullOrEmpty(shortcut.Name))
-                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
-            //if (string.IsNullOrEmpty(shortcut.Url))
-            //    return jsonException("This shortcut requires a url", HttpStatusCode.BadRequest);
+                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);            
             if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconPayload))
                 return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
 
