@@ -553,7 +553,7 @@ order by wi.StartedOn desc";
                 
             List<WorkflowFormModelField> properties = (
                                  from s in XElement.Parse(xml).Element("form").Elements()
-                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"), IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
                                  ).ToList();
 
 
@@ -566,6 +566,40 @@ order by wi.StartedOn desc";
             {
                 int fieldId = 0;
 
+                if(item.FieldType == WorkflowFormModelFieldType.relationshipType)
+                {
+                    if (item.IntersectTypeID <= 0) throw new Exception("RELATIONSHIP INPUT HAS AN INVALID INTERSECTTYPE ID VALUE");
+
+                    //load the possible options for this relationship type into values array
+                    var intersectType = Company.IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
+
+                    if (intersectType == null) throw new Exception("RELATIONSHIP INPUT CANNOT FIND THE SPECIFIED INTERSECT TYPE");
+
+                    var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == typeID).FirstOrDefault();
+
+                    if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
+
+                    var itemSql = "select i.Name as Text, i.Type + '|' + cast(i.ID as varchar) as Value from cache.objectdetails where objecttype = @objectType and objecttypeid = @objectTypeId";
+
+                    item.Values = new List<System.Web.Mvc.SelectListItem>();
+
+                    if (reg.Object == intersectType.Subject && reg.ObjectID == intersectType.SubjectID)
+                    {
+                        // load the object items into the values array                        
+
+                        item.Values.AddRange(
+                            Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
+                        );
+                    }
+                    else
+                    {
+                        // load the subject items into the value array
+                        item.Values.AddRange(
+                            Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
+                        );
+                    }
+                }
+                
                 if (string.IsNullOrEmpty(item.ReferenceFieldID) || !int.TryParse(item.ReferenceFieldID, out fieldId) || item.FieldType != WorkflowFormModelFieldType.list) continue;
 
                 //load the field type

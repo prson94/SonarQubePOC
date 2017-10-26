@@ -18,7 +18,8 @@ namespace d360.web.Models
         integer,
         date,
         textarea,
-        list
+        list,
+        relationshipType
     }
 
     public class WorkflowFormModelField
@@ -35,7 +36,7 @@ namespace d360.web.Models
         public List<SelectListItem> Values { get; set; }
 
         public bool AllowMultipleValues { get; set; }
-
+        public int IntersectTypeID { get; set; }
     }
     
 }
