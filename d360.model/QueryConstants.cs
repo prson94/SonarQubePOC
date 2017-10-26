@@ -1498,7 +1498,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 ";
 
         public static string WorkflowTypeList = @"
-            with a as
+             with a as
             (
             select 
 	            t.id as TypeID,
@@ -1511,10 +1511,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            v.Version, 
 	            v.UpdatedOn,
 	            r.FirstName + ' ' + r.LastName as UpdatedBy,  
-	            d.Name as ObjectTypeName, 
-	            d.ObjectType, 
-	            d.ObjectTypeID, 
-	            d.NgUrl, 
+	            ta.Name as ObjectTypeName, 
+	            ta.Object, 
+	            ta.ObjectID, 
+	            dbo.GenerateNgObjectUrl(ta.Object, ta.ObjectID, 0) as NgUrl, 
 	            v.id as VersionID,
 	            dbo.GetWorkflowObjectsSummary(v.id, @filteredObject, @filteredObjectId) as ObjectNames, 
  	            null as Responsibility, 
@@ -1532,17 +1532,16 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             from workflow.type t
             join workflow.eventregistration e on e.typeid = t.id
             join workflow.version v on v.typeid = t.id
-            left join cache.objectdetails d on d.object = e.object and d.objectid = e.objectid
+			left join AssetType ta on ta.object = e.object and ta.objectId = e.objectid
             left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
             left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
-            left join cache.objectdetails d2 on d2.object = i.object and d2.objectid = i.objectid 
             left join workflow.versionstep vs on vs.versionid = v.id
             left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
             left join workflow.itemassignment ia on ia.itemid = s.id
             where t.id in ({0}) and t.State <> 3
-            group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,d.Name, d.ObjectType, 
-            d.ObjectTypeID, d.NgUrl, v.id, t.PublishedVersionID, r.FirstName, r.LastName
-            )
+            group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,ta.Name, ta.Object, 
+            ta.ObjectID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
+			)
             select 
 	            a.*,
 	            vs.Settings,

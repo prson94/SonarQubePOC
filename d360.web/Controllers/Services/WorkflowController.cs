@@ -1443,8 +1443,8 @@ order by wi.StartedOn desc";
                                 {
                                     if (settings.ResponsibilityTypeID != null)
                                     {
-                                        var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
-                                        result.ResponsibleUser = resources;
+                                        //var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                        result.ResponsibleUser = "";
                                     }
                                 }
                                 else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
@@ -1463,8 +1463,8 @@ order by wi.StartedOn desc";
                             {
                                 if (settings.ResponsibilityTypeID != null)
                                 {
-                                    var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
-                                    result.ResponsibleUser = resources;
+                                    //var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                    result.ResponsibleUser = "";
                                 }
                             }
                             else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)

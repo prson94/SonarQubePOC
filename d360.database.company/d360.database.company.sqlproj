@@ -525,6 +525,7 @@
     <Build Include="dbo\Tables\MapTypeOrder.sql" />
     <Build Include="dbo\Tables\MapTypeTemplate.sql" />
     <Build Include="dbo\Tables\MapTypeTemplateItem.sql" />
+    <Build Include="dbo\Functions\GetWorkflowObjectsSummary.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
