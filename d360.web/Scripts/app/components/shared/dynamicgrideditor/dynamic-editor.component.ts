@@ -225,6 +225,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         }
                     }
                 }
+                else if (validation.rule && validation.rule.startsWith('required')) {
+                    validators.push(Validators.compose([Validators.required]));
+                }
                 else if (validation.regex) {
                     validators.push(Validators.pattern(validation.regex));
                 }
