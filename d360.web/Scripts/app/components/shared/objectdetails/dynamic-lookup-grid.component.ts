@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, OnInit } from '@angular/core';
+﻿import { Component, Input, Output, OnInit} from '@angular/core';
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../../models/lookup.model';
 import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../../models/grid-definition.model';
@@ -138,12 +138,13 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url)); 
     }
 
-    customSort(e: any, col: any) {
+    customSort(e: any, col: any) {        
         let field = e.field;
         let direction = e.order;
         let type = col.type;
 
-        this.data.Values = this.data.Values.sort((a, b) => {
+
+        this.data.Values = this.data.Values.slice().sort((a, b) => {
             let fa = a[field];
             let fb = b[field];
 
@@ -173,6 +174,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
                     return ((fa > fb) ? 1 : (fa < fb) ? -1 : 0) * direction;
             }
         });
+        
     }
 }
 
