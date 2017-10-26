@@ -999,6 +999,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             return;
         }
 
+        if (this.readonly) { //prevent d&d on readonly
+            e.diagram.currentTool.doCancel();
+            return;
+        }
+
         //console.log('finishDrop', e, grp, node, this.myDiagram);
 
         if (node != null) {
@@ -1267,7 +1272,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     name: "NodeShape"
                 },
                     new go.Binding("fill", "backColor"),
-                    new go.Binding("stroke", "valid", v => { return v ? 'transparent' : '#f00' })
+                    new go.Binding("stroke", "valid", (v, m) => {
+                        let data = m.panel.panel.data;
+                        if (data == null) return 'transparent';
+                        if (data.valid == false) return '#f00';
+                        return data.foreColor;
+                    })
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
@@ -1296,10 +1306,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             ));
     }
 
+
+
     private createMapGroup(): go.Group {
         return this.g(go.Group, "Auto",
             { // define the group's internal layout
                 background: 'transparent',
+                minSize: new go.Size(150, 50),
                 mouseDragEnter: (e, grp, prev) => this.highlightGroup(e, grp, true),
                 mouseDragLeave: (e, grp, next) => this.highlightGroup(e, grp, false),
                 mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
@@ -1342,7 +1355,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     // the SubGraphExpanderButton is a panel that functions as a button to expand or collapse the subGraph
                     this.g("SubGraphExpanderButton", new go.Binding("visible", "order", o => { return o != -1; })),
                     this.g(go.TextBlock,
-                        { font: "Bold 18px Sans-Serif", margin: 4 },
+                        { font: "Bold 12px Sans-Serif", margin: 4 },
                         new go.Binding("text", "name"),
                         new go.Binding("stroke", "foreColor", o => { return o == null ? '#000' : o; }),
                         new go.Binding("visible", "isSubGraphExpanded", o => {
