@@ -408,29 +408,29 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 // Required validation
                 if (required)
                 {
-                    models.Add(new FieldValidationModel { action = "blur", message = string.Format(Validation.Required_Tokenized, friendlyName), rule = "required" });
+                    models.Add(new FieldValidationModel { message = string.Format(Validation.Required_Tokenized, friendlyName), rule = "required" });
                 }
 
                 // Pattern validation
                 if (!string.IsNullOrEmpty(pattern))
                 {
-                    models.Add(new FieldValidationModel { action = "blur", message = validationMessage, regex = pattern });
+                    models.Add(new FieldValidationModel { message = validationMessage, regex = pattern });
                 }
 
                 // Min/Max next precedent
                 if (maxLength.HasValue && minLength.HasValue)
                 {
-                    models.Add(new FieldValidationModel { action = "blur", message = string.Format(Validation.Length_Tokenized, friendlyName, minLength.Value, maxLength.Value), rule = string.Format("length={0},{1}", minLength.Value, maxLength.Value) });
+                    models.Add(new FieldValidationModel { message = string.Format(Validation.Length_Tokenized, friendlyName, minLength.Value, maxLength.Value), rule = string.Format("length={0},{1}", minLength.Value, maxLength.Value) });
                 }
                 // Min next precedent
                 else if (minLength.HasValue)
                 {
-                    models.Add(new FieldValidationModel { action = "blur", message = string.Format(Validation.MaxLength_Tokenized, friendlyName, minLength.Value), rule = string.Format("minLength={0}", minLength.Value) });
+                    models.Add(new FieldValidationModel { message = string.Format(Validation.MaxLength_Tokenized, friendlyName, minLength.Value), rule = string.Format("minLength={0}", minLength.Value) });
                 }
                 // Max next precedent
                 else if (maxLength.HasValue)
                 {
-                    models.Add(new FieldValidationModel { action = "blur", message = string.Format(Validation.MinLength_Tokenized, friendlyName, maxLength.Value), rule = string.Format("maxLength={0}", maxLength.Value) });
+                    models.Add(new FieldValidationModel { message = string.Format(Validation.MinLength_Tokenized, friendlyName, maxLength.Value), rule = string.Format("maxLength={0}", maxLength.Value) });
                 }
             }
 

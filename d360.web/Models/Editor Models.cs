@@ -682,11 +682,7 @@ namespace d360.web.Models
         /// <summary>
         /// The error message to display to the user.
         /// </summary>
-        public string message { get; set; }
-        /// <summary>
-        /// keyup, blur, focus, change
-        /// </summary>
-        public string action { get; set; }
+        public string message { get; set; }        
         /// <summary>
         /// required; length=3,12; right:0,0; phone; ssn; zipCode; email; inline javascript function
         /// </summary>

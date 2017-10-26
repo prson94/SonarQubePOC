@@ -1,5 +1,4 @@
-﻿export class FieldValidation {
-    action: string;
+﻿export class FieldValidation {    
     message: string;
     regex: string;
     rule: string;

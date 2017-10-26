@@ -2801,11 +2801,6 @@
             The error message to display to the user.
             </summary>
         </member>
-        <member name="P:d360.web.Models.FieldValidationModel.action">
-            <summary>
-            keyup, blur, focus, change
-            </summary>
-        </member>
         <member name="P:d360.web.Models.FieldValidationModel.rule">
             <summary>
             required; length=3,12; right:0,0; phone; ssn; zipCode; email; inline javascript function
