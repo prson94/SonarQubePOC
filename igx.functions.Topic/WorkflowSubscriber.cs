@@ -27,7 +27,9 @@ namespace igx.functions.Topic
         public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Listen)]BrokeredMessage brokeredMessage, TraceWriter log)
         {
             try
-            {                
+            {
+                log.Info($"WorkflowSubscriber trigger function processed:  {brokeredMessage.MessageId}");
+
                 var info = brokeredMessage.GetBody<EventInfo>();
 
                 #region Create EF connection
