@@ -29,11 +29,12 @@ namespace igx.functions.Core
             }
         }
 
-        public static void AITrackEvent(string eventName, IDictionary<string, string> properties = null, int? companyId = null)
+        public static void AITrackEvent(string jobName, string eventName, IDictionary<string, string> properties = null, int? companyId = null)
         {
             if (properties == null)
                 properties = new Dictionary<string, string>();
 
+            properties["Function"] = jobName;
             if (companyId.HasValue) properties["CompanyId"] = companyId.Value.ToString();
             properties["Environment"] = ConfigurationManager.AppSettings["Environment"];
 
