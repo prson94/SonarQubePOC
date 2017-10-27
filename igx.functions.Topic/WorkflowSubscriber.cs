@@ -51,7 +51,7 @@ namespace igx.functions.Topic
                 //check if this event already has a open workflow instance
                 if (info.WorkflowItemID <= 0)
                 {
-                    //Console.WriteLine($"Debug - New [{info.Action}] event received.");
+                    log.Info($"Debug - New [{info.Action}] event received.");
 
                     var sObject = info.Object.ObjectType.ToString();
 
@@ -80,7 +80,7 @@ namespace igx.functions.Topic
                 {
                     //load the workflow instance and check how many events have been generated.  if greater than threashold then stop.  Do not raise more events
                     // throw an error this section prevents workflows that go on forever and flood the bus with data...
-                    //Console.WriteLine($"Debug - New [{info.Action}] event received.  With an open workflow instance.");
+                    log.Info($"Debug - New [{info.Action}] event received.  With an open workflow instance.");
 
                     var workflowInstance = company.WorkflowItems.Where(x => x.ID == info.WorkflowItemID).FirstOrDefault();
 
@@ -100,13 +100,13 @@ namespace igx.functions.Topic
 
                     if (info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
                     {
-                        Console.WriteLine($"Debug - Event is a workflow transition.");
+                        log.Info($"Debug - Event is a workflow transition.");
 
                         await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID, info.Object);
                     }
                     else if (info.ItemStepID > 0) // this event is to evauluate a workflow step
                     {
-                        Console.WriteLine($"Debug - Event is an item step.");
+                        log.Info($"Debug - Event is an item step.");
 
                         await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info.Object);
                     }
@@ -114,7 +114,7 @@ namespace igx.functions.Topic
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception: " + ex.GetFullExceptionData());
+                log.Error("Exception: " + ex.GetFullExceptionData());
             }
         }
     }
