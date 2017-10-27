@@ -579,7 +579,7 @@ order by wi.StartedOn desc";
 
                     if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
-                    var itemSql = "select i.Name as Text, i.Type + '|' + cast(i.ID as varchar) as Value from cache.objectdetails where objecttype = @objectType and objecttypeid = @objectTypeId";
+                    var itemSql = "select i.Name as Text, i.ObjectType + '|' + cast(i.ObjectID as varchar) as Value from cache.objectdetails i where i.objecttype = @objectType and i.objecttypeid = @objectTypeId";
 
                     item.Values = new List<System.Web.Mvc.SelectListItem>();
 
