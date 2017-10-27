@@ -14,6 +14,7 @@ using System;
 using System.Configuration;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.functions.Topic
 {
@@ -23,7 +24,7 @@ namespace igx.functions.Topic
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 25;
 
         [FunctionName(functionName)]
-        public static async void Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Manage)]string mySbMsg, TraceWriter log)
+        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Listen)]string mySbMsg, TraceWriter log)
         {
             try
             {
