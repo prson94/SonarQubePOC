@@ -6,6 +6,7 @@ using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
 using d360.model;
+using igx.functions.Core;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.ServiceBus.Messaging;
@@ -28,6 +29,8 @@ namespace igx.functions.Topic
         {
             try
             {
+                CoreFunction.AITrackJobStart(functionName);
+
                 log.Info($"WorkflowSubscriber trigger function processed:  {brokeredMessage.MessageId}");
 
                 var info = brokeredMessage.GetBody<EventInfo>();
@@ -111,11 +114,17 @@ namespace igx.functions.Topic
                         await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info.Object);
                     }
                 }
+
+                CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
             {
+                CoreFunction.AITrackException(functionName, ex);
+
                 log.Error("Exception: " + ex.GetFullExceptionData());
             }
+
+            CoreFunction.AIFlush();
         }
     }
 }
