@@ -120,7 +120,7 @@
                     Field Type
                 </div>
                 <div>
-                    <select [(ngModel)]="newField['@type']"  style="width:95%">
+                    <select [ngModel]="newField['@type']" (ngModelChange)="changeType($event)" style="width:95%">
                         <option *ngFor="let t of types" [value]="t.label">{{t.label}}</option>
                     </select>
                 </div>
@@ -136,7 +136,25 @@
                 </div>
             </div>
         </div>
-        <div class="row" *ngIf="newField['@type'] == 'list'">
+        <div *ngIf="isListLoading" class="row">
+            <div class="col s12">
+                <d3s-loading isLoading="true"></d3s-loading>
+            </div>
+        </div>
+        <div *ngIf="newField['@type'] == 'relationshipType' && !isListLoading" class="row">
+            <div class="col s12">
+                <div class="FieldName">
+                    Relationship Type
+                </div>
+                <div>
+                    <select [(ngModel)]="newField['@intersectTypeId']" style="width: 95%">
+                        <option></option>
+                        <option *ngFor="let i of intersectTypes" [value]="i.IntersectTypeID">{{(i.PredicateName != null && i.PredicateName.length > 0) ? '[' + i.PredicateName + ']' : ''}} {{i.TargetName}}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="newField['@type'] == 'list' && !isListLoading" class="row">
             <div class="col s12">
                 <div class="FieldName">
                     List
@@ -149,7 +167,7 @@
         </div>
         <div class="row" style="padding-top: 8px;">
             <div class="col s12">
-                <button pButton type="button" label="Add" (click)="save()" [disabled]="newField['@label'] == null || newField['@label'].length < 1 || newField['@type'] == null || (newField['@type'] == 'list' && newField['@referenceFieldId'] == null)"></button>
+                <button pButton type="button" label="Add" (click)="save()" [disabled]="!validateField()"></button>
                 <button pButton type="button" label="Cancel" (click)="cancel()"></button>
             </div>
         </div>

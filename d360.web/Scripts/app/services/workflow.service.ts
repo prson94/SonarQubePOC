@@ -363,4 +363,11 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getAllowIntersectTypes(object: string, objectId: number) {
+        return this.http.get(`api/${object}/${objectId}/relationshiptypes`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

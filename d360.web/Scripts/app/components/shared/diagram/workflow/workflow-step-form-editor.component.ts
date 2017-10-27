@@ -46,7 +46,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private showHelp = false;
     private responsibilities = [];
     private destination = [];
-    private lookups = [];
+    private lookups = null;
+    private intersectTypes = null;
+    private isListLoading = false;
 
     private allowReassignResource = false;
     private allowReassignObject = false;
@@ -57,6 +59,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         { value: WorkflowFormFieldType.Text, label: 'text' },
         { value: WorkflowFormFieldType.Date, label: 'date' },
         { value: WorkflowFormFieldType.List, label: 'list' },
+        { value: WorkflowFormFieldType.RelationshipType, label: 'relationshipType' },
 
     ];
 
@@ -161,10 +164,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
-        this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId)
-            .then(r => {
-                this.lookups = r;
-            });
+
 
         //console.log('initFields', this.step.fields.form);
     }
@@ -253,5 +253,35 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 + e;
         }
 
+    }
+
+    changeType(e: any) {
+        this.newField['@type'] = e;
+
+        if (e == 'relationshipType' && this.intersectTypes == null) {
+            this.workflowService.getAllowIntersectTypes(this.objectType, this.objectId)
+                .then(r => {
+                    this.intersectTypes = r;
+                });
+        }
+        if (e == 'list' && this.lookups == null) {
+            this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId)
+                .then(r => {
+                    this.lookups = r;
+                });
+        }
+    }
+
+    validateField() {
+        if (this.newField['@label'] == null || this.newField['@label'].length < 1 || this.newField['@type'] == null)
+           return false;
+
+        if (this.newField['@type'] == 'list' && this.newField['@referenceFieldId'] == null)
+            return false;
+
+        if (this.newField['@type'] == 'relationshipType' && this.newField['@intersectTypeId'] == null)
+            return false;
+
+        return true;
     }
 }
