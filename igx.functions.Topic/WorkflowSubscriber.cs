@@ -24,11 +24,11 @@ namespace igx.functions.Topic
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 25;
 
         [FunctionName(functionName)]
-        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Listen)]string mySbMsg, TraceWriter log)
+        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Listen)]BrokeredMessage brokeredMessage, TraceWriter log)
         {
             try
-            {
-                var info = JsonConvert.DeserializeObject<EventInfo>(mySbMsg);
+            {                
+                var info = brokeredMessage.GetBody<EventInfo>();
 
                 #region Create EF connection
 
