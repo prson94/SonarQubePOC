@@ -138,14 +138,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             });
     }
     
-    private findItemIndex(id: number) {
-        var index: number = -1;
-        for (var item of this.relations) {
-            index++;
-            if (item.ID == id) return index;
-        }
-    }
-
     private shouldShowEditor(): boolean {
         return (this.addRelationship || this.showEditor) && !this.showTechnical;
     }
@@ -178,7 +170,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     deleteItem(item) {
         this.relationshipsService.deleteRelationshipItem(item.ID).then(res => {
-            this.relations.splice(this.findItemIndex(item.ID), 1);
+            this.relations = this.relations.filter(x => x.ID != item.ID);
 
             this.relationshipRemoved.emit();
         });
