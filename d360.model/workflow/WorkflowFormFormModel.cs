@@ -26,7 +26,8 @@ namespace d360.model.workflow
                             FieldType = (string)field.Attribute("fieldtype"),
                             Label = (string)field.Attribute("label"),
                             Value = (string)field.Attribute("value"),
-                            ID = ((string)field.Attribute("id"))
+                            ID = ((string)field.Attribute("id")),
+                            IntersectTypeID = (string)field.Attribute("intersectTypeId")
                         }
                     );
             }

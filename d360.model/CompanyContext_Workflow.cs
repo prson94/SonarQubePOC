@@ -648,75 +648,113 @@ namespace d360.model
 
             foreach (var item in settings.RelationshipUpdateSettings)
             {
+                if (string.IsNullOrEmpty(item.FormField) || item.FormStepID <= 0)
+                    throw new Exception($"ERROR - INVALID FORM FIELD OR FORM STEP ID SPECIFIED FOR RELATIONSHIP UPDATE STEP.  FORM FIELD IS : [{item.FormField}] FORM STEP IS : [{item.FormStepID}]");
+
+                var verStep = WorkflowVersionSteps.Where(x => x.ID == item.FormStepID).FirstOrDefault();
+
+                if(verStep == null)
+                    throw new Exception($"ERROR - FORM STEP TO USE AS THE SOURCE OF THE RELATIONSHIP IS INVALID AND CANNOT BE LOADED");
+
+                //load the intersect from the form fields
+                //XDocument.Parse(verStep.Fields)
+                var formFields = WorkflowFormFormModel.ParseXml(XElement.Parse(verStep.Fields).Element("form"));
+
+                var field = formFields.Fields.Where(x => x.ID == item.FormField).FirstOrDefault();
+
+                if (field == null)
+                    throw new Exception($"ERROR - CANNOT FIND FORM FIELD TO USE AS INPUT FOR RELATIONSHIP.");
+
+                if (!int.TryParse(field.IntersectTypeID, out int intersectTypeId))
+                    throw new Exception("ERROR - CANNOT PARSE THE INTERSECTTYPEID VALUE AS AN INTEGER");
+
                 //get intersect type info
-                var intersectType = IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
+                var intersectType = IntersectTypes.Where(x => x.ID == intersectTypeId).FirstOrDefault();
 
                 if (intersectType == null)
-                    throw new Exception($"ERROR - INVALID INTERSECT TYPE ID SPECIFIED.  PLEASE CHECK THE SETTINGS ASSOCIATED WITH THE RELATIONSHIP UPDATE ACTION OF THE CURRENT WORKFLOW. INTERSECT TYPE ID IS [{item.IntersectTypeID}]");
+                    throw new Exception($"ERROR - INVALID INTERSECT TYPE ID SPECIFIED.  PLEASE CHECK THE SETTINGS ASSOCIATED WITH THE RELATIONSHIP UPDATE ACTION OF THE CURRENT WORKFLOW. INTERSECT TYPE ID IS [{intersectTypeId}]");
 
                 var isSubject = intersectType.SubjectID == objectInfo.ObjectID && intersectType.Subject == objectInfo.Object.ToString();
 
                 if (item.ClearValue)
                 {
                     //delete intersects with the given intersect type id for the current object
-
-                    
-                    var sql = "";
-
-                    if (isSubject)
-                        sql = "delete intersect where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
-                    else
-                        sql = "delete intersect where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
-
-                    Query<int>(sql, new { obj = objectInfo.Object.ToString(), objectid = objectInfo.ObjectID, intersectTypeId = item.IntersectTypeID });
+                    DeleteIntersects(objectInfo.Object, objectInfo.ObjectID, intersectTypeId, isSubject);
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(item.FormField) || item.FormStepID <= 0)
-                        throw new Exception($"ERROR - INVALID FORM FIELD OR FORM STEP ID SPECIFIED FOR RELATIONSHIP UPDATE STEP.  FORM FIELD IS : [{item.FormField}] FORM STEP IS : [{item.FormStepID}]");
-
-
                     var val = GetFieldValueIntersectFromFormResponse(item, itemStep.ItemID);
+
+                    bool supportsJustOne = isSubject ? intersectType.ObjectCardinality == core.enums.Cardinality.One : intersectType.SubjectCardinality == core.enums.Cardinality.One;
+
+                    if (!item.AppendValue || supportsJustOne)
+                    {
+                        DeleteIntersects(objectInfo.Object, objectInfo.ObjectID, intersectTypeId, isSubject);
+                    }
 
                     //split the value on , 
                     var rels = val.Split(',');
+
+                    // if it just supports one item just use the first selected.
+                    if(supportsJustOne)
+                        rels = rels.Where((v, idx) => idx != 0).ToArray();
 
                     foreach (var rel in rels)
                     {
                         // split by | for type id
                         // add item
                         var parts = rel.Split('|');
-
+                        
                         var intersect = new Intersect();
 
                         intersect.IntersectTypeID = intersectType.ID;
 
                         if (isSubject) {
-                            intersect.Subject = objectInfo.Object.ToString();
+                            intersect.Subject = (objectInfo.Object.ToString() ?? "").Replace("Type","");
                             intersect.SubjectID = objectInfo.ObjectID;
                             intersect.Object = parts[0];
                             intersect.ObjectID = int.Parse(parts[1]);
                         }
                         else
                         {
-                            intersect.Object = objectInfo.Object.ToString();
+                            intersect.Object = (objectInfo.Object.ToString() ?? "").Replace("Type","");
                             intersect.ObjectID = objectInfo.ObjectID;
                             intersect.Subject = parts[0];
                             intersect.SubjectID = int.Parse(parts[1]);
                         }
 
-                        intersect.CreatedBy = CurrentResourceID;
-                        intersect.CreatedOn = DateTime.UtcNow;
-                        intersect.UpdatedBy = CurrentResourceID;
-                        intersect.UpdatedOn = DateTime.UtcNow;
-                        intersect.Visible = true;
+                        //check that this relationship doesnt already exist
 
-                        Intersects.Add(intersect);
+
+                        if (!Intersects.Any(x => x.IntersectTypeID == intersectTypeId && x.Subject == intersect.Subject && x.SubjectID == intersect.SubjectID && x.Object == intersect.Object && x.ObjectID == intersect.ObjectID))
+                        {
+
+                            intersect.CreatedBy = CurrentResourceID;
+                            intersect.CreatedOn = DateTime.UtcNow;
+                            intersect.UpdatedBy = CurrentResourceID;
+                            intersect.UpdatedOn = DateTime.UtcNow;
+                            intersect.Visible = true;
+
+                            Intersects.Add(intersect);
+
+                            SaveChanges();
+                        }
+                        
                     }
-
-                    SaveChanges();
-                }               
+                }
             }
+        }
+
+        private void DeleteIntersects(SystemObjects @object, int objectID, int intersectTypeId, bool isSubject)
+        {
+            var sql = "";
+
+            if (isSubject)
+                sql = "delete [intersect] where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
+            else
+                sql = "delete [intersect] where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
+
+            Query<int>(sql, new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId });
         }
 
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)

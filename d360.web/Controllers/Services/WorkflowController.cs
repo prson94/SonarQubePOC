@@ -588,14 +588,14 @@ order by wi.StartedOn desc";
                         // load the object items into the values array                        
 
                         item.Values.AddRange(
-                            Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
+                            Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
                         );
                     }
                     else
                     {
                         // load the subject items into the value array
                         item.Values.AddRange(
-                            Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
+                            Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
                         );
                     }
                 }
