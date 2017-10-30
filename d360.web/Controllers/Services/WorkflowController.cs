@@ -579,13 +579,14 @@ order by wi.StartedOn desc";
 
                     if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
-                    var itemSql = "select i.Name as Text, i.ObjectType + '|' + cast(i.ObjectID as varchar) as Value from cache.objectdetails i where i.objecttype = @objectType and i.objecttypeid = @objectTypeId";
-
+                    var itemSql = "select i.Name as Text, i.ObjectType + '|' + cast(i.ObjectID as varchar) as Value from cache.objectdetails i where i.objecttype = @objectType and i.objecttypeid = @objectTypeId order by 1";
+                                        
                     item.Values = new List<System.Web.Mvc.SelectListItem>();
 
                     if (reg.Object == intersectType.Subject && reg.ObjectID == intersectType.SubjectID)
                     {
                         // load the object items into the values array                        
+                        item.AllowMultipleValues = !(intersectType.ObjectCardinality == core.enums.Cardinality.One);
 
                         item.Values.AddRange(
                             Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
@@ -593,6 +594,7 @@ order by wi.StartedOn desc";
                     }
                     else
                     {
+                        item.AllowMultipleValues = !(intersectType.SubjectCardinality == core.enums.Cardinality.One);
                         // load the subject items into the value array
                         item.Values.AddRange(
                             Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
