@@ -654,11 +654,13 @@ namespace d360.model
                 if (intersectType == null)
                     throw new Exception($"ERROR - INVALID INTERSECT TYPE ID SPECIFIED.  PLEASE CHECK THE SETTINGS ASSOCIATED WITH THE RELATIONSHIP UPDATE ACTION OF THE CURRENT WORKFLOW. INTERSECT TYPE ID IS [{item.IntersectTypeID}]");
 
+                var isSubject = intersectType.SubjectID == objectInfo.ObjectID && intersectType.Subject == objectInfo.Object.ToString();
+
                 if (item.ClearValue)
                 {
                     //delete intersects with the given intersect type id for the current object
 
-                    var isSubject = intersectType.SubjectID == objectInfo.ObjectID && intersectType.Subject == objectInfo.Object.ToString();
+                    
                     var sql = "";
 
                     if (isSubject)
@@ -673,6 +675,46 @@ namespace d360.model
                     if (string.IsNullOrEmpty(item.FormField) || item.FormStepID <= 0)
                         throw new Exception($"ERROR - INVALID FORM FIELD OR FORM STEP ID SPECIFIED FOR RELATIONSHIP UPDATE STEP.  FORM FIELD IS : [{item.FormField}] FORM STEP IS : [{item.FormStepID}]");
 
+
+                    var val = GetFieldValueIntersectFromFormResponse(item, itemStep.ItemID);
+
+                    //split the value on , 
+                    var rels = val.Split(',');
+
+                    foreach (var rel in rels)
+                    {
+                        // split by | for type id
+                        // add item
+                        var parts = rel.Split('|');
+
+                        var intersect = new Intersect();
+
+                        intersect.IntersectTypeID = intersectType.ID;
+
+                        if (isSubject) {
+                            intersect.Subject = objectInfo.Object.ToString();
+                            intersect.SubjectID = objectInfo.ObjectID;
+                            intersect.Object = parts[0];
+                            intersect.ObjectID = int.Parse(parts[1]);
+                        }
+                        else
+                        {
+                            intersect.Object = objectInfo.Object.ToString();
+                            intersect.ObjectID = objectInfo.ObjectID;
+                            intersect.Subject = parts[0];
+                            intersect.SubjectID = int.Parse(parts[1]);
+                        }
+
+                        intersect.CreatedBy = CurrentResourceID;
+                        intersect.CreatedOn = DateTime.UtcNow;
+                        intersect.UpdatedBy = CurrentResourceID;
+                        intersect.UpdatedOn = DateTime.UtcNow;
+                        intersect.Visible = true;
+
+                        Intersects.Add(intersect);
+                    }
+
+                    SaveChanges();
                 }               
             }
         }
@@ -741,6 +783,28 @@ namespace d360.model
                 }
 
             }
+        }
+
+        private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)
+        {
+            var formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.FormStepID && x.Step.ActivityType == WorkflowActivityType.Form);
+
+            var firstResponse = formResponses.FirstOrDefault();
+
+            if (firstResponse == null) return string.Empty;
+
+            var xml = XElement.Parse(firstResponse.Fields);
+
+            foreach (var form in xml.Elements("form"))
+            {
+                foreach (var field in form.Elements("field"))
+                {
+                    if ((string)field.Attribute("id") == item.FormField)
+                        return (string)field.Attribute("value");
+                }
+            }
+
+            return "";
         }
 
         private string GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item, long itemId)

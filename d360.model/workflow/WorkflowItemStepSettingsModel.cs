@@ -20,7 +20,9 @@ namespace d360.model.workflow
         private static string MISSING_SUBJECT_VALUE = "Data3Sixty - Workflow Email notification (missing subject)";
         private static string MISSING_BODY_VALUE = "Data3Sixty - Workflow Email (missing body).  You are receiving this email due to a Data3Sixty workflow with an email task.  The task has been improperly configured so it doesnt have any email content";
         private static string FIELD_UPDATE_SETTINGS = "FieldUpdate";
+        private static string RELATIONSHIP_UPDATE_SETTINGS = "RelationshipUpdate";
         private static string FIELD_SETTINGS = "Field";
+        private static string RELATIONSHIP_SETTINGS = "Relationship";
 
         public string SubjectTemplate { get; set; }
         public string BodyTemplate { get; set; }
@@ -68,6 +70,7 @@ namespace d360.model.workflow
             var messageSubject = "";
             var messageBody = "";
             List<WorkflowFieldUpdateSettings> fieldUpdateSettings = new List<WorkflowFieldUpdateSettings>();
+            List<WorkflowRelationshipUpdateSettings> relationshipUpdateSettings = new List<WorkflowRelationshipUpdateSettings>();
 
             if (root != null)
             {
@@ -129,6 +132,14 @@ namespace d360.model.workflow
                         fieldUpdateSettings.Add(WorkflowFieldUpdateSettings.ParseXml(field));
                     }
                 }
+
+                if(root.Element(RELATIONSHIP_UPDATE_SETTINGS) != null)
+                {
+                    foreach (var field in root.Element(RELATIONSHIP_UPDATE_SETTINGS).Elements(RELATIONSHIP_SETTINGS))
+                    {
+                        relationshipUpdateSettings.Add(WorkflowRelationshipUpdateSettings.ParseXml(field));
+                    }
+                }
             }
 
             return new WorkflowItemStepSettingModel
@@ -143,7 +154,8 @@ namespace d360.model.workflow
                 ShouldIncludeFormResponses = includeFormResponses,
                 SubjectTemplate = messageSubject ?? MISSING_SUBJECT_VALUE,
                 BodyTemplate = messageBody ?? MISSING_BODY_VALUE,
-                FieldUpdateSettings = fieldUpdateSettings
+                FieldUpdateSettings = fieldUpdateSettings,
+                RelationshipUpdateSettings = relationshipUpdateSettings
             };
         }
     }
