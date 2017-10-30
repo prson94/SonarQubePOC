@@ -77,7 +77,8 @@ BEGIN
 		intersectTypeId int,
 		businessTransformation nvarchar(max),
 		technicalTransformation nvarchar(max),
-		category varchar(50)
+		category varchar(50),
+		templateId int
 	);
 
 	--links
@@ -109,6 +110,7 @@ BEGIN
 		,g.BusinessTransformation as businessTransformation
 		,g.TechnicalTransformation as technicalTransformation
 		,'transform' as category 
+		,null as templateId
 	from 
 		MapGroup g
 	inner join MapGroupItem i on i.MapGroupID = g.ID
@@ -133,6 +135,7 @@ BEGIN
 		,null as businessTransformation
 		,null as technicalTransformation
 		,case when i.subject = 'Map' then 'map' else 'object' end as category
+		,e.ID as templateId
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join Asset a on a.[object] = i.subject and a.objectId = i.subjectid
@@ -140,6 +143,8 @@ BEGIN
 	left join ObjectStyle s on s.[objecttype] = ta.[object] and s.objectid = ta.objectid
 	left join IntersectType t on t.ID = i.IntersectTypeID
 	left join MapTypeOrder o on o.IntersectTypeID = t.ID
+	left join Map p on p.id = i.subjectid and i.subject = 'Map'
+	left join MapTypeTemplate e on e.ID = p.MapTypeTemplateID
 	union
 	select 
 		 i.object + '|' + cast(i.objectid as varchar) as [key]
@@ -162,13 +167,16 @@ BEGIN
 		,null as businessTransformation
 		,null as technicalTransformation
 		,case when i.[object] = 'Map' then 'map' else 'object' end as category
+		,e.ID as templateId
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join Asset a on a.[object] = i.[object] and a.objectId = i.objectId
 	left join AssetType ta on ta.ID = a.AssetTypeID
 	left join ObjectStyle s on s.[objecttype] = ta.[object] and s.objectid = ta.objectid
 	left join IntersectType t on t.ID = i.IntersectTypeID
-	left join MapTypeOrder o on o.IntersectTypeID = t.ID;
+	left join MapTypeOrder o on o.IntersectTypeID = t.ID
+	left join Map p on p.id = i.objectId and i.object = 'Map'
+	left join MapTypeTemplate e on e.ID = p.MapTypeTemplateID;
 
 	--we don't need links to the individual objects since they live in the maps
 	delete l
@@ -233,4 +241,3 @@ BEGIN
 			for json path, WITHOUT_ARRAY_WRAPPER;
 
 END
-

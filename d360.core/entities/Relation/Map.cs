@@ -27,6 +27,9 @@ namespace d360.core.entities
         public virtual MapType MapType { get; set; }
 
         [DataMember]
+        public int? MapTypeTemplateID { get; set; }
+
+        [DataMember]
         public virtual ICollection<MapItem> MapItems { get; set; }
     }
 }

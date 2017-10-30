@@ -245,6 +245,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.technicalTransformation = d.technicalTransformation;
                 model.order = d.order;
                 model.intersectTypeId = d.intersectTypeId;
+                model.templateId = d.templateId
 
                 model.isGroup = d.isGroup
                 model.group = d.group;
@@ -631,6 +632,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             nodeModel.TechnicalTransformation = node.technicalTransformation;
             nodeModel.IntersectTypeID = node.intersectTypeId;
             nodeModel.Order = node.order;
+            nodeModel.MapTypeTemplateID = node.templateId;
 
             if (node.valid == false)
                 valid = false;
@@ -1149,7 +1151,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 diagramObjectType: DiagramObjectType.Node,
                 visible: true,
                 order: o.order,
-                template: o.template
+                template: o.template,
+                templateId: o.templateId
             });
         });
 

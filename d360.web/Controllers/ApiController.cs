@@ -2340,7 +2340,8 @@ from    [Intersect] I
 					null as objectTypeName,
 	                coalesce(s.IconForeColor, '#fff') as foreColor,
 	                coalesce(s.IconBackColor, '#000') as backColor,
-					coalesce(o.[Order], 99999) as [order]
+					coalesce(o.[Order], 99999) as [order],
+					null as templateId
                 from 
 	                intersectType i
                 inner join AssetType t on t.object = i.object and t.objectid = i.objectid
@@ -2372,7 +2373,8 @@ from    [Intersect] I
                     m.[name] as objectTypeName,
 					null as foreColor,
 					null as backColor,
-					-1 as [order]
+					-1 as [order],
+					t.ID as templateId
 				from maptypetemplate t
 				inner join maptype m on m.id = t.maptypeid
 				where t.maptypeid = 1";
@@ -3355,7 +3357,7 @@ end",
                     loadComplexLookupColumns(fieldTypes, fields, columnModels, join, $"I{i}.ID", objColumn, objIDColumn, "left", i);
                 }
 
-                var sqlQuery = "select " + string.Join(", ", columnModels.Where(i => i.DisplayOrder > 0).OrderBy(i => i.DisplayOrder).Select(i => $"{i.DisplayColumn} as [{i.datafield}]")) + " ";
+                var sqlQuery = "select distinct " + string.Join(", ", columnModels.Where(i => i.DisplayOrder > 0).OrderBy(i => i.DisplayOrder).Select(i => $"{i.DisplayColumn} as [{i.datafield}]")) + " ";
                 sqlQuery += string.Join(" ", def.Relations.Select(i => i.JoinStatement)) + " ";
 
                 var whereQuery = string.Join(" AND ", def.Relations.Where(i => !string.IsNullOrEmpty(i.WhereStatement)).Select(i => i.WhereStatement));

@@ -1035,6 +1035,7 @@ namespace d360.web.Models
         public string Category { get; set; }
         public string BusinessTransformation { get; set; }
         public string TechnicalTransformation { get; set; }
+        public int? MapTypeTemplateID { get; set; }
     }
 
     public class LineageLinkModel

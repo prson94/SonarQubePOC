@@ -74,6 +74,7 @@ export class NodeModelV2 {
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
     template: any = null;
+    templateId: number;
     isRequired: boolean = null;
 
     valid: boolean = true;
@@ -110,6 +111,7 @@ export class LineageNodeModel {
     TechnicalTransformation: string;
     Order: number;
     IntersectTypeID: number;
+    MapTypeTemplateID: number;
 }
 
 export class LineageLinkModel {
