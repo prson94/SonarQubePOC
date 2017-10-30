@@ -710,16 +710,16 @@ namespace d360.model
                         intersect.IntersectTypeID = intersectType.ID;
 
                         if (isSubject) {
-                            intersect.Subject = (objectInfo.Object.ToString() ?? "").Replace("Type","");
+                            intersect.Subject = objectInfo.Object.ToString();
                             intersect.SubjectID = objectInfo.ObjectID;
-                            intersect.Object = parts[0];
+                            intersect.Object = (parts[0] ?? "").Replace("Type", "");
                             intersect.ObjectID = int.Parse(parts[1]);
                         }
                         else
                         {
-                            intersect.Object = (objectInfo.Object.ToString() ?? "").Replace("Type","");
+                            intersect.Object = objectInfo.Object.ToString();
                             intersect.ObjectID = objectInfo.ObjectID;
-                            intersect.Subject = parts[0];
+                            intersect.Subject = (parts[0] ?? "").Replace("Type", "");
                             intersect.SubjectID = int.Parse(parts[1]);
                         }
 
