@@ -202,10 +202,9 @@ export class AttributesTile implements OnInit {
                     label: j.Title
                 };
                 k.params = j.Params;
-                i.menuItem.items = [];
-                i.menuItem.items.push(k.menuItem);
-                this.menuItemParams.push(k);
-                //this.menuItems.push(k.menuItem);
+                i.menuItem.items = [k.menuItem];
+                //i.menuItem.items.push(k.menuItem);
+                this.menuItemParams.push(k);                
             });
         }
         if ((item.Action != 'edit' && item.Action != 'delete' && item.Action != 'add') || (item.Action == 'edit' && this.hasEdit) || (item.Action == 'delete' && this.hasDelete) || (item.Action == 'add' && this.hasAdd)) {

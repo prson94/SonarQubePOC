@@ -96,15 +96,14 @@ export class LineageEditorPreviewComponent extends BaseComponent implements OnIn
             items: []
         }
 
-        eye.items.push({
-            label: 'Business System Flow'
-        });
-        eye.items.push({
-            label: 'Business Data Flow'
-        });
-        eye.items.push({
-            label: 'Technical Lineage'
-        });
+        let eyeSub: MenuItem[] = [
+            { label: 'Business System Flow' },
+            { label: 'Business Data Flow' },
+            { label: 'Technical Lineage'}
+        ];
+
+
+        eye.items = eyeSub;
 
         this.menuItems.push(eye);
 

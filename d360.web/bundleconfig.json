@@ -8,12 +8,6 @@
       "Content/styles/typeahead.css"
     ]
   },
-  //{
-  //  "outputFileName": "content/styles/ang.min.css",
-  //  "inputFiles": [
-  //    "Content/styles/ang.css"
-  //  ]
-  //},
   {
     "outputFileName": "content/styles/materialize.min.css",
     "inputFiles": [
@@ -48,6 +42,12 @@
     "outputFileName": "content/primeng/v4.1.2/theme.min.css",
     "inputFiles": [
       "Content/primeng/v4.1.2/theme.css"
+    ]
+  },
+  {
+    "outputFileName": "content/primeng/v4.3.0/theme.min.css",
+    "inputFiles": [
+      "Content/primeng/v4.3.0/theme.css"
     ]
   },
   {

@@ -297,67 +297,57 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
             items: []
         }
 
-        edit.items.push({
-            label: 'Edit Source Rules'
-        });
-        edit.items.push({
-            label: 'Edit Business Lineage'
-        });
-        edit.items.push({
-            label: 'Edit Technical Lineage'
-        });
+        let editSubItem: MenuItem[] = [
+            { label: 'Edit Source Rules' },
+            { label: 'Edit Business Lineage' },
+            { label: 'Edit Technical Lineage'}
+        ];
+
+        edit.items = editSubItem;
 
         let view: MenuItem = {
             icon: 'fa-eye',
             items: []
         }
 
-        view.items.push({
-            label: 'Business System Flow'
-        });
-        view.items.push({
-            label: 'Business Data Flow'
-        });
-        view.items.push({
-            label: 'Technical Lineage'
-        });
+        let viewSubItem: MenuItem[] = [
+            { label: 'Business System Flow' },
+            { label: 'Business Data Flow' },
+            { label: 'Technical Lineage' }
+        ];
+
+        view.items = viewSubItem;
 
         let settings: MenuItem = {
             icon: 'fa-gears',
             items: []
         };
 
-        settings.items.push({
-            icon: this.usageOnly ? 'fa-check-square-o' : 'fa-square-o',
-            label: 'Usage only?'
-        });
+        let settingSubItem: MenuItem[] = [
+            {
+                icon: this.usageOnly ? 'fa-check-square-o' : 'fa-square-o',
+                label: 'Usage only?'
+            },
+            { label: 'Name only?', icon: this.nameOnly ? 'fa-check-square-o' : 'fa-square-o'}            
+        ];
 
-        settings.items.push({
-            icon: this.nameOnly ? 'fa-check-square-o' : 'fa-square-o',
-            label: 'Name only?'
-        });
-
+        settings.items = settingSubItem;
+        
         this.menuItems.push(edit);
         this.menuItems.push(view); 
         this.menuItems.push(settings);
+        
+        this.menuItems.push(this.createMenuItem(undefined, 'fa-search-minus'));
+        this.menuItems.push(this.createMenuItem(undefined, 'fa-search-plus'));        
+        this.menuItems.push(this.createMenuItem(undefined, 'fa-refresh'));
+        this.menuItems.push(this.createMenuItem(undefined, 'fa-info-circle'));
+    }
 
-        this.menuItems.push({
-            icon: 'fa-search-minus'
-        });
-
-        this.menuItems.push({
-            icon: 'fa-search-plus'
-        });
-
-        this.menuItems.push({
-            icon: 'fa-refresh'
-        });
-
-        this.menuItems.push({
-            icon: 'fa-info-circle'
-        });
-
-
+    private createMenuItem(label?: string, icon?: string): MenuItem {
+        let menu: MenuItem;
+        menu.label = label;
+        menu.icon = icon;
+        return menu;
     }
 
     private setSourceValues(data: any) {
