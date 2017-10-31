@@ -1295,7 +1295,7 @@ namespace d360.model
             }
             else if(settings.RecipientType == EmailTaskRecipientType.Responsibility)
             {
-                var users = Query<dynamic>("[utility].[GetOwnersForWorkflowV2] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
+                var users = Query<dynamic>("[utility].[GetOwnersForWorkflow] @id, @stepId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID });
 
                 foreach (var user in users)
                 {
