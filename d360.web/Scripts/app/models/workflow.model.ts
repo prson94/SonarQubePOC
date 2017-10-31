@@ -397,6 +397,7 @@ export enum WorkflowActivityType {
     Form = 3,
     Procedure = 4,
     FieldChange = 5,
+    RelationshipUpdate = 6,
 }
 
 export enum DiagramObjectType {

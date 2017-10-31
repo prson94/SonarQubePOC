@@ -57,6 +57,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     private fieldsSub;
     private formFields = [];
+    private formRelationshipFields = [];
+    private formRelationship;
 
     constructor(private responsibilityService: ResponsibilityTypeService, private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
         super();
@@ -107,6 +109,25 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
             this.filterFormFields();
 
+        } else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
+            if (this.step.settings.RelationshipUpdate == null)
+                this.step.settings.RelationshipUpdate = {};
+            if (this.step.settings.RelationshipUpdate.Relationship == null)
+                this.step.settings.RelationshipUpdate.Relationship = {};
+
+            this.filterFormFields();
+
+            if (this.step.settings.RelationshipUpdate.Relationship['@FormFieldId'] != null && this.step.settings.RelationshipUpdate.Relationship['@FormStepId'] != null) {
+                this.formRelationship = this.step.settings.RelationshipUpdate.Relationship['@FormFieldId'] + '|' + this.step.settings.RelationshipUpdate.Relationship['@FormStepId'];
+            }
+
+            if (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] != null) {
+                this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] = (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'].toString().toLowerCase() == 'true')
+            }
+            if (this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] != null) {
+                this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] = (this.step.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == 'true')
+            }
+
         }
 
         if (this.ed != null && this.ed.quill != null)
@@ -144,19 +165,23 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     filterFormFields() {
         this.formFields = [];
+        this.formRelationshipFields = [];
         if (this.diagram == null) return;
 
         let fields = this.workflowFieldsService.getFields();
 
         let upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
-        //console.log('upstreamSteps',upstreamSteps);
+        //console.log('upstreamSteps',upstreamSteps, fields);
         fields.forEach(f => {
             let k = upstreamSteps.filter(u => u == f['@stepId']);
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
                 f['@FormLabel'] = 'Form :: ' + f['@label'];
                 this.formFields.push(f);
+                if (f['@type'] == 'relationshipType') {
+                    this.formRelationshipFields.push(f);
+                }
             }
         });
     }
@@ -182,5 +207,30 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         if (rt)
             this.step.settings.ResponsiblityTypeName = rt.Name;
         this.stepChange.emit(this.step)
+    }
+
+    changeRelationship(e: any) {
+        this.formRelationship = e;
+        if (e == null || e.indexOf('|') < 0) {
+            this.step.settings.RelationshipUpdate.Relationship['@FormFieldId'] = null;
+            this.step.settings.RelationshipUpdate.Relationship['@FormStepId'] = null;
+        } else {
+            let vals = this.formRelationship.split('|');
+            this.step.settings.RelationshipUpdate.Relationship['@FormFieldId'] = vals[0];
+            this.step.settings.RelationshipUpdate.Relationship['@FormStepId'] = vals[1];
+        }
+
+        this.stepChange.emit(this.step);
+    }
+
+    changeValueType(e: any, field: string) {
+        this.step.settings.RelationshipUpdate.Relationship[field] = e;
+        if (field == '@AppendValue' && e == true) {
+            this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] = false;
+        } else if (field == '@ClearValue' && e == true) {
+            this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] = false;
+        }
+        //console.log('changeValueType', e, field, this.step);
+        this.stepChange.emit(this.step);
     }
 }

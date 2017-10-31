@@ -1102,7 +1102,18 @@ order by wi.StartedOn desc";
                                         key = keyMapping[key];
 
                                     var node = Company.GetById<WorkflowVersionStep>(key);
-                                    node.Settings = MapWorkflowSettings(node.Settings, keyMapping);
+                                    node.Settings = MapWorkflowFieldSettings(node.Settings, keyMapping);
+
+                                }
+                                if (n.ActivityType == WorkflowActivityType.RelationshipChange)
+                                {
+                                    int key;
+                                    if (!int.TryParse(n.Key, out key)) return;
+                                    if (keyMapping.ContainsKey(key))
+                                        key = keyMapping[key];
+
+                                    var node = Company.GetById<WorkflowVersionStep>(key);
+                                    node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
 
                                 }
                             });
@@ -1249,8 +1260,20 @@ order by wi.StartedOn desc";
                                         key = keyMapping[key];
 
                                     var node = Company.GetById<WorkflowVersionStep>(key);
-                                    node.Settings = MapWorkflowSettings(node.Settings, keyMapping);
+                                    node.Settings = MapWorkflowFieldSettings(node.Settings, keyMapping);
                                     
+                                }
+                                if (n.ActivityType == WorkflowActivityType.RelationshipChange)
+                                {
+
+                                    int key;
+                                    if (!int.TryParse(n.Key, out key)) return;
+                                    if (keyMapping.ContainsKey(key))
+                                        key = keyMapping[key];
+
+                                    var node = Company.GetById<WorkflowVersionStep>(key);
+                                    node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
+
                                 }
                             });
                             Company.SaveChanges();
@@ -1695,7 +1718,7 @@ order by wi.StartedOn desc";
         /// <summary>
         /// Maps settings properties from an XML string referencing temporary id's to the actual id's created
         /// </summary>
-        private string MapWorkflowSettings(string settingsString, Dictionary<int, int> mappings)
+        private string MapWorkflowFieldSettings(string settingsString, Dictionary<int, int> mappings)
         {
             if (!string.IsNullOrEmpty(settingsString))
             {
@@ -1732,6 +1755,26 @@ order by wi.StartedOn desc";
             return settingsString;
         }
 
+        private string MapWorkflowRelationshipUpdateSettings(string settingsString, Dictionary<int, int> mappings)
+        {
+            if (!string.IsNullOrEmpty(settingsString))
+            {
+                dynamic settings = XmlToDynamic(settingsString);
+
+                if (settings.RelationshipUpdate != null && settings.RelationshipUpdate.Relationship != null)
+                {
+                    var relationship = settings.RelationshipUpdate.Relationship;
+
+                    if (relationship["@FormStepId"] != null)
+                        relationship["@FormStepId"] = mappings[(int)relationship["@FormStepId"]];
+
+                }
+
+                return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
+            }
+
+            return settingsString;
+        }
         #endregion
     }
 }

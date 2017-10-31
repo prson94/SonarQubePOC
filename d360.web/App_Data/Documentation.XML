@@ -1916,7 +1916,7 @@
             Maps condition properties from a JSON string referencing temporary id's to the actual id's created
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.Services.WorkflowController.MapWorkflowSettings(System.String,System.Collections.Generic.Dictionary{System.Int32,System.Int32})">
+        <member name="M:d360.web.Controllers.Services.WorkflowController.MapWorkflowFieldSettings(System.String,System.Collections.Generic.Dictionary{System.Int32,System.Int32})">
             <summary>
             Maps settings properties from an XML string referencing temporary id's to the actual id's created
             </summary>

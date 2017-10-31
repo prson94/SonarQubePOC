@@ -22,7 +22,7 @@
                     Recipient
                 </div>
                 <div>
-                    <input type="text" [ngModel]="step.settings.MessageToUser" (ngModelChange)="step.settings.MessageToUser = $event; stepChange.emit(step)" style="width: 95%"/>
+                    <input type="text" [ngModel]="step.settings.MessageToUser" (ngModelChange)="step.settings.MessageToUser = $event; stepChange.emit(step)" style="width: 95%" />
                 </div>
             </div>
             <div *ngIf="step.settings.MessageRecipientType == 'Responsibility'" class="col s12">
@@ -78,10 +78,9 @@
             </div>
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.Form">
-            <d3s-workflow-step-form-editor 
-                                           [objectType]="objectType" 
+            <d3s-workflow-step-form-editor [objectType]="objectType"
                                            [objectId]="objectId"
-                                           [step]="step" 
+                                           [step]="step"
                                            (stepChange)="step = $event; stepChange.emit(step)">
             </d3s-workflow-step-form-editor>
         </div>
@@ -96,16 +95,33 @@
             </div>
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.FieldChange">
-            <d3s-workflow-step-field-change 
-                                            [formFields]="formFields"
-                                            [objectId]="objectId" 
-                                            [objectType]="objectType" 
-                                            [fieldUpdate]="step.settings.FieldUpdate" 
+            <d3s-workflow-step-field-change [formFields]="formFields"
+                                            [objectId]="objectId"
+                                            [objectType]="objectType"
+                                            [fieldUpdate]="step.settings.FieldUpdate"
                                             (fieldUpdateChange)="step.settings.FieldUpdate = $event; stepChange.emit(step)">
             </d3s-workflow-step-field-change>
         </div>
-        <ng-container  *ngSwitchCase="WorkflowActivityType.None">
-                <!-- for terminal steps -->
+        <div class="row" *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
+            <div class="col s12">
+                <div class="FieldName">Relationship Form Field</div>
+                <div>
+                    <select [ngModel]="formRelationship" (ngModelChange)="changeRelationship($event)" style="width:95%">
+                        <option *ngFor="let f of formRelationshipFields" [value]="f['@FormFieldId']">
+                            Form :: {{f['@label']}}
+                        </option>
+                    </select>
+                </div>
+                <div style="padding-top: 10px">
+                    <input type="checkbox" [ngModel]="step.settings.RelationshipUpdate.Relationship['@AppendValue']" (ngModelChange)="changeValueType($event, '@AppendValue');" /> Append relationships?
+                </div>
+                <div style="padding-top: 10px">
+                    <input type="checkbox" [ngModel]="step.settings.RelationshipUpdate.Relationship['@ClearValue']" (ngModelChange)="changeValueType($event, '@ClearValue');" /> Clear relationships?
+                </div>
+            </div>
+        </div>
+        <ng-container *ngSwitchCase="WorkflowActivityType.None">
+            <!-- for terminal steps -->
         </ng-container>
     </div>
     <div *ngIf="step.hasMultipleInputs" class="col s12" style="padding-top: 8px">
