@@ -13420,7 +13420,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                             sql = $@"select C.Object, C.ObjectID, O.LastName + ', ' + O.FirstName as Name from reporting.[Global_Resource] O inner join {sql} order by O.LastName + ', ' + O.FirstName";
                             break;
                         case "RuleType":
-                            sql = $@"select C.Object, C.ObjectID, O.DisplayValue from [Rule] O inner join {sql} order by O.Name";
+                            sql = $@"select C.Object, C.ObjectID, O.DisplayValue AS Name from [Rule] O inner join {sql} order by O.DisplayValue";
                             break;
                         case "TaxonomyType":
                             sql = $@"select C.Object, C.ObjectID, O.TextPath as Name from Taxonomy O inner join {sql} order by O.TextPath";
