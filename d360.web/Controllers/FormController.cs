@@ -13388,11 +13388,12 @@ order by r.Name";
 select		D.[Object], 
 			D.ObjectID
 from		Asset D
+            inner join AssetType AST on D.AssetTypeID = AST.ID
 			left join [Intersect] I on	I.IntersectTypeID = @it and (
 											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
 											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
 										)
-where		I.ID is null
+where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType
 ) C on C.ObjectID = O.ID";
 
                     switch (targetType)
