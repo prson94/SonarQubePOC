@@ -78,7 +78,8 @@ BEGIN
 		businessTransformation nvarchar(max),
 		technicalTransformation nvarchar(max),
 		category varchar(50),
-		templateId int
+		templateId int,
+		itemKey varchar(150)
 	);
 
 	--links
@@ -111,6 +112,7 @@ BEGIN
 		,g.TechnicalTransformation as technicalTransformation
 		,'transform' as category 
 		,null as templateId
+		,null as itemKey
 	from 
 		MapGroup g
 	inner join MapGroupItem i on i.MapGroupID = g.ID
@@ -136,6 +138,7 @@ BEGIN
 		,null as technicalTransformation
 		,case when i.subject = 'Map' then 'map' else 'object' end as category
 		,e.ID as templateId
+		,null as itemKey
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join Asset a on a.[object] = i.subject and a.objectId = i.subjectid
@@ -168,6 +171,7 @@ BEGIN
 		,null as technicalTransformation
 		,case when i.[object] = 'Map' then 'map' else 'object' end as category
 		,e.ID as templateId
+		,null as itemKey
 	from [intersect] i
 	inner join @links l on l.intersectId = i.id
 	left join Asset a on a.[object] = i.[object] and a.objectId = i.objectId
@@ -189,7 +193,8 @@ BEGIN
 		set
 		n.[name] = coalesce(t.[name],''),
 		n.backColor = t.backColor,
-		n.foreColor = t.foreColor
+		n.foreColor = t.foreColor,
+		n.itemKey = t.object + '|' + cast(t.objectId as varchar)
 	from @nodes n
 	cross apply (
 		select top 1 
@@ -241,3 +246,4 @@ BEGIN
 			for json path, WITHOUT_ARRAY_WRAPPER;
 
 END
+

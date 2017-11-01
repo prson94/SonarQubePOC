@@ -245,9 +245,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.technicalTransformation = d.technicalTransformation;
                 model.order = d.order;
                 model.intersectTypeId = d.intersectTypeId;
-                model.templateId = d.templateId
+                model.templateId = d.templateId;
+                model.itemKey = d.itemKey;
 
-                model.isGroup = d.isGroup
+                model.isGroup = d.isGroup;
                 model.group = d.group;
 
                 //if (model.category == 'map')
@@ -266,6 +267,43 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 linkList.push(link);
             }
         }
+
+
+        //calculate levels and source/target keys
+        let roots = modelList.filter(m => linkList.findIndex(l => l.to == m.key) == -1 && m.category == 'map');
+        let traverse = (level: number, node: NodeModelV2) => {
+            let links = linkList.filter(l => l.from == node.key);
+            console.log('traverse', links);
+            links.forEach(l => {
+                let n = modelList.find(m => m.key == l.to);
+                if (n != null) {
+                    n.level = level + 1;
+                    n.graphKey = node.graphKey;
+                    traverse(level + 1, n);
+                }
+            });
+        };
+
+        roots.forEach(r => {
+            r.level = 0;
+            r.graphKey = r.key;
+            traverse(0, r);
+        });
+
+        //let flattenedModel = [];
+        //let items = modelList.filter(m => m.level == 0);
+
+        //items.forEach(i => {
+        //    let level = 1;
+        //    let next = modelList.filter(m => m.level == level && m.graphKey == i.graphKey);
+        //    //we have all the level 1 items for this graph
+        //    if (next.length > 0) {
+                
+        //    }
+        //});
+
+
+        console.log('parseData', modelList);
 
         for (var i = 0; i < modelList.length; i++) {
             this.myDiagram.model.addNodeData(modelList[i]);
@@ -1155,39 +1193,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 templateId: o.templateId
             });
         });
-
-        //paletteModel.push({
-        //    category: 'map',
-        //    name: map != null ? map.name : 'Map',
-        //    object: null,
-        //    objectId: null,
-        //    objectType: 'MapType',
-        //    objectTypeId: 1,
-        //    foreColor: '#000',
-        //    backColor: '#ddd',
-        //    isGroup: true,
-        //    diagramObjectType: DiagramObjectType.Node,
-        //    visible: true,
-        //    order: -1
-        //});
-
-        //this.objectTypes.filter(o => o.order > -1).forEach(o => {
-        //    paletteModel.push({
-        //        category: 'object',
-        //        name: o.name,
-        //        objectTypeName: o.objectTypeName,
-        //        objectType: o.object,
-        //        objectTypeId: o.objectId,
-        //        foreColor: o.foreColor,
-        //        backColor: o.backColor,
-        //        isGroup: false,
-        //        diagramObjectType: DiagramObjectType.Node,
-        //        visible: true,
-        //        order: o.order
-        //    });
-        //});
-
-
 
         let pt: go.Palette = this.g(go.Palette, "LineagePalette",
             {

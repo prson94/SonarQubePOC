@@ -77,6 +77,10 @@ export class NodeModelV2 {
     templateId: number;
     isRequired: boolean = null;
 
+    level: number = -1;
+    itemKey: string;
+    graphKey: string;
+
     valid: boolean = true;
     errors = [];
 }
