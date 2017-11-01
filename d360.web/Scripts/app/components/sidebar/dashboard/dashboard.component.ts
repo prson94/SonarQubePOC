@@ -20,8 +20,9 @@ import { Dashboard } from '../../../models/dashboard.model'
                                     <option></option>
                                     <option *ngFor="let dashboard of dashboards" [ngValue]="dashboard">{{dashboard.Name}}</option>
                                 </select>                                
-                                
-                                <button pButton type="button" (click)="selected=dashboard;" label="Render" style="width: '150px';padding:4px;"></button>
+                                <span style="padding:0 10px;">
+                                    <button pButton type="button" (click)="selected=dashboard;" label="Render" style="width: '150px';padding:4px;"></button>
+                                </span>
                             </div>  
                             <div *ngIf="dashboard?.Description" class="col s12" [innerHtml]="dashboard?.Description"></div>                          
                         </div>                        
