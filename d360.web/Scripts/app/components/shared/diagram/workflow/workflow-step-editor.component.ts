@@ -230,7 +230,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         } else if (field == '@ClearValue' && e == true) {
             this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] = false;
         }
-        //console.log('changeValueType', e, field, this.step);
         this.stepChange.emit(this.step);
     }
 }

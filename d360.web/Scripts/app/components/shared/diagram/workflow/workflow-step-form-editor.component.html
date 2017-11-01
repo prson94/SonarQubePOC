@@ -55,11 +55,17 @@
             <div class="FieldName">
                 Responsibility
             </div>
-            <div>
-                <select [ngModel]="step.settings.ResponsibilityTypeID" (ngModelChange)="step.settings.ResponsibilityTypeID = $event; stepChange.emit(step)" style="width: 95%">
+            <div *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index">
+                <select [ngModel]="step.settings.ResponsibilityTypeID[i]" (ngModelChange)="step.settings.ResponsibilityTypeID[i] = $event; stepChange.emit(step)" [style.width]="step.settings.ResponsibilityTypeID.length > 1 ? '90%' : '95%'">
                     <option></option>
                     <option *ngFor="let r of responsibilities" [value]="r.ID">{{r.Name}}</option>
                 </select>
+                <div *ngIf="step.settings.ResponsibilityTypeID != null && step.settings.ResponsibilityTypeID.length > 1" style="display: inline-block; font-size: 1.5em; padding: 0 0 10px 10px;">
+                    <a style="cursor: pointer;" (click)="removeResponsibility(i)"><i class="fa fa-trash"></i></a>
+                </div>
+            </div>
+            <div>
+               <a style="cursor: pointer;" (click)="addResponsibility()"><i class="fa fa-plus"></i> Add a backup responsibility</a> 
             </div>
         </div>
     </div>

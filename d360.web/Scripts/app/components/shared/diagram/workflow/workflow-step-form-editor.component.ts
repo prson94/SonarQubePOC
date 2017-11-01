@@ -160,13 +160,22 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         if (this.step.fields.form['@allowReassignResource'] != null)
             this.allowReassignResource = this.step.fields.form['@allowReassignResource'].toString().toLowerCase() === 'true' ? true : false;
 
-
+        //convert single value to array
+        if (this.step.settings.ResponsibilityTypeID != null && !_.isArray(this.step.settings.ResponsibilityTypeID)) {
+            let id = this.step.settings.ResponsibilityTypeID;
+            delete this.step.settings.ResponsibilityTypeID;
+            this.step.settings.ResponsibilityTypeID = [];
+            this.step.settings.ResponsibilityTypeID.push(id);
+        } else if (this.step.settings.ResponsibilityTypeID == null) {
+            this.step.settings.ResponsibilityTypeID = [];
+            this.step.settings.ResponsibilityTypeID.push(null);
+        }
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
 
 
-        //console.log('initFields', this.step.fields.form);
+        //console.log('initFields', this.step.settings);
     }
 
     add() {
@@ -270,6 +279,16 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                     this.lookups = r;
                 });
         }
+    }
+
+    addResponsibility() {
+        this.step.settings.ResponsibilityTypeID.push(null);
+        this.stepChange.emit(this.step);
+    }
+
+    removeResponsibility(i: number) {
+        this.step.settings.ResponsibilityTypeID.splice(i, 1);
+        this.stepChange.emit(this.step);
     }
 
     validateField() {

@@ -872,8 +872,18 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             return false;
                         break;
                     case 'Responsibility':
-                        if (n.settings.ResponsibilityTypeID == null || n.settings.ResponsibilityTypeID < 0)
+                        if (n.settings.ResponsibilityTypeID == null)
                             return false;
+                        if (!_.isArray(n.settings.ResponsibilityTypeID) && n.settings.ResponsibilityTypeID < 0) //we still need to check single value here for legacy workflows
+                            return false;
+                        if (_.isArray(n.settings.ResponsibilityTypeID)) {
+                            if (n.settings.ResponsibilityTypeID.length < 1)
+                                return false;
+
+                            let x = n.settings.ResponsibilityTypeID.findIndex(r => r == null || r < 0);
+                            if (x > -1)
+                                return false;
+                        }
                         break;
                 }
 
