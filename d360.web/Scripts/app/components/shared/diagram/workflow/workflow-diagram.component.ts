@@ -789,6 +789,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 });
             }
 
+            //clean up empty settings
+            if (settings.hasOwnProperty('settings') == true && settings.settings == null) {
+                settings = {};
+            }
+
 
             n.Key = m.key;
             n.ActivityType = m.activityType;

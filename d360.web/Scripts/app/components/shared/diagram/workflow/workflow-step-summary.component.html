@@ -128,15 +128,12 @@
                 </div>
                 <div class="col s6" *ngIf="step.settings['MessageRecipientType'] == 'Responsibility'">
                     <div class="FieldName">
-                        Responsibility
+                        {{(step.settings.ResponsibilityTypeID == null || step.settings.ResponsibilityTypeID.length < 2) ? 'Responsibility' : 'Responsibilities' }}
                     </div>
-                    <div>
-                        <ng-container *ngIf="step.settings['ResponsibilityTypeName'] != null; else block">
-                            {{step?.settings['ResponsibilityTypeName']}}
+                    <div *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index">
+                        <ng-container *ngIf="step.settings.ResponsibilityTypeID[i] != null">
+                            {{getResponsibilityName(i)}}
                         </ng-container>
-                        <ng-template #block>
-                            &nbsp;
-                        </ng-template>
                     </div>
                 </div>
                 <div class="col s6" *ngIf="step?.fields?.form != null && step?.fields?.form['@allowReassignResource'] != null">
@@ -183,7 +180,9 @@
                         </p-dataTable>
                     </ng-container>
                     <ng-template #none>
-                        No form inputs defined
+                        <div>
+                            No form inputs defined
+                        </div>
                     </ng-template>
                 </div>
             </div>
@@ -210,6 +209,10 @@
             <!--STORED PROCEDURE-->
             <div *ngSwitchCase="WorkflowActivityType.Procedure" class="row">
 
+            </div>
+            <!--RELATIONSHIP UPDATE-->
+            <div *ngSwitchCase="WorkflowActivityType.RelationshipUpdate" class="row">
+ 
             </div>
         </ng-container>
     </ng-container>
