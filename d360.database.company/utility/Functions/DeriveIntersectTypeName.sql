@@ -11,7 +11,7 @@ BEGIN
 
 	SET @result =	(
 					SELECT	COALESCE(SA.Name, SD.Name, SF.TextPath, SM.Name, SP.Name, SR.Name, ST.Name, SI.Name, SQF.Name, '') + 
-							' ' + coalesce(P.Name,'/') + ' ' + 
+							' [' + coalesce(P.Name,'/') + '] ' + 
 							COALESCE(OA.Name, OD.Name, [OF].TextPath, OM.Name, OP.Name, [OR].Name, OT.Name, OQF.Name, '')
 					FROM	[IntersectType] I
 							left join ArtifactType SA on I.Subject = 'ArtifactType' and SA.ID = I.SubjectID
@@ -41,8 +41,7 @@ BEGIN
 							left join [TaxonomyType] OT on I.Object = 'TaxonomyType' and OT.ID = I.ObjectID
 
 							left join [Predicate] P on P.ID = I.PredicateID
-					WHERE	I.ID = @id
-					FOR XML PATH('')
+					WHERE	I.ID = @id					
 					)
 
 	RETURN @result
