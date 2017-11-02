@@ -6,8 +6,13 @@
             <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
             <p-dataTable #dt [globalFilter]="gb" [value]="loads" selectionMode="single" [(selection)]="selectedRow" [rows]="25" [paginator]="true" [rowsPerPageOptions]="defaultPagingOptions">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="Action" header="Action" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
-                <p-column field="ObjectName" header="Target" sortable="true" [style]="{ 'width': '40%' }" [filter]="!showSimpleFilter"></p-column>
+                <p-column field="Action" header="Action" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>                
+                <p-column field="ObjectName" header="Target" sortable="true" [style]="{ 'width': '40%' }" [filter]="!showSimpleFilter">
+                    <ng-template let-item="rowData" pTemplate type="body">
+                        <d3s-tooltip *ngIf="item.ObjectID > 0" [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="Preview">{{item.ObjectName}}</d3s-tooltip>                        
+                        <span *ngIf="item.ObjectID <= 0">{{item.ObjectName}}</span>
+                    </ng-template>
+                </p-column>
                 <p-column field="DateCompleted" header="Date Completed" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter">
                     <ng-template let-item="rowData" pTemplate type="body">
                         {{item.DateCompleted | date:'short'}}
