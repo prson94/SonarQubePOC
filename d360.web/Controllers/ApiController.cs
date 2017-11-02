@@ -3402,7 +3402,8 @@ end",
                     }
                 });
 
-                results = Company.Query<dynamic>(sqlQuery).Distinct();
+
+                results = Company.Query<dynamic>(sqlQuery);
             }
             catch (Exception ex)
             {
