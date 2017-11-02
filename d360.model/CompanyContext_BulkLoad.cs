@@ -33,7 +33,7 @@ namespace d360.model
         string LoadDetailBaseSql = @"select	L.ID,
 		L.[Object],
 		L.ObjectID,
-		coalesce(D.TextPath, 'Default') as ObjectName,
+		coalesce(A_T.Name, I_T.Name, 'Default') as ObjectName,
 		L.Notes,
 		'MyFile.' + L.Extension as FilePath,
 		L.DateStarted,
@@ -57,13 +57,13 @@ namespace d360.model
 		T.C as Total,
         R.FirstName + ' ' + R.LastName as Requestor
 from	[Load] L
-		left join cache.ObjectDetails D on D.[Object] = L.[Object] and D.ObjectID = L.ObjectID
+		left join AssetType A_T on A_T.[Object] = L.[Object] and A_T.ObjectID = L.ObjectID 
+		left join IntersectType I_T on L.[Object] = 'IntersectType' and I_T.ID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T 
-";
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T ";
 
         public IEnumerable<LoadDetail> GetLoadDetails()
         {
@@ -72,7 +72,7 @@ from	[Load] L
 
         public LoadDetail GetLoadDetail(int id)
         {
-            return Query<LoadDetail>(LoadDetailBaseSql + " where ID = " + id).SingleOrDefault();
+            return Query<LoadDetail>(LoadDetailBaseSql + " where L.ID = " + id).SingleOrDefault();
         }
 
         public IEnumerable<dynamic> GetLoadColumnDetails(int id)
