@@ -71,7 +71,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.initField(this.selectedField);
         this.hasFormResponses = this.formFields != null && this.formFields.length > 0;
 
-        this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType)
+        this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
             .then(r => {
                 this.fields = r;
                 //console.log(this.fields);
@@ -114,7 +114,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     selectField(i: number) {
         this.selectedFieldIndex = i;
         this.selectedField = this.fieldUpdate.Field[i];
-        console.log(this.selectedField);
+        //console.log(this.selectedField);
     }
 
     select(e: any, clear: boolean = true) {
@@ -376,6 +376,27 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             this.valueType = 'timestamp';
         else
             this.valueType = 'manual';
+    }
+
+    isHtml(i: any): boolean {
+        //console.log('isHtml', i, this.fields);
+        if (i == null) return false;
+        let f = this.usedFields.find(f => f.ID == +i['@FieldId']);
+        if (f == null) return false;
+        return f.Type == 'Html';
+    }
+
+    getValue(i: any): string {
+        let val = "";
+        if (i != null) {
+            val = i['@Value'];
+        }
+
+        if (val.length > 50) {
+            val = val.substr(0, 47) + '...';
+        }
+
+        return val;
     }
 }
 

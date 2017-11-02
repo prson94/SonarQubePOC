@@ -900,10 +900,12 @@ order by wi.StartedOn desc";
         }
 
         [Route("fieldtypes/{type}/{id:int}"), HttpGet]
-        public HttpResponseMessage GetFieldTypes(int id, string type)
+        public HttpResponseMessage GetFieldTypes(int id, string type, bool allowHtml = false)
         {
             var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
-            string[] excludedTypes = { "ComplexRelationLookup", "Password", "Html", "Link", "FilteredLookup", "FusionLookup", "OwnershipLookup", "RefListRelationship", "Relationship" };
+            List<string> excludedTypes = new List<string>() { "ComplexRelationLookup", "Password", "Link", "FilteredLookup", "FusionLookup", "OwnershipLookup", "RefListRelationship", "Relationship" };
+            if (!allowHtml)
+                excludedTypes.Add("Html");
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
 

@@ -316,7 +316,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             }
 
-            return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object)
+            return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true)
                 .then(r => this.fieldTypes = r)
                 .then(() => this.parseData(this.model))
                 .then(() => this.isLoading = false);
@@ -336,7 +336,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (this.model.Nodes != null)
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
             })
-            .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object))
+            .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true))
             .then(r => this.fieldTypes = r)
             .then(() => this.parseData(this.model))
             .then(() => { this.isLoading = false; this.hasType = true; });

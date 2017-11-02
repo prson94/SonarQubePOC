@@ -13,9 +13,15 @@
                             <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
                             <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
                             <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true'">[use value from form input {{item['@Formlabel']}}]</span>
-                            <span *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
-                                {{item['@Value']}}
-                            </span>
+                            <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
+                                <ng-container *ngIf="isHtml(item); else str" >
+                                    <div [innerHtml]="getValue(item)" style="max-height: 42px; overflow: hidden; text-overflow: ellipsis">
+                                    </div>
+                                </ng-container>
+                                <ng-template #str>
+                                    {{getValue(item)}}  
+                                </ng-template>
+                            </div>
                         </div>
                     </ng-template>
                 </p-column>
@@ -48,8 +54,11 @@
                 <div class="FieldName">Value</div>
                 <div>
                     <input type="radio" name="valueType" [checked]="valueType == 'manual' || valueType == null" (change)="changeValueType('manual')" /> Enter a value <br />
-
                     <div *ngIf="valueType == 'manual'" style="padding-bottom:10px;">
+                        <div *ngIf="field.Type == 'Html'">
+                            <p-editor [(ngModel)]="selectedField['@Value']" #ed>
+                            </p-editor>
+                        </div>
                         <div *ngIf="field.Type == 'Text'">
                             <input type="text" style="width: 95%" [(ngModel)]="selectedField['@Value']" />
                         </div>

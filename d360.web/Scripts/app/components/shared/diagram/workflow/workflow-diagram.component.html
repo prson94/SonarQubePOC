@@ -91,7 +91,7 @@
                 
                 <div *ngSwitchCase="'info'">
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node" style="padding: 10px">
-                        <d3s-workflow-step-summary [step]="selectedData"></d3s-workflow-step-summary>
+                        <d3s-workflow-step-summary [step]="selectedData" [objectId]="model.Event.ObjectID" [object]="model.Event.Object"></d3s-workflow-step-summary>
                     </div>
                     <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link" style="padding: 10px">
                         <d3s-workflow-transition-summary [link]="selectedData"></d3s-workflow-transition-summary>

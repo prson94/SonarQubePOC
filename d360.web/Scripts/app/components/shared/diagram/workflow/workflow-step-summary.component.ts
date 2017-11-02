@@ -9,6 +9,7 @@ import {
 } from '../../../../models/workflow.model';
 
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
+import { WorkflowService } from '../../../../services/workflow.service';
 
 import * as _ from 'lodash';
 
@@ -16,19 +17,22 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-workflow-step-summary',
     templateUrl: './workflow-step-summary.component.html',
-    providers: [ ResponsibilityTypeService ],
+    providers: [ResponsibilityTypeService, WorkflowService ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class WorkflowStepSummaryComponent extends BaseComponent implements OnChanges, OnInit {
+    @Input() object: string;
+    @Input() objectId: number;
     @Input() step: NodeModel;
 
     WorkflowActivityType = WorkflowActivityType;
     StepType = StepType;
 
     private responsibilities = [];
+    private fields = [];
 
-    constructor(private responsibilityService: ResponsibilityTypeService, private ref: ChangeDetectorRef) {
+    constructor(private responsibilityService: ResponsibilityTypeService, private ref: ChangeDetectorRef, private workflowService: WorkflowService) {
         super();
     }
 
@@ -36,6 +40,8 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         this.isLoading = true;
         this.responsibilityService.getResponsibilityTypes()
             .then(r => this.responsibilities = r)
+            .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true))
+            .then(r => this.fields = r)
             .then(() => this.load());
     }
     ngOnChanges() {
@@ -43,7 +49,8 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     }
 
     load() {
-        this.isLoading = true;
+        this.isLoading = false;
+
         if (this.step != null && this.step.settings != null) {
             if (this.step.activityType == WorkflowActivityType.EmailNotification || this.step.activityType == WorkflowActivityType.Form) {
                 if (this.step.settings['MessageRecipientType'] == 'Responsibility') {
@@ -73,4 +80,27 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
             return r.Name;
         return "";
     }
+
+    isHtml(i: any): boolean {
+        //console.log('isHtml', i, this.fields);
+        if (i == null) return false;
+        let f = this.fields.find(f => f.ID == +i['@FieldId']);
+        if (f == null) return false;
+        return f.Type == 'Html';
+    }
+
+
+    getValue(i: any): string {
+        let val = "";
+        if (i != null) {
+            val = i['@Value'];
+        }
+
+        if (val.length > 50) {
+            val = val.substr(0, 47) + '...';
+        }
+
+        return val;
+    }
+
 }

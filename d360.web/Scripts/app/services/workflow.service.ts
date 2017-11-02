@@ -209,10 +209,10 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getWorkflowFieldTypes(id: number, type: string): Promise<FieldType[]> {
+    getWorkflowFieldTypes(id: number, type: string, allowHtml: boolean = false): Promise<FieldType[]> {
         if (id == null || type == null)
             return Promise.resolve([]);
-        return this.http.get(`services/workflow/fieldtypes/${type}/${id}`)
+        return this.http.get(`services/workflow/fieldtypes/${type}/${id}?allowHtml=${allowHtml}`)
             .toPromise()
             .then(response => <FieldType[]>response.json())
             .catch(err => this.handleError(err));
