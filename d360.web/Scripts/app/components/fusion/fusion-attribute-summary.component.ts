@@ -31,7 +31,7 @@ import { StateService } from '../../services/state.service';
                            <p-column [style]="{width:'30px'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools" *ngIf="item.IsEditable">
-                                            <a style="cursor:pointer;" (click)="fusionAttribute=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                            <a style="cursor:pointer;" (click)="fusionAttribute=item;showEditor=true;fusionAttributeChange.emit(fusionAttribute);"><i class="fa fa-pencil"></i></a>
                                         </div>
                                     </ng-template>
                             </p-column>
