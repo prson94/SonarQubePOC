@@ -10,6 +10,7 @@
     "DBReadQueryTimeout": "1800",
     "DBBulkCopyTimeout": "1800",
     "MergeChunkSize": "5000",
-    "Environment": "NIGHTLY"
+    "Environment": "NIGHTLY",
+    "CommunityContext": "Server=tcp:bzbdz2ikmp.database.windows.net;Database=D3S;User ID=d3s_user;Password=d3fGt$$@eEwq00y;Trusted_Connection=False;"
   }
 }

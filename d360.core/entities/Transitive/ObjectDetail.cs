@@ -5,6 +5,7 @@ namespace d360.core.entities
     public class ObjectDetail
     {
         public int ID { get; set; }
+        public long? AssetID { get; set; }
         public string Name { get; set; }
         public string TextPath { get; set; }
         public string Description { get; set; }

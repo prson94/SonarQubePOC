@@ -8,9 +8,6 @@
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="functions\RunIntegrationAgent.cs" />
-  </ItemGroup>
   <ItemGroup>    
     <PackageReference Include="Dapper" Version="1.50.2" />    
     <PackageReference Include="EnterpriseLibrary.TransientFaultHandling" Version="6.0.1304" />    

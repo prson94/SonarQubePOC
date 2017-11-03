@@ -1,5 +1,5 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { ResponsibilityItem, IResponsibilityService } from '../../../models/responsibility.model';
+import { ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService } from '../../../models/responsibility.model';
 import { FormMessage } from '../../../models/form.model';
 import { ResponsibilityService } from '../../../services/responsibility.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -13,15 +13,13 @@ import { Router, ActivatedRoute }       from '@angular/router';
 })
 
 export class PeopleResponsibilitiesTile extends BaseComponent implements OnChanges {
-    @Input() objectType: string;
-    @Input() objectID: number;
+    @Input() assetID: number;
     @Input() title: string = "Responsibilities";
-    @Input() showHidden: boolean = false;
 
-    responsibilities = new Array<ResponsibilityItem>();
-    selectedRow = new ResponsibilityItem();
-    addingRow = new ResponsibilityItem();
-    
+    responsibilities = new Array<ResponsibilityItemDetail>();
+    selectedRow = new ResponsibilityItemDetail();
+    addingRow = new ResponsibilityItemDetail();
+
     private isEditing = false;
     private isDeleting = false;
     private isAdding = false;
@@ -32,12 +30,12 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'objectType') {
-                this.objectType = changes['objectType'].currentValue;
+            if (p == 'assetID') {
+                this.assetID = changes['assetID'].currentValue;
             }
-            if (p == 'objectID') {
-                this.objectID = changes['objectID'].currentValue;
-            }
+            //if (p == 'objectID') {
+            //    this.objectID = changes['objectID'].currentValue;
+            //}
         }
 
         this.load();
@@ -45,21 +43,21 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
     load(): void {
 
-        if (this.objectType == null || this.objectID == null)
+        if (this.assetID == null)
             return;
 
         this.isLoading = true;
-        this.responsibilityService.getResponsibilityDetail(this.objectID, this.objectType, this.showHidden)
+        this.responsibilityService.getResponsibilityDetail(this.assetID)
             .then(data => {                
-                data.forEach(d => {
-                    d.ObjectUrl = SiteUrlHelpers.getObjectUrl(d.ObjectType, d.ObjectID, d.ObjectTypeID);
-                    d.ResponsibleObjectUrl = SiteUrlHelpers.getObjectUrl(d.ResponsibleObjectType, d.ResponsibleObjectID);
-                    d.PrimaryOwnerResourceUrl = SiteUrlHelpers.getObjectUrl('Resource', d.PrimaryOwnerResourceID);
-                });
+                //data.forEach(d => {
+                //    d. = SiteUrlHelpers.getObjectUrl(d.ObjectType, d.ObjectID, d.ObjectTypeID);
+                //    d.ResponsibleObjectUrl = SiteUrlHelpers.getObjectUrl(d.ResponsibleObjectType, d.ResponsibleObjectID);
+                //    d.PrimaryOwnerResourceUrl = SiteUrlHelpers.getObjectUrl('Resource', d.PrimaryOwnerResourceID);
+                //});
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
-                //console.log(this.responsibilities);
+                console.log(this.responsibilities);
             });
     }
 
@@ -72,9 +70,8 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     add(): void {
-        this.addingRow = new ResponsibilityItem();
-        this.addingRow.ObjectID = this.objectID;
-        this.addingRow.ObjectType = this.objectType;
+        this.addingRow = new ResponsibilityItemDetail();
+        this.addingRow.AssetID = this.assetID;
         this.isAdding = true;
     }
 

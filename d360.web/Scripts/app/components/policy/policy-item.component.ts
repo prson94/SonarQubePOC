@@ -100,9 +100,10 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                 this.load(hierarchyId).then(() => this.isLoading = false);
             } else {
                 this.headerBreadcrumbService.popLastBreadcrumb();
-                this.selectPolicyHierarchy(hierarchyId);
-                this.clearSidebar();
-                this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
+                this.selectPolicyHierarchy(hierarchyId).then(p => {
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
+                });
             }
         });
 
@@ -126,12 +127,11 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.PolicyTypeClass, SiteUrlHelpers.getObjectUrl('POLICYTYPECLASS', this.policyType.PolicyTypeClassID)));
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`));
 
-                this.loadPolicyItems(this.policyTypeId, hierarchyId);
-
-                this.setBrowserTitle(this.titleService, this.policyType.Name);
-
-                this.clearSidebar();
-                this.setCommonRightSideBar(true, true, false, true, true, true, true);
+                this.loadPolicyItems(this.policyTypeId, hierarchyId).then(n => {
+                    this.setBrowserTitle(this.titleService, this.policyType.Name);
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(true, true, false, true, true, true, true);
+                });
             });
     }
 
@@ -149,7 +149,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     private editComplete(e: any) {
         this.load(e.ID);
     }
-
 
     private buildTreeNodeArray(policies: Policy[], Parent?: number): TreeNode[] {
         //find the root items then 
@@ -174,7 +173,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         return res;
     }
 
-    private selectPolicyHierarchy(selectedHierarchyId: number) {
+    private selectPolicyHierarchy(selectedHierarchyId: number): Promise<any> {
         if (selectedHierarchyId > 0) {
             let selArray = this.policies.filter(x => x.ID == selectedHierarchyId);
             if (selArray.length > 0) this.selected = selArray[0];
@@ -188,9 +187,13 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             this.selected = (this.policies.length && this.policies.length > 0) ? this.policies[0] : null;
         }
 
+        this.assetID = this.selected.AssetID;
+
         this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID);
 
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.DisplayValue, undefined, true, 'Policy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
+
+        return Promise.resolve(null);
     }
 
     private findSelectedTreeNode(id: number): TreeNode {

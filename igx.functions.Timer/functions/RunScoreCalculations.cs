@@ -31,7 +31,7 @@ namespace igx.functions.Timer
                     try
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        company.Execute("utility.CalculateScores", commandTimeout: 1400);
+                        company.Execute("metrics.LoadFromStaging", commandTimeout: 1400); //utility.CalculateScores
                     }
                     catch (Exception ex)
                     {

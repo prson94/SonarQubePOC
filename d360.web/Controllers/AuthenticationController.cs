@@ -31,6 +31,8 @@ namespace d360.web.Controllers
     [RoutePrefix("")]
     public class AuthenticationController : BaseController
     {
+        const string APP_ID = "https://data3sixty.com/ui";
+
         #region DI
 
         TelemetryClient Telemetry;
@@ -53,7 +55,7 @@ namespace d360.web.Controllers
                 AssertionConsumerServiceURL = string.Format("{0}://{1}/sso/acs", Request.Url.Scheme, Request.Url.Authority),
                 Destination = Community.CurrentCompanySsoModel.IdpSsoEndpoint,// "https://login.windows.net/21a2b0d9-a4b4-449e-af0b-f22a7129b71f/saml2",
                 //IsPassive = true,
-                Issuer = new Issuer("https://data3sixty.com/ui"),
+                Issuer = new Issuer(APP_ID),
                 ForceAuthn = false,
                 NameIDPolicy = new NameIDPolicy(null, null, true)
             };
@@ -513,7 +515,13 @@ namespace d360.web.Controllers
                     sloEndpoint = sloEndpoint.Trim();
                     if (!string.IsNullOrEmpty(sloEndpoint))
                     {
-                        var lr = new LogoutResponse { Status = new Status(SAMLIdentifiers.PrimaryStatusCodes.Success, null), Issuer = new Issuer("http://data3ixty.com/ui") };
+                        var resource = Community.GetById<Resource>(Community.CurrentResourceID);
+
+                        var lr = new LogoutRequest
+                        {
+                            NameID = new NameID(resource.Username, APP_ID, APP_ID, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", APP_ID),
+                            Issuer = new Issuer(APP_ID)
+                        };
                         var lrXml = lr.ToXml();
 
                         // Send the logout response over HTTP redirect.

@@ -17,6 +17,7 @@ export class BaseComponent {
     protected isLoading = false;
 
     //current object info
+    assetID: number;
     objectID: number;
     objectType: string;
     objectName: string;
@@ -112,7 +113,7 @@ export class BaseComponent {
                 this.rightSidebarService.showItem(this.auditSidebar);
             }
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
-                this.ownershipSidebar = new RightSidebarItem('Ownership', 'ownership', ['fa-user'], `/sidebar/ownership${this.objectContextUrl()}`)
+                this.ownershipSidebar = new RightSidebarItem('Ownership', 'ownership', ['fa-user'], `/sidebar/ownership/${this.assetID}`)//${this.objectContextUrl()}`)
                 this.rightSidebarService.showItem(this.ownershipSidebar);
             }
             if (hasDashboard) this.rightSidebarService.showItem(new RightSidebarItem('Dashboards', 'dashboards', ['fa-tachometer'], `/sidebar/dashboard${this.objectContextUrl()}`));
@@ -139,7 +140,8 @@ export class BaseComponent {
         }
     }
 
-    setObjectInfo(objectType: string, objectID: number, objectName?: string) {
+    setObjectInfo(objectType: string, objectID: number, objectName?: string, assetID?: number) {
+        this.assetID = assetID;
         this.objectType = objectType;
         this.objectID = objectID;
         if (objectName != undefined) this.objectName = objectName;

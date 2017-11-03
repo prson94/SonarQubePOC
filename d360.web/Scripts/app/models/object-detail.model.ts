@@ -2,6 +2,16 @@
     getObjectDetail(objectID: number, objectType: string): Promise<DetailModel>;
 }
 
+export class AssetDetail {
+    ID: number;
+    DisplayValue: string;
+    AssetTypeID: number;
+    TypeID: number;
+    Type: string;
+    AssetTypeName: string;
+    State: number;
+}
+
 export class DetailModel {
     columns: number;
     rows: DetailRow[];

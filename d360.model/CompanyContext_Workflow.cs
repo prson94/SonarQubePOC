@@ -1125,7 +1125,7 @@ namespace d360.model
 
             if (settings.FormShouldSendEmail)
             {
-                var obj = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
+                var obj = GetObjectDetail(objectInfo.Object.ToString(), objectInfo.ObjectID);
 
                 var itemName = (obj == null) ? "(unknown)" : obj.Name;
                 var emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
@@ -1358,7 +1358,7 @@ namespace d360.model
             if (result.Contains("[OBJECT_NAME]"))
             {
                 //get the objects name
-                var item = GetObjectDetail(objectInfo.Object, objectInfo.ObjectID);
+                var item = GetObjectDetail(objectInfo.Object.ToString(), objectInfo.ObjectID);
                 var itemLink = "(unknown item)";
 
                 if (item != null)                

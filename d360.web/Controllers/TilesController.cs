@@ -71,63 +71,47 @@ namespace d360.web.Controllers
         }
 
         [Route("ResponsibilityBreakdownByResource"), NonNullableParameters]
-        public async Task<JsonNetResult> ResponsibilityBreakdownByResource(int id)
-        {            
-            var query = await Company.QueryAsync<dynamic>(
-            @"            
-            select
-					O.ObjectType as [Type],
-					O.ObjectTypeName as TypeName,
-					O.ObjectTypeID as TypeID,
-					O.Count as [Count],
-					coalesce(S.IconBackColor, '#000') as IconBackColor,
-					coalesce(S.IconForeColor, '#fff') as IconForeColor,
-					coalesce(S.IconText, substring(O.ObjectTypeName, 1, 2)) as IconText
-				from(
-						select	r.ObjectType, 
-						        r.ObjectTypeName, 
-						        case r.ObjectType 
-							            when 'Policy' then 0 
-							            when 'Rule' then 0 
-							            else r.ObjectTypeID 
-						        end as ObjectTypeID,													            
-								count(1) as [Count]
-				            from ResponsibilityDetailForResource r							
-				            where ResponsibleObjectType = 'Resource' and ResponsibleObjectID = @r and Visible = 1 and ObjectTypeName is not null
-				            group by r.ObjectType, r.ObjectTypeName, ObjectTypeID) O
-				left join ObjectStyle S on  O.ObjectType + 'Type' = S.ObjectType and O.ObjectTypeID = S.ObjectID order by typename
-            ", new { r = id });
+        public async Task<JsonNetResult> ResponsibilityBreakdownByResource(int id, int? responsibilityTypeID)
+        {
+            var sql = $@"            
+select		RD.Type,
+			RD.TypeID,
+			{QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
+			count(1) as [Count]
+from		ResponsibilityDetails RD
+			inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @r";
+            if (responsibilityTypeID.HasValue)
+            {
+                sql += " where RD.ResponsibilityTypeID = @rt ";
+            }
+            sql += $@"
+group by    RD.Type, 
+            RD.TypeID, 
+            { QueryConstants.HighLevelTypeCaseStatement} + T.Name 
+order by    { QueryConstants.HighLevelTypeCaseStatement} + T.Name";
 
-                    return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+            var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID });
+
+            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [Route("ResponsibilityBreakdownByGroup"), NonNullableParameters]
         public async Task<JsonNetResult> ResponsibilityBreakdownByGroup(int id)
         {
-            var query = await Company.QueryAsync<dynamic>(
-            @"            
-            select
-					O.ObjectType as [Type],
-					O.ObjectTypeName as TypeName,
-					O.ObjectTypeID as TypeID,
-					O.Count as [Count],
-					coalesce(S.IconBackColor, '#000') as IconBackColor,
-					coalesce(S.IconForeColor, '#fff') as IconForeColor,
-					coalesce(S.IconText, substring(O.ObjectTypeName, 1, 2)) as IconText
-				from(
-						select	r.ObjectType, 
-						        r.ObjectTypeName, 
-						        case r.ObjectType 
-							            when 'Policy' then 0 
-							            when 'Rule' then 0 
-							            else r.ObjectTypeID 
-						        end as ObjectTypeID,													            
-								count(1) as [Count]
-				            from ResponsibilityDetail r							
-				            where ResponsibleObjectType = 'Group' and ResponsibleObjectID = @r and Visible = 1 and ObjectTypeName is not null
-				            group by r.ObjectType, r.ObjectTypeName, ObjectTypeID) O
-				left join ObjectStyle S on  O.ObjectType + 'Type' = S.ObjectType and O.ObjectTypeID = S.ObjectID order by typename
-            ", new { r = id });
+            var sql = $@"            
+select		RD.Type,
+			RD.TypeID,
+			{QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
+			count(1) as [Count]
+from		ResponsibilityDetails RD 
+			inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @id
+group by    RD.Type, 
+            RD.TypeID, 
+            { QueryConstants.HighLevelTypeCaseStatement} + T.Name 
+order by    { QueryConstants.HighLevelTypeCaseStatement} + T.Name";
+
+            var query = await Company.QueryAsync<dynamic>(sql, new { id });
+
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }

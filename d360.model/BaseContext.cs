@@ -183,6 +183,16 @@ namespace d360.model
             return getWithIncludes<T>(includes).Where(i => i.ID == id).SingleOrDefault();
         }
 
+        public T GetById<T>(long id) where T : BaseLongObject
+        {
+            return Set<T>().SingleOrDefault(i => i.ID == id) as T;
+        }
+
+        public T GetById<T>(long id, params Expression<Func<T, object>>[] includes) where T : BaseLongObject
+        {
+            return getWithIncludes<T>(includes).Where(i => i.ID == id).SingleOrDefault();
+        }
+
         internal IQueryable<T> getWithIncludes<T>(params Expression<Func<T, object>>[] includes) where T : BaseObject
         {
             //ObjectQuery<T> itemWithIncludes = Set<T>() as ObjectQuery<T>;

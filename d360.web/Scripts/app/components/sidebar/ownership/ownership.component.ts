@@ -10,7 +10,7 @@ import { FusionService } from '../../../services/fusion.service';
                 <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">   
-                            <d3s-people-responsibilities-tile [objectID]="objectID" [objectType]="objectType" [title]="'Ownership of ' + objectName"></d3s-people-responsibilities-tile>
+                            <d3s-people-responsibilities-tile [assetID]="assetID" [title]="'Ownership of ' + objectName"></d3s-people-responsibilities-tile>
                         </div>
                     </div>
                 </div>
@@ -32,19 +32,19 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];
-
-            if (this.objectType && this.objectType.toUpperCase() == 'FUSION') {
-                this.fusionService.getFusionConfiguration(this.objectID).then(res => {
-                    this.objectName = res.Name;
-                });
-            }
-            else {
-                this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
+            //this.objectID = +params['objectId']; // (+) converts string 'id' to a number
+            //this.objectType = params['objectType'];
+            this.assetID = +params['assetID'];
+            //if (this.objectType && this.objectType.toUpperCase() == 'FUSION') {
+            //    this.fusionService.getFusionConfiguration(this.objectID).then(res => {
+            //        this.objectName = res.Name;
+            //    });
+            //}
+            //else {
+                this.objectDetailService.getAsset(this.assetID).then(res => {
                     this.objectName = res.DisplayValue;
                 });
-            }
+            //}
         });
     }
 

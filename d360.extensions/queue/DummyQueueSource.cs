@@ -27,15 +27,6 @@ namespace d360.extensions.queue
             await Task.Run(() => { });
         }
 
-        public void CreateMessage(QueueType type, QueueObject item)
-        {
-        }
-
-        public void CreateMessages(QueueType type, List<QueueObject> items)
-        {
-
-        }
-
         public void CreateTopicMessage(EventInfo e)
         {
 

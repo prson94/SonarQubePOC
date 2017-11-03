@@ -259,35 +259,43 @@ namespace d360.web.Controllers.Services
             {
                 var type = Company.GetById<RuleType>(id);
 
-                #region Check that RuleType was found
-
+                // Check that RuleType was found
                 if (type == null)
                 {
                     throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
                 }
 
-                #endregion
-
-                if (!string.IsNullOrEmpty(model.SourceID))
+                // Check that the dimension was found.
+                var dimension = Company.Filter<RuleDimension>(i => i.Name.ToLower() == model.RuleDimension.Trim().ToLower()).FirstOrDefault();
+                if (dimension == null)
                 {
-                    if (Company.Any<RuleImplementation>(i => i.SourceID == model.SourceID))
-                    {
-                        throw new ConflictException("Rule already exists", $"A rule with the source ID of {model.SourceID} already exists.");
-                    }
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule dimension with name of ({model.RuleDimension}) not found.");
                 }
 
-                item = new Rule
-                {
-                    Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M,
-                    RuleTypeID = id,
-                    Status = item.Status,
-                    RuleDimensionID = model.RuleDimensionID
-                };
-
                 if (!string.IsNullOrEmpty(model.SourceID))
                 {
-                    item.RuleImplementations = new List<RuleImplementation>();
-                    item.RuleImplementations.Add(new RuleImplementation { SourceID = model.SourceID });
+                    item = Company.Filter<Rule>(i => i.SourceID.ToLower() == model.SourceID.Trim().ToLower()).FirstOrDefault();
+                }
+
+                var exists = false;
+
+                if (item != null)
+                {
+                    exists = true;
+
+                    item.SourceID = model.SourceID;
+                    item.Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M;
+                    item.RuleDimensionID = dimension.ID;
+                }
+                else
+                {
+                    item = new Rule
+                    {
+                        Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M,
+                        RuleTypeID = id,
+                        Status = item.Status,
+                        RuleDimensionID = dimension.ID
+                    };
                 }
 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, id).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
@@ -304,10 +312,13 @@ namespace d360.web.Controllers.Services
                     }
                 });
 
-                Company.SaveOrUpdate<Rule>(item, fields);
+                Company.SaveOrUpdate(item, fields);
 
 
-                return Request.CreateResponse<Rule>(HttpStatusCode.Created, item);
+                if (exists)
+                    return Request.CreateResponse(HttpStatusCode.OK, item);
+                else
+                    return Request.CreateResponse(HttpStatusCode.Created, item);
             }
             catch (BaseException ex)
             {
@@ -348,9 +359,17 @@ namespace d360.web.Controllers.Services
                     }
                 }
 
+                // Check that the dimension was found.
+                var dimension = Company.Filter<RuleDimension>(i => i.Name.ToLower() == model.RuleDimension.Trim().ToLower()).FirstOrDefault();
+                if (dimension == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule dimension with name of ({model.RuleDimension}) not found.");
+                }
+
+
                 item.Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M;
                 item.Status = item.Status;
-                item.RuleDimensionID = model.RuleDimensionID;
+                item.RuleDimensionID = dimension.ID;
 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
 
@@ -545,6 +564,8 @@ order by I.ID, QT.Name", new { id }).ToList();
                         {
                             var result = new RuleResult { EffectiveDate = model.EffectiveDate, RunDate = model.RunDate, RowsFailed = model.RowsFailed, RowsPassed = model.RowsPassed, RuleImplementationID = model.RuleImplementationID.Value };
 
+                            if (model.FusionAttributes == null)
+                                model.FusionAttributes = new List<string>();
                             model.FusionAttributes.ForEach(a =>
                             {
                                 if (result.RuleResultFusionAttributes == null)
@@ -553,6 +574,8 @@ order by I.ID, QT.Name", new { id }).ToList();
                                 result.RuleResultFusionAttributes.Add(new RuleResultFusionAttribute { FusionAttribute = a });
                             });
 
+                            if (model.Qualifiers == null)
+                                model.Qualifiers = new List<ResultQualifierModel>();
                             model.Qualifiers.ForEach(q =>
                             {
                                 var qt = implementationQualifiers.Single(i => i.ImplementationID == model.RuleImplementationID && i.Name == q.Name);

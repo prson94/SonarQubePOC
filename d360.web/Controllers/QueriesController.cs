@@ -75,15 +75,22 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
         [Route("ResponsibilityTypeBreakdown"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeBreakdown()
         {
-            var query = Company.Query<dynamic>(@"select O.ResponsibilityType, O.ResponsibilityTypeID, count(1) as [Count]
-from	(
-		select	distinct O.ResponsibilityType, O.ResponsibilityTypeID, COALESCE(RG.ResourceID, O.ResponsibleObjectID) as ResourceID
-		from	[cache].[ResponsibilityItem] O
-				left join ResourceGroup RG on O.ResponsibleObject = 'Group' and RG.GroupID = O.ResponsibleObjectID
-		where	O.ResponsibilityTypeGroup = 1
-                and COALESCE(RG.ResourceID, O.ResponsibleObjectID) in (select ResourceID from reporting.Global_Resource)
-		) O
-group by	O.ResponsibilityType, O.ResponsibilityTypeID");
+            var query = Company.Query<dynamic>(@"
+select		RD.ResponsibilityTypeID,
+			RD.ResponsibilityTypeName as ResponsibilityType,
+			count(1) as [Count]
+from		(
+			select		RD.ResponsibilityTypeID,
+						RD.ResponsibilityTypeName,
+						RD.ResourceID
+			from		ResponsibilityDetails RD
+						inner join reporting.Global_Resource R on R.ResourceID = RD.ResourceID
+			group by	RD.ResponsibilityTypeID,
+						RD.ResponsibilityTypeName,
+						RD.ResourceID
+			) RD
+group by	RD.ResponsibilityTypeID,
+			RD.ResponsibilityTypeName");
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -92,75 +99,48 @@ group by	O.ResponsibilityType, O.ResponsibilityTypeID");
         public JsonNetResult GetResourcesByResponsibilityType(int id)
         {
             var query = Company.Query<dynamic>(@"
-select		R.ResponsibilityTypeID, 
-			R.ResponsibilityType, 
-			R.ResourceID,
+select		RD.ResourceID,
 			R.FirstName,
 			R.LastName,
-			C.OwnedItemCount
-from		(
-			select		R.ResponsibilityTypeID, 
-						R.[Role] as ResponsibilityType, 
-						R.ResponsibleObjectID as ResourceID,
-						U.FirstName,
-						U.LastName
-			from		ResponsibilityDetailForResource R
-						inner join reporting.Global_Resource U on U.ResourceID = R.ResponsibleObjectID and R.Visible = 1 and R.ResponsibilityTypeID = @id  
-			group by	R.[Role], 
-						R.ResponsibilityTypeID, 
-						R.ResponsibleObjectID,
-						U.FirstName,
-						U.LastName
-			) R
-			inner join	(
-						select	ResponsibilityTypeID,
-								ResponsibleObjectID,
-								count(1) as OwnedItemCount
-						from	(
-								select		ResponsibilityTypeID,
-											ResponsibleObjectID,
-											ObjectType,
-											ObjectID
-								from		ResponsibilityDetailForResource
-								where		Visible = 1 
-								group by	ResponsibilityTypeID,
-											ResponsibleObjectID,
-											ObjectType,
-											ObjectID
-								) C
-						group by	ResponsibilityTypeID,
-									ResponsibleObjectID
-						) C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ResponsibleObjectID = R.ResourceID
-            order by R.FirstName, R.LastName", new { id = id }).ToList();
+			RD.ResponsibilityTypeID,
+			count(1) as OwnedItemCount
+from		ResponsibilityDetails RD
+			inner join reporting.Global_Resource R on R.ResourceID = RD.ResourceID
+where		RD.ResponsibilityTypeID = @id
+group by	RD.ResourceID,
+			R.FirstName,
+			R.LastName,
+			RD.ResponsibilityTypeID
+order by	R.LastName, R.FirstName", new { id = id }).ToList();
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("{resourceID:int}/{responsibilityTypeID:int}/ResponsibilitiesByResource")]
-        public JsonNetResult GetResponsibilitiesByResource(int resourceID, int responsibilityTypeID)
-        {
-            var query = Company.Query<dynamic>(@"
-select		ObjectType,
-			ObjectID,
-			ObjectName,
-			ObjectTypeName,
-			ObjectUrl,
-			CurrentScore,
-			ResponsibleObjectID as OwnerID 
-from		ResponsibilityDetailForResource
-where		Visible = 1 
-			and ResponsibilityTypeID = @r
-			and ResponsibleObjectID = @id 
-group by	ObjectType,
-			ObjectID,
-			ObjectName,
-			ObjectTypeName,
-			ObjectUrl,
-			CurrentScore,
-			ResponsibleObjectID
-order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityTypeID }).ToList();
+//        [Route("{resourceID:int}/{responsibilityTypeID:int}/ResponsibilitiesByResource")]
+//        public JsonNetResult GetResponsibilitiesByResource(int resourceID, int responsibilityTypeID)
+//        {
+//            var query = Company.Query<dynamic>(@"
+//select		ObjectType,
+//			ObjectID,
+//			ObjectName,
+//			ObjectTypeName,
+//			ObjectUrl,
+//			CurrentScore,
+//			ResponsibleObjectID as OwnerID 
+//from		ResponsibilityDetailForResource
+//where		Visible = 1 
+//			and ResponsibilityTypeID = @r
+//			and ResponsibleObjectID = @id 
+//group by	ObjectType,
+//			ObjectID,
+//			ObjectName,
+//			ObjectTypeName,
+//			ObjectUrl,
+//			CurrentScore,
+//			ResponsibleObjectID
+//order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityTypeID }).ToList();
 
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
         [Route("{type}/{id:int}/ScoreHistoryByObject")]
         public JsonNetResult GetScoreHistoryByObject(SystemObjects type, int id)
@@ -180,28 +160,20 @@ order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityT
         public JsonNetResult GetPointBreakdownByObject(SystemObjects type, int id)
         {
             var query = Company.Query<dynamic>(@"
-select  
-v.ID,
-V.Name,
-		V.MaximumScore as MaxScore, 
-		M.Value as Score
-FROM	(
-			select	max(ID) as ScoreID,
-					Object,
-					ObjectID,
-					ScoreTypeID
-			from	Score
-			where	Object = @type and ObjectID = @id
-			group by Object, ObjectID, ScoreTypeID
-		) MS 
-        inner join ScoreMetric M on M.ScoreID = MS.ScoreID
-		inner join (
-			select  ScoreTypeMetricID, max(ID) as VersionID, max(UpdatedOn) as UpdatedOn from ScoreTypeMetricVersion
-			group by ScoreTypeMetricID
-		) C on C.VersionID = M.ScoreTypeMetricVersionID
-		inner join ScoreTypeMetricVersion V on V.ID = C.VersionID
-order by	V.Name
-", new { type = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, id = id });
+	select	M.ID,
+			G.Name + ': ' + I.Name as Name,
+			MR.Value
+	from	metrics.Score S
+			inner join metrics.MapResult MR on MR.ScoreID = S.ID
+			inner join metrics.Map M on M.ID = MR.MapID
+			inner join metrics.[Group] G on G.ID = M.GroupID
+			inner join metrics.ITem I on I.ID = M.ItemID
+	where	getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate
+			and S.Object = @type and S.ObjectID = @id", 
+            new {
+                type = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 },
+                id = id
+            });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }

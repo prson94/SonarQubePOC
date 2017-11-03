@@ -18,9 +18,10 @@ import { Highcharts } from 'angular2-highcharts';
                             <header>Point Breakdown</header>
                             <p-dataTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdown" selectionMode="single">                                
                                 <p-column field="Name" header="Analytic" [style]="{'width':'250px'}"></p-column>                                
-                                <p-column header="Score" [style]="{'width':'250px'}">
-                                    <ng-template let-col let-data="rowData" pTemplate type="body">
-                                        <span>{{data.Score}} out of {{data.MaxScore}}</span>
+                                <p-column header="Value" [style]="{'width':'250px'}">
+                                    <ng-template let-item="rowData" pTemplate type="body">
+                                        <i *ngIf="item.Value" class="fa fa-check enabled" title="Passed"></i>
+                                        <i *ngIf="!item.Value" class="fa fa-times disabled" title="Failed"></i>
                                     </ng-template>
                                 </p-column>
                             </p-dataTable>  

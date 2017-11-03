@@ -33,6 +33,7 @@ declare var CurrentResourceID;
 })
 
 export class ResourceResponsibilityComponent implements OnChanges {
+    @Input() responsibilityTypeId: number = 0;
     @Input() resourceId: any = 0;
     @Input() resource: Resource = null;
     private items: CountObject[] = new Array<CountObject>();
@@ -64,7 +65,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
 
         this.isMe = (this.resourceId == CurrentResourceID);
 
-        this.resourcesService.getResponsibilityBreakdownByResource(this.resourceId)
+        this.resourcesService.getResponsibilityBreakdownByResource(this.resourceId, this.responsibilityTypeId)
             .then(r => {
                 this.items = r;
                 if (this.items && this.items.length > 0)

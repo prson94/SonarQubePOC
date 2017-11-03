@@ -19,6 +19,7 @@ export enum PolicyStatus {
 
 export class Policy {
     ID: number;
+    AssetID: number;
     ParentID: number;
     DisplayValue: string;
     Status: PolicyStatus;

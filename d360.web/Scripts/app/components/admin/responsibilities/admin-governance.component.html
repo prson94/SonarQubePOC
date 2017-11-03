@@ -9,11 +9,17 @@
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
             <p-dataTable #dt [globalFilter]="gb" [value]="responsibilityTypeItems" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '70%' }"></p-column>
-                <p-column [style]="{ 'width': '30%' }">
+                <p-column field="Name" header="Name" sortable="true"></p-column>
+                <p-column [style]="{ 'width': '40px' }">
                     <ng-template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        </div>
+                    </ng-template>
+                </p-column>
+                <p-column [style]="{ 'width': '40px' }">
+                    <ng-template let-col let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">
                             <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </ng-template>

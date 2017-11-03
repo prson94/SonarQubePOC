@@ -76,7 +76,7 @@ namespace d360.web.Controllers
         {
             var list = new List<DetailReadOnlyRowModel>();
 
-            var details = Company.GetObjectDetail(type, id);
+            var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
@@ -738,7 +738,7 @@ namespace d360.web.Controllers
                     staticFieldCount = 1;
                     remainingWidth = 75;
 
-                    detail = Company.GetObjectDetail(type, id);
+                    detail = Company.GetObjectDetail(type.ToString(), id);
 
                     #region Parents
 
@@ -993,10 +993,13 @@ where   h.ID <> @t order by h.[Level] desc;
 
             if (a == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
+            var asset = Company.Filter<Asset>(i => i.Object == "Artifact" && i.ObjectID == id).SingleOrDefault();
+
             var model = new ArtifactModelRequest();
 
             //Static fields
             model.Add("ID", a.ID);
+            model.Add("AssetID", asset.ID);
             model.Add("DisplayValue", a.DisplayValue);
             //model.Add("Name", a.Name);
             //model.Add("Description", a.Description);
@@ -3998,43 +4001,67 @@ order by C.TextPath";
         
         #region Governance/Ownership/Responsibility
 
-        [Route("groups/{id:int}/ownership")]
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByGroup(int id)
-        {
-            return Company.GetResponsibilitiesByResource(SystemObjects.Group, id);
-        }
+        //[Route("groups/{id:int}/ownership")]
+        //public IQueryable<ResponsibilityDetail> GetResponsibilitiesByGroup(int id)
+        //{
+        //    return Company.GetResponsibilitiesByResource(SystemObjects.Group, id);
+        //}
 
-        [Route("resources/{id:int}/ownership")]
-        public IQueryable<ResponsibilityDetailForResource> GetResponsibilitiesByResource(int id)
-        {
-            return Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == id);
-        }
+        //[Route("resources/{id:int}/ownership")]
+        //public IQueryable<ResponsibilityDetailForResource> GetResponsibilitiesByResource(int id)
+        //{
+        //    return Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == id);
+        //}
 
         [Route("resources/{resourceID:int}/ownership/{type}/{id:int}")]
-        public IQueryable<ResponsibilityDetailForResource> GetResponsibilitiesByResourceByType(int resourceID, string type, int id)
+        public IEnumerable<dynamic> GetResponsibilitiesByResourceByType(int resourceID, SystemObjects type, int id)
         {
-            if (type == "Policy" || type == "Rule")
-            {
-                return Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == resourceID && i.ObjectType == type);
-            }
-            else
-            {
-                return Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == resourceID && i.ObjectType == type && i.ObjectTypeID == id);
-            }
+            return Company.Query<dynamic>(@"
+select	RD.SecurityAsset,
+		RD.SecurityAssetID,
+		RD.SecurityAssetName,
+		RD.ResourceID,
+		RD.ResponsibilityTypeID,
+		RD.Type,
+		RD.TypeID,
+		T.Name as TypeName,
+		RD.Object,
+		RD.ObjectID,
+		utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
+		RD.ResponsibilityTypeName,
+		case RD.SecurityAsset
+			when 'G' then 'Via Group'
+			when 'O' then 'Via Organization'
+			else ''
+		end as Via
+from	ResponsibilityDetails RD
+		inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @o and T.ObjectID = @id", new { resourceID, o = type.ToString(), id });
         }
 
 
         [Route("groups/{groupID:int}/ownership/{type}/{id:int}")]
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByGroupByType(int groupID, string type, int id)
+        public IEnumerable<dynamic> GetResponsibilitiesByGroupByType(int groupID, SystemObjects type, int id)
         {
-            if (type == "Policy" || type == "Rule")
-            {
-                return Company.Filter<ResponsibilityDetail>(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == groupID && i.ObjectType == type);
-            }
-            else
-            {
-                return Company.Filter<ResponsibilityDetail>(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == groupID && i.ObjectType == type && i.ObjectTypeID == id);
-            }
+            return Company.Query<dynamic>(@"
+select	RD.SecurityAsset,
+		RD.SecurityAssetID,
+		RD.SecurityAssetName,
+		RD.ResourceID,
+		RD.ResponsibilityTypeID,
+		RD.Type,
+		RD.TypeID,
+		T.Name as TypeName,
+		RD.Object,
+		RD.ObjectID,
+		utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
+		RD.ResponsibilityTypeName,
+		case RD.SecurityAsset
+			when 'G' then 'Via Group'
+			when 'O' then 'Via Organization'
+			else ''
+		end as Via
+from	ResponsibilityDetails RD
+		inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID and T.Object = @o and T.ObjectID = @id", new { groupID, o = type.ToString(), id });
         }
 
         [Route("ownership/types")]
@@ -4045,11 +4072,9 @@ order by C.TextPath";
                 {
                     i.ID,
                     i.Name,
-                    i.Description,
-                    ResponsibilityTypeGroup = i.ResponsibilityTypeGroup.ToString()
+                    i.Description
                 })
-                .OrderBy(i => i.ResponsibilityTypeGroup)
-                .ThenBy(i => i.Name)
+                .OrderBy(i => i.Name)
                 .AsQueryable();
         }
 
@@ -4072,11 +4097,11 @@ order by C.TextPath";
                 });
         }
 
-        [Route("ownership/types/{id:int}/usage")]
-        public IQueryable<ResponsibilitySummaryDetail> GetUsageByResponsibilityType(int id)
-        {
-            return Company.GetResponsibilitiesByType(id);
-        }
+        //[Route("ownership/types/{id:int}/usage")]
+        //public IQueryable<ResponsibilitySummaryDetail> GetUsageByResponsibilityType(int id)
+        //{
+        //    return Company.GetResponsibilitiesByType(id);
+        //}
 
         [Route("ownership/types/{id:int}/rules")]
         public IEnumerable<dynamic> GetRulesByResponsibilityType(int id)
@@ -4085,10 +4110,11 @@ order by C.TextPath";
 select  R.ID, 
         R.ResponsibilityTypeID, 
         R.Name, 
+        D.Name as ObjectName, 
         O.Name as ResponsibilityType 
 from    ResponsibilityTypeRelationRule R 
-        inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-            and O.ID = @id", 
+        inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID and O.ID = @id 
+        left join AssetType D on D.Object = R.Object and D.ObjectID = R.ObjectID", 
             new { id });
         }
 
@@ -4106,10 +4132,9 @@ from    ResponsibilityTypeRelationRule R
         {
             var sType = type.ToString();
             return Request.CreateResponse(HttpStatusCode.OK,
-                Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectID == id && i.ObjectType == sType, i => i.ResponsibilityType)
+                Company.Filter<ResponsibilityTypeRelation>(i => i.ObjectID == id && i.ObjectType == sType, i => i.ResponsibilityType)
                 .Select(i => new
                 {
-                    ResponsibilityTypeGroup = i.ResponsibilityType.ResponsibilityTypeGroup,
                     i.ResponsibilityTypeID,
                     i.ObjectID,
                     i.ObjectType,
@@ -4129,10 +4154,9 @@ from    ResponsibilityTypeRelationRule R
                 id = fusion.FusionTypeID;
 
             return Request.CreateResponse(HttpStatusCode.OK,
-                Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectID == id && i.ObjectType == "FusionType", i => i.ResponsibilityType)
+                Company.Filter<ResponsibilityTypeRelation>(i => i.ObjectID == id && i.ObjectType == "FusionType", i => i.ResponsibilityType)
                 .Select(i => new
                 {
-                    ResponsibilityTypeGroup = i.ResponsibilityType.ResponsibilityTypeGroup,
                     i.ResponsibilityTypeID,
                     i.ObjectID,
                     i.ObjectType,
@@ -4185,27 +4209,20 @@ from    ResponsibilityTypeRelationRule R
             var columns = "";
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
-            var querySql = string.Format(@"select	top 100 percent A.ID,
-        A.ParentID,
-        A.DisplayValue,
+            var querySql = string.Format(@"select	top 100 percent P.ID, A.ID as AssetID, 
+        P.ParentID,
+        P.DisplayValue,
         {0}
-        A.[Level]
-from	[Policy] A  {1} 
-where    A.PolicyTypeID = @id and A.[Visible] = 1
-order by A.[Level], A.DisplayValue", columns, joins);
+        P.[Level]
+from	[Policy] P inner join Asset A on A.Object = 'Policy' and A.ObjectID = P.ID  {1} 
+where    P.PolicyTypeID = @id and P.[Visible] = 1
+order by P.[Level], P.DisplayValue", columns, joins);
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
             sql = applyFilteringSuffix(sql, Request);
 
             var policies = Company.Query<dynamic>(sql, new { id = id }).ToList();
-
-            //policies.ForEach(p =>
-            //{
-            //    if (stripHtml)
-            //        p.Description = System.Text.RegularExpressions.Regex.Replace(p.Description ?? "", @"(?></?\w+)(?>(?:[^>'""]+|'[^']*'|""[^""]*"")*)>", string.Empty);
-            //    p.Description = HttpUtility.HtmlDecode(p.Description);
-            //});
 
             return policies;
         }
@@ -4531,7 +4548,7 @@ where    A.RuleID = @id", new { id });
         public IQueryable<dynamic> GetRuleimplementationQualifierTypes(int implementationID)
         {
             return Company.Query<dynamic>(@"select R.*, D.Name as ResolutionObjectName from RuleResultQualifierType R
-                left join cache.ObjectDetails D on D.[Object] = R.ResolutionObject and D.ObjectID = R.ResolutionObjectID
+                left join AssetType D on D.[Object] = R.ResolutionObject and D.ObjectID = R.ResolutionObjectID
                 where R.RuleImplementationID = @implementationID
                 order by R.[Order]", new { implementationID }).AsQueryable();
         }
@@ -4571,10 +4588,16 @@ where    A.RuleID = @id", new { id });
 
         #region Type/ID Endpoints
 
+        [Route("asset/{id:long}")]
+        public AssetDetail GetAssetDetail(long id)
+        {
+            return Company.GetAssetDetail(id);
+        }
+
         [Route("{type}/{id:int}")]
         public ObjectDetail GetObjectDetail(SystemObjects type, int id)
         {
-            return Company.GetObjectDetail(type, id);
+            return Company.GetObjectDetail(type.ToString(), id);
         }
 
         /// <summary>
@@ -5402,74 +5425,22 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = $"<b>{rule.DisplayValue}</b>" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.Name }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.Name }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = (rule.RuleDimensionID.HasValue ? rule.Dimension.Name:""), TooltipContext = "Preview", TooltipID = rule.RuleDimensionID.GetValueOrDefault(), TooltipType = "RuleDimension" }
                             }    
                         });
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 2,
+                            columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = (rule.RuleDimensionID.HasValue ? rule.Dimension.Name:""), TooltipContext = "Preview", TooltipID = rule.RuleDimensionID.GetValueOrDefault(), TooltipType = "RuleDimension" }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleThreshold_Name, FieldName = "RuleThreshold", FieldDescription = Resources.FieldInfo.RuleThreshold_Description, Value = rule.Threshold.ToString() }
                             }
                         });
-
-                        //if (!string.IsNullOrEmpty(rule.Description))
-                        //{
-                        //    model.rows.Add(new DetailReadOnlyRowModel
-                        //    {
-                        //        columns = 1,
-                        //        FirstColumnFields = new List<ReadOnlyField>
-                        //        {
-                        //            new ReadOnlyField { Name = Resources.FieldInfo.RuleDescription_Name, FieldName = "RuleDescription", FieldDescription = Resources.FieldInfo.RuleDescription_Description, Value = rule.Description }
-                        //        }
-                        //    });
-                        //}
-
-                        //if (!string.IsNullOrEmpty(rule.Measurement))
-                        //{
-                        //    model.rows.Add(new DetailReadOnlyRowModel
-                        //    {
-                        //        columns = 1,
-                        //        FirstColumnFields = new List<ReadOnlyField>
-                        //        {
-                        //            new ReadOnlyField { Name = Resources.FieldInfo.RuleMeasurement_Name, FieldName = "RuleMeasurement", FieldDescription = Resources.FieldInfo.RuleMeasurement_Description, Value = rule.Measurement }
-                        //        }
-                        //    });
-                        //}
-
-                        //if (!string.IsNullOrEmpty(rule.Purpose))
-                        //{
-                        //    model.rows.Add(new DetailReadOnlyRowModel
-                        //    {
-                        //        columns = 1,
-                        //        FirstColumnFields = new List<ReadOnlyField>
-                        //        {
-                        //            new ReadOnlyField { Name = Resources.FieldInfo.RulePurpose_Name, FieldName = "RulePurpose", FieldDescription = Resources.FieldInfo.RulePurpose_Description, Value = rule.Purpose }
-                        //        }
-                        //    });
-                        //}
-
-                        //if (!string.IsNullOrEmpty(rule.Resolution))
-                        //{
-                        //    model.rows.Add(new DetailReadOnlyRowModel
-                        //    {
-                        //        columns = 1,
-                        //        FirstColumnFields = new List<ReadOnlyField>
-                        //        {
-                        //            new ReadOnlyField { Name = Resources.FieldInfo.RuleResolution_Name, FieldName = "RuleResolution", FieldDescription = Resources.FieldInfo.RuleResolution_Description, Value = rule.Resolution }
-                        //        }
-                        //    });
-                        //}
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
@@ -5533,32 +5504,6 @@ where    A.RuleID = @id", new { id });
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_ResultsEndpoint, FieldName = "RuleImplementation_ResultsEndpoint", Value = $"POST to <a href='/swagger/ui/index#!/Events/Events_AddRuleImplementationResults' target='api'>/services/events/rules/{impl.RuleID}/{impl.ID}/results</a>" }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = impl.Rule.DisplayValue }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = impl.Rule.RuleType.Name }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = (impl.Rule.RuleDimensionID.HasValue ? impl.Rule.Dimension.Name:""), TooltipContext = "Preview", TooltipID = impl.Rule.RuleDimensionID.GetValueOrDefault(), TooltipType = "RuleDimension" }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleThreshold_Name, FieldName = "RuleThreshold", FieldDescription = Resources.FieldInfo.RuleThreshold_Description, Value = impl.Rule.Threshold.ToString() }
                             }
                         });
 
@@ -6091,7 +6036,7 @@ where    A.RuleID = @id", new { id });
                                         var checkObjects = fields.Element("CheckObjects").Elements("Object").Select(co => new { Type = (SystemObjects)Enum.Parse(typeof(SystemObjects), co.Element("Type").Value), ID = int.Parse(co.Element("ID").Value) }).ToList();
                                         checkObjects.ForEach(co =>
                                         {
-                                            var cod = Company.GetObjectDetail(co.Type, co.ID);
+                                            var cod = Company.GetObjectDetail(co.Type.ToString(), co.ID);
                                             if (cod != null)
                                             {
                                                 items.Add(cod.TextPath);
@@ -6100,7 +6045,7 @@ where    A.RuleID = @id", new { id });
                                     }
                                     else
                                     {
-                                        var cod = Company.GetObjectDetail((SystemObjects)Enum.Parse(typeof(SystemObjects), fields.Element("ObjectType").Value), int.Parse(fields.Element("ObjectID").Value));
+                                        var cod = Company.GetObjectDetail(fields.Element("ObjectType").Value, int.Parse(fields.Element("ObjectID").Value));
                                         if (cod != null)
                                         {
                                             items.Add(cod.TextPath);
@@ -6486,10 +6431,10 @@ where    A.RuleID = @id", new { id });
             return Company.GetFollowersByObject(type, id);
         }
 
-        [Route("{type}/{id:int}/ownership/{showHidden:bool=false}")]
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = false)
+        [Route("{assetID:int}/ownership")]
+        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(long assetID)
         {
-            return Company.GetResponsibilitiesByObject(type, id, showHidden);
+            return Company.Filter<ResponsibilityDetail>(i => i.AssetID == assetID);
         }
 
         [Route("{type}/{id:int}/permissions")]
@@ -6971,12 +6916,6 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
                 FileName = $"{sourceObj.Name} to {targetObj.Name} mappings {DateTime.Now.ToShortDateString()}.xlsx"
             };
             return result;
-        }
-
-        [Route("{type}/{id:int}/statistics")]
-        public IQueryable<StatisticDetail> GetStatisticDetails(SystemObjects type, int id)
-        {
-            return Company.GetStatisticDetailsByType(type, id).AsQueryable();
         }
 
         [Route("{type}/{id:int}/{predicateId:int}/synonyms")]

@@ -87,12 +87,14 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number            
             this.isLoading = true;
 
-            this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
-            this.setObjectInfo('Rule', ruleId);
-            this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
+            this.load(ruleId).then(() => {
+                this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
+                this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
+                this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
+                this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
 
-            this.load(ruleId).then(() => this.isLoading = false);
+                this.isLoading = false;
+            });
         });
 
         this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');

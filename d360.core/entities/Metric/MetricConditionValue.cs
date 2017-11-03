@@ -8,7 +8,7 @@ namespace d360.core.entities.Metric
     public class MetricConditionValue : BaseObject
     {
         [Key, Column(Order = 1)]
-        public int MetricMapID { get; set; }
+        public int MapID { get; set; }
 
         [Key, Column(Order = 2)]
         public int FieldTypeID { get; set; }
@@ -19,10 +19,10 @@ namespace d360.core.entities.Metric
         [IgnoreDataMember]
         public virtual FieldType FieldType { get; set; }
 
-        [IgnoreDataMember, ForeignKey("MetricMapID, FieldTypeID")]
+        [IgnoreDataMember, ForeignKey("MapID, FieldTypeID")]
         public virtual MetricCondition MetricCondition { get; set; }
 
         [IgnoreDataMember]
-        public virtual MetricMap MetricMap { get; set; }
+        public virtual MetricMap Map { get; set; }
     }
 }

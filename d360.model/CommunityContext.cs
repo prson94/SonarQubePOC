@@ -38,6 +38,7 @@ namespace d360.model
 
         #region DbSets
 
+        public DbSet<Client> Clients { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }
         public DbSet<CompanyFeature> CompanyFeatures { get; set; }

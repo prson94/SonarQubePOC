@@ -26,6 +26,9 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
         public int? ParentID { get; set; }
 
+        [DataMember]
+        public string SourceID { get; set; }
+
         public bool Visible { get; set; }
 
         [IgnoreDataMember]

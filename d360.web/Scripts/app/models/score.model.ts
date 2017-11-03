@@ -1,7 +1,7 @@
 ﻿export class PointBreakdown {
     Name: string;
-    MaxScore: number;
-    Score: number;
+    ID: number;
+    Value: boolean;
 }
 
 export class ScorePoint {

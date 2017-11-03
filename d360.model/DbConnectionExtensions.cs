@@ -14,7 +14,7 @@ namespace d360.model
             #region WhenSql
 
             whenSql = $@"
-select	A.Object, A.ObjectID, utility.GetAssetDisplayValueWrapper(A.ID) as Name 
+select	A.ID as AssetID, utility.GetAssetDisplayValueWrapper(A.ID) as Name 
 from	Asset A 
 		inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ";
             var fCount = 1;
@@ -59,20 +59,19 @@ from	Asset A
             int tCount = 1;
             string whenSuffix = "";
 
-            if (rule.StructuredDefinition.Then.Object == "ResourceType")
+            if (rule.StructuredDefinition.Then.Object == "OrganizationType")
             {
                 thenSql = $@"
-select	R.ResourceID,
-		R.FirstName + ' ' + R.LastName as ResourceName,
-        null as GroupID,
-        null as GroupName
-from	reporting.Global_Resource R ";
+select	'O' as SecurityAsset,
+        O.ID as SecurityAssetID,
+		O.Name
+from	Organization O ";
 
                 rule.StructuredDefinition.Then.Conditions.ForEach(rc =>
                 {
                     if (rc.FieldTypeID > 0)
                     {
-                        thenSql += $"inner join Field F{tCount} on F{tCount}.ObjectType = 'Resource' and F{tCount}.ObjectID = R.ResourceID and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
+                        thenSql += $"inner join Field F{tCount} on F{tCount}.ObjectType = 'Organization' and F{tCount}.ObjectID = O.ID and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
                     }
                     else
                     {
@@ -80,11 +79,11 @@ from	reporting.Global_Resource R ";
                         {
                             if (rc.FieldTypeName == "Name")
                             {
-                                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"R.ResourceID = {rc.Value}";
+                                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.ID = {rc.Value}";
                             }
                             else
                             {
-                                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"R.{rc.FieldTypeName} = '{rc.Value}'";
+                                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
                             }
                         }
                     }
@@ -96,13 +95,12 @@ from	reporting.Global_Resource R ";
             if (rule.StructuredDefinition.Then.Object == "GroupType")
             {
                 thenSql = $@"
-select	RG.ResourceID,
-        R.FirstName + ' ' + R.LastName as ResourceName,		
-        RG.GroupID,
-        G.Name as GroupName
-from	[Group] G
-		inner join ResourceGroup RG on RG.GroupID = G.ID 
-        inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID";
+select	'G' as SecurityAsset,
+        O.ID as SecurityAssetID,
+        O.Name as GroupName
+from	[Group] O ";
+//		inner join ResourceGroup RG on RG.GroupID = G.ID 
+//        inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID";
 
                 if (rule.StructuredDefinition.Then.Conditions != null)
                 {
@@ -110,7 +108,7 @@ from	[Group] G
                     {
                         if (rc.FieldTypeID > 0)
                         {
-                            thenSql += $"inner join Field F{tCount} on F{tCount}.ObjectType = 'Group' and F{tCount}.ObjectID = R.GroupID and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
+                            thenSql += $"inner join Field F{tCount} on F{tCount}.ObjectType = 'Group' and F{tCount}.ObjectID = O.ID and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
                         }
                         else
                         {
@@ -130,6 +128,39 @@ from	[Group] G
                         tCount++;
                     });
                 }
+            }
+
+            if (rule.StructuredDefinition.Then.Object == "ResourceType")
+            {
+                thenSql = $@"
+select	'R' as SecurityAsset,
+        O.ResourceID as SecurityAssetID,
+		O.FirstName + ' ' + O.LastName as Name
+from	reporting.Global_Resource O ";
+
+                rule.StructuredDefinition.Then.Conditions.ForEach(rc =>
+                {
+                    if (rc.FieldTypeID > 0)
+                    {
+                        thenSql += $"inner join Field F{tCount} on F{tCount}.ObjectType = 'Resource' and F{tCount}.ObjectID = O.ResourceID and F{tCount}.FieldTypeID = {rc.FieldTypeID} and F{tCount}.Value = '{rc.Value}' ";
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(rc.FieldTypeName))
+                        {
+                            if (rc.FieldTypeName == "Name")
+                            {
+                                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.ResourceID = {rc.Value}";
+                            }
+                            else
+                            {
+                                whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
+                            }
+                        }
+                    }
+
+                    tCount++;
+                });
             }
 
             thenSql += whenSuffix;

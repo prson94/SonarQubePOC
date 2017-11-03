@@ -6,6 +6,7 @@
     "AzureWebJobsDashboard": "DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==",
     "Environment": "NIGHTLY",
     "EventBusTopicName": "events-debug",
-    "EventBusTopicEnabled": "true"
+    "EventBusTopicEnabled": "true",
+    "CommunityContext": "Server=tcp:bzbdz2ikmp.database.windows.net;Database=D3S;User ID=d3s_user;Password=d3fGt$$@eEwq00y;Trusted_Connection=False;"
   }
 }

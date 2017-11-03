@@ -2,6 +2,16 @@
 {
     public static class QueryConstants
     {
+        public static string HighLevelTypeCaseStatement = @"case 
+				when T.Object = 'ArtifactType' then 'Glossary: ' 
+				when T.Object = 'FusionAttributeType' then 'Fusion Attribute: ' 
+				when T.Object = 'FusionType' then 'Fusion: ' 
+				when T.Object = 'PolicyType' then 'Policy: ' 
+				when T.Object = 'ReferenceItemType' then 'Reference: ' 
+				when T.Object = 'RuleType' then 'Rule: ' 
+				when T.Object = 'TaxonomyType' then 'Model: '
+				else ''
+			end ";
         public static string AgentErrorList = @"
 select	ER.Date,
         ERI.Message,
@@ -793,7 +803,7 @@ order by case when (Subject = @type and SubjectID = @id) then ObjectName else Su
 
         public static string PolicySettingsItem = @"
 select	T.*, PT.Name as 'PolicyTypeClass', R.*
-from	PolicyType T
+from	PolicyType T 
         inner join PolicyTypeClass PT on (T.PolicyTypeClassID = PT.ID)
 		cross apply (
 					select	case 

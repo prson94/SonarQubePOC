@@ -3,7 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { OwnershipComponent } from './ownership.component';
 
 const routes: Routes = [
-    { path: ':objectType/:objectId', component: OwnershipComponent },
+    //{ path: ':objectType/:objectId', component: OwnershipComponent },
+    { path: ':assetID', component: OwnershipComponent },
 ];
 
 @NgModule({

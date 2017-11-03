@@ -24,17 +24,22 @@ namespace d360.web.Controllers
         [HttpGet, Route("ModelHierarchy"), NonNullableParameters]
         public JsonNetResult ModelHierarchy(int id)
         {
-            var models = Company.Query<TaxonomyDetail>(
-@"select	T.*,
+            var models = Company.Query<dynamic>(
+@"select	T.ID,
+            T.DisplayValue,
+            T.TextPath,
+            T.ParentID,
+            A.ID as AssetID, 
 			case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren		 
 	from	Taxonomy T
+            inner join Asset A on A.Object = 'Taxonomy' and A.ObjectID = T.ID 
 			CROSS APPLY (
 				select	count(1) as [ItemsCount]
 				from	[Intersect]
 				where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
 				) DC
 where T.TaxonomyTypeID = @id AND T.Visible = 1 
-order by T.[Level]", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.DisplayValue, i.TextPath, i.ParentID });
+order by T.[Level]", new { id = id });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -50,16 +55,24 @@ order by T.[Level]", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.D
             // get the dynamic fields set as listable for this taxonomy
             getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, false, false, true, fields);
 
-            var sql = string.Format(
-                @"select	A.*, {0} case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren                             
-	                from	Taxonomy A
-                            {1}
-			                CROSS APPLY (
-				                select	count(1) as [ItemsCount]
-				                from	[Intersect]
-				                where	([Subject] = 'Taxonomy' and SubjectID = A.ID) OR ([Object] = 'Taxonomy' and ObjectID = A.ID)
-				                ) DC
-                where A.TaxonomyTypeID = @id AND A.Visible = 1 order by A.[Level], A.DisplayValue", columns, joins);
+            var sql = string.Format(@"
+select	T.*, 
+        A.ID as AssetID,  
+        {0} 
+        case 
+            when DC.ItemsCount > 0 then cast(1 as bit) 
+            else cast(0 as bit) 
+        end as HasChildren 
+from	Taxonomy T 
+        inner join Asset A on A.Object = 'Taxonomy' and A.ObjectID = T.ID 
+        {1} 
+        CROSS APPLY (
+		            select	count(1) as [ItemsCount]
+		            from	[Intersect]
+		            where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
+		            ) DC 
+where T.TaxonomyTypeID = @id AND T.Visible = 1 
+order by T.[Level], T.DisplayValue", columns, joins);
 
             var models = Company.Query<dynamic>(sql, new { id = id });
 

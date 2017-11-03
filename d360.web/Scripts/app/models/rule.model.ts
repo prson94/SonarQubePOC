@@ -78,6 +78,7 @@ export class RuleResult {
 export class RuleDetail {
     Name: string;
     ID: number;
+    AssetID: number;
     Description: string;            
     IconBackColor: string;
     IconForeColor: string;

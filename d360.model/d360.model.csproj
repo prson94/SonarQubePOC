@@ -148,6 +148,7 @@
     <Compile Include="CompanyContext_Organization.cs" />
     <Compile Include="CompanyContext_BulkLoad.cs" />
     <Compile Include="CompanyContext_Asset.cs" />
+    <Compile Include="CompanyContext_Security.cs" />
     <Compile Include="CompanyContext_Score.cs" />
     <Compile Include="CompanyContext_Analytics.cs" />
     <Compile Include="CompanyContext_Workflow.cs" />

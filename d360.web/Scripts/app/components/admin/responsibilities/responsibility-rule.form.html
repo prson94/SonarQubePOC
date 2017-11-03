@@ -21,88 +21,104 @@
                 <div [hidden]="objectType.valid || objectType.pristine">Object type is required</div>
             </div>
         </div>
-        <div class="row" *ngIf="model.Object">
-            <div class="col l7 m7 s12">
-                <div>WHEN</div>
-                <table class="highlight, striped" cellpadding="5">
-                    <thead>
-                        <tr>
-                            <th>Check Type</th>
-                            <th>Field/Relation</th>
-                            <th>Value</th>
-                            <th style="width: 50px; text-align: right">
-                                <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addWhen()"><i class='fa fa-plus' title='Add check'></i></a>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody *ngFor="let item of model.Definition.When; let i=index;">
-                        <tr>
-                            <td>
-                                <p-dropdown [ngModelOptions]="{standalone: true}" [options]="whenCheckTypes" [(ngModel)]="item.CheckType" [style]="{ 'width' : '95%' }"></p-dropdown>
-                            </td>
-                            <td>
-                                <p-dropdown *ngIf="item.CheckType == 'F'" [ngModelOptions]="{standalone: true}" [options]="whenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%' }" (onChange)="loadWhenValuesForFieldType(item)"></p-dropdown>
-                                <p-dropdown *ngIf="item.CheckType == 'R'" [ngModelOptions]="{standalone: true}" [options]="whenIntersectTypes" [(ngModel)]="item.IntersectTypeID" [style]="{ 'width' : '95%' }" (onChange)="loadValuesForIntersectType(item)"></p-dropdown>
-                            </td>
-                            <td>
-                                <p-dropdown *ngIf="item.CheckType == 'F' && item.IsLookup" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
-                                <input *ngIf="item.CheckType == 'F' && !item.IsLookup" [ngModelOptions]="{standalone: true}" required name="name" pInputText type="text" [(ngModel)]="item.Value" style="width: 98%; display: block;" />
-                                
-                                <p-dropdown *ngIf="item.CheckType == 'R'" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
-                            </td>
-                            <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeFusion(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="col l5 m5 s12">
-                <div class="form-instructions">Test your WHEN query.</div>
-                <button pButton type="button" label="Test" (click)="testWhen()"></button>
-                <p-dataTable #dt [value]="WhenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
-                    <p-column field="Name" header="Name" sortable="true"></p-column>
-                </p-dataTable>
-            </div>
-        </div>
 
-        <div class="row" *ngIf="model.Object">
-            <div class="col l7 m7 s12">
-                <div>THEN</div>
-                <p-dropdown [ngModelOptions]="{standalone: true}" [options]="thenObjectTypes" [(ngModel)]="model.Definition.Then.Object" [style]="{ 'width' : '95%' }" (onChange)="loadThenFilterOptions($event.value)"></p-dropdown>
+        <simple-accordion header="When Filters" active="true" *ngIf="model.Object">
+            <div class="row">
+                <div class="col s12 form-instructions">
+                    The filters you define below will apply filters based on the Selected Type above. Items that are of the
+                    selected type, and meet the criteria you specify below, will have responsibilities applied to them.
+                </div>
+            </div>
+            <div class="row" *ngIf="model.Object">
+                <div class="col l8 m7 s12">
+                    <table class="highlight, striped responsive-table" cellpadding="5">
+                        <thead>
+                            <tr>
+                                <th>Check Type</th>
+                                <th>Field/Relation</th>
+                                <th>Value</th>
+                                <th style="width: 50px; text-align: right">
+                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addWhen()"><i class='fa fa-plus' title='Add check'></i></a>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody *ngFor="let item of model.StructuredDefinition.When; let i=index;">
+                            <tr>
+                                <td>
+                                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="whenCheckTypes" [(ngModel)]="item.CheckType" [style]="{ 'width' : '95%' }"></p-dropdown>
+                                </td>
+                                <td>
+                                    <p-dropdown *ngIf="item.CheckType == 'F'" [ngModelOptions]="{standalone: true}" [options]="whenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%' }" (onChange)="loadWhenValuesForFieldType(item)"></p-dropdown>
+                                    <p-dropdown *ngIf="item.CheckType == 'R'" [ngModelOptions]="{standalone: true}" [options]="whenIntersectTypes" [(ngModel)]="item.IntersectTypeID" [style]="{ 'width' : '95%' }" (onChange)="loadValuesForIntersectType(item)"></p-dropdown>
+                                </td>
+                                <td>
+                                    <p-dropdown *ngIf="item.CheckType == 'F' && item.IsLookup" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
+                                    <input *ngIf="item.CheckType == 'F' && !item.IsLookup" [ngModelOptions]="{standalone: true}" required name="name" pInputText type="text" [(ngModel)]="item.Value" style="width: 98%; display: block;" />
 
-                <div>Conditions:</div>
-                <table class="highlight, striped" cellpadding="5">
-                    <thead>
-                        <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                            <th style="width: 50px; text-align: right">
-                                <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addThenCondition()"><i class='fa fa-plus' title='Add condition'></i></a>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody *ngFor="let item of model.Definition.Then.Conditions; let i=index;">
-                        <tr>
-                            <td>
-                                <p-dropdown [ngModelOptions]="{standalone: true}" [options]="thenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%' }" (onChange)="loadThenValuesForFieldType(item)"></p-dropdown>
-                            </td>
-                            <td>
-                                <p-dropdown *ngIf="item.IsLookup" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
-                                <input *ngIf="!item.IsLookup" [ngModelOptions]="{standalone: true}" required name="name" pInputText type="text" [(ngModel)]="item.Value" style="width: 98%; display: block;" #Name="ngModel" />
-                            </td>
-                            <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeThenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    <p-dropdown *ngIf="item.CheckType == 'R'" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
+                                </td>
+                                <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeWhenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col l4 m5 s12">
+                    <button pButton type="button" label="Test filter" (click)="testWhen()"></button>
+                    <p-dataTable #dt [value]="WhenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
+                        <p-column field="Name" header="Name" sortable="true"></p-column>
+                    </p-dataTable>
+                </div>
             </div>
-            <div class="col l5 m5 s12">
-                <div class="form-instructions">Test your THEN query.</div>
-                <button pButton type="button" label="Test" (click)="testThen()"></button>
-                <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
-                    <p-column field="ResourceName" header="User" sortable="true"></p-column>
-                    <p-column field="GroupName" header="Via Group" sortable="true"></p-column>
-                </p-dataTable>
+        </simple-accordion>
+
+        <simple-accordion header="Then Filters" active="true" *ngIf="model.Object">
+            <div class="row">
+                <div class="col s12 form-instructions">
+                    The filters you define below will apply filters based on the Security Object Type below. Items that are of the
+                    selected type, and meet the criteria you specify below, will be assigned as resposible parties to the selected items above.
+                </div>
             </div>
-        </div>
+            <div class="row" *ngIf="model.Object">
+                <div class="col s12 FieldNameRequired">Security Object Type</div>
+                <div class="col l8 m7 s12">
+                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="thenObjectTypes" [(ngModel)]="model.StructuredDefinition.Then.Object" [style]="{ 'width' : '100%' }" (onChange)="loadThenFilterOptions($event.value)"></p-dropdown>
+                </div>
+            </div>
+            <div class="row" *ngIf="model.Object">
+                <div class="col l8 m7 s12">
+                    <table class="highlight, striped responsive-table" cellpadding="5">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Value</th>
+                                <th style="width: 50px; text-align: right">
+                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addThenCondition()"><i class='fa fa-plus' title='Add condition'></i></a>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody *ngFor="let item of model.StructuredDefinition.Then.Conditions; let i=index;">
+                            <tr>
+                                <td>
+                                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="thenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%' }" (onChange)="loadThenValuesForFieldType(item)"></p-dropdown>
+                                </td>
+                                <td>
+                                    <p-dropdown *ngIf="item.IsLookup" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
+                                    <input *ngIf="!item.IsLookup" [ngModelOptions]="{standalone: true}" required name="name" pInputText type="text" [(ngModel)]="item.Value" style="width: 98%; display: block;" #Name="ngModel" />
+                                </td>
+                                <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeThenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col l4 m5 s12">
+                    <button pButton type="button" label="Test filters" (click)="testThen()"></button>
+                    <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
+                        <p-column field="ResourceName" header="User" sortable="true"></p-column>
+                        <p-column field="GroupName" header="Via Group" sortable="true"></p-column>
+                    </p-dataTable>
+                </div>
+            </div>
+        </simple-accordion>
 
         <div class="row" *ngIf="errorMessage != ''">
             <div class="col s12">

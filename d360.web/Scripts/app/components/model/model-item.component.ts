@@ -99,14 +99,15 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             if (this.modelId != newModelId) {                
                 this.modelId = newModelId;
                 this.isLoading = true;
-                this.load(hierarchyId).then(() => this.isLoading = false);              
+                this.load(hierarchyId).then(() => this.isLoading = false);
             }
             else {
                 // pop last breadcrumb
                 this.headerBreadcrumbService.popLastBreadcrumb();
-                this.selectModelHierarchy(hierarchyId);
-                this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
+                this.selectModelHierarchy(hierarchyId).then(n => {
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
+                });
             }
             
         });
@@ -130,22 +131,21 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}/${this.model.ClassificationName}`));
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
 
-                this.loadModelHierarchy(this.modelId, hierarchyId);
+                this.loadModelHierarchy(this.modelId, hierarchyId).then(h => {
+                    this.setBrowserTitle(this.titleService, this.model.Name);
 
-                this.setBrowserTitle(this.titleService, this.model.Name);
-
-                this.clearSidebar();
-                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true, true);
+                });
             });
     }
 
-    private selectModelHierarchy(selectedHierarchyId: number) {
+    private selectModelHierarchy(selectedHierarchyId: number): Promise<void> {
         if (selectedHierarchyId > 0) {
             let selArray = this.modelHierarchy.filter(x => x.ID == selectedHierarchyId);
             if (selArray.length > 0) this.selected = selArray[0];
             else {
-                console.log("ERROR INVALID SELECTED HIERARCHY ID SPECIFIED.", selectedHierarchyId);
-
+                //console.log("ERROR INVALID SELECTED HIERARCHY ID SPECIFIED.", selectedHierarchyId);
                 this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
             }
         }
@@ -153,13 +153,17 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
         }
 
+        this.assetID = this.selected.AssetID;
+
         this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID);
 
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.DisplayValue, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
+
+        return Promise.resolve(null);
     }
 
-    private loadModelHierarchy(modelId: number, selectedHierarchyId: number) {
-        this.modelsService.getModelHierarchy(modelId)
+    private loadModelHierarchy(modelId: number, selectedHierarchyId: number): Promise<void> {
+        return this.modelsService.getModelHierarchy(modelId)
             .then(result => {
                 this.modelHierarchy = result;
 
@@ -216,8 +220,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 label: root.DisplayValue,
                 expanded: true,
                 data: {
-                    id: root.ID, hasRelations: root.HasChildren
-                },                
+                    id: root.ID, hasRelations: root.HasChildren, AssetID: root.AssetID
+                },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
         }       

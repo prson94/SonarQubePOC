@@ -40,9 +40,6 @@
             <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
-            <d3s-people-responsibilities-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" [title]="'Default Responsibilities'" [showHidden]="true"></d3s-people-responsibilities-tile>
-        </div>
-        <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
             <d3s-claims-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" [readonly]="false"></d3s-claims-tile>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">

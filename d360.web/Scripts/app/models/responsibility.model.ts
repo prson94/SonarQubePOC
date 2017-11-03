@@ -2,53 +2,41 @@
 import { SelectItem } from '../models/form.model';
 
 export interface IResponsibilityService {
-    getResponsibilityDetail(objectID: number, objectType: string, showHidden: boolean): Promise<ResponsibilityItem[]>;
-    getResponsibilityItemEditor(objectID: number, objectType: string, responsibilityID: number): Promise<ResponsibilityEditorModel>;
+    getResponsibilityDetail(assetID: number): Promise<ResponsibilityItemDetail[]>;
+    getResponsibilityItemEditor(assetID: number, responsibilityID: number): Promise<ResponsibilityEditorModel>;
     postResponsibility(responsibility: ResponsibilityItem): Promise<any>;
 }
 
 export class ResponsibilityEditorModel {
     resources: SelectItem[];
-    //resourceList: SelectItem[];
     selectedResource: string;
-    contexts: SelectItem[];
-    //contextList: SelectItem[];
-    selectedContexts: string[];
     responsibilityTypes: SelectItem[];
-    //responsibilityTypeList: SelectItem[];
     selectedResponsibilityType: string;
     responsibility: ResponsibilityItem;
 }
 
 export class ResponsibilityItem {
     ID: number;
-    ResponsibilityID: number;
-
-    AssigningItemID: number;
-    AssigningItemType: string;
-    ContextItems: string;
-    ObjectID: number;
-    ObjectName: string;
-    ObjectUrl: string;
-    ObjectType: string;
-    ObjectTypeID: number;
-    ObjectTypeName: string;
-    PrimaryOwnerResourceID: number;
-    PrimaryOwnerResourceName: string;
-    PrimaryOwnerResourceUrl: string;
     ResponsibilityTypeID: number;
-    ResponsibleObjectID: number;
-    ResponsibleObjectName: string;
-    ResponsibleObjectType: string;
-    ResponsibleObjectUrl: string;
-    Role: string;
-    Visible: boolean;
-    ResponsibilityContextItems: ResponsibilityContextItem[]; 
+    AssetID: number;
+    SecurityAsset: string;
+    SecurityAssetID: number;
 }
 
-export class ResponsibilityContextItem
-{
-    ResponsibiltyID: number; 
-    ObjectType: string;
+export class ResponsibilityItemDetail {
+    AssetID: number;
+    Object: string;
     ObjectID: number;
+    OverrideItemID: number;
+    Type: string;
+    TypeID: number;
+    RuleName: string;
+    ResponsibilityTypeID: number;
+    ResponsibilityTypeName: string;
+    FirstName: string;
+    LastName: string;
+    ResourceID: number;
+    SecurityAsset: string;
+    SecurityAssetID: number;
+    SecurityAssetName: string;
 }

@@ -284,28 +284,12 @@ namespace d360.web.Controllers
                         var fileName = $"{typeID}.{id}.{dateString}.json";
                         Storage.CreateFile(folder, fileName, json);
 
-                        var db = Community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = Company.CurrentCompanyID }).SingleOrDefault();
-
-                        var fusionQueueName = db.FusionQueue;
-
-#if DEBUG
-                        fusionQueueName = "fusion-queue-debug";
-#endif
-                        await Queue.CreateMessageAsync(fusionQueueName, new FusionProcessingData
+                        await Queue.CreateMessageAsync(Config.GetValue<string>("FusionLoadQueue"), new FusionProcessingData
                         {
                             CompanyID = Company.CurrentCompanyID,
                             FusionID = id,
                             LogFileName = fileName
                         });
-
-                        //var fusionQueue = new FusionQueueManager(fusionQueueName);
-
-                        //await fusionQueue.SendMessageAsync(new FusionProcessingData
-                        //{
-                        //    CompanyID = Company.CurrentCompanyID,
-                        //    FusionID = id,
-                        //    LogFileName = fileName
-                        //});
 
                         #endregion
                     }

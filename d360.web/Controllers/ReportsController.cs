@@ -109,7 +109,7 @@ namespace d360.web.Controllers
 
                 var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
-                var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == id && x.ObjectType == type && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
+                var currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 
                 var currentUserResponsibilityTypeID = 0;
 
@@ -150,7 +150,7 @@ namespace d360.web.Controllers
 
                     if (report.Responsibilities != null && report.Responsibilities.Count > 0)
                     {
-                        var currentUserResponsibilityType = Company.Responsibilities.Where(x => x.ObjectID == report.ObjectID && x.ObjectType == report.ObjectType && x.ResponsibleObjectType == "Resource" && x.ResponsibleObjectID == Company.CurrentResourceID).FirstOrDefault();
+                        var currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == report.ObjectType && x.SecurityAsset == "R" && x.SecurityAssetID == Company.CurrentResourceID).FirstOrDefault();
 
                         var currentUserResponsibilityTypeID = 0;
 

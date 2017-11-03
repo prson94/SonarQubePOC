@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class AssetType : BaseIntObject
+    public class AssetType : BaseCreatedAndUpdatedIntObject
     {
         [DataMember]
         public string Name { get; set; }
@@ -15,10 +15,10 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         [DataMember]
-        public string Object { get; set; }
+        public AssetTypeClass Class { get; set; }
 
         [DataMember]
-        public int ObjectID { get; set; }
+        public string DisplayFormat { get; set; }
 
         [DataMember]
         public State State { get; set; }
@@ -34,14 +34,12 @@ namespace d360.core.entities
 
         [DataMember]
         public int HierarchyMaximumDepth { get; set; }
-        
 
+        [DataMember]
+        public string Object { get; set; }
 
-        //[IgnoreDataMember, ForeignKey("IntersectTypeID")]
-        //public virtual Predicate HierarchyIntersectType { get; set; }
-
-        //[IgnoreDataMember, ForeignKey("PredicateID")]
-        //public virtual Predicate HierarchyPredicate { get; set; }
+        [DataMember]
+        public int ObjectID { get; set; }
 
         [IgnoreDataMember, ForeignKey("AssetTypeID")]
         public virtual ICollection<Asset> Assets { get; set; }

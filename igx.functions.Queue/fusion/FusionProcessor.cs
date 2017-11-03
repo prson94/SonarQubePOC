@@ -1669,6 +1669,8 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
             IsFirstRun = true;
 
+            var errorList = "";
+
             foreach (var item in results)
             {
                 if (IsFirstRun)
@@ -1678,7 +1680,21 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                 }
 
                 if (!string.IsNullOrEmpty(item.SourceID))
-                    _workArea.ExistingFusionAttributes[item.SourceID] = item;
+                {
+                    try
+                    {
+                        _workArea.ExistingFusionAttributes[item.SourceID] = item;
+                    }
+                    catch// (Exception iex)
+                    {
+                        errorList += $"{item.SourceID}; ";
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(errorList))
+            {
+                Trace.TraceWarning("Issues exist with the following sourceIDs: {0}", errorList);
             }
 
             if (IsFirstRun) Trace.TraceInformation("NO EXISTING DATA FOUND FOR FUSION ID {0}.  THIS IS THE FIRST RUN.", FusionID);

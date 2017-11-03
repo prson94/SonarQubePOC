@@ -169,8 +169,6 @@ namespace d360.model
 
         public DbSet<FusionAgentError> FusionAgentErrors { get; set; }
 
-        public DbSet<Group> Groups { get; set; }
-
         public DbSet<Intersect> Intersects { get; set; }
 
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
@@ -209,8 +207,6 @@ namespace d360.model
 
         public DbSet<NymRelation> NymRelations { get; set; }
 
-        public DbSet<ObjectSecurity> ObjectSecurities { get; set; }                                         /* CACHED TABLE LOADED BY JOB */
-
         public DbSet<ObjectStyle> ObjectStyles { get; set; }
 
         public DbSet<Policy> Policies { get; set; }
@@ -240,32 +236,6 @@ namespace d360.model
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
         public DbSet<ReportTile> ReportTiles { get; set; }
-
-        public DbSet<ResourceGroup> ResourceGroups { get; set; }
-
-        public DbSet<ResourcePasswordReset> ResourcePasswordResets { get; set; }
-
-        public DbSet<Responsibility> Responsibilities { get; set; }
-
-        public DbSet<ResponsibilityContextItem> ResponsibilityContextItems { get; set; }
-
-        public DbSet<ResponsibilityDetailForResource> ResponsibilityDetailForResources { get; set; }        /* VIEW */
-
-        public DbSet<ResponsibilityDetail> ResponsibilityDetails { get; set; }                              /* VIEW */
-
-        public DbSet<ResponsibilitySummaryDetail> ResponsibilitySummaryDetails { get; set; }                /* VIEW */
-
-        public DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
-
-        public DbSet<ResponsibilityTypeClaim> ResponsibilityTypeClaims { get; set; }
-
-        public DbSet<ResponsibilityTypeObjectClaim> ResponsibilityTypeObjectClaims { get; set; }
-
-        public DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
-
-        public DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
-
-        public DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
 
         public DbSet<ResponsibilityTypeObjectClaimDetail> ResponsibilityTypeObjectClaimDetail { get; set; } /* VIEW */
 
@@ -417,16 +387,6 @@ namespace d360.model
             QueueSource.CreateMessages(queueName, items);
         }
 
-        public void Enqueue(QueueType type, QueueObject item)
-        {
-            QueueSource.CreateMessage(type, item);
-        }
-
-        public void Enqueue(QueueType type, List<QueueObject> items)
-        {
-            QueueSource.CreateMessages(type, items);
-        }
-
         public List<AllocationPossibility> GetTypes()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
@@ -510,26 +470,6 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
                     SourceType = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, 
                     SourceTypeID = id                    
                 });
-        }
-
-        public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByObject(SystemObjects type, int id)
-        {
-            try
-            {
-                return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedResponsibilityTypesByObject @type, @id", new
-                {
-                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
-                    id = id
-                }).AsQueryable();
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
-            }
-            catch
-            {
-                throw;
-            }
         }
         
         public IQueryable<AttributeHierarchyItem> GetAttributeAndIntersectHierarchyByObject(SystemObjects type, int id)
@@ -807,18 +747,21 @@ from	TaxonomyType
             return items;
         }
 
-        //class ReferenceItemFieldValueModel
-        //{
-        //    public int ID { get; set; }
-        //    public string Name { get; set; }
-        //    public int SortOrder { get; set; }
-        //    public int ObjectID { get; set; }
-        //    public string FormattedValue { get; set; }
-        //}
-        
-        public ObjectDetail GetObjectDetail(SystemObjects type, long id)
+        public AssetDetail GetAssetDetail(long id)
         {
-            var model = GetObjectDetail(type.ToString(), id);
+            var model = Query<AssetDetail>(@"
+select	A.ID,
+		utility.GetAssetDisplayValue(A.ID) as DisplayValue,
+		A.AssetTypeID,
+		A.State,
+		A.Object,
+		A.ObjectID,
+		T.Name as AssetTypeName,
+		T.Object as Type,
+		T.ObjectID as TypeID
+from	Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @id", new { id }).SingleOrDefault();
+
             return model;
         }
 
@@ -938,92 +881,6 @@ from	TaxonomyType
             }
             return value;
         }
-
-
-        #region Permission
-
-        public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int id)
-        {
-            var sType = type.ToString();
-            return Filter<SecurityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
-        }
-
-        public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int[] id)
-        {
-            var sType = type.ToString();
-            return Filter<SecurityDetail>(i => i.ObjectType == sType && id.Contains(i.ObjectID) && i.ResponsibleObjectID == CurrentResourceID);
-        }
-
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = true)
-        {
-            try
-            {
-                var sql = @"select * from ResponsibilityDetail where ObjectType = @type and ObjectID = @id" + (showHidden ? "" : " and Visible = 1") + " order by [Role], [ResponsibleObjectName]";
-                return Query<ResponsibilityDetail>(sql, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByResource(SystemObjects type, int id)
-        {
-            try
-            {
-                var sType = type.ToString();
-                return Filter<ResponsibilityDetail>(i => i.ResponsibleObjectType == sType && i.ResponsibleObjectID == id);
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public IQueryable<ResponsibilitySummaryDetail> GetResponsibilitiesByType(int id)
-        {
-            try
-            {
-                return Filter<ResponsibilitySummaryDetail>(i => i.ResponsibilityTypeID == id);
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-        
-        public bool HasClaimInCurrentPermissionList(List<SecurityDetail> list, Claim claim, ClaimObject claimObject = ClaimObject.Root)
-        {
-            var has = CurrentResourceIsAdmin;
-            if (!has) has = list.Any(i => i.Claim == claim && i.ClaimObject == claimObject);
-            return has;
-        }
-
-        public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
-        {
-            bool hasPermission = CurrentResourceIsAdmin;
-            if (!hasPermission)
-            {
-                var sType = type.ToString();
-                hasPermission = Any<SecurityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
-            }
-
-            return hasPermission;
-        }
-
-        #endregion
 
         #region Relationships
 
@@ -1168,8 +1025,8 @@ from	TaxonomyType
             var sSubject = subject.ToString();
             var sObject = @object.ToString();
 
-            var subjectDetail = GetObjectDetail(subject, subjectID);
-            var objectDetail = GetObjectDetail(@object, objectID);
+            var subjectDetail = GetObjectDetail(subject.ToString(), subjectID);
+            var objectDetail = GetObjectDetail(@object.ToString(), objectID);
 
             if (subjectDetail == null)
                 throw new NotFoundException("Subject");
@@ -1747,17 +1604,6 @@ where	R.SourceObject = 'FusionAttribute'
             return Database.SqlQuery<MostActiveUserReportModel>("report.GetMostActiveUsers").AsQueryable();
         }
 
-        //public SocialStatisticsByObject GetSocialStatisticsByObject(SystemObjects type, int id)
-        //{
-        //    return
-        //    ExecuteQuery<SocialStatisticsByObject>("tile.GetSocialStatisticsByObject @type, @id",
-        //        new List<SqlParameter>() {
-        //            new SqlParameter("type", type.ToString()),
-        //            new SqlParameter("id", id)
-        //        }
-        //    ).FirstOrDefault();
-        //}
-
         public dynamic GetSocialDataForCurrentResource()
         {
             return Query<dynamic>(@"
@@ -2203,7 +2049,7 @@ full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @
                             
                             break;
                         case EntityState.Deleted:
-                            if (Any<Responsibility>(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == o.ID))
+                            if (Any<ResponsibilityTypeRelationOverrideItem>(i => i.SecurityAsset == "G" && i.SecurityAssetID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
                             
                             break;
@@ -2416,7 +2262,7 @@ select @err";
                                 )) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            if (Any<Responsibility>(i =>
+                            if (Any<ResponsibilityTypeRelationOverrideItem>(i =>
                                 i.ResponsibilityTypeID == o.ID
                                 )) throw new ArgumentException(Messages.Error_ResponsibilityType_ExistingResponsibilities);
                             break;
@@ -2488,26 +2334,6 @@ select @err";
                 }
                 #endregion
 
-                #region Business logic : StatisticType
-                if (entry.Entity is StatisticType)
-                {
-                    var o = entry.Entity as StatisticType;
-                    var id = o.ID.ToString();
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<StatisticType>(i => i.Name == o.Name && i.Object == o.Object && i.ObjectID == o.ObjectID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<StatisticType>(i => i.Name == o.Name && i.Object == o.Object && i.ObjectID == o.ObjectID && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
                 #region Business logic : SurveyType
                 if (entry.Entity is SurveyType)
                 {
@@ -2554,8 +2380,6 @@ select @err";
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_RelationshipReference);
                             if (Any<Taxonomy>(i => i.ParentID == o.ID)) 
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_ChildModelsExist);
-                            if (Any<Responsibility>(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
-                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_PeopleResponsibilitiesExist);
                             
                             break;
                         //case EntityState.Modified:

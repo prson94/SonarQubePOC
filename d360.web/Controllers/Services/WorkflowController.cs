@@ -498,7 +498,7 @@ order by wi.StartedOn desc";
 
                 var @object = (SystemObjects)Enum.Parse(typeof(SystemObjects), item.Object);
                 
-                var obj = Company.GetObjectDetail(@object, item.ObjectID);
+                var obj = Company.GetObjectDetail(item.Object, item.ObjectID);
 
                 var type = SystemObjects.IssueType;
 

@@ -95,28 +95,6 @@ namespace d360.core.entities
         public string FullName { get { return FirstName + " " + LastName; } }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
-    public class OverlayEventHeader : BaseObject
-    {
-        [DataMember]
-        public string Rule { get; set; }
-
-        [DataMember]
-        public int ID { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Status { get; set; }
-
-        [DataMember]
-        public DateTime? Date { get; set; }
-
-        [DataMember]
-        public int Count { get; set; }
-    }
-
     public partial class IntersectTypeOption
     {
         public int ID { get; set; }
@@ -155,17 +133,6 @@ namespace d360.core.entities
         public int Total { get; set; }
         [DataMember]
         public string Requestor { get; set; }
-    }
-
-    public class TopNavigation
-    {
-        public int ResourceID { get; set; }
-        public string ResourceName { get; set; }
-        public string ResourceImageUrl { get; set; }
-        public string ResourceUrl { get; set; }
-        public string LastLoggedInDate { get; set; }
-        public List<TopNavigationItem> NavigationItems { get; set; }
-
     }
 
     public class TopNavigationItem
@@ -208,17 +175,15 @@ namespace d360.core.entities
 
     public class ObjectResult
     {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
+        public long AssetID { get; set; }
         public string Name { get; set; }
     }
 
     public class SecurityResult
     {
-        public int ResourceID { get; set; }
-        public string ResourceName { get; set; }
-        public int? GroupID { get; set; }
-        public string GroupName { get; set; }
+        public string SecurityAsset { get; set; }
+        public int SecurityAssetID { get; set; }
+        public string Name { get; set; }
     }
 
     public class EndResult
@@ -227,11 +192,10 @@ namespace d360.core.entities
 
         public int ResponsibilityTypeID { get; set; }
 
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
+        public long AssetID { get; set; }
 
-        public int ResourceID { get; set; }
-        public int? GroupID { get; set; }
+        public string SecurityAsset { get; set; }
+        public int SecurityAssetID { get; set; }
     }
 
     #endregion
@@ -334,35 +298,6 @@ namespace d360.core.entities
         public List<ReportSchemaModel> Items { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
-    public class Property: BaseObject
-    {
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Value { get; set; }
-    }
-
-    [DataContract(Namespace = NAMESPACE)]
-    public class BulkLoadCacheEntryModel : BaseObject
-    {
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Object { get; set; }
-
-        [DataMember]
-        public int TypeID { get; set; }
-
-        [DataMember]
-        public int GroupID { get; set; }
-
-        [DataMember]
-        public int ObjectID { get; set; }
-    }
-
     public class BulkLoadRelationModel
     {
         public string DisplayValue { get; set; }
@@ -384,15 +319,6 @@ namespace d360.core.entities
         //public int FieldTypeID { get; set; }
         public string Value { get; set; }
         public int ObjectID { get; set; }
-    }
-
-    [DataContract(Namespace = NAMESPACE)]
-    public class SimpleTypeModel : BaseObject
-    {
-        [DataMember]
-        public string Name { get; set; }
-        [DataMember]
-        public int ID { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]
@@ -421,6 +347,4 @@ namespace d360.core.entities
         public string attributeIDs { get; set; }
         public string ObjectType { get; set; }
     }
-
-
 }

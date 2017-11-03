@@ -12,8 +12,6 @@ using System.Web.Mvc;
 
 namespace d360.web.Models
 {
-    #region Abstract Classes
-
     public abstract class BaseEditorModel
     {
         public string FormUri { get; set; }
@@ -27,162 +25,15 @@ namespace d360.web.Models
         public bool IsUsed { get; set; }
     }
 
-    public class BaseObjectModel
-    {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-    }
-
-    public abstract class BaseResponsibilityEditorModel : BaseEditorModel
-    {
-        public BaseResponsibilityEditorModel()
-        {
-            Contexts = new List<SelectListItem>();
-            ResponsibilityTypes = new List<SelectListItem>();
-        }
-
-        public Responsibility Responsibility { get; set; }
-        public List<SelectListItem> Contexts { get; set; }
-        public List<SelectListItem> ResponsibilityTypes { get; set; }
-    }
-
-    /// <summary>
-    /// Serves as the base editor model for all forms.
-    /// </summary>
-    //public class EditorModel
-    //{
-    //    public string Title { get; set; }
-    //    public string Description { get; set; }
-    //    public string Uri { get; set; }
-    //    public string Method { get; set; }
-    //    public string Context { get; set; }
-
-    //    public bool HasPermission { get; set; }
-    //}
-
-    #endregion
-
-    public class AddItemsToDiagramModel
-    {
-        public List<AddItemsToDiagramItem> Items { get; set; }
-    }
-
-    public class AddItemsToDiagramItem
-    {
-        public int Position { get; set; }
-        public int IntersectTypeID { get; set; }
-        public SystemObjects Subject { get; set; }
-        public int SubjectID { get; set; }
-        public SystemObjects Object { get; set; }
-        public int ObjectID { get; set; }
-        public int IntersectID { get; set; }
-        public string ErrorMessage { get; set; }
-
-        public IntersectDetail Intersect { get; set; }
-    }
-
-    public class MapRulesModel
-    {
-        public List<MapRuleModel> Rules { get; set; }
-    }
-
-    public class MapRuleModel
-    {
-        public int ID { get; set; }
-        public int SourceIntersectID { get; set; }
-        public string SourceDiagramKey { get; set; }
-        public int TargetIntersectID { get; set; }
-        public string TargetDiagramKey { get; set; }
-        public List<MapRuleItemModel> Sources { get; set; }
-        public List<MapRuleItemModel> Targets { get; set; }
-        public string Transformation { get; set; }
-    }
-
-    public class MapRuleItemModel
-    {
-        public int ID { get; set; }
-        public int IntersectID { get; set; }
-        public int FusionAttributeID { get; set; }
-        public string FusionAttributeTextPath { get; set; }
-    }
-
     public class ExternalScoreModel
     {
         public decimal Value { get; set; }
-    }
-
-    public class SourcePostModel
-    {
-        public SourcePostModel()
-        {
-            Adds = new List<SourcePostAddModel>();
-            Deletes = new List<SourcePostDeleteModel>();
-            Edits = new List<SourcePostEditModel>();
-        }
-
-        public List<SourcePostAddModel> Adds { get; set; }
-        public List<SourcePostDeleteModel> Deletes { get; set; }
-        public List<SourcePostEditModel> Edits { get; set; }
     }
 
     public class KnockoutDisplayItem
     {
         public string title { get; set; }
         public string value { get; set; }
-    }
-
-    public class SourcePostAddModel
-    {
-        public int SourceIntersectID { get; set; }
-        public string SourceKey { get; set; }
-        public int TargetIntersectID { get; set; }
-        public string TargetKey { get; set; }
-        public int IntersectRoleID { get; set; }
-        public string Transformation { get; set; }
-
-        /// <summary>
-        /// The current object that we are creating sources for.
-        /// </summary>
-        public string Focal { get; set; }
-
-        /// <summary>
-        /// The current object's ID that we are creating sources for.
-        /// </summary>
-        public int FocalID { get; set; }
-
-        public string Subject { get; set; }
-        public int SubjectID { get; set; }
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public int PredicateID { get; set; }
-    }
-
-    public class SourcePostDeleteModel
-    {
-        public int MapID { get; set; }
-
-        /// <summary>
-        /// The current object that we are deleting sources for.
-        /// </summary>
-        public SystemObjects Focal { get; set; }
-
-        /// <summary>
-        /// The current object's ID that we are deleting sources for.
-        /// </summary>
-        public int FocalID { get; set; }
-
-        public int IntersectMapID { get; set; }
-    }
-
-    public class SourcePostEditModel
-    {
-        public int MapID { get; set; }
-        public int IntersectRoleID { get; set; }
-        public string Transformation { get; set; }
-
-
-        public int IntersectMapID { get; set; }
-        public int PredicateID { get; set; }
     }
 
     public class SynonymEditModel
@@ -217,41 +68,11 @@ namespace d360.web.Models
         public string IconForeColor { get; set; }
     }
 
-    public class IntersectTypePredicateEditorModel : BaseEditorModel
-    {
-        public int IntersectTypeID { get; set; }
-
-        public List<Predicate> AllocatedPredicates { get; set; }
-        public List<Predicate> AvailablePredicates { get; set; }
-    }
-
-    public class AttributeTypeEditorModel : BaseEditorModel
-    {
-        public AttributeTypeEditorModel()
-        {
-            IsUsed = false;
-        }
-
-        public AttributeType AttributeType { get; set; }
-
-        public List<SelectListItem> Tokens { get; set; }
-
-        public List<SelectListItem> AttributeTypeCategories { get; set; }
-    }
-
     public class ClaimsMatrixEditorItemModel
     {
         public Claim Claim { get; set; }
         public ClaimObject ClaimObject { get; set; }
         public int? ID { get; set; }
-    }
-
-    public class ClaimsMatrixEditorModel
-    {
-        public string ObjectType { get; set; }
-        public int ObjectID { get; set; }
-        public int? ResponsibilityTypeID { get; set; }
-        public List<ClaimsMatrixEditorItemModel> Items { get; set; }
     }
 
     public class CompanySettingsIpRestrictionEditorModel
@@ -390,26 +211,6 @@ namespace d360.web.Models
 
     [DataContract(Name = "list", Namespace = constants.NAMESPACE)]
     public class EditableFieldLookupList : List<EditableFieldLookupItem> { }
-
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class EditableForm
-    {
-        public EditableForm()
-        {
-            FormSize = EditableForm.FormSize_Medium;
-        }
-        internal static string FormSize_Small = "small";
-        internal static string FormSize_Medium = "medium";
-        internal static string FormSize_Large = "large";
-
-        public string Context { get; set; }
-        public string FormTitle { get; set; }
-        public string FormDescription { get; set; }
-        public string FieldUri { get; set; }
-        public string FormUri { get; set; }
-        public string FormMethod { get; set; }
-        public string FormSize { get; set; }
-    }
 
     public class FieldTypeItemDisplayFieldEditorModel
     {
@@ -691,20 +492,6 @@ namespace d360.web.Models
         public string regex { get; set; }
     }
 
-    public class FormHeaderEditorModel 
-    {
-        public FormHeaderEditorModel()
-        {
-            SaveActionName = "Save";
-        }
-
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Context { get; set; }
-        public string SaveActionName { get; set; }
-    }
-       
-
     public class FusionRuleEditorModel
     {
         public int FusionTypeID { get; set; }
@@ -868,17 +655,6 @@ namespace d360.web.Models
         public bool Accept { get; set; } = false;
     }
 
-
-    public class PeopleResponsibilityEditorModel : BaseResponsibilityEditorModel
-    {
-        public PeopleResponsibilityEditorModel()
-        {
-            Resources = new List<SelectListItem>();
-        }
-
-        public List<SelectListItem> Resources { get; set; }
-    }
-
     public class HierarchyPostModel : BaseEditorModel
     {
         public HierarchyPostModel()
@@ -964,45 +740,7 @@ namespace d360.web.Models
             return valid;
         }
     }
-
-    public class StatisticTypeEditorModel : BaseEditorModel
-    {
-        public StatisticTypeEditorModel()
-        {
-            ExistenceCheckItems = new List<SelectListItem>();
-            CountCheckItems = new List<SelectListItem>();
-            PropertyExistenceCheckItems = new List<SelectListItem>();
-            PropertyValueCheckItems = new List<SelectListItem>();
-            RelationshipCheckItems = new List<SelectListItem>();
-            RollupCheckItems = new List<SelectListItem>();
-        }
-
-        public StatisticType StatisticType { get; set; }
-
-        public string ObjectTypeInfo { get; set; }
-
-        public string PropertyName { get; set; }
-
-        public string Value { get; set; }
-
-        //Event metric fields
-        public string ValidFieldName { get; set; }
-        public string InvalidFieldName { get; set; }
-        public string Threshold { get; set; }
-
-        public List<SelectListItem> ExistenceCheckItems { get; set; }
-
-        public List<SelectListItem> CountCheckItems { get; set; }
-
-        public List<SelectListItem> PropertyValueCheckItems { get; set; }
-
-        public List<SelectListItem> PropertyExistenceCheckItems { get; set; }
-
-        public List<SelectListItem> RelationshipCheckItems { get; set; }
-
-        public List<SelectListItem> RollupCheckItems { get; set; }
-    }
-            
+           
     public class LineageEditorModel
     {
         public SystemObjects Focal { get; set; }

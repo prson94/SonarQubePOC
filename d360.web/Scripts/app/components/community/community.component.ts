@@ -32,7 +32,7 @@ import { ResponsibilityTypeCount, ResourceResponsibilityTypeCount } from '../../
             </div>
             <div class="col s12" *ngIf="selectedResource">
                 <div class="tile tile-detail">   
-                   <d3s-resource-responsibility-tile [resourceId]="selectedResource.ResourceID"></d3s-resource-responsibility-tile>
+                   <d3s-resource-responsibility-tile [responsibilityTypeId]="selectedResponsibilityId" [resourceId]="selectedResource.ResourceID"></d3s-resource-responsibility-tile>
                 </div>
             </div>
         </div>
@@ -44,7 +44,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     private responsibilitiesPie: Object;
     private selectedResponsibilityId: number = 0;
     private selectedResponsibilityName: string;
-    private selectedResourceId: ResourceResponsibilityTypeCount;
+    private selectedResource: ResourceResponsibilityTypeCount;
     
     constructor(protected responsibilityTypeService: ResponsibilityTypeService,
         protected titleService: Title,

@@ -36,38 +36,6 @@ namespace d360.extensions.queue
             await CreateMessagesAsync(queueName, list);
         }
 
-        //public void CreateMessage(string queueName, QueueObject item)
-        //{
-        //    var list = new List<QueueObject>() { item };
-        //    CreateMessages(queueName, list);
-        //}
-
-        //public void CreateMessages(string queueName, List<QueueObject> items)
-        //{
-        //    try
-        //    {
-        //        var queueClient = new CloudQueueClient(
-        //            new Uri($"https://{constants.AZURE_STORAGE_NAME}.queue.core.windows.net/"),
-        //            getCredentials()
-        //        );
-
-        //        var queue = queueClient.GetQueueReference(queueName);
-
-        //        items.ForEach(item =>
-        //        {
-        //            var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
-        //            queue.AddMessage(msg);
-        //        });
-
-        //        queue = null;
-        //        queueClient = null;                
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
-        //    }
-        //}
-
         public void CreateMessages<T>(string queueName, List<T> items)
         {
             try
@@ -115,68 +83,6 @@ namespace d360.extensions.queue
 
                 queue = null;
                 queueClient = null;
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
-            }
-        }
-
-        public void CreateMessage(QueueType type, QueueObject item)
-        {
-            var list = new List<QueueObject>() { item };
-            CreateMessages(type, list);
-        }
-
-        public void CreateMessages(QueueType type, List<QueueObject> items)
-        {            
-            var queueName = "";
-
-            switch (type)
-            {
-                case QueueType.BulkLoad:
-                    queueName = "d3s-bulkload";
-                    break;
-                case QueueType.BulkLoadDev:
-                    queueName = "d3s-bulkload-debug";
-                    break;
-                case QueueType.Events:
-                    queueName = "d3s-events";
-                    break;
-                case QueueType.EventsDev:
-                    queueName = "d3s-events-debug";
-                    break;
-                case QueueType.CommunityAction:
-                    queueName = "community-actions";
-                    break;
-                case QueueType.CommunityProcess:
-                    queueName = "community-processes";
-                    break;
-                case QueueType.CompanyAction:
-                    queueName = "d3s-actions";
-                    break;
-                case QueueType.CompanyProcess:
-                    queueName = "company-processes";
-                    break;
-            }
-
-            try
-            {
-                var queueClient = new CloudQueueClient(
-                    new Uri($"https://{constants.AZURE_STORAGE_NAME}.queue.core.windows.net/"),
-                    getCredentials()
-                );
-
-                var queue = queueClient.GetQueueReference(queueName);
-
-                items.ForEach(item =>
-                {
-                    var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
-                    queue.AddMessage(msg);
-                });
-
-                queue = null;
-                queueClient = null;                
             }
             catch (Exception ex)
             {

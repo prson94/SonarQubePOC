@@ -1,4 +1,4 @@
-﻿<div *ngIf="objectType && objectID">
+﻿<div *ngIf="assetID">
     <div>
         <header>
             {{title}}
@@ -13,32 +13,30 @@
             <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" />
             <p-dataTable #dt [globalFilter]="gb" [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" (onRowDblclick)="onDoubleClick($event)">
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                <p-column field="Role" header="Role" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
-                <p-column field="ResponsibleObjectName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter">
+                <p-column field="ResponsibilityTypeName" header="Role" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
+                <p-column field="LastName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <d3s-tooltip [objectType]="item.ResponsibleObjectType" [objectId]="item.ResponsibleObjectID" [tooltipType]="'Preview'">
-                            <a (click)="navigate(item.ResponsibleObjectUrl)">{{item.ResponsibleObjectName}}</a>
+                        <d3s-tooltip [objectType]="'Resource'" [objectId]="item.ResourceID" [tooltipType]="'Preview'">
+                            <!--<a (click)="navigate(item.ResponsibleObjectUrl)">{{item.ResponsibleObjectName}}</a>-->
+                            {{item.FirstName}} {{item.LastName}}
                         </d3s-tooltip>
                     </ng-template>
                 </p-column>
-                <p-column field="PrimaryOwnerResourceName" header="Group Owner" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter">
+                <p-column field="SecurityAssetName" header="Via Group" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <d3s-tooltip objectType="Resource" [objectId]="item.PrimaryOwnerResourceID" [tooltipType]="'Preview'">
-                            <a (click)="navigate(item.PrimaryOwnerResourceUrl)">{{item.PrimaryOwnerResourceName}}</a>
-                        </d3s-tooltip>
+                        <div *ngIf="item.SecurityAsset != 'R'">{{item.SecurityAssetName}}</div>
                     </ng-template>
                 </p-column>
-                <p-column field="ContextItems" header="Context" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column [style]="{'width':'28px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="item.AssigningItemID == item.ObjectID && item.AssigningItemType == item.ObjectType" class="RowTools">
+                        <div *ngIf="!item.RuleName" class="RowTools">
                             <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
                         </div>
                     </ng-template>
                 </p-column>
                 <p-column [style]="{'width':'28px'}">
                     <ng-template let-item="rowData" pTemplate type="body">
-                        <div *ngIf="item.AssigningItemID == item.ObjectID && item.AssigningItemType == item.ObjectType"  class="RowTools">                            
+                        <div *ngIf="!item.RuleName"  class="RowTools">                            
                             <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </ng-template>
@@ -49,10 +47,10 @@
             <d3s-responsibility-item-form [item]="selectedRow" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
         </div>
         <div *ngIf="isDeleting" style="padding:15px;">
-            <d3s-delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.ID"
+            <d3s-delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.OverrideItemID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to delete this owner?'"
-                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.ID)"
+                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.OverrideItemID)"
                          (onCancel)="isDeleting=false;">
             </d3s-delete-form>
         </div>

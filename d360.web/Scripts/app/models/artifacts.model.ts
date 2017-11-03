@@ -17,6 +17,7 @@ export class Artifact {
     HasWorkflow: boolean;
     HasChildArtifacts: boolean;
     ID: number;
+    AssetID: number;
     DisplayValue: string;
     TypeName: string;
     Breadcrumbs: BreadcrumbItem[];

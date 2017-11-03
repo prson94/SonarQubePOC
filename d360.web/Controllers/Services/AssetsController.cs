@@ -83,10 +83,7 @@ namespace d360.web.Controllers.Services
                 assetTable.Columns.Add("SourceID", typeof(string));
                 assetTable.Columns.Add("Message", typeof(string));
                 assetTable.Columns.Add("Success", typeof(bool));
-                assetTable.Columns.Add("TaxonomyTypeID", typeof(int));
                 assetTable.Columns.Add("ParentID", typeof(int));
-                assetTable.Columns.Add("Name", typeof(string));
-                assetTable.Columns.Add("Description", typeof(string));
                 assetTable.Columns.Add("ArtifactID", typeof(int));
                 assetTable.Columns.Add("IsNew", typeof(bool));
 
@@ -99,8 +96,9 @@ namespace d360.web.Controllers.Services
 
                 #region Parent validation. Do they exist?
 
+                var unvalidatedParentSourceIDs = new List<string>();
                 var unvalidatedParents = new List<int>();
-                var validatedParents = new List<int>();
+                var validatedParents = new Dictionary<int, string>();
                 var parentArtifactTypeName = "";
                 if (artifactType.ParentID.HasValue)
                 {
@@ -118,11 +116,32 @@ namespace d360.web.Controllers.Services
                                 }
                             }
                         }
+                        if (model.ContainsKey("ParentSourceID"))
+                        {
+                            unvalidatedParentSourceIDs.Add(model["ParentSourceID"].Trim());
+                        }
                     }
 
                     if (unvalidatedParents.Count > 0)
                     {
-                        validatedParents = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID.Value && unvalidatedParents.Contains(i.ID)).Select(i => i.ID).ToList();
+                        var pList = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID.Value && unvalidatedParents.Contains(i.ID)).Select(i => new { k = i.ID, v = i.ID.ToString() }).ToList();
+                        pList.ForEach(i =>
+                        {
+                            validatedParents.Add(i.k, i.v);
+                        });
+                    }
+                    if (unvalidatedParentSourceIDs.Count > 0)
+                    {
+                        var pList = Company.Filter<Artifact>(i => 
+                            i.ArtifactTypeID == artifactType.ParentID.Value && 
+                            unvalidatedParentSourceIDs.Contains(i.SourceID) )
+                        .Select(i => new { k = i.ID, v = i.SourceID.ToString() })
+                        .ToList();
+                        pList.ForEach(i =>
+                        {
+                            if (!validatedParents.ContainsKey(i.k))
+                                validatedParents.Add(i.k, i.v);
+                        });
                     }
 
                     parentArtifactTypeName = artifactType.Parent.Name.ToLower();
@@ -135,31 +154,31 @@ namespace d360.web.Controllers.Services
                     var model = import[i - 1];
                     var result = new AssetImportResult { ItemNumber = i, Message = "", Success = true };
 
-                    if (!model.ContainsKey("Name"))
-                    {
-                        result.Message += "Name property not present for asset; ";
-                        result.Success = false;
-                    }
-
-                    if (!model.ContainsKey("TaxonomyTypeID"))
-                    {
-                        result.Message += "TaxonomyTypeID property not present for asset; ";
-                        result.Success = false;
-                    }
-
                     if (artifactType.ParentID.HasValue)
                     {
                         if (model.ContainsKey("ParentID"))
                         {
-                            if (!validatedParents.Contains(int.Parse(model["ParentID"])))
+                            if (!validatedParents.ContainsKey(int.Parse(model["ParentID"])))
                             {
                                 result.Message += $"Value ({model["ParentID"]}) in ParentID property does not correspond to a known {parentArtifactTypeName}.; ";
                                 result.Success = false;
                             }
                         }
+                        else if (model.ContainsKey("ParentSourceID"))
+                        {
+                            if (validatedParents.ContainsValue(model["ParentSourceID"].Trim()))
+                            {
+                                model["ParentID"] = validatedParents.First(vP => vP.Value == model["ParentSourceID"].Trim()).Key.ToString();
+                            }
+                            else
+                            {
+                                result.Message += $"Value ({model["ParentSourceID"]}) in ParentSourceID property does not correspond to a known {parentArtifactTypeName}.; ";
+                                result.Success = false;
+                            }
+                        }
                         else
                         {
-                            result.Message += "ParentID property not present for asset; ";
+                            result.Message += "Neither ParentID nor ParentSourceID properties are present for asset;";
                             result.Success = false;
                         }
                     }
@@ -175,18 +194,16 @@ namespace d360.web.Controllers.Services
 
                         row["ItemNumber"] = result.ItemNumber;
                         row["SourceID"] = result.SourceID;
-                        row["TaxonomyTypeID"] = int.Parse(model["TaxonomyTypeID"]);
                         if (model.ContainsKey("ParentID"))
                         {
                             row["ParentID"] = int.Parse(model["ParentID"]);
                         }
-                        row["Name"] = model["Name"];
 
                         assetTable.Rows.Add(row);
 
                         foreach (var k in model.Keys)
                         {
-                            if (k != "Name" && k != "TaxonomyTypeID" && k != "ParentID" && k != "SourceID" && k != "Description")
+                            if (k != "ParentID" && k != "ParentSourceID" && k != "SourceID")
                             {
                                 if (!string.IsNullOrEmpty(model[k]))
                                 {
@@ -224,10 +241,7 @@ create table #AssetTable (
     SourceID nvarchar(1000) null,
     Message nvarchar(2500) null,
     Success bit null,
-    TaxonomyTypeID int not null,
     ParentID int null,
-    Name nvarchar(250) not null,
-    Description nvarchar(max) not null,
     ArtifactID int null,
     IsNew bit null
 )", transaction: trans);
@@ -245,10 +259,7 @@ create table #AssetTable (
                     assetBulkCopy.ColumnMappings.Add("SourceID", "SourceID");
                     assetBulkCopy.ColumnMappings.Add("Message", "Message");
                     assetBulkCopy.ColumnMappings.Add("Success", "Success");
-                    assetBulkCopy.ColumnMappings.Add("TaxonomyTypeID", "TaxonomyTypeID");
                     assetBulkCopy.ColumnMappings.Add("ParentID", "ParentID");
-                    assetBulkCopy.ColumnMappings.Add("Name", "Name");
-                    assetBulkCopy.ColumnMappings.Add("Description", "Description");
                     assetBulkCopy.ColumnMappings.Add("ArtifactID", "ArtifactID");
                     assetBulkCopy.ColumnMappings.Add("IsNew", "IsNew");
 
@@ -304,9 +315,7 @@ on          (
                 T.ArtifactTypeID = @id and 
                 ( 
                     (
-                        S.TaxonomyTypeID = T.TaxonomyTypeID and 
                         {parentOnMergeQuery}
-                        S.Name = T.Name and 
                         (S.SourceID is null or S.SourceID = '')
                     ) or 
                     (
@@ -318,15 +327,12 @@ on          (
             )
 when matched then
     update set
-            T.TaxonomyTypeID = S.TaxonomyTypeID,
             T.ParentID = S.ParentID,
-            T.Name = S.Name,
-            T.Description = S.Description,
             T.UpdatedBy = @r,
             T.UpdatedOn = getutcdate()
 when not matched by target then
-    insert  (ArtifactTypeID, TaxonomyTypeID, ParentID, SourceID, Name, Description, Status, CreatedOn, UpdatedBy, UpdatedOn, Visible)
-    values  (@id, S.TaxonomyTypeID, S.ParentID, S.SourceID, S.Name, S.Description, 'Draft', getutcdate(), @r, getutcdate(), 1)
+    insert  (ArtifactTypeID, ParentID, SourceID, CreatedOn, UpdatedBy, UpdatedOn, Visible)
+    values  (@id, S.ParentID, S.SourceID, getutcdate(), @r, getutcdate(), 1)
 output inserted.ID, S.ItemNumber, $action into #ArtifactMergeTableResult;
 
 update  T

@@ -427,6 +427,16 @@
               Looks up a localized string similar to Display Description.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.DisplayFormat_Description">
+            <summary>
+              Looks up a localized string similar to The display format must be provided to properly render the text-based display value of the item..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.DisplayFormat_Name">
+            <summary>
+              Looks up a localized string similar to Display Format.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.DisplayStyle_Name">
             <summary>
               Looks up a localized string similar to Display Style.
@@ -2461,63 +2471,6 @@
         <member name="M:d360.web.Controllers.FormController.Group_EditFields(System.Int32)">
             <param name="id">GroupID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_IntersectTypes">
-            <summary>
-            Gets a list of intersect types that support lineage.
-            </summary>
-            <returns>A list of relevant fusion attribute types.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_MapSubjects(System.Int32)">
-            <summary>
-            Gets a list of subjects based on the given intersect type.
-            </summary>
-            <param name="id">The Intersect Type's ID</param>
-            <returns>A list of name/value pairs.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_MapObjects(System.Int32)">
-            <summary>
-            Gets a list of objects based on the given intersect type.
-            </summary>
-            <param name="id">The Intersect Type's ID</param>
-            <returns>A list of name/value pairs.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.MapRule_FindFusion(System.Int32,System.String)">
-            <summary>
-            Gets a list of fusion attributes based on a search string provided 
-            that should match part of the TextPath of the fusoin attribute.
-            </summary>
-            <param name="intersectID">The intersectID we are searching under.</param>
-            <param name="phrase">Part of the text path to search for.</param>
-            <returns>A list of name/value pairs.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.MapRulesByMap(d360.web.Models.SourceTargetIntersectModel)">
-            <summary>
-            Gets a list of map rules based on the currently selected map.
-            </summary>
-            <param name="model">The intersectID we are searching under.</param>
-            <returns>A deep hierarchy of map rules.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.MapRulesByObject(d360.web.Models.SourceTargetIntersectModels)">
-            <summary>
-            Gets a list of map rules based on the currently selected object.
-            </summary>
-            <param name="models">A collection of source/target intersect IDs.</param>
-            <returns>A deep hierarchy of map rules.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_AddItemsToDiagram(d360.web.Models.AddItemsToDiagramModel)">
-            <summary>
-            Creates relationships for the various objects the user is adding to the diagram.
-            </summary>
-            <param name="model">An array of items to add relationships for.</param>
-            <returns>A list of name/value pairs.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_Update(d360.web.Models.SourcePostModel)">
-            <summary>
-            Creates relationships for the various objects the user is adding to the diagram.
-            </summary>
-            <param name="models">An array of items to add relationships for.</param>
-            <returns>A list of name/value pairs.</returns>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Lookup_AddFields(System.Int32)">
             <param name="id">LookupTypeID</param>
         </member>
@@ -2616,8 +2569,8 @@
         <member name="M:d360.web.Controllers.FormController.ReportTile_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Responsibility_DeleteFields(System.Int32)">
-            <param name="id">ResponsibilityID</param>
+        <member name="M:d360.web.Controllers.FormController.Responsibility_DeleteFields(System.Int64)">
+            <param name="id">ResponsibilityTypeRelationOverrideItemID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.ResponsibilityType_DeleteFields(System.Int32)">
             <param name="id">ResponsibilityTypeID</param>
@@ -2769,31 +2722,6 @@
         <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.WhereStatement">
             <summary>
             Generated when it comes time to create a dynamic SQL query.
-            </summary>
-        </member>
-        <member name="T:d360.web.Models.AddItemsToDiagramModel">
-            <summary>
-            Serves as the base editor model for all forms.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.SourcePostAddModel.Focal">
-            <summary>
-            The current object that we are creating sources for.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.SourcePostAddModel.FocalID">
-            <summary>
-            The current object's ID that we are creating sources for.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.SourcePostDeleteModel.Focal">
-            <summary>
-            The current object that we are deleting sources for.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.SourcePostDeleteModel.FocalID">
-            <summary>
-            The current object's ID that we are deleting sources for.
             </summary>
         </member>
         <member name="P:d360.web.Models.FieldValidationModel.message">

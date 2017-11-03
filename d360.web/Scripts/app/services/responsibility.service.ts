@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FormHelper, SelectItem } from '../models/form.model';
-import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityContextItem, IResponsibilityService } from '../models/responsibility.model';
+import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService } from '../models/responsibility.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { JsonResult } from '../models/jsonresult.model'
@@ -11,29 +11,23 @@ export class ResponsibilityService extends BaseService implements IResponsibilit
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getResponsibilityDetail(objectID: number, objectType: string, showHidden: boolean = true): Promise<ResponsibilityItem[]> {
-        return this.http.get(`api/${objectType}/${objectID}/ownership/${showHidden}`)
+    getResponsibilityDetail(assetID: number): Promise<ResponsibilityItemDetail[]> {
+        return this.http.get(`api/${assetID}/ownership`)
             .toPromise()
-            .then(response => <ResponsibilityItem[]>response.json())
-            .then(r => {
-                //TODO: use same model in api get as post instead of Responsibility vs ResponsibilityDetail???
-                r.forEach(i => i.ID = i.ResponsibilityID);
-                return r;
-            })
+            .then(response => <ResponsibilityItemDetail[]>response.json())
             .catch(err=>this.handleError(err));
     }
 
-    getResponsibilityItemEditor(objectID: number, objectType: string, responsibilityID: number): Promise<ResponsibilityEditorModel> {
-        return this.http.get(`form/Responsibility?responsibilityID=${responsibilityID}&id=${objectID}&type=${objectType}`)
+    getResponsibilityItemEditor(assetID: number, responsibilityID: number): Promise<ResponsibilityEditorModel> {
+        return this.http.get(`form/Responsibility?assetID=${assetID}&overrideID=${responsibilityID}`)
             .toPromise()
             .then(response => <ResponsibilityEditorModel>response.json())
             .then(model => {
                 FormHelper.mapSelectItems(model.resources);
                 FormHelper.mapSelectItems(model.responsibilityTypes);
-                FormHelper.mapSelectItems(model.contexts);
 
-                if (model.responsibility.ResponsibleObjectType)
-                    model.selectedResource = model.responsibility.ResponsibleObjectType + '|' + model.responsibility.ResponsibleObjectID;
+                if (model.responsibility.SecurityAsset)
+                    model.selectedResource = model.responsibility.SecurityAsset + '|' + model.responsibility.SecurityAssetID;
                 else if (model.resources && model.resources.length > 0)
                     model.selectedResource = model.resources[0].value;
 
@@ -42,10 +36,7 @@ export class ResponsibilityService extends BaseService implements IResponsibilit
                 else if (model.responsibilityTypes && model.responsibilityTypes.length > 0)
                     model.selectedResponsibilityType = model.responsibilityTypes[0].value;
 
-                model.selectedContexts = model.contexts.filter(c => c.Selected).map(c => c.value);
-
                 return model;
-
             })
             .catch(err=>this.handleError(err));
     }

@@ -9,21 +9,17 @@ namespace d360.core.entities.Metric
     public class MetricMapResult : BaseObject
     {
         [Key, Column(Order = 1)]
-        public int MetricMapID { get; set; }
+        public int MapID { get; set; }
 
         [Key, Column(Order = 2)]
-        public int MetricScoreID { get; set; }
-
-        public DateTime EffectiveStartDate { get; set; }
-
-        public DateTime? EffectiveEndDate { get; set; }
+        public int ScoreID { get; set; }
 
         public bool Value { get; set; }
 
         [IgnoreDataMember]
-        public virtual MetricMap MetricMap { get; set; }
+        public virtual MetricMap Map { get; set; }
 
         [IgnoreDataMember]
-        public virtual MetricScore MetricScore { get; set; }
+        public virtual MetricScore Score { get; set; }
     }
 }

@@ -8,6 +8,9 @@ namespace d360.core.entities
     public class TaxonomyDetail : BaseIntObject, IIntObject
     {
         [DataMember]
+        public long AssetID { get; set; }
+
+        [DataMember]
         public int? ParentID { get; set; }
 
         [DataMember]

@@ -11,17 +11,17 @@ import { Router } from '@angular/router';
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
     <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" [hidden]="!simpleFilter">  
-    <p-dataTable #dt [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
+    <p-dataTable #dt [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single">
         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
         <p-column header="Name" field="ObjectName" [filter]="!simpleFilter" sortable="true">
             <ng-template let-row="rowData" pTemplate type="body">
-                <d3s-tooltip [objectType]="row.ObjectType" [objectId]="row.ObjectID" tooltipType="preview">{{row.ObjectName}}</d3s-tooltip>
+                <d3s-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" tooltipType="preview">{{row.ObjectName}}</d3s-tooltip>
             </ng-template>
         </p-column>
-        <p-column field="Role" header="Role" [filter]="!simpleFilter" sortable="true"></p-column>
-        <p-column header="Current Score" sortable="true" field="CurrentScore">
+        <p-column field="ResponsibilityTypeName" header="Role" [filter]="!simpleFilter" sortable="true"></p-column>
+        <p-column header="Via" field="SecurityAssetName" [filter]="!simpleFilter" sortable="true">
             <ng-template let-row="rowData" pTemplate type="body">
-                <div>{{row.CurrentScore | scoreDisplay }}</div>
+                <div *ngIf="row.SecurityAsset != 'R'">{{row.SecurityAssetName}}</div>
             </ng-template>
         </p-column>
     </p-dataTable>
@@ -51,14 +51,14 @@ export class ResourceResponsibilityGridComponent implements OnChanges {
         this.resourcesService.getResponsibilitiesByResourceByType(this.type, this.Id, this.objectType, this.objectId)
             .then(r => {
                 this.items = r;
-                FormHelper.convertToNgUrl(this.items, 'ObjectUrl');
+                //FormHelper.convertToNgUrl(this.items, 'ObjectUrl');
                 this.isLoading = false;
             });
     }
 
     navigate(e: any) {
-        let url = e.data.ObjectUrl;
-        this.router.navigateByUrl(url);
+        //let url = e.data.ObjectUrl;
+        //this.router.navigateByUrl(url);
 
     }
 }

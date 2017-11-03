@@ -62,7 +62,7 @@ export class ResponsibilityTypeRelationRule {
     Object: string;
     ObjectID: number;
     ObjectString: string;
-    Definition: ResponsibilityTypeRelationRuleDefinition;
+    StructuredDefinition: ResponsibilityTypeRelationRuleDefinition;
 }
 
 export class ResponsibilityTypeRelationRuleDefinition {

@@ -31,8 +31,16 @@ export class ResourcesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getResponsibilityBreakdownByResource(id: number): Promise<CountObject[]> {
-        return this.http.get(`tiles/ResponsibilityBreakdownByResource?id=${id}`)
+    getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Promise<CountObject[]> {
+        var url = "";
+        if (responsibilityTypeId > 0) {
+            url = `tiles/ResponsibilityBreakdownByResource?id=${id}&responsibilityTypeID=${responsibilityTypeId}`;
+        }
+        else {
+            url = `tiles/ResponsibilityBreakdownByResource?id=${id}`;
+        }
+
+        return this.http.get(url)
             .toPromise()
             .then(response => <CountObject[]>response.json())
             .catch(err => this.handleError(err));

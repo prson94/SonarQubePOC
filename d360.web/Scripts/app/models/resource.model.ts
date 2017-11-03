@@ -37,18 +37,18 @@ export class CountObject {
 }
 
 export class ResponsibilityDetailForResource {
-    ResponsibilityID: number;
-    ObjectType: string;
-    ObjectID: number;
+    ResponsibilityTypeID: number;
+    SecurityAsset: string;
+    SecurityAssetID: number;
+    SecurityAssetName: string;
+    Type: string;
+    ID: number;
+    TypeName: string;
+    Object: string;
     ObjectName: string;
-    ObjectTypeID: number;
-    ObjectTypeName: string;
-    ObjectUrl: string;
-    ResponsibleObjectType: string;
-    ResponsibleObjectID: string;
-    FormGroup: boolean;
-    Role: string;
-    CurrentScore: number;
+    ObjectID: number;
+    ResponsibilityTypeName: string;
+    Via: string;
 }
 
 export class FollowingDetailForResource {

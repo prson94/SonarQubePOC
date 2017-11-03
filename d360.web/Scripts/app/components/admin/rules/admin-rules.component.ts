@@ -73,13 +73,6 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">           
-                                    <d3s-people-responsibilities-tile [objectType]="'RuleType'" [objectID]="selected?.ID" [showHidden]="true"></d3s-people-responsibilities-tile>                        
-                                </div>
-                            </div>
-                        </div>
                     <div>
                 </div>  
                 `

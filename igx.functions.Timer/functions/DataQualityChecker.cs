@@ -24,7 +24,7 @@ namespace igx.functions.Timer
         const string timerSettings = "0 */30 * * * *";
         //const string timerSettings = "*/10 * * * * *";
 
-        [FunctionName(functionName)]
+        [FunctionName(functionName), Disable()]
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TraceWriter log) //   
         {
             //https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer#schedule-examples
@@ -49,11 +49,12 @@ select  od.[Object],
 		utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/') as CorrectTextPath
 from    cache.objectdetails od
 where   od.[textpath] != utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/') and
-		od.[object] in ('Artifact','Taxonomy', 'Policy')").ToList();
+		od.[object] in ('Taxonomy', 'Policy')").ToList();
 
                         if (items.Count > 0)
                         {
                             CoreFunction.AITrackEvent(
+                                functionName,
                                 "Invalid Paths Found", 
                                 new System.Collections.Generic.Dictionary<string, string>() { {
                                         "Message",

@@ -7,6 +7,7 @@ import { FormHelper } from '../models/form.model';
 import { JsonResult } from '../models/jsonresult.model';
 import {
     Classification,
+    AssetDetail,
     DetailField,
     DetailRow,
     DetailModel,
@@ -39,6 +40,13 @@ export class ObjectDetailService extends BaseService {
         return this.http.get(`api/${objectType}/${objectID}`)
             .toPromise()
             .then(response => <ObjectDetail>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getAsset(assetID: number): Promise<AssetDetail> {
+        return this.http.get(`api/asset/${assetID}`)
+            .toPromise()
+            .then(response => <AssetDetail>response.json())
             .catch(err => this.handleError(err));
     }
 

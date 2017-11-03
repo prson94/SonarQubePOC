@@ -9,12 +9,6 @@ namespace d360.core.entities
     public class Company : BaseIntObject, IIntObject
     {
         [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Status { get; set; }
-
-        [DataMember]
         public int DatabaseServerID { get; set; }
 
         [DataMember]

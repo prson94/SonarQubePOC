@@ -16,31 +16,16 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
         public string Name { get; set; }
 
-        [
-        DataMember, 
-        Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ResponsibilityTypeGroup_Name", Description = "ResponsibilityTypeGroup_Description")
-        ]
-        public ResponsibilityTypeGroup ResponsibilityTypeGroup { get; set; }
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Description { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
+
         public int? UpdatedBy { get; set; }
 
         #endregion
-
-        [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
-        public virtual ICollection<ResponsibilityTypeClaim> ResponsibilityTypeClaims { get; set; }
-
-        [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
-        public virtual ICollection<ResponsibilityTypeObjectClaim> ResponsibilityTypeObjectClaims { get; set; }
-
+        
         [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
         public virtual ICollection<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
-
-        [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
-        public virtual ICollection<Responsibility> Responsibilities { get; set; }
     }
 }

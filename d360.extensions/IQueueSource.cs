@@ -17,10 +17,6 @@ namespace d360.extensions
 
         Task CreateMessagesAsync<T>(string queueName, List<T> items);
 
-        void CreateMessage(QueueType type, QueueObject item);
-
-        void CreateMessages(QueueType type, List<QueueObject> items);
-
         void CreateTopicMessage(EventInfo e);
         void CreateTopicMessage(string topicName, EventInfo e);
 

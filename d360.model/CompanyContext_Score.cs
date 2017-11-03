@@ -42,20 +42,11 @@ namespace d360.model
 
         public DbSet<ScoreTypeMetricVersion> ScoreTypeMetricVersions { get; set; }
 
-        public DbSet<Statistic> Statistics { get; set; }
-
-        public DbSet<StatisticType> StatisticTypes { get; set; }
-
         public DbSet<StatisticTypeCheckOption> StatisticTypeCheckOptions { get; set; }
 
         #endregion
 
         #region Engine Methods
-
-        public List<StatisticDetail> GetStatisticDetailsByType(SystemObjects type, int id)
-        {
-            return Query<StatisticDetail>($"GetStatisticDetails '{type.ToString()}', {id}").ToList();
-        }
 
         public IEnumerable<dynamic> GetStatisticTypeRollupCheckOptions()
         {

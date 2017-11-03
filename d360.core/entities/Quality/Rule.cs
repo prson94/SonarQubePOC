@@ -18,7 +18,7 @@ namespace d360.core.entities
         public decimal? Threshold { get; set; }
 
         [DataMember]
-        public int? RuleDimensionID { get; set; }
+        public string RuleDimension { get; set; }
 
         [DataMember]
         public string SourceID { get; set; }
@@ -54,6 +54,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int RuleTypeID { get; set; }
+
+        [DataMember]
+        public string SourceID { get; set; }
 
         [DataMember, ForeignKey("RuleTypeID")]
         public RuleType RuleType { get; set; }

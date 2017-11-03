@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Metric
 {
     [DataContract(Namespace = NAMESPACE), Table("Item", Schema = "metrics")]
-    public class MetricItem : BaseCreatedAndUpdatedIntObject
+    public class MetricItem : BaseCreatedAndUpdatedLongObject
     {
         public string Name { get; set; }
 
@@ -13,7 +13,7 @@ namespace d360.core.entities.Metric
 
         public DateTime EffectiveStartDate { get; set; }
 
-        public DateTime? EffectiveEndDate { get; set; }
+        public DateTime EffectiveEndDate { get; set; }
 
     }
 }

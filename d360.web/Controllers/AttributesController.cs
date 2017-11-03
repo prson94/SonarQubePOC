@@ -91,8 +91,8 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    var detail = Company.GetObjectDetail(type, id);
                     var sType = type.ToString();
+                    var detail = Company.GetObjectDetail(sType, id);
                     int _id = id;
 
                     if (detail != null)

@@ -124,6 +124,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The display format must be provided to properly render the text-based display value of the item..
+        /// </summary>
+        public static string DisplayFormat_Description {
+            get {
+                return ResourceManager.GetString("DisplayFormat_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display Format.
+        /// </summary>
+        public static string DisplayFormat_Name {
+            get {
+                return ResourceManager.GetString("DisplayFormat_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Display Style.
         /// </summary>
         public static string DisplayStyle_Name {

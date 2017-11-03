@@ -59,13 +59,10 @@ namespace igx.functions.Timer
                                               {
                                                   RuleID = i.ID,
                                                   ResponsibilityTypeID = i.ResponsibilityTypeID,
-                                                  Object = o.Object,
-                                                  ObjectID = o.ObjectID,
-                                                  ResourceID = s.ResourceID,
-                                                  GroupID = s.GroupID
+                                                  AssetID = o.AssetID,
+                                                  SecurityAsset = s.SecurityAsset,
+                                                  SecurityAssetID = s.SecurityAssetID
                                               });
-
-                                    //company.Execute($"update [{i.Object}] set TextPath = @tp where ID = @id", new { tp = i.CorrectTextPath, id = i.ObjectID });
                                 }
                                 catch (Exception ex)
                                 {
@@ -81,20 +78,21 @@ namespace igx.functions.Timer
                                 {
                                     company.Execute(@"
     set nocount on 
-    create table #ResponsibilityTypeRelationRuleItem (
-	    RuleID int not null,
-	    ResponsibilityTypeID int NOT NULL,
-	    [Object] varchar(50) NOT NULL,
-	    ObjectID int NOT NULL,	
-	    [ResourceID] int not null,
-	    [GroupID] int not null
+    create table #ResponsibilityTypeRelationItem (
+	    RuleID int not null, 
+	    ResponsibilityTypeID int not null, 
+	    AssetID bigint not null, 
+        [SecurityAsset] char(1) not null, 
+	    [SecurityAssetID] int not null
     )
     set nocount off", commandTimeout: 3600, transaction: trans);
+
+                                    #region Bulk insert the rows above.
 
                                     using (var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans))
                                     {
                                         bulkCopy.BatchSize = results.Count;
-                                        bulkCopy.DestinationTableName = "#ResponsibilityTypeRelationRuleItem";
+                                        bulkCopy.DestinationTableName = "#ResponsibilityTypeRelationItem";
                                         bulkCopy.BulkCopyTimeout = 3600;
 
                                         var table = new System.Data.DataTable();
@@ -109,19 +107,15 @@ namespace igx.functions.Timer
                                         table.Columns.Add(columnName, typeof(int));
                                         bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                                        columnName = "Object";
+                                        columnName = "AssetID";
+                                        table.Columns.Add(columnName, typeof(long));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "SecurityAsset";
                                         table.Columns.Add(columnName, typeof(string));
                                         bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                                        columnName = "ObjectID";
-                                        table.Columns.Add(columnName, typeof(int));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "ResourceID";
-                                        table.Columns.Add(columnName, typeof(int));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "GroupID";
+                                        columnName = "SecurityAssetID";
                                         table.Columns.Add(columnName, typeof(int));
                                         bulkCopy.ColumnMappings.Add(columnName, columnName);
 
@@ -133,10 +127,9 @@ namespace igx.functions.Timer
 
                                             row["RuleID"] = item.RuleID;
                                             row["ResponsibilityTypeID"] = item.ResponsibilityTypeID;
-                                            row["Object"] = item.Object;
-                                            row["ObjectID"] = item.ObjectID;
-                                            row["ResourceID"] = item.ResourceID;
-                                            row["GroupID"] = item.GroupID ?? 0;
+                                            row["AssetID"] = item.AssetID;
+                                            row["SecurityAsset"] = item.SecurityAsset;
+                                            row["SecurityAssetID"] = item.SecurityAssetID;
 
                                             table.Rows.Add(row);
                                         }
@@ -144,35 +137,71 @@ namespace igx.functions.Timer
                                         bulkCopy.WriteToServer(table);
                                     }
 
+                                    #endregion
+
+                                    #region  Merge the raw data you compiled above into the item table. These are rule results.
+
                                     company.Execute(@"
-        merge   ResponsibilityTypeRelationRuleItem as T 
-        using   ( 
-                select  *
-                from    #ResponsibilityTypeRelationRuleItem
-                ) as S 
-                on  (
-                    T.RuleID = S.RuleID 
-                    and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
-                    and T.[Object] = S.[Object] 
-                    and T.ObjectID = S.ObjectID 
-                    and T.[ResourceID] = S.[ResourceID] 
-                    and T.[GroupID] = S.[GroupID] 
-                    )
-        when    matched then 
-                update set  T.UpdatedOn = getutcdate()
-        when    not matched by source then 
-                delete
-        when    not matched by target then 
-                insert (RuleID, ResponsibilityTypeID, [Object], ObjectID, ResourceID, GroupID, UpdatedOn) 
-                values (S.RuleID, S.ResponsibilityTypeID, S.[Object], S.ObjectID, S.ResourceID, S.GroupID, getutcdate());", commandTimeout: 3600, transaction: trans);
+merge   ResponsibilityTypeRelationItem as T 
+using   ( 
+        select  *
+        from    #ResponsibilityTypeRelationItem
+        ) as S 
+        on  (
+            T.RuleID = S.RuleID 
+            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+            and T.[AssetID] = S.[AssetID] 
+            and T.[SecurityAsset] = S.[SecurityAsset] 
+            and T.[SecurityAssetID] = S.[SecurityAssetID] 
+            )
+when    not matched by source and T.RuleID > 0 then 
+        delete
+when    not matched by target then 
+        insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID) 
+        values (S.RuleID, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID);", 
+                commandTimeout: 3600, transaction: trans);
+
+                                    #endregion
+
+                                    #region Merge the overrides into the item table. These are override items.
+
+                                    company.Execute(@"
+merge   ResponsibilityTypeRelationItem as T 
+using   ( 
+        select  *
+        from    ResponsibilityTypeRelationOverrideItem
+        ) as S 
+        on  (
+            T.RuleID = 0
+            and T.ResponsibilityTypeID = S.ResponsibilityTypeID 
+            and T.[AssetID] = S.[AssetID] 
+            and T.[SecurityAsset] = S.[SecurityAsset] 
+            and T.[SecurityAssetID] = S.[SecurityAssetID] 
+            )
+when    not matched by source and T.RuleID = 0 then 
+        delete
+when    not matched by target then 
+        insert (RuleID, ResponsibilityTypeID, [AssetID], SecurityAsset, SecurityAssetID, OverrideItemID) 
+        values (0, S.ResponsibilityTypeID, S.[AssetID], S.SecurityAsset, S.SecurityAssetID, S.ID);",
+                commandTimeout: 3600, transaction: trans);
+
+                                    #endregion
+
+                                    #region Mark the overriden items generated from rules with overrides we laoded above.
+
+                                    company.Execute(@"
+update	T
+set		T.Overriden = 1
+from	ResponsibilityTypeRelationItem T
+		inner join ResponsibilityTypeRelationItem S on S.RuleID = 0 and T.RuleID > 0 and S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and T.Overriden = 0;",
+                commandTimeout: 3600, transaction: trans);
+
+                                    #endregion
 
                                     trans.Commit();
                                 }
 
                                 #endregion
-
-                                // Merge into the responsibility cache.
-
                             }
                         }
 

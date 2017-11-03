@@ -97,7 +97,7 @@ where   A.RuleImplementationID = @id";
 			                        )
 			                        ) as qr) as RQ on RQ.ResID = A.ID
                                     ";
-                qualifierFieldsSql = string.Format(qualifierFieldsSql, string.Join(",", ruleQualifiers.Select(q => q.Field)));
+                qualifierFieldsSql = string.Format(qualifierFieldsSql, string.Join(",", ruleQualifiers.Select(q => $"[{q.Field}]")));
             }
 
             querySql = string.Format(querySql, qualifierFieldsSql, (ruleQualifiers.Count > 0) ? ",RQ.*" : "");
