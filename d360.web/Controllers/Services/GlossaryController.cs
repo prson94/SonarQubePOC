@@ -397,11 +397,11 @@ from    FieldWithRelation F
             return response;
         }
 
-        [Route("artifacts/{id:int}/responsibilities"), HttpGet]
-        public IQueryable<dynamic> GetResponsibilitiesForArtifactType(int id)
-        {
-            return GetResponsibilities(SystemObjects.ArtifactType, id);
-        }
+        //[Route("artifacts/{id:int}/responsibilities"), HttpGet]
+        //public IQueryable<dynamic> GetResponsibilitiesForArtifactType(int id)
+        //{
+        //    return GetResponsibilities(SystemObjects.ArtifactType, id);
+        //}
 
         JArray GetAttributesProperty(List<AttributeDetail> attributes, List<FieldWithRelation> attributeFields, int? parentAttributeID)
         {
@@ -598,11 +598,11 @@ where A.ArtifactTypeID = @id", columns, joins);
             }
         }
 
-        [Route("artifacts/{typeID:int}/{id:int}/responsibilities"), HttpGet]
-        public IQueryable<dynamic> GetResponsibilitiesForArtifact(int typeID, int id)
-        {
-            return GetResponsibilities(SystemObjects.Artifact, id);
-        }
+        //[Route("artifacts/{typeID:int}/{id:int}/responsibilities"), HttpGet]
+        //public IQueryable<dynamic> GetResponsibilitiesForArtifact(int typeID, int id)
+        //{
+        //    return GetResponsibilities(SystemObjects.Artifact, id);
+        //}
 
         #endregion
 
@@ -644,11 +644,11 @@ where A.TaxonomyTypeID = @id ", columns, joins);
             return Company.Query<dynamic>(sql, new { id = id }).AsQueryable();
         }
 
-        [Route("models/{id:int}/responsibilities"), HttpGet]
-        public IQueryable<dynamic> GetResponsibilitiesForTaxonomyType(int id)
-        {
-            return GetResponsibilities(SystemObjects.TaxonomyType, id);
-        }
+        //[Route("models/{id:int}/responsibilities"), HttpGet]
+        //public IQueryable<dynamic> GetResponsibilitiesForTaxonomyType(int id)
+        //{
+        //    return GetResponsibilities(SystemObjects.TaxonomyType, id);
+        //}
 
         /// <summary>
         /// Add a model.
@@ -779,11 +779,11 @@ where A.TaxonomyTypeID = @id ", columns, joins);
             }
         }
 
-        [Route("models/{typeID:int}/{id:int}/responsibilities"), HttpGet]
-        public IQueryable<dynamic> GetResponsibilitiesForTaxonomy(int typeID, int id)
-        {
-            return GetResponsibilities(SystemObjects.Taxonomy, id);
-        }
+        //[Route("models/{typeID:int}/{id:int}/responsibilities"), HttpGet]
+        //public IQueryable<dynamic> GetResponsibilitiesForTaxonomy(int typeID, int id)
+        //{
+        //    return GetResponsibilities(SystemObjects.Taxonomy, id);
+        //}
 
         #endregion
     }

@@ -1,0 +1,77 @@
+﻿CREATE PROCEDURE [analytics].AddStatistic 
+	@Object varchar(50),
+	@ObjectID int,
+	@Ip varchar(100),
+	@UserAgent varchar(250),
+	@Host varchar(50),
+	@BrowserLanguage varchar(500),
+	@Action varchar(50),
+	@ResourceID int,
+	@Timestamp datetime
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	declare @IpLookupID int,
+			@UserAgentLookupID int,
+			@ObjectLookupID int,
+			@HostLookupID int,
+			@BrowserLanguageLookupID int,
+			@ActionLookupID int
+
+	select	@ActionLookupID = ID			from [analytics].[Action]			where [Value] = @Action
+	select	@BrowserLanguageLookupID = ID	from [analytics].[BrowserLanguage]	where [Value] = @BrowserLanguage
+	select	@HostLookupID = ID				from [analytics].[Host]				where [Value] = @Host
+	select	@IpLookupID = ID				from [analytics].[Ip]				where [Value] = @Ip
+	select	@ObjectLookupID = ID			from [analytics].[Object]			where [Value] = @Object
+	select	@UserAgentLookupID = ID			from [analytics].[UserAgent]		where [Value] = @UserAgent
+
+	if @ActionLookupID is null
+	begin
+		insert into [analytics].[Action] values (@Action)
+		set @ActionLookupID = SCOPE_IDENTITY()
+	end
+
+	if @BrowserLanguageLookupID is null
+	begin
+		insert into [analytics].[BrowserLanguage] values (@BrowserLanguage)
+		set @BrowserLanguageLookupID = SCOPE_IDENTITY()
+	end
+
+	if @HostLookupID is null
+	begin
+		insert into [analytics].[Host] values (@Host)
+		set @HostLookupID = SCOPE_IDENTITY()
+	end
+
+	if @IpLookupID is null
+	begin
+		insert into [analytics].[Ip] values (@Ip)
+		set @IpLookupID = SCOPE_IDENTITY()
+	end
+
+	if @ObjectLookupID is null
+	begin
+		insert into [analytics].[Object] values (@Object)
+		set @ObjectLookupID = SCOPE_IDENTITY()
+	end
+
+	if @UserAgentLookupID is null
+	begin
+		insert into [analytics].[UserAgent] values (@UserAgent)
+		set @UserAgentLookupID = SCOPE_IDENTITY()
+	end
+
+	INSERT INTO [analytics].Statistic values (
+		newid(), 
+		@ObjectLookupID,
+		@ObjectID,
+		@IpLookupID,
+		@UserAgentLookupID,
+		@HostLookupID,
+		@BrowserLanguageLookupID,
+		@ActionLookupID,
+		@ResourceID,
+		@Timestamp
+	)
+END

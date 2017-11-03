@@ -1,4 +1,7 @@
-﻿CREATE FUNCTION [dbo].[GetWorkflowObjectsSummary]
+﻿
+
+
+CREATE FUNCTION [dbo].[GetWorkflowObjectsSummary]
 (
 	@versionId int,
 	@filteredObject varchar(50) = null,
@@ -33,6 +36,7 @@ return (
 		select distinct top 5 
 		utility.GetAssetDisplayValue(a.ID) as name, i.object, i.objectid from workflow.item i
 		inner join Asset a on a.object = i.object and a.objectid = i.objectid
+		--join cache.ObjectDetails d on d.object = i.object and d.objectid = i.objectid
 		where versionid = @versionId and ((@filteredObjectId is not null and (i.object = @filteredObject and i.objectId = @filteredObjectId)) or (@filteredObjectId is null))
 		order by 1
 	) x 

@@ -3,7 +3,9 @@
     [CommentID]  INT NOT NULL,
     [ResourceID] INT NOT NULL,
     [Vote]       INT DEFAULT ((0)) NOT NULL,
-    PRIMARY KEY CLUSTERED ([ID] ASC),
-    CONSTRAINT [FK_Comment_ID] FOREIGN KEY ([CommentID]) REFERENCES [dbo].[Comment] ([ID])
+    CONSTRAINT [PK_CommentVote] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_CommentVote_Comment] FOREIGN KEY ([CommentID]) REFERENCES [dbo].[Comment] ([ID])
 );
+
+
 

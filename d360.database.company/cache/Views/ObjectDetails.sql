@@ -1,129 +1,114 @@
-﻿create view [cache].[ObjectDetails]
+﻿
+CREATE view [cache].[ObjectDetails]
 as
-	select	D.[Object],
-			D.[ObjectID],
-			coalesce(O1.Name, O2.Name, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.Name, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.Name, O18.Name, O21.Name, O22.Name, O23.Name, O24.Name, O25.DisplayValue, O26.Name, O27.Name, O28.Name, O29.Name, null) as Name, --O4.Name, 
-			coalesce(O1.TextPath, O2.TextPath, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.TextPath, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.TextPath, O18.Name, O21.Name, O22.Name, O23.Name, O24.Name, O25.DisplayValue, O26.Name, O27.Name, O28.Name, O29.Name, '') as TextPath, --O4.TextPath, 
-			coalesce(O1.Description, O2.Description, O6.Description, O7.Description, O8.Description, O9.Description, O10.Description, O12.Description, O13.Description, O26.Description, NULL) as Description,
-			case D.[Object]
-				when 'Lookup' then dbo.GenerateNgObjectUrl('Lookup', O20.LookupTypeID, O20.ID)
-				when 'LookupType' then dbo.GenerateNgObjectUrl('LookupType', O21.ID, 0)
-				when 'ReferenceItem' then dbo.GenerateNgObjectUrl('ReferenceItem', O25.ReferenceItemTypeID, O25.ID)
-				when 'ReferenceItemType' then dbo.GenerateNgObjectUrl('ReferenceItemType', O26.ID, 0)
-				else dbo.GenerateNgObjectUrl(D.[Object], D.[ObjectTypeID], D.ObjectID) 
-			end as Url,
-			case 
-				when P1.ID is not null then 'Artifact'
-				when P2.ID is not null then 'Taxonomy'
-				--when P4.ID is not null then 'FusionAttribute'
-				when P7.ID is not null then 'ArtifactType'
-				when P10.ID is not null then 'AttributeType'
-				when P13.ID is not null then 'PolicyType'
-				when P17.ID is not null then 'FusionAttributeType'
-				else NULL
-			end as Parent,
-			coalesce(O1.ParentID, O2.ParentID, O7.ParentID, O10.ParentID, O13.ParentID, O17.ParentID, NULL) as ParentID, --O4.ParentID, 
-			coalesce(P1.Name, P2.Name, P7.Name, P10.Name, P13.Name, P17.Name, NULL) as ParentName,	--P4.Name, 
-			D.[ObjectType],
-			D.ObjectTypeID,
-			coalesce(OT1.Name, OT2.Name, OT5.Name, OT12.Name, OT13.Name, OT14.Name, OT15.Name, OT20.Name, OT24.Name, OT25.Name, NULL) as ObjectTypeName, --OT4.TextPath, 
-			coalesce(S.IconBackColor, '#000') as IconBackColor,
-			coalesce(S.IconForeColor, '#fff') as IconForeColor,
-			coalesce(S.IconText, 'leaf') as IconText,
-			case D.[Object]
-				when 'Lookup' then dbo.GenerateNgObjectUrl('Lookup', O20.LookupTypeID, O20.ID)
-				when 'LookupType' then dbo.GenerateNgObjectUrl('LookupType', O21.ID, 0)
-				when 'ReferenceItem' then dbo.GenerateNgObjectUrl('ReferenceItem', O25.ReferenceItemTypeID, O25.ID)
-				when 'ReferenceItemType' then dbo.GenerateNgObjectUrl('ReferenceItemType', O26.ID, 0)
-				else dbo.GenerateNgObjectUrl(D.[Object], D.[ObjectTypeID], D.ObjectID) 
-			end as NgUrl
-	from	cache.[Object] D with(nolock)
-			left join Artifact O1 with(nolock) on D.[Object] = 'Artifact' and O1.ID = D.ObjectID
-			left join ArtifactType OT1 with(nolock) on D.[Object] = 'Artifact' and OT1.ID = O1.ArtifactTypeID
-			left join Artifact P1 with(nolock) on D.[Object] = 'Artifact' and P1.ID = O1.ParentID
+select
+	T.Object,
+	T.ObjectID,
+	T.Name,
+	T.Name as TextPath,
+	cast(null as nvarchar) as Description,		
+	T.Url,
+	T.Url as NgUrl,
+	cast(null as varchar) as Parent,
+	cast(null as int) as ParentID,
+	cast(null as nvarchar) as ParentName,
+	T.ObjectType,
+	T.ObjectTypeID,
+	T.ObjectTypeName,
+	T.IconBackColor,
+	T.IconForeColor,
+	T.IconText
+from
+	( select	A.Object as Object,
+		A.ObjectID as ObjectID,
+		utility.GetAssetDisplayValue(A.ID) as Name,						
+		AUrl.[Url] as [Url],
+		AST.Object as ObjectType,
+		AST.ObjectID as ObjectTypeID,
+		AST.Name as ObjectTypeName,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
+		coalesce(S.IconForeColor, '#fff') as IconForeColor,
+		coalesce(S.IconText, 'leaf') as IconText
+	from	AssetType AST
+		left join ObjectStyle S on S.ObjectType = AST.Object and S.ObjectID = AST.ObjectID
+		left join Asset A on A.AssetTypeID = AST.ID
+		cross apply utility.GenerateObjectUrls(A.[Object], AST.ObjectID, A.ObjectID) AUrl
+			) T		
+union -- types
+select
+	T_t.Object,
+	T_t.ObjectID,
+	T_t.Name,
+	T_t.Name as TextPath,
+	cast(null as nvarchar) as Description,		
+	T_t.Url,
+	T_t.Url as NgUrl,
+	cast(null as varchar) as Parent,
+	cast(null as int) as ParentID,
+	cast(null as nvarchar) as ParentName,
+	T_t.ObjectType,
+	T_t.ObjectTypeID,
+	T_t.ObjectTypeName,
+	T_t.IconBackColor,
+	T_t.IconForeColor,
+	T_t.IconText
+from
+( select	AST.Object as Object,
+		AST.ObjectID as ObjectID,
+		AST.Name as Name,						
+		AUrl.[Url] as [Url],
+		AST.Object as ObjectType,
+		AST.ObjectID as ObjectTypeID,
+		null as ObjectTypeName,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
+		coalesce(S.IconForeColor, '#fff') as IconForeColor,
+		coalesce(S.IconText, 'leaf') as IconText
+	from	AssetType AST
+		left join ObjectStyle S on S.ObjectType = AST.Object and S.ObjectID = AST.ObjectID		
+		cross apply utility.GenerateObjectUrls(AST.[Object], AST.ObjectID, AST.ObjectID) AUrl
+			) T_t
+union -- intersects
+select	'Intersect' as Object,
+		I.ID as ObjectID,
+		IName.Name as Name,
+		IName.Name as TextPath,		
+		cast(null as nvarchar) as Description,
+		null as Url,
+		null as NgUrl,
+		cast(null as varchar) as Parent,
+		cast(null as int) as ParentID,
+		cast(null as nvarchar) as ParentName,
+		'IntersectType' as ObjectType,
+		IT.ID as ObjectTypeID,
+		ITypeName.Name as ObjectTypeName,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
+		coalesce(S.IconForeColor, '#fff') as IconForeColor,
+		coalesce(S.IconText, 'leaf') as IconText
+from	IntersectType IT		
+		inner join [Intersect] I on I.IntersectTypeID = IT.ID		
+		left join ObjectStyle S on S.ObjectType = 'IntersectType' and S.ObjectID = IT.ID		
+		cross apply utility.GetIntersectNames(I.ID) IName	
+		cross apply utility.GetIntersectTypeNames(IT.ID) ITypeName
 
-			left join Taxonomy O2 with(nolock) on D.[Object] = 'Taxonomy' and O2.ID = D.ObjectID
-			left join TaxonomyType OT2 with(nolock) on D.[Object] = 'Taxonomy' and OT2.ID = O2.TaxonomyTypeID
-			left join Taxonomy P2 with(nolock) on D.[Object] = 'Taxonomy' and P2.ID = O2.ParentID
-
-			--left join FusionAttribute O4 with(nolock) on D.[Object] = 'FusionAttribute' and O4.ID = D.ObjectID
-			--left join FusionAttributeType OT4 with(nolock) on D.[Object] = 'FusionAttribute' and OT4.ID = O4.FusionAttributeTypeID
-			--left join FusionAttribute P4 with(nolock) on D.[Object] = 'FusionAttribute' and P4.ID = O4.ParentID
-
-			left join Fusion O5 with(nolock) on D.[Object] = 'Fusion' and O5.ID = D.ObjectID
-			left join FusionType OT5 with(nolock) on D.[Object] = 'Fusion' and OT5.ID = O5.FusionTypeID
-
-			left join FusionType O6 with(nolock) on D.[Object] = 'FusionType' and O6.ID = D.ObjectID
-
-			left join ArtifactType O7 with(nolock) on D.[Object] = 'ArtifactType' and O7.ID = D.ObjectID
-			left join ArtifactType P7 with(nolock) on D.[Object] = 'ArtifactType' and P7.ID = O7.ParentID
-
-			left join TaxonomyType O8 with(nolock) on D.[Object] = 'TaxonomyType' and O8.ID = D.ObjectID
-
-			left join ResponsibilityType O9 with(nolock) on D.[Object] = 'ResponsibilityType' and O9.ID = D.ObjectID
-
-			left join AttributeType O10 with(nolock) on D.[Object] = 'AttributeType' and O10.ID = D.ObjectID
-			left join AttributeType P10 with(nolock) on D.[Object] = 'AttributeType' and P10.ID = O10.ParentID
-
-			left join IntersectType O11 with(nolock) on D.[Object] = 'IntersectType' and O11.ID = D.ObjectID
-
-			left join [Rule] O12 with(nolock) on D.[Object] = 'Rule' and O12.ID = D.ObjectID
-			left join RuleType OT12 with(nolock) on D.[Object] = 'Rule' and OT12.ID = O12.RuleTypeID
-
-			left join [Policy] O13 with(nolock) on D.[Object] = 'Policy' and O13.ID = D.ObjectID
-			left join PolicyType OT13 with(nolock) on D.[Object] = 'Policy' and OT13.ID = O13.PolicyTypeID
-			left join [Policy] P13 with(nolock) on D.[Object] = 'Policy' and P13.ID = O13.ParentID
-
-			left join reporting.Global_Resource O14 with(nolock) on D.[Object] = 'Resource' and O14.ResourceID = D.ObjectID --and O14.Status = 'Active'
-			left join (select 1 as ID, 'User' as Name) OT14 on D.[Object] = 'Resource' and OT14.ID = D.ObjectTypeID
-
-			left join [Group] O15 with(nolock) on D.[Object] = 'Group' and O15.ID = D.ObjectID
-			left join (
-						select 0 as ID, 'Group' as Name
-						union
-						select 1 as ID, 'Group' as Name
-					  ) OT15 on D.[Object] = 'Group' and OT15.ID = D.ObjectTypeID
-
-			left join PolicyType O16 with(nolock) on D.[Object] = 'PolicyType' and O16.ID = D.ObjectID
-
-			left join FusionAttributeType O17 with(nolock) on D.[Object] = 'FusionAttributeType' and O17.ID = D.ObjectID
-			left join FusionAttributeType P17 with(nolock) on D.[Object] = 'FusionAttributeType' and P17.ID = O17.ParentID
-
-			left join RuleType O18 on D.[Object] = 'RuleType' and O18.ID = D.ObjectID
-
-			left join [Lookup] O20 with(nolock) on D.[Object] = 'Lookup' and O20.ID = D.ObjectID
-			left join LookupType OT20 with(nolock) on D.[Object] = 'Lookup' and OT20.ID = O20.LookupTypeID
-
-			left join [LookupType] O21 with(nolock) on D.[Object] = 'LookupType' and O21.ID = D.ObjectID
-
-			left join	(
-						select 0 as ID, 'User' as Name
-						union
-						select 1 as ID, 'User' as Name
-						) O22 on D.[Object] = 'ResourceType' and O22.ID = D.ObjectID
-
-			left join	(
-						select 0 as ID, 'Group' as Name
-						union
-						select 1 as ID, 'Group' as Name
-						) O23 on D.[Object] = 'GroupType' and O22.ID = D.ObjectID
-
-			left join [Intersect] O24 with(nolock) on D.[Object] = 'Intersect' and O24.ID = D.ObjectID
-			left join IntersectType OT24 with(nolock) on D.[Object] = 'Intersect' and OT24.ID = O24.IntersectTypeID
-
-			left join ReferenceItem O25 with(nolock) on D.[Object] = 'ReferenceItem' and O25.ID = D.ObjectID
-			left join ReferenceItemType OT25 with(nolock) on D.[Object] = 'ReferenceItem' and OT25.ID = O25.ReferenceItemTypeID
-
-			left join ReferenceItemType O26 with(nolock) on D.[Object] = 'ReferenceItemType' and O26.ID = D.ObjectID
-
-			left join FusionQueryAttributeType O27 with(nolock) on D.[Object] = 'FusionQueryAttributeType' and O27.ID = D.ObjectID
-
-			left join IssueType O28 with(nolock) on D.[Object] = 'IssueType' and O28.ID = D.ObjectID
-
-			left join	(
-						select 0 as ID, 'Reference List' as Name						
-			) O29 on D.[Object] = 'ReferenceItemType' and O29.ID = D.ObjectID
-			
-			left join ObjectStyle S with(nolock) on S.ObjectType = D.ObjectType and S.ObjectID = D.[ObjectTypeID]
+union -- intersect types
+select	'IntersectType' as Object,
+		I_T.ID as ObjectID,
+		ITypeName.Name as Name,
+		ITypeName.Name as TextPath,		
+		cast(null as nvarchar) as Description,
+		null as Url,
+		null as NgUrl,
+		cast(null as varchar) as Parent,
+		cast(null as int) as ParentID,
+		cast(null as nvarchar) as ParentName,
+		'IntersectType' as ObjectType,
+		0 as ObjectTypeID,
+		null as ObjectTypeName,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
+		coalesce(S.IconForeColor, '#fff') as IconForeColor,
+		coalesce(S.IconText, 'leaf') as IconText
+from	IntersectType I_T				
+		left join ObjectStyle S on S.ObjectType = 'IntersectType' and S.ObjectID = I_T.ID				
+		cross apply utility.GetIntersectTypeNames(I_T.ID) ITypeName
 
 GO

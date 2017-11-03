@@ -9,8 +9,7 @@ namespace d360.core.enums
     public enum PredicateType
     {
         [
-            Name("Lineage"), 
-            Graph("Lineage"), 
+            Name("Data Lineage"), 
             Description("Allows you to define source paths between objects."), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
@@ -18,7 +17,7 @@ namespace d360.core.enums
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
         ]
-        Lineage = 1,
+        DataLineage = 1,
         [
             Name("Source To Target"), 
             Graph("Lineage"), 

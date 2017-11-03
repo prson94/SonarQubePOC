@@ -530,8 +530,8 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             var d = new Dictionary<string, object>();
             d.Add("p", parentID);
 
-            var type = Company.ArtifactTypes.Where(x => x.ID == parentID).Single();
-            if (type == null) throw new Exception("Artifact Type Not found");
+            var parent = Company.GetById<Artifact>(parentID, i => i.ArtifactType);
+            if (parent == null) throw new Exception("Parent Not found");
 
             var sql = @"
 select	A.ID,
@@ -550,7 +550,7 @@ from	Artifact A
                 "ArtifactType", childArtifactTypeID,
                 true,
                 sortDataField, sortOrder, pagenum, pagesize,
-                (type.ParentID > 0 ? new string[] { "P.DisplayValue" } : new string[] { }),
+                (parent.ArtifactType.ParentID.HasValue ? new string[] { "P.DisplayValue" } : new string[] { }),
                 filter, extraParams: d, applyHiddenFilters: true, includeIdColumn: false);
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }

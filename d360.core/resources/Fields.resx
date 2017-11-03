@@ -660,48 +660,6 @@
   <data name="Pattern_Name" xml:space="preserve">
     <value>Validation Pattern</value>
   </data>
-  <data name="Probability_Description" xml:space="preserve">
-    <value>The Probability for this item.</value>
-  </data>
-  <data name="Probability_ErrorRequired" xml:space="preserve">
-    <value>Probability is a required field.</value>
-  </data>
-  <data name="Probability_Name" xml:space="preserve">
-    <value>Probability</value>
-  </data>
-  <data name="PublicID_Description" xml:space="preserve">
-    <value>The value used when associating multiple events together.  This public ID can be any value.</value>
-  </data>
-  <data name="PublicID_Name" xml:space="preserve">
-    <value>Public ID</value>
-  </data>
-  <data name="Public_Description" xml:space="preserve">
-    <value>The visibility for this item.</value>
-  </data>
-  <data name="Public_Name" xml:space="preserve">
-    <value>Publicly available?</value>
-  </data>
-  <data name="ReadOnly_Description" xml:space="preserve">
-    <value>Is this item read-only, updateable via the API only?</value>
-  </data>
-  <data name="ReadOnly_Name" xml:space="preserve">
-    <value>Read Only?</value>
-  </data>
-  <data name="Regex_Description" xml:space="preserve">
-    <value>The regular expression, if any, to validate all entries against.</value>
-  </data>
-  <data name="Regex_Name" xml:space="preserve">
-    <value>Regular Expression</value>
-  </data>
-  <data name="Region_Description" xml:space="preserve">
-    <value>The assigned region for this item.</value>
-  </data>
-  <data name="Region_ErrorRequired" xml:space="preserve">
-    <value>Region is a required field.</value>
-  </data>
-  <data name="Region_Name" xml:space="preserve">
-    <value>Region</value>
-  </data>
   <data name="ResourceAllowed_Description" xml:space="preserve">
     <value>Is resource assignment allowed?</value>
   </data>
@@ -722,15 +680,6 @@
   </data>
   <data name="ResourceType_Name" xml:space="preserve">
     <value>Resource Type</value>
-  </data>
-  <data name="Resource_Description" xml:space="preserve">
-    <value>The assigned resource for this item.</value>
-  </data>
-  <data name="Resource_ErrorRequired" xml:space="preserve">
-    <value>Resource is a required field.</value>
-  </data>
-  <data name="Resource_Name" xml:space="preserve">
-    <value>Resource</value>
   </data>
   <data name="Role_Description" xml:space="preserve">
     <value>The role assigned to this item.</value>
@@ -894,12 +843,6 @@
   <data name="Locked_Name" xml:space="preserve">
     <value>Locked?</value>
   </data>
-  <data name="Promoted_Description" xml:space="preserve">
-    <value>Item was promoted via Fusion Promotion?</value>
-  </data>
-  <data name="Promoted_Name" xml:space="preserve">
-    <value>Promoted?</value>
-  </data>
   <data name="ResponsibilityTypeGroup_Description" xml:space="preserve">
     <value>The group associated with this responsibility type.</value>
   </data>
@@ -951,12 +894,6 @@
   <data name="GroupSecondaryOwner_Name" xml:space="preserve">
     <value>Secondary Owner</value>
   </data>
-  <data name="Vocabulary_Description" xml:space="preserve">
-    <value>The assigned subject area this item falls under.</value>
-  </data>
-  <data name="Vocabulary_Name" xml:space="preserve">
-    <value>Subject Area</value>
-  </data>
   <data name="AllowRelatedArtifacts_Description" xml:space="preserve">
     <value>Allowing related artifacts will enable a new tile on artifact details of this type.</value>
   </data>
@@ -978,41 +915,11 @@
   <data name="ReportDescription_Description" xml:space="preserve">
     <value>A description of the meaning for this report; what this report trying to explain.</value>
   </data>
-  <data name="ReportLayout_Description" xml:space="preserve">
-    <value>The layout this report will renders its content in.</value>
-  </data>
-  <data name="ReportLayout_Name" xml:space="preserve">
-    <value>Report Layout</value>
-  </data>
-  <data name="ReportName_Description" xml:space="preserve">
-    <value>The name for this report.  This name will be used wherever the report is available for display.</value>
-  </data>
-  <data name="ReportTileName_Description" xml:space="preserve">
-    <value>The name for this report tile.  the name will be displayed at the top of the contents for this tile.</value>
-  </data>
-  <data name="ReportTileType_Description" xml:space="preserve">
-    <value>The type of report tile to render with.</value>
-  </data>
-  <data name="ReportTileType_Name" xml:space="preserve">
-    <value>Type</value>
-  </data>
-  <data name="ReportObjectType_Description" xml:space="preserve">
-    <value>The type of object where this report will be available.</value>
-  </data>
-  <data name="ReportObjectType_Name" xml:space="preserve">
-    <value>Target Type</value>
-  </data>
   <data name="AttributeTypeCategory_Description" xml:space="preserve">
     <value>An attribute category that groups similar attributes together.</value>
   </data>
   <data name="AttributeTypeCategory_Name" xml:space="preserve">
     <value>Category</value>
-  </data>
-  <data name="Policy_Description" xml:space="preserve">
-    <value>The policy that this rule is assigned to.</value>
-  </data>
-  <data name="Policy_Name" xml:space="preserve">
-    <value>Policy</value>
   </data>
   <data name="RuleType_Description" xml:space="preserve">
     <value>The type of rule defined.  This impacts whether the events under a rule can be assigned.</value>
@@ -1025,12 +932,6 @@
   </data>
   <data name="DateLastCertified_Name" xml:space="preserve">
     <value>Date Last Certified</value>
-  </data>
-  <data name="RequiresCertification_Description" xml:space="preserve">
-    <value>Items of this type require a periodic re-certification of data accuracy.  This is conducted by the owners of the item.</value>
-  </data>
-  <data name="RequiresCertification_Name" xml:space="preserve">
-    <value>Requires Certification</value>
   </data>
   <data name="CertificationEndDate_Description" xml:space="preserve">
     <value>The certification process ends on this date.</value>
@@ -1055,12 +956,6 @@
   </data>
   <data name="MonthsUntilCertification_Name" xml:space="preserve">
     <value># Months Between Certifications</value>
-  </data>
-  <data name="RequiresSuggestionToAdd_Description" xml:space="preserve">
-    <value>When enabled, additions of this type of artifact are only allowed via the Suggest Artifact UI and workflow.</value>
-  </data>
-  <data name="RequiresSuggestionToAdd_Name" xml:space="preserve">
-    <value>Enable Add via Suggestion Only?</value>
   </data>
   <data name="ResponsibilityTransformationType_Description" xml:space="preserve">
     <value>The type of transformation you are working with.</value>
@@ -1166,5 +1061,89 @@
   </data>
   <data name="UpdatedOn_Name" xml:space="preserve">
     <value>Date Last Modified</value>
+  </data>
+  <data name="Permissions_DeleteAttributes_Description" xml:space="preserve">
+    <value>Allow permission to remove attributes.</value>
+  </data>
+  <data name="Permissions_DeleteAttributes_Name" xml:space="preserve">
+    <value>Remove Attributes</value>
+  </data>
+  <data name="Permissions_DeleteObject_Description" xml:space="preserve">
+    <value>Allow permission to remove item.</value>
+  </data>
+  <data name="Permissions_DeleteObject_Name" xml:space="preserve">
+    <value>Remove Item</value>
+  </data>
+  <data name="Permissions_DeleteRelationships_Description" xml:space="preserve">
+    <value>Allow permissions to remove relationships and lineage.</value>
+  </data>
+  <data name="Permissions_DeleteRelationships_Name" xml:space="preserve">
+    <value>Remove Relationships</value>
+  </data>
+  <data name="Permissions_DeleteSocial_Description" xml:space="preserve">
+    <value>Allow permissions to remove comments.</value>
+  </data>
+  <data name="Permissions_DeleteSocial_Name" xml:space="preserve">
+    <value>Remove Comments</value>
+  </data>
+  <data name="Permissions_ModifyAttributes_Description" xml:space="preserve">
+    <value>Allow permission to create or update attributes.</value>
+  </data>
+  <data name="Permissions_ModifyAttributes_Name" xml:space="preserve">
+    <value>Modify Attributes</value>
+  </data>
+  <data name="Permissions_ModifyObject_Description" xml:space="preserve">
+    <value>Allow permission to create or update item.</value>
+  </data>
+  <data name="Permissions_ModifyObject_Name" xml:space="preserve">
+    <value>Modify Item</value>
+  </data>
+  <data name="Permissions_ModifyRelationships_Description" xml:space="preserve">
+    <value>Allow permission to create or update relationships and lineage.</value>
+  </data>
+  <data name="Permissions_ModifyRelationships_Name" xml:space="preserve">
+    <value>Modify Relationships</value>
+  </data>
+  <data name="Permissions_ModifySocial_Description" xml:space="preserve">
+    <value>Allow permission to participate in collaboration.</value>
+  </data>
+  <data name="Permissions_ModifySocial_Name" xml:space="preserve">
+    <value>Participate in Collaboration</value>
+  </data>
+  <data name="Permissions_ReadAttributes_Description" xml:space="preserve">
+    <value>Allow permission to read attributes.</value>
+  </data>
+  <data name="Permissions_ReadAttributes_Name" xml:space="preserve">
+    <value>Read Attributes</value>
+  </data>
+  <data name="Permissions_ReadAudit_Description" xml:space="preserve">
+    <value>Allow permission to read audit data and item history.</value>
+  </data>
+  <data name="Permissions_ReadAudit_Name" xml:space="preserve">
+    <value>Read Audit History</value>
+  </data>
+  <data name="Permissions_ReadDashboards_Description" xml:space="preserve">
+    <value>Allow permission to view dashboards and reports for this item.</value>
+  </data>
+  <data name="Permissions_ReadDashboards_Name" xml:space="preserve">
+    <value>Read Dashboards</value>
+  </data>
+  <data name="Permissions_ReadObject_Description" xml:space="preserve">
+    <value>Allow permission to read item.</value>
+  </data>
+  <data name="Permissions_ReadObject_Name" xml:space="preserve">
+    <value>Read Item</value>
+  </data>
+  <data name="Permissions_ReadRelationships_Description" xml:space="preserve">
+    <value>Allow permission to read relationships, lineage, and see impact analysis.</value>
+  </data>
+  <data name="Permissions_ReadRelationships_Name" xml:space="preserve">
+    <value>Read Relationships</value>
+  </data>
+  <data name="Permissions_ReadSocial_Description" xml:space="preserve">
+    <value>Allow permission to read comments.</value>
+  </data>
+  <data name="Permissions_ReadSocial_Name" xml:space="preserve">
+    <value>Read Comments</value>
   </data>
 </root>

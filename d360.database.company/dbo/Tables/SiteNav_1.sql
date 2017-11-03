@@ -7,8 +7,11 @@
     [ObjectID]  INT            NULL,
     [Object]    VARCHAR (50)   NULL,
     [Icon]      VARCHAR (100)  NULL,
-    [Title]     NVARCHAR (250) NULL
+    [Title]     NVARCHAR (250) NULL,
+    CONSTRAINT [PK_SiteNav] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 GO

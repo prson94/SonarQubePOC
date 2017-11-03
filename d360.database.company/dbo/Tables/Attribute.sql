@@ -8,10 +8,13 @@
     [InheritanceObjectID]   INT          NULL,
     [UpdatedOn]             DATETIME     NULL,
     [UpdatedBy]             INT          NULL,
+    [DisplayValue]          AS           ([utility].[GetObjectDisplayValueWrapper]('Attribute',[ID],[AttributeTypeID])),
     CONSTRAINT [PK_Attribute] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Attribute_AttributeType] FOREIGN KEY ([AttributeTypeID]) REFERENCES [dbo].[AttributeType] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [FK_Attribute_ParentAttribute] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Attribute] ([ID])
 );
+
+
 
 
 
@@ -22,31 +25,35 @@ CREATE NONCLUSTERED INDEX [IX_Attribute_ObjectType-ObjectID]
 
 
 GO
-
 CREATE TRIGGER [dbo].[Attribute_AfterDelete]
    ON  [dbo].[Attribute] 
    AFTER DELETE
 AS 
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Delete', [queue].WriteIndexXml('Removed', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Attribute', ID from deleted
+	SET NOCOUNT ON
+	update	Asset
+	set		[State] = 3
+	where	Object = 'Attribute' and ObjectID in (select ID from deleted)
+
+	delete Asset where Object = 'Attribute' and ObjectID in (select ID from deleted)
 
 GO
-
 CREATE TRIGGER [dbo].[Attribute_AfterInsert]
    ON  [dbo].[Attribute] 
    AFTER INSERT
 AS 
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Add', [queue].WriteIndexXml('', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Attribute', ID from inserted
+	SET NOCOUNT ON
+	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+		SELECT	T.ID, 1, 'Attribute', O.ID, O.[UpdatedOn], O.[UpdatedBy], O.[UpdatedOn], O.[UpdatedBy]
+		FROM	inserted O inner join  AssetType T on T.Object = 'AttributeType' and T.ObjectID = O.AttributeTypeID
 
 GO
-
 CREATE TRIGGER [dbo].[Attribute_AfterUpdate]
    ON  [dbo].[Attribute] 
    AFTER UPDATE
 AS 
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Attribute', ID from inserted
+	SET NOCOUNT ON
+	update	T
+	set		T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn
+	from	Asset T
+			inner join inserted S on T.Object = 'Attribute' and T.ObjectID = S.ID

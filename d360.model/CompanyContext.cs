@@ -253,8 +253,6 @@ namespace d360.model
 
         public DbSet<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
 
-        public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
-
         public DbSet<SiteNav> SiteNav { get; set; }
 
         public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }

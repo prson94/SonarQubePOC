@@ -24,7 +24,7 @@ begin
 	declare @tbl table (ID int identity, FieldTypeID int, FieldName nvarchar(250), NewValue nvarchar(max), MostRecentVersion int, Updated bit)
 
 	-- Object Resolution --------------------------------------------------
-	if @Object = 'Artifact'				begin		select @objectName = Name from Artifact where ID = @ObjectID				end
+	if @Object = 'Artifact'				begin		select @objectName = DisplayValue from Artifact where ID = @ObjectID		end
 	if @Object = 'ArtifactType'			begin		select @objectName = Name from ArtifactType where ID = @ObjectID			end
 	if @Object = 'AttributeType'		begin		select @objectName = Name from AttributeType where ID = @ObjectID			end
 	if @Object = 'Fusion'				begin		select @objectName = Name from Fusion where ID = @ObjectID					end
@@ -34,16 +34,14 @@ begin
 	if @Object = 'Group'				begin		select @objectName = Name from [Group] where ID = @ObjectID					end
 	if @Object = 'Intersect'			begin		select @objectName = Name from [Intersect] where ID = @ObjectID				end
 	if @Object = 'IntersectType'		begin		select @objectName = Name from IntersectType where ID = @ObjectID			end
-	if @Object = 'LoadType'				begin		select @objectName = Name from LoadType where ID = @ObjectID				end
 	if @Object = 'LookupType'			begin		select @objectName = Name from LookupType where ID = @ObjectID				end
-	if @Object = 'Policy'				begin		select @objectName = Name from Policy where ID = @ObjectID					end
+	if @Object = 'Policy'				begin		select @objectName = DisplayValue from Policy where ID = @ObjectID			end
 	if @Object = 'ReferenceItemType'	begin		select @objectName = Name from ReferenceItemType where ID = @ObjectID		end
 	if @Object = 'Report'				begin		select @objectName = Name from Report where ID = @ObjectID					end
 	if @Object = 'ResponsibilityType'	begin		select @objectName = Name from ResponsibilityType where ID = @ObjectID		end
-	if @Object = 'Rule'					begin		select @objectName = Name from [Rule] where ID = @ObjectID					end
-	if @Object = 'StatisticType'		begin		select @objectName = Name from StatisticType where ID = @ObjectID			end
+	if @Object = 'Rule'					begin		select @objectName = DisplayValue from [Rule] where ID = @ObjectID			end
 	if @Object = 'SurveyType'			begin		select @objectName = Name from SurveyType where ID = @ObjectID				end
-	if @Object = 'Taxonomy'				begin		select @objectName = Name from Taxonomy where ID = @ObjectID				end
+	if @Object = 'Taxonomy'				begin		select @objectName = DisplayValue from Taxonomy where ID = @ObjectID		end
 	if @Object = 'TaxonomyType'			begin		select @objectName = Name from TaxonomyType where ID = @ObjectID			end
 	----------------------------------------------------------------------
 
@@ -53,17 +51,12 @@ begin
 	if @ActionObject = 'Artifact'
 	begin
 		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.TextPath
+				@actionObjectName = O.DisplayValue
 		from	Artifact O
 				inner join ArtifactType T on T.ID = O.ArtifactTypeID
 		where	O.ID = @ActionObjectID
 
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Artifact where ID = @ActionObjectID
 		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'TaxonomyTypeID', TaxonomyTypeID, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Status', Status, 0, 0 from Artifact where ID = @ActionObjectID
-		insert into @tbl  select 0, 'DateLastCertified', DateLastCertified, 0, 0 from Artifact where ID = @ActionObjectID
 	end
 
 	-- Relevant ONLY to: ArtifactType
@@ -78,8 +71,6 @@ begin
 		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from ArtifactType where ID = @ActionObjectID
 		insert into @tbl  select 0, 'Description', Description, 0, 0 from ArtifactType where ID = @ActionObjectID
 		insert into @tbl  select 0, 'CanOwnFusion', CanOwnFusion, 0, 0 from ArtifactType where ID = @ActionObjectID
-		--insert into @tbl  select 0, 'SourcingApplies', SourcingApplies, 0, 0 from ArtifactType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'AllowRelatedArtifacts', AllowRelatedArtifacts, 0, 0 from ArtifactType where ID = @ActionObjectID
 	end
 	
 	-- Relevant ONLY to: Artifact, Fusion, FusionAttribute, Intersect, Taxonomy
@@ -103,21 +94,7 @@ begin
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from AttributeType where ID = @ActionObjectID
 		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from AttributeType where ID = @ActionObjectID
 		insert into @tbl  select 0, 'Description', Description, 0, 0 from AttributeType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'TextFormatString', TextFormatString, 0, 0 from AttributeType where ID = @ActionObjectID
 		insert into @tbl  select 0, 'AttributeTypeCategoryID', AttributeTypeCategoryID, 0, 0 from AttributeType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Rule
-	if @ActionObject = 'EventGroup'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	EventGroup O
-				inner join [Rule] T on T.ID = O.RuleID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from EventGroup where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PublicID', PublicID, 0, 0 from EventGroup where ID = @ActionObjectID
 	end
 
 	-- Relevant ONLY to: Fusion
@@ -186,9 +163,6 @@ begin
 		from	[Intersect] O
 				inner join [IntersectType] T on T.ID = O.IntersectTypeID
 		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Classification', Classification, 0, 0 from [Intersect] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Intersect] where ID = @ActionObjectID
 	end
 
 	-- Relevant ONLY to: IntersectType
@@ -202,64 +176,6 @@ begin
 		--insert into @tbl  select 0, 'ReadOnly', [ReadOnly], 0, 0 from IntersectType where ID = @ActionObjectID
 		--insert into @tbl  select 0, 'IsTechnical', IsTechnical, 0, 0 from IntersectType where ID = @ActionObjectID
 		--insert into @tbl  select 0, 'AllowContext', AllowContext, 0, 0 from IntersectType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LoadType
-	if @ActionObject = 'LoadType'
-	begin
-		select	@actionObjectTypeName = 'Load Type',
-				@actionObjectName = O.Name 
-		from	LoadType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from LoadType where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LoadType
-	if @ActionObject = 'LoadTypeField'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = O.Name 
-		from	LoadTypeField O
-				inner join LoadType T on T.ID = O.LoadTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from LoadTypeField where ID = @ActionObjectID
-		insert into @tbl  select 0, 'SortOrder', SortOrder, 0, 0 from LoadTypeField where ID = @ActionObjectID
-		insert into @tbl  select 0, 'LookupObjectType', LookupObjectType, 0, 0 from LoadTypeField where ID = @ActionObjectID
-		insert into @tbl  select 0, 'LookupObjectID', LookupObjectID, 0, 0 from LoadTypeField where ID = @ActionObjectID
-		insert into @tbl  select 0, 'LookupFieldName', LookupFieldName, 0, 0 from LoadTypeField where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LoadType
-	if @ActionObject = 'LoadTypeRule'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = T.Name + ' Rule ' + cast(O.ID as nvarchar(15))
-		from	LoadTypeRule O
-				inner join LoadType T on T.ID = O.LoadTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'LoadTypeRuleGroup', case LoadTypeRuleGroup when 1 then 'Promotion' when 2 then 'Relation' else 'Unknown' end, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'SortOrder', SortOrder, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'UniqueLoadTypeFieldID', UniqueLoadTypeFieldID, 0, 0 from LoadTypeRule where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: LoadType
-	if @ActionObject = 'LoadTypeRuleItem'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = 'Rule Field ' + cast(O.ID as nvarchar(15))
-		from	LoadTypeRuleItem O
-				inner join LoadTypeRule R on R.ID = O.LoadTypeRuleID
-				inner join LoadType T on T.ID = R.LoadTypeID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'SourceLoadTypeFieldID', SourceLoadTypeFieldID, 0, 0 from LoadTypeRuleItem where ID = @ActionObjectID
-		insert into @tbl  select 0, 'TargetFieldName', TargetFieldName, 0, 0 from LoadTypeRuleItem where ID = @ActionObjectID
-		insert into @tbl  select 0, 'IsCustomField', IsCustomField, 0, 0 from LoadTypeRuleItem where ID = @ActionObjectID
 	end
 
 	-- Relevant ONLY to: LookupType
@@ -287,13 +203,12 @@ begin
 	if @ActionObject = 'Policy'
 	begin
 		select	@actionObjectTypeName = 'Policy',
-				@actionObjectName = O.Name 
+				@actionObjectName = O.DisplayValue
 		from	[Policy] O
 		where	O.ID = @ActionObjectID
 
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from [Policy] where ID = @ActionObjectID
+		insert into @tbl  select 0, 'Name', DisplayValue, 0, 0 from [Policy] where ID = @ActionObjectID
 		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from [Policy] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Policy] where ID = @ActionObjectID
 	end
 
 	-- Relevant ONLY to: SurveyType
@@ -366,30 +281,6 @@ begin
 		insert into @tbl  select 0, 'Settings', cast(Settings as nvarchar(max)), 0, 0 from ReportTile where ID = @ActionObjectID
 	end
 
-	-- Relevant ONLY to: Artifact, ArtifactType, Intersect, Policy, Rule, Taxonomy, TaxonomyType, Vocabulary
-	if @ActionObject = 'Responsibility'
-	begin
-		select	@actionObjectTypeName = 'Responsibility',
-				@actionObjectName = T.Name 
-		from	Responsibility O
-				inner join ResponsibilityType T on T.ID = O.ResponsibilityTypeID
-
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Context', (
-				select	D.Name + ': ' + I.Code + '; '
-				from	ResponsibilityContextItem C
-						inner join ReferenceItem I on C.ObjectType = 'ReferenceItem' and C.ObjectID = I.ID
-						inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
-				where	ResponsibilityID = @ActionObjectID
-				for xml path ('')--, root('items')
-				), 0, 0 from Responsibility where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from Responsibility where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from Responsibility where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ResponsibleObjectType', ResponsibleObjectType, 0, 0 from Responsibility where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ResponsibleObjectID', ResponsibleObjectID, 0, 0 from Responsibility where ID = @ActionObjectID
-	end
-
 	-- Relevant ONLY to: ResponsibilityType
 	if @ActionObject = 'ResponsibilityType'
 	begin
@@ -407,28 +298,11 @@ begin
 	if @ActionObject = 'Rule'
 	begin
 		select	@actionObjectTypeName = 'Rule',
-				@actionObjectName = O.Name 
+				@actionObjectName = O.DisplayValue 
 		from	[Rule] O
 		where	O.ID = @ActionObjectID
 
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from [Rule] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Rule] where ID = @ActionObjectID
-		insert into @tbl  select 0, 'RuleType', RuleType, 0, 0 from [Rule] where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: StatisticType
-	if @ActionObject = 'StatisticType'
-	begin
-		select	@actionObjectTypeName = 'Statistic Type',
-				@actionObjectName = O.Name 
-		from	StatisticType O
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from StatisticType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'CheckType', CheckType, 0, 0 from StatisticType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from StatisticType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PartOfScore', PartOfScore, 0, 0 from StatisticType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Configuration', cast(Configuration as nvarchar(max)), 0, 0 from StatisticType where ID = @ActionObjectID
+		insert into @tbl  select 0, 'Dimension', D.Name, 0, 0 from [Rule] R inner join RuleDimension D on D.ID = R.RuleDimensionID and R.ID = @ActionObjectID
 	end
 
 	-- Relevant ONLY to: SurveyType
@@ -453,9 +327,7 @@ begin
 				inner join TaxonomyType T on T.ID = O.TaxonomyTypeID
 		where	O.ID = @ActionObjectID
 
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Taxonomy where ID = @ActionObjectID
 		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from Taxonomy where ID = @ActionObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Taxonomy where ID = @ActionObjectID
 		insert into @tbl  select 0, 'Level', [Level], 0, 0 from Taxonomy where ID = @ActionObjectID
 	end
 
@@ -474,7 +346,7 @@ begin
 	end
 
 	-- Get the dynamic fields for the actional object, if available for this type.
-	if @ActionObject in ('Artifact', 'Attribute', 'Event', 'Fusion', 'FusionAttribute', 'Lookup', 'Resource', 'Taxonomy') 
+	if @ActionObject in ('Artifact', 'Attribute', 'Fusion', 'FusionAttribute', 'Lookup', 'Resource', 'Rule', 'Policy', 'Taxonomy') 
 	begin
 		insert into @tbl  
 			select	FieldTypeID, 

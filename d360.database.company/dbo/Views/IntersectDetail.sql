@@ -8,12 +8,12 @@ as
 			case I.Subject
 				when 'Intersect' then utility.DeriveIntersectName(SI.ID)
 				when 'Resource' then SRE.FirstName + ' ' + SRE.LastName
-				else coalesce(SA.TextPath, SD.Name, SF.TextPath, SG.Name, SM.Name, SP.TextPath, SR.Name, SRI.DisplayValue, ST.TextPath) 
+				else coalesce(SA.DisplayValue, SD.Name, SF.TextPath, SQF.DisplayValue, SG.Name, 'Map', SP.TextPath, SR.DisplayValue, SRI.DisplayValue, ST.TextPath) 
 			end as SubjectName,
 			case I.Subject
 				when 'Intersect' then utility.DeriveIntersectName(SI.ID)
 				when 'Resource' then SRE.FirstName + ' ' + SRE.LastName
-				else coalesce(SA.Name, SD.Name, SF.Name, SG.Name, SM.Name, SP.Name, SR.Name, SRI.DisplayValue, ST.Name) 
+				else coalesce(SA.DisplayValue, SD.Name, SF.Name, SQF.DisplayValue, SG.Name, 'Map', SP.DisplayValue, SR.DisplayValue, SRI.DisplayValue, ST.DisplayValue) 
 			end as SubjectShortName,
 			dbo.GenerateNgObjectUrl(
 				I.Subject, 
@@ -21,7 +21,7 @@ as
 					when 'Resource' then 1
 					when 'Group' then 1
 					when 'ReferenceItemType' then 0
-					else coalesce(SA.ArtifactTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SM.MapTypeID, SP.PolicyTypeID, SR.RuleTypeID, SRI.ReferenceItemTypeID, ST.TaxonomyTypeID) 
+					else coalesce(SA.ArtifactTypeID, SF.FusionAttributeTypeID, SQF.FusionQueryAttributeTypeID, SI.IntersectTypeID, SM.MapTypeID, SP.PolicyTypeID, SR.RuleTypeID, SRI.ReferenceItemTypeID, ST.TaxonomyTypeID) 
 				end,
 				I.SubjectID) as SubjectUrl,
 			case I.Subject
@@ -33,7 +33,7 @@ as
 				when 'Resource' then 1
 				when 'Group' then 1
 				when 'ReferenceItemType' then 0
-				else coalesce(SA.ArtifactTypeID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SM.MapTypeID, SP.PolicyTypeID, SR.RuleTypeID, SRI.ReferenceItemTypeID, ST.TaxonomyTypeID) 
+				else coalesce(SA.ArtifactTypeID, SF.FusionAttributeTypeID, SQF.FusionQueryAttributeTypeID, SI.IntersectTypeID, SM.MapTypeID, SP.PolicyTypeID, SR.RuleTypeID, SRI.ReferenceItemTypeID, ST.TaxonomyTypeID) 
 			end as SubjectTypeID,
 			case 
 				when I.Subject = 'ReferenceItemType' then 'Reference List'
@@ -49,12 +49,12 @@ as
 			case I.Object
 				when 'Intersect' then utility.DeriveIntersectName(OI.ID)
 				when 'Resource' then ORE.FirstName + ' ' + ORE.LastName
-				else coalesce(OA.TextPath, OD.Name, [OF].TextPath, OG.Name, OM.Name, OP.TextPath, [OR].Name, ORI.DisplayValue, OT.TextPath)
+				else coalesce(OA.DisplayValue, OD.Name, [OF].TextPath, OQF.DisplayValue, OG.Name, 'Map', OP.TextPath, [OR].DisplayValue, ORI.DisplayValue, OT.TextPath)
 			end as ObjectName,
 			case I.Object
 				when 'Intersect' then utility.DeriveIntersectName(OI.ID)
 				when 'Resource' then ORE.FirstName + ' ' + ORE.LastName
-				else coalesce(OA.Name, OD.Name, [OF].Name, OG.Name, OM.Name, OP.Name, [OR].Name, ORI.DisplayValue, OT.Name)
+				else coalesce(OA.DisplayValue, OD.Name, [OF].Name, OQF.DisplayValue, OG.Name, 'Map', OP.DisplayValue, [OR].DisplayValue, ORI.DisplayValue, OT.DisplayValue)
 			end as ObjectShortName,
 			dbo.GenerateNgObjectUrl(
 				I.Object, 
@@ -62,12 +62,13 @@ as
 					when 'Resource' then 1
 					when 'Group' then 1
 					when 'ReferenceItemType' then 0
-					else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OM.MapTypeID, OP.PolicyTypeID, [OR].RuleTypeID, ORI.ReferenceItemTypeID, OT.TaxonomyTypeID)
+					else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, [OQF].FusionQueryAttributeTypeID, OI.IntersectTypeID, OM.MapTypeID, OP.PolicyTypeID, [OR].RuleTypeID, ORI.ReferenceItemTypeID, OT.TaxonomyTypeID)
 				end,
 				I.ObjectID) as ObjectUrl,
 			case I.Object
 				when 'Artifact' then 'ArtifactType'
 				when 'FusionAttribute' then 'FusionAttributeType'
+				when 'FusionQueryAttribute' then 'FusionQueryAttributeType'
 				when 'Intersect' then 'IntersectType'
 				when 'Map' then 'MapType'
 				when 'Policy' then 'PolicyType'
@@ -79,7 +80,7 @@ as
 				when 'Resource' then 1
 				when 'Group' then 1
 				when 'ReferenceItemType' then 0
-				else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OM.MapTypeID, OP.PolicyTypeID, [OR].RuleTypeID, ORI.ReferenceItemTypeID, OT.TaxonomyTypeID)
+				else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OQF.FusionQueryAttributeTypeID, OI.IntersectTypeID, OM.MapTypeID, OP.PolicyTypeID, [OR].RuleTypeID, ORI.ReferenceItemTypeID, OT.TaxonomyTypeID)
 			end as ObjectTypeID,
 			case
 				when I.Object = 'ReferenceItemType' then 'Reference List'
@@ -101,6 +102,7 @@ as
 			left join dbo.ArtifactType SAT with(nolock) on SAT.ID = SA.ArtifactTypeID
 			left join dbo.ReferenceItemType SD with(nolock) on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
 			left join dbo.FusionAttribute SF with(nolock) on I.Subject = 'FusionAttribute' and SF.ID = I.SubjectID
+			left join dbo.FusionQueryAttribute [SQF] with(nolock) on I.Object = 'FusionQueryAttribute' and [SQF].ID = I.SubjectID
 			left join dbo.FusionAttributeType SFT with(nolock) on SFT.ID = SF.FusionAttributeTypeID
 			left join dbo.[Group] SG with(nolock) on I.Subject = 'Group' and SG.ID = I.SubjectID
 			left join dbo.[Intersect] SI with(nolock) on I.Subject = 'Intersect' and SI.ID = I.SubjectID
@@ -121,6 +123,7 @@ as
 			left join dbo.ArtifactType OAT with(nolock) on OAT.ID = OA.ArtifactTypeID
 			left join dbo.ReferenceItemType OD with(nolock) on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
 			left join dbo.FusionAttribute [OF] with(nolock) on I.Object = 'FusionAttribute' and [OF].ID = I.ObjectID
+			left join dbo.FusionQueryAttribute [OQF] with(nolock) on I.Object = 'FusionQueryAttribute' and [OQF].ID = I.ObjectID
 			left join dbo.FusionAttributeType OFT with(nolock) on OFT.ID = [OF].FusionAttributeTypeID
 			left join dbo.[Group] OG with(nolock) on I.Object = 'Group' and OG.ID = I.SubjectID
 			left join dbo.[Intersect] OI with(nolock) on I.Subject = 'Intersect' and OI.ID = I.SubjectID
@@ -145,7 +148,7 @@ as
 														and SIcon.ObjectID =	case I.Subject
 																					when 'Resource' then 1
 																					when 'Group' then 1
-																					else coalesce(SA.ArtifactTypeID, SD.ID, SF.FusionAttributeTypeID, SI.IntersectTypeID, SM.MapTypeID, SP.PolicyTypeID, SR.RuleTypeID, ST.TaxonomyTypeID) 
+																					else coalesce(SA.ArtifactTypeID, SD.ID, SF.FusionAttributeTypeID, SQF.FusionQueryAttributeTypeID, SI.IntersectTypeID, SM.MapTypeID, SP.PolicyTypeID, SR.RuleTypeID, ST.TaxonomyTypeID) 
 																				end
 			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType =	case I.Object
 																				when 'Group' then 'GroupType'
@@ -155,11 +158,11 @@ as
 														and OIcon.ObjectID =	case I.Object
 																					when 'Resource' then 1
 																					when 'Group' then 1
-																					else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OI.IntersectTypeID, OM.MapTypeID, OP.PolicyTypeID, [OR].RuleTypeID, OT.TaxonomyTypeID) 
+																					else coalesce(OA.ArtifactTypeID, OD.ID, [OF].FusionAttributeTypeID, OQF.FusionQueryAttributeTypeID, OI.IntersectTypeID, OM.MapTypeID, OP.PolicyTypeID, [OR].RuleTypeID, OT.TaxonomyTypeID) 
 																				end
 
-	where	coalesce(SA.ID, SD.ID, SF.ID, SG.ID, SI.ID, SM.ID, SP.ID, SR.ID, SRI.ID, SRE.ResourceID, ST.ID) is not null
-			and coalesce(OA.ID, OD.ID, [OF].ID, OG.ID, OI.ID, OM.ID, OP.ID, [OR].ID, ORI.ID, ORE.ResourceID, OT.ID) is not null
+	where	coalesce(SA.ID, SD.ID, SF.ID, SQF.ID, SG.ID, SI.ID, SM.ID, SP.ID, SR.ID, SRI.ID, SRE.ResourceID, ST.ID) is not null
+			and coalesce(OA.ID, OD.ID, [OF].ID, OQF.ID, OG.ID, OI.ID, OM.ID, OP.ID, [OR].ID, ORI.ID, ORE.ResourceID, OT.ID) is not null
 
 GO
 

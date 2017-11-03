@@ -1,7 +1,8 @@
-﻿CREATE procedure [bulkload].[Promotions]
+﻿
+CREATE procedure [bulkload].[Promotions]
 --declare
 	@id int
---set @id = 231
+--set @id = 11
 as
 begin
 	set nocount on;
@@ -10,20 +11,9 @@ begin
 			@ObjectID int,
 			@Action varchar(1),
 			@UpdatedOn datetime = getutcdate(),
-			@UpdatedBy int = 0,
-			@startDynamicFieldColumnIndex int,
-			@columnCount int
-
-	declare @ResolvedObjects table ([Object] varchar(50), ObjectID int, [Action] varchar(25), LoadID int, RowIndex int)	--This captures the INSERTED/UPDATED objects from the merge statements below.
-
-	drop table if exists #FieldValidationRows
-
-	create table #FieldValidationRows (
-		RowIndex int,
-		Valid bit
-	)
-
-	select	@Object = [Object],
+			@UpdatedBy int = 0
+				
+	select	@Object = [Object], 
 			@ObjectID = ObjectID,
 			@Action = [Action],
 			@UpdatedBy = UpdatedBy
@@ -31,489 +21,498 @@ begin
 	where	ID = @id;
 
 	update	LoadItem
-	set		Status = null,
+	set		Object = null, 
+			ObjectID = null, 
+			Status = null,
 			StatusMessage = null
 	where	LoadID = @id;
 
-	select	@columnCount = count(1) from LoadColumn where LoadID = @id;
+	
+	-- Process hashes for Load Items
+	if @Object = 'ReferenceItemType'
+	begin
+		update	T
+		set		T.KeyHash = CONVERT(
+									varchar(32), 
+									SUBSTRING(HASHBYTES('SHA1', substring(ltrim(rtrim(IC.Value)), 1, 250)), 3, 32), 
+									2),
+				T.FieldHash = V.FieldHash
+		from	LoadItem T
+				inner join LoadColumn C on C.LoadID = T.LoadID and C.Name = 'Code'
+				inner join LoadItemColumn IC on IC.LoadID = C.LoadID and IC.RowIndex = T.RowIndex and IC.ColumnIndex = C.ColumnIndex
+				inner join	(
+							select		RowIndex,
+										CONVERT(
+											varchar(32), 
+											SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+											2) as FieldHash
+							from		(
+										select		top 100 percent
+													I.RowIndex,
+													FT.ID as FieldTypeID,
+													coalesce(IC.Value, '') as Value
+										from		LoadItem I
+													inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
+													inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+													inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
+										order by	I.RowIndex,
+													FT.ID
+										) A
+							group by	A.RowIndex	
+							) V on V.RowIndex = T.RowIndex
+		where	T.LoadID = @id;
+	end
+	else
+	begin
+		update	T
+		set		T.KeyHash = K.KeyHash,
+				T.FieldHash = V.FieldHash
+		from	LoadItem T
+				inner join	(
+							select		RowIndex,
+										CONVERT(
+											varchar(32), 
+											SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+											2) as KeyHash
+							from		(
+										select		top 100 percent
+													I.RowIndex,
+													FT.ID as FieldTypeID,
+													coalesce(IC.Value, '') as Value
+										from		LoadItem I
+													inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
+													inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+													inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = C.Name
+										order by	I.RowIndex,
+													FT.ID
+										) A
+							group by	A.RowIndex
+							) K on K.RowIndex = T.RowIndex
+				inner join	(
+							select		RowIndex,
+										CONVERT(
+											varchar(32), 
+											SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+											2) as FieldHash
+							from		(
+										select		top 100 percent
+													I.RowIndex,
+													FT.ID as FieldTypeID,
+													coalesce(IC.Value, '') as Value
+										from		LoadItem I
+													inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
+													inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+													inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
+										order by	I.RowIndex,
+													FT.ID
+										) A
+							group by	A.RowIndex	
+							) V on V.RowIndex = T.RowIndex
+		where	T.LoadID = @id;
+	end
+	-- -----------------------------
+	
+	-- Resolve LOOKUP fields
+	update	IC
+	set		IC.LookupObject = 'ReferenceItem',--L.LookupObjectType,
+			IC.LookupObjectID = L.ID --L.LookupObjectID
+	from	LoadItemColumn IC
+			inner join LoadColumn C on C.ColumnIndex = IC.ColumnIndex and C.LoadID = IC.LoadID and C.LoadID = @id
+			inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.Type = 'Lookup'
+			inner join ReferenceItem L ON FT.LookupObjectType = 'ReferenceItem' AND FT.LookupObjectID = L.ReferenceItemTypeID and L.Visible = 1 and IC.Value = utility.GetFormattedFieldLookupValue(FT.Type, coalesce(FT.LookupEditFormat, FT.LookupDisplayFormat), FT.LookupObjectType, FT.LookupObjectID, L.ID);
 
-	declare @ParentID int = null,	--Artifact
-			@currentLevel int,		--Taxonomy
-			@maxLevel int			--Taxonomy
+	-- Log error messages for reference list resolution.
+	update	LI
+	set		LI.StatusMessage = coalesce(LI.StatusMessage,'') + FT.Name + ' could not be resolved to an existing reference item.' 
+	from	LoadItem LI
+			inner join LoadItemColumn IC on LI.LoadID = @id and IC.LoadID = LI.LoadID and IC.RowIndex = LI.RowIndex
+			inner join LoadColumn C on C.ColumnIndex = IC.ColumnIndex and C.LoadID = IC.LoadID
+			inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.Type = 'Lookup' and FT.LookupObjectType = 'ReferenceItem' and (FT.IsRequired = 1 or FT.IsPartOfKey = 1) and IC.LookupObjectID is null;
 
+	-- Resolve LOOKUP fields
+	update	IC
+	set		IC.LookupObject = REPLACE(FT.LookupObjectType, 'Type', ''),
+			IC.LookupObjectID = 0
+	from	LoadItemColumn IC
+			inner join LoadColumn C on C.ColumnIndex = IC.ColumnIndex and C.LoadID = IC.LoadID and C.LoadID = @id
+			inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.Type = 'Lookup' and FT.AllowAllValue = 1 and IC.Value = FT.AllowAllLabel;
+
+	-- Resolve RELATIONSHIP fields
+	update	IC
+	set		IC.LookupObject = 'Artifact',--L.LookupObjectType,
+			IC.LookupObjectID = D.ID --L.LookupObjectID
+	from	LoadItemColumn IC
+			inner join LoadColumn C on C.ColumnIndex = IC.ColumnIndex and C.LoadID = IC.LoadID and C.LoadID = @id
+			inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.Type = 'Relationship'
+			inner join IntersectType IT on FT.LookupObjectType = 'IntersectType' and FT.LookupObjectID = IT.ID
+			inner join Artifact D on --D.ObjectType = case 
+										--						when IT.Subject = @Object and IT.SubjectID = @ObjectID then IT.Object 
+											--					else IT.Subject 
+												--			   end 
+										--and	
+										D.ArtifactTypeID =	case 
+																when IT.Subject = @Object and IT.SubjectID = @ObjectID then IT.ObjectID 
+																else IT.SubjectID
+															end
+										and D.DisplayValue = IC.Value;
+
+	-- Capture changes for logging purposes.
+	declare @tbl table (ObjectID int, RowIndex int, [Action] varchar(1), [FieldsLoaded] bit null, [RelationshipsLoaded] bit null);
+	declare @insertToPerform table (RowID int identity, KeyHash varchar(250));
+	declare @insertOutputID table (RowID int identity, ObjectID int);
+	
+	-- ARTIFACTS ---------------
 	if @Object = 'ArtifactType'
 	begin
-		select	@ParentID = ParentID 
-		from	ArtifactType 
-		where	ID = @ObjectID
-
-		if @ParentID is not null
-			begin
-				set @startDynamicFieldColumnIndex = 5
-			end
-		else
-			begin
-				set @startDynamicFieldColumnIndex = 4
-			end
-	end
-	else if @Object = 'AttributeType'
-	begin
-		set @startDynamicFieldColumnIndex = 4
-	end
-	else if @Object = 'ReferenceItemType'
-	begin
-		set @startDynamicFieldColumnIndex = 2
-	end
-	else if @Object = 'TaxonomyType'
-	begin
-		select	@currentLevel = 0,
-				@maxLevel = max(
-								case when isnumeric(replace(Name,'Level','')) = 1 then
-									replace(Name,'Level','') 
-								else 
-									0 
-								end) 
-		from	LoadColumn 
-		where	LoadID = @id 
-				and Name like 'Level%';
-
-		set @startDynamicFieldColumnIndex = @maxLevel + 1 + 1 -- the first 1 is for description.  the second 1 is to move to the start column of the dynamic fields, if any.
-	end
-
-	-- PARSE any dynamic fields that are specifically lookups.
-	exec [bulkload].[UpdateDynamicLookupFieldColumns] @id, @startDynamicFieldColumnIndex, @columnCount
-
-	--Note the dynamic field status for all load items.
-	insert into #FieldValidationRows
-		select	I.RowIndex,
-				case
-					when S.InvalidCount = 0 then cast(1 as bit)
-					else cast(0 as bit)
-				end
-		from	LoadItem I
-				inner join	(
-							select	I.LoadID,
-									I.RowIndex,
-									C.InvalidCount
-							from	[Load] L
-									inner join [LoadItem] I on I.LoadID = L.ID
-									cross apply (
-												select	count(1) as InvalidCount
-												from	[LoadItemColumn] IC
-														inner join FieldType F on L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-														inner join [LoadColumn] C on C.LoadID = IC.LoadID and F.Name = C.Name and C.ColumnIndex = IC.ColumnIndex and C.ColumnIndex between @startDynamicFieldColumnIndex and @columnCount
-												where	IC.LoadID = @id 
-														and IC.RowIndex = I.RowIndex
-														and IC.LookupObject is null and IC.LookupObjectID is null
-														and IC.Value is not null and IC.Value <> ''
-												) C
-							where	L.ID = @id
-							) S on I.LoadID = S.LoadID and S.RowIndex = I.RowIndex
-
-	if @Object = 'ArtifactType'
-	begin
-		exec bulkload.UpdateSubjectAreaColumn @id, 3
-
-		-- Mark the rows with invalid subject areas.
-		update	I
-		set		I.StatusMessage = I.StatusMessage + ' Subject area could not be found.'
-		from	LoadItem I
-				inner join LoadItemColumn S on I.LoadID = @id and S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 3 and S.LookupObjectID is null
-
-		-- Mark the rows with invalid names.
-		update	I
-		set		I.StatusMessage = I.StatusMessage + ' Name cannot be empty.'
-		from	LoadItem I
-				inner join LoadItemColumn N on I.LoadID = @id and N.LoadID = I.LoadID and N.RowIndex = I.RowIndex and N.ColumnIndex = 1 and N.Value is null
-
-		if @ParentID is not null
-			begin
-				-- Parse the parents, if any.
-				exec bulkload.UpdateItemColumnByType @id, 'ArtifactType', @ParentID, 3, 4
-
-				drop table if exists #ParentArtifacts
-
-				select	I.LoadID,
-						I.RowIndex,
-						I.LookupObjectID as ID,
-						@ObjectID as ArtifactTypeID,
-						I.Value as Name,
-						D.Value as Description,
-						S.LookupObjectID as TaxonomyTypeID,
-						P.LookupObjectID as ParentID,
-						T.ID as ExistingArtifactID
-				into	#ParentArtifacts
-				from	LoadItemColumn I
-						inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 3 and S.LookupObjectID is not null
-						inner join LoadItemColumn P on P.LoadID = I.LoadID and P.RowIndex = I.RowIndex and P.ColumnIndex = 4 and P.LookupObjectID is not null
-						inner join LoadItemColumn D on D.LoadID = I.LoadID and D.RowIndex = I.RowIndex and D.ColumnIndex = 2
-						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
-						left join Artifact T on T.ArtifactTypeID = @ObjectID and T.TaxonomyTypeID = S.LookupObjectID and T.ParentID = P.LookupObjectID and T.Name = I.Value
-				where	I.LoadID = @id and I.ColumnIndex = 1 AND I.Value IS NOT NULL;
-
-				update	T
-				set		--T.ParentID = null,
-						T.[Description] = S.[Description],
-						T.[Status] = 
-						( CASE  
-							WHEN (T.[Status] = 'Certified') THEN 'Draft' 							
-							ELSE  (T.[Status])
-							END 
-						),
-						T.UpdatedBy = @UpdatedBy,
-						T.UpdatedOn = @UpdatedOn
-				from	Artifact T
-						inner join #ParentArtifacts S on S.ExistingArtifactID = T.ID;
-
-				insert into @ResolvedObjects
-					select 'Artifact', ExistingArtifactID, 'UPDATE', LoadID, RowIndex from #ParentArtifacts where ExistingArtifactID is not null
-
-				insert into Artifact (ArtifactTypeID, TaxonomyTypeID, ParentID, Name, [Description], [Status], CreatedOn, UpdatedOn, UpdatedBy)
-					select	ArtifactTypeID, TaxonomyTypeID, ParentID, Name, [Description], 'Draft', @UpdatedOn, @UpdatedOn, @UpdatedBy
-					from	#ParentArtifacts 
-					where	ExistingArtifactID is null
-
-				insert into @ResolvedObjects
-					select	'Artifact', A.ID, 'INSERT', I.LoadID, I.RowIndex 
-					from	#ParentArtifacts I
-							inner join Artifact A on A.ArtifactTypeID = I.ArtifactTypeID and A.TaxonomyTypeID = I.TaxonomyTypeID and A.ParentID = I.ParentID and A.Name = I.Name and I.ExistingArtifactID is null
-
-				-- Mark the rows with invalid parents.
-				update	I
-				set		I.StatusMessage = 'Parent could not be found.'
-				from	LoadItem I
-						inner join LoadItemColumn P on I.LoadID = @id and P.LoadID = I.LoadID and P.RowIndex = I.RowIndex and P.ColumnIndex = 4 and P.LookupObjectID is null
-			end
-		else
-			begin
-				drop table if exists #NoParentArtifacts
-
-				select	I.LoadID,
-						I.RowIndex,
-						I.LookupObjectID as ID,
-						I.Value as Name,
-						D.Value as Description,
-						@ObjectID as ArtifactTypeID,
-						S.LookupObjectID as TaxonomyTypeID,
-						T.ID as ExistingArtifactID
-				into	#NoParentArtifacts
-				from	LoadItemColumn I
-						inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 3 and S.LookupObjectID is not null
-						inner join LoadItemColumn D on D.LoadID = I.LoadID and D.RowIndex = I.RowIndex and D.ColumnIndex = 2
-						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
-						left join Artifact T on T.ArtifactTypeID = @ObjectID and T.TaxonomyTypeID = S.LookupObjectID and T.Name = I.Value
-				where	I.LoadID = @id and I.ColumnIndex = 1 AND I.Value IS NOT NULL
-				
-				update	T
-				set		T.ParentID = null,
-						T.[Description] = S.[Description],						
-						T.[Status] = 
-						( CASE  
-							WHEN (T.[Status] = 'Certified') THEN 'Draft' 							
-							ELSE  (T.[Status])
-						  END 
-						),
-						T.UpdatedBy = @UpdatedBy,
-						T.UpdatedOn = @UpdatedOn
-				from	Artifact T
-						inner join #NoParentArtifacts S on S.ExistingArtifactID = T.ID;
-
-				insert into @ResolvedObjects
-					select 'Artifact', ExistingArtifactID, 'UPDATE', LoadID, RowIndex from #NoParentArtifacts where ExistingArtifactID is not null
-
-				insert into Artifact (ArtifactTypeID, TaxonomyTypeID, Name, [Description], [Status], CreatedOn, UpdatedOn, UpdatedBy)
-					select	ArtifactTypeID, TaxonomyTypeID, Name, [Description], 'Draft', @UpdatedOn, @UpdatedOn, @UpdatedBy
-					from	#NoParentArtifacts 
-					where	ExistingArtifactID is null
-
-				insert into @ResolvedObjects
-					select	'Artifact', A.ID, 'INSERT', I.LoadID, I.RowIndex 
-					from	#NoParentArtifacts I
-							inner join Artifact A on A.ArtifactTypeID = I.ArtifactTypeID and A.TaxonomyTypeID = I.TaxonomyTypeID and A.Name = I.Name and I.ExistingArtifactID is null
-			end
-	end
-	else if @Object = 'AttributeType'
-	begin
-		-- Clean Owner Type field.
-		update	LoadItemColumn
-		set		Value = case when charindex('Type', Value) > 0 then Value else Value + 'Type' end
-		where	LoadID = @id and ColumnIndex = 1;
-
-		-- PARSE Owner Type fields.
+		-- Identify which load items already exist based on key hash.
 		update	T
-		set		T.LookupObject = S.LookupObject,
-				T.LookupObjectID = S.LookupObjectID
-		from	LoadItemColumn T
-				inner join	(
-							select	LI.LoadID,
-									LI.RowIndex,
-									C2.ColumnIndex,
-									D.[Object] as LookupObject,
-									D.ObjectID as LookupObjectID
-							from	[Load] L
-									inner join LoadItem LI on LI.LoadID = L.ID and L.ID = @id
-									inner join [LoadItemColumn] C1 on C1.LoadID = LI.LoadID and C1.RowIndex = LI.RowIndex and C1.ColumnIndex = 1 --'Owner Type' 
-									inner join [LoadItemColumn] C2 on C2.LoadID = LI.LoadID and C2.RowIndex = LI.RowIndex and C2.ColumnIndex = 2 --'Owner Type Name'
-									inner join cache.ObjectDetails D on D.[Object] = C1.Value and D.[Name] = C2.Value
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex;
+		set		T.Object = 'Artifact',
+				T.ObjectID = S.ID
+		from	LoadItem T
+				inner join Artifact S on S.ArtifactTypeID = @ObjectID and S.KeyHash = T.KeyHash and S.KeyHash is not null;
 
-		-- PARSE Owner fields.
+		-- Mark the existing artifacts as being updated.
 		update	T
-		set		T.LookupObject = S.LookupObject,
-				T.LookupObjectID = S.LookupObjectID
-		from	LoadItemColumn T
-				inner join	(
-							select	LI.LoadID,
-									LI.RowIndex,
-									C3.ColumnIndex,
-									D.[Object] as LookupObject,
-									D.ObjectID as LookupObjectID
-							from	[Load] L
-									inner join LoadItem LI on LI.LoadID = L.ID and L.ID = @id
-									--inner join [LoadItemColumn] C1 on	C1.LoadID = LI.LoadID	and C1.RowIndex = LI.RowIndex	and C1.ColumnIndex = 1 --'Owner Type' 
-									inner join [LoadItemColumn] C2 on C2.LoadID = LI.LoadID and C2.RowIndex = LI.RowIndex and C2.ColumnIndex = 2 --'Owner Type Name'
-									inner join [LoadItemColumn] C3 on C3.LoadID = LI.LoadID	and C3.RowIndex = LI.RowIndex and C3.ColumnIndex = 3 --'Owner Name'
-									inner join cache.ObjectDetails D on D.[ObjectType] = C2.[LookupObject] and D.ObjectTypeID = C2.LookupObjectID and D.[Name] = C3.Value
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex;
+		set		T.UpdatedBy = @UpdatedBy,
+				T.UpdatedOn = @UpdatedOn
+		from	Artifact T
+				inner join LoadItem S on S.LoadID = @id and S.Object = 'Artifact' and S.ObjectID = T.ID and T.ArtifactTypeID = @ObjectID;
 
-		merge	[Attribute] T
-		using	(
-				select	I.LoadID,
-						I.RowIndex,
-						@ObjectID as AttributeTypeID,
-						C.LookupObject as [Object],
-						C.LookupObjectID as ObjectID
-				from	[LoadItem] I
-						inner join [LoadItemColumn] C on I.LoadID = @id and C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and C.ColumnIndex = 3
-						and C.LookupObject is not null
-						and C.LookupObjectID is not null
-						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
-				) S
-		on		(T.AttributeTypeID = S.AttributeTypeID and T.[ObjectType] = S.[Object] and T.[ObjectID] = S.[ObjectID] and T.ParentID = NULL)-- and T.Name = S.Name)
-		when	matched then
-				update	set T.[UpdatedOn] = getutcdate(),
-							T.UpdatedBy = @UpdatedBy
-		when	not matched then
-				insert (AttributeTypeID, ObjectType, ObjectID, UpdatedOn, UpdatedBy)
-				values (S.AttributeTypeID, S.[Object], S.ObjectID, getutcdate(), @UpdatedBy)
-		output	'Attribute', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;		
+		-- Insert the updated records into temp table for logging.
+		insert into @tbl 
+			select	ObjectID,
+					RowIndex,
+					'U', null, null
+			from	LoadItem
+			where	LoadID = @id 
+					and ObjectID is not null;
+
+		-- Insert new items into the Artifact table.
+		insert into @insertToPerform
+			select	distinct
+					KeyHash
+			from	LoadItem
+			where	LoadID = @id
+					and ObjectID is null
+					and KeyHash is not null;
+
+		--declare @insertOutputID table (RowID int identity, ObjectID int);
+		insert Artifact (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy)
+		output inserted.ID into @insertOutputID
+			select	@ObjectID, 
+					@UpdatedOn, 
+					@UpdatedBy, 
+					@UpdatedOn, 
+					@UpdatedBy
+			from	@insertToPerform;
+
+		-- Insert the added records into temp table for logging.
+		insert into @tbl 
+			select	N.ObjectID,
+					I.RowIndex,
+					'A', null, null
+			from	LoadItem I
+					inner join @insertToPerform P on P.KeyHash = I.KeyHash and I.LoadID = @id 
+					inner join @insertOutputID N on N.RowID = P.RowID;
+
+		-- Update the LoadItem table with the Object and ObjectID generated from the insert above.
+		update	T
+		set		T.Object = 'Artifact',
+				T.ObjectID = S.ObjectID
+		from	LoadItem T
+				inner join @tbl S on T.LoadID = @id and S.RowIndex = T.RowIndex and S.[Action] = 'A';
 	end
-	else if @Object = 'ReferenceItemType'
+	-------------------------
+
+	-- REFERENCE ------------
+	if @Object = 'ReferenceItemType'
 	begin
-		-- Mark the rows with invalid codes.
-		update	I
-		set		I.StatusMessage = I.StatusMessage + ' Code cannot be empty.'
-		from	LoadItem I
-				inner join LoadItemColumn N on I.LoadID = @id and N.LoadID = I.LoadID and N.RowIndex = I.RowIndex and N.ColumnIndex = 1 and N.Value is null
+		declare @ri_insertToPerform table (RowID int identity, Code nvarchar(250), KeyHash varchar(250));
+		declare @ri_insertOutputID table (RowID int identity, ObjectID int);
 
-		merge	ReferenceItem T
-		using	(
-				select	I.LoadID,
-						I.RowIndex,
-						@ObjectID as ReferenceItemTypeID,
-						C.Value as Code
-				from	[LoadItem] I
-						inner join [LoadItemColumn] C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and C.ColumnIndex = 1 and C.Value is not null
-						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
-				where	I.LoadID = @id
-				) S
-		on		(T.ReferenceItemTypeID = S.ReferenceItemTypeID and T.Code = S.Code)
-		when	matched then
-				update	set T.[Code] = S.[Code],
-							T.UpdatedBy = @UpdatedBy,
-							T.UpdatedOn = @UpdatedOn
-		when	not matched then
-				insert (ReferenceItemTypeID, Code, UpdatedOn, UpdatedBy)
-				values (S.ReferenceItemTypeID, S.Code, @UpdatedOn, @UpdatedBy)
-		output	'ReferenceItem', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
+		-- Identify which load items already exist based on key hash.
+		update	T
+		set		T.Object = 'ReferenceItem',
+				T.ObjectID = S.ID
+		from	LoadItem T
+				inner join ReferenceItem S on S.ReferenceItemTypeID = @ObjectID and S.KeyHash = T.KeyHash and S.KeyHash is not null;
+
+		-- Mark the existing items as being updated.
+		update	T
+		set		T.UpdatedBy = @UpdatedBy,
+				T.UpdatedOn = @UpdatedOn
+		from	ReferenceItem T
+				inner join LoadItem S on S.LoadID = @id and S.Object = 'ReferenceItem' and S.ObjectID = T.ID and T.ReferenceItemTypeID = @ObjectID;
+
+		-- Insert the updated records into temp table for logging.
+		insert into @tbl 
+			select	ObjectID,
+					RowIndex,
+					'U', null, null
+			from	LoadItem
+			where	LoadID = @id 
+					and ObjectID is not null;
+
+		-- Insert new items into the ReferenceItem table.
+		insert into @ri_insertToPerform
+			select	distinct
+					substring(ltrim(rtrim(IC.Value)), 1, 250),
+					I.KeyHash
+			from	LoadItem I
+					inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex 
+					inner join LoadColumn C on C.LoadID = I.LoadID and C.Name = 'Code'
+			where	I.LoadID = @id
+					and I.ObjectID is null
+					and I.KeyHash is not null;
+
+		insert ReferenceItem (ReferenceItemTypeID, Code, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy)
+		output inserted.ID into @ri_insertOutputID
+			select	@ObjectID, 
+					Code,
+					@UpdatedOn, 
+					@UpdatedBy, 
+					@UpdatedOn, 
+					@UpdatedBy
+			from	@ri_insertToPerform;
+
+		-- Insert the added records into temp table for logging.
+		insert into @tbl 
+			select	N.ObjectID,
+					I.RowIndex,
+					'A', null, null
+			from	LoadItem I
+					inner join @ri_insertToPerform P on P.KeyHash = I.KeyHash and I.LoadID = @id 
+					inner join @ri_insertOutputID N on N.RowID = P.RowID;
+
+		-- Update the LoadItem table with the Object and ObjectID generated from the insert above.
+		update	T
+		set		T.Object = 'ReferenceItem',
+				T.ObjectID = S.ObjectID
+		from	LoadItem T
+				inner join @tbl S on T.LoadID = @id and S.RowIndex = T.RowIndex and S.[Action] = 'A';
 	end
-	else if @Object = 'TaxonomyType'
-	begin
-		declare @rowCount int,
-				@rowCurr int;
+	-------------------------
+	
 
-		declare @levels table (id int, ColumnIndex int, RowIndex int, [Level] varchar(50), Value varchar(250),MaxLevel int, TaxonomyID int, ParentID int, [Status] varchar(50));
+	-- Capture field logs
+	declare @fields table (RowIndex int, ColumnIndex int, [Action] varchar(25))
 
-		with v as
-		(
-			select	L.ID, 
-					L.Object, 
-					L.ObjectID, 
-					LC.Name, 
-					LC.ColumnIndex, 
-					IC.RowIndex, 
-					IC.Value, 
-					replace(LC.Name,'Level','') as [Level], 
-					T.ID as TaxonomyID 
-			from	[Load] L
-					join LoadColumn LC on LC.LoadID = L.ID
-					join LoadItemColumn IC on IC.LoadID = LC.LoadID AND IC.ColumnIndex = LC.ColumnIndex
-					left join Taxonomy T on T.TaxonomyTypeID = L.ObjectID and T.[Level] = replace(LC.Name,'Level','') and T.Name = IC.Value
-			where	L.ID = @id 
-					AND ltrim(rtrim(IC.Value)) != '' 
-					and LC.Name like 'Level%'  
-		)
+	-- Non-relationship fields
+	merge	Field as T
+	using	(
+			select	I.FieldTypeID,
+					I.Type,
+					I.Object,
+					I.ObjectID,
+					C.*
+			from	(
+					select		I.LoadID,
+								FT.ID as FieldTypeID,
+								FT.Type,
+								I.Object,
+								I.ObjectID,
+								min(I.RowIndex) as RowIndex,
+								C.ColumnIndex
+					from		LoadItem I
+								inner join LoadItemColumn C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and I.LoadID = @id
+								inner join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+								inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID 
+														and FT.Name = LC.Name and FT.Type <> 'Relationship' 
+														and ( (FT.Type <> 'Lookup' and C.Value is not null) OR (FT.Type = 'Lookup' and C.LookupObjectID is not null) )			
+					where		I.ObjectID is not null
+					group by	I.LoadID,
+								FT.ID,
+								FT.Type,
+								I.Object,
+								I.ObjectID,
+								C.ColumnIndex
+					) I
+					inner join LoadItemColumn C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and C.ColumnIndex = I.ColumnIndex
+			) S on (T.FieldTypeID = S.FieldTypeID and S.Object = T.ObjectType and S.ObjectID = T.ObjectID)
+	when matched then
+		update	set
+				Value = case S.Type
+							when 'Lookup' then cast(S.LookupObjectID as nvarchar)
+							else S.Value
+						end
+	when not matched then
+		insert (FieldTypeID, ObjectType, ObjectID, Value)
+		values (
+				S.FieldTypeID,
+				S.Object, 
+				S.ObjectID, 
+				IIF(S.Type = 'Lookup', cast(S.LookupObjectID as nvarchar), S.Value)
+				)
+	output S.RowIndex, S.ColumnIndex, $action into @fields;
 
-		insert into @levels
-			select		distinct
-						row_number() over (partition by 1 order by v.[Level]) as ID,
-						v.ColumnIndex,
-						v.RowIndex,
-						v.[Level],
-						v.Value,
-						m.[Level] as MaxLevel,
-						v.TaxonomyID,
-						p.TaxonomyID as ParentID,
-						'UPDATE' as [Status]
-			from		v	
-						left join v p on p.RowIndex = v.RowIndex and v.TaxonomyID is null and p.ColumnIndex = (v.ColumnIndex - 1)
-						inner join v m on m.RowIndex = v.RowIndex and m.[Level] = (select max([Level]) from v where RowIndex = m.RowIndex)
-			order by	v.[Level] asc;
-
-		-- calculate hierarchy
-		while @currentLevel <= @maxLevel
-		begin
-			set @currentLevel = @currentLevel + 1;
-				
-			update	LV
-			set		LV.ParentID = P.ID
-			from	@levels LV
-					left join @levels P on P.[Level] = (LV.[Level] - 1) AND LV.RowIndex = P.RowIndex
-			where	LV.[Level] = @currentLevel;
-		end
-
-		select @rowCurr = 0, @rowCount = count(*) from @levels;
-
-		while @rowCurr <= @rowCount
-		begin
-			set @rowCurr = @rowCurr + 1;
-
-			--parent does not exist or leading columns were not filled
-			if (select ParentID from @levels where id = @rowCurr) IS NULL AND (select Level from @levels where id = @rowCurr) > 1
-			begin
-				update	@levels 
-				set		[Status] = 'ERROR' 
-				where	rowIndex = (select rowindex from @levels where id = @rowCurr);
-				continue;
-			end
-
-			--update the TaxonomyID for records that do not yet have it
-			if (select level from @levels where id = @rowCurr) = 1
-			begin
-				update	LV
-				set		TaxonomyID = T.ID
-				from	@levels LV
-						join Load L on L.ID = @id
-						join Taxonomy T on T.Name = LV.Value and T.ParentID is NULL and T.Level = LV.Level and T.TaxonomyTypeID = L.ObjectID
-				where	LV.ID = @rowCurr;
-			end
-			else
-			begin
-				update	LV
-				set		TaxonomyID = T.ID
-				from	@levels LV
-						left join @levels P on P.ID = LV.ParentID
-						join Taxonomy T on T.Name = LV.Value and T.ParentID = P.TaxonomyID and T.Level = LV.Level
-				where	LV.ID = @rowCurr;
-			end
-
-			if (select TaxonomyID from @levels where id = @rowCurr) IS NULL
-			begin
-				--insert the new taxonomy
-				insert into Taxonomy (TaxonomyTypeID, ParentID, Name, [Description], UpdatedOn, UpdatedBy)
-					select	distinct
-							L.ObjectID as TaxonomyTypeID,
-							LVP.TaxonomyID as ParentID,
-							LV.Value as Name,
-							case 
-								when LV.Level = LV.MaxLevel then LI.Value
-								else ''
-							end as Description,
-							@UpdatedOn as UpdatedOn,
-							@UpdatedBy as UpdatedBy
-					from	@levels LV
-							left join @levels LVP on LVP.ID = LV.ParentID
-							join [Load] L on L.ID = @id
-							inner join LoadColumn LC on LC.Name = 'Description' and LC.LoadID = @id
-							inner join LoadItemColumn LI on LI.RowIndex = LV.RowIndex AND LI.ColumnIndex = LC.ColumnIndex AND LI.LoadID = @id
-							inner join #FieldValidationRows V on V.RowIndex = LI.RowIndex and V.Valid = 1
-					where	LV.ID = @rowCurr
-
-				update	@levels 
-				set		[Status] = 'INSERT' 
-				where	id = @rowCurr;
-
-				--set the levels taxonomy id after insert
-				update	LV
-				set		TaxonomyID = T.ID
-				from	@levels LV
-						left join @levels P on P.ID = LV.ParentID
-						join Taxonomy T on T.Name = LV.Value and coalesce(T.ParentID,-1) = coalesce(P.TaxonomyID,-1) and T.Level = LV.Level
-				where	LV.ID = @rowCurr;
-			end
-				
-			--if level = max, update the description
-			if (select level from @levels where id = @rowCurr) = (select maxlevel from @levels where id = @rowCurr)
-			begin
-				update	T
-				set		T.Description = case when LI.Value = '' then T.Description else LI.Value end,
-						T.UpdatedOn = getutcdate(),
-						T.UpdatedBy = @UpdatedBy
-				from	Taxonomy T
-						join @levels LV on LV.ID = @rowCurr and T.ID = LV.TaxonomyID
-						inner join LoadColumn LC on LC.Name = 'Description' and LC.LoadID = @id
-						inner join LoadItemColumn LI on LI.RowIndex = LV.RowIndex AND LI.ColumnIndex = LC.ColumnIndex AND LI.LoadID = @id
-						inner join #FieldValidationRows V on V.RowIndex = LI.RowIndex and V.Valid = 1;
-			end
-		end --end while
-			
-
-		--remove error rows
-		delete from @levels
-		where rowindex in (select rowindex from @levels where status is null or status = 'ERROR');
-
-					--insert object statuses
-		insert into @ResolvedObjects ([Object], ObjectID, [Action], LoadID, RowIndex)
-			select	'Taxonomy',
-					TaxonomyID,
-					[Status],
-					@id,
-					RowIndex
-			from	@levels;
-	end
-
-	-- Update the LoadItem table with the IDs we recieved in the merge statements above.
 	update	T
-	set		T.[Object] = S.[Object],
-			T.ObjectID = S.ObjectID,
-			T.[Status] = 1,
-			T.StatusMessage = case S.[Action]
-								when 'INSERT' then 'Added item'
-								when 'UPDATE' then 'Updated item'
-								else NULL
-								end
+	set		T.FieldsLoaded = 1
+	from	@tbl T
+			inner join	(
+						select		RowIndex,
+									[Action]
+						from		@fields
+						group by	RowIndex, 
+									[Action]
+						) S on S.RowIndex = T.RowIndex
+
+	delete @fields
+
+	-- Relationship fields
+	merge	[Intersect] as T
+	using	(
+			select	distinct
+					FT.LookupObjectID as IntersectTypeID,
+					case 
+						when IT.Subject = @Object and IT.SubjectID = @ObjectID then I.Object
+						else C.LookupObject
+					end as Subject,
+					case 
+						when IT.Subject = @Object and IT.SubjectID = @ObjectID then I.ObjectID
+						else C.LookupObjectID
+					end as SubjectID,
+					case 
+						when IT.Subject = @Object and IT.SubjectID = @ObjectID then C.LookupObject
+						else I.Object
+					end as Object,
+					case 
+						when IT.Subject = @Object and IT.SubjectID = @ObjectID then C.LookupObjectID
+						else I.ObjectID
+					end as ObjectID--,
+					--C.*
+			from	LoadItem I
+					inner join LoadItemColumn C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and I.LoadID = @id
+					inner join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+					inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID 
+											and FT.Name = LC.Name and FT.Type = 'Relationship' 
+											and C.LookupObject is not null and C.LookupObjectID is not null
+					inner join IntersectType IT on FT.LookupObjectType = 'IntersectType' and FT.LookupObjectID = IT.ID
+			where	I.ObjectID is not null
+			) S on (
+					T.IntersectTypeID = S.IntersectTypeID 
+					and S.Subject = T.Subject and S.SubjectID = T.SubjectID
+					and S.Object = T.Object and S.ObjectID = T.ObjectID
+					)
+	when not matched then
+		insert (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner], Visible)
+		values (
+				S.IntersectTypeID,
+				S.Subject, 
+				S.SubjectID,
+				S.Object, 
+				S.ObjectID, 
+				0, @UpdatedBy, @UpdatedOn, @UpdatedBy, @UpdatedOn, 'BulkLoad', 1
+				);
+--	output S.RowIndex, S.ColumnIndex, $action into @fields;
+
+	--update	T
+	--set		T.RelationshipsLoaded = 1
+	--from	@tbl T
+	--		inner join	(
+	--					select		RowIndex,
+	--								[Action]
+	--					from		@fields
+	--					group by	RowIndex, 
+	--								[Action]
+	--					) S on S.RowIndex = T.RowIndex
+	
+/*	UPDATE	T
+	SET		T.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, T.Value)
+	FROM	Field T 
+			INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID and T.FormattedValue is null or T.FormattedValue = '' and FT.Object = @Object and FT.ObjectID = @ObjectID*/
+
+	--if @Object = 'ArtifactType'
+	--begin
+	--	update	T
+	--	set		--T.KeyHash = K.KeyHash,
+	--			T.FieldHash = V.FieldHash--,
+	--			--T.DisplayValue = [utility].GetObjectDisplayValue('Artifact', T.ID, T.ArtifactTypeID)
+	--	from	Artifact T
+	--			--inner join	(
+	--			--			select		ID,
+	--			--						CONVERT(
+	--			--							varchar(32), 
+	--			--							SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+	--			--							2) as KeyHash
+	--			--			from		(
+	--			--						select		top 100 percent
+	--			--									A.ID,
+	--			--									F.FieldTypeID,
+	--			--									coalesce(F.Value, '') as Value
+	--			--						from		Artifact A
+	--			--									inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and FT.IsPartOfKey = 1 and A.ArtifactTypeID = @ObjectID
+	--			--									left join Field F on FT.ID = F.FieldTypeID and F.ObjectType = 'Artifact' and F.ObjectID = A.ID
+	--			--						order by	A.ID,
+	--			--									F.FieldTypeID
+	--			--						) A
+	--			--			group by	A.ID		
+	--			--			) K on K.ID = T.ID
+	--			inner join	(
+	--						select		ID,
+	--									CONVERT(
+	--										varchar(32), 
+	--										SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+	--										2) as FieldHash
+	--						from		(
+	--									select		top 100 percent
+	--												A.ID,
+	--												F.FieldTypeID,
+	--												coalesce(F.Value, '') as Value
+	--									from		Artifact A
+	--												inner join FieldType FT on FT.Object = 'ArtifactType' and FT.ObjectID = A.ArtifactTypeID and A.ArtifactTypeID = @ObjectID
+	--												left join Field F on FT.ID = F.FieldTypeID and F.ObjectType = 'Artifact' and F.ObjectID = A.ID
+	--									order by	A.ID,
+	--												F.FieldTypeID
+	--									) A
+	--						group by	A.ID
+	--						) V on V.ID = T.ID;
+	--end
+
+	--if @Object = 'ReferenceItemType'
+	--begin
+	--	update	T
+	--	set		T.FieldHash = V.FieldHash--,
+	--			--T.DisplayValue = [utility].GetObjectDisplayValue('ReferenceItem', T.ID, T.ReferenceItemTypeID)
+	--	from	ReferenceItem T
+	--			inner join	(
+	--						select		ID,
+	--									CONVERT(
+	--										varchar(32), 
+	--										SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+	--										2) as FieldHash
+	--						from		(
+	--									select		top 100 percent
+	--												A.ID,
+	--												F.FieldTypeID,
+	--												coalesce(F.Value, '') as Value
+	--									from		ReferenceItem A
+	--												inner join FieldType FT on FT.Object = 'ReferenceItemType' and FT.ObjectID = A.ReferenceItemTypeID and A.ReferenceItemTypeID = @ObjectID
+	--												left join Field F on FT.ID = F.FieldTypeID and F.ObjectType = 'ReferenceItem' and F.ObjectID = A.ID
+	--									order by	A.ID,
+	--												F.FieldTypeID
+	--									) A
+	--						group by	A.ID
+	--						) V on V.ID = T.ID;
+	--end
+	
+	-- Capture logs and update load status. -----
+	update	T
+	set		T.Status = 1,
+			T.StatusMessage = 'Item successfully ' + case S.[Action] when 'A' then 'added' else 'updated' end + '.'
 	from	LoadItem T
-			inner join	@ResolvedObjects S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex;
-
-	-- Update the LoadItems that were not successfully added or updated.
-	update	LoadItem
-	set		[Status] = 0,
-			[StatusMessage] = coalesce([StatusMessage], 'Item could not be added nor updated.')
-	where	LoadID = @id
-			and [ObjectID] is null
+			inner join @tbl S on T.LoadID = @id and S.RowIndex = T.RowIndex and T.[Object] is not null and T.ObjectID is not null;
 
 	update	LoadItem
-	set		[Status] = 0,
-			[StatusMessage] = coalesce([StatusMessage], 'Item could not be added nor updated.')
-	where	LoadID = @id
-			and RowIndex in (select RowIndex from #FieldValidationRows where Valid = 0)
-			and [ObjectID] is null
+	set		Status = 0,
+			StatusMessage = 'Item load failed. ' + coalesce(StatusMessage, '')
+	where	([Object] is null or ObjectID is null)
+			and LoadID = @id;
 
-	-- merge the dynamic fields involved with this load into the Fields table.  Needs to be here as this proc looks at the LaodItem table for the Object and ObjectID.
-	exec [bulkload].MergeDynamicLookupFields @id, @startDynamicFieldColumnIndex, @columnCount
-
-	--Finally, close out the Load.
+	----Finally, close out the Load.
 	update	[Load] 
 	set		DateCompleted = getutcdate()
 	where	ID = @id
+	---------------------------------------------
+
+	
 end

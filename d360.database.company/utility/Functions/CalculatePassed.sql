@@ -1,7 +1,7 @@
 ﻿CREATE FUNCTION [utility].[CalculatePassed]
 (
 	@PassFraction decimal(4,3),
-	@RuleID int
+	@RuleImplementationID int
 )
 RETURNS bit
 AS
@@ -10,11 +10,11 @@ BEGIN
 
 	select	top 1
 			@Passed = case 
-						when @PassFraction >= Threshold then cast(1 as bit)
+						when @PassFraction >= R.Threshold then cast(1 as bit)
 						else cast(0 as bit)
 					end
-	from	[Rule] 
-	where	ID = @RuleID
+	from	RuleImplementation I
+			inner join [Rule] R on I.ID = @RuleImplementationID and I.RuleID = R.ID
 
 	RETURN @Passed
 END

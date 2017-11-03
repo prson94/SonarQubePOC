@@ -13,7 +13,6 @@ BEGIN
 													)
 												 AND F.ResourceID = @FollowingResourceID
 				inner join cache.ObjectDetails O on O.[Object] = CR.ObjectType and O.ObjectID = CR.ObjectID
-				--CROSS APPLY utility.ObjectDetail(CR.ObjectType, CR.ObjectID) O
 	GROUP BY	CR.ObjectID,
 				O.ObjectTypeName,
 				CR.ObjectType,

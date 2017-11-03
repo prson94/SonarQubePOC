@@ -14,15 +14,35 @@ begin
 								IC.RowIndex,
 								IC.ColumnIndex,
 								case 
-									when L_A.ID is not null then 'Artifact'
-									when L_D.ID is not null then 'ReferenceItemType'
-									when L_DI.ID is not null then 'ReferenceItem'
-									when L_F.ID is not null then 'FusionAttribute'
-									when L_L.Value is not null then 'Lookup'
-									when L_T.ID is not null then 'Taxonomy'
+									when ( (L_A.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType in ('Artifact', 'ArtifactType')) ) then 'Artifact'
+									when ( (L_D.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItemType') ) then 'ReferenceItemType'
+									when ( (L_DI.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItem') ) then 'ReferenceItem'
+									when ( (L_F.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'FusionAttributeType') ) then 'FusionAttribute'
+									when ( (L_L.Value is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'Lookup') ) then 'Lookup'
+									when ( (L_T.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType in ('Taxonomy', 'TaxonomyType')) ) then 'Taxonomy'
 									else NULL
 								end as LookupObject,
-								coalesce(L_A.ID, L_D.ID, L_DI.ID, L_F.ID, L_L.Value, L_T.ID) as LookupObjectID -- L_I.ID,
+								case 
+									when L_A.ID is not null then L_A.ID
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType in ('Artifact', 'ArtifactType') then 0
+
+									when L_D.ID is not null then L_D.ID
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItemType' then 0
+
+									when L_DI.ID is not null then L_DI.ID
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItem' then 0
+
+									when L_F.ID is not null then L_F.ID
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'FusionAttributeType' then 0
+
+									when L_L.Value is not null then L_L.Value
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'Lookup' then 0
+
+									when L_T.ID is not null then L_T.ID
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType in ('Taxonomy', 'TaxonomyType') then 0
+
+									else NULL
+								end as LookupObjectID --coalesce(L_A.ID, L_D.ID, L_DI.ID, L_F.ID, L_L.Value, L_T.ID) as LookupObjectID -- L_I.ID,
 						from	FieldType F
 								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
 								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name

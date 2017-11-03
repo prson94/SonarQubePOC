@@ -10,10 +10,13 @@
     [ReportType]       VARCHAR (25)    CONSTRAINT [DF_Report_ReportType] DEFAULT ('legacy') NOT NULL,
     [PowerBIDatasetID] VARCHAR (50)    NULL,
     [PowerBIReportID]  VARCHAR (50)    NULL,
-    [FileName] VARCHAR(260) NULL, 
-	[Url] NVARCHAR(500) NULL,
+    [FileName]         VARCHAR (260)   NULL,
+    [Url]              NVARCHAR (500)  NULL,
+    [ShowOnHomePage]   BIT             CONSTRAINT [DF_Report_ShowOnHomePage] DEFAULT ((0)) NOT NULL,
     CONSTRAINT [PK_Report] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 

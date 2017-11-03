@@ -20,7 +20,7 @@ namespace d360.model
 
         public DbSet<ResourcePasswordReset> ResourcePasswordResets { get; set; }
 
-        public DbSet<ResponsibilityDetailForResource> ResponsibilityDetailForResources { get; set; }        /* VIEW */
+        //public DbSet<ResponsibilityDetailFor Resource> ResponsibilityDetailForResources { get; set; }        /* VIEW */
 
         public DbSet<ResponsibilityDetail> ResponsibilityDetails { get; set; }                              /* VIEW */
 
@@ -37,6 +37,8 @@ namespace d360.model
         public DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
 
         public DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
+
+        public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
         #endregion
 
@@ -64,46 +66,46 @@ order by RT.Name", new { id }).AsQueryable();
             }
         }
 
-        public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAssetType(int id)
-        {
-            try
-            {
-                return Database.Connection.Query<ResponsibilityType>(@"
-select	RT.*
-from	ResponsibilityType RT
-		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = RT.ID
-		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and T.ID = @id 
-order by RT.Name", new { id }).AsQueryable();
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
-            }
-            catch
-            {
-                throw;
-            }
-        }
+//        public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAssetType(int id)
+//        {
+//            try
+//            {
+//                return Database.Connection.Query<ResponsibilityType>(@"
+//select	RT.*
+//from	ResponsibilityType RT
+//		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = RT.ID
+//		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and T.ID = @id 
+//order by RT.Name", new { id }).AsQueryable();
+//            }
+//            catch (SqlException ex)
+//            {
+//                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
+//            }
+//            catch
+//            {
+//                throw;
+//            }
+//        }
 
-        public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByObject(SystemObjects type, int id)
-        {
-            try
-            {
-                return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedResponsibilityTypesByObject @type, @id", new
-                {
-                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
-                    id = id
-                }).AsQueryable();
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByObject(SystemObjects type, int id)
+        //{
+        //    try
+        //    {
+        //        return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedResponsibilityTypesByObject @type, @id", new
+        //        {
+        //            type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
+        //            id = id
+        //        }).AsQueryable();
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        throw CheckAndTranslateSqlException(ex, "Responsibility Type");
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int id)
         {
@@ -111,60 +113,60 @@ order by RT.Name", new { id }).AsQueryable();
             return Filter<SecurityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
         }
 
-        public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int[] id)
-        {
-            var sType = type.ToString();
-            return Filter<SecurityDetail>(i => i.ObjectType == sType && id.Contains(i.ObjectID) && i.ResponsibleObjectID == CurrentResourceID);
-        }
+        //public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int[] id)
+        //{
+        //    var sType = type.ToString();
+        //    return Filter<SecurityDetail>(i => i.ObjectType == sType && id.Contains(i.ObjectID) && i.ResponsibleObjectID == CurrentResourceID);
+        //}
 
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id)
-        {
-            try
-            {
-                var sType = type.ToString();
-                return Filter<ResponsibilityDetail>(i => i.Object == sType && i.ObjectID == id);
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id)
+        //{
+        //    try
+        //    {
+        //        var sType = type.ToString();
+        //        return Filter<ResponsibilityDetail>(i => i.Object == sType && i.ObjectID == id);
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        throw CheckAndTranslateSqlException(ex, "Responsibility");
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByResource(SystemObjects type, int id)
-        {
-            try
-            {
-                return Filter<ResponsibilityDetail>(i => i.ResourceID == id);
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //public IQueryable<ResponsibilityDetail> GetResponsibilitiesByResource(SystemObjects type, int id)
+        //{
+        //    try
+        //    {
+        //        return Filter<ResponsibilityDetail>(i => i.ResourceID == id);
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        throw CheckAndTranslateSqlException(ex, "Responsibility");
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByType(int id)
-        {
-            try
-            {
-                return Filter<ResponsibilityDetail>(i => i.ResponsibilityTypeID == id);
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //public IQueryable<ResponsibilityDetail> GetResponsibilitiesByType(int id)
+        //{
+        //    try
+        //    {
+        //        return Filter<ResponsibilityDetail>(i => i.ResponsibilityTypeID == id);
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        throw CheckAndTranslateSqlException(ex, "Responsibility");
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         public bool HasClaimInCurrentPermissionList(List<SecurityDetail> list, Claim claim, ClaimObject claimObject = ClaimObject.Root)
         {

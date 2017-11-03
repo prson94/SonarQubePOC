@@ -37,16 +37,7 @@ BEGIN
 					union all
 					select	ID 
 					from	comment c2
-							inner join	(
-										select	r.[Object], r.ObjectID 
-										from	ResourceGroup rg 
-												inner join cache.ResponsibilityItem r on rg.GroupID = r.ResponsibleObjectID and r.ResponsibleObject = 'Group' and rg.ResourceID = @resourceID
-										union
-										select	[Object], ObjectID 
-										from	cache.ResponsibilityItem
-										where	ResponsibleObject = 'Resource' 
-												and ResponsibleObjectID = @resourceID
-										) o on o.[Object] = c2.OwnerObjectType and o.ObjectID = c2.OwnerObjectid
+							inner join	ResponsibilityDetails o on o.ResourceID = @resourceID and o.Object = c2.OwnerObjectType and o.ObjectID = c2.OwnerObjectID
 					)
 			AND C.isdeleted = 0
 			AND (

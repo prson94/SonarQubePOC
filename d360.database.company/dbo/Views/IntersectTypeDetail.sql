@@ -1,8 +1,9 @@
-﻿create view [dbo].[IntersectTypeDetail]
+﻿CREATE view [dbo].[IntersectTypeDetail]
 as
 	select	IT.ID,
 			IT.Subject,
 			IT.SubjectID,
+			IT.SubjectCardinality,
 			case IT.Subject
 				when 'IntersectType' then utility.DeriveIntersectTypeName(SIT.ID)
 				when 'GroupType' then 'Group'
@@ -15,6 +16,7 @@ as
 			
 			IT.Object,
 			IT.ObjectID,
+			IT.ObjectCardinality,
 			case IT.Object
 				when 'IntersectType' then utility.DeriveIntersectTypeName(OIT.ID)
 				when 'GroupType' then 'Group'
@@ -28,8 +30,9 @@ as
 
 			IT.PredicateID,
 			P.Name as [PredicateName],
+			P.Inverse as PredicateInverse,
 			P.Type as PredicateType,
-			
+
 			coalesce(IT.IsSystem, cast(0 as bit)) as IsSystem
 	from	IntersectType IT with(nolock) 
 			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 

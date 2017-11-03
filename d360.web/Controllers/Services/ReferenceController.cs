@@ -332,11 +332,11 @@ for json path";
             return response;
         }
 
-        [Route("{typeID:int}/responsibilities"), HttpGet]
-        public IQueryable<dynamic> GetResponsibilitiesForReferenceItemType(int typeID)
-        {
-            return GetResponsibilities(SystemObjects.ReferenceItemType, typeID);
-        }
+        //[Route("{typeID:int}/responsibilities"), HttpGet]
+        //public IQueryable<dynamic> GetResponsibilitiesForReferenceItemType(int typeID)
+        //{
+        //    return GetResponsibilities(SystemObjects.ReferenceItemType, typeID);
+        //}
 
         /// <summary>
         /// Gets an OData-queryable list of lists.

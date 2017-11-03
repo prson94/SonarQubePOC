@@ -15,14 +15,14 @@ BEGIN
 		WITH H
 		AS
 		(
-			SELECT	Name, 
+			SELECT	DisplayValue, 
 					ParentID, 
 					ID, 
 					0 as [Level]
 			FROM	Artifact
 			WHERE	ID = @ID		
 			UNION ALL
-			SELECT	P.Name, 
+			SELECT	P.DisplayValue, 
 					P.ParentID, 
 					P.ID, 
 					C.[level] + 1
@@ -30,7 +30,7 @@ BEGIN
 					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
 		)
 
-		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.Name
+		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.DisplayValue
 								FROM	H
 								ORDER BY H.level DESC
 
@@ -95,14 +95,14 @@ BEGIN
 		WITH H
 		AS
 		(
-			SELECT	Name, 
+			SELECT	DisplayValue, 
 					ParentID, 
 					ID, 
 					0 as [Level]
 			FROM	Policy
 			WHERE	ID = @ID		
 			UNION ALL
-			SELECT	P.Name, 
+			SELECT	P.DisplayValue, 
 					P.ParentID, 
 					P.ID, 
 					C.[level] + 1
@@ -110,7 +110,7 @@ BEGIN
 					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
 		)
 
-		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.Name
+		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.DisplayValue
 								FROM	H
 								ORDER BY H.level DESC
 
@@ -118,10 +118,10 @@ BEGIN
 
 	IF (@Type = 'Taxonomy')
 	BEGIN
-		WITH H (Name, CatalogID, ParentID, ID, [level])
+		WITH H (DisplayValue, CatalogID, ParentID, ID, [level])
 		AS
 		(
-			SELECT	Name, 
+			SELECT	DisplayValue, 
 					TaxonomyTypeID, 
 					ParentID, 
 					ID, 
@@ -129,7 +129,7 @@ BEGIN
 			FROM	Taxonomy
 			WHERE	ID = @ID		
 			UNION ALL
-			SELECT	P.Name, 
+			SELECT	P.DisplayValue, 
 					P.TaxonomyTypeID, 
 					P.ParentID, 
 					P.ID, 
@@ -138,7 +138,7 @@ BEGIN
 					INNER JOIN H AS C ON C.ParentID = P.ID and @@NESTLEVEL < 6
 		)
 	
-		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.Name
+		SELECT @breadcrumb =	COALESCE(@breadcrumb + @Delimiter, '') + H.DisplayValue
 								FROM	H
 								ORDER BY H.level DESC
 

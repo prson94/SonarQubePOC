@@ -1,22 +1,24 @@
 ﻿CREATE TABLE [dbo].[Rule] (
     [ID]              INT            IDENTITY (1, 1) NOT NULL,
-    [Name]            NVARCHAR (250) NOT NULL,
-    [Description]     NVARCHAR (MAX) NULL,
-    [RuleType]        INT            NOT NULL,
-    [UpdatedOn]       DATETIME       NULL,
-    [UpdatedBy]       INT            NULL,
+    [RuleTypeID]      INT            NOT NULL,
     [RuleDimensionID] INT            NULL,
     [Status]          INT            CONSTRAINT [DF_Rule_Status] DEFAULT ((1)) NOT NULL,
     [Threshold]       DECIMAL (4, 3) CONSTRAINT [DF_Rule_Threshold] DEFAULT ((0)) NULL,
-    [Purpose]         NVARCHAR (MAX) NULL,
-    [Measurement]     NVARCHAR (MAX) NULL,
-    [Resolution]      NVARCHAR (MAX) NULL,
-    [CreatedOn]       DATETIME       NULL,
+    [Visible]         BIT            CONSTRAINT [DF_Rule_Visible] DEFAULT ((1)) NOT NULL,
+    [SourceID]        NVARCHAR (250) NULL,
+    [KeyHash]         VARCHAR (250)  NULL,
+    [FieldHash]       VARCHAR (250)  NULL,
     [CreatedBy]       INT            NULL,
-	[Visible]		  BIT			 NOT NULL DEFAULT ((1)),
+    [CreatedOn]       DATETIME       NULL,
+    [UpdatedBy]       INT            NULL,
+    [UpdatedOn]       DATETIME       NULL,
+    [DisplayValue]    AS             ([utility].[GetObjectDisplayValueWrapper]('Rule',[ID],[RuleTypeID])),
     CONSTRAINT [PK_Rule] PRIMARY KEY CLUSTERED ([ID] ASC),
-    CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY ([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
+    CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY ([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID]),
+    CONSTRAINT [FK_Rule_RuleType] FOREIGN KEY ([RuleTypeID]) REFERENCES [dbo].[RuleType] ([ID])
 );
+
+
 
 
 GO
@@ -38,68 +40,35 @@ go
 
 
 GO
-
 CREATE TRIGGER [dbo].[Rule_AfterUpdate]
    ON  [dbo].[Rule] 
    AFTER UPDATE
 AS 
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Update', [queue].WriteIndexXml('', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from inserted
-
-	merge	[cache].[Object] as T
-	using	(
-			select	'Rule' as [Object],			ID as ObjectID,
-					'RuleType' as ObjectType,	RuleType as ObjectTypeID
-			from	inserted
-			) as S
-	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-	when	matched then
-			update set	T.[ObjectType] = S.[ObjectType],
-						T.[ObjectTypeID] = S.[ObjectTypeID]
-	when	not matched then
-			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
-			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+	SET NOCOUNT ON
+	update	T
+	set		T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn
+	from	Asset T
+			inner join inserted S on T.Object = 'Rule' and T.ObjectID = S.ID
 
 GO
 CREATE TRIGGER [dbo].[Rule_AfterInsert]
    ON  [dbo].[Rule] 
    AFTER INSERT
 AS 
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Add', [queue].WriteIndexXml('', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from inserted
-
-	update	T
-	set		T.CreatedOn = coalesce(S.CreatedOn, getutcdate()),
-			T.UpdatedOn = coalesce(S.UpdatedOn, getutcdate())
-	from	[Rule] T
-			inner join inserted S on S.ID = T.ID;
-
-	merge	[cache].[Object] as T
-	using	(
-			select	'Rule' as [Object],			ID as ObjectID,
-					'RuleType' as ObjectType,	RuleType as ObjectTypeID
-			from	inserted
-			) as S
-	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-	when	matched then
-			update set	T.[ObjectType] = S.[ObjectType],
-						T.[ObjectTypeID] = S.[ObjectTypeID]
-	when	not matched then
-			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
-			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+	SET NOCOUNT ON
+	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+		SELECT	T.ID, 1, 'Rule', O.ID, O.[CreatedOn], O.[CreatedBy], O.[UpdatedOn], O.[UpdatedBy]
+		FROM	inserted O inner join  AssetType T on T.Object = 'RuleType' and T.ObjectID = O.RuleTypeID
 
 GO
-
 CREATE TRIGGER [dbo].[Rule_AfterDelete]
    ON  [dbo].[Rule] 
    AFTER DELETE
 AS 
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Delete', [queue].WriteIndexXml('Removed', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from deleted
+	SET NOCOUNT ON
+	update	Asset
+	set		[State] = 3
+	where	Object = 'Rule' and ObjectID in (select ID from deleted)
 
-	delete	T
-	from	[cache].[Object] T
-			inner join deleted D on T.[Object] = 'Rule' and D.ID = T.ObjectID;
+	delete Asset where Object = 'Rule' and ObjectID in (select ID from deleted)

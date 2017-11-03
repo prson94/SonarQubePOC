@@ -4,8 +4,11 @@
     [Value]                     NVARCHAR (1000) NULL,
     [ResolvedObject]            VARCHAR (50)    NULL,
     [ResolvedObjectID]          INT             NULL,
+    [EventNotificationSent]     BIT             CONSTRAINT [DF_RuleResultQualifier_EventNotificationSent] DEFAULT ((0)) NOT NULL,
     CONSTRAINT [PK_RuleResultQualifier] PRIMARY KEY NONCLUSTERED ([RuleResultID] ASC, [RuleResultQualifierTypeID] ASC),
     CONSTRAINT [FK_RuleResultQualifier_RuleResult] FOREIGN KEY ([RuleResultID]) REFERENCES [dbo].[RuleResult] ([ID]),
     CONSTRAINT [FK_RuleResultQualifier_RuleResultQualifierType] FOREIGN KEY ([RuleResultQualifierTypeID]) REFERENCES [dbo].[RuleResultQualifierType] ([ID])
 );
+
+
 

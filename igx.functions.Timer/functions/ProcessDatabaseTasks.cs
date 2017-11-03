@@ -83,40 +83,26 @@ namespace igx.functions.Timer
     {
         #region Notification Task : SQL Statements
 
-        public static string Notification = @"select n.* from queue.Notification n
-inner join Comment c on 
-	n.[Object] = 'Comment' 
-	AND ObjectId = c.ID 
-	AND  (
-			(select count(*) from comment r where r.ParentID = c.ID) > 0
-			OR (
-				c.ParentID IS NOT NULL
-				OR C.DateCreated < (getdate() - (5 / 24.0 / 60.0))
-			)
-		 )
-where n.MachineAssigned IS NULL
-union all
-select * from queue.Notification where [Object] != 'Comment' and MachineAssigned IS NULL";
-
-
-        public static string Comment = @"select	C.ID,
-C.Body,
-C.DateCreated,
-R.FirstName + ' ' + R.LastName as Author,
-C.ParentID,
-P.Body as ParentBody,
-P.DateCreated as ParentDateCreated,
-PR.FirstName + ' ' + PR.LastName as ParentAuthor,
-D.Name as OwnerName,
-D.Url as OwnerUrl,
-D.ObjectTypeName as OwnerTypeName,
-case when C.ParentID is null then 'comment' else 'reply' end as OriginationType
+        public static string Comment = @"
+select	C.ID,
+		C.Body,
+		C.DateCreated,
+		R.FirstName + ' ' + R.LastName as Author,
+		C.ParentID,
+		P.Body as ParentBody,
+		P.DateCreated as ParentDateCreated,
+		PR.FirstName + ' ' + PR.LastName as ParentAuthor,
+		utility.GetAssetDisplayValueWrapper(D.ID) as OwnerName,
+		dbo.GenerateNgObjectUrl(T.Object, T.ObjectID,D.ObjectID) as OwnerUrl,
+		T.Name as OwnerTypeName,
+		case when C.ParentID is null then 'comment' else 'reply' end as OriginationType
 from	Comment C
-inner join reporting.Global_Resource R on R.ResourceID = C.CreatingResourceID and C.ID = @CommentID
-inner join cache.ObjectDetails D on D.[Object] = C.OwnerObjectType and D.ObjectID = C.OwnerObjectID
-left join Comment P on P.ID = C.ParentID
-left join reporting.Global_Resource PR on PR.ResourceID = P.CreatingResourceID
-where (select count(*) from comment where parentID = @CommentID) > 0 OR C.DateCreated < (getdate() - (5 / 24.0 / 60.0)) ";
+		inner join reporting.Global_Resource R on R.ResourceID = C.CreatingResourceID and C.ID = @CommentID
+		inner join Asset D on D.[Object] = C.OwnerObjectType and D.ObjectID = C.OwnerObjectID
+		inner join AssetType T on T.ID = D.AssetTypeID
+		left join Comment P on P.ID = C.ParentID
+		left join reporting.Global_Resource PR on PR.ResourceID = P.CreatingResourceID
+where	(select count(*) from comment where parentID = @CommentID) > 0 OR C.DateCreated < (getdate() - (5 / 24.0 / 60.0)) ";
 
         public static string Resources = @"select	F.ResourceID,
 R.FirstName + ' ' + R.LastName as Name,
@@ -134,16 +120,19 @@ left join ResourceGroup RG on R.ResponsibleObjectType = 'Group' and RG.GroupID =
 inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceID, R.ResponsibleObjectID) and RE.Email not like '%?subject=%'";
 
         public static string FusionResources = @"
-select	coalesce(RG.ResourceID, R.ResponsibleObjectID) as ResourceID,
-RE.FirstName + ' ' + RE.LastName as Name,
-RE.Email
-from	cache.Responsibilities CR
-inner join ResponsibilityDetail R on R.ObjectType = CR.[Object] and R.ObjectID = CR.ObjectID and CR.[Object] = 'Fusion' and CR.ObjectID = @id
-left join ResourceGroup RG on R.ResponsibleObjectType = 'Group' and RG.GroupID = R.ResponsibleObjectID
-inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceID, R.ResponsibleObjectID) and RE.Email not like '%?subject=%'";
+select	R.ResourceID, 
+        RE.FirstName + ' ' + RE.LastName as Name, 
+        RE.Email 
+from	ResponsibilityDetails R on R.Object = 'Fusion' and R.ObjectID = @id 
+        inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID and RE.Email not like '%?subject=%'";
 
-        public static string FusionInfo = @"select F.ID as FusionID, F.Name as Fusion, FT.ID as FusionTypeID, FT.Name as FusionType
-from Fusion F inner join FusionType FT on FT.ID = F.FusionTypeID and F.ID = @id";
+        public static string FusionInfo = @"
+select  F.ID as FusionID, 
+        F.Name as Fusion, 
+        FT.ID as FusionTypeID,  
+        FT.Name as FusionType 
+from    Fusion F 
+        inner join FusionType FT on FT.ID = F.FusionTypeID and F.ID = @id";
 
         #endregion
 

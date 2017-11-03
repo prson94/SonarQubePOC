@@ -10,7 +10,10 @@
     [UpdatedOn]    DATETIME     DEFAULT (getutcdate()) NOT NULL,
     [UpdatedBy]    INT          NULL,
     [Criticality]  INT          DEFAULT ((0)) NOT NULL,
+    [CommentID]    INT          NULL,
     CONSTRAINT [PK_Issue] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Issue_IssueType] FOREIGN KEY ([IssueTypeID]) REFERENCES [dbo].[IssueType] ([ID]) ON DELETE CASCADE
 );
+
+
 

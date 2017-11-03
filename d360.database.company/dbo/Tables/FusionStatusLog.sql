@@ -6,9 +6,12 @@
     [MachineQueuedOn] VARCHAR (250)    NULL,
     [Success]         BIT              NOT NULL,
     [Message]         NVARCHAR (MAX)   NULL,
+    [FullRefresh]     BIT              CONSTRAINT [DF_FusionStatusLog_FullRefresh] DEFAULT ((0)) NOT NULL,
     CONSTRAINT [PK_FusionStatusLog] PRIMARY KEY NONCLUSTERED ([ID] ASC),
     CONSTRAINT [FK_FusionStatusLog_Fusion] FOREIGN KEY ([FusionID]) REFERENCES [dbo].[Fusion] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 GO

@@ -2,11 +2,8 @@
 as
 	select	R.IntersectTypeID,
 			R.ID as IntersectID,
-			case R.Classification
-				when 0 then 2
-				else R.Classification
-			end as Classification,
-			R.Description,
+			2 as Classification,
+			null as Description,
 			'' as [Role],
 			0 as SourceIntersectTypeNodeID,
 			R.Subject as SourceObjectType,

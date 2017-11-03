@@ -11,6 +11,11 @@ AS
 BEGIN
 	declare @formattedValue nvarchar(max)
 	
+	if @Value is null
+	begin
+		return null
+	end
+
 	if @LookupObjectType is null
 	begin
 		set @formattedValue  = @Value
@@ -116,10 +121,15 @@ BEGIN
 									FROM	Field [IF]
 											inner join FieldType IT ON [IF].FieldTypeID = IT.ID 
 																	and [IF].ObjectType = L.ObjectType
-																	and [IF].ObjectID = case 
+																	/*and [IF].ObjectID = case 
 																							when dbo.IsInteger(@Value) = 1 then @Value
 																							else 0
+																						end*/
+																	and [IF].ObjectID = case 
+																							when TRY_CAST(@Value AS int) IS NULL  then 0 --not an int
+																							else @Value -- int
 																						end
+																							
 								
 									UNION
 
@@ -131,15 +141,13 @@ BEGIN
 									FROM	(
 											SELECT	ID as AID,
 													CAST(ID as nvarchar(max)) as ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description,
-													CAST(TextPath as nvarchar(max)) as TextPath
+													CAST(DisplayValue as nvarchar(max)) as TextPath
 											FROM	Artifact A
 											WHERE	A.ID = CAST(@Value as int)
 													and L.ObjectType = 'Artifact'
 											) A
 											unpivot	(
-													FieldValue for FieldName in (ID, Name, Description, TextPath)
+													FieldValue for FieldName in (ID, TextPath)
 													) p
 
 									UNION
@@ -151,15 +159,13 @@ BEGIN
 											NULL as LookupDisplayFormat
 									FROM	(
 											SELECT	ID,
-													CAST(Name as nvarchar(max)) as Name,
-													CAST(Description as nvarchar(max)) as Description,
 													CAST(TextPath as nvarchar(max)) as TextPath
 											FROM	Taxonomy A
 											WHERE	A.ID = CAST(@Value as int)
 													and L.ObjectType = 'Taxonomy'
 											) A
 											unpivot	(
-													FieldValue for FieldName in (Name, Description, TextPath)
+													FieldValue for FieldName in (TextPath)
 													) p
 
 									UNION
@@ -257,6 +263,10 @@ BEGIN
 					end
 
 					SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
+				end
+				else
+				begin
+					SET @formattedValue = REPLACE(@formattedValue, @currentToken, '')
 				end
 
 				SET @current = @current + 1

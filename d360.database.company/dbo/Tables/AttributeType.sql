@@ -3,15 +3,17 @@
     [ParentID]                INT            NULL,
     [Name]                    NVARCHAR (250) NOT NULL,
     [Description]             NVARCHAR (MAX) NULL,
-    [TextFormatString]        NVARCHAR (250) NOT NULL,
     [AttributeTypeCategoryID] INT            NULL,
     [UpdatedOn]               DATETIME       NULL,
     [UpdatedBy]               INT            NULL,
-    [ShowNameInTree]          BIT            DEFAULT ((1)) NOT NULL,
+    [ShowNameInTree]          BIT            CONSTRAINT [DF_AttributeType_ShowNameInTree] DEFAULT ((1)) NOT NULL,
+    [DisplayFormat]           NVARCHAR (250) CONSTRAINT [DF_AttributeType_DisplayFormat] DEFAULT ('') NOT NULL,
     CONSTRAINT [PK_AttributeType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_AttributeType_AttributeTypeCategory] FOREIGN KEY ([AttributeTypeCategoryID]) REFERENCES [dbo].[AttributeTypeCategory] ([ID]),
     CONSTRAINT [FK_AttributeType_ParentAttributeType] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[AttributeType] ([ID])
 );
+
+
 
 
 
@@ -26,82 +28,93 @@ CREATE NONCLUSTERED INDEX [IX_Attribute_ParentID]
 
 
 GO
-
 CREATE TRIGGER [dbo].[AttributeType_AfterDelete]
    ON  [dbo].[AttributeType] 
    AFTER DELETE
 AS 
-	SET NOCOUNT ON;
-	DECLARE @Count int
-	SET @Count = 0;
+	SET NOCOUNT ON
+	--DECLARE @Count int
+	--SET @Count = 0;
 
-	IF 0 < (
-		SELECT count(*) FROM deleted atts JOIN  statisticType statType on statType.Configuration.exist ('/fields[ObjectID=sql:column("atts.ID") and ObjectType="AttributeType"]') = 1
-	)
-	BEGIN
-		RAISERROR('You cannot delete an attribute if it is being used in an Analytic.  Please delete the analytic before deleting the attribute.',16,1)
-		ROLLBACK TRANSACTION
-		RETURN;
-	END
-	ELSE
-	BEGIN
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-			select 'Delete', [queue].WriteIndexXml('Removed', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from deleted
+	--IF 0 < (
+	--	SELECT count(*) FROM deleted atts JOIN  statisticType statType on statType.Configuration.exist ('/fields[ObjectID=sql:column("atts.ID") and ObjectType="AttributeType"]') = 1
+	--)
+	--BEGIN
+	--	RAISERROR('You cannot delete an attribute if it is being used in an Analytic.  Please delete the analytic before deleting the attribute.',16,1)
+	--	ROLLBACK TRANSACTION
+	--	RETURN;
+	--END
+	--ELSE
+	--BEGIN
+	--	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+	--		select 'Delete', [queue].WriteIndexXml('Removed', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from deleted
 
-		delete	T
-		from	[cache].[Object] T
-				inner join deleted D on T.[Object] = 'AttributeType' and D.ID = T.ObjectID;
-	END
+	--	delete	T
+	--	from	[cache].[Object] T
+	--			inner join deleted D on T.[Object] = 'AttributeType' and D.ID = T.ObjectID;
+	--END
+	update	AssetType
+	set		[State] = 3
+	where	Object = 'AttributeType' and ObjectID in (select ID from deleted)
+
+	delete AssetType where Object = 'AttributeType' and ObjectID in (select ID from deleted)
 
 
 GO
-
 CREATE TRIGGER [dbo].[AttributeType_AfterInsert]
    ON  [dbo].[AttributeType] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Add', [queue].WriteIndexXml('', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from inserted
+	--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+ --       select 'Add', [queue].WriteIndexXml('', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from inserted
 
-	merge	[cache].[Object] as T
-	using	(
-			select	'AttributeType' as [Object],			ID as ObjectID,
-					'AttributeType' as ObjectType,			0 as ObjectTypeID
-			from	inserted
-			) as S
-	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-	when	matched then
-			update set	T.[ObjectType] = S.[ObjectType],
-						T.[ObjectTypeID] = S.[ObjectTypeID]
-	when	not matched then
-			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
-			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+	--merge	[cache].[Object] as T
+	--using	(
+	--		select	'AttributeType' as [Object],			ID as ObjectID,
+	--				'AttributeType' as ObjectType,			0 as ObjectTypeID
+	--		from	inserted
+	--		) as S
+	--on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	--when	matched then
+	--		update set	T.[ObjectType] = S.[ObjectType],
+	--					T.[ObjectTypeID] = S.[ObjectTypeID]
+	--when	not matched then
+	--		insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+	--		values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+	insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
+		select Name, Description, 5, DisplayFormat, 1, 0, 1, 'AttributeType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted
 
 GO
-
-
 CREATE TRIGGER [dbo].[AttributeType_AfterUpdate]
    ON  [dbo].[AttributeType] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from inserted
+	--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+ --       select 'Update', [queue].WriteIndexXml('', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from inserted
 
-	merge	[cache].[Object] as T
-	using	(
-			select	'AttributeType' as [Object],			ID as ObjectID,
-					'AttributeType' as ObjectType,			0 as ObjectTypeID
-			from	inserted
-			) as S
-	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-	when	matched then
-			update set	T.[ObjectType] = S.[ObjectType],
-						T.[ObjectTypeID] = S.[ObjectTypeID]
-	when	not matched then
-			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
-			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+	--merge	[cache].[Object] as T
+	--using	(
+	--		select	'AttributeType' as [Object],			ID as ObjectID,
+	--				'AttributeType' as ObjectType,			0 as ObjectTypeID
+	--		from	inserted
+	--		) as S
+	--on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	--when	matched then
+	--		update set	T.[ObjectType] = S.[ObjectType],
+	--					T.[ObjectTypeID] = S.[ObjectTypeID]
+	--when	not matched then
+	--		insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+	--		values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+	update	T
+	set		T.Name = S.Name,
+			T.Description = S.Description,
+			T.DisplayFormat = S.DisplayFormat,
+			T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn
+	from	AssetType T
+			inner join inserted S on T.Object = 'AttributeType' and T.ObjectID = S.ID
 
 GO
 

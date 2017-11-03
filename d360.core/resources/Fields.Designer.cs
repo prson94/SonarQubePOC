@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Fields {
@@ -2275,164 +2275,254 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The policy that this rule is assigned to..
+        ///   Looks up a localized string similar to Allow permission to remove attributes..
         /// </summary>
-        public static string Policy_Description {
+        public static string Permissions_DeleteAttributes_Description {
             get {
-                return ResourceManager.GetString("Policy_Description", resourceCulture);
+                return ResourceManager.GetString("Permissions_DeleteAttributes_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Policy.
+        ///   Looks up a localized string similar to Remove Attributes.
         /// </summary>
-        public static string Policy_Name {
+        public static string Permissions_DeleteAttributes_Name {
             get {
-                return ResourceManager.GetString("Policy_Name", resourceCulture);
+                return ResourceManager.GetString("Permissions_DeleteAttributes_Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Probability for this item..
+        ///   Looks up a localized string similar to Allow permission to remove item..
         /// </summary>
-        public static string Probability_Description {
+        public static string Permissions_DeleteObject_Description {
             get {
-                return ResourceManager.GetString("Probability_Description", resourceCulture);
+                return ResourceManager.GetString("Permissions_DeleteObject_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Probability is a required field..
+        ///   Looks up a localized string similar to Remove Item.
         /// </summary>
-        public static string Probability_ErrorRequired {
+        public static string Permissions_DeleteObject_Name {
             get {
-                return ResourceManager.GetString("Probability_ErrorRequired", resourceCulture);
+                return ResourceManager.GetString("Permissions_DeleteObject_Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Probability.
+        ///   Looks up a localized string similar to Allow permissions to remove relationships and lineage..
         /// </summary>
-        public static string Probability_Name {
+        public static string Permissions_DeleteRelationships_Description {
             get {
-                return ResourceManager.GetString("Probability_Name", resourceCulture);
+                return ResourceManager.GetString("Permissions_DeleteRelationships_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Item was promoted via Fusion Promotion?.
+        ///   Looks up a localized string similar to Remove Relationships.
         /// </summary>
-        public static string Promoted_Description {
+        public static string Permissions_DeleteRelationships_Name {
             get {
-                return ResourceManager.GetString("Promoted_Description", resourceCulture);
+                return ResourceManager.GetString("Permissions_DeleteRelationships_Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Promoted?.
+        ///   Looks up a localized string similar to Allow permissions to remove comments..
         /// </summary>
-        public static string Promoted_Name {
+        public static string Permissions_DeleteSocial_Description {
             get {
-                return ResourceManager.GetString("Promoted_Name", resourceCulture);
+                return ResourceManager.GetString("Permissions_DeleteSocial_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The visibility for this item..
+        ///   Looks up a localized string similar to Remove Comments.
         /// </summary>
-        public static string Public_Description {
+        public static string Permissions_DeleteSocial_Name {
             get {
-                return ResourceManager.GetString("Public_Description", resourceCulture);
+                return ResourceManager.GetString("Permissions_DeleteSocial_Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Publicly available?.
+        ///   Looks up a localized string similar to Allow permission to create or update attributes..
         /// </summary>
-        public static string Public_Name {
+        public static string Permissions_ModifyAttributes_Description {
             get {
-                return ResourceManager.GetString("Public_Name", resourceCulture);
+                return ResourceManager.GetString("Permissions_ModifyAttributes_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The value used when associating multiple events together.  This public ID can be any value..
+        ///   Looks up a localized string similar to Modify Attributes.
         /// </summary>
-        public static string PublicID_Description {
+        public static string Permissions_ModifyAttributes_Name {
             get {
-                return ResourceManager.GetString("PublicID_Description", resourceCulture);
+                return ResourceManager.GetString("Permissions_ModifyAttributes_Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Public ID.
+        ///   Looks up a localized string similar to Allow permission to create or update item..
         /// </summary>
-        public static string PublicID_Name {
+        public static string Permissions_ModifyObject_Description {
             get {
-                return ResourceManager.GetString("PublicID_Name", resourceCulture);
+                return ResourceManager.GetString("Permissions_ModifyObject_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Is this item read-only, updateable via the API only?.
+        ///   Looks up a localized string similar to Modify Item.
         /// </summary>
-        public static string ReadOnly_Description {
+        public static string Permissions_ModifyObject_Name {
             get {
-                return ResourceManager.GetString("ReadOnly_Description", resourceCulture);
+                return ResourceManager.GetString("Permissions_ModifyObject_Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Read Only?.
+        ///   Looks up a localized string similar to Allow permission to create or update relationships and lineage..
         /// </summary>
-        public static string ReadOnly_Name {
+        public static string Permissions_ModifyRelationships_Description {
             get {
-                return ResourceManager.GetString("ReadOnly_Name", resourceCulture);
+                return ResourceManager.GetString("Permissions_ModifyRelationships_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The regular expression, if any, to validate all entries against..
+        ///   Looks up a localized string similar to Modify Relationships.
         /// </summary>
-        public static string Regex_Description {
+        public static string Permissions_ModifyRelationships_Name {
             get {
-                return ResourceManager.GetString("Regex_Description", resourceCulture);
+                return ResourceManager.GetString("Permissions_ModifyRelationships_Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Regular Expression.
+        ///   Looks up a localized string similar to Allow permission to participate in collaboration..
         /// </summary>
-        public static string Regex_Name {
+        public static string Permissions_ModifySocial_Description {
             get {
-                return ResourceManager.GetString("Regex_Name", resourceCulture);
+                return ResourceManager.GetString("Permissions_ModifySocial_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The assigned region for this item..
+        ///   Looks up a localized string similar to Participate in Collaboration.
         /// </summary>
-        public static string Region_Description {
+        public static string Permissions_ModifySocial_Name {
             get {
-                return ResourceManager.GetString("Region_Description", resourceCulture);
+                return ResourceManager.GetString("Permissions_ModifySocial_Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Region is a required field..
+        ///   Looks up a localized string similar to Allow permission to read attributes..
         /// </summary>
-        public static string Region_ErrorRequired {
+        public static string Permissions_ReadAttributes_Description {
             get {
-                return ResourceManager.GetString("Region_ErrorRequired", resourceCulture);
+                return ResourceManager.GetString("Permissions_ReadAttributes_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Region.
+        ///   Looks up a localized string similar to Read Attributes.
         /// </summary>
-        public static string Region_Name {
+        public static string Permissions_ReadAttributes_Name {
             get {
-                return ResourceManager.GetString("Region_Name", resourceCulture);
+                return ResourceManager.GetString("Permissions_ReadAttributes_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allow permission to read audit data and item history..
+        /// </summary>
+        public static string Permissions_ReadAudit_Description {
+            get {
+                return ResourceManager.GetString("Permissions_ReadAudit_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Audit History.
+        /// </summary>
+        public static string Permissions_ReadAudit_Name {
+            get {
+                return ResourceManager.GetString("Permissions_ReadAudit_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allow permission to view dashboards and reports for this item..
+        /// </summary>
+        public static string Permissions_ReadDashboards_Description {
+            get {
+                return ResourceManager.GetString("Permissions_ReadDashboards_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Dashboards.
+        /// </summary>
+        public static string Permissions_ReadDashboards_Name {
+            get {
+                return ResourceManager.GetString("Permissions_ReadDashboards_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allow permission to read item..
+        /// </summary>
+        public static string Permissions_ReadObject_Description {
+            get {
+                return ResourceManager.GetString("Permissions_ReadObject_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Item.
+        /// </summary>
+        public static string Permissions_ReadObject_Name {
+            get {
+                return ResourceManager.GetString("Permissions_ReadObject_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allow permission to read relationships, lineage, and see impact analysis..
+        /// </summary>
+        public static string Permissions_ReadRelationships_Description {
+            get {
+                return ResourceManager.GetString("Permissions_ReadRelationships_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Relationships.
+        /// </summary>
+        public static string Permissions_ReadRelationships_Name {
+            get {
+                return ResourceManager.GetString("Permissions_ReadRelationships_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allow permission to read comments..
+        /// </summary>
+        public static string Permissions_ReadSocial_Description {
+            get {
+                return ResourceManager.GetString("Permissions_ReadSocial_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Comments.
+        /// </summary>
+        public static string Permissions_ReadSocial_Name {
+            get {
+                return ResourceManager.GetString("Permissions_ReadSocial_Name", resourceCulture);
             }
         }
         
@@ -2442,141 +2532,6 @@ namespace d360.core.resources {
         public static string ReportDescription_Description {
             get {
                 return ResourceManager.GetString("ReportDescription_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The layout this report will renders its content in..
-        /// </summary>
-        public static string ReportLayout_Description {
-            get {
-                return ResourceManager.GetString("ReportLayout_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Report Layout.
-        /// </summary>
-        public static string ReportLayout_Name {
-            get {
-                return ResourceManager.GetString("ReportLayout_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name for this report.  This name will be used wherever the report is available for display..
-        /// </summary>
-        public static string ReportName_Description {
-            get {
-                return ResourceManager.GetString("ReportName_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The type of object where this report will be available..
-        /// </summary>
-        public static string ReportObjectType_Description {
-            get {
-                return ResourceManager.GetString("ReportObjectType_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Target Type.
-        /// </summary>
-        public static string ReportObjectType_Name {
-            get {
-                return ResourceManager.GetString("ReportObjectType_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name for this report tile.  the name will be displayed at the top of the contents for this tile..
-        /// </summary>
-        public static string ReportTileName_Description {
-            get {
-                return ResourceManager.GetString("ReportTileName_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The type of report tile to render with..
-        /// </summary>
-        public static string ReportTileType_Description {
-            get {
-                return ResourceManager.GetString("ReportTileType_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Type.
-        /// </summary>
-        public static string ReportTileType_Name {
-            get {
-                return ResourceManager.GetString("ReportTileType_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Items of this type require a periodic re-certification of data accuracy.  This is conducted by the owners of the item..
-        /// </summary>
-        public static string RequiresCertification_Description {
-            get {
-                return ResourceManager.GetString("RequiresCertification_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Requires Certification.
-        /// </summary>
-        public static string RequiresCertification_Name {
-            get {
-                return ResourceManager.GetString("RequiresCertification_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to When enabled, additions of this type of artifact are only allowed via the Suggest Artifact UI and workflow..
-        /// </summary>
-        public static string RequiresSuggestionToAdd_Description {
-            get {
-                return ResourceManager.GetString("RequiresSuggestionToAdd_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable Add via Suggestion Only?.
-        /// </summary>
-        public static string RequiresSuggestionToAdd_Name {
-            get {
-                return ResourceManager.GetString("RequiresSuggestionToAdd_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The assigned resource for this item..
-        /// </summary>
-        public static string Resource_Description {
-            get {
-                return ResourceManager.GetString("Resource_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Resource is a required field..
-        /// </summary>
-        public static string Resource_ErrorRequired {
-            get {
-                return ResourceManager.GetString("Resource_ErrorRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Resource.
-        /// </summary>
-        public static string Resource_Name {
-            get {
-                return ResourceManager.GetString("Resource_Name", resourceCulture);
             }
         }
         
@@ -3189,24 +3144,6 @@ namespace d360.core.resources {
         public static string Version_Name {
             get {
                 return ResourceManager.GetString("Version_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The assigned subject area this item falls under..
-        /// </summary>
-        public static string Vocabulary_Description {
-            get {
-                return ResourceManager.GetString("Vocabulary_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Subject Area.
-        /// </summary>
-        public static string Vocabulary_Name {
-            get {
-                return ResourceManager.GetString("Vocabulary_Name", resourceCulture);
             }
         }
     }

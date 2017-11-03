@@ -22,20 +22,26 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Fusion_FusionTypeID]
     ON [dbo].[Fusion]([FusionTypeID] ASC);
 
 
 GO
-
 CREATE TRIGGER [dbo].[Fusion_AfterDelete]
    ON  [dbo].[Fusion] 
    AFTER DELETE
 AS 
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Delete', [queue].WriteIndexXml('Removed', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from deleted
+	SET NOCOUNT ON
+	update	Asset
+	set		[State] = 3
+	where	Object = 'Fusion' and ObjectID in (select ID from deleted)
+
+	delete Asset where Object = 'Fusion' and ObjectID in (select ID from deleted)
+	--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+	--	select 'Delete', [queue].WriteIndexXml('Removed', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from deleted
 
 GO
 CREATE TRIGGER [dbo].[Fusion_AfterInsert]
@@ -43,37 +49,44 @@ CREATE TRIGGER [dbo].[Fusion_AfterInsert]
    AFTER INSERT
 AS 
 BEGIN
-       SET NOCOUNT ON;
-       INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Add', [queue].WriteIndexXml('', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from inserted
+	SET NOCOUNT ON
+	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+		SELECT	T.ID, 1, 'Fusion', O.ID, O.[UpdatedOn], O.[UpdatedBy], O.[UpdatedOn], O.[UpdatedBy]
+		FROM	inserted O inner join  AssetType T on T.Object = 'FusionType' and T.ObjectID = O.FusionTypeID
+       --INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+       -- select 'Add', [queue].WriteIndexXml('', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from inserted
 
-       merge  [cache].[Object] as T
-       using  (
-                     select 'Fusion' as [Object],
-                            ID as ObjectID,
-                            'FusionType' as ObjectType,
-                            FusionTypeID as ObjectTypeID
-                     from   inserted
-                     ) as S
-       on            T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-       when   matched then
-                     update set    T.[ObjectType] = S.[ObjectType],
-                                         T.[ObjectTypeID] = S.[ObjectTypeID]
-       when   not matched then
-                     insert (
-                                  [Object], [ObjectID], [ObjectType], [ObjectTypeID]--, [Name], [TextPath], [Url]
-                                  )
-                     values (
-                                  S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID]--, S.[Name], S.[TextPath], S.[Url]
-                                  );
+       --merge  [cache].[Object] as T
+       --using  (
+       --              select 'Fusion' as [Object],
+       --                     ID as ObjectID,
+       --                     'FusionType' as ObjectType,
+       --                     FusionTypeID as ObjectTypeID
+       --              from   inserted
+       --              ) as S
+       --on            T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+       --when   matched then
+       --              update set    T.[ObjectType] = S.[ObjectType],
+       --                                  T.[ObjectTypeID] = S.[ObjectTypeID]
+       --when   not matched then
+       --              insert (
+       --                           [Object], [ObjectID], [ObjectType], [ObjectTypeID]--, [Name], [TextPath], [Url]
+       --                           )
+       --              values (
+       --                           S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID]--, S.[Name], S.[TextPath], S.[Url]
+       --                           );
 END
 
 GO
-
 CREATE TRIGGER [dbo].[Fusion_AfterUpdate]
    ON  [dbo].[Fusion] 
    AFTER UPDATE
 AS 
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from inserted
+	SET NOCOUNT ON
+	update	T
+	set		T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn
+	from	Asset T
+			inner join inserted S on T.Object = 'Fusion' and T.ObjectID = S.ID
+	--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+ --       select 'Update', [queue].WriteIndexXml('', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from inserted

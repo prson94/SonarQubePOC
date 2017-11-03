@@ -1,4 +1,5 @@
-﻿CREATE procedure [dbo].[AsyncAddObject]
+﻿
+CREATE procedure [dbo].[AsyncAddObject]
 	@Object varchar(50),
 	@ObjectID int,
 	@ParentObject varchar(50),
@@ -14,33 +15,16 @@ begin
 
 	begin try
 		begin transaction @trans
-		
-		exec [cache].[SynchronizeObjectDetails] @Object, @ObjectID
 
 		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Created', @Object, @ObjectID
 
 		if @Object in ('AttributeTypeRelation', 'AttributeTypeRelation', 'ResponsibilityTypeRelation', 'ResponsibilityType')
 		begin
-			exec utility.CalculateStatistics
+			exec utility.CalculateScores
 		end
 		else
 		begin
-			exec utility.CalculateStatistics @Object, @ObjectID
-		end
-
-		if @Object = 'Intersect'
-		begin
-			exec cache.SynchronizeResponsibilitiesForObject @ParentObject, @ParentObjectID 
-		end
-
-		if @Object = 'Responsibility'
-		begin
-			exec cache.SynchronizeResponsibilitiesForObject @ParentObject, @ParentObjectID 
-		end
-
-		if @Object = 'Artifact'
-		begin
-			exec cache.SynchronizeResponsibilitiesForObject @Object, @ObjectID 
+			exec utility.CalculateScores @Object, @ObjectID
 		end
 
 		commit transaction @trans

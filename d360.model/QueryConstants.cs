@@ -830,19 +830,19 @@ select	ID,
 from    fusion.RuleLog
 order by    DateStarted desc";
 
-        
-        public static string ResponsibilityList = @"
-select distinct  
-        r.responsibilityid as [ID],
-		r.responsibilitytype as [Type],
-		r.responsibleobjectname as [Name],
-		r.responsibleobjecturl as [Url],
-		d.PrimaryOwnerResourceName as [Owner],
-		d.PrimaryOwnerResourceUrl as [OwnerUrl],
-		d.ContextItems as [Context]
-from    cache.Responsibilities r
-		inner join ResponsibilityDetail d on d.ResponsibilityID = r.ResponsibilityID
-where   r.objectid = @ObjectID and r.[object] = @ObjectType";
+
+//        public static string ResponsibilityList = @"
+//select distinct  
+//        r.responsibilityid as [ID],
+//		r.responsibilitytype as [Type],
+//		r.responsibleobjectname as [Name],
+//		r.responsibleobjecturl as [Url],
+//		d.PrimaryOwnerResourceName as [Owner],
+//		d.PrimaryOwnerResourceUrl as [OwnerUrl],
+//		d.ContextItems as [Context]
+//from    cache.Responsibilities r
+//		inner join ResponsibilityDetail d on d.ResponsibilityID = r.ResponsibilityID
+//where   r.objectid = @ObjectID and r.[object] = @ObjectType";
 
         public static string SourceRuleList = @"
 select	R.SubjectName + ' ' + coalesce(R.PredicateName, 'stores') + ' ' + R.ObjectName as SubjectName,

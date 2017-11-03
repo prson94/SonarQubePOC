@@ -23,8 +23,7 @@ begin
 			@TargetObjectColumn int = 13,
 			@TargetFusionConfigColumn int = 14,
 			@TargetFusionAttributeColumn int = 15,
-			@TransformationColumn int = 16,
-			@RoleColumn int = 17
+			@TransformationColumn int = 16
 
 	select	@r = UpdatedBy from [Load] where ID = @id
 
@@ -51,8 +50,6 @@ begin
 
 	exec bulkload.UpdateFusionAttributeColumn @id, @SourceFusionConfigColumn, @SourceFusionAttributeColumn										-- source fusion attribute
 	exec bulkload.UpdateFusionAttributeColumn @id, @TargetFusionConfigColumn, @TargetFusionAttributeColumn										-- target fusion attribute
-
-	exec bulkload.UpdateIntersectRoleColumn @id, @RoleColumn																					-- intersect role
 
 	drop table if exists #RemoveItems
 	drop table if exists #AddItems

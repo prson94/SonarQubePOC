@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [bulkload].[Unrelate]
+﻿CREATE PROCEDURE [bulkload].[Unrelate]
 --declare 
 	@id int --= 297
 AS
@@ -155,7 +154,6 @@ BEGIN
 
 		-- now delete the Intersects.
 		delete [Intersect] where ID in (select ID from @tbl)
-		delete [cache].[Object] where Object = 'Intersect' and ObjectID in (select ID from @tbl)
 
 		-- SUCCESS STATUS
 		update	#Items

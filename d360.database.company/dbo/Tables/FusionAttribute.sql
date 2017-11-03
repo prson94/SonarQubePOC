@@ -1,16 +1,18 @@
-﻿CREATE TABLE [dbo].[FusionAttribute] (
-    [ID]                    INT             IDENTITY (1, 1) NOT NULL,
+CREATE TABLE [dbo].[FusionAttribute] (
     [ParentID]              INT             NULL,
     [Name]                  NVARCHAR (250)  NOT NULL,
     [FusionID]              INT             NOT NULL,
     [FusionAttributeTypeID] INT             NOT NULL,
     [SourceID]              VARCHAR (250)   NULL,
-    [Deleted]               BIT             CONSTRAINT [DF_FusionAttribute_Deleted] DEFAULT ((0)) NOT NULL,    
+    [Deleted]               BIT             CONSTRAINT [DF_FusionAttribute_Deleted] DEFAULT ((0)) NOT NULL,
     [TextPath]              NVARCHAR (2500) NULL,
-    CONSTRAINT [PK_FusionAttribute] PRIMARY KEY NONCLUSTERED ([ID] ASC),
+    [ID]                    INT             CONSTRAINT [Const_FusionAttributeSeq] DEFAULT (NEXT VALUE FOR [dbo].[FusionAttribute_Seq]) NOT NULL,
+    CONSTRAINT [PK_FusionAttribute] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_FusionAttribute_Fusion] FOREIGN KEY ([FusionID]) REFERENCES [dbo].[Fusion] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [FK_FusionAttribute_FusionAttributeType] FOREIGN KEY ([FusionAttributeTypeID]) REFERENCES [dbo].[FusionAttributeType] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 
@@ -43,8 +45,7 @@ CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID-SourceID]
 
 
 GO
-CREATE CLUSTERED INDEX [CIX_FusionAttribute]
-    ON [dbo].[FusionAttribute]([FusionID] ASC, [FusionAttributeTypeID] ASC, [ParentID] ASC);
+
 
 
 GO
@@ -55,5 +56,35 @@ GO
 CREATE INDEX IX_FusionAttribute_FusionID_Deleted_ParentID 
 	ON FusionAttribute (FusionID, Deleted, ParentID)
 GO
+CREATE TRIGGER [dbo].[FusionAttribute_AfterUpdate]
+   ON  [dbo].[FusionAttribute] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON
+	update	T
+	set		T.UpdatedBy = 0,
+			T.UpdatedOn = getutcdate()
+	from	Asset T
+			inner join inserted S on T.Object = 'FusionAttribute' and T.ObjectID = S.ID
+GO
+CREATE TRIGGER [dbo].[FusionAttribute_AfterInsert]
+   ON  [dbo].[FusionAttribute] 
+   AFTER INSERT
+AS 
+BEGIN
+	SET NOCOUNT ON
+	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+		SELECT	T.ID, 1, 'FusionAttribute', O.ID, getutcdate(), 0, getutcdate(), 0
+		FROM	inserted O inner join  AssetType T on T.Object = 'FusionAttributeType' and T.ObjectID = O.FusionAttributeTypeID
+END
+GO
+CREATE TRIGGER [dbo].[FusionAttribute_AfterDelete]
+   ON  [dbo].[FusionAttribute] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON
+	update	Asset
+	set		[State] = 3
+	where	Object = 'FusionAttribute' and ObjectID in (select ID from deleted)
 
-
+	delete Asset where Object = 'FusionAttribute' and ObjectID in (select ID from deleted)

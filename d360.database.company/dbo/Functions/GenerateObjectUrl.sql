@@ -28,11 +28,11 @@ BEGIN
 		WHEN 'PolicyType' THEN 'policy/' + CAST(@TypeID as varchar) + '/structure'		
 		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)
 		WHEN 'ResourceType' THEN 'resource/list/' + CAST(@TypeID as varchar)
-		WHEN 'Rule' THEN 'quality/rule/' + CAST(@ObjectID as varchar)
+		WHEN 'Rule' THEN 'quality/rule/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'RuleType' THEN 'quality/rule/' + CAST(@TypeID as varchar)	
 		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)
 		WHEN 'TaxonomyType' THEN 'model/' + CAST(@ObjectID as varchar) + '/structure'		
 		WHEN 'ShoppingCartType' THEN 'cart/' + CAST(@ObjectID as varchar)	
-
 	END
 
 	SET @Url = @Prefix + @Url

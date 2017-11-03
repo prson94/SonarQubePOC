@@ -2,14 +2,12 @@
 	@id int
 AS
 BEGIN
-	with i (owner1, owner2) 
+	with i (ResourceID) 
 	as
 	(
-		select primaryownerresourceid as owner1,secondaryownerresourceid as owner2 from responsibility r
-		join responsibilitytype rt on rt.id = r.responsibilitytypeid
-		join [group] g on g.id = rt.responsibilitytypegroup
-		where r.objecttype = (select ownerobjecttype from comment where id = @id)
-		and r.objectid = (select ownerobjectid from comment where id = @id)
+		select	r.ResourceID
+		from	ResponsibilityDetails r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
 	),
 	P (ID, ParentID)
 	AS
@@ -18,11 +16,6 @@ BEGIN
 					C.ParentID
 		FROM		Comment C
 		WHERE		ID = @id
-	/*	UNION ALL
-		SELECT	C.ID, 
-				C.ParentID
-		FROM	Comment C
-				INNER JOIN P PAR ON PAR.ID = C.ParentID*/
 	)
 
 	SELECT		C.*,
@@ -59,15 +52,14 @@ BEGIN
 				where commentid = p.ID
 					for xml path('vote'), root('votes'), type
 			) as VotesXML,
-			CASE WHEN (select count(*) from i where owner1 = C.CreatingResourceID) > 0  THEN
+			CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
 				cast(1 as bit)
-			WHEN (select count(*) from i where owner2 = C.CreatingResourceID) > 0  THEN
+			WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
 				cast(1 as bit)
 			ELSE
 				cast(0 as bit)
 			END as CreatorIsOwner
 	FROM		Comment C
-				--INNER JOIN CommentRelation CR ON CR.CommentID = C.ID
 				left join cache.ObjectDetails O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
 				INNER JOIN P ON C.ID = P.ID
 	ORDER BY	C.ParentID, C.DateCreated DESC

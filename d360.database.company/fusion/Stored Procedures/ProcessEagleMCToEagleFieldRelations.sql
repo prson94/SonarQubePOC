@@ -87,17 +87,21 @@ BEGIN
 				USING   (
 							SELECT	sr.IntersectTypeID, 
 									2 as class,
-									sr.ID as srID,
+									--sr.ID as srID,
 									'FusionAttribute' as Subject,
 									sr.StreamFusionAttributeID as SubjectID,
 									'FusionAttribute' as Object,
 									sr.FieldFusionAttributeID as ObjectID
 							FROM	@StreamToFieldList sr							
 						) s
-				ON      (1 = 0)
+				ON      (
+						s.IntersectTypeID = d.IntersectTypeID 
+						and s.Subject = d.Subject and s.SubjectID = d.SubjectID 
+						and s.Object = d.Object and s.ObjectID = d.ObjectID
+						)
 				WHEN NOT MATCHED THEN
 				INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
-				VALUES  (s.IntersectTypeID, s.class, NULL, s.Subject, s.SubjectID, s.Object, s.ObjectID)
-				OUTPUT  INSERTED.ID, s.srID into @IDList;
+				VALUES  (s.IntersectTypeID, s.class, NULL, s.Subject, s.SubjectID, s.Object, s.ObjectID);
+				--OUTPUT  INSERTED.ID, s.srID into @IDList;
 	end;
 end

@@ -9,6 +9,7 @@
 RETURNS @tbl TABLE 
 (
 	ID int,
+	AssetID bigint,
 	Name nvarchar(250),
 	TextPath nvarchar(2500),
 	Description nvarchar(max),
@@ -27,9 +28,10 @@ AS
 BEGIN
 	if @type = 'Artifact'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName, Status)
-			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, O.ArtifactTypeID, O.ID),	O.ArtifactTypeID,	'ArtifactType',	T.Name, O.Status
+		insert into @tbl (	ID,		AssetID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	A.ID, O.DisplayValue,	O.DisplayValue,	NULL,	O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, O.ArtifactTypeID, O.ID),	O.ArtifactTypeID,	'ArtifactType',	T.Name, NULL
 			FROM	Artifact O
+					inner join Asset A on A.Object = @type and A.ObjectID = O.ID
 					INNER JOIN ArtifactType T ON O.ArtifactTypeID = T.ID and O.ID = @id
 	end
 
@@ -43,9 +45,10 @@ BEGIN
 
 	if @type = 'Attribute'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
-			SELECT			O.ID,	'',		'',			'',				O.ParentID,	@type,		D.Url,	O.AttributeTypeID,	'AttributeType',	T.Name
+		insert into @tbl (	ID,		AssetID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	A.ID,	O.DisplayValue,		O.DisplayValue,			'',				O.ParentID,	@type,		D.Url,	O.AttributeTypeID,	'AttributeType',	T.Name
 			FROM	[Attribute] O
+					inner join Asset A on A.Object = @type and A.ObjectID = O.ID
 					INNER JOIN AttributeType T ON O.AttributeTypeID = T.ID and O.ID = @id
 					cross apply  utility.ObjectDetail(O.ObjectType, O.ObjectID) D
 	end
@@ -100,9 +103,10 @@ BEGIN
 
 	if @type = 'Fusion'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		'',				NULL,		@type,		dbo.GenerateObjectUrl(@type, O.FusionTypeID, O.ID),	O.FusionTypeID,	'FusionType',	T.Name
+		insert into @tbl (	ID,		AssetID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	A.ID,	O.Name,	O.Name,		'',				NULL,		@type,		dbo.GenerateObjectUrl(@type, O.FusionTypeID, O.ID),	O.FusionTypeID,	'FusionType',	T.Name
 			FROM	Fusion O
+					inner join Asset A on A.Object = @type and A.ObjectID = O.ID
 					INNER JOIN FusionType T ON O.FusionTypeID = T.ID and O.ID = @id
 	end
 
@@ -116,10 +120,11 @@ BEGIN
 
 	if @type = 'FusionAttribute'
 	begin
-		insert into @tbl (	ID,		Name,		TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,						[Type],					TypeName)
-			SELECT			O.ID,	coalesce(O.TextPath, O.Name),	O.TextPath,	'',				O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, FT.ID, O.ID),
+		insert into @tbl (	ID,		AssetID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,						[Type],					TypeName)
+			SELECT			O.ID,	A.ID,	coalesce(O.TextPath, O.Name),	O.TextPath,	'',				O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, FT.ID, O.ID),
 																											O.FusionAttributeTypeID,	'FusionAttributeType',	T.Name
 			FROM	FusionAttribute O
+					inner join Asset A on A.Object = @type and A.ObjectID = O.ID
 					INNER JOIN FusionAttributeType T ON O.FusionAttributeTypeID = T.ID and O.ID = @id
 					INNER JOIN FusionType FT ON T.FusionTypeID = FT.ID
 	end
@@ -149,13 +154,13 @@ BEGIN
 			WHERE	ID = @id
 	end
 
-	if @type = 'Map'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName, Status)
-			SELECT			O.ID,	O.Name,	O.Name,	NULL,	NULL,	NULL,		dbo.GenerateObjectUrl(@type, O.MapTypeID, O.ID),	O.MapTypeID,	'MapType',	T.Name, NULL
-			FROM	Map O
-					INNER JOIN MapType T ON O.MapTypeID = T.ID and O.ID = @id
-	end
+	--if @type = 'Map'
+	--begin
+	--	insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName, Status)
+	--		SELECT			O.ID,	O.Name,	O.Name,	NULL,	NULL,	NULL,		dbo.GenerateObjectUrl(@type, O.MapTypeID, O.ID),	O.MapTypeID,	'MapType',	T.Name, NULL
+	--		FROM	Map O
+	--				INNER JOIN MapType T ON O.MapTypeID = T.ID and O.ID = @id
+	--end
 
 	if @type = 'MapType'
 	begin
@@ -166,9 +171,10 @@ BEGIN
 
 	if @type = 'Policy'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, T.ID, O.ID),	T.ID,	'PolicyType',	T.Name
+		insert into @tbl (	ID,		AssetID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
+			SELECT			O.ID,	A.ID,	O.DisplayValue,	O.TextPath,	O.DisplayValue,	NULL,		@type,		dbo.GenerateObjectUrl(@type, T.ID, O.ID),	T.ID,	'PolicyType',	T.Name
 			FROM	[Policy] O
+					inner join Asset A on A.Object = @type and A.ObjectID = O.ID
 					INNER JOIN PolicyType T ON O.PolicyTypeID = T.ID AND O.ID = @id
 	end
 
@@ -183,17 +189,18 @@ BEGIN
 
 	if @type = 'ReferenceItem'
 	begin
-		insert into @tbl (	ID,	
+		insert into @tbl (	ID,	AssetID, 
 							Name, TextPath, [Description],	
 							ParentID, ParentType, 
 							Url, 
 							TypeID, [Type], TypeName)
-			SELECT			O.ID,		
+			SELECT			O.ID, A.ID, 		
 							O.DisplayValue, O.DisplayValue, NULL,
 							NULL, NULL, 
 							dbo.GenerateObjectUrl(@type, T.ID, O.ID),
 							T.ID, 'ReferenceItemType', T.Name
 			FROM	ReferenceItem O
+					inner join Asset A on A.Object = @type and A.ObjectID = O.ID
 					inner join ReferenceItemType T on T.ID = O.ReferenceItemTypeID and O.ID = @id
 	end
 
@@ -237,9 +244,10 @@ BEGIN
 
 	if @type = 'Rule'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
-			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	O.RuleTypeID,	'RuleType',	T.Name, case O.Status when 1 then 'Draft' when 2 then 'Active' else 'Inactive' end
+		insert into @tbl (	ID,		AssetID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	A.ID,	O.DisplayValue,	O.DisplayValue,	NULL,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	O.RuleTypeID,	'RuleType',	T.Name, case O.Status when 1 then 'Draft' when 2 then 'Active' else 'Inactive' end
 			FROM	[Rule] O
+					inner join Asset A on A.Object = @type and A.ObjectID = O.ID
 					inner join RuleType T on T.ID = O.RuleTypeID
 			WHERE	O.ID = @id
 	end
@@ -247,7 +255,7 @@ BEGIN
 	if @type = 'RuleImplementation'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
-			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		dbo.GenerateObjectUrl(@type, T.ID, O.ID),	T.RuleTypeID,	'RuleType',	T.Name, 'Active'
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		dbo.GenerateObjectUrl(@type, T.ID, O.ID),	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active'
 			FROM	[RuleImplementation] O
 					inner join [Rule] T on T.ID = O.RuleID
 			WHERE	O.ID = @id
@@ -270,28 +278,13 @@ BEGIN
 			WHERE	O.ID = @id
 	end
 
-	if @type = 'StatisticType'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Analytic Type'
-			FROM	StatisticType O
-			WHERE	ID = @id
-	end
-
-	if @type = 'Synonym'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,			[Type],		TypeName)
-			SELECT			O.ID,	O.Name,	D.TextPath,	D.TypeName,		O.ObjectID,	O.Object,	D.Url,	O.PredicateID,	'Synonym',	P.Name
-			FROM	[Synonym] O
-					INNER JOIN [Predicate] P ON O.PredicateID = P.ID and O.ID = @id
-					cross apply  utility.ObjectDetail(O.[Object], O.ObjectID) D
-	end
 
 	if @type = 'Taxonomy'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, O.TaxonomyTypeID, O.ID),	O.TaxonomyTypeID,	'TaxonomyType',	C.Name + ' Model'
+		insert into @tbl (	ID,		AssetID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName)
+			SELECT			O.ID,	A.ID, O.DisplayValue,	O.TextPath,	NULL,	O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, O.TaxonomyTypeID, O.ID),	O.TaxonomyTypeID,	'TaxonomyType',	C.Name + ' Model'
 			FROM	Taxonomy O
+					inner join Asset A on A.Object = @type and A.ObjectID = O.ID
 					INNER JOIN TaxonomyType T ON O.TaxonomyTypeID = T.ID AND O.ID = @id
 					inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
 	end

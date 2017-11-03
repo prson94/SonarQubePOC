@@ -85,8 +85,8 @@ BEGIN
 						and s.Object = d.Object and s.ObjectID = d.ObjectID
 						)
 				WHEN NOT MATCHED THEN
-					INSERT  (IntersectTypeID, Subject, SubjectID, Object, ObjectID)
-					VALUES  (s.IntersectTypeID, s.Subject, s.SubjectID, s.Object, s.ObjectID);
+					INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
+					VALUES  (s.IntersectTypeID, 2, NULL, s.Subject, s.SubjectID, s.Object, s.ObjectID);
 				--OUTPUT  INSERTED.ID, s.ID into @IDList;
 										
 			--insert into @Intersects 

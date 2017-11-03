@@ -16,21 +16,20 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	with i (owner1, owner2) 
+	with i (ResourceID) 
 	as
 	(
-		select primaryownerresourceid as owner1,secondaryownerresourceid as owner2 from responsibility r
-		join responsibilitytype rt on rt.id = r.responsibilitytypeid
-		join [group] g on g.id = rt.responsibilitytypegroup
-		where r.objecttype = @type and r.objectid = @id
+		select	r.ResourceID
+		from	ResponsibilityDetails r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
 	),
 	 P
 	AS
 	(
 		SELECT		C.*,
-					CASE WHEN (select count(*) from i where owner1 = C.CreatingResourceID) > 0  THEN
+					CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
 						1
-					WHEN (select count(*) from i where owner2 = C.CreatingResourceID) > 0  THEN
+					WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
 						1
 					ELSE
 						0

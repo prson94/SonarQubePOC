@@ -23,16 +23,11 @@ begin
 	begin try
 		begin transaction @trans
 
-		--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority])
-		--values ('ObjectIndex', 'D', @Object, @ObjectID, 4)
-
 		--COMMON
 		delete CommentRelation					where ObjectType = @Object and ObjectID = @ObjectID
 		delete Field							where ObjectType = @Object and ObjectID = @ObjectID
 		delete Follow							where ObjectType = @Object and ObjectID = @ObjectID
 		delete Responsibility					where ObjectType = @Object and ObjectID = @ObjectID
-		--delete SurveyObjectCache				where ObjectType = @Object and ObjectID = @ObjectID
-		delete cache.[Object]					where [Object] = @Object and ObjectID = @ObjectID
 
 		if charindex('Type', @Object) > 0
 		begin
@@ -40,12 +35,10 @@ begin
 			delete FieldType						where [Object] = @Object AND ObjectID = @ObjectID
 			delete ResponsibilityTypeRelation		where ObjectType = @Object and ObjectID = @ObjectID
 			delete ResponsibilityTypeObjectClaim	where ObjectType = @Object and ObjectID = @ObjectID
-			delete StatisticType					where [Object] = @Object and ObjectID = @ObjectID
-			delete WorkflowTypeRelation				where [Object] = @Object and ObjectID = @ObjectID
 
 			if @Object in ('AttributeTypeRelation', 'AttributeTypeRelation', 'ResponsibilityTypeRelation', 'ResponsibilityType')
 			begin
-				exec utility.CalculateStatistics
+				exec utility.CalculateScores
 			end
 
 			if @Object = 'ArtifactType'
@@ -221,20 +214,11 @@ begin
 					FROM	[Intersect]
 					WHERE	(Subject = @Object and SubjectID = @ObjectID) OR (Object = @Object and ObjectID = @ObjectID)
 
-				delete	MapItem 
-				where	SourceIntersectID in (select ID from @tblIntersectIDs) OR
-						TargetIntersectID in (select ID from @tblIntersectIDs)
-
 				delete [Intersect] where ID in (select ID from @tblIntersectIDs)
 			END TRY
 			BEGIN CATCH
 
 			END CATCH
-
-			if @Object = 'Responsibility'
-			begin
-				exec cache.SynchronizeResponsibilitiesForObject @ParentObject, @ParentObjectID 
-			end
 
 			if @Object = 'Taxonomy'
 			begin
@@ -254,8 +238,6 @@ begin
 					select ID from th
 			
 				delete Taxonomy where ID in (select ID from @th)
-
-				exec cache.SynchronizeResponsibilities
 			end
 		end
 		

@@ -3617,10 +3617,9 @@ select  case
             when count(1) > 0 then cast(1 as bit)
 			else cast(0 as bit)
         end 
-from    [cache].[Responsibilities] 
+from    ResponsibilityDetails 
 where   Object = @type 
-		and ObjectID = @id 
-		and [Visible] = 1";
+		and ObjectID = @id";
 
             return Company.Query<bool>(sql, new { type, id }).First();
         }
@@ -3641,167 +3640,65 @@ where   Object = @type
                 var def = lookup.ParseOwnershipLookupDefinition();
                 type = type.CleanForSql();
 
-                var sql = "SELECT R.ResponsibilityType, CI.ContextItems";
-                var tableSql = @" from [cache].[Responsibilities] R
-            outer apply (
-                        select(
-                                select  D.Name + ': ' + I.Code + '; '
-                                from    ResponsibilityContextItem C
-                                        inner join ReferenceItem I on C.ObjectType = 'ReferenceItem' and C.ObjectID = I.ID
-                                        inner join ReferenceItemType D on D.ID = I.ReferenceItemTypeID
-                                where   ResponsibilityID = R.ResponsibilityID
-                                for xml path ('')
-                                ) as ContextItems
-						) CI ";
+                var sql = @"
+SELECT  R.ResponsibilityTypeName, 
+        case SecurityAsset when 'G' then 'Group' when 'O' then 'Organization' else 'Resource' end as SecurityAsset, 
+        SecurityAssetID, 
+        case SecurityAsset when 'R' then '' else SecurityAssetName end as SecurityAssetName, 
+        'Preview' as SecurityAssetContext, 
+        U.FirstName + ' ' + U.LastName as ResourceName, 
+        U.ResourceID, 
+        'Resource' as ResourceObject, 
+        'Preview' as ResourceItemContext, 
+        '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl 
+from    ResponsibilityDetails R
+        inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.Status = 'Active' 
+where   R.Object = @type and R.ObjectID = @id";
 
-                #region Common fields/columns
+                gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
+                gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
+                gridFields.Add(new GridField { name = "ResourceID", type = "number" });
+                gridFields.Add(new GridField { name = "ResourceObject", type = "string" });
+                gridFields.Add(new GridField { name = "ResourceItemContext", type = "string" });
+                gridFields.Add(new GridField { name = "ResourceItemUrl", type = "string" });
+                gridFields.Add(new GridField { name = "SecurityAsset", type = "string" });
+                gridFields.Add(new GridField { name = "SecurityAssetID", type = "number" });
+                gridFields.Add(new GridField { name = "SecurityAssetName", type = "lookup" });
+                gridFields.Add(new GridField { name = "SecurityAssetContext", type = "string" });
 
-                gridFields.Add(new GridField { name = "ResponsibilityType", type = "string" });
                 columns.Add(new GridColumn
                 {
                     text = "Responsibility",
-                    datafield = "ResponsibilityType",
-                    //description = "Role assigned",
+                    datafield = "ResponsibilityTypeName",
                     columntype = "textbox",
                     filtertype = "textbox"
                 });
 
-                #endregion
+                columns.Add(new GridColumn
+                {
+                    text = "Assigned User",
+                    datafield = "ResourceName",
+                    contextfield = "ResourceItemContext",
+                    objectfield = "ResourceObject",
+                    objectidfield = "ResourceID",
+                    urlfield = "ResourceItemUrl",
+                    columntype = "textbox",
+                    filtertype = "textbox"
+                });
 
                 if (def.DisplayAssignmentSource)
                 {
-                    sql += ", [AssigningItem], [AssigningItemID], [AssigningItemName], [AssigningItemUrl] , 'Preview' as AssigningItemContext";
-
-                    #region Fields/Columns when displaying assignment source
-
-                    gridFields.Add(new GridField { name = "AssigningItem", type = "string" });
-                    gridFields.Add(new GridField { name = "AssigningItemID", type = "number" });
-                    gridFields.Add(new GridField { name = "AssigningItemName", type = "lookup" });
-                    gridFields.Add(new GridField { name = "AssigningItemContext", type = "string" });
-                    gridFields.Add(new GridField { name = "AssigningItemUrl", type = "string" });
-
                     columns.Add(new GridColumn
                     {
-                        text = "Assignment Source",
-                        datafield = "AssigningItemName",
-                        contextfield = "AssigningItemContext",
-                        objectfield = "AssigningItem",
-                        objectidfield = "AssigningItemID",
-                        urlfield = "AssigningItemUrl",
-                        //description = "Role assigned",
+                        text = "Via",
+                        datafield = "SecurityAssetName",
+                        contextfield = "SecurityAssetContext",
+                        objectfield = "SecurityAsset",
+                        objectidfield = "SecurityAssetID",
                         columntype = "textbox",
                         filtertype = "textbox"
                     });
-
-                    #endregion
                 }
-
-                if (def.ExpandGroupMembership)
-                {
-                    sql += @"
-, U.FirstName + ' ' + U.LastName as ResourceName
-, U.ResourceID
-, 'Resource' as ResourceObject
-, 'Preview' as ResourceItemContext
-, '/resource/' + cast(U.ResourceID as varchar) as ResourceItemUrl
-, R.[ResponsibleObject]
-, R.[ResponsibleObjectID] 
-, 'Preview' as ResponsibleObjectContext
-, R.ResponsibleObjectUrl
-, case R.ResponsibleObject when 'Group' then[ResponsibleObjectName] else '' end as ViaGroup";
-                    tableSql += @"
- left join ResourceGroup RG on R.ResponsibleObject = 'Group' and RG.GroupID = R.ResponsibleObjectID 
- left join reporting.Global_Resource U on (R.ResponsibleObject = 'Group' and RG.ResourceID = U.ResourceID) or (R.ResponsibleObject = 'Resource' and U.ResourceID = R.ResponsibleObjectID) and U.Status = 'Active' ";
-
-                    #region Fields/Columns when expanding group membership
-
-                    gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
-                    gridFields.Add(new GridField { name = "ResourceID", type = "number" });
-                    gridFields.Add(new GridField { name = "ResourceObject", type = "string" });
-                    gridFields.Add(new GridField { name = "ResourceItemContext", type = "string" });
-                    gridFields.Add(new GridField { name = "ResourceItemUrl", type = "string" });
-
-                    columns.Add(new GridColumn
-                    {
-                        text = "Assigned User",
-                        datafield = "ResourceName",
-                        contextfield = "ResourceItemContext",
-                        objectfield = "ResourceObject",
-                        objectidfield = "ResourceID",
-                        urlfield = "ResourceItemUrl",
-                        //description = "User assigned to the role",
-                        columntype = "textbox",
-                        filtertype = "textbox"
-                    });
-
-                    gridFields.Add(new GridField { name = "ViaGroup", type = "lookup" });
-                    gridFields.Add(new GridField { name = "ResponsibleObjectID", type = "number" });
-                    gridFields.Add(new GridField { name = "ResponsibleObject", type = "string" });
-                    gridFields.Add(new GridField { name = "ResponsibleObjectContext", type = "string" });
-                    gridFields.Add(new GridField { name = "ResponsibleObjectUrl", type = "string" });
-
-                    columns.Add(new GridColumn
-                    {
-                        text = "Via Group",
-                        datafield = "ViaGroup",
-                        contextfield = "ResponsibleObjectContext",
-                        objectfield = "ResponsibleObject",
-                        objectidfield = "ResponsibleObjectID",
-                        urlfield = "ResponsibleObjectUrl",
-                        description = "Group assigned to the role",
-                        columntype = "textbox",
-                        filtertype = "textbox"
-                    });
-
-                    #endregion
-                }
-                else
-                {
-                    sql += @", R.[ResponsibleObject]
-, R.[ResponsibleObjectID]
-, R.[ResponsibleObjectName]
-, 'Preview' as ResponsibleObjectContext
-, R.ResponsibleObjectUrl";
-
-                    #region Fields/Columns when not expanding group membership
-
-                    gridFields.Add(new GridField { name = "ResponsibleObjectName", type = "lookup" });
-                    gridFields.Add(new GridField { name = "ResponsibleObjectID", type = "number" });
-                    gridFields.Add(new GridField { name = "ResponsibleObject", type = "string" });
-                    gridFields.Add(new GridField { name = "ResponsibleObjectContext", type = "string" });
-                    gridFields.Add(new GridField { name = "ResponsibleObjectUrl", type = "string" });
-
-                    columns.Add(new GridColumn
-                    {
-                        text = "Responsible Party",
-                        datafield = "ResponsibleObjectName",
-                        contextfield = "ResponsibleObjectContext",
-                        objectfield = "ResponsibleObject",
-                        objectidfield = "ResponsibleObjectID",
-                        urlfield = "ResponsibleObjectUrl",
-                        //description = "Group/User assigned to the role",
-                        columntype = "textbox",
-                        filtertype = "textbox"
-                    });
-
-                    #endregion
-                }
-
-                sql += tableSql + " where R.Object = @type and R.ObjectID = @id and R.[Visible] = 1";
-
-                #region Common fields/columns
-
-                gridFields.Add(new GridField { name = "ContextItems", type = "string" });
-                columns.Add(new GridColumn
-                {
-                    text = "Context",
-                    datafield = "ContextItems",
-                    description = "Associated contexts",
-                    columntype = "textbox",
-                    filtertype = "textbox"
-                });
-
-                #endregion
 
                 results = Company.Query<dynamic>(sql, new { type, id }).Distinct();
             }

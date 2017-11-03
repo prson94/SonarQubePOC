@@ -1,5 +1,4 @@
-﻿
-CREATE VIEW [dbo].[FieldTypeWithRelation]
+﻿CREATE VIEW [dbo].[FieldTypeWithRelation]
 AS
 	SELECT	T.ID,
 			T.Name,
@@ -20,8 +19,11 @@ AS
 			T.[Object],
 			T.ObjectID,
 			D.Name as ObjectName,
+			T.IsDisplayable,
+			T.IsEditable,
 			T.IsListable,
 			T.IsRequired,
-			T.SortOrder
+			T.SortOrder,
+			T.DefaultValue
 	FROM	FieldType T
 			inner join cache.ObjectDetails D on D.[Object] = T.[Object] and D.ObjectID = T.ObjectID

@@ -1,0 +1,49 @@
+﻿CREATE procedure [utility].[GetOwnersForWorkflowV2]
+	@workflowID int,
+	@workflowStepID int = 0,
+	@workflowItemID int = 0
+as
+begin
+	declare @objectId int,			
+			@objectType varchar(50),
+			@responsibilityTypeID int;
+
+	declare @tbl table (ResourceID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, ResourceTypeID int, Status nvarchar(25))
+	
+	--get the responsibility for this step from the settings of the step
+	select @responsibilityTypeID = settings.value('(/settings/ResponsibilityTypeID)[1]', 'int') from [workflow].[VersionStep] where id = @workflowStepID
+	
+	-- check object
+	begin
+			select @objectType = object, @objectId = objectid from [workflow].[item] where id = @workflowItemID;
+
+			insert into @tbl
+			select	R.ResourceID, 
+					R.FirstName, 
+					R.LastName, 
+					R.Email, 
+					R.Email, 
+					R.DateLastLoggedIn, 
+					1 as ResourceTypeID, 
+					R.Status 
+			from	ResponsibilityDetails RD
+					inner join reporting.Global_Resource R on RD.Object = @objectType
+							and RD.ObjectID = @objectId
+							and RD.ResponsibilityTypeID = @responsibilityTypeID
+							and RD.ResourceID = R.ResourceID
+							and R.Email not like '%?subject=%' and R.Status = 'Active'
+		end
+	
+	-- if noone found email admins
+	if not exists (select 1 from @tbl)
+		begin
+			insert into @tbl
+				select 
+					R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
+				from 
+					reporting.Global_Resource R where isadministrator = 1 and status = 'Active'
+		end
+	
+
+	select * from @tbl
+end

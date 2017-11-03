@@ -169,14 +169,14 @@ namespace d360.web.Controllers
                 );
         }
 
-        [Route("responsibilities/{type}/{id:int}")]
-        internal IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
-        {
-            return Company.Query<dynamic>(
-                QueryConstants.ResponsibilityList,
-                new { ObjectType = type.ToString(), ObjectID = id }
-            ).AsQueryable();
-        }
+        //[Route("responsibilities/{type}/{id:int}")]
+        //internal IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
+        //{
+        //    return Company.Query<dynamic>(
+        //        QueryConstants.ResponsibilityList,
+        //        new { ObjectType = type.ToString(), ObjectID = id }
+        //    ).AsQueryable();
+        //}
 
         internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
@@ -1031,7 +1031,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     var ids = user.Split('|');
                     if (ids.Length == 2)
                     {
-                        joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'resource' and RD{index}.ResponsibleObjectID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
+                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Object = 'Artifact' and RD{index}.SecurityAsset = 'R' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
                         index++;
                     }
                 }
@@ -1044,7 +1044,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     var ids = group.Split('|');
                     if (ids.Length == 2)
                     {
-                        joins += $" inner join responsibilitydetail RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Visible = 1 and RD{index}.ObjectType = 'Artifact' and RD{index}.ResponsibleObjectType = 'group' and RD{index}.ResponsibleObjectID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
+                        joins += $" inner join ResponsibilityDetails RD{index} on (RD{index}.ObjectID = A.ID and RD{index}.Object = 'Artifact' and RD{index}.SecurityAsset = 'G' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
                         index++;
                     }
                 }

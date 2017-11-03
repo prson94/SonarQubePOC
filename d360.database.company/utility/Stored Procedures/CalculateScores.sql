@@ -28,6 +28,8 @@ begin
 		Object varchar(50),
 		ObjectID int
 	)
+/*
+
 	insert into #MetricTypes
 		select	M.ScoreTypeID,
 				M.ID as ScoreTypeMetricID,
@@ -37,10 +39,10 @@ begin
 				M.CheckType,
 				M.Configuration,
 				M.MaximumScore,
-				O.Object,
-				O.ObjectID
-		from	ScoreType T
-				inner join ScoreTypeMetric M on M.ScoreTypeID = T.ID  and M.Deleted = 0
+				A.Object,
+				A.ObjectID
+		from	ScoreType ST
+				inner join ScoreTypeMetric M on M.ScoreTypeID = ST.ID  and M.Deleted = 0
 				inner join	(
 							select		ScoreTypeMetricID,
 										max(IV.ID) as ID,
@@ -48,7 +50,8 @@ begin
 							from		ScoreTypeMetricVersion IV
 							group by	IV.ScoreTypeMetricID
 							) V on V.ScoreTypeMetricID = M.ID
-				inner join cache.[Object] O on O.ObjectType = M.Object and O.ObjectTypeID = M.ObjectID and ( (O.Object = @Object and O.ObjectID = @ObjectID) OR @ObjectID is null)
+				inner join AssetType T on T.Object = M.Object and T.ObjectID = M.ObjectID 
+				inner join Asset A on A.AssetTypeID = T.ID and ( (A.Object = @Object and A.ObjectID = @ObjectID) OR @ObjectID is null)
 
 	DROP TABLE IF EXISTS #ScoreMetrics
 	create table #ScoreMetrics (
@@ -72,12 +75,11 @@ begin
 					when T.CheckType = 1 and f.value('(ObjectType/text())[1]', 'varchar(50)') = 'AttributeType' and C1_A.ValueExists <> 0 then T.MaximumScore
 					when T.CheckType = 1 and f.value('(ObjectType/text())[1]', 'varchar(50)') = 'ResponsibilityType' and C1_R.ValueExists <> 0 then T.MaximumScore
 					when T.CheckType = 2 then C2.Multiplier * T.MaximumScore
-					when T.CheckType = 3 and T.ObjectType = 'ArtifactType' and C3_S.ValueExists <> 0 then T.MaximumScore
+					--when T.CheckType = 3 and T.ObjectType = 'ArtifactType' and C3_S.ValueExists <> 0 then T.MaximumScore
 					when T.CheckType = 3 and f.value('(PropertyName/text())[1]', 'varchar(250)') <> 'Status' and C3_F.ValueExists <> 0 then T.MaximumScore
 					when T.CheckType = 4 and f.value('(PropertyName/text())[1]', 'varchar(250)') = 'Description' and C4_D.ValueExists <> 0 then T.MaximumScore
 					when T.CheckType = 4 and f.value('(PropertyName/text())[1]', 'varchar(250)') <> 'Description' and C4_F.ValueExists <> 0 then T.MaximumScore
-					when T.CheckType = 5 and f.exist('/CheckObjects/Object')=1 and C5_R.ValueExists <> 0 then T.MaximumScore
-					when T.CheckType = 5 and f.exist('/CheckObjects/IntersectType')=1 and C5_R2.ValueExists <> 0 then T.MaximumScore
+					when T.CheckType = 5 and (C5_R.ValueExists <> 0 OR C5_R2.ValueExists <> 0) then T.MaximumScore
 					when T.CheckType = 6 and C6_F.ValueExists <> 0 then T.MaximumScore
 					when T.CheckType = 7 and C7_R.AverageScore is not null then (C7_R.AverageScore / 100) * T.MaximumScore
 					when T.CheckType = 8 and C8_O.AverageScore is not null then (C8_O.AverageScore / 100) * T.MaximumScore
@@ -114,17 +116,6 @@ begin
 										and T.CheckType = 1
 							group by	ResponsibilityTypeID, [Object], ObjectID
 							) C1_R
-				outer apply (
-							select		CASE 
-											when [Status] = f.value('(PropertyValue/text())[1]', 'nvarchar(4000)') then 1
-											else 0
-										END as ValueExists
-							from		Artifact
-							where		T.ObjectType = 'ArtifactType'
-										and ID = T.ObjectID
-										and f.value('(PropertyName/text())[1]', 'varchar(250)') = 'Status'
-										and T.CheckType = 3
-							) C3_S
 				outer apply (
 							select		CASE 
 											when F.FormattedValue = f.value('(PropertyValue/text())[1]', 'nvarchar(4000)') then 1
@@ -254,9 +245,6 @@ begin
 							where	T.CheckType = 10
 							) C10_P	-- PREDICATE CHECK
 
---drop table #ScoreMetrics
---select * from #ScoreMetrics
-
 	-- Gets results from merge statement below (OUTPUT)
 	DROP TABLE IF EXISTS #Scores
 	create table #Scores (ScoreID bigint, Object varchar(50), ObjectID int, ScoreTypeID int, Date date, [Action] varchar(15), CurrentScore int not null, NewScore int null)
@@ -338,11 +326,13 @@ begin
 
 	insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select	'EventTopicNotification', 
-				'<fields><ChangeType>ScoreUpdate</ChangeType><ObjectType>' + O.ObjectType + '</ObjectType><ObjectTypeID>' + cast(O.ObjectTypeID as varchar) + '</ObjectTypeID><Score>' + cast(S.NewScore as varchar) + '</Score></fields>',
+				'<fields><ChangeType>ScoreUpdate</ChangeType><ObjectType>' + T.Object + '</ObjectType><ObjectTypeID>' + cast(T.ObjectID as varchar) + '</ObjectTypeID><Score>' + cast(S.NewScore as varchar) + '</Score></fields>',
 				S.Object, 
 				S.ObjectID
 		from	#Scores S
-				inner join cache.Object O on O.Object = S.Object and O.ObjectID = S.ObjectID
+				inner join Asset O on O.Object = S.Object and O.ObjectID = S.ObjectID
+				inner join AssetType T on T.ID = O.AssetTypeID
 		where	S.CurrentScore <> S.NewScore
 				and S.[Action] = 'UPDATE';
+*/
 end

@@ -27,17 +27,12 @@
 
 
 
-GO
-CREATE TRIGGER [dbo].[Load_AfterInsert]
-	ON [dbo].[Load]
-	FOR INSERT
-AS
-	SET NOCOUNT ON;
-	insert into [queue].[BulkLoad] (LoadID)
-		select ID from inserted
+
 
 GO
-DISABLE TRIGGER [dbo].[Load_AfterInsert]
-    ON [dbo].[Load];
+
+
+GO
+
 
 

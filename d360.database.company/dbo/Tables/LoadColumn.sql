@@ -7,3 +7,10 @@
     CONSTRAINT [FK_LoadColumn_Load] FOREIGN KEY ([LoadID]) REFERENCES [dbo].[Load] ([ID]) ON DELETE CASCADE
 );
 
+
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_LoadColumn_Load]
+    ON [dbo].[LoadColumn]([LoadID] DESC);
+

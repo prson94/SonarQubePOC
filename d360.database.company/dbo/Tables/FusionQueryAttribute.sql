@@ -7,7 +7,15 @@
     [UpdatedOn]                  DATETIME      NULL,
     [UpdatedBy]                  INT           NULL,
     [Deleted]                    BIT           CONSTRAINT [DF_FusionQueryAttribute_Deleted] DEFAULT ((0)) NOT NULL,
+    [DisplayValue]               AS            ([utility].[GetObjectDisplayValueWrapper]('FusionQueryAttribute',[ID],[FusionQueryAttributeTypeID])),
     CONSTRAINT [PK_FusionQueryAttribute] PRIMARY KEY NONCLUSTERED ([ID] ASC),
     CONSTRAINT [FK_FusionQueryAttribute_FusionQueryAttributeType] FOREIGN KEY ([FusionQueryAttributeTypeID]) REFERENCES [dbo].[FusionQueryAttributeType] ([ID]) ON DELETE CASCADE
 );
+
+
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_FusionQueryAttribute_FusionQueryAttributeTypeID]
+    ON [dbo].[FusionQueryAttribute]([FusionQueryAttributeTypeID] ASC);
 

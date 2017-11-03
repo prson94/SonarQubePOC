@@ -1,12 +1,19 @@
 ﻿CREATE TABLE [dbo].[Field] (
-    [ObjectType]     VARCHAR (50)   NOT NULL,
-    [ObjectID]       INT            NOT NULL,
-    [FieldTypeID]    INT            NOT NULL,
-    [Value]          NVARCHAR (MAX) NULL,
-    [FormattedValue] NVARCHAR (MAX) NULL,
-    CONSTRAINT [PK_Field] PRIMARY KEY CLUSTERED ([ObjectType] ASC, [ObjectID] ASC, [FieldTypeID] ASC) ON [PF_BY_OBJECT] ([ObjectType]),
-    CONSTRAINT [FK_Field_FieldType] FOREIGN KEY ([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
-);
+    [AssetID]            BIGINT                                      NULL,
+    [ObjectType]         VARCHAR (50)                                NOT NULL,
+    [ObjectID]           INT                                         NOT NULL,
+    [FieldTypeID]        INT                                         NOT NULL,
+    [Value]              NVARCHAR (MAX)                              NULL,
+    [FormattedValue]     NVARCHAR (MAX)                              NULL,
+    [EffectiveStartDate] DATETIME2 (0) GENERATED ALWAYS AS ROW START NOT NULL,
+    [EffectiveEndDate]   DATETIME2 (0) GENERATED ALWAYS AS ROW END   NOT NULL,
+    CONSTRAINT [PK_FieldNew] PRIMARY KEY NONCLUSTERED ([ObjectType] ASC, [ObjectID] ASC, [FieldTypeID] ASC),
+    CONSTRAINT [FK_Field_FieldType] FOREIGN KEY ([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE,
+    PERIOD FOR SYSTEM_TIME ([EffectiveStartDate], [EffectiveEndDate])
+)
+WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE=[dbo].[Field_History], DATA_CONSISTENCY_CHECK=ON));
+
+
 
 
 
@@ -20,8 +27,7 @@
 
 
 GO
-CREATE NONCLUSTERED INDEX [IX_Field_ObjectType-ObjectID]
-    ON [dbo].[Field]([ObjectType] ASC, [ObjectID] ASC);
+
 
 
 GO
@@ -53,5 +59,25 @@ AS
 GO
 CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID]
     ON [dbo].[Field]([FieldTypeID] ASC)
-    INCLUDE([Value]);
+    INCLUDE([ObjectType], [ObjectID]);
 
+
+
+
+GO
+CREATE CLUSTERED INDEX [CIX_Field]
+    ON [dbo].[Field]([ObjectType] ASC, [ObjectID] ASC);
+
+
+GO
+CREATE TRIGGER [dbo].[Field_AfterInsert]
+	ON [dbo].[Field]
+	FOR INSERT
+AS
+	SET NOCOUNT ON;
+
+	UPDATE	T
+	SET		T.AssetID = A.ID
+	FROM	Field T 
+			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and T.AssetID is null
+			left join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID

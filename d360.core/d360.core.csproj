@@ -280,7 +280,6 @@
     <Compile Include="entities\Social\CommentRelation.cs" />
     <Compile Include="entities\Contracts\IIntObject.cs" />
     <Compile Include="entities\Contracts\IFieldsObject.cs" />
-    <Compile Include="entities\Security\ObjectSecurity.cs" />
     <Compile Include="entities\Survey\QuestionType.cs" />
     <Compile Include="entities\Survey\Question.cs" />
     <Compile Include="entities\Survey\QuestionTypeOption.cs" />
@@ -304,7 +303,6 @@
     <Compile Include="entities\Reference\LookupType.cs" />
     <Compile Include="entities\Reference\Lookup.cs" />
     <Compile Include="entities\Community\Resource.cs" />
-    <Compile Include="entities\Security\Role.cs" />
     <Compile Include="entities\Transitive\AllowedIntersectionType.cs" />
     <Compile Include="entities\Transitive\AttributeHierarchyItem.cs" />
     <Compile Include="entities\Transitive\FusionOwnerOption.cs" />
@@ -318,7 +316,6 @@
     <Compile Include="entities\Transitive\RenderTemplateModel.cs" />
     <Compile Include="entities\Transitive\ResponsibilityTypeClaimDetail.cs" />
     <Compile Include="entities\Views\DomainAllocationDetail.cs" />
-    <Compile Include="entities\Views\ResponsibilityDetailForResource.cs" />
     <Compile Include="entities\Views\ResponsibilityTypeObjectClaimDetail.cs" />
     <Compile Include="entities\Views\SecurityDetail.cs" />
     <Compile Include="entities\Views\StatisticTypeCheckOption.cs" />
@@ -343,7 +340,6 @@
     <Compile Include="enums\ExportView.cs" />
     <Compile Include="enums\AssetTypeClass.cs" />
     <Compile Include="enums\LinkTarget.cs" />
-    <Compile Include="enums\MapClass.cs" />
     <Compile Include="enums\RegisterStep.cs" />
     <Compile Include="enums\Cardinality.cs" />
     <Compile Include="enums\ClientState.cs" />
@@ -368,7 +364,6 @@
     <Compile Include="enums\CommentVisibility.cs" />
     <Compile Include="enums\ComplexLookupRelationType.cs" />
     <Compile Include="enums\IssueCriticality.cs" />
-    <Compile Include="enums\IssueType.cs" />
     <Compile Include="enums\QuestionDisplayStyle.cs" />
     <Compile Include="enums\FollowType.cs" />
     <Compile Include="enums\FusionRuleType.cs" />
@@ -382,13 +377,9 @@
     <Compile Include="entities\Views\AttributeTypeRelationDetail.cs" />
     <Compile Include="entities\Views\FollowDetail.cs" />
     <Compile Include="enums\JobIntervalType.cs" />
-    <Compile Include="enums\ObjectType.cs" />
-    <Compile Include="enums\ResponsibilityTransformationType.cs" />
-    <Compile Include="enums\PolicyStatus.cs" />
     <Compile Include="enums\RuleStatus.cs" />
     <Compile Include="enums\QueueType.cs" />
     <Compile Include="enums\ReportTileType.cs" />
-    <Compile Include="enums\ResponsibilityTypeGroup.cs" />
     <Compile Include="enums\StatisticCheckType.cs" />
     <Compile Include="enums\SystemObjects.cs" />
     <Compile Include="enums\TemplateAction.cs" />

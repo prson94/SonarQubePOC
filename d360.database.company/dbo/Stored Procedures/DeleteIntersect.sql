@@ -1,4 +1,5 @@
-﻿CREATE PROCEDURE [dbo].[DeleteIntersect]
+﻿
+CREATE PROCEDURE [dbo].[DeleteIntersect]
 	@ID int,
 	@ResourceID int
 AS
@@ -21,15 +22,6 @@ BEGIN
 		IF EXISTS(select 1 from [Intersect] where (Subject = 'Intersect' and SubjectID = @ID) OR (Object = 'Intersect' and ObjectID = @ID) )
 		BEGIN
 			RAISERROR('Item is used in other relationships.', 16, 1);
-		END
-
-		IF EXISTS(
-			select	I.ID
-			from	[Intersect] I
-					inner join MapItem MI on MI.SourceIntersectID = I.ID and I.ID = @ID
-		)
-		BEGIN
-			RAISERROR('Relationship is a source for other relationships.  You must first remove those consuming relationships before deleting this one.', 16, 1);
 		END
 
 		if exists(select 1 from [Attribute] where ObjectType = 'Intersect' and ObjectID = @ID)
@@ -57,27 +49,9 @@ BEGIN
 		exec utility.AddAuditEntry @Subject, @SubjectID, @ResourceID, @date, 'Removed', 'Intersect', @ID
 		exec utility.AddAuditEntry @Object, @ObjectID, @ResourceID, @date, 'Removed', 'Intersect', @ID
 
-		-- Delete anywhere that the intersect is a target or consumer.
-		delete MapRuleItemMapItem where MapItemID in (select ID from MapItem where TargetIntersectID = @ID)
-		delete MapItemMap where MapItemID in (select ID from MapItem where TargetIntersectID = @ID)
-		delete MapItem where TargetIntersectID = @ID
-
 		-- Now delete the actual record.
 		delete	[Intersect]
 		where	ID = @ID
-
-		--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
-		if ( (@Subject = 'Taxonomy' and @Object = 'Artifact') OR (@Subject = 'Artifact' and @Object = 'Taxonomy') )
-		begin
-			if @Subject = 'Artifact'
-			begin
-				exec [cache].[SynchronizeResponsibilitiesForObject] @Subject, @SubjectID
-			end
-			if @Object = 'Artifact'
-			begin
-				exec [cache].[SynchronizeResponsibilitiesForObject] @Object, @ObjectID
-			end
-		end
 
 		if @trancount = 0
 			commit;

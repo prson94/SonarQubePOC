@@ -1,4 +1,4 @@
-﻿create procedure [tile].[GetObjectStatistics]
+﻿CREATE procedure [tile].[GetObjectStatistics]
 	@type varchar(50),
 	@id int
 AS
@@ -21,18 +21,10 @@ BEGIN
                                                 and C.ParentID is null
 												and C.IsDeleted = 0
 
-	select	@ObjectScore = cast(round(avg(S.Value), 0) as int)	
-	FROM	[Score] S
-			inner join (
-				select	max(ID) as ScoreID,
-						Object,
-						ObjectID,
-						ScoreTypeID
-				from	Score
-				where		Object = @type and ObjectID = @id
-				group by Object, ObjectID, ScoreTypeID
-			) MS on MS.ScoreID = S.ID
-	where	S.Object = @type and S.ObjectID = @id
+	select	@ObjectScore = cast(Value * 100 as int)
+	from	metrics.Score
+	where	getutcdate() between EffectiveStartDate and EffectiveEndDate
+			and Object = @type and ObjectID = @id
 
 	insert into @table values (null, @ObjectScore, 'Score', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/score', null, null)
 
@@ -50,20 +42,18 @@ BEGIN
 			group by	T.Name,
 						T.ID
 			order by	T.Name
-						
+
 		insert into @table
 			select 
 				'Issue',
 				count(1),
 				'Issues',	
 				'',
-				max(datestarted),
+				max(wi.CreatedOn),
 				null
 			from
-				WorkflowIssue wi                
-				inner join Artifact A on A.ID = wi.objectid
-			where
-				wi.objectid = @id and wi.[object] = 'Artifact' and wi.iscompleted = 0;
+				Issue wi                
+				inner join Artifact A on wi.Object ='Artifact' and A.ID = wi.objectid and A.ID = @id;-- and wi.iscompleted = 0;
 				
 	end
 
