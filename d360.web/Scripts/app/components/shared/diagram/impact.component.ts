@@ -224,7 +224,9 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     }
 
     private addCategoryLayer(root: NodeModel, nodes: NodeModel[], links: LinkModel[], append: boolean = true) {
-        //console.log('addCategoryLayer', root, _.cloneDeep(links));
+        if (root == null || root.key == null)
+            return;
+        //console.log('addCategoryLayer', root, _.cloneDeep(links), _.cloneDeep(nodes));
         let categories: any[] = [];
         let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
 
