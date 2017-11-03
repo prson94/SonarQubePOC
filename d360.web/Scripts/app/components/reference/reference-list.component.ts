@@ -7,6 +7,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ReferenceService } from '../../services/reference.service';
 
 @Component({
@@ -30,13 +31,6 @@ import { ReferenceService } from '../../services/reference.service';
                             <div class="col s12">
                                 <div class="tile tile-detail">           
                                     <d3s-dynamic-grid #itemsGrid [sortField]="'Code'" [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">                                              
-                                    <d3s-field-definition-tile (onFieldsChanged)="refreshItems(itemsGrid);"  [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" ></d3s-field-definition-tile>
                                 </div>
                             </div>
                         </div>
@@ -105,6 +99,18 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                 return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceItemType.ID}`
             });
         }
+
+        let fields = new RightSidebarItem()
+        fields.hasDynamicUrl = true;
+        fields.icons = ['fa-drivers-license-o'];
+        fields.tag = 'fields'
+        fields.title = 'Field Definitions'
+        fields.url = '/sidebar/fields'
+        fields.dynamicUrlCallback = (() => {
+            return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceItemType.ID}`
+        });
+        
+        this.rightSidebarService.showItem(fields);
     }
 
     ngOnInit() {

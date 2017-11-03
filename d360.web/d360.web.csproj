@@ -1134,6 +1134,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\dashboard\dashboard.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\dashboard\dashboard.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\dashboard\sagacity-viewer.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\fields\field-definition.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\fields\fields.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\fields\fields.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.routes.ts" />

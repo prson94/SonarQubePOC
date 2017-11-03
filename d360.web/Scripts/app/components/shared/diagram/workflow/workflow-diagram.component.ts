@@ -924,7 +924,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             case WorkflowActivityType.RelationshipUpdate:
                 if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || _.isEmpty(n.settings.RelationshipUpdate.Relationship))
                     return false;
-                if (n.settings.RelationshipUpdate.Relationship['@ClearValue'] != null && n.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == false) {
+                if (n.settings.RelationshipUpdate.Relationship['@ClearValue'] != null && n.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == "false") {
                     if (n.settings.RelationshipUpdate.Relationship['@FormStepId'] == null || n.settings.RelationshipUpdate.Relationship['@FormFieldId'] == null)
                         return false;
                 }

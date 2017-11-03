@@ -31,6 +31,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_RELATIONSHIP_ROOT, loadChildren: './components/sidebar/relationships/relationships.module#RelationshipsModule?chunkName=relationshipsChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_CHILDREN_ROOT, loadChildren: './components/sidebar/children/children.module#ChildrenModule?chunkName=childrenChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_WORKFLOW_MONITOR_ROOT, loadChildren: './components/sidebar/workflowmonitor/workflow-monitor.module#WorkflowMonitorModule?chunkName=workflowMonitorChunk' },
+    { path: SiteUrlHelpers.SITE_URL_FIELDS_ROOT, loadChildren: './components/sidebar/fields/fields.module#FieldsModule?chunkName=fieldsChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_SHOPPING_CART_ROOT, loadChildren: './components/shoppingcart/shopping-cart.module#ShoppingCartModule?chunkName=shoppingCartChunk' }, 
 ];
 
