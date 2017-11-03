@@ -8588,7 +8588,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 case "R":   // Relation
                 case "U":   // Unrelation
                     #region
-                    sql = @"select 'IntersectType|' + cast(ID as varchar(10)) as value, Name as title from IntersectType where IsSystem = 0 order by Name";
+                    sql = @"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, IName.Name as title from intersecttypedetail itd cross apply utility.GetIntersectTypeNames(itd.ID) IName	 where itd.IsSystem = 0 order by IName.Name";
                     break;
                     #endregion
                 case "BL":   // Lineage
