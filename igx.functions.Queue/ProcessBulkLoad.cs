@@ -20,6 +20,7 @@ using d360.core;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using igx.functions.Core;
 using System.Configuration;
+using System.Threading.Tasks;
 
 namespace igx.functions.Queue
 {
@@ -28,7 +29,7 @@ namespace igx.functions.Queue
         const string functionName = "ProcessBulkLoad";
 
         [FunctionName(functionName)]
-        public static void Run([QueueTrigger("%BulkLoadQueue%", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log) //%BulkLoadQueueName%
+        public static async Task Run([QueueTrigger("%BulkLoadQueue%", Connection = "MainStorageAccount")]string myQueueItem, TraceWriter log) //%BulkLoadQueueName%
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(myQueueItem);
 
@@ -484,7 +485,9 @@ namespace igx.functions.Queue
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
                         break;
                     case "R":   // Relations
-                        executeWithTry(companyConnection, log, $@"EXEC bulkload.Relationships {load.ID}", loadInfo.CompanyID, 2400);
+                                //  executeWithTry(companyConnection, log, $@"EXEC bulkload.Relationships {load.ID}", loadInfo.CompanyID, 2400);
+                        log.Info($"Starting bulk relate job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
+                        await company.PerformBulkRelate(load.ID);
                         break;
                     case "U":   // Unrelate
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.Unrelate {load.ID}", loadInfo.CompanyID, 2400);

@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.model
 {
@@ -661,7 +663,129 @@ order by	ColumnIndex", new { id });
             return inList;
         }
 
-        # endregion Parse Spreadsheet Methods
+        #endregion Parse Spreadsheet Methods
+
+
+        #region Process Data Methods
+
+        public async Task PerformBulkRelate(int loadId)
+        {
+            // get load properties
+            var load = Loads.Where(x => x.ID == loadId).FirstOrDefault();
+
+            if(load == null)
+            {
+                throw new Exception($"Bulk load relate cannot find the load job to run [{loadId}].");
+            }
+
+            var intersectType = IntersectTypeDetails.Where(x => x.ID == load.ObjectID).FirstOrDefault();
+
+            if(intersectType == null)
+            {
+                throw new Exception($"Bulk load relate cannot find the intersect type [{load.ObjectID}] specified by the load job [{loadId}]");
+            }
+
+
+            // get the load columns
+            var columns = LoadColumns.Where(x => x.LoadID == loadId).ToList();
+
+            if(columns == null)
+            {
+                throw new Exception($"Bulk load data doesnt contain any columns in LoadColumn table.  Load ID [{loadId}]");
+            }
+            
+            var loaddata = LoadItemColumns.Where(x => x.LoadID == loadId);
+
+            //loop throw rows until there are no more indexes start at 2
+
+            int currentRowIndex = 2;
+
+            
+
+            //check all key fields for source are there
+            var subjectKeyFields = FieldTypes.Where(x => x.Object == intersectType.Subject && x.ObjectID == intersectType.SubjectID && x.IsPartOfKey).ToList();
+
+            validateKeyFields(subjectKeyFields, columns, intersectType.SubjectName);
+            
+            //check all key fields for target are there
+            var objectKeyFields = FieldTypes.Where(x => x.Object == intersectType.Object && x.ObjectID == intersectType.ObjectID && x.IsPartOfKey).ToList();
+
+            validateKeyFields(objectKeyFields, columns, intersectType.ObjectName);
+
+            // create map that has field type ids to column indexes
+
+            Dictionary<int, int> columnToFieldTypeIdMap = new Dictionary<int, int>();
+
+            foreach (var field in subjectKeyFields)
+            {
+                var col = columns.Where(x => string.Compare(x.Name, $"{intersectType.SubjectName} {field.Name}", true) == 0).First();
+
+                columnToFieldTypeIdMap[field.ID] = col.ColumnIndex;
+            }
+
+            foreach (var field in objectKeyFields)
+            {
+                var col = columns.Where(x => string.Compare(x.Name, $"{intersectType.ObjectName} {field.Name}", true) == 0).First();
+
+                columnToFieldTypeIdMap[field.ID] = col.ColumnIndex;
+            }
+
+            var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
+
+
+            while (rowData != null && rowData.Count > 0)
+            {
+                rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
+
+                //determine subject object from key field values
+                //int subjectId = GetRowObjectId(rowData.ToList(), fieldTypeColumnIndexes)
+                //determine object from key field values
+                int objectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, objectKeyFields, intersectType.Object.Replace("Type",""));
+
+                int subject = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, subjectKeyFields, intersectType.Subject.Replace("Type",""));
+                //merge new relation
+
+                currentRowIndex++;
+            }
+
+        }
+
+        private async Task<int> getItemIdFromKeyFields(Dictionary<int, int> columnToFieldTypeIdMap, List<LoadItemColumn> rowData, List<FieldType> objectKeyFields, string @object)
+        {
+            var sql = @"select top 1
+	                        objectid
+                        from
+	                        field
+                        where ";
+
+            dynamic parametersObj = new ExpandoObject();
+
+            int index = 0;
+            foreach (var keyField in objectKeyFields)
+            {
+                var valItem = rowData.Where(x => x.ColumnIndex == columnToFieldTypeIdMap[keyField.ID]).FirstOrDefault();
+
+                if (valItem == null) throw new Exception($"Cannot find relationship load data for field type id {keyField.ID}");
+
+                parametersObj[$"val_{index}"] = valItem.Value;
+
+                sql += $" fieldtypeid = {keyField.ID} and formattedValue = @val_{index++}";
+            }
+
+            return await QueryAsync<int>(sql, parametersObj);            
+        }
+
+        private void validateKeyFields(List<FieldType> keyFieldType, List<LoadColumn> columns, string objectTypeName)
+        {
+            foreach (var field in keyFieldType)
+            {
+                //find the field in the input load columns
+                if (!columns.Any(x => string.Compare(x.Name, $"{objectTypeName} {field.Name}", true) == 0))
+                    throw new Exception($"Bulk Relate cannot find key field {field.Name} id {field.ID} friendly name {field.FriendlyName}");
+            }            
+        }
+
+        #endregion
 
         #endregion
     }
