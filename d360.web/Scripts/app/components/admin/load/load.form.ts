@@ -138,7 +138,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
         FormHelper.getDataUrl(this.file).then(s => {
             model.File = s;
             model.LoadAction = this.selectedAction;
-            model.Type = this.selectedType; //.split('|')[0];
+            model.Type = this.selectedType;
             model.Notes = this.notes;
         })
             .then(() => this.loadService.postLoad(model))
@@ -153,6 +153,4 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
                 this.onComplete.emit(null);
             });
     }
-
-
 }
