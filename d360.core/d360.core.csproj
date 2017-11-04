@@ -334,6 +334,7 @@
     <Compile Include="entities\Workflow\Models.cs" />
     <Compile Include="entities\Workflow\WorkflowItemAssignment.cs" />
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
+    <Compile Include="enums\EnvironmentLevel.cs" />
     <Compile Include="enums\FusionRuleFindSearchType.cs" />
     <Compile Include="enums\FusionRuleRelateSearchType.cs" />
     <Compile Include="enums\HelpResourceType.cs" />

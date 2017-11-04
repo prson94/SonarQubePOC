@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.entities.Contracts;
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -13,6 +14,15 @@ namespace d360.core.entities
 
         [DataMember]
         public bool SynchAgentLog { get; set; }
+
+        [DataMember]
+        public int ClientID { get; set; }
+
+        [DataMember]
+        public EnvironmentLevel EnvironmentLevel { get; set; }
+
+        [DataMember]
+        public string Notes { get; set; }
 
         [IgnoreDataMember]
         public virtual DatabaseServer DatabaseServer { get; set; }
