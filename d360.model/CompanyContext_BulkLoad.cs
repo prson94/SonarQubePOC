@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using Dapper;
 using Newtonsoft.Json;
 using SpreadsheetLight;
 using System;
@@ -699,8 +700,7 @@ order by	ColumnIndex", new { id });
             //loop throw rows until there are no more indexes start at 2
 
             int currentRowIndex = 2;
-
-            
+                       
 
             //check all key fields for source are there
             var subjectKeyFields = FieldTypes.Where(x => x.Object == intersectType.Subject && x.ObjectID == intersectType.SubjectID && x.IsPartOfKey).ToList();
@@ -731,23 +731,69 @@ order by	ColumnIndex", new { id });
             }
 
             var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
-
-
+            
             while (rowData != null && rowData.Count > 0)
             {
-                rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
-
+                var statusMsg = "";
                 //determine subject object from key field values
                 //int subjectId = GetRowObjectId(rowData.ToList(), fieldTypeColumnIndexes)
                 //determine object from key field values
                 int objectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, objectKeyFields, intersectType.Object.Replace("Type",""));
 
-                int subject = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, subjectKeyFields, intersectType.Subject.Replace("Type",""));
+                int subjectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, subjectKeyFields, intersectType.Subject.Replace("Type",""));
                 //merge new relation
 
-                currentRowIndex++;
-            }
+                int intersectId = -1;
 
+                var existingIntersect = Intersects.Where(x => x.Subject == intersectType.Subject.Replace("Type", "") && x.Object == intersectType.Object.Replace("Type", "") && x.IntersectTypeID == intersectType.ID && x.ObjectID == objectId && x.SubjectID == subjectId).FirstOrDefault();
+
+                if(existingIntersect == null)
+                {
+                    var newIntersect = new Intersect
+                    {
+                        IntersectTypeID = intersectType.ID,
+                        Subject = intersectType.Subject.Replace("Type", ""),
+                        SubjectID = subjectId,
+                        Object = intersectType.Object.Replace("Type", ""),
+                        ObjectID = objectId
+                    };
+
+                    Intersects.Add(newIntersect);
+
+                    SaveChanges();
+
+                    intersectId = newIntersect.ID;
+
+                    statusMsg = "Item successfully added.";
+                }
+                else
+                {
+                    intersectId = existingIntersect.ID;
+
+                    statusMsg = "Item successfully updated.";
+                }
+
+                //add any fields to the relationship here
+
+                // update status for this item
+                
+                var loadItem = LoadItems.Where(x => x.LoadID == loadId && x.RowIndex == currentRowIndex).FirstOrDefault();
+
+                if(loadItem != null)
+                {
+                    loadItem.Object = "Intersect";
+                    loadItem.ObjectID = intersectId;
+                    loadItem.Status = true;
+                    loadItem.StatusMessage = statusMsg;
+                }
+
+                SaveChanges();
+
+                //next row
+                currentRowIndex++;
+
+                rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
+            }
         }
 
         private async Task<int> getItemIdFromKeyFields(Dictionary<int, int> columnToFieldTypeIdMap, List<LoadItemColumn> rowData, List<FieldType> objectKeyFields, string @object)
@@ -758,7 +804,7 @@ order by	ColumnIndex", new { id });
 	                        field
                         where ";
 
-            dynamic parametersObj = new ExpandoObject();
+            dynamic parametersObj = new DynamicParameters();
 
             int index = 0;
             foreach (var keyField in objectKeyFields)
@@ -767,12 +813,16 @@ order by	ColumnIndex", new { id });
 
                 if (valItem == null) throw new Exception($"Cannot find relationship load data for field type id {keyField.ID}");
 
-                parametersObj[$"val_{index}"] = valItem.Value;
+                //x.Add("NewProp", string.Empty);
+                parametersObj.Add($"val_{index}", valItem.Value);
 
                 sql += $" fieldtypeid = {keyField.ID} and formattedValue = @val_{index++}";
             }
+            
 
-            return await QueryAsync<int>(sql, parametersObj);            
+            List<int> items =  (await QueryAsync<int>(sql, parametersObj));
+
+            return items.Count > 0 ? items[0] : -1;
         }
 
         private void validateKeyFields(List<FieldType> keyFieldType, List<LoadColumn> columns, string objectTypeName)
