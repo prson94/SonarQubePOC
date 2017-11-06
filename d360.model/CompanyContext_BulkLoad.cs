@@ -749,6 +749,23 @@ order by	ColumnIndex", new { id });
                 objectNameFieldIndex = col.ColumnIndex;
             }
 
+            //load any custom field types for this relationship type
+            var customFieldTypes = FieldTypes.Where(x => x.Object == "IntersectType" && x.ObjectID == intersectType.ID);
+            Dictionary<int, int> customFieldTypeMap = new Dictionary<int, int>();
+
+            if(customFieldTypes.Any())
+            {
+                foreach (var item in customFieldTypes)
+                {
+                    var col = columns.Where(x => string.Compare(x.Name, item.Name, true) == 0).FirstOrDefault();
+
+                    if(col != null)
+                    {
+                        customFieldTypeMap[item.ID] = col.ColumnIndex;
+                    }
+                }
+            }
+
             var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
             
             while (rowData != null && rowData.Count > 0)
@@ -803,6 +820,40 @@ order by	ColumnIndex", new { id });
                 }
 
                 //add any fields to the relationship here
+                
+                if(customFieldTypes.Any() && customFieldTypeMap.Any())
+                {
+                    foreach (var ft in customFieldTypes)
+                    {
+                        if (customFieldTypeMap.ContainsKey(ft.ID))
+                        {
+                            var val = rowData.Where(x => x.ColumnIndex == customFieldTypeMap[ft.ID]).FirstOrDefault();
+
+                            if(val != null && !string.IsNullOrWhiteSpace(val.Value))
+                            {
+                                var existingField = Fields.Where(x => x.ObjectType == "Intersect" && x.ObjectID == intersectId).FirstOrDefault();
+
+                                if(existingField != null)
+                                {
+                                    existingField.Value = val.Value;                                    
+                                }
+                                else
+                                {
+                                    Fields.Add(new Field
+                                    {
+                                        FieldTypeID = ft.ID,
+                                        ObjectID = intersectId,
+                                        ObjectType = "Intersect",
+                                        Value = val.Value
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    SaveChanges();
+                }
+                
 
                 // update status for this item
 
