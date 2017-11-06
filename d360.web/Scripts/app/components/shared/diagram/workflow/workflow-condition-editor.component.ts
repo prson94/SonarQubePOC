@@ -310,7 +310,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         if (this.condition['@Value'] == null && this.condition['@Operator'] != 'C')
             return false;
         if (this.condition['@Operator'] == '') return false;
-        if (this.condition['@Value'] == '') return false;
+        if (this.condition['@Value'] === '') return false;
 
         return true;
     }
