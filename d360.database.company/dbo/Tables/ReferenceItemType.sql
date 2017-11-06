@@ -7,6 +7,7 @@
     [CreatedBy]     INT            NULL,
     [UpdatedOn]     DATETIME       NULL,
     [UpdatedBy]     INT            NULL,
+	[SourceNotes]	NVARCHAR (MAX) NULL,
     CONSTRAINT [PK_ReferenceItemType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [CONST_Reference_Item_Type_Name] UNIQUE NONCLUSTERED ([Name] ASC)
 );

@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarService } from '../../services/right-sidebar.service';
@@ -9,6 +9,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ReferenceService } from '../../services/reference.service';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-reference-list',   
@@ -17,7 +18,7 @@ import { ReferenceService } from '../../services/reference.service';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
                     <div class="col s12 l3">
-                        <d3s-reference-item-type-list [initialSelectedListId]="selectedReferenceListId" [(selected)]="selectedReferenceItemType"></d3s-reference-item-type-list>
+                        <d3s-reference-item-type-list [initialSelectedListId]="selectedReferenceListId" [selected]="selectedReferenceItemType" (selectedChange)="changeType($event)"></d3s-reference-item-type-list>
                     </div>
                     <div class="col s12 l9" *ngIf="selectedReferenceItemType">
                         <div class="row">
@@ -47,10 +48,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
     constructor(
         rightSidebarService: RightSidebarService,
+        private route: ActivatedRoute,
+        private router: Router,
         private permissionsService: PermissionsService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        private route: ActivatedRoute,
         protected referenceService: ReferenceService
     ) {
         super();
@@ -145,5 +147,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
     private refreshItems(itemsGrid) {
         itemsGrid.load();
+    }
+
+    changeType(e: any) {
+        this.selectedReferenceItemType = e;
+        this.selectedReferenceListId = e.ID;
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);
     }
 };

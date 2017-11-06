@@ -22,6 +22,10 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Description { get; set; }
 
+        [DataMember]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "SourceNotes_Name", Description = "SourceNotes_Description")]
+        public string SourceNotes { get; set; }
+
         public DateTime? CreatedOn { get; set; }
         public int? CreatedBy { get; set; }
 

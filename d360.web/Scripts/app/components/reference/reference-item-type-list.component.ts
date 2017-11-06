@@ -81,7 +81,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                 this.referenceTypes = result;
                 if (this.referenceTypes.length > 0) {
                     if (this.initialSelectedListId > 0) {
-                        console.log('here');
+                        //console.log('here');
                         let index = this.referenceTypes.findIndex(x => x.ID == this.initialSelectedListId);
                         this.initialSelectedListId = 0;
                         if (index >= 0 && index < this.referenceTypes.length) {

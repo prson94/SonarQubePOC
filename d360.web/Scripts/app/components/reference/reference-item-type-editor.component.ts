@@ -22,7 +22,11 @@ import * as _ from 'lodash';
                     <div class="col s12">
                         <div class="FieldName">Description</div>
                         <p-editor [style]="{'height':'150px'}" name="description" [(ngModel)]="editedReferenceItemType.Description"></p-editor>
-                    </div>                                        
+                    </div>      
+                   <div class="col s12">
+                        <div class="FieldName">Source Notes</div>
+                        <p-editor [style]="{'height':'150px'}" name="sourceNotes" [(ngModel)]="editedReferenceItemType.SourceNotes"></p-editor>
+                    </div>   
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12">
                         <button pButton type="submit" [disabled]="!referenceItemTypeForm.form.valid" label="Save"></button>

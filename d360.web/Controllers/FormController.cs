@@ -11336,6 +11336,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 {
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
+                    SourceNotes = parseTextField(form, "SourceNotes"),
                     DisplayFormat = parseTextField(form, "DisplayFormat"),
                     UpdatedBy = Company.CurrentResourceID,
                     UpdatedOn = DateTime.UtcNow,
@@ -11436,6 +11437,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
+                model.SourceNotes = parseTextField(form, "SourceNotes");
                 model.DisplayFormat = parseTextField(form, "DisplayFormat");
                 model.UpdatedBy = Company.CurrentResourceID;
                 model.UpdatedOn = DateTime.UtcNow;
