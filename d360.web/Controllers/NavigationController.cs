@@ -633,7 +633,7 @@ namespace d360.web.Controllers
         public JsonNetResult GetFavorites(bool adminOnly = false)
         {
             var sql = @"
-select	utility.GetAssetDisplayValueWrapper(a.ID) as Name,
+select	AName.DisplayValue as Name,
 		f.Route as [Route],
 		f.[Object],
 		f.[ObjectId],
@@ -643,6 +643,7 @@ select	utility.GetAssetDisplayValueWrapper(a.ID) as Name,
 		f.IsHomePage
 from	Favorite f
 		inner join Asset a on a.[Object] = f.[Object] and a.[ObjectID] = f.[ObjectID]
+        cross apply [dbo].[GetAssetDisplayValueById](A.ID) AName
 where	f.ObjectID > 0 and f.ResourceID = @resId
 union
 select		f.Name as Name,	
