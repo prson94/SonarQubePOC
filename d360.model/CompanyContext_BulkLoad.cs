@@ -715,19 +715,38 @@ order by	ColumnIndex", new { id });
             // create map that has field type ids to column indexes
 
             Dictionary<int, int> columnToFieldTypeIdMap = new Dictionary<int, int>();
+            var subjectNameFieldIndex = -1;
+            var objectNameFieldIndex = -1;
 
-            foreach (var field in subjectKeyFields)
+
+            mapKeyFields(subjectKeyFields, columnToFieldTypeIdMap, intersectType.SubjectName, columns);
+            
+            if(intersectType.Subject == "FusionAttributeType")
             {
-                var col = columns.Where(x => string.Compare(x.Name, $"{intersectType.SubjectName} {field.Name}", true) == 0).First();
+                //get the fusionattributetype name
+                var fusionAttributeType = FusionAttributeTypes.Where(x => x.ID == intersectType.SubjectID).FirstOrDefault();
 
-                columnToFieldTypeIdMap[field.ID] = col.ColumnIndex;
+                if (fusionAttributeType == null)
+                    throw new Exception($"BULK LOAD INTERSECT CANNOT COMPLETE AS SUBJECT REFERENCES INVALID FUSION ATTRIBUTE TYPE ID {intersectType.SubjectID}");
+
+                var col = columns.Where(x => string.Compare(x.Name, fusionAttributeType.TextPath, true) == 0).First();
+
+                subjectNameFieldIndex = col.ColumnIndex;
             }
 
-            foreach (var field in objectKeyFields)
-            {
-                var col = columns.Where(x => string.Compare(x.Name, $"{intersectType.ObjectName} {field.Name}", true) == 0).First();
+            mapKeyFields(objectKeyFields, columnToFieldTypeIdMap, intersectType.ObjectName, columns);
 
-                columnToFieldTypeIdMap[field.ID] = col.ColumnIndex;
+            if (intersectType.Object == "FusionAttributeType")
+            {
+                //get the fusionattributetype name
+                var fusionAttributeType = FusionAttributeTypes.Where(x => x.ID == intersectType.ObjectID).FirstOrDefault();
+
+                if (fusionAttributeType == null)
+                    throw new Exception($"BULK LOAD INTERSECT CANNOT COMPLETE AS SUBJECT REFERENCES INVALID FUSION ATTRIBUTE TYPE ID {intersectType.ObjectID}");
+
+                var col = columns.Where(x => string.Compare(x.Name, fusionAttributeType.TextPath, true) == 0).First();
+                
+                objectNameFieldIndex = col.ColumnIndex;
             }
 
             var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
@@ -738,57 +757,59 @@ order by	ColumnIndex", new { id });
                 //determine subject object from key field values
                 //int subjectId = GetRowObjectId(rowData.ToList(), fieldTypeColumnIndexes)
                 //determine object from key field values
-                int objectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, objectKeyFields, intersectType.Object.Replace("Type",""));
+                int objectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, objectKeyFields, intersectType.Object.Replace("Type",""), objectNameFieldIndex, intersectType.ObjectID);
 
-                int subjectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, subjectKeyFields, intersectType.Subject.Replace("Type",""));
-                //merge new relation
+                int subjectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, subjectKeyFields, intersectType.Subject.Replace("Type",""), subjectNameFieldIndex, intersectType.SubjectID);
+                //merge new relation                
 
                 int intersectId = -1;
 
-                var existingIntersect = Intersects.Where(x => x.Subject == intersectType.Subject.Replace("Type", "") && x.Object == intersectType.Object.Replace("Type", "") && x.IntersectTypeID == intersectType.ID && x.ObjectID == objectId && x.SubjectID == subjectId).FirstOrDefault();
-
-                if(existingIntersect == null)
+                if (objectId > 0 && subjectId > 0)
                 {
-                    var newIntersect = new Intersect
+
+                    var existingIntersect = Intersects.Where(x => x.Subject == intersectType.Subject.Replace("Type", "") && x.Object == intersectType.Object.Replace("Type", "") && x.IntersectTypeID == intersectType.ID && x.ObjectID == objectId && x.SubjectID == subjectId).FirstOrDefault();
+
+                    if (existingIntersect == null)
                     {
-                        IntersectTypeID = intersectType.ID,
-                        Subject = intersectType.Subject.Replace("Type", ""),
-                        SubjectID = subjectId,
-                        Object = intersectType.Object.Replace("Type", ""),
-                        ObjectID = objectId
-                    };
+                        var newIntersect = new Intersect
+                        {
+                            IntersectTypeID = intersectType.ID,
+                            Subject = intersectType.Subject.Replace("Type", ""),
+                            SubjectID = subjectId,
+                            Object = intersectType.Object.Replace("Type", ""),
+                            ObjectID = objectId
+                        };
 
-                    Intersects.Add(newIntersect);
+                        Intersects.Add(newIntersect);
 
-                    SaveChanges();
+                        SaveChanges();
 
-                    intersectId = newIntersect.ID;
+                        intersectId = newIntersect.ID;
 
-                    statusMsg = "Item successfully added.";
+                        statusMsg = "Item successfully added.";
+                    }
+                    else
+                    {
+                        intersectId = existingIntersect.ID;
+
+                        statusMsg = "Item successfully updated.";
+                    }
                 }
                 else
                 {
-                    intersectId = existingIntersect.ID;
-
-                    statusMsg = "Item successfully updated.";
+                    if (objectId <= 0) statusMsg = "Cannot find the object object for the relationship";
+                    else if (subjectId <= 0) statusMsg = "Cannot find the subject object for the relationship";
+                    else statusMsg = "Unknown error"; // shouldnt happen
                 }
 
                 //add any fields to the relationship here
 
                 // update status for this item
+
+                var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = 1, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
+
+                await QueryAsync<int>(statusSql, new { objectId = intersectId, msg = statusMsg, loadId = loadId, rowIndex = currentRowIndex });
                 
-                var loadItem = LoadItems.Where(x => x.LoadID == loadId && x.RowIndex == currentRowIndex).FirstOrDefault();
-
-                if(loadItem != null)
-                {
-                    loadItem.Object = "Intersect";
-                    loadItem.ObjectID = intersectId;
-                    loadItem.Status = true;
-                    loadItem.StatusMessage = statusMsg;
-                }
-
-                SaveChanges();
-
                 //next row
                 currentRowIndex++;
 
@@ -796,33 +817,59 @@ order by	ColumnIndex", new { id });
             }
         }
 
-        private async Task<int> getItemIdFromKeyFields(Dictionary<int, int> columnToFieldTypeIdMap, List<LoadItemColumn> rowData, List<FieldType> objectKeyFields, string @object)
+        private void mapKeyFields(List<FieldType> subjectKeyFields, Dictionary<int, int> columnToFieldTypeIdMap, string objectName, List<LoadColumn> columns)
         {
-            var sql = @"select top 1
+            foreach (var field in subjectKeyFields)
+            {
+                var col = columns.Where(x => string.Compare(x.Name, $"{objectName} {field.Name}", true) == 0).First();
+
+                columnToFieldTypeIdMap[field.ID] = col.ColumnIndex;
+            }
+        }
+
+        private async Task<int> getItemIdFromKeyFields(Dictionary<int, int> columnToFieldTypeIdMap, List<LoadItemColumn> rowData, List<FieldType> objectKeyFields, string @object, int nameFieldIndex, int objectTypeId)
+        {
+            if (@object == "FusionAttribute")
+            {
+                //load the fusion attribute where the fusionattribute type id matches the type in the intersecttype and the value 
+                var valItem = rowData.Where(x => x.ColumnIndex == nameFieldIndex).FirstOrDefault();
+
+                if (valItem == null) throw new Exception($"Cannot find relationship load data for the name field");
+
+                var fusionItem = FusionAttributes.Where(x => x.FusionAttributeTypeID == objectTypeId && string.Compare(x.TextPath,valItem.Value,true) == 0).FirstOrDefault();
+
+                if (fusionItem == null) return -1;
+
+                return fusionItem.ID;
+            }
+            else
+            {
+                var sql = @"select top 1
 	                        objectid
                         from
 	                        field
                         where ";
 
-            dynamic parametersObj = new DynamicParameters();
+                dynamic parametersObj = new DynamicParameters();
 
-            int index = 0;
-            foreach (var keyField in objectKeyFields)
-            {
-                var valItem = rowData.Where(x => x.ColumnIndex == columnToFieldTypeIdMap[keyField.ID]).FirstOrDefault();
+                int index = 0;
+                foreach (var keyField in objectKeyFields)
+                {
+                    var valItem = rowData.Where(x => x.ColumnIndex == columnToFieldTypeIdMap[keyField.ID]).FirstOrDefault();
 
-                if (valItem == null) throw new Exception($"Cannot find relationship load data for field type id {keyField.ID}");
+                    if (valItem == null) throw new Exception($"Cannot find relationship load data for field type id {keyField.ID}");
 
-                //x.Add("NewProp", string.Empty);
-                parametersObj.Add($"val_{index}", valItem.Value);
+                    //x.Add("NewProp", string.Empty);
+                    parametersObj.Add($"val_{index}", valItem.Value);
 
-                sql += $" fieldtypeid = {keyField.ID} and formattedValue = @val_{index++}";
+                    sql += $" fieldtypeid = {keyField.ID} and formattedValue = @val_{index++}";
+                }
+
+
+                List<int> items = (await QueryAsync<int>(sql, parametersObj));
+
+                return items.Count > 0 ? items[0] : -1;
             }
-            
-
-            List<int> items =  (await QueryAsync<int>(sql, parametersObj));
-
-            return items.Count > 0 ? items[0] : -1;
         }
 
         private void validateKeyFields(List<FieldType> keyFieldType, List<LoadColumn> columns, string objectTypeName)
