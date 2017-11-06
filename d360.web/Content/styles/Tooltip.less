@@ -48,18 +48,34 @@
 	direction: ltr;
 }
 
-	.qtip-content{
-		position: relative;
-		padding: 5px 9px;
-		overflow: hidden;
+.qtip-content {
+    position: relative;
+    padding: 5px 9px;
+    overflow: hidden;
+    text-align: left;
+    word-wrap: break-word;
 
-		text-align: left;
-		word-wrap: break-word;
+    ul {
+        margin-left: 15px;
 
-        img{
-            width:100%;
+        li {
+            list-style-type: disc;
         }
-	}
+
+        li.ql-indent-1{
+            margin-left: 10px;
+            list-style-type: circle;
+        }
+        li.ql-indent-2 {
+            margin-left: 20px;
+            list-style-type: circle;
+        }
+    }
+
+    img {
+        width: 100%;
+    }
+}
 
 	.qtip-titlebar{
 		position: relative;
