@@ -6362,10 +6362,7 @@ where    A.RuleID = @id", new { id });
             }
             else
             {
-                //if (type == SystemObjects.RuleType)
-                //    permissions = Company.GetPermissions(type, new int[] { (int)RuleType.Informational, (int)RuleType.Metric, (int)RuleType.Profile, (int)RuleType.Quality }).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
-                //else
-                    permissions = Company.GetPermissions(type, id).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
+                permissions = Company.GetPermissions(type, id).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
             }
 
             return permissions;
@@ -6426,50 +6423,7 @@ where    A.RuleID = @id", new { id });
                 Columns = columns
             });
         }
-
-        //        [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}")]
-        //        public IEnumerable<dynamic> GetRelationshipsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
-        //        {
-        //            var IDs = Company.Query<int>(
-        //                QueryConstants.ObjectRelationshipTypeIDs,
-        //                new
-        //                {
-        //                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
-        //                    objid,
-        //                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
-        //                    objtypeid = targettypeid
-        //                }
-        //            ).ToList();
-
-        //            var sql = QueryConstants.ObjectInjectableRelationships;
-
-        //            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && IDs.Contains(i.ObjectID) && i.IsListable).OrderBy(i => i.SortOrder).ToList();
-
-        //            var columns = "";
-        //            var joins = "";
-
-        //            foreach (var f in fields)
-        //            {
-        //                var pfx = $"Field{f.ID}_T";
-        //                columns += $", {pfx}.FormattedValue as [Field{f.ID}]";
-        //                joins += $@" 
-        //left join Field {pfx} on {pfx}.ObjectType = 'Intersect' and {pfx}.ObjectID = A.ID and {pfx}.FieldTypeID = {f.ID} 
-        //left join FieldType {pfx}T on {pfx}T.ID = {pfx}T.FieldTypeID and {pfx}T.IsListable = 1";
-        //            }
-
-        //            sql = string.Format(sql, columns, joins);
-
-        //            return Company.Query<dynamic>(
-        //                sql, 
-        //                new {
-        //                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
-        //                    objid,
-        //                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
-        //                    objtypeid = targettypeid
-        //                }
-        //            );
-        //        }
-
+        
         #endregion
 
         [Route("{type}/{id:int}/relations")]
@@ -6490,9 +6444,16 @@ where    A.RuleID = @id", new { id });
 
             var joins = "";
             var columns = "";
-            //var whereClause = "";
+            
             getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
-            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out joins, out columns, false, false, false, true, "ObjectID");
+
+            var sourceJoins = "";
+            var sourceColumns = "";
+
+            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "ObjectID");
+
+            joins = joins + sourceJoins;
+            columns = columns + sourceColumns;
 
             var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
             foreach (var f in attributesTypes)
