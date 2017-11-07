@@ -985,7 +985,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 }
                                 else
                                 {
-                                    intersect = new Intersect { IntersectTypeID = intersectType.ID, Object = obj, ObjectID = objID, Subject = sub, SubjectID = subID, Visible = true };
+                                    intersect = new Intersect { IntersectTypeID = intersectType.ID, Object = obj, ObjectID = objID, Subject = sub, SubjectID = subID };
                                     Company.Add(intersect);
                                 }
                             }

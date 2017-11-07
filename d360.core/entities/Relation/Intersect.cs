@@ -13,9 +13,8 @@ namespace d360.core.entities
     public class Intersect : BaseIntObject, IIntObject, IFieldsObject, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
     {
         public Intersect()
-        {
-            Visible = true;
-        }
+        { }
+
         [DataMember]
         public int IntersectTypeID { get; set; }
 
@@ -31,8 +30,6 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; }
 
         public int? UpdatedBy { get; set; }
-
-        public bool Visible { get; set; }
 
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Subject { get; set; }

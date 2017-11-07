@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.entities.Workflow;
 using d360.core.enums.Workflow;
+using d360.core.enums;
 using d360.core.queue;
 using d360.model.workflow;
 using Dapper;
@@ -742,7 +743,6 @@ namespace d360.model
                             intersect.CreatedOn = DateTime.UtcNow;
                             intersect.UpdatedBy = CurrentResourceID;
                             intersect.UpdatedOn = DateTime.UtcNow;
-                            intersect.Visible = true;
 
                             Intersects.Add(intersect);
 
@@ -960,40 +960,41 @@ namespace d360.model
 
         }
 
-        private void SetObjectVisibility(EventObjectInfo objectInfo, bool visiblity = true)
+        private void SetObjectVisibility(EventObjectInfo objectInfo, bool visibility = true)
         {
-            Console.WriteLine($"Debug - Setting Object {objectInfo.Object} {objectInfo.ObjectID} as visible {visiblity}");
+            Console.WriteLine($"Debug - Setting Object {objectInfo.Object} {objectInfo.ObjectID} as visible {visibility}");
 
             switch (objectInfo.Object)
             {
                 case core.SystemObjects.Artifact:
                     var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
                     if (artifact == null) return;
-                    artifact.Visible = visiblity;
+                    artifact.Visible = visibility;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Intersect:
                     var intersect = Intersects.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
                     if (intersect == null) return;
-                    intersect.Visible = visiblity;
+                    //intersect.Visible = visibility;
+                    intersect.State = visibility ? State.Active : State.PendingAdd;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Taxonomy:
                     var taxonomy = Taxonomies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
                     if (taxonomy == null) return;
-                    taxonomy.Visible = visiblity;
+                    taxonomy.Visible = visibility;
                     SaveChanges();
                     break;                                
                 case core.SystemObjects.Policy:
                     var policy = Policies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
                     if (policy == null) return;
-                    policy.Visible = visiblity;
+                    policy.Visible = visibility;
                     SaveChanges();
                     break;                
                 case core.SystemObjects.Rule:
                     var rule = Rules.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
                     if (rule == null) return;
-                    rule.Visible = visiblity;
+                    rule.Visible = visibility;
                     SaveChanges();
                     break;                                             
                 default:

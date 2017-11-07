@@ -11,7 +11,6 @@ CREATE TABLE [dbo].[Intersect] (
     [UpdatedBy]       INT           CONSTRAINT [DF_Intersect_UpdatedBy] DEFAULT ((0)) NULL,
     [UpdatedOn]       DATETIME      CONSTRAINT [DF_Intersect_UpdatedOn] DEFAULT (getutcdate()) NULL,
     [owner]           VARCHAR (100) NULL,
-    [Visible]         BIT           CONSTRAINT [DF_Intersect_Visible] DEFAULT ((1)) NOT NULL,
 	[State]			  INT			CONSTRAINT [DF_IntersectNew_State]  DEFAULT ((1)) NOT NULL,
     CONSTRAINT [PK_Intersect] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Intersect_IntersectType] FOREIGN KEY ([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE,
