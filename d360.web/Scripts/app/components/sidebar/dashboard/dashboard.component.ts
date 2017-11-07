@@ -12,7 +12,8 @@ import { Dashboard } from '../../../models/dashboard.model'
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">  
-                        <header>Dashboards for {{objectName}}</header>
+                        <header *ngIf="objectName">Dashboards for {{objectName}}</header>
+                        <header *ngIf="!objectName">Dashboards</header>
                         <div class="row">
                             <div class="col s12">
                                 <span style="padding:0 10px;">Dashboard:</span>
@@ -21,7 +22,7 @@ import { Dashboard } from '../../../models/dashboard.model'
                                     <option *ngFor="let dashboard of dashboards" [ngValue]="dashboard">{{dashboard.Name}}</option>
                                 </select>                                
                                 <span style="padding:0 10px;">
-                                    <button pButton type="button" (click)="selected=dashboard;" label="Render" style="width: '150px';padding:4px;"></button>
+                                    <button pButton type="button" (click)="selected=dashboard;" label="Display" style="width: '150px';padding:4px;"></button>
                                 </span>
                             </div>  
                             <div *ngIf="dashboard?.Description" class="col s12" [innerHtml]="dashboard?.Description"></div>                          
@@ -32,7 +33,7 @@ import { Dashboard } from '../../../models/dashboard.model'
                         <d3s-sagacity-viewer *ngIf="selected.ReportType =='sagacity'" [dashboard]="selected"></d3s-sagacity-viewer>
                     </div>
                     <div class="tile tile-detail" *ngIf="!selected">
-                        <h4 class="center" style="padding:30px;">Please choose a dashboard from the dropdown above and press render to view the specified dashboards content.</h4>
+                        <h4 class="center" style="padding:30px;">Please choose a dashboard from the dropdown above and press display to view the specified dashboards content.</h4>
                     </div>
                 </div>
             </div>
