@@ -48,7 +48,14 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         'Under Review',
         'Certified'
     ];
-
+    private states = [
+        //'Unknown',
+        { value: 'PendingAdd', label: 'Pending Add' },
+        { value: 'Active', label: 'Active' },
+        { value: 'PendingDelete', label: 'Pending Delete' },
+        { value: 'Deleted', label: 'Deleted' },
+    ];
+    
     private quill;
     private destination = [];
 

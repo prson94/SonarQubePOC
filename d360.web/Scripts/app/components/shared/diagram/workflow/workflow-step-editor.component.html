@@ -120,6 +120,22 @@
                 </div>
             </div>
         </div>
+        <div class="row" *ngSwitchCase="WorkflowActivityType.StateChange">
+            <div class="col s12">
+                <div class="FieldName">State</div>
+                <div>
+                    <select [ngModel]="step.settings.State" (ngModelChange)="step.settings.State = $event; stepChange.emit(step)" style="width: 95%">
+                        <option value=""></option>
+                        <option *ngFor="let s of states" [value]="s.value">{{s.label}}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row" *ngSwitchCase="WorkflowActivityType.Delete">
+            <div class="col s12">
+
+            </div>
+        </div>
         <ng-container *ngSwitchCase="WorkflowActivityType.None">
             <!-- for terminal steps -->
         </ng-container>

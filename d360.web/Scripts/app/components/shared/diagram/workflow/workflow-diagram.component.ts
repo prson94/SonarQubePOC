@@ -929,6 +929,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         return false;
                 }
                 break; 
+            case WorkflowActivityType.StateChange:
+                if (n.settings.State == null || n.settings.State == '')
+                    return false;
+                break;
         }
 
         return true;
@@ -1108,6 +1112,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 break;
             case WorkflowActivityType.RelationshipUpdate:
                 n.settings.RelationshipUpdate = e.settings.RelationshipUpdate;
+                break;
+            case WorkflowActivityType.StateChange: //status change
+                n.settings.State = e.settings.State;
                 break;
         }
 

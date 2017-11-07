@@ -24,6 +24,10 @@ namespace d360.core.enums.Workflow
         FieldChange = 5,
         [Name("Relationship Change"), Description("Relationship Change"), BackColor("#0066CC"), ForeColor("#fff"), Icon("\uf0c0")]
         RelationshipChange = 6,
+        [Name("State Change"), Description("State Change"), BackColor("#ae335f"), ForeColor("#fff"), Icon("\uf0c5")]
+        StateChange = 7,
+        [Name("Delete"), Description("Delete"), BackColor("#b99f39"), ForeColor("#fff"), Icon("\uf014")]
+        Delete = 8,
     }
 
     public class ActivityTypeInfo
