@@ -669,6 +669,163 @@ order by	ColumnIndex", new { id });
 
         #region Process Data Methods
 
+        public async Task PerformUnrelate(int loadId)
+        {
+            // get load properties
+            var load = Loads.Where(x => x.ID == loadId).FirstOrDefault();
+
+            if (load == null)
+            {
+                throw new Exception($"Bulk load unrelate cannot find the load job to run [{loadId}].");
+            }
+
+            var intersectType = IntersectTypeDetails.Where(x => x.ID == load.ObjectID).FirstOrDefault();
+
+            if (intersectType == null)
+            {
+                throw new Exception($"Bulk load unrelate cannot find the intersect type [{load.ObjectID}] specified by the load job [{loadId}]");
+            }
+
+
+            // get the load columns
+            var columns = LoadColumns.Where(x => x.LoadID == loadId).ToList();
+
+            if (columns == null)
+            {
+                throw new Exception($"Bulk load data doesnt contain any columns in LoadColumn table.  Load ID [{loadId}]");
+            }
+
+            var loaddata = LoadItemColumns.Where(x => x.LoadID == loadId);
+
+            //loop throw rows until there are no more indexes start at 2
+
+            int currentRowIndex = 2;
+
+
+            //check all key fields for source are there
+            var subjectKeyFields = FieldTypes.Where(x => x.Object == intersectType.Subject && x.ObjectID == intersectType.SubjectID && x.IsPartOfKey).ToList();
+
+            validateKeyFields(subjectKeyFields, columns, intersectType.SubjectName);
+
+            //check all key fields for target are there
+            var objectKeyFields = FieldTypes.Where(x => x.Object == intersectType.Object && x.ObjectID == intersectType.ObjectID && x.IsPartOfKey).ToList();
+
+            validateKeyFields(objectKeyFields, columns, intersectType.ObjectName);
+
+            // create map that has field type ids to column indexes
+
+            Dictionary<int, int> columnToFieldTypeIdMap = new Dictionary<int, int>();
+            var subjectNameFieldIndex = -1;
+            var objectNameFieldIndex = -1;
+
+
+            mapKeyFields(subjectKeyFields, columnToFieldTypeIdMap, intersectType.SubjectName, columns);
+
+            if (intersectType.Subject == "FusionAttributeType")
+            {
+                //get the fusionattributetype name
+                var fusionAttributeType = FusionAttributeTypes.Where(x => x.ID == intersectType.SubjectID).FirstOrDefault();
+
+                if (fusionAttributeType == null)
+                    throw new Exception($"BULK LOAD INTERSECT CANNOT COMPLETE AS SUBJECT REFERENCES INVALID FUSION ATTRIBUTE TYPE ID {intersectType.SubjectID}");
+
+                var col = columns.Where(x => string.Compare(x.Name, fusionAttributeType.TextPath, true) == 0).First();
+
+                subjectNameFieldIndex = col.ColumnIndex;
+            }
+
+            mapKeyFields(objectKeyFields, columnToFieldTypeIdMap, intersectType.ObjectName, columns);
+
+            if (intersectType.Object == "FusionAttributeType")
+            {
+                //get the fusionattributetype name
+                var fusionAttributeType = FusionAttributeTypes.Where(x => x.ID == intersectType.ObjectID).FirstOrDefault();
+
+                if (fusionAttributeType == null)
+                    throw new Exception($"BULK LOAD INTERSECT CANNOT COMPLETE AS SUBJECT REFERENCES INVALID FUSION ATTRIBUTE TYPE ID {intersectType.ObjectID}");
+
+                var col = columns.Where(x => string.Compare(x.Name, fusionAttributeType.TextPath, true) == 0).First();
+
+                objectNameFieldIndex = col.ColumnIndex;
+            }
+
+            //load any custom field types for this relationship type
+            var customFieldTypes = FieldTypes.Where(x => x.Object == "IntersectType" && x.ObjectID == intersectType.ID);
+            Dictionary<int, int> customFieldTypeMap = new Dictionary<int, int>();
+
+            if (customFieldTypes.Any())
+            {
+                foreach (var item in customFieldTypes)
+                {
+                    var col = columns.Where(x => string.Compare(x.Name, item.Name, true) == 0).FirstOrDefault();
+
+                    if (col != null)
+                    {
+                        customFieldTypeMap[item.ID] = col.ColumnIndex;
+                    }
+                }
+            }
+
+            var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
+
+            while (rowData != null && rowData.Count > 0)
+            {
+                var statusMsg = "";
+                //determine subject object from key field values
+                //int subjectId = GetRowObjectId(rowData.ToList(), fieldTypeColumnIndexes)
+                //determine object from key field values
+                int objectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, objectKeyFields, intersectType.Object.Replace("Type", ""), objectNameFieldIndex, intersectType.ObjectID);
+
+                int subjectId = await getItemIdFromKeyFields(columnToFieldTypeIdMap, rowData, subjectKeyFields, intersectType.Subject.Replace("Type", ""), subjectNameFieldIndex, intersectType.SubjectID);
+                //merge new relation                
+
+                int intersectId = -1;
+
+                if (objectId > 0 && subjectId > 0)
+                {
+
+                    var existingIntersect = Intersects.Where(x => x.Subject == intersectType.Subject.Replace("Type", "") && x.Object == intersectType.Object.Replace("Type", "") && x.IntersectTypeID == intersectType.ID && x.ObjectID == objectId && x.SubjectID == subjectId).FirstOrDefault();
+
+                    if (existingIntersect == null)
+                    {                        
+                        statusMsg = "Relationship doesnt exist.";
+                    }
+                    else
+                    {
+                        intersectId = existingIntersect.ID;
+
+                        statusMsg = "Relationship successfully removed.";
+
+                        Intersects.Remove(existingIntersect);
+
+                        SaveChanges();
+
+                        //delete any fields to the relationship here
+                        var deleteFieldsSql = @"delete from field where objecttype = 'Intersect' and objectid = @intersectId";
+
+                        await QueryAsync<int>(deleteFieldsSql, new { intersectId = intersectId });
+                    }
+                }
+                else
+                {
+                    if (objectId <= 0) statusMsg = "Cannot find the object object for the relationship";
+                    else if (subjectId <= 0) statusMsg = "Cannot find the subject object for the relationship";
+                    else statusMsg = "Unknown error"; // shouldnt happen
+                }
+
+                // update status for this item
+
+                var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = 1, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
+
+                await QueryAsync<int>(statusSql, new { objectId = intersectId, msg = statusMsg, loadId = loadId, rowIndex = currentRowIndex });
+
+                //next row
+                currentRowIndex++;
+
+                rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
+            }
+        }
+
         public async Task PerformBulkRelate(int loadId)
         {
             // get load properties

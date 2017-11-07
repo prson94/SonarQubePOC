@@ -484,13 +484,13 @@ namespace igx.functions.Queue
                     case "P":   // Promotions
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
                         break;
-                    case "R":   // Relations
-                                //  executeWithTry(companyConnection, log, $@"EXEC bulkload.Relationships {load.ID}", loadInfo.CompanyID, 2400);
+                    case "R":   // Relations                                
                         log.Info($"Starting bulk relate job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
                         await company.PerformBulkRelate(load.ID);
                         break;
                     case "U":   // Unrelate
-                        executeWithTry(companyConnection, log, $@"EXEC bulkload.Unrelate {load.ID}", loadInfo.CompanyID, 2400);
+                        log.Info($"Starting bulk unrelate job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
+                        await company.PerformUnrelate(load.ID);
                         break;
                     case "B":
                     case "BL":  // Business Lineage
