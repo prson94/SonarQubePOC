@@ -46,7 +46,9 @@ namespace d360.core.entities
         [DataMember]
         public int ObjectID { get; set; }
 
-        public bool? Deleted { get; set; }
+        [DataMember]
+        public State State { get; set; } = State.Active;
+
 
         [IgnoreDataMember]
         public virtual IntersectType IntersectType { get; set; }

@@ -983,7 +983,7 @@ from	Asset A
 
             if (intersect == null)
             {
-                intersect = new Intersect { IntersectTypeID = intersectType.ID, Deleted = false };
+                intersect = new Intersect { IntersectTypeID = intersectType.ID };
 
                 if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
                 {
@@ -1008,7 +1008,7 @@ from	Asset A
             }
             else
             {
-                intersect.Deleted = false;
+                intersect.State = State.Active;
                 SaveChanges();
             }
 

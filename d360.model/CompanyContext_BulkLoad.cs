@@ -566,7 +566,7 @@ order by	ColumnIndex", new { id });
 
                                                 if (intersectType != null)
                                                 {
-                                                    var intersect = new Intersect { IntersectTypeID = ft.LookupObjectID.Value, Deleted = false, Visible = true };
+                                                    var intersect = new Intersect { IntersectTypeID = ft.LookupObjectID.Value };
 
                                                     try
                                                     {
