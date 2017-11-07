@@ -50,10 +50,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     ];
     private states = [
         //'Unknown',
-        { value: 'PendingAdd', label: 'Pending Add' },
-        { value: 'Active', label: 'Active' },
-        { value: 'PendingDelete', label: 'Pending Delete' },
-        { value: 'Deleted', label: 'Deleted' },
+        { value: '0', label: 'Pending Add' },
+        { value: '1', label: 'Active' },
+        { value: '2', label: 'Pending Delete' },
+        { value: '3', label: 'Deleted' },
     ];
     
     private quill;
