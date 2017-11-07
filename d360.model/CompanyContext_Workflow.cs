@@ -614,6 +614,10 @@ namespace d360.model
                         DeleteItemWorkflowActivity(objectInfo);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.StateChange:
+                        ChangeItemState(itemStep);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -646,8 +650,17 @@ namespace d360.model
             }
         }
 
+        private void ChangeItemState(WorkflowItemStep item)
+        {
+            Console.WriteLine("DEBUG - CHANGING ITEM STATE.");
+
+            Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
+        }
+
         private void DeleteItemWorkflowActivity(EventObjectInfo objectInfo)
         {
+            Console.WriteLine("DEBUG - DELETING ITEM.");
+
             Delete(objectInfo.Object, objectInfo.ObjectID);
         }
 
