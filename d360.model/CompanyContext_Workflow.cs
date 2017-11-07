@@ -609,6 +609,10 @@ namespace d360.model
                         UpdateItemRelationship(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.Delete:
+                        DeleteItemWorkflowActivity(objectInfo);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -639,6 +643,11 @@ namespace d360.model
             {
                 await MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
             }
+        }
+
+        private void DeleteItemWorkflowActivity(EventObjectInfo objectInfo)
+        {
+            Delete(objectInfo.Object, objectInfo.ObjectID);
         }
 
         private void UpdateItemRelationship(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
