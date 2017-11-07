@@ -1373,9 +1373,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             from fusion t
             group by t.id, t.name
             union all
-            select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t.Name as [label], 1 as [count] 
+            select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t_name.Name as [label], 1 as [count] 
             from intersecttype t
-            group by t.id, t.name
+			cross apply dbo.GetIntersectTypeNames(t.ID) t_name			
+            group by t.id, t_name.name
             union all
 			select 'ShoppingCartType|' + cast(t.id as varchar) as value, t.id, 'ShoppingCartType' as [type], 'Shopping Cart :: ' + t.Name as [label], 1 as [count]
 			from shoppingcarttype t
@@ -1395,7 +1396,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     ,t.UpdatedOn
 					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
                     ,e.ChangeType
-                    ,coalesce(d.Name, st.Name) as TypeName,
+                    ,coalesce(d.Name, it_t.Name, st.Name) as TypeName,
 					case when t.PublishedVersionID is not null then
 						'Version ' + cast(v.Version as varchar) + ' Published'
 					else
@@ -1424,7 +1425,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 					end as [Type]
                 from workflow.type t
                 inner join workflow.eventregistration e on e.typeid = t.id
-                left join AssetType d on d.object = e.object and d.objectid = e.objectid 
+                left join [cache].objectdetails d on d.object = e.object and d.objectid = e.objectid  
+                left join issuetype it_t on e.object = 'IssueType' and it_t.id = e.objectid
                 left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
