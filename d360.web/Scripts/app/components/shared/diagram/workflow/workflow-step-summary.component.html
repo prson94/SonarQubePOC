@@ -220,6 +220,19 @@
             <div *ngSwitchCase="WorkflowActivityType.RelationshipUpdate" class="row">
  
             </div>
+            <!--STATE CHANGE-->
+            <div *ngSwitchCase="WorkflowActivityType.StateChange" class="row">
+                <div class="col s6">
+                    <div class="FieldName">State</div>
+                    <div>
+                        {{states[step?.settings?.State]?.label || 'Unknown'}}
+                    </div>
+                </div>
+            </div>
+            <!--DELETE-->
+            <div *ngSwitchCase="WorkflowActivityType.Delete" class="row">
+
+            </div>
         </ng-container>
     </ng-container>
 </div>

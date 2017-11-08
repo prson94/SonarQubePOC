@@ -8,6 +8,7 @@ import {
     StepType
 } from '../../../../models/workflow.model';
 
+
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { WorkflowService } from '../../../../services/workflow.service';
 
@@ -28,6 +29,13 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
 
     WorkflowActivityType = WorkflowActivityType;
     StepType = StepType;
+    private states = [
+        //'Unknown',
+        { value: '0', label: 'Pending Add' },
+        { value: '1', label: 'Active' },
+        { value: '2', label: 'Pending Delete' },
+        { value: '3', label: 'Deleted' },
+    ];
 
     private responsibilities = [];
     private fields = [];

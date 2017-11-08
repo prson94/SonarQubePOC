@@ -321,6 +321,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     changeResponsibilitySide(e: any) {
+        //if we switch sides, clear the current values
+        if (e != this.step.settings.ResponsibilitySide) {
+            this.step.settings.ResponsibilityTypeID = [];
+            this.addResponsibility();
+        }
+
         this.step.settings.ResponsibilitySide = e;
         //console.log('changeResponsibilitySide', this.step, e, this.intersectType, this.responsibleObject, this.responsibleObjectId);
         let promises = [];
@@ -362,7 +368,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         //console.log('getResTypes', this.responsibleObject, this.responsibleObjectId);
         if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0) {
             this.responsibilities = [];
-            return Promise.resolve();
+            return this.responsibilityService.getResponsibilityTypes()
+                .then(r => this.responsibilities = r);
         }
 
         return this.responsibilityService.getResponsibilityTypesByObject(this.responsibleObject, this.responsibleObjectId)
