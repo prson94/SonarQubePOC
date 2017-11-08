@@ -79,6 +79,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Asset ID is the unique identifier for this item across Data3Sixty..
+        /// </summary>
+        public static string AssetId_Description {
+            get {
+                return ResourceManager.GetString("AssetId_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset ID.
+        /// </summary>
+        public static string AssetId_Name {
+            get {
+                return ResourceManager.GetString("AssetId_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The date that this item was created in Data3Sixty..
         /// </summary>
         public static string CreatedOn_Description {

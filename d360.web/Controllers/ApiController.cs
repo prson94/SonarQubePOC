@@ -4660,6 +4660,19 @@ where    A.RuleID = @id", new { id });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
+                        var asset = Company.Assets.Where(x => x.Object == "Artifact" && x.ObjectID == id).FirstOrDefault();
+
+                        if (asset != null) {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                            }
+                            });
+                        }
+
                         if (artifact.UpdatedOn.HasValue)
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
@@ -5300,6 +5313,20 @@ where    A.RuleID = @id", new { id });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
+                        var asset = Company.Assets.Where(x => x.Object == "Policy" && x.ObjectID == id).FirstOrDefault();
+
+                        if (asset != null)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                            }
+                            });
+                        }
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -5340,6 +5367,20 @@ where    A.RuleID = @id", new { id });
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
+
+                        var asset = Company.Assets.Where(x => x.Object == "Rule" && x.ObjectID == id).FirstOrDefault();
+
+                        if (asset != null)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                            }
+                            });
+                        }
 
                         if (rule.UpdatedOn.HasValue)
                         {
@@ -6112,6 +6153,20 @@ where    A.RuleID = @id", new { id });
                         }
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
+
+                        var asset = Company.Assets.Where(x => x.Object == "Taxonomy" && x.ObjectID == id).FirstOrDefault();
+
+                        if (asset != null)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                            }
+                            });
+                        }
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {

@@ -123,6 +123,12 @@
   <data name="ApiName_Name" xml:space="preserve">
     <value>API Name</value>
   </data>
+  <data name="AssetId_Description" xml:space="preserve">
+    <value>The Asset ID is the unique identifier for this item across Data3Sixty.</value>
+  </data>
+  <data name="AssetId_Name" xml:space="preserve">
+    <value>Asset ID</value>
+  </data>
   <data name="CreatedOn_Description" xml:space="preserve">
     <value>The date that this item was created in Data3Sixty.</value>
   </data>

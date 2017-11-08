@@ -486,11 +486,11 @@ namespace igx.functions.Queue
                         break;
                     case "R":   // Relations                                
                         log.Info($"Starting bulk relate job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
-                        await company.PerformBulkRelate(load.ID);
+                        await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Relate);
                         break;
                     case "U":   // Unrelate
                         log.Info($"Starting bulk unrelate job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
-                        await company.PerformUnrelate(load.ID);
+                        await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Unrelate);
                         break;
                     case "B":
                     case "BL":  // Business Lineage

@@ -402,6 +402,16 @@
               Looks up a localized string similar to API Name.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.AssetId_Description">
+            <summary>
+              Looks up a localized string similar to The Asset ID is the unique identifier for this item across Data3Sixty..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.AssetId_Name">
+            <summary>
+              Looks up a localized string similar to Asset ID.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.CreatedOn_Description">
             <summary>
               Looks up a localized string similar to The date that this item was created in Data3Sixty..
