@@ -216,271 +216,9 @@ namespace igx.functions.Queue
                 switch (load.Action)
                 {
                     case "O":
-                        #region Ownership
-                        
-                        #region
-                        /*
-                            "Item Type",
-                            "Subject Area", //ArtifactType only
-                            "Item Path",
-                            "Responsibility",
-                            "Resource"
-                         */
-                        #endregion
-
-                        #region Get data to pre-populate
-
-                        var subjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-
-                        List<SimpleTypeModel> types = null;
-                        switch (load.Object)
-                        {
-                            case "ArtifactType":
-                                types = company.Table<ArtifactType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-                                break;
-                            case "ReferenceItemType":
-                                types = company.Table<ReferenceItemType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-                                break;
-                            case "FusionType":
-                                types = company.Table<FusionType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-                                break;
-                            case "PolicyType":
-                                types = company.Table<PolicyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-                                break;
-                            case "TaxonomyType":
-                                types = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-                                break;
-                        }
-
-                        var resources = new List<SimpleTypeModel>();
-                        resources.AddRange(
-                            company.Table<Group>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = "group:" + x.Name.Trim().ToLower(), ID = x.ID }).ToList());
-                        resources.AddRange(
-                            company.Table<GlobalReportingResource>().ToList().Select(x => new SimpleTypeModel { Name = "user:" + x.FullName.Trim().ToLower(), ID = x.ResourceID })
-                         );
-
-                        var responsibilities = company.Table<ResponsibilityType>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = x.Name.ToLower(), ID = x.ID });
-
-                        var allocations = company.Table<ResponsibilityTypeRelation>().ToList();
-
-                        #endregion
-
-                        #region ForEach
-
-                        load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
-
-                        foreach (var loadItem in load.LoadItems)
-                        {
-                            //#region Vars
-
-                            //var rawType = "";
-                            //var rawSubjectArea = "";
-                            //var rawItemPath = "";
-                            //var rawResponsibility = "";
-                            //var rawResource = "";
-
-                            //LoadItemColumn typeColumn = null;
-                            //LoadItemColumn subjectAreaColumn = null;
-                            //LoadItemColumn itemColumn = null;
-                            //LoadItemColumn responsibilityColumn = null;
-                            //LoadItemColumn resourceColumn = null;
-
-                            //SimpleTypeModel verifiedType = null;
-                            //SimpleTypeModel verifiedSubjectArea = null;
-                            //SimpleTypeModel verifiedItem = null;
-                            //SimpleTypeModel verifiedResponsibility = null;
-                            //SimpleTypeModel verifiedResource = null;
-
-                            //var currentColumnIndex = 1;
-
-                            //#endregion
-
-                            //#region Verify Type
-
-                            //typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            //rawType = typeColumn.Value.Trim().ToLower();
-                            //verifiedType = types.SingleOrDefault(i => i.Name == rawType);
-
-                            //if (verifiedType != null)
-                            //{
-                            //    typeColumn.LookupObject = load.Object;
-                            //    typeColumn.LookupObjectID = verifiedType.ID;
-                            //}
-                            //currentColumnIndex++;
-
-                            //#endregion
-
-                            //if (verifiedType != null)
-                            //{
-                            //    #region Verify Item
-
-                            //    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            //    rawItemPath = itemColumn.Value.Trim().ToLower();
-                            //    switch (load.Object)
-                            //    {
-                            //        case "ArtifactType":
-                            //            if (verifiedSubjectArea != null)
-                            //            {
-                            //                verifiedItem = company.Filter<Artifact>(x =>
-                            //                    x.ArtifactTypeID == verifiedType.ID //&&
-                            //                    //x.TaxonomyTypeID == verifiedSubjectArea.ID &&
-                            //                    //x.TextPath.ToLower() == rawItemPath
-                            //                )
-                            //                .Select(x => new SimpleTypeModel { Name = "Artifact", ID = x.ID })
-                            //                .FirstOrDefault();
-                            //            }
-                            //            break;
-                            //        case "ReferenceItemType":
-                            //            verifiedItem = company.Filter<ReferenceItemType>(x =>
-                            //                x.Name.ToLower() == rawItemPath
-                            //            )
-                            //            .Select(x => new SimpleTypeModel { Name = "ReferenceItemType", ID = x.ID })
-                            //            .FirstOrDefault();
-                            //            break;
-                            //        case "FusionType":
-                            //            verifiedItem = company.Filter<Fusion>(x =>
-                            //                x.FusionTypeID == verifiedType.ID &&
-                            //                x.Name.ToLower() == rawItemPath
-                            //            )
-                            //            .Select(x => new SimpleTypeModel { Name = "Fusion", ID = x.ID })
-                            //            .FirstOrDefault();
-                            //            break;
-                            //        case "PolicyType":
-                            //            verifiedItem = company.Filter<Policy>(x =>
-                            //                x.PolicyTypeID == verifiedType.ID &&
-                            //                x.TextPath.ToLower() == rawItemPath
-                            //            )
-                            //            .Select(x => new SimpleTypeModel { Name = "Policy", ID = x.ID })
-                            //            .FirstOrDefault();
-                            //            break;
-                            //        case "TaxonomyType":
-                            //            verifiedItem = company.Filter<Taxonomy>(x =>
-                            //                x.TaxonomyTypeID == verifiedType.ID &&
-                            //                x.TextPath.ToLower() == rawItemPath
-                            //            )
-                            //            .Select(x => new SimpleTypeModel { Name = "Taxonomy", ID = x.ID })
-                            //            .FirstOrDefault();
-                            //            break;
-                            //    }
-                            //    if (verifiedItem != null)
-                            //    {
-                            //        itemColumn.LookupObject = verifiedItem.Name;
-                            //        itemColumn.LookupObjectID = verifiedItem.ID;
-                            //    }
-
-                            //    #endregion
-                            //}
-                            //currentColumnIndex++;
-
-                            //#region Verify Responsibility
-
-                            //responsibilityColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            //rawResponsibility = string.IsNullOrEmpty(responsibilityColumn.Value) ? "" : responsibilityColumn.Value.Trim().ToLower();
-                            //verifiedResponsibility = responsibilities.SingleOrDefault(i => i.Name == rawResponsibility);
-                            //if (verifiedResponsibility != null)
-                            //{
-                            //    responsibilityColumn.LookupObject = "ResponsibilityType";
-                            //    responsibilityColumn.LookupObjectID = verifiedResponsibility.ID;
-                            //}
-                            //currentColumnIndex++;
-
-                            //#endregion
-
-                            //#region Verify Resource
-
-                            //resourceColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            //rawResource = resourceColumn.Value.Trim().ToLower();
-                            //verifiedResource = resources.SingleOrDefault(i => i.Name == rawResource);
-                            //if (verifiedResource != null)
-                            //{
-                            //    resourceColumn.LookupObject = rawResource.StartsWith("group:") ? "Group" : "Resource";
-                            //    resourceColumn.LookupObjectID = verifiedResource.ID;
-                            //}
-
-                            //#endregion
-
-                            //if (verifiedItem != null && verifiedResource != null && verifiedResponsibility != null)
-                            //{
-                            //    if (allocations.Any(x => x.ObjectType == load.Object && x.ObjectID == verifiedType.ID && x.ResponsibilityTypeID == verifiedResponsibility.ID))
-                            //    {
-                            //        // OK to proceed with insert.
-                            //        var alreadyPresent = company.ResponsibilityTypeRelationOverrideItems.Any(i =>
-                            //            i.ObjectType == verifiedItem.Name && i.ObjectID == verifiedItem.ID &&
-                            //            i.ResponsibleObjectType == resourceColumn.LookupObject && i.ResponsibleObjectID == resourceColumn.LookupObjectID &&
-                            //            i.ResponsibilityTypeID == verifiedResponsibility.ID &&
-                            //            i.AssigningItemType == verifiedItem.Name && i.AssigningItemID == verifiedItem.ID);
-
-                            //        if (!alreadyPresent)
-                            //        {
-                            //            var model = new Responsibility
-                            //            {
-                            //                ObjectID = verifiedItem.ID,
-                            //                ObjectType = verifiedItem.Name,
-                            //                ResponsibilityTypeID = verifiedResponsibility.ID,
-                            //                ResponsibleObjectID = resourceColumn.LookupObjectID.Value,
-                            //                ResponsibleObjectType = resourceColumn.LookupObject,
-                            //                Visible = true
-                            //            };
-
-                            //            try
-                            //            {
-                            //                company.Add<Responsibility>(model);
-                            //                loadItem.Object = "Responsibility";
-                            //                loadItem.ObjectID = model.ID;
-                            //                loadItem.Status = true;
-                            //                loadItem.StatusMessage = "Successfully created responsibility.";
-                            //            }
-                            //            catch (BaseException ex)
-                            //            {
-                            //                loadItem.Status = false;
-                            //                loadItem.StatusMessage = ex.StatusDescription;
-                            //            }
-                            //            catch (Exception ex)
-                            //            {
-                            //                loadItem.Status = false;
-                            //                loadItem.StatusMessage = ex.Message;
-                            //            }
-                            //        }
-                            //        else
-                            //        {
-                            //            loadItem.Status = true;
-                            //            loadItem.StatusMessage = $" Responsibility already present on item.";
-                            //        }
-                            //    }
-                            //    else
-                            //    {
-                            //        loadItem.Status = false;
-                            //        loadItem.StatusMessage = $" Responsibility {rawResponsibility} not allocated to this type of item.";
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    // Log errors.
-                            //    loadItem.Status = false;
-
-                            //    if (verifiedItem == null)
-                            //    {
-                            //        loadItem.StatusMessage += $" Could not find item [{rawItemPath}].";
-                            //    }
-
-                            //    if (verifiedResource == null)
-                            //    {
-                            //        loadItem.StatusMessage += $" Could not find resource [{rawResource}].";
-                            //    }
-
-                            //    if (verifiedResponsibility == null)
-                            //    {
-                            //        loadItem.StatusMessage += $" Could not find responsibility [{rawResponsibility}].";
-                            //    }
-                            //}
-
-                            //company.Update(loadItem);
-                        }
-
-                        #endregion
-
-                        break;
-                        #endregion
+                        log.Info($"Starting bulk responsibilities job with load ID {load.ID} for Company ID {loadInfo.CompanyID}");
+                        await BulkLoadOwnership(company, load.ID, log);
+                        break;                        
                     case "P":   // Promotions
                         executeWithTry(companyConnection, log, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
                         break;
@@ -766,6 +504,63 @@ namespace igx.functions.Queue
             {
                 CoreFunction.AITrackException(functionName, ex, loadInfo.CompanyID);
                 log.Error($"Company [{loadInfo.CompanyID}], Load ID [{loadInfo.LoadID}]: [{ex.GetFullExceptionData()}]");
+            }
+        }
+
+        private static async Task BulkLoadOwnership(CompanyContext company, int loadId, TraceWriter log)
+        {
+            var load = company.Loads.Where(x => x.ID == loadId).FirstOrDefault();
+
+            if (load == null)
+            {
+                log.Error($"Bulk load relate cannot find the load job to run [{loadId}].");
+                throw new Exception($"Bulk load relate cannot find the load job to run [{loadId}].");
+            }
+
+
+            // get the load columns
+            var columns = company.LoadColumns.Where(x => x.LoadID == loadId).ToList();
+
+            if (columns == null)
+            {
+                throw new Exception($"Bulk load data doesnt contain any columns in LoadColumn table.  Load ID [{loadId}]");
+            }
+
+            var loaddata = company.LoadItemColumns.Where(x => x.LoadID == loadId);
+
+            //loop throw rows until there are no more indexes start at 2
+            int currentRowIndex = 2;
+            var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
+            int assetIdIndex = -1;
+            int responsibilityIndex = -1;
+            int resourceIndex = -1;
+
+            foreach (var column in columns)
+            {
+                if(string.Compare(column.Name,"Asset ID") == 0)
+                {
+                    assetIdIndex = column.ColumnIndex;
+                }
+                else if (string.Compare(column.Name, "Resource") == 0)
+                {
+                    resourceIndex = column.ColumnIndex;
+                }
+                else if (string.Compare(column.Name, "Responsibility") == 0)
+                {
+                    responsibilityIndex = column.ColumnIndex;
+                }
+            }
+
+            while (rowData != null && rowData.Count > 0)
+            {
+                //add a row to [ResponsibilityTypeRelationOverrideItem] table for the responsibility
+
+                //company.ResponsibilityTypeRelationOverrideItems
+
+                //next row
+                currentRowIndex++;
+
+                rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
             }
         }
 
