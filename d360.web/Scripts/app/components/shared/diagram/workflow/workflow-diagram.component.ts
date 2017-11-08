@@ -877,6 +877,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             return false;
                         break;
                     case 'Responsibility':
+                        if (this.model.Event.Object == 'IntersectType' && n.settings.ResponsibilitySide == null)
+                            return false;
                         if (n.settings.ResponsibilityTypeID == null)
                             return false;
                         if (!_.isArray(n.settings.ResponsibilityTypeID) && n.settings.ResponsibilityTypeID < 0) //we still need to check single value here for legacy workflows
@@ -1092,6 +1094,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.Status = e.settings.Status;
                 break;
             case WorkflowActivityType.Form: //form
+                //console.log('changeNode', this.model.Event.Object);
                 n.fields = e.fields;
                 n.settings.FormResponseType = e.settings.FormResponseType
                 n.settings.SendFormEmail = e.settings.SendFormEmail;
@@ -1102,6 +1105,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                 } else {
                     delete e.settings.MessageBodyTemplate;
+                }
+                if (this.model.Event.Object == 'IntersectType') {
+                    n.settings.ResponsibilitySide = e.settings.ResponsibilitySide;
                 }
                 break;
             case WorkflowActivityType.Procedure:
@@ -1297,7 +1303,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         nodes.forEach(n => {
             if (n.activityType == WorkflowActivityType.Form) {
                 let canDelete = true;
-                if (n.fields.form != null) {
+                if (n.fields.form != null && n.fields.form.field != null) {
                     n.fields.form.field.forEach(f => {
                         if (this.workflowFieldsService.getUsedFields().findIndex(u => u.stepId == n.key) > -1) {
                             canDelete = false;
