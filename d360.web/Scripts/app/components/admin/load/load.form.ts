@@ -11,7 +11,7 @@ import * as _ from 'lodash';
     providers: [LoadService],
 })
 
-export class LoadForm implements OnInit, OnChanges, FormEvents {    
+export class LoadForm implements OnInit, OnChanges {    
     @Input() title: string = "Upload a Spreadsheet Job";
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
@@ -31,8 +31,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
     columns: LoadColumn[];
     file: File;
     errorMessage = "";
-
-
+    
     constructor(private loadService: LoadService) {
     }
 
@@ -47,8 +46,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
             }
         }
     }
-
-
+    
     private load(): void {
         this.actions = this.loadService.getActionOptions();
         this.selectedAction = this.actions[0].value;
@@ -84,8 +82,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
             this.isLoadingColumns = false;
         });
     }
-
-
+    
     private isRequiredColumn(col: string) {
         let type = this.selectedType.split('|')[0];
 
