@@ -1146,4 +1146,28 @@
   <data name="Permissions_ReadSocial_Name" xml:space="preserve">
     <value>Read Comments</value>
   </data>
+  <data name="ReportLayout_Description" xml:space="preserve">
+    <value>The layout this report will renders its content in.</value>
+  </data>
+  <data name="ReportLayout_Name" xml:space="preserve">
+    <value>Report Layout</value>
+  </data>
+  <data name="ReportName_Description" xml:space="preserve">
+    <value>The name for this report.  This name will be used wherever the report is available for display.</value>
+  </data>
+  <data name="ReportObjectType_Description" xml:space="preserve">
+    <value>The type of object where this report will be available.</value>
+  </data>
+  <data name="ReportObjectType_Name" xml:space="preserve">
+    <value>Target Type</value>
+  </data>
+  <data name="ReportTileName_Description" xml:space="preserve">
+    <value>The name for this report tile.  the name will be displayed at the top of the contents for this tile.</value>
+  </data>
+  <data name="ReportTileType_Description" xml:space="preserve">
+    <value>The type of report tile to render with.</value>
+  </data>
+  <data name="ReportTileType_Name" xml:space="preserve">
+    <value>Type</value>
+  </data>
 </root>

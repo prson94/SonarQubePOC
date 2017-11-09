@@ -2536,6 +2536,78 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The layout this report will renders its content in..
+        /// </summary>
+        public static string ReportLayout_Description {
+            get {
+                return ResourceManager.GetString("ReportLayout_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Report Layout.
+        /// </summary>
+        public static string ReportLayout_Name {
+            get {
+                return ResourceManager.GetString("ReportLayout_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name for this report.  This name will be used wherever the report is available for display..
+        /// </summary>
+        public static string ReportName_Description {
+            get {
+                return ResourceManager.GetString("ReportName_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type of object where this report will be available..
+        /// </summary>
+        public static string ReportObjectType_Description {
+            get {
+                return ResourceManager.GetString("ReportObjectType_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Target Type.
+        /// </summary>
+        public static string ReportObjectType_Name {
+            get {
+                return ResourceManager.GetString("ReportObjectType_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name for this report tile.  the name will be displayed at the top of the contents for this tile..
+        /// </summary>
+        public static string ReportTileName_Description {
+            get {
+                return ResourceManager.GetString("ReportTileName_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type of report tile to render with..
+        /// </summary>
+        public static string ReportTileType_Description {
+            get {
+                return ResourceManager.GetString("ReportTileType_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type.
+        /// </summary>
+        public static string ReportTileType_Name {
+            get {
+                return ResourceManager.GetString("ReportTileType_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Is resource assignment allowed?.
         /// </summary>
         public static string ResourceAllowed_Description {
