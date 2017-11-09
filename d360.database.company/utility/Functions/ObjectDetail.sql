@@ -80,8 +80,9 @@ BEGIN
 	if @type = 'IntersectType'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		Name,	Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Intersect Type'
-			FROM	IntersectType
+			SELECT			ID,		tName.Name,	T.Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Intersect Type'
+			FROM	IntersectType T
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) tName	
 			WHERE	ID = @id
 	end
 
@@ -181,9 +182,8 @@ BEGIN
 	if @type = 'PolicyType'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID,	[Type],	TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, O.ID, O.ID),	C.ID,	@type,	C.Name
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, O.ID, O.ID),	null,	@type,	null
 			FROM	PolicyType O
-					inner join PolicyTypeClass C on C.ID = O.PolicyTypeClassID
 			WHERE	O.ID = @id
 	end
 
@@ -292,9 +292,8 @@ BEGIN
 	if @type = 'TaxonomyType'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID,	[Type],	TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, O.ID),	C.ID,	@type,	C.Name
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, O.ID),	null,	@type,	null
 			FROM	TaxonomyType O
-					inner join TaxonomyTypeClass C on C.ID = O.TaxonomyTypeClassID
 			WHERE	O.ID = @id
 	end
 
