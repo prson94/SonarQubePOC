@@ -551,17 +551,134 @@ namespace igx.functions.Queue
                 }
             }
 
+            log.Info($"Bulk load responsibilities will add {rowData.Count} responsibilites.");
+
             while (rowData != null && rowData.Count > 0)
             {
                 //add a row to [ResponsibilityTypeRelationOverrideItem] table for the responsibility
+                var responsibilityCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == responsibilityIndex).FirstOrDefault();
+                var resourceCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == resourceIndex).FirstOrDefault();
+                var assetCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == assetIdIndex).FirstOrDefault();
+                var msg = "";
 
-                //company.ResponsibilityTypeRelationOverrideItems
+                if((responsibilityCol == null) || (resourceCol == null) || (assetCol == null))
+                {
+                    if (responsibilityCol == null)
+                        log.Error($"Bulk load responsibilities cannot find the responsibility column in row {currentRowIndex}");
+                    if (resourceCol == null)
+                        log.Error($"Bulk load responsibilities cannot find the resource column in row {currentRowIndex}");
+                    if (assetCol == null)
+                        log.Error($"Bulk load responsibilities cannot find the asset column in row {currentRowIndex}");
+                }
+                else
+                {
+                    var responsiblityOverride = new ResponsibilityTypeRelationOverrideItem();
+                    //company.ResponsibilityTypeRelationOverrideItems
+                    if (!int.TryParse(assetCol.Value, out int assetId))
+                    {
+                        msg = $"Bulk load responsibilities asset ID value {assetCol.Value} is not a valid asset id.  Asset ID values must be an integer.";
+
+                        log.Error(msg);
+                    }
+                    else
+                    {
+                        responsiblityOverride.AssetID = assetId;
+                    }
+                    
+                    var resource = resourceCol.Value;
+                    var responsiblity = responsibilityCol.Value;
+
+                    // lookup the resource
+                    var resourceParts = resource.Split(':');
+
+                    if (resourceParts.Length != 2)
+                    {
+                        msg = $"Bulk load responsibilities resource value {resource} is not a valid resource it must be formatted [type]:[id].";
+
+                        log.Error(msg);
+                    }
+                    else
+                    {
+                        if (string.Compare(resourceParts[0], "USER", true) == 0)
+                        {
+                            responsiblityOverride.SecurityAsset = "R";
+
+                            var email = resourceParts[1];
+                            //lookup the resource
+                            var res = company.GlobalReportingResources.Where(x => string.Compare(x.Email, email, true) == 0).FirstOrDefault();
+
+                            if (res == null)
+                            {
+                                msg = $"Bulk load responsibilities user value {resourceParts[1]} is not a valid resource and the email cannot be found in the resources table.";
+                                log.Error(msg);
+                            }
+                            else
+                            {
+                                responsiblityOverride.SecurityAssetID = res.ResourceID;
+                            }
+                        }
+                        else
+                        {
+                            responsiblityOverride.SecurityAsset = "G";
+
+                            //lookup the group
+                            var grp = company.Groups.Where(x => string.Compare(x.Name, resourceParts[1], true) == 0).FirstOrDefault();
+
+                            if (grp == null)
+                            {
+                                msg = $"Bulk load responsibilities group name value {resourceParts[1]} is not a valid group name it cannot be found in the groups table.";
+
+                                log.Error(msg);                                
+                            }
+                            else
+                            {
+                                responsiblityOverride.SecurityAssetID = grp.ID;
+                            }
+                        }
+                    }
+
+                    // lookup the responsibility
+
+                    var resp = company.ResponsibilityTypes.Where(x => string.Compare(x.Name, responsiblity, true) == 0).FirstOrDefault();
+
+                    if (resp == null)
+                    {
+                        msg = $"Bulk load responsibilities responsibility value {responsiblity} is not a valid responsibility type it cannot be found in the responsibility type table.";
+                        log.Error(msg);
+                    }
+                    else
+                    {
+                        responsiblityOverride.ResponsibilityTypeID = resp.ID;
+                    }
+
+                    if(string.IsNullOrEmpty(msg))
+                    {
+                        if (company.ResponsibilityTypeRelationOverrideItems.Any(x => x.ResponsibilityTypeID == responsiblityOverride.ResponsibilityTypeID && x.SecurityAsset == responsiblityOverride.SecurityAsset && x.SecurityAssetID == responsiblityOverride.SecurityAssetID && responsiblityOverride.AssetID == x.AssetID))
+                        {
+                            msg = "Responsibility already exists.";
+                        }
+                        else
+                        {
+                            msg = "Responsibility added sucessfully.";
+                            company.ResponsibilityTypeRelationOverrideItems.Add(responsiblityOverride);
+                        }
+                    }
+
+                    log.Info($"Bulk load responsibilities adding {currentRowIndex} of {rowData.Count} responsibilites.");
+
+                    // update status for this item
+                    var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = 1, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
+
+                    await company.QueryAsync<int>(statusSql, new { objectId = responsiblityOverride.ID, msg = msg, loadId = loadId, rowIndex = currentRowIndex });
+                }
 
                 //next row
                 currentRowIndex++;
 
                 rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
             }
+
+            if (currentRowIndex > 2) company.SaveChanges();
         }
 
         static void executeWithTry(SqlConnection companyConnection, TraceWriter logger, string lineageSql, int companyID, int timeout = 1200)
