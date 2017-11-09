@@ -1108,6 +1108,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
                 if (this.model.Event.Object == 'IntersectType') {
                     n.settings.ResponsibilitySide = e.settings.ResponsibilitySide;
+                } else {
+                    delete n.settings.ResponsibilitySide;
                 }
                 break;
             case WorkflowActivityType.Procedure:
