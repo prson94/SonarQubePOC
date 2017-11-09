@@ -17,10 +17,12 @@ import * as _ from 'lodash';
     <div *ngSwitchCase="FormMode.Default">
         <p-dataTable #dt [value]="shortcuts" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3">
             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-            <p-column field="Name" header="Name"></p-column>
+            <p-column field="Name" header="Name"></p-column>                
             <p-column field="ID">
                 <ng-template pTemplate type="body" let-item="rowData">
                     <div class="RowTools">
+                        <a (click)="moveUp(item.ID)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
+                        <a (click)="moveDown(item.ID)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
                         <a (click)="edit(item.ID)"><i class="fa fa-pencil"></i></a>
                         <a (click)="delete(item.ID)"><i class="fa fa-trash-o"></i></a>
                     </div>
@@ -51,7 +53,7 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
     private selectedShortcut: Shortcut = null;
     private formMode = FormMode.Default;
     FormMode = FormMode;
-
+    
     constructor(private shortcutService: ShortcutService, private messagesService: MessagesService) {
         super();
     }
@@ -94,5 +96,18 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
         this.selectedShortcut = null;
         this.load();
         this.formMode = FormMode.Default;
+    }
+    moveUp(id: number) {
+        this.isLoading = true;
+        this.shortcutService.moveShortcutUp(id)
+            .then(r => this.shortcutService.getShortcuts())
+            .then(r => this.shortcuts = r);
+    }
+
+    moveDown(id: number) {
+        this.isLoading = true;
+        this.shortcutService.moveShortcutDown(id)
+            .then(r => this.shortcutService.getShortcuts())
+            .then(r => this.shortcuts = r);
     }
 }

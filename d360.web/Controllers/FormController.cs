@@ -15858,8 +15858,9 @@ from    [IntersectType] RT
 
                     }
                 }
+                var MaxDisplayShortcut = Company.Shortcuts.OrderByDescending(o => o.DisplayOrder).FirstOrDefault();
+                shortcut.DisplayOrder = MaxDisplayShortcut.DisplayOrder + 1;
 
-                shortcut.DisplayOrder = 100;
 
                 shortcut.Url += "";
                 Company.Add(shortcut);
@@ -15983,13 +15984,63 @@ from    [IntersectType] RT
 
             return jsonSuccess("Shortcut deleted successfully.", id.ToString(), "delete", HttpStatusCode.OK);
         }
-        
+
+        [HttpPut, Route("shortcut/Move")]
+        public JsonNetResult MoveShortCut(int id,bool moveUp)
+        {
+            var success = true;
+            var message = "";
+            var direction = "";
+            try
+            {
+                var shortcut = Company.GetById<Shortcut>(id);
+                direction = moveUp ? "up" : "down";
+                Shortcut adjacentShortcut = null;
+                if (moveUp)
+                {
+                    adjacentShortcut = Company.Shortcuts.Where(s => s.DisplayOrder == shortcut.DisplayOrder - 1).SingleOrDefault();
+                }
+                else
+                {
+                    adjacentShortcut = Company.Shortcuts.Where(s => s.DisplayOrder == shortcut.DisplayOrder + 1).SingleOrDefault();
+                }
+                
+
+                if (shortcut == null)
+                    throw new Exception($"Shortcut Id ${id} not found");
+                if (adjacentShortcut == null)
+                    throw new Exception($"Shortcut is already sorted to the "+(moveUp ? "top." : "bottom."));
+
+                if (moveUp)
+                {
+                    adjacentShortcut.DisplayOrder++;
+                    shortcut.DisplayOrder--;
+                }
+                else
+                {
+                    adjacentShortcut.DisplayOrder--;
+                    shortcut.DisplayOrder++;
+                }
+                Company.SaveChanges();
+                message = $"Shortcut {shortcut.Name} moved {direction} successfully.";
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         [HttpGet, Route("shortcut/list")]
         public JsonNetResult ListShortcuts()
         {
             return new JsonNetResult
             {
-                Data = Company.Shortcuts.ToList(),
+                Data = Company.Shortcuts.OrderBy(s => s.DisplayOrder).ToList(),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

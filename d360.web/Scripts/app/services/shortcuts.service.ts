@@ -38,6 +38,18 @@ export class ShortcutService extends BaseService {
             .then(response => <Shortcut[]>response.json())
             .catch(err => this.handleError(err));
     }
+    public moveShortcutUp(id: number): Promise<JsonResult> {
+        return this.http.put(`form/shortcut/Move?id=${id}&moveUp=true`, null)
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
 
+    public moveShortcutDown(id: number): Promise<JsonResult> {
+        return this.http.put(`form/shortcut/Move?id=${id}&moveUp=false`, null)
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
   
 }
