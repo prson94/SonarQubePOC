@@ -10,29 +10,31 @@ import { Column } from 'primeng/primeng';
     template: `
         <header>Promotion History<d3s-tile-actions hasClose="true" (closeClick)="onClose.emit()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <input *ngIf="!isLoading" [hidden]="!showSimpleFilter" #gbRuleStepsHistory type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-        <p-dataTable *ngIf="!isLoading" #dtRuleStepsHistory [globalFilter]="gbRuleStepsHistory" [value]="ruleStepPromotions" selectionMode="single" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-            <p-footer *ngIf="dtRuleStepsHistory.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleStepsHistory.totalRecords" [first]="dtRuleStepsHistory.first" [rows]="dtRuleStepsHistory.rows"></d3s-grid-paging-info></p-footer>
-            <p-column header="Attribute" field="AttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
-            <p-column header="Object" field="ObjectName" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
-                <ng-template pTemplate type="body" let-row="rowData">
-                    <d3s-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" tooltipType="preview">
-                        <a (click)="navigate(row.ObjectUrl)">{{row.ObjectName}}</a>
-                    </d3s-tooltip>
-                </ng-template>
-            </p-column>
+        <span *ngIf="!isLoading">
+            <input [hidden]="!showSimpleFilter" #gbRuleStepsHistory type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+            <p-dataTable #dtRuleStepsHistory [globalFilter]="gbRuleStepsHistory" [value]="ruleStepPromotions" selectionMode="single" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                <p-footer *ngIf="dtRuleStepsHistory.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleStepsHistory.totalRecords" [first]="dtRuleStepsHistory.first" [rows]="dtRuleStepsHistory.rows"></d3s-grid-paging-info></p-footer>
+                <p-column header="Attribute" field="AttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
+                <p-column header="Object" field="ObjectName" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                    <ng-template pTemplate type="body" let-row="rowData">
+                        <d3s-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" tooltipType="preview">
+                            <a (click)="navigate(row.ObjectUrl)">{{row.ObjectName}}</a>
+                        </d3s-tooltip>
+                    </ng-template>
+                </p-column>
 
-            <p-column header="Created On" field="CreatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
-                <ng-template pTemplate type="body" let-row="rowData">
-                    <span>{{row.CreatedOn | date: 'short'}}</span>
-                </ng-template>
-            </p-column>
-            <p-column header="Updated On" field="UpdatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
-                <ng-template pTemplate type="body" let-row="rowData">
-                    <span>{{row.UpdatedOn | date: 'short'}}</span>
-                </ng-template>
-            </p-column>
-        </p-dataTable>
+                <p-column header="Created On" field="CreatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                    <ng-template pTemplate type="body" let-row="rowData">
+                        <span>{{row.CreatedOn | date: 'short'}}</span>
+                    </ng-template>
+                </p-column>
+                <p-column header="Updated On" field="UpdatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                    <ng-template pTemplate type="body" let-row="rowData">
+                        <span>{{row.UpdatedOn | date: 'short'}}</span>
+                    </ng-template>
+                </p-column>
+            </p-dataTable>
+        </span>
 `,
     providers: [FusionService]
 })
@@ -42,8 +44,7 @@ export class FusionRuleStepHistoryComponent extends BaseComponent implements OnC
     @Output() onClose = new EventEmitter();
 
     ruleStepPromotions: RuleStepPromotionHistoryModel[] = [];
-
-
+    
     constructor(private fusionService: FusionService, private router: Router) {
         super();
     }
