@@ -513,9 +513,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private getAvailableFormInputs(link: LinkModel): string[] {
         let links = [];
         let forms = [];
-
+        let visited = [];
 
         let nodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
+        visited = visited.concat(nodes.map(n => { return (<any>n).key; }));
 
         while (nodes.length > 0) {
             links = [];
@@ -530,7 +531,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             //console.log('nodes: ', nodes);
             nodes = [];
             links.forEach(l => {
-                nodes = nodes.concat(this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from));
+                let newNodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
+                nodes = nodes.concat(newNodes);
+                visited = visited.concat(newNodes.map(n => { return (<any>n).key; }));
             });
             //console.log('links: ', links);
         }
