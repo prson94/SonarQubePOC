@@ -16119,20 +16119,19 @@ from    [IntersectType] RT
             try
             {
                 var shortcut = Company.GetById<Shortcut>(id);
+                if (shortcut == null)
+                    throw new Exception($"Shortcut Id ${id} not found");
                 direction = moveUp ? "up" : "down";
                 Shortcut adjacentShortcut = null;
                 if (moveUp)
                 {
-                    adjacentShortcut = Company.Shortcuts.Where(s => s.DisplayOrder == shortcut.DisplayOrder - 1).SingleOrDefault();
+                    adjacentShortcut = Company.Shortcuts.OrderByDescending(s => s.DisplayOrder).FirstOrDefault(s=> shortcut.DisplayOrder > s.DisplayOrder);
                 }
                 else
                 {
-                    adjacentShortcut = Company.Shortcuts.Where(s => s.DisplayOrder == shortcut.DisplayOrder + 1).SingleOrDefault();
+                    adjacentShortcut = Company.Shortcuts.OrderBy(s => s.DisplayOrder).FirstOrDefault(s => shortcut.DisplayOrder < s.DisplayOrder);
                 }
                 
-
-                if (shortcut == null)
-                    throw new Exception($"Shortcut Id ${id} not found");
                 if (adjacentShortcut == null)
                     throw new Exception($"Shortcut is already sorted to the "+(moveUp ? "top." : "bottom."));
 
