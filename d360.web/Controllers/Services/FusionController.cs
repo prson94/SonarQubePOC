@@ -53,7 +53,24 @@ namespace d360.web.Controllers.Services
         [Route("{id:int}/attributetypes")]
         public IQueryable<FusionAttributeType> GetFusionAttributeTypes(int id)
         {
-            return Company.Filter<FusionAttributeType>(i => i.FusionTypeID == id).AsQueryable();
+            return Company.Query<FusionAttributeType>(@"
+select	    FAT.ID,
+		    IT.SubjectID as ParentID,
+		    FAT.Name,
+		    FAT.FusionTypeID,
+		    FAT.ScanEnabled,
+		    FAT.UpdatedBy,
+		    FAT.UpdatedOn,
+            T.ID as AssetTypeID		
+from	    FusionAttributeType FAT
+		    inner join AssetType T on T.Object = 'FusionAttributeType' and T.ObjectID = FAT.ID
+		    outer apply (
+					    select	IT.SubjectID
+					    from	IntersectType IT 
+							    inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = FAT.ID and P.ID = IT.PredicateID and P.Type = 3
+					    ) IT
+where	    FAT.FusionTypeID = @id
+order by    IT.SubjectID, FAT.Name", new { id }).AsQueryable();
         }
 
         [Route("attributetypes")]

@@ -11,6 +11,7 @@ import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { AssetTypeClass } from "../../../models/asset.model";
 
 
 @Component({
@@ -23,6 +24,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     selectedRow: TreeNode;
+    //assetTypeClass: AssetTypeClass = AssetTypeClass.Glossary;
 
     isAdding = false;
     isEditing = false;

@@ -19,45 +19,45 @@ namespace d360.core.enums
         ]
         DataLineage = 1,
         [
-            Name("Source To Target"), 
-            Description("The most common mapping that allows you to set sources and targets across types contained in the system."), 
-            ReadOnly(true),
-            AllowIntersectTypeAssignment(false),
+            Name("Reference Data Lineage"), 
+            Description("Allow for defining links between reference items across lists."), 
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
-            ForceDifferentSubjectObject(false)
+            ForceDifferentSubjectObject(true)
         ]
-        SourceToTarget = 2,
+        ReferenceLineage = 2,
         [
-            Name("Type Hierarchy"), 
-            Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), 
-            ReadOnly(true),
+            Name("Inter-type Hierarchy"), 
+            Description("This hierarchy allows for creating a tree structure or hierarchy referencing different asset types at each level."), 
+            ReadOnly(false),
             AllowIntersectTypeAssignment(true),
-            AllowMultiplePredicates(false), 
+            AllowMultiplePredicates(true), 
+            AllowDifferentSubjectObject(true), 
+            ForceDifferentSubjectObject(true)
+        ]
+        InterTypeHierarchy = 3,
+        [
+            Name("Intra-type Hierarchy"), 
+            Description("This hierarchy allows for creating a tree structure or hierarchy referencing the same asset type at each level."), 
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(false), 
             ForceDifferentSubjectObject(false)
         ]
-        TypeHierarchy = 3,
-        [
-            Name("Group Hierarchy"), 
-            Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), 
-            ReadOnly(true),
-            AllowIntersectTypeAssignment(false),
-            AllowMultiplePredicates(false), 
-            AllowDifferentSubjectObject(true), 
-            ForceDifferentSubjectObject(true)
-        ]
-        GroupHierarchy = 4,
-        [
-            Name("Parent Child Hierarchy"), 
-            Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), 
-            ReadOnly(true), 
-            AllowIntersectTypeAssignment(false),
-            AllowMultiplePredicates(false), 
-            AllowDifferentSubjectObject(true), 
-            ForceDifferentSubjectObject(true)
-        ]
-        ParentChildHierarchy = 5,
+        IntraTypeHierarchy = 4,
+        //[
+        //    Name("Parent Child Hierarchy"), 
+        //    Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), 
+        //    ReadOnly(true), 
+        //    AllowIntersectTypeAssignment(false),
+        //    AllowMultiplePredicates(false), 
+        //    AllowDifferentSubjectObject(true), 
+        //    ForceDifferentSubjectObject(true)
+        //]
+        //ParentChildHierarchy = 5,
         [
             Name("Grammatic Association"), 
             Description("Allows you to establish grammatic association between two objects."), 
@@ -100,7 +100,7 @@ namespace d360.core.enums
         SeeAlso = 9,
         [
             Name("Usage"),
-            Description("This type of predicate allows for items to be acts as filters within a greater lineage diagram to indicate that only certain paths are used."),
+            Description("This type of predicate allows for items to be act as filters within a greater lineage diagram to indicate that only certain paths are used."),
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),

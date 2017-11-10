@@ -97,6 +97,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Modify this {0} type using the form below..
+        /// </summary>
+        public static string Add_Asset_Type_Directions {
+            get {
+                return ResourceManager.GetString("Add_Asset_Type_Directions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add {0} Type.
+        /// </summary>
+        public static string Add_Asset_Type_Title {
+            get {
+                return ResourceManager.GetString("Add_Asset_Type_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Attribute group successfully added..
         /// </summary>
         public static string Add_AttributeType_Confirmation {
@@ -385,6 +403,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Glossary.
+        /// </summary>
+        public static string ArtifactType {
+            get {
+                return ResourceManager.GetString("ArtifactType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A category can group different types of attributes together into more meaningful sets of of similar information..
         /// </summary>
         public static string AttributeTypeCategory_Directions {
@@ -498,6 +525,15 @@ namespace Resources {
         public static string Edit_ArtifactType_Title {
             get {
                 return ResourceManager.GetString("Edit_ArtifactType_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Modify {0} Type.
+        /// </summary>
+        public static string Edit_Asset_Type_Title {
+            get {
+                return ResourceManager.GetString("Edit_Asset_Type_Title", resourceCulture);
             }
         }
         
@@ -754,6 +790,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fusion Attribute.
+        /// </summary>
+        public static string FusionAttributeType {
+            get {
+                return ResourceManager.GetString("FusionAttributeType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may not remove this fusion attribute type as there are existing attributes based on it..
         /// </summary>
         public static string FusionAttributeType_Remove {
@@ -835,6 +880,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Policy.
+        /// </summary>
+        public static string PolicyType {
+            get {
+                return ResourceManager.GetString("PolicyType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removing this top-level policy type will permanently remove all policies under it, as well as any relationships that these policies participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
         /// </summary>
         public static string PolicyType_Remove {
@@ -867,6 +921,15 @@ namespace Resources {
         public static string Taxonomy_ChangeParent_Warning {
             get {
                 return ResourceManager.GetString("Taxonomy_ChangeParent_Warning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model.
+        /// </summary>
+        public static string TaxonomyType {
+            get {
+                return ResourceManager.GetString("TaxonomyType", resourceCulture);
             }
         }
         

@@ -55,6 +55,7 @@ namespace d360.core.entities
         public string EventTopic { get; set; }
         public bool IsDevelopment { get; set; }
         public string UrlPrefix { get; set; }
+        public EnvironmentLevel EnvironmentLevel { get; set; }
     }
 
     public class FieldsObjectModel 

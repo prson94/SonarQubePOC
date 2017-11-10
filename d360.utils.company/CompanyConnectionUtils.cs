@@ -176,6 +176,7 @@ select  c.ID as CompanyID,
         ds.SearchServer, 
         ds.EventTopic, 
         ds.IsDevelopment,
+        c.EnvironmentLevel,
         CDS.UrlPrefix
 from    company c 
         inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 

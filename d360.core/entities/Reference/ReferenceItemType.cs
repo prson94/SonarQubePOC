@@ -10,6 +10,9 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class ReferenceItemType : BaseIntObject, IIntObject, ISearchable, ICreatedMetadata, IUpdatedMetadata
     {
+        [DataMember, NotMapped]
+        public int? AssetTypeID { get; set; }
+
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         public string Name { get; set; }

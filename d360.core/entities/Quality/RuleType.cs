@@ -10,6 +10,9 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class RuleType : BaseCreatedAndUpdatedIntObject, IIntObject, ISearchable, ICreatedMetadata, IUpdatedMetadata
     {
+        [DataMember, NotMapped]
+        public int? AssetTypeID { get; set; }
+
         [DataMember]
         public string Name { get; set; }
 

@@ -15,7 +15,10 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedDeleteFormModule } from '../shared/delete.form';
 
 import {        
-    ButtonModule,    
+    ButtonModule,  
+    ColorPickerModule,
+    DropdownModule,
+    SpinnerModule,
     DataTableModule,
     EditorModule,
     InputTextModule,    
@@ -30,7 +33,8 @@ import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminNymAllocationsComponent } from './admin-nym-allocations.component';
 import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
-
+import { AdminAssetTypeEditorForm } from "./admin-asset-type-editor.form";
+import { SimpleAccordionModule } from "../shared/simple-accordion.part";
 
 @NgModule({
     declarations: [        
@@ -41,12 +45,14 @@ import { ClaimsMatrixPart } from './claims-matrix.part';
         AdminLevelEditorComponent,   
         AdminNymAllocationsComponent,             
         ClaimsMatrixPart,
-        ClaimsTile,                          
+        ClaimsTile,
+        AdminAssetTypeEditorForm,
     ],
     exports: [
         AdminAllocationComponent,
         AdminClassificationsComponent,
         ClaimsTile,
+        AdminAssetTypeEditorForm,
         AdminLevelListComponent,
     ],
     imports: [CommonModule,
@@ -54,10 +60,15 @@ import { ClaimsMatrixPart } from './claims-matrix.part';
         HttpModule,
         RouterModule,
         AdminRoutingModule,
-        
+
+        SimpleAccordionModule,
+
         //primeng                
         InputTextModule,
+        ColorPickerModule,
+        SpinnerModule,
         DataTableModule,
+        DropdownModule,
         EditorModule,
         ButtonModule,
         SharedModule,

@@ -803,6 +803,16 @@
               Looks up a localized string similar to Add Artifact Type.
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.Add_Asset_Type_Directions">
+            <summary>
+              Looks up a localized string similar to Modify this {0} type using the form below..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Asset_Type_Title">
+            <summary>
+              Looks up a localized string similar to Add {0} Type.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.Add_AttributeType_Confirmation">
             <summary>
               Looks up a localized string similar to Attribute group successfully added..
@@ -963,6 +973,11 @@
               Looks up a localized string similar to Allocate Workflow.
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.ArtifactType">
+            <summary>
+              Looks up a localized string similar to Glossary.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.AttributeTypeCategory_Directions">
             <summary>
               Looks up a localized string similar to A category can group different types of attributes together into more meaningful sets of of similar information..
@@ -1026,6 +1041,11 @@
         <member name="P:Resources.FormInfo.Edit_ArtifactType_Title">
             <summary>
               Looks up a localized string similar to Edit Artifact Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Asset_Type_Title">
+            <summary>
+              Looks up a localized string similar to Modify {0} Type.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Edit_Attribute_Description">
@@ -1168,6 +1188,11 @@
               Looks up a localized string similar to This field type is in use and cannot be removed..
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.FusionAttributeType">
+            <summary>
+              Looks up a localized string similar to Fusion Attribute.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.FusionAttributeType_Remove">
             <summary>
               Looks up a localized string similar to You may not remove this fusion attribute type as there are existing attributes based on it..
@@ -1213,6 +1238,11 @@
               Looks up a localized string similar to You may not remove this policy as there are existing rules assigned to it..
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.PolicyType">
+            <summary>
+              Looks up a localized string similar to Policy.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.PolicyType_Remove">
             <summary>
               Looks up a localized string similar to Removing this top-level policy type will permanently remove all policies under it, as well as any relationships that these policies participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
@@ -1231,6 +1261,11 @@
         <member name="P:Resources.FormInfo.Taxonomy_ChangeParent_Warning">
             <summary>
               Looks up a localized string similar to Altering a model&apos;s parent could potentially have a significant impact on ownership throughout the system..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.TaxonomyType">
+            <summary>
+              Looks up a localized string similar to Model.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.TaxonomyType_Remove">
@@ -2329,6 +2364,9 @@
         <member name="M:d360.web.Controllers.FormController.ArtifactType_DeleteFields(System.Int32)">
             <param name="id">ArtifactID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.AssetType_DeleteFields(System.Int32)">
+            <param name="id">AssetTypeID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Attribute_AddFields(System.Int32,System.String,System.Int32,System.Int32)">
             <param name="at">AttributeTypeID</param>
             <param name="ot">ObjectType</param>
@@ -2462,16 +2500,6 @@
         <member name="M:d360.web.Controllers.FormController.FusionAttribute_EditFields(System.Int32)">
             <param name="id">FusionAttributeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.FusionAttributeType_AddFields(System.Int32,System.Int32)">
-            <param name="fat">FusionTypeID</param>
-            <param name="p">ParentID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.FusionAttributeType_DeleteFields(System.Int32)">
-            <param name="id">FusionAttributeTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.FusionAttributeType_EditFields(System.Int32)">
-            <param name="id">FusionAttributeTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.IntersectType_DeleteFields(System.Int32)">
             <param name="id">IntersectTypeID</param>
         </member>
@@ -2534,15 +2562,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.PolicyType_DeleteFields(System.Int32)">
             <param name="id">PolicyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.PolicyType_EditFields(System.Int32)">
-            <param name="id">PolicyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.PolicyTypeClass_DeleteFields(System.Int32)">
-            <param name="id">PolicyTypeClassID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.PolicyTypeClass_EditFields(System.Int32)">
-            <param name="id">PolicyTypeClassID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.PolicyTypeLevel_DeleteFields(System.Int32,System.Int32)">
             <param name="id">PolicyTypeID</param>
@@ -2660,15 +2679,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.TaxonomyType_DeleteFields(System.Int32)">
             <param name="id">TaxonomyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyType_EditFields(System.Int32)">
-            <param name="id">TaxonomyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeClass_DeleteFields(System.Int32)">
-            <param name="id">TaxonomyTypeClassID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeClass_EditFields(System.Int32)">
-            <param name="id">TaxonomyTypeClassID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_DeleteFields(System.Int32,System.Int32)">
             <param name="id">TaxonomyTypeID</param>

@@ -21,7 +21,6 @@ import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/sh
 import { AdminModule } from '../admin.module';
 
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 
 import { AdminTaxonomiesRoutingModule } from './admin-taxonomies.routes';
@@ -35,6 +34,8 @@ import {
     SharedModule,
     DataTableModule,
 } from 'primeng/primeng';
+
+
 
 @NgModule({
     imports: [CommonModule,
@@ -68,8 +69,7 @@ import {
         TilesModule,
     ],
     declarations: [
-        AdminTaxonomiesComponent,        
-        AdminTaxonomyEditorComponent,
+        AdminTaxonomiesComponent,
         AdminTaxonomyDetailComponent,
     ],
     providers: [

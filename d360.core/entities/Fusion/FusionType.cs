@@ -20,6 +20,9 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Description { get; set; }
 
+        [DataMember, NotMapped]
+        public int? AssetTypeID { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 

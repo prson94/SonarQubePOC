@@ -19,7 +19,6 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
 import { AdminArtifactsComponent } from './admin-artifacts.component';
-import { ArtifactTypeForm } from './artifact-type.form';
 
 import { AdminArtifactsRoutingModule } from './admin-artifacts.routes';
 
@@ -29,6 +28,7 @@ import { ArtifactTypeDeleteComponent } from './artifact-type-delete.component';
 import {
     ButtonModule,
     CheckboxModule,
+    SpinnerModule,
     ColorPickerModule,
     DropdownModule,
     EditorModule,
@@ -37,6 +37,7 @@ import {
     SharedModule,    
     TreeTableModule,
 } from 'primeng/primeng';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -49,6 +50,7 @@ import {
         ButtonModule,
         CheckboxModule,
         DropdownModule,
+        SpinnerModule,
         EditorModule,
         InputTextModule,
         MultiSelectModule,
@@ -74,7 +76,6 @@ import {
     ],
     declarations: [
         AdminArtifactsComponent,
-        ArtifactTypeForm,
         ArtifactTypeDeleteComponent,
     ],
     providers: [

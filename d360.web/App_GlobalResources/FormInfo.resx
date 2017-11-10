@@ -129,6 +129,12 @@
   <data name="Add_ArtifactType_Title" xml:space="preserve">
     <value>Add Artifact Type</value>
   </data>
+  <data name="Add_Asset_Type_Directions" xml:space="preserve">
+    <value>Modify this {0} type using the form below.</value>
+  </data>
+  <data name="Add_Asset_Type_Title" xml:space="preserve">
+    <value>Add {0} Type</value>
+  </data>
   <data name="Add_AttributeTypeCategory_Title" xml:space="preserve">
     <value>Add Attribute Category</value>
   </data>
@@ -225,6 +231,9 @@
   <data name="Allocate_Workflow_Title" xml:space="preserve">
     <value>Allocate Workflow</value>
   </data>
+  <data name="ArtifactType" xml:space="preserve">
+    <value>Glossary</value>
+  </data>
   <data name="AttributeTypeCategory_Directions" xml:space="preserve">
     <value>A category can group different types of attributes together into more meaningful sets of of similar information.</value>
   </data>
@@ -263,6 +272,9 @@
   </data>
   <data name="Edit_ArtifactType_Title" xml:space="preserve">
     <value>Edit Artifact Type</value>
+  </data>
+  <data name="Edit_Asset_Type_Title" xml:space="preserve">
+    <value>Modify {0} Type</value>
   </data>
   <data name="Edit_AttributeTypeCategory_Title" xml:space="preserve">
     <value>Edit Category</value>
@@ -348,6 +360,9 @@
   <data name="FieldType_Error_Used" xml:space="preserve">
     <value>This field type is in use and cannot be removed.</value>
   </data>
+  <data name="FusionAttributeType" xml:space="preserve">
+    <value>Fusion Attribute</value>
+  </data>
   <data name="FusionAttributeType_Remove" xml:space="preserve">
     <value>You may not remove this fusion attribute type as there are existing attributes based on it.</value>
   </data>
@@ -372,6 +387,9 @@
   <data name="Permisions_Error_Edit" xml:space="preserve">
     <value>You do not have permissions to update this.</value>
   </data>
+  <data name="PolicyType" xml:space="preserve">
+    <value>Policy</value>
+  </data>
   <data name="PolicyTypeLevel_Remove" xml:space="preserve">
     <value>Removing this level will alter the level name of all policies at this level.</value>
   </data>
@@ -383,6 +401,9 @@
   </data>
   <data name="SynonymType_Remove" xml:space="preserve">
     <value>Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>
+  </data>
+  <data name="TaxonomyType" xml:space="preserve">
+    <value>Model</value>
   </data>
   <data name="TaxonomyType_Remove" xml:space="preserve">
     <value>Removing this top-level information model will permanently remove all models under it, as well as any relationships that these models participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>

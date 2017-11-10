@@ -16,6 +16,9 @@ namespace d360.core.entities
         [DataMember]
         public int? ParentID { get; set; }
 
+        [DataMember, NotMapped]
+        public int? AssetTypeID { get; set; }
+
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "Name_ErrorRequired")]

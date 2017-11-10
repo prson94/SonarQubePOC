@@ -7,6 +7,9 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Field : BaseObject
     {
+        [DataMember]
+        public long? AssetID { get; set; }
+
         [Column(Order = 1, TypeName = "varchar"), DataMember, Key, StringLength(25)]
         public string ObjectType { get; set; }
 

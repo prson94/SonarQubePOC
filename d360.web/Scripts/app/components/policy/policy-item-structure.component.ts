@@ -122,7 +122,6 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                     this.policyType = result;                    
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.PolicyTypeClass, SiteUrlHelpers.getObjectUrl('POLICYTYPECLASS', this.policyType.PolicyTypeClassID)));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId}/structure`));
 
                     this.loadPolicyHierarchy(this.policyTypeId);

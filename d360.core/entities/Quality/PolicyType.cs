@@ -12,6 +12,9 @@ namespace d360.core.entities
     {
         #region Properties
 
+        [DataMember, NotMapped]
+        public int? AssetTypeID { get; set; }
+
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "Name_ErrorRequired")]
@@ -29,19 +32,12 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "MaximumDepth_Name", Description = "MaximumDepth_Description")]
         public int? MaximumDepth { get; set; }
 
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Class_Name", Description = "Class_Description")]
-        public int PolicyTypeClassID { get; set; }
-
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 
         #endregion
 
         #region Collection Properties
-
-        [IgnoreDataMember, ForeignKey("PolicyTypeClassID")]
-        public virtual PolicyTypeClass PolicyTypeClass { get; set; }
 
         [IgnoreDataMember, ForeignKey("PolicyTypeID")]
         public virtual ICollection<Policy> Policies { get; set; }

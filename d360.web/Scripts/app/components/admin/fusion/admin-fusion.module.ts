@@ -8,6 +8,7 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 //import { ColorPickerModule } from 'ngx-color-picker';
 
+import { AdminModule } from '../admin.module';
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 
@@ -35,6 +36,7 @@ import {
     ButtonModule,
     CalendarModule,
     ColorPickerModule,
+    DropdownModule,
     EditorModule,
     GrowlModule,
     InputMaskModule,
@@ -56,6 +58,7 @@ import { CodemirrorModule } from 'ng2-codemirror';
         //prime  
         ButtonModule,
         CalendarModule,
+        DropdownModule,
         EditorModule,
         GrowlModule,
         InputMaskModule,
@@ -72,6 +75,7 @@ import { CodemirrorModule } from 'ng2-codemirror';
 
         //d3s                
         CoreModule,
+        AdminModule,
         D3SSharedModule,
         
         SharedDeleteFormModule,

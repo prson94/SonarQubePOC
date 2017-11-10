@@ -36,9 +36,9 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
                             </ng-template>
                         </p-column>
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">                                                                
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item.data"></d3s-dynamic-field-value>                                 
-                                </ng-template>
+                            <ng-template let-item="rowData" pTemplate type="body">
+                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item.data"></d3s-dynamic-field-value>                                 
+                            </ng-template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()" >
                             <ng-template let-item="rowData" pTemplate type="body">

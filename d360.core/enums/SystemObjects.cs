@@ -80,8 +80,6 @@ namespace d360.core
         Policy,
         [Description("Policy Type"), AllowSurvey(false), EnableAudit(true)]
         PolicyType,
-        [Description("Policy Type Class"), AllowSurvey(false), EnableAudit(true)]
-        PolicyTypeClass,
         [Description("Rule"), AllowSurvey(false), EnableAudit(true)]
         Rule,
         [Description("Rule Type"), AllowSurvey(false), EnableAudit(true)]
@@ -90,8 +88,6 @@ namespace d360.core
         FusionExecution,
         [Description("Workflow Relation"), AllowSurvey(false), EnableAudit(false)]
         WorkflowTypeRelation,
-        [Description("Taxonomy Type Class"), AllowSurvey(false), EnableAudit(true)]
-        TaxonomyTypeClass,
         [Description("Predicate"), AllowSurvey(false), EnableAudit(true)]
         Predicate,
         [Description("Group Type"), AllowSurvey(false), EnableAudit(false)]
@@ -102,8 +98,6 @@ namespace d360.core
         Map,
         [Description("Map Type"), AllowSurvey(false), EnableAudit(true)]
         MapType,
-        [Description("Intersect Role"), AllowSurvey(false), EnableAudit(true)]
-        IntersectRole,
         [Description("Reference Item"), AllowSurvey(false), EnableAudit(true)]
         ReferenceItem,
         [Description("Reference Item Type"), AllowSurvey(false), EnableAudit(true)]

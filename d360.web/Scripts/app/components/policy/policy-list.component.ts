@@ -22,19 +22,14 @@ import * as _ from 'lodash';
                                 <d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>         
                             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                   
-                            <p-dataTable #dt sortField="PolicyTypeClass" sortOrder="1" [globalFilter]="gb"  [value]="policies" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showPolicyType(selected);" >
+                            <p-dataTable #dt sortField="Name" sortOrder="1" [globalFilter]="gb"  [value]="policies" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showPolicyType(selected);" >
                                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
-                                <p-column field="PolicyTypeClass" [hidden]="policyTypeClassificationId" header="Classification" sortable="true" [style]="{width:'200px'}"  [filter]="!showSimpleFilter">
-                                    <ng-template let-item="rowData" pTemplate type="body">
-                                            <a (click)="showPolicyTypeClass(item)">{{item.PolicyTypeClass}}</a>
-                                    </ng-template>
-                                </p-column>
-                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'200px'}" [filter]="!showSimpleFilter">
+                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'250px'}" [filter]="!showSimpleFilter">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                             <a (click)="showPolicyType(item)">{{item.Name}}</a>
                                     </ng-template>
                                 </p-column>                                                                                                                                                        
-                                <p-column field="Description" header="Description" sortable="true" [style]="{width:'500px'}"  [filter]="!showSimpleFilter">
+                                <p-column field="Description" header="Description" sortable="true" [filter]="!showSimpleFilter">
                                     <ng-template let-col let-data="rowData" pTemplate type="body">
                                         <span [innerHtml]="data?.Description"></span>
                                     </ng-template>                                                        
@@ -48,7 +43,6 @@ import * as _ from 'lodash';
 
 export class PolicyListComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    private policyTypeClassificationId: number;
     private policies: PolicyType[] = [];
     private selected: PolicyType;
     private policyClassName: string;
@@ -81,15 +75,9 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.policyTypeClassificationId = +params['policyTaxonomyClass'];
-
-            if (this.policyTypeClassificationId > 0) {
-                this.headerBreadcrumbService.setCurrentObjectInfo('PolicyTypeClass', this.policyTypeClassificationId);
-            }
-
             this.headerBreadcrumbService.clearCurrentObjectInfo();
             this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', this.policyTypeClassificationId ? `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}` : undefined));
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}`));
             
             this.loadPolicies();
         });
@@ -102,26 +90,15 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
 
     loadPolicies() {
         this.isLoading = true;
-        this.policiesService.getPolicyTypesWithClassification()
+        this.policiesService.getPolicyTypes()
             .then(result => {
                 this.policyClassName = '';
                 this.isLoading = false;
-                if (this.policyTypeClassificationId) {
-                    this.policies = result.filter(x => x.PolicyTypeClassID == this.policyTypeClassificationId);
-                    this.policyClassName = this.policies.length > 0 ? this.policies[0].PolicyTypeClass : `Policy Classification ID: ${this.policyTypeClassificationId}`;
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyClassName));
-                }
-                else {
-                    this.policies = result;
-                }
-                this.setBrowserTitle(this.titleService, `${this.policyTypeClassificationId ? this.policyClassName + ' ' : ''}Policies`);
-                this.policies = _.sortBy(this.policies, 'PolicyTypeClass');
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyClassName));
+                this.policies = result;
+                this.setBrowserTitle(this.titleService, `Policies`);
                 if (this.policies.length && this.policies.length > 0) this.selected = this.policies[0];
             });
-    }
-
-    showPolicyTypeClass(policyType: PolicyType) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('POLICYTYPECLASS', policyType.PolicyTypeClassID));
     }
 
     showPolicyType(policyType: PolicyType) {

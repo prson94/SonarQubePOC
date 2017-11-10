@@ -10,20 +10,21 @@ import { AdminBaseComponent} from '../admin-base.component';
 import { FieldDefinition } from '../../../models/fields.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { AssetTypeService } from "../../../services/asset-type.services";
 
 @Component({
     selector: 'd3s-admin-models-component',    
-    providers: [TaxonomiesService, FieldsService],
+    providers: [TaxonomiesService, FieldsService, AssetTypeService],
     template:   `<div *ngIf="showEditor || showDelete && !isLoading" class="row">
-                    <div class="tile tile-detail">                            
-                            <d3s-admin-model-editor *ngIf="showEditor" [taxonomy]="selectedTaxonomy" (saveClick)="saveModel($event)" (closeClick)="closeEditor()"></d3s-admin-model-editor>
-                            <d3s-delete-form *ngIf="showDelete"
-                                        [callback]="theDeleteCallback"
-                                        [itemId]="selectedTaxonomy?.ID"
-                                         [method]="'callback'"
-                                         [prompt]="'Are you sure you want to delete the model [' + [selectedTaxonomy?.Name] + ']?'"                                         
-                                         (onCancel)="showDelete=false;"
-                            ></d3s-delete-form>
+                    <div class="tile tile-detail">     
+                        <d3s-asset-type-editor-form *ngIf="showEditor" [assetTypeClass]="'M'" [id]="selectedTaxonomy?.AssetTypeID" [title]="'Edit Model Type'" (onCancel)="closeEditor()" (onComplete)="saveModel($event)"></d3s-asset-type-editor-form>
+                        <d3s-delete-form *ngIf="showDelete"
+                                    [callback]="theDeleteCallback"
+                                    [itemId]="selectedTaxonomy?.AssetTypeID"
+                                        [method]="'callback'"
+                                        [prompt]="'Are you sure you want to delete the model [' + [selectedTaxonomy?.Name] + ']?'"                                         
+                                        (onCancel)="showDelete=false;"
+                        ></d3s-delete-form>
                     </div>
                 </div>
                 <div *ngIf="!showEditor && !showDelete" class="row">
@@ -38,8 +39,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selectedTaxonomy"  (onRowDblclick)="selectedTaxonomy=$event.data;showEditor=true;" >                                                        
                                     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
-                                    <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
-                                    <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
+                                    <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="!showSimpleFilter" [style]="{width:'100px'}"></p-column>                            
                                     <p-column [style]="{width:'40px'}">
                                         <ng-template let-model="rowData" pTemplate type="body">
                                             <div class="RowTools">
@@ -72,9 +72,21 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-    
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService,  private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+
+    protected assetTypeService: AssetTypeService = null;
+
+    constructor(private stateService: StateService,
+        assetTypeService: AssetTypeService,
+        rightSidebarService: RightSidebarService,
+        private taxonomiesService: TaxonomiesService,
+        private fieldsService: FieldsService,
+        private messagesService: MessagesService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title) {
+
+        super(headerBreadcrumbService, titleService, rightSidebarService);    
+        this.assetTypeService = assetTypeService;
+
         this.areaName = "Models";
         this.setCommonItems();
         this.setCommonRightSideBar(true);
@@ -122,35 +134,31 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     }
 
     saveModel(event) {        
-        this.taxonomiesService
-             .saveTaxonomy(event.taxonomy)
-            .then(response => {                
-                this.showEditor = false;
-                if (response.type == 'error') {                    
-                    this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
-                }
-                else {                                        
-                    
-                    if (event.action == "new") {
-                        event.taxonomy.ID = Number(response.id);
-                        event.taxonomy.Class = undefined;                        
-                        this.taxonomies[this.taxonomies.length] = event.taxonomy;
-                    }
-                    else {
-                        var index = this.taxonomies.findIndex(x => x.ID == event.taxonomy.ID);                        
-                        if (index >= 0)
-                            this.taxonomies[index] = event.taxonomy;
-                    }                    
-                    this.selectedTaxonomy = event.taxonomy;
-                }
-                this.showMessageForResult(this.messagesService, response);
-                this.stateService.reloadLeftNavMenu();
-            })
-             .catch(error => this.error = error);        
+        this.showEditor = false;
+        //if (response.type == 'error') {
+        //    this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
+        //}
+        //else {
+
+        //    if (event.action == "new") {
+        //        event.taxonomy.ID = Number(response.id);
+        //        event.taxonomy.Class = undefined;
+        //        this.taxonomies[this.taxonomies.length] = event.taxonomy;
+        //    }
+        //    else {
+        //        var index = this.taxonomies.findIndex(x => x.ID == event.taxonomy.ID);
+        //        if (index >= 0)
+        //            this.taxonomies[index] = event.taxonomy;
+        //    }
+        //    this.selectedTaxonomy = event.taxonomy;
+        //}
+        //this.showMessageForResult(this.messagesService, response);
+        this.getTaxonomies();
+        this.stateService.reloadLeftNavMenu();
     }
 
     deleteTaxonomy(id : number) {
-        this.taxonomiesService.deleteTaxonomy(id)
+        this.assetTypeService.deleteAssetType(id)
             .then(res => {                
                 this.showMessageForResult(this.messagesService, res);
 

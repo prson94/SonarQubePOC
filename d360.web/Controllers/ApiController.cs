@@ -380,7 +380,7 @@ namespace d360.web.Controllers
             return string.Format("{0}%", thisColumnWidth + ((dynamicFieldWidth == 0) ? remainingWidth / staticFieldCount : 0));
         }
 
-        GridColumn getGridColumnForColumn(FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true)
+        GridColumn getGridColumnForColumn(FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true, bool useNameAsDataField = false)
         {
             string cellsFormat = "";
             string columnType = GridColumn.COLUMN_TYPE_STRING;
@@ -422,7 +422,7 @@ namespace d360.web.Controllers
                     break;
             }
 
-            var gc = new GridColumn { text = item.FriendlyName, datafield = $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = item.ColumnWidth };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = item.ColumnWidth };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -456,9 +456,9 @@ namespace d360.web.Controllers
             return fieldType;
         }
 
-        GridField getGridFieldForColumn(FieldType item)
+        GridField getGridFieldForColumn(FieldType item, bool useNameAsDataField = false)
         {
-            return new GridField { name = $"Field{item.ID}", type = getGridFieldTypeForColumn(item) };
+            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item) };
         }
 
         void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, List<GridColumnGroup> groups, decimal dynamicFieldWidth, bool serverPaged = false)
@@ -886,8 +886,8 @@ where   h.ID <> @t order by h.[Level] desc;
 
                         foreach (var field in taxonomyFields)
                         {
-                            columns.Add(getGridColumnForColumn(field, 0, false));
-                            fields.Add(getGridFieldForColumn(field));
+                            columns.Add(getGridColumnForColumn(field, 0, false, useNameAsDataField: false));
+                            fields.Add(getGridFieldForColumn(field, useNameAsDataField: false));
                         }
 
                         fields.Add(new GridField { name = "ID", type = "number" });
@@ -1627,18 +1627,6 @@ from	cte a
         public IEnumerable<dynamic> GetAllocationsByLookupType(int id)
         {
             return Company.Query<dynamic>(QueryConstants.LookupAllocations, new { type = "Lookup", id });
-        }
-
-        [Route("PolicyTypeClass")]
-        public IQueryable<PolicyTypeClass> GetPolicyTypeClasses()
-        {
-            return Company.Table<PolicyTypeClass>();
-        }
-
-        [Route("TaxonomyTypeClass")]
-        public IQueryable<TaxonomyTypeClass> GetTaxonomyTypeClasses()
-        {
-            return Company.Table<TaxonomyTypeClass>();
         }
 
         [Route("fusionlookup/list/{id:int}"), HttpGet]
@@ -4068,16 +4056,24 @@ from    ResponsibilityTypeRelationRule R
         #region Policies
 
         [Route("policytypes")]
-        public IQueryable<PolicyType> GetPolicyTypes()
+        public HttpResponseMessage GetPolicyTypes()
         {
-            return Company.Table<PolicyType>();
-        }
-
-        [Route("policytypesWithClassification")]
-        public HttpResponseMessage GetPolicyTypesWithClassification()
-        {
-            return Request.CreateResponse<dynamic>(HttpStatusCode.OK,
-                Company.Table<PolicyType>().OrderBy(i => i.Name).Select(i => new { i.Description, i.ID, i.Name, i.MaximumDepth, PolicyTypeClassID = i.PolicyTypeClassID, PolicyTypeClass = i.PolicyTypeClass.Name })
+            return Request.CreateResponse<dynamic>(
+                HttpStatusCode.OK,
+                Company.Query<PolicyType>(@"
+select	    FAT.ID,
+		    FAT.Name,
+            FAT.Description,
+		    FAT.MaximumDepth,
+			FAT.DisplayFormat,
+			T.CreatedBy,
+			T.CreatedOn,
+			T.UpdatedBy,
+		    T.UpdatedOn,
+            T.ID as AssetTypeID
+from	    PolicyType FAT
+		    inner join AssetType T on T.Object = 'PolicyType' and T.ObjectID = FAT.ID")
+            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
             );
         }
 
@@ -4091,8 +4087,6 @@ from    ResponsibilityTypeRelationRule R
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
-                    { "PolicyTypeClass", row.PolicyTypeClass },
-                    { "PolicyTypeClassID", row.PolicyTypeClassID },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "MaximumDepth", row.MaximumDepth }
                 }
@@ -4106,14 +4100,25 @@ from    ResponsibilityTypeRelationRule R
             var columns = "";
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
-            var querySql = string.Format(@"select	top 100 percent P.ID, A.ID as AssetID, 
-        P.ParentID,
-        P.DisplayValue,
+            var querySql = string.Format(@"
+select	top 100 percent 
+        A.ID, 
+        OA.ID as AssetID, 
+        P.SubjectID as ParentID,
+        TD.DisplayValue,
         {0}
-        P.[Level]
-from	[Policy] P inner join Asset A on A.Object = 'Policy' and A.ObjectID = P.ID  {1} 
-where    P.PolicyTypeID = @id and P.[Visible] = 1
-order by P.[Level], P.DisplayValue", columns, joins);
+        A.[Level]
+from	[Policy] A 
+        inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id and A.[Visible] = 1 
+        {1} 
+        left join dbo.GetAssetDisplayValue() TD on TD.ID = OA.ID
+        outer apply (
+					select	I.SubjectID
+					from	[Intersect] I
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
+							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+					) P
+order by A.[Level], TD.DisplayValue", columns, joins);
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -6120,7 +6125,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Taxonomy:
                     #region Fields
-                    var taxonomy = Company.GetById<Taxonomy>(id, i => i.TaxonomyType.TaxonomyTypeClass);
+                    var taxonomy = Company.GetById<Taxonomy>(id);
                     if (taxonomy != null)
                     {
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
@@ -6181,7 +6186,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.TaxonomyType:
                     #region Fields
-                    var taxonomyType = Company.GetById<TaxonomyType>(id, i => i.TaxonomyTypeClass);
+                    var taxonomyType = Company.GetById<TaxonomyType>(id);
                     if (taxonomyType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6199,12 +6204,8 @@ where    A.RuleID = @id", new { id });
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 2,
+                            columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.TaxonomyTypeClassID), FieldName = "TaxonomyTypeClass", FieldDescription = taxonomyType.GetDescription(i => i.TaxonomyTypeClassID), Value = taxonomyType.TaxonomyTypeClass.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = taxonomyType.GetName(i => i.MaximumDepth), FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = taxonomyType.GetDescription(i => i.MaximumDepth), Value = taxonomyType.MaximumDepth.ToString() }
                             }
@@ -7075,8 +7076,22 @@ SELECT (
         [Route("catalogs")]
         public HttpResponseMessage GetTaxonomyTypes()
         {
-            return Request.CreateResponse<dynamic>(HttpStatusCode.OK,
-                Company.Table<TaxonomyType>().OrderBy(i => i.Name).Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, TaxonomyTypeClass = i.TaxonomyTypeClass.Name })
+            return Request.CreateResponse<dynamic>(
+                HttpStatusCode.OK,
+                Company.Query<TaxonomyType>(@"
+select	    FAT.ID,
+		    FAT.Name,
+            FAT.Description,
+		    FAT.MaximumDepth,
+			FAT.DisplayFormat,
+			T.CreatedBy,
+			T.CreatedOn,
+			T.UpdatedBy,
+		    T.UpdatedOn,
+            T.ID as AssetTypeID
+from	    TaxonomyType FAT
+		    inner join AssetType T on T.Object = 'TaxonomyType' and T.ObjectID = FAT.ID")
+            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
             );
         }
 
@@ -7084,12 +7099,6 @@ SELECT (
         public IQueryable<TaxonomyTypeLevel> GetTaxonomyTypeLevels(int id)
         {
             return Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id).OrderBy(i => i.Level);
-        }
-
-        [Route("TaxonomyClassifications")]
-        public IQueryable<TaxonomyTypeClass> GetTaxonomyClassifications()
-        {
-            return Company.Table<TaxonomyTypeClass>().OrderBy(i => i.Name);
         }
 
         [Route("catalogs/{typeID:int}")]

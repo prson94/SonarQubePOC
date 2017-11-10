@@ -101,14 +101,16 @@ namespace igx.functions.Core
                 switch (environment)
                 {
                     case "NIGHTLY":
-                        //companies = companies.Where(i => i.CompanyID == 65 || i.CompanyID == 72 || i.CompanyID == 74).ToList();
-                        companies = companies.Where(i => i.CompanyID == 4).ToList();
+                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Nightly).ToList();
                         break;
                     case "CLIENTDEV":
-                        companies = companies.Where(i => i.IsDevelopment && i.CompanyID != 4).ToList();
+                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Development).ToList();
+                        break;
+                    case "UAT":
+                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.UAT).ToList();
                         break;
                     case "PROD":
-                        companies = companies.Where(i => !i.IsDevelopment).ToList();
+                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Production).ToList();
                         break;
                 }
 

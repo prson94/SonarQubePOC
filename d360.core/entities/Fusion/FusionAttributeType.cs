@@ -14,20 +14,17 @@ namespace d360.core.entities
         [DataMember]
         public int? ParentID { get; set; }
 
+        [DataMember, NotMapped]
+        public int? AssetTypeID { get; set; }
+
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "FusionType_Name", Description = "FusionType_Description")]
         public int FusionTypeID { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         public string Name { get; set; }
 
-        //[DataMember]
-        //public string Query { get; set; }
-
         [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
         public string TextPath { get; set; }
-
-        //[DataMember]
-        //public bool Assignable { get; set; }
 
         [DataMember]
         public bool ScanEnabled { get; set; }

@@ -13,6 +13,9 @@ namespace d360.core.entities
     {
         #region Properties
 
+        [DataMember, NotMapped]
+        public int? AssetTypeID { get; set; }
+
         [DataMember]
         public int? ParentID { get; set; }
 

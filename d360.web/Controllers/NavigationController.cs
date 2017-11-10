@@ -64,21 +64,13 @@ namespace d360.web.Controllers
 	                select cast(
 	                case when object = 'ArtifactType' then
 		                'Glossary :: ' + name
-	                when object = 'TaxonomyTypeClass' then
-		                'Models :: ' + name
-	                when object = 'PolicyTypeClass' then
-		                'Policy :: ' + name
 	                else
 		                name
 	                end	
 	                 as varchar(500)) as Title,* from sitenavavailable where parentid is null
 	                union all
 	                select cast((s.Title + ' :: ' + v.name) as varchar(500)) as Title, v.* from sitenavavailable v join s on s.objectid = v.parentid and 
-	                case when v.object = 'TaxonomyType' or v.object = 'PolicyType' then
-		                v.object + 'Class'
-	                else
-		                v.object
-	                end = s.object
+	                v.object = s.object
                 )
                 select * from s where object not like '%Class'").ToList();
 

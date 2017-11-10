@@ -26,7 +26,7 @@ namespace d360.test.jobs
         public void DeployFusionConnector()
         {
             var companyID = 91; //10
-            var fusionTypeID = 29;//13;
+            var fusionTypeID = 102;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);

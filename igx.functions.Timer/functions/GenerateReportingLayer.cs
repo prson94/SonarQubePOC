@@ -302,15 +302,13 @@ select  A.ID,
         A.TextPath, 
         A.[Level], 
         L.Name as LevelName, 
-        L.Description as LevelDescription, 
-        C.Name as Class,
+        L.Description as LevelDescription,
         {columns} 
         dbo.GenerateObjectUrl('{objectType}', A.TaxonomyTypeID, A.ID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore
 from    Taxonomy A 
         {joins} 
         inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
-        inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID 
         left join metrics.Score S on S.Object = 'Taxonomy' and S.ObjectID = A.ID and getutcdate() between S.EffectiveStartDate and S.EffectiveEndDate 
     left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]
 where   A.TaxonomyTypeID = {o.ID}";
@@ -571,11 +569,9 @@ SELECT  T.[ID] as [Taxonomy ID],
         T.[UpdatedBy], 
         CONVERT(VARCHAR(10), t.UpdatedOn, 112) as UpdatedOnKey,
         TY.Name as [Taxonomy Type Name],
-        TC.Name as [Taxonomy Class Name],
         TL.Name as [Level Name]
 FROM [dbo].[Taxonomy] T
 inner join TaxonomyType Ty on TY.ID = t.TaxonomyTypeID
-inner join TaxonomyTypeClass TC on TC.ID = TY.[TaxonomyTypeClassID]
 inner join TaxonomyTypeLevel TL on TL.[TaxonomyTypeID] = TY.ID and TL.[Level] = T.[Level]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -654,13 +650,10 @@ SELECT  p.[ID] as [PolicyID],
         p.[Level],
         pt.Name as [Policy Type],
         ptl.Name as [Policy Level Name],
-        pt.[PolicyTypeClassID],
-        pc.Name as [Policy Classification],
         CONVERT(VARCHAR(10), p.UpdatedOn, 112) as UpdatedOnKey
 FROM    [dbo].[Policy] p
         inner Join PolicyType pt on pt.ID = p.[PolicyTypeID]
-        inner Join PolicyTypeLevel ptl on ptl.PolicyTypeID = pt.ID and ptl.[Level] = p.[level]
-        inner join PolicyTypeClass pc on pc.ID = pt.[PolicyTypeClassID]";
+        inner Join PolicyTypeLevel ptl on ptl.PolicyTypeID = pt.ID and ptl.[Level] = p.[level]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1085,7 +1078,6 @@ select	R.ID as IntersectID,
 		S.[Level] as SourceLevel,
 		SL.Name as SourceLevelName,
 		dbo.GenerateObjectUrl('Taxonomy', S.TaxonomyTypeID, S.ID) as SourceURL,
-		SC.Name as SourceClass,
 		T.ID as TargetID,
 		T.Name as TargetName,
         T.TextPath as TargetTextPath,
@@ -1093,15 +1085,12 @@ select	R.ID as IntersectID,
 		T.[Level] as TargetLevel,
 		TL.Name as TargetLevelName,
 		dbo.GenerateObjectUrl('Taxonomy', T.TaxonomyTypeID, T.ID) as TargetUrl,
-		TC.Name as TargetClass
 from	[Intersect] R
 		inner join Taxonomy S on R.Subject = 'Taxonomy' and S.ID = R.SubjectID
 		inner join Taxonomy T on R.Object = 'Taxonomy' and T.ID = R.ObjectID
 		inner join TaxonomyType ST on ST.ID = S.TaxonomyTypeID
-        inner join TaxonomyTypeClass SC on SC.ID = ST.TaxonomyTypeClassID
         left join TaxonomyTypeLevel SL on SL.TaxonomyTypeID = S.TaxonomyTypeID and S.[Level] = SL.[Level]
 		inner join TaxonomyType TT on TT.ID = T.TaxonomyTypeID
-        inner join TaxonomyTypeClass TC on TC.ID = TT.TaxonomyTypeClassID
 		left join TaxonomyTypeLevel TL on TL.TaxonomyTypeID = T.TaxonomyTypeID and T.[Level] = TL.[Level]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -1110,49 +1099,6 @@ from	[Intersect] R
                         viewSql += $@" VIEW {objectName} AS {selectSql}";
 
                         executeSqlWithTry(companyConnection, viewSql);
-
-                        #endregion
-
-                        #region ModelOwners
-
-//                        objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, "ModelResponsibilities");
-//                        viewNames.Add(objectName);
-
-//                        selectSql = @"
-//select	R.ResponsibilityID,
-//		R.AssigningItemType,
-//		R.AssigningItemID,
-//		R.ObjectID as InformationModelID,
-//		R.ObjectName,
-//		R.ObjectTypeID,
-//		R.ObjectTypeName,
-//		R.ObjectUrl,
-//		COALESCE(U.FirstName + ' ' + U.LastName, R.[ResponsibleObjectName]) as ResponsibleObjectName,
-//		R.[ResponsibleObjectUrl],
-//		R.[PrimaryOwnerResourceID],
-//		GU.FirstName + ' ' + GU.LastName as PrimaryOwnerResourceName,
-//		R.[Role],
-//		R.[CurrentScore],
-//		O.TextPath,
-//		O.[Level],
-//		TL.Name as LevelName,
-//		TL.Description as LevelDescription,
-//		C.Name as [Class]
-//from	ResponsibilityDetail R
-//		inner join Taxonomy O on O.ID = R.ObjectID
-//		inner join TaxonomyType T on T.ID = O.TaxonomyTypeID
-//        inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
-//        left join TaxonomyTypeLevel TL on TL.TaxonomyTypeID = T.ID and TL.[Level] = O.[Level]
-//		left join [reporting].[Global_Resource] U on U.ResourceID = R.[ResponsibleObjectID] and R.[ResponsibleObjectType] = 'Resource'
-//		left join [reporting].[Global_Resource] GU on GU.ResourceID = R.[PrimaryOwnerResourceID]
-//where	ObjectType = 'Taxonomy'";
-
-//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-//                        viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-//                        executeSqlWithTry(companyConnection, viewSql);
 
                         #endregion
 

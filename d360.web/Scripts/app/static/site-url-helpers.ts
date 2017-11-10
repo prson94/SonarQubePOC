@@ -108,11 +108,7 @@ export class SiteUrlHelpers {
             case 'TAXONOMY':
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parentId};hierarchyId=${objectId}`;
             case 'TAXONOMYTYPE':
-                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${objectId}/structure`;
-            case 'TAXONOMYTYPECLASS':
-                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/classification/${objectName}`;                
-            case 'POLICYTYPECLASS':                
-                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/classification/${objectId}`;                
+                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${objectId}/structure`;              
             case 'POLICYTYPE':
                 return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${objectId}/structure`;                
             case 'POLICY':

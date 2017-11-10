@@ -213,8 +213,6 @@ namespace d360.model
 
         public DbSet<PolicyType> PolicyTypes { get; set; }
 
-        public DbSet<PolicyTypeClass> PolicyTypeClasses { get; set; }
-
         public DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
 
         public DbSet<Predicate> Predicates { get; set; }
@@ -272,8 +270,6 @@ namespace d360.model
         public DbSet<Taxonomy> Taxonomies { get; set; }
 
         public DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
-
-        public DbSet<TaxonomyTypeClass> TaxonomyTypeClasses { get; set; }
 
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
@@ -776,10 +772,14 @@ from	Asset A
             return model;
         }
 
+        public ObjectStyle GetObjectStyle(string type, int id)
+        {
+            return Filter<ObjectStyle>(i => i.ObjectType == type && i.ObjectID == id).FirstOrDefault();
+        }
+
         public ObjectStyle GetObjectStyle(SystemObjects type, int id)
         {
-            var sType = type.ToString();
-            return Filter<ObjectStyle>(i => i.ObjectType == sType && i.ObjectID == id).FirstOrDefault();
+            return GetObjectStyle(type.ToString(), id);
         }
         
         public bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID)

@@ -7,6 +7,7 @@
 }
 
 export class FusionAttributeType {
+    AssetTypeID: number;
     ID: number;
     ParentID: number;
     FusionTypeID: number;

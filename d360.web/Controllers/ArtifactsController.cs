@@ -543,8 +543,11 @@ select	A.ID,
         dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
         {1} 
-        left join Artifact P on P.ID = A.ParentID 
-        where A.ArtifactTypeID = @id and A.ParentID = @p and A.[Visible] = 1";
+        inner join [Intersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID 
+        inner join IntersectType PIT on PIT.ID = PI.IntersectTypeID 
+        inner join Predicate PR on PR.ID = PIT.PredicateID and PR.Type = 3 
+        inner join Artifact P on P.ID = PI.SubjectID 
+where   A.ArtifactTypeID = @id and A.[Visible] = 1";
             var model = processDynamicResults(
                 sql, Request,
                 "ArtifactType", childArtifactTypeID,
@@ -566,26 +569,50 @@ from	Artifact A
         {
             try
             {
-                var type = Company.ArtifactTypes.Where(x => x.ID == id).Single();
+                var type = Company.GetById<ArtifactType>(id);
                 if (type == null) throw new Exception("Artifact Type Not found");
-                var sql = @"
-    select	A.ID,
-            A.ParentID,
-		    A.DisplayValue,
-            P.DisplayValue as Parent,
-            dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
-            {0}
-            dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url            
-    from	Artifact A 
-            {1} 
-            left join Artifact P on P.ID = A.ParentID 
-    where    A.ArtifactTypeID = @id and A.[Visible] = 1";
+
+                var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
+
+                var parentSqlColumn = @"null as ParentID, null as Parent, null as ParentUrl,";
+                var parentSqlJoin = @"";
+
+                if (parentIntersectType != null)
+                {
+                    parentSqlColumn = @"P.ParentID, P.DisplayValue as Parent, P.ParentUrl, ";
+                    parentSqlJoin = @" outer apply (
+				    select	I.SubjectID as ParentID,
+                            ID.DisplayValue,
+                            dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
+				    from	[Intersect] I
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Artifact' and I.ObjectID = A.ID
+                            inner join Asset IA on IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID
+                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID
+                            left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
+						    inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 3
+				    ) P";
+                }
+
+                var dcToken = "{0}";
+                var djToken = "{1}";
+
+                var sql = $@"
+select	A.ID,
+		A.DisplayValue,
+        {parentSqlColumn}
+        {dcToken}
+        dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url            
+from	Artifact A 
+        {djToken} 
+        left join dbo.GetAssetDisplayValue() TD on TD.ID = A.ID
+        {parentSqlJoin}
+where    A.ArtifactTypeID = @id and A.[Visible] = 1";
                 var model = processDynamicResults(
                     sql, Request, 
                     "ArtifactType", id, 
                     true, 
                     sortDataField, sortOrder, pagenum, pagesize,
-                    (type.ParentID > 0 ? new string[] { "P.DisplayValue" } : new string[] {  }), 
+                    (parentIntersectType != null ? new string[] { "P.DisplayValue" } : new string[] {  }), 
                     filter, ownerUsers, ownerGroups, applyHiddenFilters: true, includeIdColumn: false, fetchPermissions: true);
                 return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
             }
@@ -630,9 +657,30 @@ from	Artifact A
         [Route("types")]
         public JsonNetResult GetTypes()
         {
+            var models = Company.Query<ArtifactType>(@"
+select	    FAT.ID,
+		    IT.SubjectID as ParentID,
+		    FAT.Name,
+			FAT.AutoDisplayDescription,
+			FAT.CanOwnFusion,
+			FAT.DisplayFormat,
+		    T.CreatedBy,
+			T.CreatedOn,
+			T.UpdatedBy,
+		    T.UpdatedOn,
+            T.ID as AssetTypeID		
+from	    ArtifactType FAT
+		    inner join AssetType T on T.Object = 'ArtifactType' and T.ObjectID = FAT.ID
+		    outer apply (
+					    select	IT.SubjectID
+					    from	IntersectType IT 
+							    inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = FAT.ID and P.ID = IT.PredicateID and P.Type = 3
+					    ) IT
+order by    FAT.Name").AsQueryable();
+
             return new JsonNetResult
             {
-                Data = Company.Table<ArtifactType>().OrderBy(i => i.Parent.Name).ThenBy(i => i.Name).Select(i => new { i.ID, i.Name, i.ParentID, expanded = true }),
+                Data = models.Select(i => new { i.ID, i.Name, i.ParentID, i.AssetTypeID, expanded = true }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

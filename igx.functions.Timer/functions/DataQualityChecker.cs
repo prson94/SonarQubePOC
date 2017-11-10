@@ -38,49 +38,49 @@ namespace igx.functions.Timer
                 {
                     try
                     {
-                        var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
+//                        var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
 
-                        company.OpenWithRetry(RetryPolicy.DefaultFixed);
+//                        company.OpenWithRetry(RetryPolicy.DefaultFixed);
 
-                        var items = company.Query<TextPathModel>(@"
-select  od.[Object],
-		od.[ObjectID],
-		od.[TextPath],
-		utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/') as CorrectTextPath
-from    cache.objectdetails od
-where   od.[textpath] != utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/') and
-		od.[object] in ('Taxonomy', 'Policy')").ToList();
+//                        var items = company.Query<TextPathModel>(@"
+//select  od.[Object],
+//		od.[ObjectID],
+//		od.[TextPath],
+//		utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/') as CorrectTextPath
+//from    cache.objectdetails od
+//where   od.[textpath] != utility.GetBreadcrumbStringWrapper(od.[object], od.[objectid], '/') and
+//		od.[object] in ('Taxonomy', 'Policy')").ToList();
 
-                        if (items.Count > 0)
-                        {
-                            CoreFunction.AITrackEvent(
-                                functionName,
-                                "Invalid Paths Found", 
-                                new System.Collections.Generic.Dictionary<string, string>() { {
-                                        "Message",
-                                        $"Found {items.Count} item(s) with invalid text paths."
-                                    }
-                                },
-                                c.CompanyID);
-                        }
+//                        if (items.Count > 0)
+//                        {
+//                            CoreFunction.AITrackEvent(
+//                                functionName,
+//                                "Invalid Paths Found", 
+//                                new System.Collections.Generic.Dictionary<string, string>() { {
+//                                        "Message",
+//                                        $"Found {items.Count} item(s) with invalid text paths."
+//                                    }
+//                                },
+//                                c.CompanyID);
+//                        }
 
-                        var errorList = string.Empty;
-                        items.ForEach(i => {
-                            try
-                            {
-                                company.Execute($"update [{i.Object}] set TextPath = @tp where ID = @id", new { tp = i.CorrectTextPath, id = i.ObjectID });
-                            }
-                            catch (Exception ex)
-                            {
-                                errorList += $"Company [{c.CompanyID}] for Object [{i.Object} {i.ObjectID}]: [{ex.GetFullExceptionData()}]; ";
-                            }
-                        });
+//                        var errorList = string.Empty;
+//                        items.ForEach(i => {
+//                            try
+//                            {
+//                                company.Execute($"update [{i.Object}] set TextPath = @tp where ID = @id", new { tp = i.CorrectTextPath, id = i.ObjectID });
+//                            }
+//                            catch (Exception ex)
+//                            {
+//                                errorList += $"Company [{c.CompanyID}] for Object [{i.Object} {i.ObjectID}]: [{ex.GetFullExceptionData()}]; ";
+//                            }
+//                        });
 
-                        if (!string.IsNullOrEmpty(errorList))
-                        {
-                            CoreFunction.AITrackException(functionName, new ApplicationException($"The following TextPath update errors occurred: {errorList}"), c.CompanyID);
-                            log.Error(errorList);
-                        }
+//                        if (!string.IsNullOrEmpty(errorList))
+//                        {
+//                            CoreFunction.AITrackException(functionName, new ApplicationException($"The following TextPath update errors occurred: {errorList}"), c.CompanyID);
+//                            log.Error(errorList);
+//                        }
                     }
                     catch (Exception ex)
                     {

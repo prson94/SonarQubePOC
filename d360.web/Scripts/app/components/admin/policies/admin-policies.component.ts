@@ -8,14 +8,25 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { PolicyType } from '../../../models/policy.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { AssetTypeService } from "../../../services/asset-type.services";
 
 @Component({
     selector: 'd3s-admin-policies-component',
-    providers: [PoliciesService],
-    template: ` <div class="row">
+    providers: [PoliciesService, AssetTypeService],
+    template: ` <div class="tile tile-detail" *ngIf="showEditor || showDelete">
+                    <d3s-asset-type-editor-form  *ngIf="showEditor" [assetTypeClass]="'P'" [id]="selected?.AssetTypeID" [title]="'Edit Policy Type'" (onCancel)="closeEditor()" (onComplete)="savePolicyType($event)"></d3s-asset-type-editor-form>
+                    <d3s-delete-form *ngIf="showDelete"
+                        [callback]="theDeleteCallback"
+                        [itemId]="selected?.AssetTypeID"
+                        [method]="'callback'"
+                        [prompt]="'Are you sure you want to delete the policy type [' + [selected?.Name] + ']?'"                                         
+                        (onCancel)="showDelete=false;"
+                    ></d3s-delete-form>
+                </div>
+                <div class="row" *ngIf="!showEditor && !showDelete">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor && !showDelete">Policy Types
+                            <header>Policy Types
                                 <d3s-tile-actions [hasAdd]="true" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" (addClick)="add()"></d3s-tile-actions>                            
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -24,8 +35,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                                 <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="policyTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
                                     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                                     <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>     
-                                    <p-column field="PolicyTypeClass" header="Classification" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                                               
-                                    <p-column field="MaximumDepth" header="Max Depth" sortable="true"  [filter]="!showSimpleFilter"></p-column>                                                        
+                                    <p-column field="MaximumDepth" header="Max Depth" sortable="true"  [filter]="!showSimpleFilter" [style]="{width:'100px'}"></p-column>                                                        
                                     <p-column [style]="{width:'40px'}">
                                         <ng-template let-policy="rowData"  pTemplate type="body">
                                             <div class="RowTools">
@@ -41,18 +51,10 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
                                         </ng-template>
                                     </p-column>    
                                 </p-dataTable>      
-                            </span>
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'PolicyType'" [title]="'Policy Type'" [selection]="selected" (saveClick)="savePolicyType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
-                            <d3s-delete-form *ngIf="showDelete"
-                                [callback]="theDeleteCallback"
-                                [itemId]="selected?.ID"
-                                [method]="'callback'"
-                                [prompt]="'Are you sure you want to delete the policy type [' + [selected?.Name] + ']?'"                                         
-                                (onCancel)="showDelete=false;"
-                            ></d3s-delete-form>        
+                            </span>    
                         </div>
                     </div>               
-                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">
+                    <div class="col l8 s12" *ngIf="selected">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
@@ -99,15 +101,26 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-    
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+
+    protected assetTypeService: AssetTypeService = null;
+
+    constructor(
+        private stateService: StateService,
+        rightSidebarService: RightSidebarService,
+        private policiesService: PoliciesService,
+        protected messagesService: MessagesService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        assetTypeService: AssetTypeService,
+        titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
+
+        this.assetTypeService = assetTypeService;
+
         this.areaName = "Policy Types";
         this.setCommonItems();
         this.theDeleteCallback = this.deletePolicyType.bind(this);
         this.setCommonRightSideBar(true);
 
-        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag'], 'admin/classification/PolicyTypeClass'));
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
@@ -127,7 +140,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
 
     getPolicyTypes() {
         this.isLoading = true;
-        this.policiesService.getPolicyTypesWithClassification()
+        this.policiesService.getPolicyTypes()
             .then(result => {
                 this.policyTypes = result;
                 this.isLoading = false;
@@ -136,7 +149,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     }
         
     deletePolicyType(id: number) {
-        this.policiesService.deletePolicy(id)
+        this.assetTypeService.deleteAssetType(id)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
@@ -149,16 +162,9 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     }
 
     savePolicyType(event) {
-        
-        this.policiesService.savePolicyType(event.item)
-            .then(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
-                    this.getPolicyTypes();
-                }
-                this.showEditor = false;
-                this.stateService.reloadLeftNavMenu();
-            });
+        this.showEditor = false;
+        this.getPolicyTypes();
+        this.stateService.reloadLeftNavMenu();
     }
 
     closeEditor() {
