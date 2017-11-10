@@ -80,9 +80,9 @@ BEGIN
 	if @type = 'IntersectType'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
-			SELECT			ID,		tName.Name,	T.Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Intersect Type'
-			FROM	IntersectType T
-			CROSS APPLY dbo.GetIntersectTypeNames(@id) tName	
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Intersect Type'
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
 			WHERE	ID = @id
 	end
 

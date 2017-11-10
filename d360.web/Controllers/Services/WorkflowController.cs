@@ -1481,11 +1481,8 @@ order by wi.StartedOn desc";
                 from
                 (
 	                select distinct 
-		                r.* 
-	                from ResponsibilityDetail d
-	                left join [ResourceGroup] g on g.GroupID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Group'
-	                left join reporting.Global_resource r on (r.ResourceID = d.ResponsibleObjectID and d.ResponsibleObjectType = 'Resource') 
-		                or (r.ResourceID = g.ResourceID and d.ResponsibleObjectType = 'Group')
+		                d.FirstName, d.LastName 
+	                from ResponsibilityDetails d
 	                where ResponsibilityTypeID  = @id
                 ) r";
 
@@ -1504,7 +1501,7 @@ order by wi.StartedOn desc";
                                 {
                                     if (settings.ResponsibilityTypeID != null)
                                     {
-                                        //var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                        var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
                                         result.ResponsibleUser = "";
                                     }
                                 }
@@ -1524,7 +1521,7 @@ order by wi.StartedOn desc";
                             {
                                 if (settings.ResponsibilityTypeID != null)
                                 {
-                                    //var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
+                                    var resources = Company.Query<string>(responsibilitySql, new { id = (int)settings.ResponsibilityTypeID });
                                     result.ResponsibleUser = "";
                                 }
                             }

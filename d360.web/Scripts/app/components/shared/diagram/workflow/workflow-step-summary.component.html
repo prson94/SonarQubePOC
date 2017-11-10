@@ -132,7 +132,7 @@
                     </div>
                     <div *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index">
                         <ng-container *ngIf="step.settings.ResponsibilityTypeID[i] != null">
-                            {{step.settings.ResponsibilitySide != null ? step.settings.ResponsibilitySide : ''}} {{getResponsibilityName(i)}}
+                            {{step?.settings?.ResponsibilitySide != null ? step?.settings?.ResponsibilitySide : ''}} {{getResponsibilityName(i)}}
                         </ng-container>
                     </div>
                 </div>

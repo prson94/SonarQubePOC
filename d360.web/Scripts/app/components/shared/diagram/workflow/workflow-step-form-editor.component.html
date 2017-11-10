@@ -64,7 +64,7 @@
                     </select>
                 </div>
             </ng-container>
-            <ng-container *ngIf="step.settings.ResponsibilitySide != null && !isLoadingRes">
+            <ng-container *ngIf="((step.settings.ResponsibilitySide != null && step.settings.ResponsibilitySide != '' && objectType == 'IntersectType') || objectType != 'IntersectType') && !isLoadingRes">
                 <div class="FieldName">
                     Responsibility
                 </div>

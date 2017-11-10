@@ -505,6 +505,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         this.objectDetailService.getObject(this.model.Event.ObjectID, this.model.Event.Object)
             .then(r => {
+              //  console.log(r);
                 this.objectTypeName = r.TypeName + ' :: ' + r.Name;
             });
     }
@@ -877,7 +878,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             return false;
                         break;
                     case 'Responsibility':
-                        if (this.model.Event.Object == 'IntersectType' && n.settings.ResponsibilitySide == null)
+                        if (this.model.Event.Object == 'IntersectType' && n.settings.ResponsibilitySide == null || n.settings.ResponsibilitySide == '')
                             return false;
                         if (n.settings.ResponsibilityTypeID == null)
                             return false;
