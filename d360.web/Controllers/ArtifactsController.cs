@@ -260,6 +260,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             foreach (var field in fields)
             {
                 SetColumnStyles(document, index, styles);
+
                 document.SetCellValue(1, index++, (string)field.FriendlyName);                
             }
 
@@ -328,7 +329,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                     else
                     {
                         document.SetCellValue(rowNumber, index++, "");
-                    }
+                    }                    
                 }
                 
                 previousRow = row;
@@ -423,11 +424,21 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
         {
             if (styles == null) return;
 
+            //style for the whole column
             var columnStyle = styles.Where(x => x.Row == -1 && x.Column == column).FirstOrDefault();
 
-            if (columnStyle == null) return;
-                        
-            document.SetColumnStyle(column, CreateStyle(columnStyle));            
+            if (columnStyle != null)
+            {
+                document.SetColumnStyle(column, CreateStyle(columnStyle));
+            }
+
+            //style for the header
+            var columnheaderStyle = styles.Where(x => x.Row == 1 && x.Column == column).FirstOrDefault();
+
+            if (columnheaderStyle != null)
+            {
+                document.SetCellStyle(1,column, CreateStyle(columnheaderStyle));
+            }
         }
 
         private void SetRowStyles(SLDocument document, int row, ICollection<ArtifactTypeExportTemplateStyle> styles)
@@ -458,7 +469,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             return style;
         }
-
+        
         private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
         {
             int index = 1;
