@@ -57,7 +57,12 @@ namespace d360.core.enums
             Name("Reference"),
             Description("Reference asset.")
         ]
-        Reference = 9
+        Reference = 9,
+        [
+            Name("Organization"),
+            Description("Organization asset.")
+        ]
+        Organization = 10
     }
 
     public class AssetTypeClassInfo

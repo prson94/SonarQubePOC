@@ -48,16 +48,16 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(false)
         ]
         IntraTypeHierarchy = 4,
-        //[
-        //    Name("Parent Child Hierarchy"), 
-        //    Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), 
-        //    ReadOnly(true), 
-        //    AllowIntersectTypeAssignment(false),
-        //    AllowMultiplePredicates(false), 
-        //    AllowDifferentSubjectObject(true), 
-        //    ForceDifferentSubjectObject(true)
-        //]
-        //ParentChildHierarchy = 5,
+        [
+            Name("User Ownership - NOT USED YET"),
+            Description("This allows owners to be ssociated with owned items."),
+            ReadOnly(true),
+            AllowIntersectTypeAssignment(false),
+            AllowMultiplePredicates(false),
+            AllowDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(true)
+        ]
+        UserOwnership = 5,
         [
             Name("Grammatic Association"), 
             Description("Allows you to establish grammatic association between two objects."), 
@@ -107,7 +107,17 @@ namespace d360.core.enums
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true)
         ]
-        Usage = 10
+        Usage = 10,
+        [
+            Name("Object Ownership"),
+            Description("This type of predicate allows for fusion configurations to be owned by glossary-level objects."),
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(true)
+        ]
+        ObjectOwnerhip = 11
     }
 
     public class PredicateTypeInfo

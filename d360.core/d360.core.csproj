@@ -141,6 +141,7 @@
     <Compile Include="entities\Metric\MetricMap.cs" />
     <Compile Include="entities\Metric\MetricGroup.cs" />
     <Compile Include="entities\Metric\MetricItem.cs" />
+    <Compile Include="entities\Organization\OrganizationType.cs" />
     <Compile Include="entities\Organization\OrganizationRegistration.cs" />
     <Compile Include="entities\Organization\OrganizationInvitation.cs" />
     <Compile Include="entities\Organization\OrganizationResource.cs" />

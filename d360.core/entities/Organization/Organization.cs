@@ -13,6 +13,9 @@ namespace d360.core.entities
         public string Name { get; set; }
 
         [DataMember]
+        public int OrganizationTypeID { get; set; }
+
+        [DataMember]
         public bool? Accepted { get; set; }
 
         [DataMember]
@@ -23,6 +26,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string AdministratorEmail { get; set; }
+
+        [IgnoreDataMember, ForeignKey("OrganizationTypeID")]
+        public virtual OrganizationType OrganizationType { get; set; }
 
         [IgnoreDataMember, ForeignKey("OrganizationID")]
         public virtual ICollection<Contract> Contracts { get; set; }
