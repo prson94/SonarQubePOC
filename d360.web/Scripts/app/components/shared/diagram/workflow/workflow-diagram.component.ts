@@ -1446,7 +1446,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 "animationManager.duration": 800,
                 nodeTemplateMap: this.myDiagram.nodeTemplateMap,
                 model: new go.GraphLinksModel(paletteModel),
-                layout: this.g(go.GridLayout, { alignment: go.GridLayout.Location })
+                layout: this.g(go.GridLayout, {
+                    sorting: go.GridLayout.Forward,
+                    comparer: (a, b) => {
+                        if (a.activityType < b.activityType) return -1;
+                        if (a.activityType > b.activityType) return 1;
+                        return 0;
+                    }
+                })
             });
 
         return pt;
