@@ -20,6 +20,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                         <a (click)="navigate(item[column.urlfield])" [innerHtml]="fieldValue"></a>
                     </d3s-tooltip>
                 </span>
+                <span *ngSwitchCase="'string'">{{fieldValue}}</span>                                                        
                 <ng-template ngSwitchDefault>
                     <span *ngIf="fieldValue != null" [innerHtml]="fieldValue"></span>                                        
                 </ng-template>

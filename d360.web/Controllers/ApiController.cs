@@ -451,6 +451,9 @@ namespace d360.web.Controllers
                 case "Boolean":
                     fieldType = "bool";
                     break;
+                case "Html":
+                    fieldType = "html";
+                    break;
             }
 
             return fieldType;
