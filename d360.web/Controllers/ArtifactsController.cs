@@ -257,6 +257,8 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             #region Header
 
+            SetRowStyles(document, 1, styles);
+
             foreach (var field in fields)
             {
                 SetColumnStyles(document, index, styles);
@@ -275,7 +277,8 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                 foreach (var field in fields)
                 {
                     var val = getRowFieldValue(row, field);
-                    SetSpreadsheetValueFromField(document, rowNumber, index, field, val);                    
+                    SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
+                    SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
                     index++;
                 }                
             }
@@ -293,6 +296,8 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             var document = createExcelBaseDocument(template, worksheetName);
 
             #region Header
+
+            SetRowStyles(document, 1, styles);
 
             foreach (var field in fields)
             {
@@ -324,12 +329,14 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                     if (!rowSameAsPrevious)
                     {
                         SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
+                        SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
                         index++;                        
                     }
                     else
                     {
                         document.SetCellValue(rowNumber, index++, "");
-                    }                    
+                        SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
+                    }
                 }
                 
                 previousRow = row;
@@ -368,7 +375,9 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                     {
                         var val = getRowFieldValue(row, field);
                         SetSpreadsheetValueFromField(document, index, columnNumber, field, val);
-                        index++;
+                        SetRowStylesFromField(styles, document, index, columnNumber, field, row);
+
+                        index++;                        
                     }
                 }
             }
@@ -381,6 +390,34 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             document.AutoFitColumn(1, columnNumber);
 
             return document;
+        }
+
+        private void SetRowStylesFromField(ICollection<ArtifactTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
+        {
+            if (!styles.Any()) return;
+
+            //check if the styles collection has an entry for this row
+            var style = styles.Where(x => x.Row == rowIndex && x.Column == -1 && (x.BackgroundColorValueFieldTypeID > 0 || x.ColorValueFieldTypeID > 0)).FirstOrDefault();
+
+            if (style != null)
+            {
+                //we have a style based on the value in another column(s)
+                document.SetCellStyle(rowIndex, columnIndex, CreateStyle(style, row));
+            }
+        }
+
+        private void SetColumnStylesFromField(ICollection<ArtifactTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
+        {
+            if (!styles.Any()) return;
+
+            //check if the styles collection has an entry for this row
+            var style = styles.Where(x => x.Row == -1 && x.Column == columnIndex && (x.BackgroundColorValueFieldTypeID > 0 || x.ColorValueFieldTypeID > 0)).FirstOrDefault();
+
+            if (style != null)
+            {
+                //we have a style based on the value in another column(s)
+                document.SetCellStyle(rowIndex, columnIndex, CreateStyle(style, row));
+            }
         }
 
         private SLDocument createExcelBaseDocument(ArtifactTypeExportTemplate template, string worksheetName)
@@ -438,7 +475,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             if (columnheaderStyle != null)
             {
                 document.SetCellStyle(1,column, CreateStyle(columnheaderStyle));
-            }
+            }            
         }
 
         private void SetRowStyles(SLDocument document, int row, ICollection<ArtifactTypeExportTemplateStyle> styles)
@@ -452,7 +489,7 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
             document.SetRowStyle(row, CreateStyle(columnStyle));
         }
 
-        private SLStyle CreateStyle(ArtifactTypeExportTemplateStyle columnStyle)
+        private SLStyle CreateStyle(ArtifactTypeExportTemplateStyle columnStyle, dynamic row = null)
         {
             SLStyle style = new SLStyle();
 
@@ -464,6 +501,25 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             if (columnStyle.Color.HasValue)
                 style.SetFontColor(System.Drawing.Color.FromArgb(columnStyle.Color.Value));
+
+            if (columnStyle.BackgroundColorValueFieldTypeID > 0 && row != null)
+            {
+                var color = getRowFieldValue(row, columnStyle.BackgroundColorValueFieldTypeID);
+                if (!string.IsNullOrWhiteSpace(color))
+                {
+                    style.Fill.SetPatternType(DocumentFormat.OpenXml.Spreadsheet.PatternValues.Solid);
+                    style.Fill.SetPatternForegroundColor(System.Drawing.ColorTranslator.FromHtml(color));
+                }
+            }
+
+            if(columnStyle.ColorValueFieldTypeID > 0 && row != null)
+            {
+                var color = getRowFieldValue(row, columnStyle.ColorValueFieldTypeID);
+                if (!string.IsNullOrWhiteSpace(color))
+                {
+                    style.SetFontColor(System.Drawing.ColorTranslator.FromHtml(color));
+                }
+            }
 
             style.SetFontBold(columnStyle.IsBold);
 
@@ -522,6 +578,13 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
                 return (string)((row as IDictionary<string, object>)["Parent"]);
             else if (field != null && field.Name == "Url")
                 return (string)((row as IDictionary<string, object>)["Url"]);
+            return "";
+        }
+
+        private string getRowFieldValue(dynamic row, int fieldId)
+        {
+            if(fieldId>0)
+                return (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);            
             return "";
         }
 

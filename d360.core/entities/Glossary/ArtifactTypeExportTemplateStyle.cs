@@ -34,6 +34,10 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 
+        public int BackgroundColorValueFieldTypeID { get; set; }
+
+        public int ColorValueFieldTypeID { get; set; }
+
         #endregion
 
         [IgnoreDataMember]
