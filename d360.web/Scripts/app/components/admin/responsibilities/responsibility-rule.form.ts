@@ -46,7 +46,7 @@ import * as _ from 'lodash';
     providers: [ResponsibilityTypeService, ObjectDetailService],
 })
 
-export class ResponsibilityRuleForm extends BaseComponent implements OnInit, OnChanges {
+export class ResponsibilityRuleForm extends BaseComponent implements OnChanges {
     @Input() ruleId: number;
     @Input() id: number;
 
@@ -59,25 +59,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit, OnC
     private model: ResponsibilityTypeRelationRule = new ResponsibilityTypeRelationRule();
 
     private actionName: string = "Add";
-    //private lookupDefaultValueOptions: SelectItem[];
 
-    //private testPattern: string;
-    //private testPatternValidationText: string;
-    //private syncApiNameWithName: boolean = true;
-
-    //private relationItemCount = 0;
-
-    //private childIntersectTypes: any[] = [];
-    //private childIntersectsLoading = false;
-    //private childIntersectDisabled = true;
-
-    //private filteredLookup: string = '';
-    //private filteredLookupDisplayFields: any[] = [];
-    //private filteredSortOrderList: any[] = [];
-    //private filteredLookupHideHeader: boolean = false;
-    //private filteredLookupHideFooter: boolean = false; 
-    //private selectedLookupToken = null;
-    //private selectedFormatToken = null;
     private objectTypes: SelectItem[] = [];
     private whenCheckTypes: SelectItem[] = [
         { label: "Field", value: "F" },
@@ -91,46 +73,25 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit, OnC
     private thenObjectTypes: SelectItem[] = [
         { label: "Choose...", value: null },
         { label: "Group", value: "GroupType" },
-        { label: "User", value: "ResourceType" }
+        { label: "Organization", value: "OrganizationType" },
+        { label: "User", value: "ResourceType" }        
     ];
     private thenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
-
-    //private supportsPrimaryFilterOption: boolean = false;
-    //private displayFieldSelected: boolean = true;
-
+        
     private errorMessage: string = "";
 
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
-        super();
-        //if (!this.id) {
-        //    this.model = new ResponsibilityTypeRelationRule();
-        //    this.model.Definition = new ResponsibilityTypeRelationRuleDefinition();
-        //    this.model.Definition.When = [];
-        //    this.model.Definition.Then = new ResponsibilityTypeRelationRuleDefinitionThen();
-        //    this.model.Definition.Then.Conditions = [];
-        //}
-
-        //this.model.FieldType = new FieldType();
-        //this.model.FieldType.Object = this.objectType;
-        //this.model.FieldType.ObjectID = this.objectID;
+        super();        
     }
-
-    ngOnInit() {
-        //this.initialItem = _.cloneDeep(this.model);
-    }
-
+    
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'id') {
-                this.load();
-                //this.initialItem = _.cloneDeep(this.model);
+                this.load();                
             }
             else if (p == 'ruleId' && this.model != null) {
                 this.load();
             }
-            //else if (p == 'objectType') {
-            //    this.supportsPrimaryFilterOption = (this.objectType && this.objectType.toLowerCase() == 'artifacttype');
-            //}
         }        
     }
 
@@ -217,9 +178,6 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit, OnC
                 this.whenIntersectTypes = d.IntersectTypes;
                 this.whenFieldTypes.unshift({ label: 'Choose...', value: null, type: null, isLookup: false, values: [] });
                 this.whenIntersectTypes.unshift({ label: 'Choose...', value: null });
-            })
-            .then(() => {
-                //this.isLoading = false;
             });
 
         return Promise.all(promises).then(() => { });
@@ -263,9 +221,6 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit, OnC
         this.responsibilityTypeService.testWhen(this.model)
             .then(d => {
                 this.WhenTestRows = d;
-            })
-            .then(() => {
-                //this.isLoading = false;
             });
 
         return Promise.all(promises).then(() => { });
@@ -281,19 +236,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit, OnC
 
         if (value == null)
             return Promise.resolve();
-
-        //var otData = value.split("|");
-
-        this.model.StructuredDefinition.Then.Object = value;//otData[0];
-        this.model.StructuredDefinition.Then.ObjectID = 1;//+otData[1];
+        
+        this.model.StructuredDefinition.Then.Object = value;
+        this.model.StructuredDefinition.Then.ObjectID = 1;
 
         this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
             .then(d => {
                 this.thenFieldTypes = d.FieldTypes;
                 this.thenFieldTypes.unshift({ label: 'Choose...', value: null, type: null, isLookup: false, values: [] });
-            })
-            .then(() => {
-                //this.isLoading = false;
             });
 
         return Promise.all(promises).then(() => { });
@@ -309,9 +259,6 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit, OnC
         this.responsibilityTypeService.testThen(this.model)
             .then(d => {
                 this.ThenTestRows = d;
-            })
-            .then(() => {
-                //this.isLoading = false;
             });
 
         return Promise.all(promises).then(() => { });

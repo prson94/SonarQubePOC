@@ -19,7 +19,7 @@ from	Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ";
             var fCount = 1;
             var rCount = 1;
-            if (rule.StructuredDefinition.When != null)
+            if (rule.StructuredDefinition != null && rule.StructuredDefinition.When != null)
             {
                 rule.StructuredDefinition.When.ForEach(w => {
                     if (w.CheckType == "F")
