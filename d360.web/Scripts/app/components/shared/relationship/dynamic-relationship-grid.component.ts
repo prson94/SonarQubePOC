@@ -49,7 +49,7 @@ declare var CompanySettings;
                     </p-dataTable>   
                 </span>
                 <div *ngIf="showTechnical && !shouldShowEditor()">
-                    <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" [addTechnicalRelationship]="addRelationship" (addTechnicalRelationshipChange)="addRelationship=false;addRelationshipChange.emit(addRelationship);" (closeClick)="showTechnical=false" [hasEdit]="hasEdit" [hasDelete]="hasDelete"></d3s-relationship-technical-relations>                    
+                    <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" [addTechnicalRelationship]="addRelationship" (allTechnicalRelationshipsDeleted)="selected.HasTechnicalRelationships=false;" (addTechnicalRelationshipChange)="addRelationship=false;addRelationshipChange.emit(addRelationship);selected.HasTechnicalRelationships=true;" (closeClick)="showTechnical=false" [hasEdit]="hasEdit" [hasDelete]="hasDelete"></d3s-relationship-technical-relations>                    
                 </div>
                 <d3s-dynamic-editor *ngIf="shouldShowEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="intersectTypeID" [objectType]="'IntersectType'" [targetType]="objectType" [targetTypeID]="objectID" [title]="targetName + ' Relationship'" [selection]="addRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                
                 <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">

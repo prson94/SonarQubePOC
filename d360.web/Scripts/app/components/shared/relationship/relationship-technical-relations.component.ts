@@ -83,6 +83,7 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
     @Input() objectName: string;
 
     @Output() closeClick = new EventEmitter();
+    @Output() allTechnicalRelationshipsDeleted = new EventEmitter();
 
     @Input() addTechnicalRelationship: boolean;
     @Output() addTechnicalRelationshipChange = new EventEmitter();
@@ -104,8 +105,7 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.relationship) this.load();        
-        console.log(this.relationship);
+        if (this.relationship) this.load();                
     }
 
     private load() {
@@ -139,15 +139,11 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
         this.fusionAttributeItemDetailsComponent.openItemInFusion();        
     }
 
-    private deleteItem(item) {
-        console.log(item.ID);
+    private deleteItem(item) {        
         this.relationshipsService.deleteRelationshipItem(item.ID)
             .then(res => {
-                let indx = this.relations.findIndex(x => x.ID == item.ID);
-
-                    if (indx >= 0) {
-                        this.relations.splice(indx, 1);
-                    }                
+                this.relations = this.relations.filter(x => x.ID != item.ID);                
+                if (this.relations.length == 0) this.allTechnicalRelationshipsDeleted.emit();
             });
         
     }
@@ -172,5 +168,3 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
         return this.showEditor;
     }
 }
-
-
