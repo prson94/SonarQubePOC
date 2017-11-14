@@ -4478,9 +4478,8 @@ where    A.RuleID = @id", new { id });
 	                                c.ObjectTypeName, 
 	                                c.IconForeColor, 
 	                                c.IconBackColor
-                                from cache.ObjectDetails c
-                                 left join Artifact A with(nolock) on c.[Object] = 'Artifact' and A.ID = c.ObjectID
-                                where c.[Object] not in ('Intersect') and (c.Name like @beginsWith or (len(@val) > 2 and c.Name like @contains))";
+                                from cache.ObjectDetails c                                 
+                                where c.[Object] not in ('Intersect','FusionAttribute') and (c.Name like @beginsWith or (len(@val) > 2 and c.Name like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
             dbParams.Add("val", $"{phrase}%");
