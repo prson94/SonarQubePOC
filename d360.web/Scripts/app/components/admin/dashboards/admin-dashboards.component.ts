@@ -175,6 +175,9 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 else {
                     this.reports[this.findReportIndex(event.report.ID)] = event.report;
                 }
+
+                if (event.report.ReportType == 'sagacity') event.report.DisplayType = 'Data3Sixty Analyze';
+                else event.report.DisplayType = event.report.ReportType;
                 
                 this.selected = event.report;
                 this.isLoading = false;
