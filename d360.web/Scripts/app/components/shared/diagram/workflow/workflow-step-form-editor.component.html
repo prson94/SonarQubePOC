@@ -68,8 +68,8 @@
                 <div class="FieldName">
                     Responsibility
                 </div>
-                <div *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index">
-                    <select [ngModel]="step.settings.ResponsibilityTypeID[i]" (ngModelChange)="step.settings.ResponsibilityTypeID[i] = $event; stepChange.emit(step)" [style.width]="step.settings.ResponsibilityTypeID.length > 1 ? '90%' : '95%'">
+                <div *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index; trackBy: trackRes">
+                    <select [ngModel]="step.settings.ResponsibilityTypeID[i]" (ngModelChange)="changeResponsibility($event, i)" [style.width]="step.settings.ResponsibilityTypeID.length > 1 ? '90%' : '95%'">
                         <option></option>
                         <option *ngFor="let r of responsibilities" [value]="r.ResponsibilityTypeID">{{r.Name}}</option>
                     </select>

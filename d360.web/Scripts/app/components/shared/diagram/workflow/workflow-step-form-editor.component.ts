@@ -312,11 +312,13 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     addResponsibility() {
         this.step.settings.ResponsibilityTypeID.push(null);
+        this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
         this.stepChange.emit(this.step);
     }
 
     removeResponsibility(i: number) {
         this.step.settings.ResponsibilityTypeID.splice(i, 1);
+        this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
         this.stepChange.emit(this.step);
     }
 
@@ -374,6 +376,17 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         return this.responsibilityService.getResponsibilityTypesByObject(this.responsibleObject, this.responsibleObjectId)
             .then(r => this.responsibilities = r);
+    }
+
+    changeResponsibility(e: any, i: number) {
+        this.step.settings.ResponsibilityTypeID[i] = e;
+        this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
+        this.stepChange.emit(this.step)
+    }
+
+    trackRes(index, item) {
+        //not sure why this is required, but without it Angular has trouble keeping track of the index based responsibility types
+        return index;
     }
 
     validateField() {

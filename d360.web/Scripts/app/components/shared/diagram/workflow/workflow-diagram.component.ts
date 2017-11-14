@@ -881,6 +881,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             return false;
                         break;
                     case 'Responsibility':
+                        //console.log('validateNode', n.settings);
                         if (this.model.Event.Object == 'IntersectType' && n.settings.ResponsibilitySide == null || n.settings.ResponsibilitySide == '')
                             return false;
                         if (n.settings.ResponsibilityTypeID == null)
@@ -891,7 +892,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             if (n.settings.ResponsibilityTypeID.length < 1)
                                 return false;
 
-                            let x = n.settings.ResponsibilityTypeID.findIndex(r => r == null || r < 0);
+                            let x = n.settings.ResponsibilityTypeID.findIndex(r => r == null || r == "" || r < 0);
                             if (x > -1)
                                 return false;
                         }
