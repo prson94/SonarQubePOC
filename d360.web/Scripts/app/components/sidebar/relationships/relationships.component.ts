@@ -2,6 +2,7 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { PermissionsService } from '../../../services/permissions.service';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-relationships-wrapper',
@@ -14,7 +15,7 @@ import { PermissionsService } from '../../../services/permissions.service';
                     </div>
                 </div>
         `,
-    providers: [PermissionsService]
+    providers: [PermissionsService, ObjectDetailService]
 })
 
 export class RelationshipsComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -23,7 +24,8 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private permissionsService: PermissionsService
+        private permissionsService: PermissionsService,
+        private objectDetailService: ObjectDetailService
     ) {
         super();
     }
@@ -32,6 +34,10 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
+
+            this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
+                if (res) this.objectName = res.Name ? res.Name : res.DisplayValue;
+            });
 
             this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
         });
