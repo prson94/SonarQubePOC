@@ -59,6 +59,8 @@
         var CurrentResourceID = @(CurrentResourceID);
         var ResourceHomePage = '@(ResourceHomePage)';
         var SingleSignOn = @(ViewData["SingleSignOn"].ToString().ToLower());
+        var ResourceName = '@(ViewData["ResourceName"].ToString())';
+        var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
     </script>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v4.3.0/primeng.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />

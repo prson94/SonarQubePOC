@@ -25,7 +25,7 @@ import { HeaderComponent } from './header.component';
 import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { HeaderShoppingCartComponent } from './header-shopping-cart.component';
 import { HeaderHomePageComponent } from './header-homepage.component';
-
+import { HeaderProfileComponent } from './header-profile.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -53,6 +53,7 @@ import { HeaderHomePageComponent } from './header-homepage.component';
         RaiseIssueButtonComponent,
         HeaderShoppingCartComponent,
         HeaderHomePageComponent,
+        HeaderProfileComponent,
     ],
     exports: [
         HeaderComponent

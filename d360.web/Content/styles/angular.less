@@ -626,22 +626,25 @@ a.breadcrumb {
     list-style:none;    
 }
 
-.header-search-active > .header-search-panel{
+.header-search-active > .header-search-panel, .header-search-active > .header-profile-panel {
     display: block !important;
-    width:auto;
+    width: auto;
 }
 
-.header-search-panel{
-    background-color:#E7E7E7; //10 opacity of hover color for li items in header xFF (x) .1 = F FF - F = F0
+.header-search-panel, .header-profile-panel {
+    background-color: #E7E7E7; //10 opacity of hover color for li items in header xFF (x) .1 = F FF - F = F0
     border-radius: 0 0 3px 3px;
 }
 
-
+.header-profile-panel {    
+    white-space: nowrap;
+    color: black;
+    background-color:white;
+}
 /* end header search*/
-
-.grid-simple-filter{
-    margin-bottom:10px !important;
-    width:100%;
+.grid-simple-filter {
+    margin-bottom: 10px !important;
+    width: 100%;
 }
 
 /* follow header styles*/

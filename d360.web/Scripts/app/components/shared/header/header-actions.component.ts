@@ -23,15 +23,14 @@ declare var CompanySettings;
                     <li *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
                     <li *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
                     <li><a href="/slo" title="Sign out"><i class="fa fa-sign-out"></i></a></li>
-                    <li><a [routerLink]="resourceUrl()" class="photo" title="Go to your profile"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a></li>                    
+                    <li><d3s-header-profile></d3s-header-profile></li>                    
                 </ul> 
                 `,
     providers: [FavoritesService]
 })
 
 export class HeaderActionsComponent {
-    @Output() controlWidthChange = new EventEmitter();
-    private resourceId: number = CurrentResourceID;
+    @Output() controlWidthChange = new EventEmitter();    
     private isAdminUrl = false;
     private uri = "";
     private hasRaiseIssueButton: boolean = true;
@@ -89,10 +88,6 @@ export class HeaderActionsComponent {
             this.showShoppingCart = true;
         }
 
-    }
-
-    private resourceUrl() {
-        return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);
     }
 
     private calculateControlWidth() {
