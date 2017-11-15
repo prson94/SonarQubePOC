@@ -1075,8 +1075,6 @@ namespace d360.web.Controllers
 
         #region ArtifactType
 
-        #region Field Generation
-
         /// <param name="id">ArtifactID</param>
         [Route("ArtifactType_DeleteFields"), NonNullableParameters]
         public JsonResult ArtifactType_DeleteFields(int id)
@@ -1088,224 +1086,6 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [HttpGet, ActionName("ArtifactType"), Route("ArtifactType")]
-        public JsonNetResult GetArtifactType(int? id = null, int? parentID = null)
-        {
-            try
-            {
-                var model = new ArtifactTypeEditorModel();
-                var loadPredicates = false;
-
-                if (parentID == null)
-                {
-                    var at = Company.GetById<ArtifactType>((int)id);
-                    var style = Company.GetObjectStyle(SystemObjects.ArtifactType, (int)id);
-
-                    model = new ArtifactTypeEditorModel
-                    {
-                        FormName = Resources.FormInfo.Edit_ArtifactType_Title,
-                        FormDescription = Resources.FormInfo.Edit_ArtifactType_Directions,
-                        FormUri = "/form/EditArtifactType",
-                        FormMethod = "PUT",
-                        ArtifactType = at,
-                        IconBackColor = ((style != null) ? style.IconBackColor : "#000"),
-                        IconForeColor = ((style != null) ? style.IconForeColor : "#FFF"),
-                        Tokens = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id && !this.limitedFieldTypes.Contains(i.Type)).OrderBy(i => i.FriendlyName).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()
-                    };
-
-                    var intersectType = Company.Filter<IntersectType>(i =>
-                        i.Object == "ArtifactType" &&
-                        i.ObjectID == at.ID &&
-                        i.Predicate.Type == PredicateType.InterTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersectType != null)
-                    {
-                        loadPredicates = true;
-                        model.ParentID = intersectType.SubjectID;
-                        model.SelectedPredicateID = intersectType.PredicateID;
-                    }
-                } 
-                else
-                {
-                    loadPredicates = true;
-                    model = new ArtifactTypeEditorModel
-                    {
-                        FormName = Resources.FormInfo.Add_ArtifactType_Title,
-                        FormDescription = Resources.FormInfo.Add_ArtifactType_Directions,
-                        FormUri = "/form/AddArtifactType",
-                        FormMethod = "POST",
-                        ArtifactType = new ArtifactType { ParentID = parentID, CanOwnFusion = false, DisplayFormat = "{Name}" },
-                        IconBackColor = "#000",
-                        IconForeColor = "#FFF",
-                        SelectedPredicateID = null,
-                        ParentID = parentID,
-                        Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
-                    };
-                }
-
-                if (loadPredicates)
-                {
-                    model.Predicates = Company.Filter<Predicate>(i => i.Type == PredicateType.InterTypeHierarchy).Select(i => new PrimeSelectItem { label = i.Inverse, value = i.ID.ToString() }).ToList();
-                }
-
-                return new JsonNetResult
-                {
-                    Data = model,
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-            catch (Exception ex)
-            {
-                return jsonNetException(ex);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("ArtifactType"), Route("ArtifactType")]
-        public JsonResult PostArtifactType(ArtifactTypeEditorModel model)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.ArtifactType, 0, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var a = new ArtifactType
-                {
-                    Name = model.ArtifactType.Name,
-                    DisplayFormat = model.ArtifactType.DisplayFormat,
-                    Description = model.ArtifactType.Description,
-                    CanOwnFusion = model.ArtifactType.CanOwnFusion,
-                    AutoDisplayDescription = model.ArtifactType.AutoDisplayDescription
-                };
-                Company.Add(a);
-
-
-                if (model.ParentID.HasValue)
-                {
-                    var intersectType = new IntersectType
-                    {
-                        Subject = SystemObjects.ArtifactType.ToString(),
-                        SubjectID = model.ParentID.Value,
-                        SubjectCardinality = Cardinality.One,
-                        Object = SystemObjects.ArtifactType.ToString(),
-                        ObjectID = a.ID,
-                        ObjectCardinality = Cardinality.Many
-                    };
-                    Company.Add(intersectType);
-
-                    //TODO: Remove the ParentID logic below, in favor of pure relationship.
-                    a.ParentID = model.ArtifactType.ParentID;
-                    if (a.ParentID == 0) a.ParentID = null;
-                }
-
-                upsertObjectStyle(SystemObjects.ArtifactType, a.ID, model.IconForeColor, model.IconBackColor, a.Name);
-
-                dynamic custom = new
-                {
-                    ParentID = model.ParentID,
-                    Name = a.Name,
-                    action = "add"
-                };
-
-                if (a.ID > 0)
-                {
-                    Company.Add(new FieldType
-                    {
-                        ObjectID = a.ID,
-                        Object = SystemObjects.ArtifactType.ToString(),
-                        IsListable = true,
-                        IsRequired = true,
-                        IsEditable = true,
-                        FriendlyName = "Name",
-                        Name = "Name",
-                        MaximumLength = 500,
-                        MinimumLength = 1,
-                        SortOrder = 1,
-                        Type = DataType.Text.ToString(),
-                        IsDisplayable = true,
-                        IsPartOfKey = true
-                    });
-                }
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("ArtifactType"), Route("ArtifactType")]
-        public JsonResult PutArtifactType(ArtifactTypeEditorModel model)
-        {
-            try
-            {
-                var id = model.ArtifactType.ID;
-                var existing = Company.GetById<ArtifactType>(id);
-                if (existing == null) throw new NotFoundException("artifact type");
-
-                if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                existing.Name = model.ArtifactType.Name;
-                existing.DisplayFormat = model.ArtifactType.DisplayFormat;
-                existing.Description = model.ArtifactType.Description;
-                existing.CanOwnFusion = model.ArtifactType.CanOwnFusion;
-                existing.AutoDisplayDescription = model.ArtifactType.AutoDisplayDescription;
-
-                Company.Update(existing);
-
-                upsertObjectStyle(SystemObjects.ArtifactType, existing.ID, model.IconForeColor, model.IconBackColor, existing.Name);
-
-                if (model.ParentID.HasValue)
-                {
-                    var intersectType = Company.Filter<IntersectType>(i =>
-                        i.Subject == "ArtifactType" &&
-                        i.SubjectID == model.ParentID &&
-                        i.Object == "ArtifactType" &&
-                        i.ObjectID == existing.ID && 
-                        i.Predicate.Type == PredicateType.InterTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersectType != null)
-                    {
-                        if (intersectType.PredicateID != model.SelectedPredicateID && model.SelectedPredicateID.HasValue)
-                        {
-                            intersectType.PredicateID = model.SelectedPredicateID.Value;
-                            Company.Update(intersectType);
-                        }
-                    }
-                }
-
-                dynamic custom = new
-                {
-                    ParentID = model.ParentID,
-                    Name = existing.Name,
-                    action = "edit"                    
-                };
-
-                return jsonSuccess(existing.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
         }
 
         [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("ArtifactType"), Route("ArtifactType"), NonNullableParameters]
@@ -1351,8 +1131,6 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        #endregion
 
         #endregion
 
@@ -1403,6 +1181,11 @@ namespace d360.web.Controllers
                         appendTitle = FormInfo.TaxonomyType;
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                         break;
+                    case AssetTypeClass.Organization:
+                        ot = SystemObjects.OrganizationType;
+                        appendTitle = FormInfo.OrganizationType;
+                        parentPredicateType = PredicateType.IntraTypeHierarchy;
+                        break;
                     case AssetTypeClass.Policy:
                         ot = SystemObjects.PolicyType;
                         appendTitle = FormInfo.PolicyType;
@@ -1451,6 +1234,13 @@ namespace d360.web.Controllers
                             model.AssetType.Name = t.Name;
                             model.AssetType.Description = t.Description;
                             model.AssetType.DisplayFormat = t.DisplayFormat;
+                            break;
+                        case AssetTypeClass.Organization:
+                            var o = Company.GetById<OrganizationType>(model.AssetType.ObjectID);
+                            model.AssetType.HierarchyMaximumDepth = 1;
+                            model.AssetType.Name = o.Name;
+                            model.AssetType.Description = o.Description;
+                            model.AssetType.DisplayFormat = o.DisplayFormat;
                             break;
                         case AssetTypeClass.Policy:
                             var p = Company.GetById<PolicyType>(model.AssetType.ObjectID);
@@ -10873,8 +10663,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
         #region PolicyType
 
-        #region Field Generation
-
         /// <param name="id">PolicyTypeID</param>
         [Route("PolicyType_DeleteFields"), NonNullableParameters]
         public JsonResult PolicyType_DeleteFields(int id)
@@ -10890,9 +10678,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        #endregion
-
-        #region Form Get/Post
 
         [HttpDelete, Route("DeletePolicyType")]
         public JsonResult DeletePolicyType(FormCollection form)
@@ -10922,8 +10707,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        #endregion
 
         #endregion
 
@@ -16958,8 +16741,6 @@ order by TextPath
 
         #region TaxonomyType
 
-        #region Field Generation
-
         /// <param name="id">TaxonomyTypeID</param>
         [Route("TaxonomyType_DeleteFields"), NonNullableParameters]
         public JsonResult TaxonomyType_DeleteFields(int id)
@@ -16974,10 +16755,6 @@ order by TextPath
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        #endregion
-
-        #region Form Get/Post
 
         [HttpDelete, Route("DeleteTaxonomyType")]
         public JsonResult DeleteTaxonomyType(FormCollection form)
@@ -17007,8 +16784,6 @@ order by TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        #endregion
 
         #endregion
 

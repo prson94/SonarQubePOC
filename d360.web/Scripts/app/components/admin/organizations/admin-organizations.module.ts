@@ -15,12 +15,16 @@ import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/sh
 
 import { AdminModule } from '../admin.module';
 
+import { AdminOrganizationTypesComponent } from './admin-organizationtypes.component';
 import { AdminOrganizationsComponent } from './admin-organizations.component';
 import { AdminOrganizationContractsComponent } from './admin-organization-contracts.component';
 import { AdminOrganizationDomainsComponent } from './admin-organization-domains.component';
 import { AdminOrganizationInvitationsComponent } from './admin-organization-invitations.component';
 import { AdminOrganizationResourcesComponent } from './admin-organization-resources.component';
 import { AdminContractsComponent } from './admin-contracts.component';
+import { AdminOrganizationListComponent } from "./admin-organization-list.component";
+
+import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 
 import { AdminOrganizationsRoutingModule } from './admin-organizations.routes';
 
@@ -31,6 +35,7 @@ import {
     SharedModule,
     DataTableModule,
 } from 'primeng/primeng';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -50,13 +55,16 @@ import {
         AdminModule,
         CoreModule,
         PipesModule,
-        
+
+        SharedFieldDefinitionModule,
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
         SharedDynamicGridEditorModule,
         TilesModule,
     ],
     declarations: [
+        AdminOrganizationTypesComponent,
+        AdminOrganizationListComponent,
         AdminOrganizationsComponent,     
         AdminOrganizationContractsComponent,
         AdminOrganizationDomainsComponent,

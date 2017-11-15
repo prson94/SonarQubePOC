@@ -378,6 +378,9 @@
   <data name="NoFormData_FieldType" xml:space="preserve">
     <value>field type</value>
   </data>
+  <data name="OrganizationType" xml:space="preserve">
+    <value>Organization Type</value>
+  </data>
   <data name="Permisions_Error_Add" xml:space="preserve">
     <value>You do not have permissions to add this.</value>
   </data>

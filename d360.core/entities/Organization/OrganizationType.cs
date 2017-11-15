@@ -15,7 +15,26 @@ namespace d360.core.entities
         [DataMember]
         public string Description { get; set; }
 
+        [DataMember]
+        public string DisplayFormat { get; set; }
+
         [IgnoreDataMember, ForeignKey("OrganizationTypeID")]
         public virtual ICollection<Organization> Organizations { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class OrganizationTypeDetail : BaseIntObject, IIntObject
+    {
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public int AssetTypeID { get; set; }
+
+        [DataMember]
+        public string OrganizationCount { get; set; }
     }
 }

@@ -1,4 +1,12 @@
-﻿export class Organization {
+﻿export class OrganizationType {
+    ID: number;
+    Name: string;
+    Description: string;
+    AssetTypeID: number;
+    OrganizationCount: string;
+}
+
+export class Organization {
     Name: string;
     ID: number;
     Accepted: boolean;

@@ -1218,6 +1218,11 @@
               Looks up a localized string similar to field type.
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.OrganizationType">
+            <summary>
+              Looks up a localized string similar to Organization Type.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.Permisions_Error_Add">
             <summary>
               Looks up a localized string similar to You do not have permissions to add this..
@@ -1873,7 +1878,13 @@
             Manage your organizations within Data3Sixty.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetOrganizations">
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetOrganizationTypes">
+            <summary>
+            Gets a list of all organizations.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetOrganizationsByType(System.Int32)">
             <summary>
             Gets a list of all organizations.
             </summary>

@@ -35,7 +35,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         </p-column>
                     </p-dataTable>  
                 </span>
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organization?.ID" [objectType]="'Contract'" [title]="'Contract'" [selection]="selected" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Contract'" [title]="'Contract'" [selection]="selected" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
@@ -48,8 +48,6 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 })
 
 export class AdminContractsComponent extends BaseComponent implements OnInit {
-    @Input() organization: Organization = null;
-
     error: any;
     
     showEditor: boolean = false;

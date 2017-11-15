@@ -4,6 +4,7 @@ using d360.core.enums;
 using Dapper;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
 
 namespace d360.model
 {
@@ -19,9 +20,9 @@ namespace d360.model
 
         #region Engine Methods
 
-        public List<GenerateAssetTypeSqlModel> GenerateAssetTypeSql(SystemObjects type, int typeID, PredicateType predicateType, out string baseSql, bool showPassword = false)
+        public List<GenerateAssetTypeSqlModel> GenerateAssetTypeSql(SystemObjects type, int typeID, PredicateType predicateType, out string sql, bool showPassword = false)
         {
-            baseSql = @"
+            sql = @"
 	select	A.ID as AssetID,
 			A.ObjectID as ID,
 			P.ParentID,
@@ -39,7 +40,16 @@ namespace d360.model
 						where	I.Object = A.Object and I.ObjectID = A.ObjectID
 						) P
     {2}";
-            return Database.Connection.Query<GenerateAssetTypeSqlModel>(@"exec GenerateAssetTypeSql @type, @id, @pt, @showPassword", new { type = type.ToString(), id = typeID, pt = (int)predicateType, showPassword }).AsList<GenerateAssetTypeSqlModel>();
+            var statements = Database.Connection.Query<GenerateAssetTypeSqlModel>(@"exec GenerateAssetTypeSql @type, @id, @pt, @showPassword", new { type = type.ToString(), id = typeID, pt = (int)predicateType, showPassword }).AsList<GenerateAssetTypeSqlModel>();
+
+            var joins = string.Join(" ", statements.Where(i => !(!i.IsListable && i.SortOrder != 0)).Select(i => i.JoinStatement));
+            var columns = string.Join(", ", statements.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).Select(i => i.ColumnStatement));
+            if (!string.IsNullOrEmpty(columns)) columns += ", ";
+            var sorts = string.Join(", ", statements.Where(i => !(!i.IsListable && i.SortOrder != 0)).OrderBy(i => i.SortOrder).Select(i => i.SortStatement));
+            if (!string.IsNullOrEmpty(sorts)) sorts = "order by " + sorts;
+            sql = string.Format(sql, columns, joins, sorts);
+
+            return statements;
         }
 
         #endregion

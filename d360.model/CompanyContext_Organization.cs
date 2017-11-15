@@ -28,6 +28,8 @@ namespace d360.model
 
         public DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }
 
+        public DbSet<OrganizationType> OrganizationTypes { get; set; }
+
         #endregion
 
         #region Engine Methods

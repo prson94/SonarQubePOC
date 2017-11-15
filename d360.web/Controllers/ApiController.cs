@@ -5631,14 +5631,27 @@ where    A.RuleID = @id", new { id });
                             }
                         });
 
-                        model.rows.Add(new DetailReadOnlyRowModel
+                        if (!string.IsNullOrEmpty(refType.Description))
                         {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
+                            model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                new ReadOnlyField { Name = refType.GetName(i => i.Description), FieldName = "Description", FieldDescription = refType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(refType.Description) ? "None provided" : refType.Description }
-                            }
-                        });
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = refType.GetName(i => i.Description), FieldName = "Description", FieldDescription = refType.GetDescription(i => i.Description), Value = refType.Description }
+                                }
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(refType.SourceNotes))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = refType.GetName(i => i.SourceNotes), FieldName = "SourceNotes", FieldDescription = refType.GetDescription(i => i.SourceNotes), Value = refType.SourceNotes }
+                                }
+                            });
+                        }
                     }
                     break;
                 #endregion

@@ -1,0 +1,139 @@
+﻿import { Component, Input, OnChanges, SimpleChange, Output, EventEmitter } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { OrganizationsService } from '../../../services/organizations.service';
+import { MessagesService } from '../../../services/messages.service';
+import { BaseComponent } from '../../shared/base.component';
+import { Organization, OrganizationType } from '../../../models/organization.model';
+
+@Component({
+    selector: 'd3s-admin-organization-list-component',
+    providers: [OrganizationsService],
+    template: `        
+    <div class="tile tile-detail">
+        <header *ngIf="!showEditor && !showDelete">
+            Organizations
+            <d3s-tile-actions [hasAdd]="true" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" (addClick)="add()"></d3s-tile-actions>
+        </header>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <span *ngIf="!isLoading && !showEditor && !showDelete">
+            <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+            <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="organizations" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedOrganization"  (onRowDblclick)="selectedOrganization=$event.data;showEditor=true;organizationUpdated.emit(selectedOrganization);">
+                <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
+                <p-column field="Name" header="Name" sortable="true"  [filter]="!showSimpleFilter"></p-column>
+                <p-column field="AdministratorEmail" header="Administrator Email"></p-column>
+                <p-column field="DateAccepted" header="Accepted On">
+                    <ng-template pTemplate type="body" let-item="rowData">
+                        {{ item.DateAccepted | date: 'short' }}
+                    </ng-template>
+                </p-column>
+                <p-column field="AcceptedBy" header="Accepted By">
+                    <ng-template let-item="rowData" pTemplate type="body">
+                        <a (click)="openResource(item)">{{item.AcceptedByName}}</a>
+                    </ng-template>
+                </p-column>
+                <p-column [style]="{width:'40px'}">
+                    <ng-template let-item="rowData"  pTemplate type="body">
+                        <div class="RowTools">
+                            <a style="cursor:pointer;" (click)="selectedOrganization=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                        </div>
+                    </ng-template>
+                </p-column>
+                <p-column  [style]="{width:'40px'}">
+                    <ng-template let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">
+                            <a style="cursor:pointer;" (click)="selectedOrganization=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </ng-template>
+                </p-column>
+            </p-dataTable>
+        </span>
+        <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selectedOrganization?.ID" [objectType]="'Organization'" [title]="'Organization'" [selection]="selectedOrganization" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+        <d3s-delete-form *ngIf="showDelete"
+            [callback]="theDeleteCallback"
+            [itemId]="selectedOrganization?.ID"
+            [method]="'callback'"
+            [prompt]="'Are you sure you want to delete the organization [' + [selectedOrganization?.Name] + ']?'"                                         
+            (onCancel)="showDelete=false;"
+        ></d3s-delete-form>
+    </div>
+    `
+})
+
+export class AdminOrganizationListComponent extends BaseComponent implements OnChanges {
+    @Input() organizationType: OrganizationType = null;
+    @Output() organizationUpdated = new EventEmitter();
+
+    selectedOrganization: Organization;
+
+    organizations: Organization[] = [];
+    showEditor: boolean = false;
+    showDelete: boolean = false;
+    theDeleteCallback: Function;
+
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        private organizationService: OrganizationsService,
+        private messagesService: MessagesService) {
+        super();
+
+        this.theDeleteCallback = this.deleteOrganization.bind(this);
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (this.organizationType != null) this.getOrganizations();
+    }
+
+    getOrganizations() {
+        this.isLoading = true;
+        console.log(this.organizationType);
+        this.organizationService.getOrganizationsByType(this.organizationType.ID)
+            .then(result => {
+                this.organizations = result;
+                this.isLoading = false;
+                if (this.organizations.length > 0) this.selectedOrganization = this.organizations[0];
+
+                this.organizationUpdated.emit(this.selectedOrganization);
+            });
+    }
+        
+    deleteOrganization(id: number) {
+        this.organizationService.deleteOrganization(id)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                if (result.type != 'error') {
+                    this.selectedOrganization = this.organizations.length > 0 ? this.organizations[0] : null;
+                    this.organizations = this.organizations.filter(x => x.ID != id);
+                }
+            });
+    }
+
+    save(event) {
+        this.organizationService.saveOrganization(event.item)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {
+                    this.showEditor = false;
+                    this.getOrganizations();
+                }
+            });
+    }
+
+    closeEditor() {
+        this.showEditor = false;
+        if (this.selectedOrganization == null) {
+            this.selectedOrganization = this.organizations.length > 0 ? this.organizations[0] : null;
+        }
+    }
+
+    add() {
+        this.showEditor = true;
+        this.selectedOrganization = null;
+    }
+    
+    private openResource(event) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.AcceptedBy));
+    }
+}

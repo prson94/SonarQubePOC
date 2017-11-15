@@ -60,6 +60,9 @@ export class AdminAssetTypeEditorForm implements OnInit, OnChanges {
             case 'M':
                 this.theAssetTypeClass = AssetTypeClass.Model;
                 break;
+            case 'O':
+                this.theAssetTypeClass = AssetTypeClass.Organization;
+                break;
             case 'P':
                 this.theAssetTypeClass = AssetTypeClass.Policy;
                 break;

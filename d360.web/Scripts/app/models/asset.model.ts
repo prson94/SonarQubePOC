@@ -30,7 +30,8 @@ export enum AssetTypeClass {
     Policy = 6,
     Rule = 7,
     Map = 8,
-    Reference = 9
+    Reference = 9,
+    Organization = 10
 }
 
 export enum State {

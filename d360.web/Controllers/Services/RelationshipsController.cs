@@ -182,9 +182,11 @@ namespace d360.web.Controllers.Services
         }
 
 
-        public class TestModel
+        public class LineageModel
         {
-            public int ID { get; set; }
+            public int IntersectID { get; set; }
+            public int? IntersectGroupID { get; set; }
+
             public long SubjectAssetID { get; set; }
             public string Subject { get; set; }
             public int SubjectID { get; set; }
@@ -210,6 +212,9 @@ namespace d360.web.Controllers.Services
 
         public class Node
         {
+            public long assetId { get; set; }
+            public string @object { get; set; }
+            public int objectId { get; set; }
             public string id { get; set; }
             public string name { get; set; }
             public string back { get; set; }
@@ -231,28 +236,28 @@ namespace d360.web.Controllers.Services
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        //private string RandomString(int length)
-        //{
-        //    var rand = new Random();
-        //    const string pool = "abcdefghijklmnopqrstuvwxyz0123456789";
-        //    var chars = Enumerable.Range(0, length).Select(x => pool[rand.Next(0, pool.Length)]);
-        //    return new string(chars.ToArray());
-        //}
-
-        void Process(TestModel current, List<TestModel> list, List<Node> nodes, bool forward = true)
+        void Process(LineageModel current, List<LineageModel> list, List<Node> nodes, bool forward = true)
         {
-            //var linkIndicator = RandomString(5);
             if (forward)
             {
                 if (string.IsNullOrEmpty(current.ObjectPrefix))
                 {
-                    current.ObjectPrefix = RandomString(5);
+                    current.ObjectPrefix = "Grp";//RandomString(5);
                 }
                 
                 //Add to node collection.
                 if (!nodes.Any(i => i.id == $"{current.ObjectPrefix}.{current.ObjectAssetID}"))
                 {
-                    nodes.Add(new Node { id = $"{current.ObjectPrefix}.{current.ObjectAssetID}", name = current.ObjectName, back = current.ObjectBackColor, fore = current.ObjectForeColor, type = current.ObjectTypeName });
+                    nodes.Add(new Node {
+                        id = $"{current.ObjectPrefix}.{current.ObjectAssetID}",
+                        assetId = current.ObjectAssetID,
+                        @object = current.Object,
+                        objectId = current.ObjectID,
+                        name = current.ObjectName,
+                        back = current.ObjectBackColor,
+                        fore = current.ObjectForeColor,
+                        type = current.ObjectTypeName
+                    });
                 }
 
                 current.Processed = true;
@@ -266,13 +271,22 @@ namespace d360.web.Controllers.Services
             {
                 if (string.IsNullOrEmpty(current.SubjectPrefix))
                 {
-                    current.SubjectPrefix = RandomString(5);
+                    current.SubjectPrefix =  "Grp";//RandomString(5);
                 }
 
                 //Add to node collection.
                 if (!nodes.Any(i => i.id == $"{current.SubjectPrefix}.{current.SubjectAssetID}"))
                 {
-                    nodes.Add(new Node { id = $"{current.SubjectPrefix}.{current.SubjectAssetID}", name = current.SubjectName, back = current.SubjectBackColor, fore = current.SubjectForeColor, type = current.SubjectTypeName });
+                    nodes.Add(new Node {
+                        id = $"{current.SubjectPrefix}.{current.SubjectAssetID}",
+                        assetId = current.SubjectAssetID,
+                        @object = current.Subject,
+                        objectId = current.SubjectID,
+                        name = current.SubjectName,
+                        back = current.SubjectBackColor,
+                        fore = current.SubjectForeColor,
+                        type = current.SubjectTypeName
+                    });
                 }
 
                 current.Processed = true;
@@ -290,34 +304,11 @@ namespace d360.web.Controllers.Services
         {
             #region SQL
 
-            var sql = @"
-select	I.ID,
-		SA.ID as SubjectAssetID,
-        I.Subject,
-		I.SubjectID,
-		utility.GetAssetDisplayValueWrapper(SA.ID) as SubjectName,
-        SA.BackColor as SubjectBackColor,
-        SA.ForeColor as SubjectForeColor,
-        SA.TypeName as SubjectTypeName,
-
-        OA.ID as ObjectAssetID,
-        I.Object,
-		I.ObjectID,
-		utility.GetAssetDisplayValueWrapper(OA.ID) as ObjectName,
-        OA.BackColor as ObjectBackColor,
-        OA.ForeColor as ObjectForeColor,
-        OA.TypeName as ObjectTypeName,
-
-        P.Name as [Predicate]
-from	[Intersect] I
-		inner join IntersectType T on T.ID = I.IntersectTypeID
-		inner join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
-		inner join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
-		inner join [Predicate] P on P.ID = T.PredicateID and P.Type = 1";
+            var sql = @"lineage.GetByObject @o, @oid";
 
             #endregion
 
-            var list = Company.Query<TestModel>(sql).ToList();
+            var list = Company.Query<LineageModel>(sql, new { o = @object.ToString(), oid = id }).ToList();
 
             var nodes = new List<Node>();
             var links = new List<Link>();
@@ -331,10 +322,6 @@ from	[Intersect] I
                 }
             });
 
-            //var current = list[0];
-            //Process(current, list, nodes, true);
-            //Process(current, list, nodes, false);
-
             links = list.Select(i => new Link { from = $"{i.SubjectPrefix}.{i.SubjectAssetID}", to = $"{i.ObjectPrefix}.{i.ObjectAssetID}" }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, new
@@ -342,8 +329,6 @@ from	[Intersect] I
                 nodes,
                 links
             });
-
-            //return Request.CreateResponse(HttpStatusCode.OK, list);
         }
     }
 }

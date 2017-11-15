@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Organization, OrganizationDomain, OrganizationInvitation, OrganizationResource, Contract, ContractType } from '../models/organization.model';
+import { Organization, OrganizationDomain, OrganizationInvitation, OrganizationResource, OrganizationType, Contract, ContractType } from '../models/organization.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -10,8 +10,22 @@ export class OrganizationsService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getOrganizations(): Promise<Organization[]> {
-        return this.http.get('services/organizations')
+    getOrganizationTypes(): Promise<OrganizationType[]> {
+        return this.http.get('services/organizations/types')
+            .toPromise()
+            .then(response => <OrganizationType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getOrganizations(id: number): Promise<Organization[]> {
+        return this.http.get(`services/organizations/${id}/items`)
+            .toPromise()
+            .then(response => <Organization[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getOrganizationsByType(id: number): Promise<Organization[]> {
+        return this.http.get(`services/organizations/${id}/items`)
             .toPromise()
             .then(response => <Organization[]>response.json())
             .catch(err => this.handleError(err));
@@ -51,7 +65,14 @@ export class OrganizationsService extends BaseService {
             .then(response => <OrganizationResource[]>response.json())
             .catch(err => this.handleError(err));
     }
-   
+
+    deleteOrganizationType(id: number): Promise<JsonResult> {
+        return this.http.delete(`/form/AssetType?id=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     saveOrganization(organization: Organization): Promise<JsonResult> {
         if (organization.ID == undefined || !organization.ID) {
                 return this.postDynamic(this.http, 'organization', organization);

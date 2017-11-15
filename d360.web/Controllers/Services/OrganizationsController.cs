@@ -26,8 +26,34 @@ namespace d360.web.Controllers.Services
         /// Gets a list of all organizations.
         /// </summary>
         /// <returns></returns>
-        [HttpGet, Route("")]
-        public IQueryable<OrganizationDetail> GetOrganizations()
+        [HttpGet, Route("types")]
+        public IEnumerable<OrganizationTypeDetail> GetOrganizationTypes()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return null;
+
+            return Company.Query<OrganizationTypeDetail>(@"
+select		T.ID,
+			T.Name,
+			T.Description,
+			A.ID as AssetTypeID,
+			count(1) as OrganizationCount
+from		OrganizationType T
+			inner join AssetType A on A.Object = 'OrganizationType' and A.ObjectID = T.ID
+			left join Organization O on O.OrganizationTypeID = T.ID
+group by	T.ID,
+			T.Name,
+			T.Description,
+			A.ID 
+order by    T.Name");
+        }
+
+        /// <summary>
+        /// Gets a list of all organizations.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet, Route("{id:int}/items")]
+        public IQueryable<OrganizationDetail> GetOrganizationsByType(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return null;

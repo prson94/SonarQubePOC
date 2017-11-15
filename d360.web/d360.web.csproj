@@ -1062,6 +1062,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\maps\admin-maps.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\maps\admin-maps.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\maps\admin-maps.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organizationtypes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-contracts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contracts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-resources.component.ts" />
