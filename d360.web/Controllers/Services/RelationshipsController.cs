@@ -203,6 +203,8 @@ namespace d360.web.Controllers.Services
             public string ObjectForeColor { get; set; }
             public string ObjectTypeName { get; set; }
 
+            public State State { get; set; }
+
             public string Predicate { get; set; }
 
             public string SubjectPrefix { get; set; } = string.Empty;
@@ -215,11 +217,15 @@ namespace d360.web.Controllers.Services
             public long assetId { get; set; }
             public string @object { get; set; }
             public int objectId { get; set; }
+            public int intersectId { get; set; }
+            public int state { get; set; }
+            public int? intersectGroupId { get; set; }
             public string id { get; set; }
             public string name { get; set; }
             public string back { get; set; }
             public string fore { get; set; }
             public string type { get; set; }
+
         }
 
         public class Link
@@ -253,6 +259,9 @@ namespace d360.web.Controllers.Services
                         assetId = current.ObjectAssetID,
                         @object = current.Object,
                         objectId = current.ObjectID,
+                        intersectId = current.IntersectID,
+                        state = (int)current.State,
+                        intersectGroupId = current.IntersectGroupID,
                         name = current.ObjectName,
                         back = current.ObjectBackColor,
                         fore = current.ObjectForeColor,
@@ -282,6 +291,9 @@ namespace d360.web.Controllers.Services
                         assetId = current.SubjectAssetID,
                         @object = current.Subject,
                         objectId = current.SubjectID,
+                        intersectId = current.IntersectID,
+                        state = (int)current.State,
+                        intersectGroupId = current.IntersectGroupID,
                         name = current.SubjectName,
                         back = current.SubjectBackColor,
                         fore = current.SubjectForeColor,
