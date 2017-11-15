@@ -50,13 +50,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4. Functions", "4. Function
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Core", "igx.functions.Core\igx.functions.Core.csproj", "{CD1F930F-47A9-4F20-B715-7C2F26ABA945}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Queue", "igx.functions.Queue\igx.functions.Queue.csproj", "{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.functions.Topic", "igx.functions.Topic\igx.functions.Topic.csproj", "{96B838B1-2975-4328-B55C-ACF57C017A15}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.functions.Timer", "igx.functions.Timer\igx.functions.Timer.csproj", "{3D020915-FFBB-4474-8389-B9F76A7627B0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.FusionRules", "igx.functions.FusionRules\igx.functions.FusionRules.csproj", "{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.Queue", "igx.functions.Queue\igx.functions.Queue.csproj", "{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -453,36 +453,6 @@ Global
 		{CD1F930F-47A9-4F20-B715-7C2F26ABA945}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CD1F930F-47A9-4F20-B715-7C2F26ABA945}.Release|x86.ActiveCfg = Release|Any CPU
 		{CD1F930F-47A9-4F20-B715-7C2F26ABA945}.Release|x86.Build.0 = Release|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Client Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Client Development|Any CPU.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Client Development|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Client Development|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Client Development|x86.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Client Development|x86.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Debug|x86.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Nightly|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Nightly|Any CPU.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Nightly|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Nightly|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Nightly|x86.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Nightly|x86.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Production|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Production|Any CPU.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Production|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Production|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Production|x86.ActiveCfg = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Production|x86.Build.0 = Debug|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Release|x86.ActiveCfg = Release|Any CPU
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A}.Release|x86.Build.0 = Release|Any CPU
 		{96B838B1-2975-4328-B55C-ACF57C017A15}.Client Development|Any CPU.ActiveCfg = Debug|Any CPU
 		{96B838B1-2975-4328-B55C-ACF57C017A15}.Client Development|Any CPU.Build.0 = Debug|Any CPU
 		{96B838B1-2975-4328-B55C-ACF57C017A15}.Client Development|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -573,6 +543,36 @@ Global
 		{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8}.Release|x86.ActiveCfg = Release|Any CPU
 		{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8}.Release|x86.Build.0 = Release|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Client Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Client Development|Any CPU.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Client Development|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Client Development|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Client Development|x86.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Client Development|x86.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Debug|x86.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Nightly|Any CPU.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Nightly|Any CPU.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Nightly|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Nightly|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Nightly|x86.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Nightly|x86.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Production|Any CPU.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Production|Any CPU.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Production|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Production|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Production|x86.ActiveCfg = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Production|x86.Build.0 = Debug|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Release|x86.ActiveCfg = Release|Any CPU
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -590,15 +590,15 @@ Global
 		{52ECE463-AC2D-4EA5-B16B-8CC8BF2ED18A} = {82A3B52F-C19D-4FA8-8AC5-AF524FF8C173}
 		{8F2DCC2D-4967-4B82-A664-F894ED6FB3C6} = {313B4C9B-F3D7-4718-97A5-2F04A3B12589}
 		{CD1F930F-47A9-4F20-B715-7C2F26ABA945} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
-		{A2D7C8BC-0331-4B36-9337-F88EA0E52D4A} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
 		{96B838B1-2975-4328-B55C-ACF57C017A15} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
 		{3D020915-FFBB-4474-8389-B9F76A7627B0} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
 		{68DC2162-2E8F-4C5D-822F-25EF47CA8AB8} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
+		{D63CA9EB-9230-46AA-8DE2-3221FB6CB829} = {46AA259B-683D-4755-BEDF-D11AA0A61879}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {128F1A7E-2BC3-4035-9F04-0517583746B0}
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\TransientFaultHandling.Core.5.1.1209.1\lib\NET4
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\TransientFaultHandling.Core.5.1.1209.1\lib\NET4
+		SolutionGuid = {128F1A7E-2BC3-4035-9F04-0517583746B0}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 17
@@ -645,30 +645,30 @@ Global
 		SccProjectTopLevelParentUniqueName10 = D360.sln
 		SccProjectName10 = d360.database.community
 		SccLocalPath10 = d360.database.community
-		SccProjectUniqueName11 = d360.test.web\\d360.test.web.csproj
+		SccProjectUniqueName11 = igx.functions.Core\\igx.functions.Core.csproj
 		SccProjectTopLevelParentUniqueName11 = D360.sln
-		SccProjectName11 = d360.test.web
-		SccLocalPath11 = d360.test.web
-		SccProjectUniqueName12 = igx.functions.Core\\igx.functions.Core.csproj
+		SccProjectName11 = igx.functions.Core
+		SccLocalPath11 = igx.functions.Core
+		SccProjectUniqueName12 = igx.functions.Topic\\igx.functions.Topic.csproj
 		SccProjectTopLevelParentUniqueName12 = D360.sln
-		SccProjectName12 = igx.functions.Core
-		SccLocalPath12 = igx.functions.Core
-		SccProjectUniqueName13 = igx.functions.Queue\\igx.functions.Queue.csproj
+		SccProjectName12 = igx.functions.Topic
+		SccLocalPath12 = igx.functions.Topic
+		SccProjectUniqueName13 = igx.functions.Timer\\igx.functions.Timer.csproj
 		SccProjectTopLevelParentUniqueName13 = D360.sln
-		SccProjectName13 = igx.functions.Queue
-		SccLocalPath13 = igx.functions.Queue
-		SccProjectUniqueName14 = igx.functions.Topic\\igx.functions.Topic.csproj
+		SccProjectName13 = igx.functions.Timer
+		SccLocalPath13 = igx.functions.Timer
+		SccProjectUniqueName14 = igx.functions.FusionRules\\igx.functions.FusionRules.csproj
 		SccProjectTopLevelParentUniqueName14 = D360.sln
-		SccProjectName14 = igx.functions.Topic
-		SccLocalPath14 = igx.functions.Topic
-		SccProjectUniqueName15 = igx.functions.Timer\\igx.functions.Timer.csproj
+		SccProjectName14 = igx.functions.FusionRules
+		SccLocalPath14 = igx.functions.FusionRules
+		SccProjectUniqueName15 = d360.test.web\\d360.test.web.csproj
 		SccProjectTopLevelParentUniqueName15 = D360.sln
-		SccProjectName15 = igx.functions.Timer
-		SccLocalPath15 = igx.functions.Timer
-		SccProjectUniqueName16 = igx.functions.FusionRules\\igx.functions.FusionRules.csproj
+		SccProjectName15 = d360.test.web
+		SccLocalPath15 = d360.test.web
+		SccProjectUniqueName16 = igx.functions.Queue\\igx.functions.Queue.csproj
 		SccProjectTopLevelParentUniqueName16 = D360.sln
-		SccProjectName16 = igx.functions.FusionRules
-		SccLocalPath16 = igx.functions.FusionRules
+		SccProjectName16 = igx.functions.Queue
+		SccLocalPath16 = igx.functions.Queue
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi

@@ -1,6 +1,4 @@
-﻿import { MapTypeTemplate, MapTypeTemplateItem } from './map.model';
-
-export class LinkModel {
+﻿export class LinkModel {
     id: number = null;
     key = null;
     Category: string = '';
@@ -79,6 +77,7 @@ export class NodeModelV2 {
 
     level: number = -1;
     itemKey: string;
+    fromItemKey: string;
     graphKey: string;
 
     valid: boolean = true;

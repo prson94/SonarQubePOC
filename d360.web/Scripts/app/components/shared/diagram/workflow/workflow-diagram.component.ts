@@ -201,7 +201,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.myDiagram.nodeTemplateMap.add('finish', this.createTerminalNode(false));
         this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
 
-        this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.myDiagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
@@ -562,7 +561,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             let a = this.activityTypes.find(a => a.ID == p.activityType);
             let name = this.getNodeDisplayName(p);
             this.overlayHeader = (a == null) ? name : a.Description + ((name == null || name.toLowerCase() == a.Description.toLowerCase()) ? '' : ' - ' + name);
-            //this.overlayHeader = (a == null) ? ((p.name == null || p.name == '') ? this.tab : p.name) : a.Description + (p.name == null ? '' : ' - ' + p.name);
         }
     }
 
@@ -1247,11 +1245,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.selectionChange.emit(this.selection);
         //console.log('selection changed: ', e);
         //console.log(this.selection);
-    }
-
-    private ObjectDoubleClicked(e: any) {
-        //console.log('double clicked', e);
-        //var obj = e.diagram.selection.first().data;
     }
 
     private LinkDrawn(e: any) {
