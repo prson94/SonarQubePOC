@@ -14,8 +14,8 @@ import { Column } from 'primeng/primeng';
             <input [hidden]="!showSimpleFilter" #gbRuleStepsHistory type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
             <p-dataTable #dtRuleStepsHistory [globalFilter]="gbRuleStepsHistory" [value]="ruleStepPromotions" selectionMode="single" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
                 <p-footer *ngIf="dtRuleStepsHistory.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleStepsHistory.totalRecords" [first]="dtRuleStepsHistory.first" [rows]="dtRuleStepsHistory.rows"></d3s-grid-paging-info></p-footer>
-                <p-column header="Attribute" field="AttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
-                <p-column header="Object" field="ObjectName" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                <p-column header="Attribute" sortable="true" field="AttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
+                <p-column header="Object" sortable="true" field="ObjectName" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                     <ng-template pTemplate type="body" let-row="rowData">
                         <d3s-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" tooltipType="preview">
                             <a (click)="navigate(row.ObjectUrl)">{{row.ObjectName}}</a>
@@ -23,12 +23,12 @@ import { Column } from 'primeng/primeng';
                     </ng-template>
                 </p-column>
 
-                <p-column header="Created On" field="CreatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                <p-column header="Created On" sortable="true" field="CreatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                     <ng-template pTemplate type="body" let-row="rowData">
                         <span>{{row.CreatedOn | date: 'short'}}</span>
                     </ng-template>
                 </p-column>
-                <p-column header="Updated On" field="UpdatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                <p-column header="Updated On" sortable="true" field="UpdatedOn" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                     <ng-template pTemplate type="body" let-row="rowData">
                         <span>{{row.UpdatedOn | date: 'short'}}</span>
                     </ng-template>
