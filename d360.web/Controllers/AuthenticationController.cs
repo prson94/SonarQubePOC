@@ -18,6 +18,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,6 +32,7 @@ namespace d360.web.Controllers
     [RoutePrefix("")]
     public class AuthenticationController : BaseController
     {
+        //const string APP_ID = "https://d3s.com/ui"; //saml testing id
         const string APP_ID = "https://data3sixty.com/ui";
 
         #region DI
@@ -57,7 +59,7 @@ namespace d360.web.Controllers
                 //IsPassive = true,
                 Issuer = new Issuer(APP_ID),
                 ForceAuthn = false,
-                NameIDPolicy = new NameIDPolicy(null, null, true)
+                NameIDPolicy = new NameIDPolicy(null, null, true)                
             };
 
             // Serialize the authentication request to XML for transmission.
@@ -138,44 +140,15 @@ namespace d360.web.Controllers
                     Telemetry.TrackTrace(new TraceTelemetry { Message = $"Login => relayState: {relayState}", SeverityLevel = SeverityLevel.Information });
                     //Trace.TraceInformation("Login => relayState: {0}", relayState);
 
-                    //X509Certificate2 x509Certificate = null;
-
-                    // Send the authentication request to the identity provider over the configured binding.
-                    //if (Community.CurrentCompanySsoModel.IdpCertificateFile != null) 
-                    //{
-                    //    x509Certificate = new X509Certificate2(Community.CurrentCompanySsoModel.IdpCertificateFile);
-                    //}
-
-                    #region Hash Choice
-
-                    //http://www.w3.org/TR/xmlsec-algorithms/
-
-                    var hashString = "";
-                    switch (Community.CurrentCompanySsoModel.HashAlgorithmType)
-                    {
-                        case HashAlgorithmType.SHA1:
-                            hashString = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
-                            break;
-                        case HashAlgorithmType.SHA224:
-                            hashString = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha224";
-                            break;
-                        case HashAlgorithmType.SHA256:
-                            hashString = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
-                            break;
-                        case HashAlgorithmType.SHA384:
-                            hashString = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
-                            break;
-                        case HashAlgorithmType.SHA512:
-                            hashString = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
-                            break;
-                    }
-
-                    #endregion
-
+                    var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("d360.web.d3s-signing.pfx");
+                    var bytes = new byte[stream.Length];
+                    stream.Read(bytes, 0, bytes.Length);
+                    X509Certificate2 x509Certificate = new X509Certificate2(bytes, "D3S");
+                    
                     telemetry = null;
 
-                    ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState, null, hashString);
-
+                    ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState,  x509Certificate != null ? x509Certificate.PrivateKey : null, "http://www.w3.org/2000/09/xmldsig#rsa-sha1");
+                    
                     return new EmptyResult();
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);

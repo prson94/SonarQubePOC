@@ -886,6 +886,7 @@
     <Content Include="fonts\fontawesome-webfont.woff" />
     <Content Include="fonts\fontawesome-webfont.ttf" />
     <Content Include="fonts\fontawesome-webfont.eot" />
+    <EmbeddedResource Include="d3s-signing.pfx" />
     <None Include="Properties\PublishProfiles\UI - Alternate Development - UK - London.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Development - US - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - India - Pune.pubxml" />
