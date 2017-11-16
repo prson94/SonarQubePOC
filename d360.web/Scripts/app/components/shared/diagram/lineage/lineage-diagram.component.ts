@@ -93,12 +93,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     public ngOnInit() {
-        this.readonly = this.readonly.toString() == 'true' ? true : false;
-        this.hasHeader = false;// !this.readonly;
+        this.readonly = true;
+        this.hasHeader = false;
 
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
-        //this.initializeDiagram();
-        //if (!this.readonly) this.initializePalette();
+
     }
 
     public ngOnChanges(changes: SimpleChanges) {
@@ -113,10 +112,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.initializeDiagram();
             this.resizeDiagram();
 
-        }
-
-        if (changes['readonly'] != null && changes['readonly'].currentValue != changes['readonly'].previousValue) {
-            this.toggleReadOnly();
         }
     }
 
@@ -143,9 +138,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram = this.createDiagram();
 
-        this.myDiagram.groupTemplateMap.add('map', this.createMapGroup());
-        this.myDiagram.groupTemplateMap.add('transform', this.createTransformationGroup());
-
         this.myDiagram.nodeTemplateMap.add('object', this.createObjectNode());
         this.myDiagram.nodeTemplateMap.add('focal', this.createFocalNode());
         this.myDiagram.nodeTemplateMap.add('palette', this.createPaletteNode());
@@ -156,8 +148,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
-        this.myDiagram.addDiagramListener('SelectionDeleted', e => this.SelectionDeleted(e));
-        //this.myDiagram.addDiagramListener('ExternalObjectsDropped', e => this.ExternalObjectsDropped(e));
 
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -170,10 +160,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.toolManager.linkingTool.archetypeLinkData = new LinkModelV2();
 
         this.myDiagram.allowDrop = true;
-
-        this.myDiagram.mouseDrop = e => this.finishDrop(e, null);
-
-        //console.log('init', this.myDiagram);
 
         return this.populateDiagram();
     }
@@ -237,24 +223,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 model.assetId = d.assetId;
                 model.object = d.object;
                 model.objectId = d.objectId;
-                //model.objectType = d.objectType;
-                //model.objectTypeId = d.objectTypeId;
+
                 model.objectTypeName = d.type;
                 model.name = d.name;
                 model.foreColor = d.fore;
                 model.backColor = d.back;
                 model.category = 'object';
-                //model.businessTransformation = d.businessTransformation;
-                //model.technicalTransformation = d.technicalTransformation;
-                //model.order = d.order;
-                //model.intersectTypeId = d.intersectTypeId;
-                //model.templateId = d.templateId;
-                //model.itemKey = d.itemKey;
 
-                //model.isGroup = d.isGroup;
-                //model.group = d.group;
-
-                //if (model.category == 'map')
                 modelList.push(model);
             }
         }
@@ -279,45 +254,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
         }
 
-
-        //calculate levels and source/target keys
-        //let roots = modelList.filter(m => linkList.findIndex(l => l.to == m.key) == -1 && m.category == 'map');
-        //let traverse = (level: number, node: NodeModelV2) => {
-        //    let links = linkList.filter(l => l.from == node.key);
-        //    //console.log('traverse', links);
-        //    links.forEach(l => {
-        //        let n = modelList.find(m => m.key == l.to);
-        //        let f = modelList.find(m => m.key == l.from);
-        //        if (n != null) {
-        //            n.level = level + 1;
-        //            n.graphKey = node.graphKey;
-        //            if (f != null)
-        //                n.fromItemKey = f.itemKey;
-        //            traverse(level + 1, n);
-        //        }
-        //    });
-        //};
-
-        //roots.forEach(r => {
-        //    r.level = 0;
-        //    r.graphKey = r.key;
-        //    traverse(0, r);
-        //});
-
-        //let flattenedModel = [];
-        //let items = modelList.filter(m => m.level == 0);
-
-        //items.forEach(i => {
-        //    let level = 1;
-        //    let next = modelList.filter(m => m.level == level && m.graphKey == i.graphKey);
-        //    //we have all the level 1 items for this graph
-        //    if (next.length > 0) {
-                
-        //    }
-        //});
-
-
-        console.log('parseData', modelList);
+        //console.log('parseData', modelList);
 
         for (var i = 0; i < modelList.length; i++) {
             this.myDiagram.model.addNodeData(modelList[i]);
@@ -388,110 +325,27 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         }
     }
 
-    private toggleReadOnly(readonly?: boolean) {
-        if (readonly != null) this.readonly = readonly;
-
-        //this.hasHeader = !this.readonly;
-
-        //this.myDiagram.isReadOnly = this.readonly;
-
-        let dt = this.myDiagram.toolManager.diagram
-        dt.allowDelete = !this.readonly;
-        dt.allowClipboard = !this.readonly;
-        dt.allowCopy = !this.readonly;
-        dt.allowInsert = !this.readonly;
-        dt.allowLink = !this.readonly;
-        dt.allowRelink = !this.readonly;
-        dt.allowGroup = !this.readonly;
-        dt.allowTextEdit = !this.readonly;
-
-        this.myDiagram.toolManager.linkingTool.isEnabled = !this.readonly;
-
-        this.loadMenuItems();
-
-        //if (!this.readonly)
-        //    this.createDiagram();
-
-
-        //this.myDiagram.model.isReadOnly = this.readonly;
-    }
-
     private loadMenuItems() {
-        this.menuItems = [];
-        this.editorMenuItems = [];   
-        
-
-        //let add = {
-        //    icon: 'fa-plus',
-        //    items: []
-        //};
-
-        //this.editorMenuItems.push(add);
-
-
-        //if (this.selectedData != null && this.selectedData.category == 'map')
-        //    add.items.push({
-        //        icon: 'fa-plus',
-        //        label: 'Add focal object to selected mapping',
-        //        items: null
-        //    });
-
-        //this.editorMenuItems.push({
-        //    icon: 'fa-floppy-o',
-        //    items: null
-        //});
-
-        let mapCount = 0;
-        //if (this.selection != null)
-        //    this.selection.each(s => {
-        //        if (s.category == 'map')
-        //            mapCount++;
-        //    });
-
-        //if (this.selection != null && mapCount > 1)
-        //this.editorMenuItems.push({
-        //    icon: 'fa-object-group',
-        //    items: null
-        //});
-
-        //if (this.selectedData != null)
-        //    this.editorMenuItems.push({
-        //        icon: 'fa-object-ungroup',
-        //        items: null
-        //    });
-
-        //if (this.readonly)
-        //    this.menuItems.push({
-        //        icon: 'fa-pencil',
-        //        items: null
-        //    });
-
-        //if (!this.readonly)
-        //    this.menuItems.push({
-        //        icon: 'fa-close',
-        //        items: null
-        //    });
-
-        //this.menuItems.push({
-        //    icon: 'fa-plus-square-o',
-        //    items: null
-        //});
-
-        //this.menuItems.push({
-        //    icon: 'fa-minus-square-o',
-        //    items: null
-        //});
+        this.menuItems = []; 
 
         this.menuItems.push({
             icon: 'fa-info-circle',
             items: null
         });
+    }
 
-        //if (!this.readonly)
-        //    this.editorMenuItems.forEach(e => {
-        //        this.menuItems.push(e);
-        //    });
+    private reOrderLayout() {
+        this.myDiagram.layout.invalidateLayout();
+        this.myDiagram.requestUpdate();
+    }
 
+    private selectTab(val: string) {
+        this.headerText = '';
+        this.tab = val;
+    }
+
+    private validateNode(n: NodeModelV2) {
+        return true;
     }
 
     private setSourceValues(data: any) {
@@ -526,199 +380,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
         }
     }
-
-    private reOrderLayout() {
-        this.myDiagram.layout.invalidateLayout();
-        this.myDiagram.requestUpdate();
-    }
-
-    private selectTab(val: string) {
-        this.headerText = '';
-        this.tab = val;
-    }
-
-    private validateNode(n: NodeModelV2) {
-        let valid = true;
-
-        //if (n == null) {
-        //    console.warn('NULL passed to validateNode()');
-        //    return;
-        //}
-
-        //n.errors = [];
-
-        //switch (n.category) {
-        //    case 'object':
-        //    case 'focal':
-        //        if (n.object == null || n.objectId == null) {
-        //            valid = false;
-        //            n.errors.push('No object has been chosen for this item');
-        //        }
-        //        if (n.group == null) {
-        //            valid = false;
-        //            n.errors.push('This item must be inside a map');
-
-        //        }
-        //        if (n.isGroup) {
-        //            valid = false;
-        //            n.errors.push(`This item's template is incorrect`);
-
-        //        }
-        //        //invalidate the map too
-        //        if (!valid && n.group != null) {
-        //            let map = this.myDiagram.model.findNodeDataForKey(n.group);
-        //            if (map != null) {
-        //                this.myDiagram.model.setDataProperty(map, 'valid', false);
-        //                map.errors = [];
-        //                map.errors.push('One or more items in this map has validation issues');
-        //            }
-        //        }
-        //        break;
-        //    case 'map':
-        //        let items = this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key);
-        //        if (!n.isGroup) {
-        //            valid = false;
-        //            n.errors.push(`This item's template is incorrect`);
-        //        }
-        //        if (items.length < 1) {
-        //            valid = false;
-        //            n.errors.push(`This map must contain at least one object`);
-        //        }
-        //        if (valid && this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key && (<any>c).valid == false).length > 0) {
-        //            valid = false;
-        //            n.errors.push('One or more items in this map has validation issues');
-        //        }
-        //        if (n.template != null) { //check for required template items
-        //            n.template.filter(t => t.isRequired).forEach(t => {
-        //                let i = items.find(i => (<any>i).objectType == t.object && (<any>i).objectTypeId == t.objectId);
-        //                let o = this.objectTypes.find(o => o.object == t.object && o.objectId == t.objectId);
-        //                if (i == null) {
-        //                    valid = false;
-        //                    if (o == null) {
-        //                        n.errors.push(`This map template is missing a required object`);
-        //                    } else
-        //                        n.errors.push(`This map template requires a ${o.name} object`);
-
-        //                }
-        //            });
-        //        }
-        //        break;
-        //    case 'transform':
-        //        if (!n.isGroup || n.group != null) {
-        //            valid = false;
-        //            n.errors.push(`This item's template is incorrect`);
-        //        }
-        //        if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 2) {
-        //            valid = false;
-        //            n.errors.push(`The transformation must contain at least 2 map items`);
-
-        //        }
-        //        break;
-        //}
-
-        //let node = this.myDiagram.model.findNodeDataForKey(n.key);
-        //if (node != null) {
-        //    this.myDiagram.model.setDataProperty(node, 'valid', valid);
-        //    if (node.group != null)
-        //        this.validateNode(this.myDiagram.model.findNodeDataForKey(node.group));
-        //}
-        return true;
-        //console.log('validateNode', n.valid, n);
-
-    }
-
-    private updateMapName(key: string) {
-        let map = this.myDiagram.model.findNodeDataForKey(key);
-        let items = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).group == key);
-
-        if (items.length < 1) {
-            if (map != null) {
-                this.myDiagram.model.setDataProperty(map, 'name', '<drop objects here>');
-                this.myDiagram.model.setDataProperty(map, 'foreColor', '#000');
-                this.myDiagram.model.setDataProperty(map, 'backColor', '#eee');
-                this.validateNode(map);
-            }
-            return;
-        }
-
-        items.sort((a, b) => this.compareObjects(a, b));
-
-        this.myDiagram.model.setDataProperty(map, 'name', (<any>items[0]).name);
-        this.myDiagram.model.setDataProperty(map, 'foreColor', (<any>items[0]).foreColor);
-        this.myDiagram.model.setDataProperty(map, 'backColor', (<any>items[0]).backColor);
-    }
-
-    private compareObjects(a: any, b: any): number {
-        if (a.order < b.order) return -1;
-        if (a.order > b.order) return 1;
-
-        let aName = (a.name || '').toLowerCase();
-        let bName = (b.name || '').toLowerCase();
-
-        if (aName < bName) return -1;
-        if (aName > bName) return 1;
-
-        return 0;
-      
-    }
-
-    private save() {
-        //convert to lineage models
-        let model: LineageEditorModelV2 = new LineageEditorModelV2();
-        model.Focal = this.objectType;
-        model.FocalID = this.objectID;
-        let valid = true;
-
-        //this.myDiagram.model.nodeDataArray.forEach(n => {
-        //    let node = (<any>n);
-        //    let nodeModel: LineageNodeModel = new LineageNodeModel();
-        //    nodeModel.Group = node.group;
-        //    nodeModel.IsGroup = node.isGroup;
-        //    nodeModel.Key = node.key;
-        //    nodeModel.Object = node.object;
-        //    nodeModel.ObjectID = node.objectId;
-        //    nodeModel.ObjectType = node.objectType;
-        //    nodeModel.ObjectTypeID = node.objectTypeId;
-        //    nodeModel.Category = node.category;
-        //    nodeModel.BusinessTransformation = node.businessTransformation;
-        //    nodeModel.TechnicalTransformation = node.technicalTransformation;
-        //    nodeModel.IntersectTypeID = node.intersectTypeId;
-        //    nodeModel.Order = node.order;
-        //    nodeModel.MapTypeTemplateID = node.templateId;
-
-        //    if (node.valid == false)
-        //        valid = false;
-
-        //    model.Nodes.push(nodeModel);
-        //});
-
-        //(<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
-        //    let link = (<any>l);
-        //    let linkModel: LineageLinkModel = new LineageLinkModel();
-        //    linkModel.IntersectID = link.intersectId;
-        //    linkModel.From = link.from;
-        //    linkModel.To = link.to;
-
-        //    model.Links.push(linkModel);
-        //});
-
-        //if (!valid) {
-        //    this.messagesService.showError('Error', 'One or more nodes on the diagram have validation issues');
-        //    return;
-        //}
-
-        //let windowState = this.isWindowVisible;
-        //this.isLoading = true;
-        //this.isWindowVisible = false;
-        //console.log('save model', model);
-        //this.lineageService.postLineage(model)
-        //    .then(() => {
-        //        this.populateDiagram();
-        //        this.isWindowVisible = windowState;
-        //        this.toggleReadOnly(false);
-        //        //console.log('save complete');
-        //    });
-    }
     //#endregion
 
     //#region events
@@ -733,20 +394,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.startTransaction('changeNode');
 
         let objChanged = (node.object != e.object || node.objectId != e.objectId);
-        //console.log('changeNode', objChanged);
-        //node.name = null; //force name update
+
         node.object = e.object;
         node.objectId = e.objectId;
-       // node.technicalTransformation = e.technicalTransformation;
-
-        //this.myDiagram.model.setDataProperty(node, 'businessTransformation', e.businessTransformation);
 
         this.myDiagram.model.setDataProperty(node, 'name', e.name);
         this.validateNode(node);
-
-        //if (!node.isGroup && node.group != null)
-        //    this.updateMapName(node.group);
-        //console.log('changeNode', node);
 
         this.myDiagram.commitTransaction('changeNode');
     }
@@ -759,7 +412,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private resizeDiagram() {
         this.diagramRef.nativeElement.style.height = (window.innerHeight - 142) + 'px';
         this.paletteRef.nativeElement.style.height = (window.innerHeight - 142) + 'px';
-        //this.overlayMaxHeight = window.innerHeight - oOffset;
 
         let dOffset = (this.hasHeader ? this.diagramOffset : this.diagramOffset - 125);
         let oOffset = (this.hasHeader ? this.overlayOffset : this.overlayOffset - 125);
@@ -795,153 +447,30 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private ObjectDoubleClicked(e: any) {
+
+        var obj = e.diagram.selection.first().data;
+        if (obj != null) {
+            if (obj.diagramObjectType == DiagramObjectType.Node) {
+                this.objectType = obj.object;
+                this.objectID = obj.objectId;
+
+                this.populateDiagram();
+            }
+        }
         return;
-
-
-        //var obj = e.diagram.selection.first().data;
-        //if (obj != null) {
-        //    if (obj.diagramObjectType == DiagramObjectType.Node) {
-        //        this.objectType = obj.obj;
-        //        this.objectID = obj.objid;
-
-        //        this.populateDiagram();
-        //    }
-        //}
     }
 
     private SelectionDeleted(e: any) {
-        //console.log('SelectionDeleted', e);
-
-        //re-validate parent on delete
-        e.subject.each(s => {
-            let data = s.data;
-
-            if (data.group != null) { 
-                let grp = this.myDiagram.model.findNodeDataForKey(data.group);
-                if (grp != null) {
-                    this.validateNode(grp);
-                    this.updateMapName(grp.key);
-                }
-            }
-        });
 
     }
 
     private ExternalObjectsDropped(e: any) {
-        console.log(e, this.myDiagram.selection);
+        //console.log(e, this.myDiagram.selection);
     }
 
     private menuClick(e: MenuItem) {
-        //TODO: this is a hack, need a better way to handle these clicks
-        if (e.icon == 'fa-pencil') {
-            this.readonly = !this.readonly;
-            this.toggleReadOnly();
-
-            //console.log('menuClick', this.myPalette, this.readonly);
-
-            this.initializePalette();
-            this.resizeDiagram();
-        } else if (e.icon == 'fa-close') {
-            this.readonly = true;
-            this.toggleReadOnly();
-            this.populateDiagram();
-        }
-        else if (e.icon == 'fa-object-group') {
-            this.groupSelection();
-        }
-        else if (e.icon == 'fa-object-ungroup') {
-            this.ungroupSelection();
-        }
-        else if (e.icon == 'fa-info-circle') {
+        if (e.icon == 'fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
-        }
-        else if (e.icon == 'fa-floppy-o') {
-            this.save();
-        }
-        else if (e.icon == 'fa-plus-square-o') {
-            this.myDiagram.nodes.each(n => {
-                let g = n.containingGroup;
-                if (g != null && (n.data.category == 'object' || n.data.category == 'focal')) {
-                    g.isSubGraphExpanded = true;
-                   // console.log(n, n.data, n.data.category);
-                }
-            });
-        }
-        else if (e.icon == 'fa-minus-square-o') {
-            this.myDiagram.nodes.each(n => {
-                let g = n.containingGroup;
-                if (g != null && (n.data.category == 'object' || n.data.category == 'focal')) {
-                    g.isSubGraphExpanded = false;
-                   // console.log(n, n.data, n.data.category);
-
-                }
-            });
-        } else if (e.icon == 'fa-plus') {
-            //console.log('add node', e, this.selectedData, this.selection, this.myDiagram.selection);
-            //if (e.label.toLowerCase().indexOf('focal') > -1) {
-            //    let mapKey = this.selectedData == null ? null : this.selectedData.key;
-
-            //    if (mapKey != null) {
-            //        let focal = null;
-            //        let newFocal = new NodeModelV2();
-            //        let focalIndex = this.myDiagram.model.nodeDataArray.findIndex(f => (<any>f).category == 'focal');
-            //        let promises = [];
-
-            //        if (focalIndex > -1) {
-            //            focal = this.myDiagram.model.nodeDataArray[focalIndex];
-            //        } else {
-            //            //we many not have the focal info on new lineage, get it here
-            //            promises.push(this.lineageService.getLineageNodeDataForObject(this.objectType, this.objectID)
-            //                .then(r => {
-            //                    focal = r;
-            //                }));
-            //        }
-
-            //        Promise.all(promises).then(() => {
-            //            if (focal != null) {
-            //                let objType = this.objectTypes.find(o => o.object == focal.objectType && o.objectId == focal.objectTypeId);
-            //                newFocal.name = focal.name;
-            //                newFocal.backColor = focal.backColor;
-            //                newFocal.foreColor = focal.foreColor;
-            //                newFocal.category = 'focal';
-            //                newFocal.object = focal.object;
-            //                newFocal.objectId = focal.objectId;
-            //                newFocal.objectType = focal.objectType;
-            //                newFocal.objectTypeId = focal.objectTypeId;
-            //                newFocal.objectTypeName = focal.objectTypeName;
-            //                newFocal.order = (objType == null ? null : objType.order);
-            //                newFocal.diagramObjectType = DiagramObjectType.Node;
-            //                newFocal.visible = true;
-            //                newFocal.isGroup = false;
-            //                newFocal.group = mapKey;
-
-            //                this.myDiagram.model.addNodeData(newFocal);
-            //                this.messagesService.showInfoMessage('Focal object added', 'The focal object has been added to the mapping.');
-            //            }
-            //        });
-
-            //    }
-            //} else {
-            //    let newMap = new NodeModelV2();
-            //    let map = this.objectTypes.find(o => o.order == -1);
-            //    if (map != null) {
-            //        newMap.backColor = map.backColor;
-            //        newMap.foreColor = map.foreColor;
-            //        newMap.name = '<drop objects here>';
-            //        newMap.category = 'map'
-            //        newMap.object = map.object;
-            //        newMap.objectId = map.objectId;
-            //        newMap.objectTypeId = 1
-            //        newMap.objectType = map.objectType;
-            //        newMap.order = null;
-            //        newMap.diagramObjectType = DiagramObjectType.Node;
-            //        newMap.visible = true;
-            //        newMap.isGroup = true;
-
-            //        this.myDiagram.model.addNodeData(newMap);
-            //        this.messagesService.showInfoMessage('Mapping added', 'A new mapping has been added to the diagram.');
-            //    }
-            //}
         }
     }
 
@@ -972,8 +501,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 this.myDiagram.model.setDataProperty(n, 'group', null);
             });
         });
-
-        this.removeEmptyGroups()
         this.reOrderLayout();
     }
 
@@ -1008,136 +535,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //console.log(maps);
     }
 
-    private removeEmptyGroups() {
-        let removes = [];
-
-        this.myDiagram.model.nodeDataArray.forEach(n => {
-            let node = <NodeModelV2>n;
-
-            //if (node.isGroup && node.category == 'transform') {
-            //    let children = this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == node.key);
-            //    if (children.length < 2) {
-            //        removes.push(node);
-            //    }
-            //}
-        });
-
-        removes.forEach(r => this.myDiagram.model.removeNodeData(r));
-    }
-
-    private highlightGroup(e, grp: go.Group, show) {
-        //console.log('highlightGroup', e, grp, show);
-
-        if (!grp) return;
-        e.handled = true;
-        if (show) {
-
-            // cannot depend on the grp.diagram.selection in the case of external drag-and-drops;
-            // instead depend on the DraggingTool.draggedParts or .copiedParts
-            var tool = grp.diagram.toolManager.draggingTool;
-            var map = tool.draggedParts || tool.copiedParts;  // this is a Map
-            // now we can check to see if the Group will accept membership of the dragged Parts
-            if (grp.canAddMembers(map.toKeySet())) {
-                grp.isHighlighted = true;
-                return;
-            }
-        }
-        grp.isHighlighted = false;
-    }
-
-    private finishDrop(e, grp: go.Group) {
-        let node = e.diagram.selection.first().data;
-
-        if (e.diagram.div.id == 'LineagePalette') { //prevent drop into palette
-            e.diagram.currentTool.doCancel();
-            return;
-        }
-
-        if (this.readonly) { //prevent d&d on readonly
-            e.diagram.currentTool.doCancel();
-            return;
-        }
-
-        //console.log('finishDrop', e, grp, node, this.myDiagram);
-
-        //if (node != null) {
-        //    if (node.isGroup) {
-        //        e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true);
-        //        if (node.category == 'map' && node.order < 0) {
-        //            this.myDiagram.model.setDataProperty(node, 'name', '<drop objects here>');
-        //            this.myDiagram.model.setDataProperty(node, 'order', null);
-        //            if (node.template != null) {
-        //                //console.log('finishDrop- template', node);
-        //                node.template.forEach(i => {
-        //                    let item = new NodeModelV2();
-        //                    let type = this.objectTypes.find(o => o.object == i.object && o.objectId == i.objectId);
-        //                    if (type == null)
-        //                        return;
-        //                    item.category = 'object';
-        //                    item.backColor = type.backColor;
-        //                    item.foreColor = type.foreColor;
-        //                    item.isGroup = false;
-        //                    item.visible = true;
-        //                    item.diagramObjectType = DiagramObjectType.Node;
-        //                    item.objectType = type.object;
-        //                    item.objectTypeId = type.objectId;
-        //                    item.object = null;
-        //                    item.objectId = null;
-        //                    item.order = type.order;
-        //                    item.objectTypeName = type.name;
-        //                    item.isRequired = (i.isRequired.toString() == 'true' ? true : false);
-        //                    item.name = '<choose an object>';
-        //                    item.group = node.key;
-        //                    this.myDiagram.model.addNodeData(item);
-        //                    this.validateNode(item);
-        //                });
-        //            }
-        //            this.validateNode(node);
-        //            let p = this.myDiagram.findPartForData(node);
-        //            if (p != null) (<any>p).isSubGraphExpanded = true;
-        //        }
-        //    } else {
-        //        if (grp == null || (grp != null && grp.data != null && (node.category != 'map' && grp.data.category == 'transform'))) {
-        //            e.diagram.currentTool.doCancel();
-        //            this.messagesService.showError('Error', 'This item can only be added to maps');
-        //            this.selectedData = null;
-        //            this.selectTab('info');
-        //            this.isWindowVisible = false;
-        //            return;
-        //        } else {
-        //            //if this is a new object, change the name/objName for display purposes
-        //            if (node.object == null && node.objectId == null && node.name != '<choose an object>') {
-        //                this.myDiagram.model.setDataProperty(node, 'objectTypeName', node.name);
-        //                this.myDiagram.model.setDataProperty(node, 'name', '<choose an object>');
-        //            }
-        //            grp.addMembers(grp.diagram.selection, true);
-        //            grp.isSubGraphExpanded = true;
-        //            if (grp.data.name == '<drop objects here>') {
-        //                this.myDiagram.model.setDataProperty(grp.data, 'name', node.name);
-        //            }
-        //            if (grp.data.template != null) {
-        //                grp.data.template.forEach(t => {
-        //                    if (t.object == node.objectType && t.objectId == node.objectTypeId) {
-        //                        this.myDiagram.model.setDataProperty(node, 'isRequired', t.isRequired);
-        //                    }
-        //                })
-        //            }
-        //            //revalidate the group 
-        //            this.validateNode(this.myDiagram.model.findNodeDataForKey(grp.data.key));
-        //        }
-        //    }
-        //    this.validateNode(node);
-        //    this.refreshControls(node);
-        //} else {
-        //    e.diagram.currentTool.doCancel();
-        //}
-
-        this.myDiagram.model.nodeDataArray.filter(n => (<any>n).category == 'map').forEach(n => {
-            this.updateMapName((<any>n).key);
-        });
-        this.reOrderLayout();
-    }
-
     //#endregion
 
     //#region templates
@@ -1153,8 +550,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             initialPosition: new go.Point(go.Spot.Center.x, go.Spot.Center.y),
             layout: this.g(go.LayeredDigraphLayout, {
                 //angle: 0,
-                layerSpacing: 7,
-                columnSpacing: 7
+                layerSpacing: 12,
+                columnSpacing: 12
                 //rowSpacing: 10
             }),
             "undoManager.isEnabled": true
@@ -1215,9 +612,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 groupTemplateMap: this.myDiagram.groupTemplateMap,
                 model: new go.GraphLinksModel(paletteModel),
                 layout: this.g(go.GridLayout, {
-                    sorting: go.GridLayout.Ascending,
-                    comparer: (a, b) => this.compareObjects(a.data, b.data)
-                })//GridLayout.Forward preserves order
+                    sorting: go.GridLayout.Ascending
+                })
             });
 
         return pt;
@@ -1225,7 +621,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private createObjectNode(): go.Node {
         let nodeWidth = 150;
-        let nodeHeight = 50;
+        let nodeHeight = 75;
         let nodeBorderColor = 'transparent';
         let nodeFontSize = 8;
 
@@ -1328,73 +724,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             ));
     }
 
-
-
-    private createMapGroup(): go.Group {
-        return this.g(go.Group, "Auto",
-            { // define the group's internal layout
-                background: 'transparent',
-                minSize: new go.Size(150, 50),
-                mouseDragEnter: (e, grp, prev) => this.highlightGroup(e, grp, true),
-                mouseDragLeave: (e, grp, next) => this.highlightGroup(e, grp, false),
-                mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
-                mouseLeave: (e, obj) => { this.showPorts(obj.part, false); },
-                computesBoundsAfterDrag: true,
-                // when the selection is dropped into a Group, add the selected Parts into that Group;
-                // if it fails, cancel the tool, rolling back any changes
-                mouseDrop: (e, grp) => this.finishDrop(e, grp),
-                handlesDragDropForMembers: true,  // don't need to define handlers on member Nodes and Links
-                // Groups containing Groups lay out their members horizontally
-                layout:
-                this.g(go.GridLayout,
-                    {
-                        wrappingColumn: 1,
-                        sorting: go.GridLayout.Ascending,
-                        comparer: (a, b) => this.compareObjects(a.data, b.data)
-                    }),
-                isSubGraphExpanded: false
-            },
-            this.g(go.Shape, "RoundedRectangle",
-                { fill: null, stroke: "gray", strokeWidth: 2 }
-                , new go.Binding("stroke", "valid", (v, o) => {
-                    if (v == false) return '#f00';
-                    let data = o.panel.data;
-                    if (data == null || data.foreColor == null) return 'gray';
-                    return data.foreColor;
-                }),
-                new go.Binding("fill", "backColor", o => {
-                    return o == null ? '#eee' : o;
-                }),
-                new go.Binding("fill", "isHighlighted", (o, x) => {
-                    let data = x.panel.data;
-                    return o ? '#eac925' : (data.backColor || '#eee');
-                }).ofObject()
-            ),
-            this.g(go.Panel, "Vertical",
-                { defaultAlignment: go.Spot.Left, margin: 4 },
-                this.g(go.Panel, "Horizontal",
-                    { defaultAlignment: go.Spot.Top },
-                    // the SubGraphExpanderButton is a panel that functions as a button to expand or collapse the subGraph
-                    this.g("SubGraphExpanderButton", new go.Binding("visible", "order", o => { return o != -1; })),
-                    this.g(go.TextBlock,
-                        { font: "Bold 12px Sans-Serif", margin: 4 },
-                        new go.Binding("text", "level"),
-                        new go.Binding("stroke", "foreColor", o => { return o == null ? '#000' : o; }),
-                        new go.Binding("visible", "isSubGraphExpanded", o => {
-                            return !o;
-                        }).ofObject()
-                    )
-                ),
-                // create a placeholder to represent the area where the contents of the group are
-                this.g(go.Placeholder,
-                    { padding: new go.Margin(0, 10) })
-            )  // end Vertical Panel
-            //,this.g(go.Panel, "Horizontal", { defaultAlignment: go.Spot.TopRight }, this.g("SubGraphExpanderButton"))
-            , this.makePort('L', go.Spot.Left, false, true),
-            this.makePort('R', go.Spot.Right, true, false)
-        );  // end Group
-    }
-
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
@@ -1443,7 +772,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 stroke: "gray", strokeWidth: 2, strokeDashArray: [3, 2]
             },
                 new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
-                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
+                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" }),
+                {
+                    toolTip: this.showTooltip("Pending Add")
+                }
+            ), 
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
@@ -1456,7 +789,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     new go.Binding("visible", "text", function (a) { return (a ? true : false) })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4,
                 },
                     // the label
                     new go.Binding("text", "text").makeTwoWay()
@@ -1478,8 +811,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 stroke: "#900", strokeWidth: 2, strokeDashArray: [3, 2]
             },
                 new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
-                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
-            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" }),
+                {
+                    toolTip: this.showTooltip("Pending Delete")
+                }
+            ),
+            this.g(go.Shape, { toArrow: "standard", fill: "#900", stroke: "#900" }),
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
                     visible: false,
@@ -1499,7 +836,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             )
         );
     }
-
 
     private createPaletteNode(): go.Node {
         let nodeWidth = 150;
@@ -1536,80 +872,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             ));
     }
 
-    private createDefaultGroup(): go.Group {
-        return this.g(go.Group, "Auto",
-            { // define the group's internal layout
-
-                layout: this.g(go.TreeLayout,
-                    { angle: 90, arrangement: go.TreeLayout.ArrangementHorizontal, isRealtime: false }),
-                // the group begins unexpanded;
-                // upon expansion, a Diagram Listener will generate contents for the group
-                isSubGraphExpanded: false
-            },
-            this.g(go.Shape, "Rectangle",
-                { fill: null, stroke: "gray", strokeWidth: 2 }),
-            this.g(go.Panel, "Vertical",
-                { defaultAlignment: go.Spot.Left, margin: 4 },
-                this.g(go.Panel, "Horizontal",
-                    { defaultAlignment: go.Spot.Top },
-                    // the SubGraphExpanderButton is a panel that functions as a button to expand or collapse the subGraph
-                    this.g("SubGraphExpanderButton")
-                    //,this.g(go.TextBlock,
-                    //  { font: "Bold 18px Sans-Serif", margin: 4 },
-                    //  new go.Binding("text", "name"))
-                ),
-                // create a placeholder to represent the area where the contents of the group are
-                this.g(go.Placeholder,
-                    { padding: new go.Margin(0, 10) })
-            )  // end Vertical Panel
-        );  // end Group
-    }
-
-    private createTransformationGroup(): go.Group {
-        return this.g(go.Group, "Auto",
-            { // define the group's internal layout
-                background: '#f9f9f9',
-                mouseDragEnter: (e, grp, prev) => this.highlightGroup(e, grp, true),
-                mouseDragLeave: (e, grp, next) => this.highlightGroup(e, grp, false),
-                computesBoundsAfterDrag: true,
-                // when the selection is dropped into a Group, add the selected Parts into that Group;
-                // if it fails, cancel the tool, rolling back any changes
-                mouseDrop: (e, grp) => this.finishDrop(e, grp),
-                handlesDragDropForMembers: true,  // don't need to define handlers on member Nodes and Links
-                // Groups containing Groups lay out their members horizontally
-                layout:
-                this.g(go.GridLayout,
-                    {
-                        wrappingColumn: 1, alignment: go.GridLayout.Location
-                    }),
-                // the group begins unexpanded;
-                // upon expansion, a Diagram Listener will generate contents for the group
-                isSubGraphExpanded: true
-            },
-            new go.Binding("background", "isHighlighted", (h) => { return h ? "#faffad" : "#f9f9f9"; }).ofObject(),
-            this.g(go.Shape, "Rectangle",
-                { fill: null, stroke: "#000", strokeWidth: 1, strokeDashArray: [4, 2] },
-                new go.Binding("stroke", "valid", v => { return v ? '#000' : '#f00' })),
-            this.g(go.Panel, "Vertical",
-                { defaultAlignment: go.Spot.Center, margin: 5 },
-                this.g(go.Panel, "Horizontal",
-                    { defaultAlignment: go.Spot.Top },
-                    // the SubGraphExpanderButton is a panel that functions as a button to expand or collapse the subGraph
-                    //this.g("SubGraphExpanderButton"),
-                    this.g(go.TextBlock,
-                        { font: "bold 10px Sans-Serif", margin: 2 },
-                        new go.Binding("text", "businessTransformation", n => { return (n.length > 25) ? n.substring(0, 23) + '...' : n }),
-                        new go.Binding("visible", "businessTransformation", n => { return (n == null || n == '') ? false : true })
-                    )
-                )
-                ,
-                // create a placeholder to represent the area where the contents of the group are
-                this.g(go.Placeholder,
-                    { padding: new go.Margin(0, 5) })
-            )  // end Vertical Panel
-        );  // end Group
-    }
-
     private makePort(name, spot, output, input) {
         return this.g(go.Shape, "Circle",
             {
@@ -1630,6 +892,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         node.ports.each((port) => {
             port.stroke = (show ? "#000" : null);
         });
+    }
+
+    private showTooltip(text: string): go.Adornment {
+        return this.g(go.Adornment, "Auto",
+            this.g(go.Shape, { fill: "#333" }),
+            this.g(go.TextBlock, { margin: 4, text: text, stroke: "#fff" }
+        ));
     }
 
     //#endregion
