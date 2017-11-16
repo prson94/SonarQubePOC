@@ -2764,7 +2764,8 @@ namespace d360.web.Controllers
                           ,v.Title
                       FROM [dbo].[SiteNav] v
 		                    left join artifacttype a on a.id = v.objectID and v.Object = 'ArtifactType'
-                            WHERE   v.ParentID = @parentId";
+                            WHERE   v.ParentID = @parentId
+                            ORDER BY v.SortOrder desc";
 
             var items = Company.Query<SiteNav>(sql, new { parentId = id });
 
