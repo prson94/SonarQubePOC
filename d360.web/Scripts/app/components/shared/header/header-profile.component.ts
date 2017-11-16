@@ -16,8 +16,8 @@ declare var ResourceEmail;
                             <div class="col s2"><a [routerLink]="resourceUrl()" class="photo" title="Go to your profile"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a></div>
                             <div class="col s10">
                                 <div class="row">
-                                    <div class="col s12"><h4>Kenneth McNamee</h4></div>
-                                    <div class="col s12"><h5>kmcnamee@infogix.com</h5></div>
+                                    <div class="col s12"><h4>{{userName}}</h4></div>
+                                    <div class="col s12"><h5>{{userEmail}}</h5></div>
                                 </div>
                             </div>                                                        
                         </div>
