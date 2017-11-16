@@ -67,6 +67,7 @@ export class GridDefinition {
     Title: string;
     Type: string;
     TopLevelFilterColumns: GridFilterColumn[];
+    IsReadOnly: boolean;
 }
 
 

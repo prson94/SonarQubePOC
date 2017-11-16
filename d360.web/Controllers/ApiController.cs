@@ -524,7 +524,9 @@ namespace d360.web.Controllers
             int remainingWidth = 0;
             int staticFieldCount = 0;
             ObjectDetail detail = null;
-            
+            bool isReadOnly = false;
+
+
             Dictionary<string, string> settings = null;
 
             switch (type)
@@ -608,6 +610,11 @@ namespace d360.web.Controllers
                     #region
 
                     var intersectType = Company.GetById<IntersectType>(id);
+
+                    if(intersectType != null && intersectType.Predicate != null)
+                    {
+                        isReadOnly = !intersectType.Predicate.Type.AsInfoModel().AllowEditFromRelationshipEditor;
+                    }
                     var targetType = Request.GetQueryString("target");
                     var targetTypeID = Request.GetQueryString("targetID");
 
@@ -624,18 +631,7 @@ namespace d360.web.Controllers
                             new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
                         );
                     }
-
-                    //var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == id && !i.AllowMultipleEntries).ToList();
-                    //foreach (var f in attributesTypes)
-                    //{
-                    //    var name = $"AttributeType{f.AttributeType.ID}";
-                    //    columns.Add(
-                    //        new GridColumn { text = f.AttributeType.Name, datafield = $"{name}", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
-                    //    );
-
-                    //    fields.Add(new GridField { name = $"{name}", type = "string" });
-                    //}
-
+                    
                     staticFieldCount = columns.Count;
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
@@ -911,7 +907,8 @@ where   h.ID <> @t order by h.[Level] desc;
                 Columns = columns,
                 FilterColumns = filterColumns,
                 ColumnGroups = groups,
-                TopLevelFilterColumns = topLevelFilterFields
+                TopLevelFilterColumns = topLevelFilterFields,
+                IsReadOnly = isReadOnly
             });
         }
 

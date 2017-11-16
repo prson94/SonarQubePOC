@@ -10,7 +10,7 @@ import { Permission } from '../../../models/permission.model'
     providers: [RelationshipsService],      
     template: `
                 <header>Relationships
-                    <d3s-tile-actions [hasAdd]="cardinalityShow && hasRelationships && selected &&  hasRelationshipCreatePermissions()" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="cardinalityShow && hasRelationships && selected &&  hasRelationshipCreatePermissions() &&!readOnly" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && hasRelationships" class="row" style="padding-left:10px;padding-bottom:5px;">
@@ -28,7 +28,7 @@ import { Permission } from '../../../models/permission.model'
                         </ng-template>
                     </div>
                     <div class="col l9 s12">                        
-                        <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetName]="selected?.Name" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID" [hasEdit]="hasRelationshipUpdatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-dynamic-relationship-grid>                        
+                        <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" [(readOnly)]="readOnly" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetName]="selected?.Name" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID" [hasEdit]="hasRelationshipUpdatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-dynamic-relationship-grid>                        
                     </div>                    
                 </div>
                 <div class="row" *ngIf="!isLoading && !hasRelationships">
@@ -48,6 +48,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     relationshipItems: ObjectRelationshipCount[] = [];
     selected: ObjectRelationshipCount;
 
+    readOnly: boolean = false;
     cardinalityShow: boolean = true;
     hasRelationships: boolean;
     showAddRelationship: boolean = false;

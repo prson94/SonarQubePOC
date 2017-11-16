@@ -21,14 +21,14 @@ declare var CompanySettings;
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column  [style]="{width:'28px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="hasEdit">                                
+                                    <div class="RowTools" *ngIf="hasEdit && !readOnly">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>                                                                           
                                     </div>
                                 </ng-template>
                         </p-column>                   
                         <p-column  [style]="{width:'28px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="hasDelete">                                                    
+                                    <div class="RowTools" *ngIf="hasDelete && !readOnly">                                                    
                                         <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
                                 </ng-template>
@@ -70,7 +70,9 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Input() addRelationship: boolean;
     @Input() hasEdit: boolean = true;
     @Input() hasDelete: boolean = true;
+    @Input() readOnly: boolean = false;
 
+    @Output() readOnlyChange = new EventEmitter();
     @Output() addRelationshipChange = new EventEmitter();
     @Output() relationshipAdded = new EventEmitter();
     @Output() relationshipRemoved = new EventEmitter();
@@ -78,6 +80,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Input() simpleFilter: boolean;
 
     private fields: GridField[] = [];
+    
 
     get taxonomyName() {
         return CompanySettings.ArtifactType_TaxonomyTypeID || '';
@@ -114,6 +117,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             .then(result => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
+                this.readOnly = result.IsReadOnly;
+                this.readOnlyChange.emit(this.readOnly);
                 if (result.Fields.findIndex(x => x.name == 'TaxonomyType') >= 0) {
                     this.columns.unshift({
                         text: this.taxonomyName,
