@@ -336,6 +336,38 @@ namespace d360.web.Controllers
 
         }
 
+        [Authorize, HttpPut, Route("SiteNavFolderMove"), NonNullableParameters]
+        public JsonNetResult SiteNavFolderMove(int targetFolderId,int adjacentFolderId)
+        {
+            var success = true;
+            var message = "";
+            try
+            {
+                var siteNav = Company.GetById<SiteNav>(targetFolderId);
+                var siteNavBelow = Company.GetById<SiteNav>(adjacentFolderId); ;
+
+                if (siteNav == null)
+                    throw new Exception($"Folder Id ${targetFolderId} not found.");
+                if (siteNavBelow == null)
+                    throw new Exception($"Folder Id ${adjacentFolderId} not found.");
+
+                int? tmpSortOrder = siteNav.SortOrder;
+                siteNav.SortOrder = siteNavBelow.SortOrder;
+                siteNavBelow.SortOrder = tmpSortOrder;
+                Company.SaveChanges();
+                message = $"Folder ${siteNav.Name} moved successfully.";
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         #region Permissions
 
         [Authorize, HttpGet, Route("permissions/get/list/{id:int}")]
