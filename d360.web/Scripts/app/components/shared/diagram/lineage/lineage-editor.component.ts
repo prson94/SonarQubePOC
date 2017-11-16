@@ -123,15 +123,15 @@ export class LineageEditorComponent implements OnInit, OnChanges, OnDestroy {
     constructor(private lineageService: LineageService) { }
 
     ngOnChanges() {
-        if (this.node != null) {
-            if (this.node.category == 'map' && this.node.isGroup) {
-                if (this.diagram != null) {
-                    //if we don't clone here we would need to handle change logic in this component
-                    //this allows us to keep it in the changeNode method of the diagram component instead
-                    this.objects = _.cloneDeep(this.diagram.model.nodeDataArray.filter(n => (<any>n).group == this.node.key));
-                }
-            }
-        }
+        //if (this.node != null) {
+        //    if (this.node.category == 'map' && this.node.isGroup) {
+        //        if (this.diagram != null) {
+        //            //if we don't clone here we would need to handle change logic in this component
+        //            //this allows us to keep it in the changeNode method of the diagram component instead
+        //            this.objects = _.cloneDeep(this.diagram.model.nodeDataArray.filter(n => (<any>n).group == this.node.key));
+        //        }
+        //    }
+        //}
     }
 
     ngOnInit() {

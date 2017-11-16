@@ -51,34 +51,22 @@ export class NodeModel {
 
 
 export class NodeModelV2 {
+    id: any;
     key: any;
+    assetId: any;
     object: string;
     objectId: number;
-    objectType: string;
-    objectTypeId: number;
     objectTypeName: string;
+
     name: string;
     foreColor: string = '#000';
     backColor: string = '#fff';
     visible: boolean = true;
-    order: number;
-    intersectTypeId: number;
 
-    businessTransformation: string;
-    technicalTransformation: string;
 
-    group: string;
-    isGroup: boolean = false;
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
     template: any = null;
-    templateId: number;
-    isRequired: boolean = null;
-
-    level: number = -1;
-    itemKey: string;
-    fromItemKey: string;
-    graphKey: string;
 
     valid: boolean = true;
     errors = [];
@@ -88,6 +76,7 @@ export class LinkModelV2 {
     from: string;
     to: string;
     intersectId: number;
+    state: number;
 
     category: string;
     diagramObjectType: DiagramObjectType = DiagramObjectType.Link;

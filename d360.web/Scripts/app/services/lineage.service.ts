@@ -25,7 +25,7 @@ export class LineageService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     public getLineageDiagram(type: string, id: number): Promise<any> {
-        return this.http.get(`diagrams/lineage/${type}/${id}`)
+        return this.http.get(`services/relationships/${type}/${id}/lineage `)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

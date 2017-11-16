@@ -151,6 +151,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.nodeTemplateMap.add('palette', this.createPaletteNode());
 
         this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
+        this.myDiagram.linkTemplateMap.add('adding', this.createPendingAddLink());
+        this.myDiagram.linkTemplateMap.add('deleting', this.createPendingDeleteLink());
 
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
@@ -231,25 +233,26 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
                 var d = data.nodes[i];
                 var model = new NodeModelV2();
-                model.key = d.key;
+                model.key = d.id;
+                model.assetId = d.assetId;
                 model.object = d.object;
                 model.objectId = d.objectId;
-                model.objectType = d.objectType;
-                model.objectTypeId = d.objectTypeId;
-                model.objectTypeName = d.objectTypeName;
+                //model.objectType = d.objectType;
+                //model.objectTypeId = d.objectTypeId;
+                model.objectTypeName = d.type;
                 model.name = d.name;
-                model.foreColor = d.foreColor;
-                model.backColor = d.backColor;
-                model.category = d.category;
-                model.businessTransformation = d.businessTransformation;
-                model.technicalTransformation = d.technicalTransformation;
-                model.order = d.order;
-                model.intersectTypeId = d.intersectTypeId;
-                model.templateId = d.templateId;
-                model.itemKey = d.itemKey;
+                model.foreColor = d.fore;
+                model.backColor = d.back;
+                model.category = 'object';
+                //model.businessTransformation = d.businessTransformation;
+                //model.technicalTransformation = d.technicalTransformation;
+                //model.order = d.order;
+                //model.intersectTypeId = d.intersectTypeId;
+                //model.templateId = d.templateId;
+                //model.itemKey = d.itemKey;
 
-                model.isGroup = d.isGroup;
-                model.group = d.group;
+                //model.isGroup = d.isGroup;
+                //model.group = d.group;
 
                 //if (model.category == 'map')
                 modelList.push(model);
@@ -263,32 +266,43 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 link.intersectId = d.intersectId;
                 link.from = d.from;
                 link.to = d.to;
-                link.category = '';
+                link.state = d.state;
+                if (link.state == 0)
+                    link.category = 'adding';
+                else if (link.state == 2)
+                    link.category = 'deleting';
+                else
+                    link.category = '';
+                
                 linkList.push(link);
+
             }
         }
 
 
         //calculate levels and source/target keys
-        let roots = modelList.filter(m => linkList.findIndex(l => l.to == m.key) == -1 && m.category == 'map');
-        let traverse = (level: number, node: NodeModelV2) => {
-            let links = linkList.filter(l => l.from == node.key);
-            console.log('traverse', links);
-            links.forEach(l => {
-                let n = modelList.find(m => m.key == l.to);
-                if (n != null) {
-                    n.level = level + 1;
-                    n.graphKey = node.graphKey;
-                    traverse(level + 1, n);
-                }
-            });
-        };
+        //let roots = modelList.filter(m => linkList.findIndex(l => l.to == m.key) == -1 && m.category == 'map');
+        //let traverse = (level: number, node: NodeModelV2) => {
+        //    let links = linkList.filter(l => l.from == node.key);
+        //    //console.log('traverse', links);
+        //    links.forEach(l => {
+        //        let n = modelList.find(m => m.key == l.to);
+        //        let f = modelList.find(m => m.key == l.from);
+        //        if (n != null) {
+        //            n.level = level + 1;
+        //            n.graphKey = node.graphKey;
+        //            if (f != null)
+        //                n.fromItemKey = f.itemKey;
+        //            traverse(level + 1, n);
+        //        }
+        //    });
+        //};
 
-        roots.forEach(r => {
-            r.level = 0;
-            r.graphKey = r.key;
-            traverse(0, r);
-        });
+        //roots.forEach(r => {
+        //    r.level = 0;
+        //    r.graphKey = r.key;
+        //    traverse(0, r);
+        //});
 
         //let flattenedModel = [];
         //let items = modelList.filter(m => m.level == 0);
@@ -422,61 +436,61 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //        items: null
         //    });
 
-        this.editorMenuItems.push({
-            icon: 'fa-floppy-o',
-            items: null
-        });
+        //this.editorMenuItems.push({
+        //    icon: 'fa-floppy-o',
+        //    items: null
+        //});
 
         let mapCount = 0;
-        if (this.selection != null)
-            this.selection.each(s => {
-                if (s.category == 'map')
-                    mapCount++;
-            });
+        //if (this.selection != null)
+        //    this.selection.each(s => {
+        //        if (s.category == 'map')
+        //            mapCount++;
+        //    });
 
-        if (this.selection != null && mapCount > 1)
-        this.editorMenuItems.push({
-            icon: 'fa-object-group',
-            items: null
-        });
+        //if (this.selection != null && mapCount > 1)
+        //this.editorMenuItems.push({
+        //    icon: 'fa-object-group',
+        //    items: null
+        //});
 
-        if (this.selectedData != null)
-            this.editorMenuItems.push({
-                icon: 'fa-object-ungroup',
-                items: null
-            });
+        //if (this.selectedData != null)
+        //    this.editorMenuItems.push({
+        //        icon: 'fa-object-ungroup',
+        //        items: null
+        //    });
 
-        if (this.readonly)
-            this.menuItems.push({
-                icon: 'fa-pencil',
-                items: null
-            });
+        //if (this.readonly)
+        //    this.menuItems.push({
+        //        icon: 'fa-pencil',
+        //        items: null
+        //    });
 
-        if (!this.readonly)
-            this.menuItems.push({
-                icon: 'fa-close',
-                items: null
-            });
+        //if (!this.readonly)
+        //    this.menuItems.push({
+        //        icon: 'fa-close',
+        //        items: null
+        //    });
 
-        this.menuItems.push({
-            icon: 'fa-plus-square-o',
-            items: null
-        });
+        //this.menuItems.push({
+        //    icon: 'fa-plus-square-o',
+        //    items: null
+        //});
 
-        this.menuItems.push({
-            icon: 'fa-minus-square-o',
-            items: null
-        });
+        //this.menuItems.push({
+        //    icon: 'fa-minus-square-o',
+        //    items: null
+        //});
 
         this.menuItems.push({
             icon: 'fa-info-circle',
             items: null
         });
 
-        if (!this.readonly)
-            this.editorMenuItems.forEach(e => {
-                this.menuItems.push(e);
-            });
+        //if (!this.readonly)
+        //    this.editorMenuItems.forEach(e => {
+        //        this.menuItems.push(e);
+        //    });
 
     }
 
@@ -526,89 +540,89 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private validateNode(n: NodeModelV2) {
         let valid = true;
 
-        if (n == null) {
-            console.warn('NULL passed to validateNode()');
-            return;
-        }
+        //if (n == null) {
+        //    console.warn('NULL passed to validateNode()');
+        //    return;
+        //}
 
-        n.errors = [];
+        //n.errors = [];
 
-        switch (n.category) {
-            case 'object':
-            case 'focal':
-                if (n.object == null || n.objectId == null) {
-                    valid = false;
-                    n.errors.push('No object has been chosen for this item');
-                }
-                if (n.group == null) {
-                    valid = false;
-                    n.errors.push('This item must be inside a map');
+        //switch (n.category) {
+        //    case 'object':
+        //    case 'focal':
+        //        if (n.object == null || n.objectId == null) {
+        //            valid = false;
+        //            n.errors.push('No object has been chosen for this item');
+        //        }
+        //        if (n.group == null) {
+        //            valid = false;
+        //            n.errors.push('This item must be inside a map');
 
-                }
-                if (n.isGroup) {
-                    valid = false;
-                    n.errors.push(`This item's template is incorrect`);
+        //        }
+        //        if (n.isGroup) {
+        //            valid = false;
+        //            n.errors.push(`This item's template is incorrect`);
 
-                }
-                //invalidate the map too
-                if (!valid && n.group != null) {
-                    let map = this.myDiagram.model.findNodeDataForKey(n.group);
-                    if (map != null) {
-                        this.myDiagram.model.setDataProperty(map, 'valid', false);
-                        map.errors = [];
-                        map.errors.push('One or more items in this map has validation issues');
-                    }
-                }
-                break;
-            case 'map':
-                let items = this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key);
-                if (!n.isGroup) {
-                    valid = false;
-                    n.errors.push(`This item's template is incorrect`);
-                }
-                if (items.length < 1) {
-                    valid = false;
-                    n.errors.push(`This map must contain at least one object`);
-                }
-                if (valid && this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key && (<any>c).valid == false).length > 0) {
-                    valid = false;
-                    n.errors.push('One or more items in this map has validation issues');
-                }
-                if (n.template != null) { //check for required template items
-                    n.template.filter(t => t.isRequired).forEach(t => {
-                        let i = items.find(i => (<any>i).objectType == t.object && (<any>i).objectTypeId == t.objectId);
-                        let o = this.objectTypes.find(o => o.object == t.object && o.objectId == t.objectId);
-                        if (i == null) {
-                            valid = false;
-                            if (o == null) {
-                                n.errors.push(`This map template is missing a required object`);
-                            } else
-                                n.errors.push(`This map template requires a ${o.name} object`);
+        //        }
+        //        //invalidate the map too
+        //        if (!valid && n.group != null) {
+        //            let map = this.myDiagram.model.findNodeDataForKey(n.group);
+        //            if (map != null) {
+        //                this.myDiagram.model.setDataProperty(map, 'valid', false);
+        //                map.errors = [];
+        //                map.errors.push('One or more items in this map has validation issues');
+        //            }
+        //        }
+        //        break;
+        //    case 'map':
+        //        let items = this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key);
+        //        if (!n.isGroup) {
+        //            valid = false;
+        //            n.errors.push(`This item's template is incorrect`);
+        //        }
+        //        if (items.length < 1) {
+        //            valid = false;
+        //            n.errors.push(`This map must contain at least one object`);
+        //        }
+        //        if (valid && this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key && (<any>c).valid == false).length > 0) {
+        //            valid = false;
+        //            n.errors.push('One or more items in this map has validation issues');
+        //        }
+        //        if (n.template != null) { //check for required template items
+        //            n.template.filter(t => t.isRequired).forEach(t => {
+        //                let i = items.find(i => (<any>i).objectType == t.object && (<any>i).objectTypeId == t.objectId);
+        //                let o = this.objectTypes.find(o => o.object == t.object && o.objectId == t.objectId);
+        //                if (i == null) {
+        //                    valid = false;
+        //                    if (o == null) {
+        //                        n.errors.push(`This map template is missing a required object`);
+        //                    } else
+        //                        n.errors.push(`This map template requires a ${o.name} object`);
 
-                        }
-                    });
-                }
-                break;
-            case 'transform':
-                if (!n.isGroup || n.group != null) {
-                    valid = false;
-                    n.errors.push(`This item's template is incorrect`);
-                }
-                if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 2) {
-                    valid = false;
-                    n.errors.push(`The transformation must contain at least 2 map items`);
+        //                }
+        //            });
+        //        }
+        //        break;
+        //    case 'transform':
+        //        if (!n.isGroup || n.group != null) {
+        //            valid = false;
+        //            n.errors.push(`This item's template is incorrect`);
+        //        }
+        //        if (this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == n.key).length < 2) {
+        //            valid = false;
+        //            n.errors.push(`The transformation must contain at least 2 map items`);
 
-                }
-                break;
-        }
+        //        }
+        //        break;
+        //}
 
-        let node = this.myDiagram.model.findNodeDataForKey(n.key);
-        if (node != null) {
-            this.myDiagram.model.setDataProperty(node, 'valid', valid);
-            if (node.group != null)
-                this.validateNode(this.myDiagram.model.findNodeDataForKey(node.group));
-        }
-
+        //let node = this.myDiagram.model.findNodeDataForKey(n.key);
+        //if (node != null) {
+        //    this.myDiagram.model.setDataProperty(node, 'valid', valid);
+        //    if (node.group != null)
+        //        this.validateNode(this.myDiagram.model.findNodeDataForKey(node.group));
+        //}
+        return true;
         //console.log('validateNode', n.valid, n);
 
     }
@@ -655,55 +669,55 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         model.FocalID = this.objectID;
         let valid = true;
 
-        this.myDiagram.model.nodeDataArray.forEach(n => {
-            let node = (<any>n);
-            let nodeModel: LineageNodeModel = new LineageNodeModel();
-            nodeModel.Group = node.group;
-            nodeModel.IsGroup = node.isGroup;
-            nodeModel.Key = node.key;
-            nodeModel.Object = node.object;
-            nodeModel.ObjectID = node.objectId;
-            nodeModel.ObjectType = node.objectType;
-            nodeModel.ObjectTypeID = node.objectTypeId;
-            nodeModel.Category = node.category;
-            nodeModel.BusinessTransformation = node.businessTransformation;
-            nodeModel.TechnicalTransformation = node.technicalTransformation;
-            nodeModel.IntersectTypeID = node.intersectTypeId;
-            nodeModel.Order = node.order;
-            nodeModel.MapTypeTemplateID = node.templateId;
+        //this.myDiagram.model.nodeDataArray.forEach(n => {
+        //    let node = (<any>n);
+        //    let nodeModel: LineageNodeModel = new LineageNodeModel();
+        //    nodeModel.Group = node.group;
+        //    nodeModel.IsGroup = node.isGroup;
+        //    nodeModel.Key = node.key;
+        //    nodeModel.Object = node.object;
+        //    nodeModel.ObjectID = node.objectId;
+        //    nodeModel.ObjectType = node.objectType;
+        //    nodeModel.ObjectTypeID = node.objectTypeId;
+        //    nodeModel.Category = node.category;
+        //    nodeModel.BusinessTransformation = node.businessTransformation;
+        //    nodeModel.TechnicalTransformation = node.technicalTransformation;
+        //    nodeModel.IntersectTypeID = node.intersectTypeId;
+        //    nodeModel.Order = node.order;
+        //    nodeModel.MapTypeTemplateID = node.templateId;
 
-            if (node.valid == false)
-                valid = false;
+        //    if (node.valid == false)
+        //        valid = false;
 
-            model.Nodes.push(nodeModel);
-        });
+        //    model.Nodes.push(nodeModel);
+        //});
 
-        (<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
-            let link = (<any>l);
-            let linkModel: LineageLinkModel = new LineageLinkModel();
-            linkModel.IntersectID = link.intersectId;
-            linkModel.From = link.from;
-            linkModel.To = link.to;
+        //(<go.GraphLinksModel>this.myDiagram.model).linkDataArray.forEach(l => {
+        //    let link = (<any>l);
+        //    let linkModel: LineageLinkModel = new LineageLinkModel();
+        //    linkModel.IntersectID = link.intersectId;
+        //    linkModel.From = link.from;
+        //    linkModel.To = link.to;
 
-            model.Links.push(linkModel);
-        });
+        //    model.Links.push(linkModel);
+        //});
 
-        if (!valid) {
-            this.messagesService.showError('Error', 'One or more nodes on the diagram have validation issues');
-            return;
-        }
+        //if (!valid) {
+        //    this.messagesService.showError('Error', 'One or more nodes on the diagram have validation issues');
+        //    return;
+        //}
 
-        let windowState = this.isWindowVisible;
-        this.isLoading = true;
-        this.isWindowVisible = false;
-        console.log('save model', model);
-        this.lineageService.postLineage(model)
-            .then(() => {
-                this.populateDiagram();
-                this.isWindowVisible = windowState;
-                this.toggleReadOnly(false);
-                //console.log('save complete');
-            });
+        //let windowState = this.isWindowVisible;
+        //this.isLoading = true;
+        //this.isWindowVisible = false;
+        //console.log('save model', model);
+        //this.lineageService.postLineage(model)
+        //    .then(() => {
+        //        this.populateDiagram();
+        //        this.isWindowVisible = windowState;
+        //        this.toggleReadOnly(false);
+        //        //console.log('save complete');
+        //    });
     }
     //#endregion
 
@@ -723,15 +737,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //node.name = null; //force name update
         node.object = e.object;
         node.objectId = e.objectId;
-        node.technicalTransformation = e.technicalTransformation;
+       // node.technicalTransformation = e.technicalTransformation;
 
-        this.myDiagram.model.setDataProperty(node, 'businessTransformation', e.businessTransformation);
+        //this.myDiagram.model.setDataProperty(node, 'businessTransformation', e.businessTransformation);
 
         this.myDiagram.model.setDataProperty(node, 'name', e.name);
         this.validateNode(node);
 
-        if (!node.isGroup && node.group != null)
-            this.updateMapName(node.group);
+        //if (!node.isGroup && node.group != null)
+        //    this.updateMapName(node.group);
         //console.log('changeNode', node);
 
         this.myDiagram.commitTransaction('changeNode');
@@ -864,70 +878,70 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             });
         } else if (e.icon == 'fa-plus') {
             //console.log('add node', e, this.selectedData, this.selection, this.myDiagram.selection);
-            if (e.label.toLowerCase().indexOf('focal') > -1) {
-                let mapKey = this.selectedData == null ? null : this.selectedData.key;
+            //if (e.label.toLowerCase().indexOf('focal') > -1) {
+            //    let mapKey = this.selectedData == null ? null : this.selectedData.key;
 
-                if (mapKey != null) {
-                    let focal = null;
-                    let newFocal = new NodeModelV2();
-                    let focalIndex = this.myDiagram.model.nodeDataArray.findIndex(f => (<any>f).category == 'focal');
-                    let promises = [];
+            //    if (mapKey != null) {
+            //        let focal = null;
+            //        let newFocal = new NodeModelV2();
+            //        let focalIndex = this.myDiagram.model.nodeDataArray.findIndex(f => (<any>f).category == 'focal');
+            //        let promises = [];
 
-                    if (focalIndex > -1) {
-                        focal = this.myDiagram.model.nodeDataArray[focalIndex];
-                    } else {
-                        //we many not have the focal info on new lineage, get it here
-                        promises.push(this.lineageService.getLineageNodeDataForObject(this.objectType, this.objectID)
-                            .then(r => {
-                                focal = r;
-                            }));
-                    }
+            //        if (focalIndex > -1) {
+            //            focal = this.myDiagram.model.nodeDataArray[focalIndex];
+            //        } else {
+            //            //we many not have the focal info on new lineage, get it here
+            //            promises.push(this.lineageService.getLineageNodeDataForObject(this.objectType, this.objectID)
+            //                .then(r => {
+            //                    focal = r;
+            //                }));
+            //        }
 
-                    Promise.all(promises).then(() => {
-                        if (focal != null) {
-                            let objType = this.objectTypes.find(o => o.object == focal.objectType && o.objectId == focal.objectTypeId);
-                            newFocal.name = focal.name;
-                            newFocal.backColor = focal.backColor;
-                            newFocal.foreColor = focal.foreColor;
-                            newFocal.category = 'focal';
-                            newFocal.object = focal.object;
-                            newFocal.objectId = focal.objectId;
-                            newFocal.objectType = focal.objectType;
-                            newFocal.objectTypeId = focal.objectTypeId;
-                            newFocal.objectTypeName = focal.objectTypeName;
-                            newFocal.order = (objType == null ? null : objType.order);
-                            newFocal.diagramObjectType = DiagramObjectType.Node;
-                            newFocal.visible = true;
-                            newFocal.isGroup = false;
-                            newFocal.group = mapKey;
+            //        Promise.all(promises).then(() => {
+            //            if (focal != null) {
+            //                let objType = this.objectTypes.find(o => o.object == focal.objectType && o.objectId == focal.objectTypeId);
+            //                newFocal.name = focal.name;
+            //                newFocal.backColor = focal.backColor;
+            //                newFocal.foreColor = focal.foreColor;
+            //                newFocal.category = 'focal';
+            //                newFocal.object = focal.object;
+            //                newFocal.objectId = focal.objectId;
+            //                newFocal.objectType = focal.objectType;
+            //                newFocal.objectTypeId = focal.objectTypeId;
+            //                newFocal.objectTypeName = focal.objectTypeName;
+            //                newFocal.order = (objType == null ? null : objType.order);
+            //                newFocal.diagramObjectType = DiagramObjectType.Node;
+            //                newFocal.visible = true;
+            //                newFocal.isGroup = false;
+            //                newFocal.group = mapKey;
 
-                            this.myDiagram.model.addNodeData(newFocal);
-                            this.messagesService.showInfoMessage('Focal object added', 'The focal object has been added to the mapping.');
-                        }
-                    });
+            //                this.myDiagram.model.addNodeData(newFocal);
+            //                this.messagesService.showInfoMessage('Focal object added', 'The focal object has been added to the mapping.');
+            //            }
+            //        });
 
-                }
-            } else {
-                let newMap = new NodeModelV2();
-                let map = this.objectTypes.find(o => o.order == -1);
-                if (map != null) {
-                    newMap.backColor = map.backColor;
-                    newMap.foreColor = map.foreColor;
-                    newMap.name = '<drop objects here>';
-                    newMap.category = 'map'
-                    newMap.object = map.object;
-                    newMap.objectId = map.objectId;
-                    newMap.objectTypeId = 1
-                    newMap.objectType = map.objectType;
-                    newMap.order = null;
-                    newMap.diagramObjectType = DiagramObjectType.Node;
-                    newMap.visible = true;
-                    newMap.isGroup = true;
+            //    }
+            //} else {
+            //    let newMap = new NodeModelV2();
+            //    let map = this.objectTypes.find(o => o.order == -1);
+            //    if (map != null) {
+            //        newMap.backColor = map.backColor;
+            //        newMap.foreColor = map.foreColor;
+            //        newMap.name = '<drop objects here>';
+            //        newMap.category = 'map'
+            //        newMap.object = map.object;
+            //        newMap.objectId = map.objectId;
+            //        newMap.objectTypeId = 1
+            //        newMap.objectType = map.objectType;
+            //        newMap.order = null;
+            //        newMap.diagramObjectType = DiagramObjectType.Node;
+            //        newMap.visible = true;
+            //        newMap.isGroup = true;
 
-                    this.myDiagram.model.addNodeData(newMap);
-                    this.messagesService.showInfoMessage('Mapping added', 'A new mapping has been added to the diagram.');
-                }
-            }
+            //        this.myDiagram.model.addNodeData(newMap);
+            //        this.messagesService.showInfoMessage('Mapping added', 'A new mapping has been added to the diagram.');
+            //    }
+            //}
         }
     }
 
@@ -982,7 +996,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (maps.length > 1) {
             let group = new NodeModelV2();
             group.category = 'transform';
-            group.isGroup = true;
+           // group.isGroup = true;
             this.myDiagram.model.addNodeData(group);
             this.myDiagram.model.setDataProperty(group, 'name', '');
 
@@ -1000,12 +1014,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.model.nodeDataArray.forEach(n => {
             let node = <NodeModelV2>n;
 
-            if (node.isGroup && node.category == 'transform') {
-                let children = this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == node.key);
-                if (children.length < 2) {
-                    removes.push(node);
-                }
-            }
+            //if (node.isGroup && node.category == 'transform') {
+            //    let children = this.myDiagram.model.nodeDataArray.filter(c => (<any>c).group == node.key);
+            //    if (children.length < 2) {
+            //        removes.push(node);
+            //    }
+            //}
         });
 
         removes.forEach(r => this.myDiagram.model.removeNodeData(r));
@@ -1046,77 +1060,77 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         //console.log('finishDrop', e, grp, node, this.myDiagram);
 
-        if (node != null) {
-            if (node.isGroup) {
-                e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true);
-                if (node.category == 'map' && node.order < 0) {
-                    this.myDiagram.model.setDataProperty(node, 'name', '<drop objects here>');
-                    this.myDiagram.model.setDataProperty(node, 'order', null);
-                    if (node.template != null) {
-                        //console.log('finishDrop- template', node);
-                        node.template.forEach(i => {
-                            let item = new NodeModelV2();
-                            let type = this.objectTypes.find(o => o.object == i.object && o.objectId == i.objectId);
-                            if (type == null)
-                                return;
-                            item.category = 'object';
-                            item.backColor = type.backColor;
-                            item.foreColor = type.foreColor;
-                            item.isGroup = false;
-                            item.visible = true;
-                            item.diagramObjectType = DiagramObjectType.Node;
-                            item.objectType = type.object;
-                            item.objectTypeId = type.objectId;
-                            item.object = null;
-                            item.objectId = null;
-                            item.order = type.order;
-                            item.objectTypeName = type.name;
-                            item.isRequired = (i.isRequired.toString() == 'true' ? true : false);
-                            item.name = '<choose an object>';
-                            item.group = node.key;
-                            this.myDiagram.model.addNodeData(item);
-                            this.validateNode(item);
-                        });
-                    }
-                    this.validateNode(node);
-                    let p = this.myDiagram.findPartForData(node);
-                    if (p != null) (<any>p).isSubGraphExpanded = true;
-                }
-            } else {
-                if (grp == null || (grp != null && grp.data != null && (node.category != 'map' && grp.data.category == 'transform'))) {
-                    e.diagram.currentTool.doCancel();
-                    this.messagesService.showError('Error', 'This item can only be added to maps');
-                    this.selectedData = null;
-                    this.selectTab('info');
-                    this.isWindowVisible = false;
-                    return;
-                } else {
-                    //if this is a new object, change the name/objName for display purposes
-                    if (node.object == null && node.objectId == null && node.name != '<choose an object>') {
-                        this.myDiagram.model.setDataProperty(node, 'objectTypeName', node.name);
-                        this.myDiagram.model.setDataProperty(node, 'name', '<choose an object>');
-                    }
-                    grp.addMembers(grp.diagram.selection, true);
-                    grp.isSubGraphExpanded = true;
-                    if (grp.data.name == '<drop objects here>') {
-                        this.myDiagram.model.setDataProperty(grp.data, 'name', node.name);
-                    }
-                    if (grp.data.template != null) {
-                        grp.data.template.forEach(t => {
-                            if (t.object == node.objectType && t.objectId == node.objectTypeId) {
-                                this.myDiagram.model.setDataProperty(node, 'isRequired', t.isRequired);
-                            }
-                        })
-                    }
-                    //revalidate the group 
-                    this.validateNode(this.myDiagram.model.findNodeDataForKey(grp.data.key));
-                }
-            }
-            this.validateNode(node);
-            this.refreshControls(node);
-        } else {
-            e.diagram.currentTool.doCancel();
-        }
+        //if (node != null) {
+        //    if (node.isGroup) {
+        //        e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true);
+        //        if (node.category == 'map' && node.order < 0) {
+        //            this.myDiagram.model.setDataProperty(node, 'name', '<drop objects here>');
+        //            this.myDiagram.model.setDataProperty(node, 'order', null);
+        //            if (node.template != null) {
+        //                //console.log('finishDrop- template', node);
+        //                node.template.forEach(i => {
+        //                    let item = new NodeModelV2();
+        //                    let type = this.objectTypes.find(o => o.object == i.object && o.objectId == i.objectId);
+        //                    if (type == null)
+        //                        return;
+        //                    item.category = 'object';
+        //                    item.backColor = type.backColor;
+        //                    item.foreColor = type.foreColor;
+        //                    item.isGroup = false;
+        //                    item.visible = true;
+        //                    item.diagramObjectType = DiagramObjectType.Node;
+        //                    item.objectType = type.object;
+        //                    item.objectTypeId = type.objectId;
+        //                    item.object = null;
+        //                    item.objectId = null;
+        //                    item.order = type.order;
+        //                    item.objectTypeName = type.name;
+        //                    item.isRequired = (i.isRequired.toString() == 'true' ? true : false);
+        //                    item.name = '<choose an object>';
+        //                    item.group = node.key;
+        //                    this.myDiagram.model.addNodeData(item);
+        //                    this.validateNode(item);
+        //                });
+        //            }
+        //            this.validateNode(node);
+        //            let p = this.myDiagram.findPartForData(node);
+        //            if (p != null) (<any>p).isSubGraphExpanded = true;
+        //        }
+        //    } else {
+        //        if (grp == null || (grp != null && grp.data != null && (node.category != 'map' && grp.data.category == 'transform'))) {
+        //            e.diagram.currentTool.doCancel();
+        //            this.messagesService.showError('Error', 'This item can only be added to maps');
+        //            this.selectedData = null;
+        //            this.selectTab('info');
+        //            this.isWindowVisible = false;
+        //            return;
+        //        } else {
+        //            //if this is a new object, change the name/objName for display purposes
+        //            if (node.object == null && node.objectId == null && node.name != '<choose an object>') {
+        //                this.myDiagram.model.setDataProperty(node, 'objectTypeName', node.name);
+        //                this.myDiagram.model.setDataProperty(node, 'name', '<choose an object>');
+        //            }
+        //            grp.addMembers(grp.diagram.selection, true);
+        //            grp.isSubGraphExpanded = true;
+        //            if (grp.data.name == '<drop objects here>') {
+        //                this.myDiagram.model.setDataProperty(grp.data, 'name', node.name);
+        //            }
+        //            if (grp.data.template != null) {
+        //                grp.data.template.forEach(t => {
+        //                    if (t.object == node.objectType && t.objectId == node.objectTypeId) {
+        //                        this.myDiagram.model.setDataProperty(node, 'isRequired', t.isRequired);
+        //                    }
+        //                })
+        //            }
+        //            //revalidate the group 
+        //            this.validateNode(this.myDiagram.model.findNodeDataForKey(grp.data.key));
+        //        }
+        //    }
+        //    this.validateNode(node);
+        //    this.refreshControls(node);
+        //} else {
+        //    e.diagram.currentTool.doCancel();
+        //}
 
         this.myDiagram.model.nodeDataArray.filter(n => (<any>n).category == 'map').forEach(n => {
             this.updateMapName((<any>n).key);
@@ -1364,7 +1378,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     this.g("SubGraphExpanderButton", new go.Binding("visible", "order", o => { return o != -1; })),
                     this.g(go.TextBlock,
                         { font: "Bold 12px Sans-Serif", margin: 4 },
-                        new go.Binding("text", "name"),
+                        new go.Binding("text", "level"),
                         new go.Binding("stroke", "foreColor", o => { return o == null ? '#000' : o; }),
                         new go.Binding("visible", "isSubGraphExpanded", o => {
                             return !o;
@@ -1415,6 +1429,77 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             )
         );
     }
+
+    private createPendingAddLink(): go.Link {
+        return this.g(
+            go.Link, {
+                routing: go.Link.Orthogonal,
+                corner: 10,
+                relinkableFrom: false,
+                relinkableTo: false,
+                //curve: go.Link.Bezier
+            }, // the whole link panel
+            this.g(go.Shape, {
+                stroke: "gray", strokeWidth: 2, strokeDashArray: [3, 2]
+            },
+                new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
+                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
+            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+            this.g(go.Panel, "Auto",
+                this.g(go.Shape, {
+                    visible: false,
+                    fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: '#999',
+                    strokeDashArray: [3, 2]
+                },
+                    //only visible if there's a label
+                    new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                },
+                    // the label
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        );
+    }
+
+    private createPendingDeleteLink(): go.Link {
+        return this.g(
+            go.Link, {
+                routing: go.Link.Orthogonal,
+                corner: 10,
+                relinkableFrom: false,
+                relinkableTo: false,
+                //curve: go.Link.Bezier
+            }, // the whole link panel
+            this.g(go.Shape, {
+                stroke: "#900", strokeWidth: 2, strokeDashArray: [3, 2]
+            },
+                new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
+                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
+            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+            this.g(go.Panel, "Auto",
+                this.g(go.Shape, {
+                    visible: false,
+                    fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: '#999',
+                    strokeDashArray: [3, 2]
+                },
+                    //only visible if there's a label
+                    new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                },
+                    // the label
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        );
+    }
+
 
     private createPaletteNode(): go.Node {
         let nodeWidth = 150;

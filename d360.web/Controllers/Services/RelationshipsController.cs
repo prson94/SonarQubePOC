@@ -232,6 +232,8 @@ namespace d360.web.Controllers.Services
         {
             public string from { get; set; }
             public string to { get; set; }
+            public int intersectId { get; set; }
+            public int state { get; set; }
         }
 
         private static Random random = new Random();
@@ -334,7 +336,7 @@ namespace d360.web.Controllers.Services
                 }
             });
 
-            links = list.Select(i => new Link { from = $"{i.SubjectPrefix}.{i.SubjectAssetID}", to = $"{i.ObjectPrefix}.{i.ObjectAssetID}" }).ToList();
+            links = list.Select(i => new Link { from = $"{i.SubjectPrefix}.{i.SubjectAssetID}", to = $"{i.ObjectPrefix}.{i.ObjectAssetID}", intersectId = i.IntersectID, state = (int)i.State }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
