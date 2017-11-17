@@ -12,123 +12,123 @@ namespace d360.core.enums
             Name("Data Lineage"), 
             Description("Allows you to define source paths between objects."), 
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(true),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
-            ForceDifferentSubjectObject(false)
+            ForceDifferentSubjectObject(false),
+            AllowEditFromRelationshipEditor(false)
         ]
         DataLineage = 1,
         [
             Name("Reference Data Lineage"), 
             Description("Allow for defining links between reference items across lists."), 
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(false),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
-            ForceDifferentSubjectObject(true)
+            ForceDifferentSubjectObject(true),
+            AllowEditFromRelationshipEditor(false)
         ]
         ReferenceLineage = 2,
         [
             Name("Inter-type Hierarchy"), 
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing different asset types at each level."), 
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(false),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
-            ForceDifferentSubjectObject(true)
+            ForceDifferentSubjectObject(true),
+            AllowEditFromRelationshipEditor(false)
         ]
         InterTypeHierarchy = 3,
         [
             Name("Intra-type Hierarchy"), 
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing the same asset type at each level."), 
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(false),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(false), 
-            ForceDifferentSubjectObject(false)
+            ForceDifferentSubjectObject(false),
+            AllowEditFromRelationshipEditor(false)
         ]
         IntraTypeHierarchy = 4,
         [
             Name("User Ownership - NOT USED YET"),
             Description("This allows owners to be ssociated with owned items."),
             ReadOnly(true),
-            AllowIntersectTypeAssignment(false),
-            AllowEditFromRelationshipEditor(false),
+            AllowIntersectTypeAssignment(false),            
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(true)
+            ForceDifferentSubjectObject(true),
+            AllowEditFromRelationshipEditor(true)
         ]
         UserOwnership = 5,
         [
             Name("Grammatic Association"), 
             Description("Allows you to establish grammatic association between two objects."), 
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(true),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
-            ForceDifferentSubjectObject(false)
+            ForceDifferentSubjectObject(false),
+            AllowEditFromRelationshipEditor(true)
         ]
         Grammar = 6,
         [
             Name("Simple"), 
             Description(""), 
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(true),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
-            ForceDifferentSubjectObject(false)
+            ForceDifferentSubjectObject(false),
+            AllowEditFromRelationshipEditor(true)
         ]
         Simple = 7,
         [
             Name("Mapping"),
             Description("Allows you to create mappings that are used in fusion rules."),
             ReadOnly(true),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(true),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(true)
+            ForceDifferentSubjectObject(true),
+            AllowEditFromRelationshipEditor(true)
         ]
         FusionMapping = 8,
         [
             Name("See Also"),
             Description("This type of predicate allows for items to be related together to express similarity between them."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(true),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(false)
+            ForceDifferentSubjectObject(false),
+            AllowEditFromRelationshipEditor(true)
         ]
         SeeAlso = 9,
         [
             Name("Usage"),
             Description("This type of predicate allows for items to be act as filters within a greater lineage diagram to indicate that only certain paths are used."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(true),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(true)
+            ForceDifferentSubjectObject(true),
+            AllowEditFromRelationshipEditor(true)
         ]
         Usage = 10,
         [
             Name("Object Ownership"),
             Description("This type of predicate allows for fusion configurations to be owned by glossary-level objects."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowEditFromRelationshipEditor(false),
+            AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(true)
+            ForceDifferentSubjectObject(true),
+            AllowEditFromRelationshipEditor(false)
         ]
-        ObjectOwnerhip = 11
+        ObjectOwnerhip = 11            
     }
 
     public class PredicateTypeInfo
@@ -177,7 +177,7 @@ namespace d360.core.enums
                         AllowIntersectTypeAssignment = ((AllowIntersectTypeAssignmentAttribute)tm.GetCustomAttribute(typeof(AllowIntersectTypeAssignmentAttribute))).Allowed,
                         AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)tm.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                         AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
-                        AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditor)tm.GetCustomAttribute(typeof(AllowEditFromRelationshipEditor))).Allowed,
+                        AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)tm.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
                         ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly
                     });
@@ -200,8 +200,8 @@ namespace d360.core.enums
                     AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)t.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                     AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
                     ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
-                    AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditor)t.GetCustomAttribute(typeof(AllowEditFromRelationshipEditor))).Allowed,
-                    ReadOnly = ((ReadOnlyAttribute)t.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly
+                    ReadOnly = ((ReadOnlyAttribute)t.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
+                    AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)t.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed
                 };
         }
     }

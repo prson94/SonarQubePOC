@@ -73,17 +73,7 @@ namespace d360.core
             _allowed = allowed;
         }
     }
-
-    public class AllowEditFromRelationshipEditor : Attribute
-    {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
-        public AllowEditFromRelationshipEditor(bool allowed)
-        {
-            _allowed = allowed;
-        }
-    }
-
+    
     public class ForceDifferentSubjectObjectAttribute : Attribute
     {
         private bool _allowed = true;
@@ -131,6 +121,16 @@ namespace d360.core
         public EnableAuditAttribute(bool enabled)
         {
             Enabled = enabled;
+        }
+    }
+
+    public class AllowEditFromRelationshipEditorAttribute : Attribute
+    {
+        public bool Allowed { get; set; }
+
+        public AllowEditFromRelationshipEditorAttribute(bool allowed)
+        {
+            Allowed = allowed;
         }
     }
 }
