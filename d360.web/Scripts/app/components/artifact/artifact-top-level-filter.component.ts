@@ -19,13 +19,15 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../
                                     </div>
                                 </div>
                             </div>
-                        </ng-template>
-                        <div class="col s3 buttons">
+                        </ng-template>                        
+                        <div class="col s6 buttons">
                             <div class="row">
                                 <div class="col s12">&nbsp;</div>
                                 <div class="col s12">
-                                    <button pButton type="submit" [disabled]="!filterForm.form.valid" style="width: '150px';padding:3px" label="Filter Results"></button>                            
-                                </div>
+                                    <button pButton type="submit" [disabled]="!filterForm.form.valid" style="padding:3px" label="Filter Results"></button>
+                                    &nbsp;
+                                    <button pButton (click)="resetFilters()" type="button" style="padding:3px" label="Clear Filters"></button>
+                                </div>                                
                             </div>
                         </div>
                     </div>                    
@@ -35,7 +37,7 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../
 })
 
 
-export class ArtifactTopLevelFilterComponent extends BaseComponent implements OnInit, OnChanges {
+export class ArtifactTopLevelFilterComponent extends BaseComponent {
     @Input() fields: GridFilterColumn[];
     
     @Output() filterChanged = new EventEmitter();
@@ -46,13 +48,15 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
     constructor() {
         super();        
     }
-
-    ngOnInit() {
-
-    }
-
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        
+    
+    private resetFilters(): void {
+        this.filters = [];
+        for (let field of this.fields) {            
+            if (!field.value || field.value === '') continue;
+            field.value = null;
+        }
+        this.filtersChange.emit(this.filters);
+        this.filterChanged.emit();        
     }
 
     onSubmit() {
