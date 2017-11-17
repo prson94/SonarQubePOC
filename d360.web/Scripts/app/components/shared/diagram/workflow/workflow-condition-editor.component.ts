@@ -86,7 +86,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             if (this.formFields.length > 0) {
                 this.formFields.forEach(f => {
                     this.fieldList.push({
-                        value: 'FormInput|' + f['@id'],
+                        value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
                         label: 'Form :: ' + f['@label']
                     });
                 });
@@ -96,8 +96,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 this.fieldList = this.fieldList.concat(this.contextualFields);
             }
 
-
         }
+       // console.log(this.fields, this.fieldList, this.formFields);
     }
 
     load() {
@@ -118,7 +118,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 if (this.formFields.length > 0) {
                     this.formFields.forEach(f => {
                         this.fieldList.push({
-                            value: 'FormInput|' + f['@id'],
+                            value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
                             label: 'Form :: ' + f['@label']
                         });
                     });
@@ -151,8 +151,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     loadFormFields() {
         if (this.formFields.length > 0) {
             this.formFields.forEach(f => {
+              //  console.log(f);
                 this.fieldList.push({
-                    value: 'FormInput|' + f['@id'],
+                    value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
                     label: 'Form :: ' + f['@label']
                 });
             });
@@ -167,7 +168,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.selectedField = e;
         this.selectedIssueObject = null;
 
-        //console.log('selectField: ', e);
+       // console.log('selectField: ', e);
 
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
@@ -202,7 +203,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     });
             }
         } else if (this.selectedField.split('|')[0] == 'FormInput') {
-            let input = this.formFields.find(f => f['@id'] == this.selectedField.split('|')[1]);
+            let input = this.formFields.find(f => f['@id'] == this.selectedField.split('|')[2] && f['@stepId'] == this.selectedField.split('|')[1]);
 
             this.selectedType = input['@type'].toLowerCase();
 
