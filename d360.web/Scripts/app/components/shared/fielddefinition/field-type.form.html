@@ -89,12 +89,12 @@
                                     [(ngModel)]="model.FieldType.IsPrimaryFilter" 
                                     label="Show As Top Level Filter?" 
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="!supportsPrimaryFilterOption || model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup' || model.FieldType.AllowMultipleValues"></p-checkbox>
+                                    [disabled]="!supportsPrimaryFilterOption || model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
                                     [ngModel]="model.FieldType.AllowMultipleValues"
-                                    (ngModelChange)="model.FieldType.AllowMultipleValues=$event;model.FieldType.IsPrimaryFilter=false;model.FieldType.IsPartOfKey=false;"
+                                    (ngModelChange)="model.FieldType.AllowMultipleValues=$event;model.FieldType.IsPartOfKey=false;"
                                     label="Allow Multiple Items?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="model.FieldType.Type != 'Lookup'"></p-checkbox>

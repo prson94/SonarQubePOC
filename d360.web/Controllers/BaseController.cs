@@ -1462,7 +1462,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     allValueBind = $"{ft.AllowAllLabel.Replace("'", "''")}";
                 }
 
-                if (ft.AllowMultipleValues) condition = "CONTAINS";
+                if (ft.AllowMultipleValues)
+                {
+                    if (condition == "IN")
+                        condition = "IN_MULTI";
+                    else
+                        condition = "CONTAINS";
+                }
             }            
 
             var querySyntax = "";
@@ -1496,6 +1502,20 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case "IN":                    
                     dbParams.Add(bind, value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries));
                     querySyntax = $"{field} IN @{bind}";
+                    break;
+                case "IN_MULTI":
+                    var vals = value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries);
+                    int index = 0;
+                    querySyntax = "(";
+                    foreach (var part in vals)
+                    {
+                        if (index != 0) querySyntax += " or ";
+                        var bind_sub = $"{bind}{index++}";
+                        dbParams.Add(bind_sub, $"%{part}%");                        
+                        querySyntax += $"{field} LIKE @{bind_sub}";
+                    }
+                    querySyntax += ")";
+
                     break;
                 //greater / less than cause issues with dates when casting...               
                 /*case "GREATER_THAN":
