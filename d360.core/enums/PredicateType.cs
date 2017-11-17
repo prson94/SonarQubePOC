@@ -13,6 +13,7 @@ namespace d360.core.enums
             Description("Allows you to define source paths between objects."), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(true),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
@@ -23,6 +24,7 @@ namespace d360.core.enums
             Description("Allow for defining links between reference items across lists."), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(false),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(true)
@@ -33,6 +35,7 @@ namespace d360.core.enums
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing different asset types at each level."), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(false),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(true)
@@ -43,6 +46,7 @@ namespace d360.core.enums
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing the same asset type at each level."), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(false),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(false), 
             ForceDifferentSubjectObject(false)
@@ -53,6 +57,7 @@ namespace d360.core.enums
             Description("This allows owners to be ssociated with owned items."),
             ReadOnly(true),
             AllowIntersectTypeAssignment(false),
+            AllowEditFromRelationshipEditor(false),
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true)
@@ -63,6 +68,7 @@ namespace d360.core.enums
             Description("Allows you to establish grammatic association between two objects."), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(true),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
@@ -73,6 +79,7 @@ namespace d360.core.enums
             Description(""), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(true),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
@@ -83,6 +90,7 @@ namespace d360.core.enums
             Description("Allows you to create mappings that are used in fusion rules."),
             ReadOnly(true),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(true),
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true)
@@ -93,6 +101,7 @@ namespace d360.core.enums
             Description("This type of predicate allows for items to be related together to express similarity between them."),
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false)
@@ -103,6 +112,7 @@ namespace d360.core.enums
             Description("This type of predicate allows for items to be act as filters within a greater lineage diagram to indicate that only certain paths are used."),
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true)
@@ -113,6 +123,7 @@ namespace d360.core.enums
             Description("This type of predicate allows for fusion configurations to be owned by glossary-level objects."),
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
+            AllowEditFromRelationshipEditor(false),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true)
@@ -129,6 +140,7 @@ namespace d360.core.enums
         public bool AllowMultiplePredicates { get; set; }
         public bool AllowDifferentSubjectObject { get; set; }
         public bool ForceDifferentSubjectObject { get; set; }
+        public bool AllowEditFromRelationshipEditor { get; set; }
         public bool ReadOnly { get; set; }
     }
 
@@ -165,6 +177,7 @@ namespace d360.core.enums
                         AllowIntersectTypeAssignment = ((AllowIntersectTypeAssignmentAttribute)tm.GetCustomAttribute(typeof(AllowIntersectTypeAssignmentAttribute))).Allowed,
                         AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)tm.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                         AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
+                        AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditor)tm.GetCustomAttribute(typeof(AllowEditFromRelationshipEditor))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
                         ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly
                     });
@@ -187,6 +200,7 @@ namespace d360.core.enums
                     AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)t.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                     AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
                     ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
+                    AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditor)t.GetCustomAttribute(typeof(AllowEditFromRelationshipEditor))).Allowed,
                     ReadOnly = ((ReadOnlyAttribute)t.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly
                 };
         }

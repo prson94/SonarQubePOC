@@ -3014,6 +3014,7 @@ end",
                             objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
                             objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                         }
+
                         if (addDeletedCheck)
                         {
                             join.JoinStatement += $" and A{i}.Deleted = 0";
@@ -3430,7 +3431,7 @@ end",
                 foreach (var f in fieldTypes)
                 {
                     sqlColumns += $", F{f.ID}.FormattedValue as [{f.Name}]";
-                    sqlJoins += $" left join Field F{f.ID} on F{f.ID}.ObjectType = 'ReferenceItem' and F{f.ID}.ObjectID = R.ID";
+                    sqlJoins += $" left join Field F{f.ID} on F{f.ID}.FieldTypeID = {f.ID} and F{f.ID}.ObjectType = 'ReferenceItem' and F{f.ID}.ObjectID = R.ID";
 
                     var gc = new GridColumn { datafield = f.Name, text = f.FriendlyName };
                     if (f.ColumnWidth.HasValue)
@@ -7133,7 +7134,6 @@ from	    TaxonomyType FAT
         private IEnumerable<CountModel> LoadSocialActivityCount(int days, int resourceId)
         {
             days = days * -1;
-            var socialUri = "/Home/SocialActivityOverlay";
 
             var counts = Company.GetCommentCountByFollower(resourceId, days).ToList().OrderBy(i => i.CommentTypeName);
 

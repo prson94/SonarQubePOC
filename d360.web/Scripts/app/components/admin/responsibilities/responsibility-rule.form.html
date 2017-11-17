@@ -113,8 +113,7 @@
                 <div class="col l4 m5 s12">
                     <button pButton type="button" label="Test filters" (click)="testThen()"></button>
                     <p-dataTable #dt [value]="ThenTestRows" selectionMode="single" scrollable="true" scrollHeight="150px">
-                        <p-column field="ResourceName" header="User" sortable="true"></p-column>
-                        <p-column field="GroupName" header="Via Group" sortable="true"></p-column>
+                        <p-column field="Name" header="Security Asset" sortable="true"></p-column>
                     </p-dataTable>
                 </div>
             </div>

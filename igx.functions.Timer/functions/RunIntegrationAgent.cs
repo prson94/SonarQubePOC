@@ -62,8 +62,8 @@ namespace igx.functions.Timer
     public static class RunIntegrationAgent
     {
         const string functionName = "RunIntegrationAgent";
-        const string timerSettings = "0 */10 * * * *";
-        //const string timerSettings = "*/5 * * * * *";
+        //const string timerSettings = "0 */10 * * * *";
+        const string timerSettings = "*/5 * * * * *";
 
         internal static string GetJsonFromApi(string uri, string authorization)
         {
@@ -101,10 +101,32 @@ namespace igx.functions.Timer
             return jsonToReturn;
         }
 
+        internal static string TransformJson(string transformation, string jsonRaw)
+        {
+            return JsonTransformer.Transform(transformation, jsonRaw);
+        }
+
+        internal static string GetTransformedDataFromApi(string sourceUri, string sourceAuthString, string sourceSearchString, string transformation, string filePath = "")
+        {
+            string jsonRaw = "";
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                var url = $"{sourceUri}search/{sourceSearchString}"; ;
+                jsonRaw = GetJsonFromApi(url, sourceAuthString);
+            }
+            else
+            {
+                jsonRaw = File.ReadAllText(filePath);
+            }
+
+            return TransformJson(transformation, jsonRaw);
+        }
+
         internal static void LoadSource(
             string sourceUri, string sourceAuthString, string sourceSearchString,
             string detailTransformation,
-            string targetUri, string targetAuthString, SystemObjects targetType, int targetTypeID)
+            string targetUri, string targetAuthString, SystemObjects targetType, int targetTypeID, string jsonRaw = "")
         {
             //var jsonRaw = GetJsonFromApi($"{sourceUri}search/{sourceSearchString}", sourceAuthString);
 
@@ -115,26 +137,36 @@ namespace igx.functions.Timer
             //var IDs = rawObj.SelectToken("ids").Select(i => i["id"].Value<string>()).ToList();
             var IDs = new List<string>();
             GenericIgcAssetsModel model = null;
-            string jsonRaw;
             string url;
 
             url = $"{sourceUri}search/{sourceSearchString}";
 
-            while (!string.IsNullOrEmpty(url))
-            {
-                jsonRaw = GetJsonFromApi(url, sourceAuthString);
-                model = JsonConvert.DeserializeObject<GenericIgcAssetsModel>(jsonRaw);
-                IDs.AddRange(model.items.Select(i => i._id));
-                url = model.paging.next;
-            }
-
             var arr = new JArray();
-            foreach (var id in IDs)
-            {
-                jsonRaw = GetJsonFromApi($"{sourceUri}assets/{id}", sourceAuthString);
-                var converted = JsonTransformer.Transform(detailTransformation, jsonRaw);
 
+            if (string.IsNullOrEmpty(jsonRaw))
+            {
+                // Raw json came in already provided. No need to retrieve it from source server.
+                var converted = TransformJson(detailTransformation, jsonRaw);
                 arr.Add(JObject.Parse(converted));
+            }
+            else
+            {
+                // Gets all the IDs we need to get details for below.
+                while (!string.IsNullOrEmpty(url))
+                {
+                    jsonRaw = GetJsonFromApi(url, sourceAuthString);
+                    model = JsonConvert.DeserializeObject<GenericIgcAssetsModel>(jsonRaw);
+                    IDs.AddRange(model.items.Select(i => i._id));
+                    url = model.paging.next;
+                }
+                
+                // Loop through each ID and get the details for it.
+                foreach (var id in IDs)
+                {
+                    jsonRaw = GetJsonFromApi($"{sourceUri}assets/{id}", sourceAuthString);
+                    var converted = TransformJson(detailTransformation, jsonRaw);
+                    arr.Add(JObject.Parse(converted));
+                }
             }
 
             var respString = PostJsonToApi(
@@ -153,7 +185,8 @@ namespace igx.functions.Timer
             {
                 CoreFunction.AITrackJobStart(functionName);
                 //var targetUri = "http://demo.dev.data3sixty.local/services/assets/";
-                var targetUri = "https://ssb.dev.data3sixty.com/services/assets/";
+                var targetUri = "http://ssb-igx.dev.data3sixty.local/services/assets/";
+                //var targetUri = "https://ssb.dev.data3sixty.com/services/assets/";
                 var targetAuthString = "w7gt581AOMXhXeW9mh0jWCPMe;3=f+7afAQUq9wUZgyibXq9kGa2iLGS3M0r-Ex-ZxJ6O9TAu+-7";
 
                 var sourceUri = "https://192.168.99.100:9443/ibm/iis/igc-rest/v1/";
@@ -161,54 +194,116 @@ namespace igx.functions.Timer
 
                 #region General
 
-                LoadSource(
-                    sourceUri, sourceAuthString, "$ApplicationCatalog-ApplicationCatalog",
-                    @"{ SourceID: '#valueof($._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)',  CMDBApplicationCode: '#valueof($.$CMDBAppCode)' }",
-                    targetUri, targetAuthString, SystemObjects.ArtifactType, 2);
+                //LoadSource(
+                //    sourceUri, sourceAuthString, "$ApplicationCatalog-ApplicationCatalog",
+                //    @"{ SourceID: '#valueof($._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)',  CMDBApplicationCode: '#valueof($.$CMDBAppCode)' }",
+                //    targetUri, targetAuthString, SystemObjects.ArtifactType, 2);
 
                 #endregion
 
                 #region BCM
 
-                LoadSource(
-                    sourceUri, sourceAuthString, "$BCM-Lifecycle",
-                    @"{ SourceID: '#valueof($._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)', CMDBApplicationCode: '#valueof($.long_description)' }",
-                    targetUri, targetAuthString, SystemObjects.ArtifactType, 3);
+                //LoadSource(
+                //    sourceUri, sourceAuthString, "$BCM-Lifecycle",
+                //    @"{ SourceID: '#valueof($._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)', CMDBApplicationCode: '#valueof($.long_description)' }",
+                //    targetUri, targetAuthString, SystemObjects.ArtifactType, 3);
 
-                LoadSource(
-                    sourceUri, sourceAuthString, "$BCM-Function",
-                    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[0]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
-                    targetUri, targetAuthString, SystemObjects.ArtifactType, 4);
+                //LoadSource(
+                //    sourceUri, sourceAuthString, "$BCM-Function",
+                //    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[0]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                //    targetUri, targetAuthString, SystemObjects.ArtifactType, 4);
 
-                LoadSource(
-                    sourceUri, sourceAuthString, "$BCM-SubFunction",
-                    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[1]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
-                    targetUri, targetAuthString, SystemObjects.ArtifactType, 5);
+                //LoadSource(
+                //    sourceUri, sourceAuthString, "$BCM-SubFunction",
+                //    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[1]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                //    targetUri, targetAuthString, SystemObjects.ArtifactType, 5);
 
                 #endregion
 
                 #region Usage Hierarchy
 
+                //LoadSource(
+                //    sourceUri, sourceAuthString, "$UsageHierarchy-Division",
+                //    @"{ SourceID: '#valueof($._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                //    targetUri, targetAuthString, SystemObjects.ArtifactType, 6);
+
+                //LoadSource(
+                //    sourceUri, sourceAuthString, "$UsageHierarchy-BusinessUnit",
+                //    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[0]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                //    targetUri, targetAuthString, SystemObjects.ArtifactType, 7);
+
+                //LoadSource(
+                //    sourceUri, sourceAuthString, "$UsageHierarchy-Function",
+                //    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[1]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                //    targetUri, targetAuthString, SystemObjects.ArtifactType, 8);
+
+
+                //LoadSource(
+                //    sourceUri, sourceAuthString, "$UsageHierarchy-SubFunction",
+                //    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[2]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                //    targetUri, targetAuthString, SystemObjects.ArtifactType, 9);
+
+                #endregion
+
+                #region Fusion Data
+
+                var schemas = "";
+
+                #region Basel II
+
+                // Database
+                schemas =
+                    GetTransformedDataFromApi(
+                        sourceUri, sourceAuthString, "b1c497ce.54bd3a08.ocg5i7thq.6gthrm4.8hj8si.oj8ojo680ghlppj37b5f6",
+                        @"{ 
+                            'array': { 
+                                '#loop($.database_schemas.items)': { 'SourceID': '#currentvalueatpath($._id)', 'Name': '#currentvalueatpath($._name)' } 
+                            } 
+                          }",
+                        @"C:\Users\mike\Desktop\SSG - Samples for IGC\JSON Samples\Basel II Datawarhouse.txt"
+                    );
+
+                // Schema
                 LoadSource(
-                    sourceUri, sourceAuthString, "$UsageHierarchy-Division",
+                    sourceUri, sourceAuthString, "BaselII",
                     @"{ SourceID: '#valueof($._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
-                    targetUri, targetAuthString, SystemObjects.ArtifactType, 6);
+                    targetUri, targetAuthString, SystemObjects.FusionAttributeType, 2);
 
+                // Table
                 LoadSource(
-                    sourceUri, sourceAuthString, "$UsageHierarchy-BusinessUnit",
+                    sourceUri, sourceAuthString, "BaselII",
+                    @"{ SourceID: '#valueof($._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                    targetUri, targetAuthString, SystemObjects.FusionAttributeType, 3);
+
+                // Column
+                LoadSource(
+                    sourceUri, sourceAuthString, "BaselII",
+                    @"{ SourceID: '#valueof($._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                    targetUri, targetAuthString, SystemObjects.FusionAttributeType, 4);
+
+                #endregion
+
+                #region ORI
+
+                // Schema
+                LoadSource(
+                    sourceUri, sourceAuthString, "$ORI",
                     @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[0]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
-                    targetUri, targetAuthString, SystemObjects.ArtifactType, 7);
+                    targetUri, targetAuthString, SystemObjects.FusionAttributeType, 2);
 
+                // Table
                 LoadSource(
-                    sourceUri, sourceAuthString, "$UsageHierarchy-Function",
-                    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[1]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
-                    targetUri, targetAuthString, SystemObjects.ArtifactType, 8);
+                    sourceUri, sourceAuthString, "$ORI",
+                    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[0]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                    targetUri, targetAuthString, SystemObjects.FusionAttributeType, 3);
 
-
+                // Column
                 LoadSource(
-                    sourceUri, sourceAuthString, "$UsageHierarchy-SubFunction",
-                    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[2]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
-                    targetUri, targetAuthString, SystemObjects.ArtifactType, 9);
+                    sourceUri, sourceAuthString, "$ORI",
+                    @"{ SourceID: '#valueof($._id)', ParentSourceID: '#valueof($._context[0]._id)', Name: '#valueof($._name)', Description: '#valueof($.short_description)', LongDescription: '#valueof($.long_description)' }",
+                    targetUri, targetAuthString, SystemObjects.FusionAttributeType, 4);
+
+                #endregion
 
                 #endregion
 

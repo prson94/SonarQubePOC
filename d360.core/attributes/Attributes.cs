@@ -74,6 +74,16 @@ namespace d360.core
         }
     }
 
+    public class AllowEditFromRelationshipEditor : Attribute
+    {
+        private bool _allowed = true;
+        public bool Allowed { get { return _allowed; } }
+        public AllowEditFromRelationshipEditor(bool allowed)
+        {
+            _allowed = allowed;
+        }
+    }
+
     public class ForceDifferentSubjectObjectAttribute : Attribute
     {
         private bool _allowed = true;

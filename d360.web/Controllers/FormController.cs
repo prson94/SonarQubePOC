@@ -2780,7 +2780,6 @@ namespace d360.web.Controllers
         public JsonNetResult GetSiteNavFolderAvailableItems()
         {
             throw new NotImplementedException("Do we even need this?");
-            return null;
         }
 
         #endregion
@@ -13177,21 +13176,23 @@ order by	case
         {
             var items = Company.Query<dynamic>($@"
 select	D.ObjectID as value,
-		D.Name as label
-from	AssetType D
+		DN.DisplayValue as label
+from	Asset D
+        inner join AssetType DT on DT.ID = D.AssetTypeID
 		inner join	(
 					select	case
 								when (Subject = '{type.ToString()}' and SubjectID = {id}) then Object
 								else Subject
-							end as ObjectType,
+							end as Object,
 							case
 								when (Subject = '{type.ToString()}' and SubjectID = {id}) then ObjectID
 								else SubjectID
-							end as ObjectTypeID
+							end as ObjectID
 					from	IntersectType
 					where	ID = {intersectTypeID}
-					) I on I.ObjectType = D.ObjectType and I.ObjectTypeID = D.ObjectTypeID
-order by D.Name");
+					) I on I.Object = DT.Object and I.ObjectID = DT.ObjectID
+        cross apply dbo.GetAssetDisplayValueById(D.ID) DN  
+order by DN.DisplayValue");
 
             return new JsonNetResult
             {

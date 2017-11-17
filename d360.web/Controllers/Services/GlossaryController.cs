@@ -181,7 +181,16 @@ select	A.ID,
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
         {joins}
-where   A.ArtifactTypeID = @id 
+        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
+		left join	(
+					select	distinct 
+							R.AssetID
+					from	ResponsibilityDetails R
+							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
+					where	R.ResourceID = {Company.CurrentResourceID}
+							and C.ObjectID is null 
+					) RP on RP.AssetID = A.ID 
+where   A.ArtifactTypeID = @id and RP.AssetID is null 
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
@@ -361,8 +370,17 @@ select	A.ID,
         {columns}
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
+        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         {joins}
-where   A.ID = @id 
+		left join	(
+					select	distinct 
+							R.AssetID
+					from	ResponsibilityDetails R
+							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
+					where	R.ResourceID = {Company.CurrentResourceID}
+							and C.ObjectID is null 
+					) RP on RP.AssetID = O.ID 
+where   A.ID = @id and RP.AssetID is null
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
@@ -438,7 +456,7 @@ from    FieldWithRelation F
             var columns = "";
             getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
 
-            var querySql = string.Format(@"select	A.ID,
+            var querySql = $@"select	A.ID,
 		A.Name,
 		A.Description,
         A.ParentID,
@@ -446,11 +464,21 @@ from    FieldWithRelation F
         dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
 		A.Status,
         A.DateLastCertified,
-        {0}
+        {columns}
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
-left join Artifact P on P.ID = A.ParentID {1}
-where A.ArtifactTypeID = @id", columns, joins);
+        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
+        left join Artifact P on P.ID = A.ParentID 
+        {joins}
+		left join	(
+					select	distinct 
+							R.AssetID
+					from	ResponsibilityDetails R
+							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
+					where	R.ResourceID = {Company.CurrentResourceID}
+							and C.ObjectID is null 
+					) RP on RP.AssetID = O.ID 
+where   A.ArtifactTypeID = @id and RP.AssetID is null";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -629,15 +657,25 @@ where A.ArtifactTypeID = @id", columns, joins);
             var columns = "";
             getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns);
 
-            var querySql = string.Format(@"select	A.ID,
+            var querySql = $@"select	A.ID,
         A.ParentID,
 		P.DisplayValue as Parent,
         dbo.GenerateObjectUrl('Taxonomy', P.TaxonomyTypeID, P.ID) as ParentUrl,
-        {0}
+        {columns}
 		dbo.GenerateObjectUrl('Taxonomy', A.TaxonomyTypeID, A.ID) as Url
-from	Taxonomy A {1}
-left join Taxonomy P on P.ID = A.ParentID
-where A.TaxonomyTypeID = @id ", columns, joins);
+from	Taxonomy A 
+        {joins} 
+        inner join Asset O on O.Object = 'Taxonomy' and O.ObjectID = A.ID 
+        left join Taxonomy P on P.ID = A.ParentID 
+		left join	(
+					select	distinct 
+							R.AssetID
+					from	ResponsibilityDetails R
+							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
+					where	R.ResourceID = {Company.CurrentResourceID}
+							and C.ObjectID is null 
+					) RP on RP.AssetID = O.ID 
+where A.TaxonomyTypeID = @id and RP.AssetID is null";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 

@@ -68,10 +68,11 @@ namespace d360.web.Controllers.Services
 
             try
             {
-                var artifactType = Company.GetById<ArtifactType>(otid, i => i.Parent);
+                var sType = ot.ToString();
+                var assetType = Company.Filter<AssetType>(i => i.Object == sType && i.ObjectID == otid).SingleOrDefault();
 
-                if (artifactType == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with ID {otid} could not be found.");
+                if (assetType == null)
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type with Object {sType} and ObjectID {otid} could not be found.");
 
                 var import = JsonConvert.DeserializeObject<BulkAssetImport>(json);
                 var results = new List<AssetImportResult>();
@@ -96,11 +97,20 @@ namespace d360.web.Controllers.Services
 
                 #region Parent validation. Do they exist?
 
+                var predicateType = PredicateType.InterTypeHierarchy;
+
+                if (ot == SystemObjects.PolicyType || ot == SystemObjects.TaxonomyType)
+                {
+                    predicateType = PredicateType.IntraTypeHierarchy;
+                }
+
+                var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == sType && i.ObjectID == otid && i.Predicate.Type == predicateType).FirstOrDefault();
+
                 var unvalidatedParentSourceIDs = new List<string>();
                 var unvalidatedParents = new List<int>();
                 var validatedParents = new Dictionary<int, string>();
                 var parentArtifactTypeName = "";
-                if (artifactType.ParentID.HasValue)
+                if (parentIntersectType != null)
                 {
                     for (int i = 1; i <= import.Count; i++)
                     {
@@ -124,7 +134,12 @@ namespace d360.web.Controllers.Services
 
                     if (unvalidatedParents.Count > 0)
                     {
-                        var pList = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID.Value && unvalidatedParents.Contains(i.ID)).Select(i => new { k = i.ID, v = i.ID.ToString() }).ToList();
+                        var pList = Company.Filter<Asset>(i => 
+                                i.AssetType.Object == parentIntersectType.Subject && 
+                                i.AssetType.ObjectID == parentIntersectType.SubjectID && 
+                                unvalidatedParents.Contains(i.ObjectID)
+                            ).Select(i => new { k = i.ObjectID, v = i.ID.ToString() }).ToList();
+
                         pList.ForEach(i =>
                         {
                             validatedParents.Add(i.k, i.v);
@@ -132,11 +147,12 @@ namespace d360.web.Controllers.Services
                     }
                     if (unvalidatedParentSourceIDs.Count > 0)
                     {
-                        var pList = Company.Filter<Artifact>(i => 
-                            i.ArtifactTypeID == artifactType.ParentID.Value && 
-                            unvalidatedParentSourceIDs.Contains(i.SourceID) )
-                        .Select(i => new { k = i.ID, v = i.SourceID.ToString() })
-                        .ToList();
+                        var pList = Company.Filter<Asset>(i =>
+                            i.AssetType.Object == parentIntersectType.Subject &&
+                            i.AssetType.ObjectID == parentIntersectType.SubjectID &&
+                            unvalidatedParentSourceIDs.Contains(i.SourceID)
+                        ).Select(i => new { k = i.ObjectID, v = i.ID.ToString() }).ToList();
+
                         pList.ForEach(i =>
                         {
                             if (!validatedParents.ContainsKey(i.k))
@@ -144,7 +160,9 @@ namespace d360.web.Controllers.Services
                         });
                     }
 
-                    parentArtifactTypeName = artifactType.Parent.Name.ToLower();
+                    var parentAssetType = Company.Filter<AssetType>(i => i.Object == parentIntersectType.Subject && i.ObjectID == parentIntersectType.SubjectID).FirstOrDefault();
+                    if (parentAssetType != null)
+                        parentArtifactTypeName = parentAssetType.Name.ToLower();
                 }
 
                 #endregion
@@ -154,7 +172,7 @@ namespace d360.web.Controllers.Services
                     var model = import[i - 1];
                     var result = new AssetImportResult { ItemNumber = i, Message = "", Success = true };
 
-                    if (artifactType.ParentID.HasValue)
+                    if (parentIntersectType != null)
                     {
                         if (model.ContainsKey("ParentID"))
                         {
@@ -297,12 +315,6 @@ create table #AssetFieldTable (
 
                     #region Merge into Artifact table
 
-                    var parentOnMergeQuery = "";
-                    if (artifactType.ParentID.HasValue)
-                    {
-                        parentOnMergeQuery = "S.ParentID = T.ParentID and ";
-                    }
-
                     Company.Database.Connection.Execute($@"
 create table #ArtifactMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
 
@@ -313,26 +325,17 @@ using       (
             ) S
 on          (
                 T.ArtifactTypeID = @id and 
-                ( 
-                    (
-                        {parentOnMergeQuery}
-                        (S.SourceID is null or S.SourceID = '')
-                    ) or 
-                    (
-                        S.SourceID is not null and 
-                        S.SourceID <> '' and 
-                        S.SourceID = T.SourceID
-                    ) 
-                )
+                S.SourceID is not null and 
+                S.SourceID <> '' and 
+                S.SourceID = T.SourceID
             )
 when matched then
     update set
-            T.ParentID = S.ParentID,
             T.UpdatedBy = @r,
             T.UpdatedOn = getutcdate()
 when not matched by target then
-    insert  (ArtifactTypeID, ParentID, SourceID, CreatedOn, UpdatedBy, UpdatedOn, Visible)
-    values  (@id, S.ParentID, S.SourceID, getutcdate(), @r, getutcdate(), 1)
+    insert  (ArtifactTypeID, SourceID, CreatedOn, UpdatedBy, UpdatedOn, Visible)
+    values  (@id, S.SourceID, getutcdate(), @r, getutcdate(), 1)
 output inserted.ID, S.ItemNumber, $action into #ArtifactMergeTableResult;
 
 update  T
@@ -341,6 +344,36 @@ set     T.ArtifactID = S.ID,
 from    #AssetTable T
         inner join #ArtifactMergeTableResult S on S.ItemNumber = T.ItemNumber;
 ", new { id = otid, @r = Company.CurrentResourceID }, transaction: trans);
+
+                    #endregion
+
+                    #region Deal with parent relationship if required
+
+                    if (parentIntersectType != null)
+                    {
+                        Company.Database.Connection.Execute($@"
+merge into  [Intersect] T
+using       (
+            select  'Artifact' as Subject, 
+                    ParentID as SubjectID, 
+                    'Artifact' as Object, 
+                    ArtifactID as ObjectID 
+            from    #AssetTable 
+            where   ParentID is not null 
+                    and ArtifactID is not null 
+            ) S
+on          (
+                T.IntersectTypeID = {parentIntersectType.ID} and 
+                T.Subject = S.Subject and 
+                T.SubjectID = S.SubjectID and 
+                T.Object = S.Object and 
+                T.ObjectID = S.ObjectID
+            )
+when not matched by target then
+    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+    values  ({parentIntersectType.ID}, S.Subject, S.SubjectID, S.Object, S.ObjectID, @r, @r);
+", new { @r = Company.CurrentResourceID }, transaction: trans);
+                    }
 
                     #endregion
 

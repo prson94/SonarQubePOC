@@ -53,16 +53,26 @@ namespace d360.web.Controllers
 
             #region Sql
 
-            var sql = string.Format(@"
+            var sql = $@"
 select	A.ID,
-        A.ParentID,		
+        P.ID as ParentID, 
         P.DisplayValue as Parent,
-        {0}
+        {columns}
 		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
-        left join Artifact P on P.ID = A.ParentID 
-        {1}
-where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
+        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
+        {joins} 
+        left join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID and PI.PredicateType = 3 
+        left join Artifact P on P.ID = PI.SubjectID 
+		left join	(
+					select	distinct 
+							R.AssetID
+					from	ResponsibilityDetails R
+							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
+					where	R.ResourceID = {Company.CurrentResourceID}
+							and C.ObjectID is null 
+					) RP on RP.AssetID = O.ID 
+where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
 
             #endregion
 
@@ -163,17 +173,26 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             #region Sql
 
-            var sql = string.Format(@"
+            var sql = $@"
 select	A.ID,
-        A.ParentID,
-		A.DisplayValue,
+        P.ID as ParentID,
         P.DisplayValue as Parent,
-        {0}
+        {columns}
 		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
-        left join Artifact P on P.ID = A.ParentID 
-        {1}
-where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
+        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
+        {joins} 
+        left join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID and PI.PredicateType = 3 
+        left join Artifact P on P.ID = PI.SubjectID 
+		left join	(
+					select	distinct 
+							R.AssetID
+					from	ResponsibilityDetails R
+							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
+					where	R.ResourceID = {Company.CurrentResourceID}
+							and C.ObjectID is null 
+					) RP on RP.AssetID = O.ID 
+where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
 
             #endregion
 
@@ -609,19 +628,25 @@ where A.ArtifactTypeID = @id and A.[Visible] = 1 ", columns, joins);
 
             var sql = @"
 select	A.ID,
-        A.ParentID,
-		A.DisplayValue,
+        P.ID as ParentID,
         P.DisplayValue as Parent,
         dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
         {0}
         dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
+        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID 
         {1} 
-        inner join [Intersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID 
-        inner join IntersectType PIT on PIT.ID = PI.IntersectTypeID 
-        inner join Predicate PR on PR.ID = PIT.PredicateID and PR.Type = 3 
+        inner join [PredicateIntersect] PI on PI.Subject = 'Artifact' and PI.Object = 'Artifact' and PI.SubjectID = @p and PI.ObjectID = A.ID and PI.PredicateType = 3 
         inner join Artifact P on P.ID = PI.SubjectID 
-where   A.ArtifactTypeID = @id and A.[Visible] = 1";
+		left join	(
+					select	distinct 
+							R.AssetID
+					from	ResponsibilityDetails R
+							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
+					where	R.ResourceID = " + Company.CurrentResourceID + @" 
+							and C.ObjectID is null 
+					) RP on RP.AssetID = O.ID 
+where   A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
             var model = processDynamicResults(
                 sql, Request,
                 "ArtifactType", childArtifactTypeID,
@@ -658,12 +683,10 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1";
 				    select	I.SubjectID as ParentID,
                             ID.DisplayValue,
                             dbo.GenerateObjectUrl('Artifact', IAT.ObjectID, I.SubjectID) as ParentUrl
-				    from	[Intersect] I
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Artifact' and I.ObjectID = A.ID
-                            inner join Asset IA on IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID
+				    from	[PredicateIntersect] I
+                            inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
                             left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
-						    inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 3
 				    ) P";
                 }
 
@@ -672,15 +695,23 @@ where   A.ArtifactTypeID = @id and A.[Visible] = 1";
 
                 var sql = $@"
 select	A.ID,
-		A.DisplayValue,
+        A.DisplayValue,
         {parentSqlColumn}
         {dcToken}
         dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url            
 from	Artifact A 
         {djToken} 
-        left join dbo.GetAssetDisplayValue() TD on TD.ID = A.ID
+        inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
         {parentSqlJoin}
-where    A.ArtifactTypeID = @id and A.[Visible] = 1";
+		left join	(
+					select	distinct 
+							R.AssetID
+					from	ResponsibilityDetails R
+							left join ResponsibilityTypeObjectClaim C on C.ResponsibilityTypeID = R.ResponsibilityTypeID and C.ObjectType = R.Type and C.ObjectID = R.TypeID and C.Claim = 1 and C.ClaimObject = 1 
+					where	R.ResourceID = {Company.CurrentResourceID}
+							and C.ObjectID is null 
+					) RP on RP.AssetID = O.ID 
+where    A.ArtifactTypeID = @id and A.[Visible] = 1 and RP.AssetID is null";
                 var model = processDynamicResults(
                     sql, Request, 
                     "ArtifactType", id, 
