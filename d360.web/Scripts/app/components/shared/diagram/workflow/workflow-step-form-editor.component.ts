@@ -371,7 +371,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType == 'IssueType') {
             this.responsibilities = [];
             return this.responsibilityService.getResponsibilityTypes()
-                .then(r => this.responsibilities = r);
+                .then(r => this.responsibilities = r)
+                .then(() => {
+                    this.responsibilities.forEach(r => {
+                        r.ResponsibilityTypeID = r.ID;
+                    })
+                });
         }
 
         return this.responsibilityService.getResponsibilityTypesByObject(this.responsibleObject, this.responsibleObjectId)
@@ -379,6 +384,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     changeResponsibility(e: any, i: number) {
+        console.log('changeResponsibility', e, i, this.responsibilities);
         this.step.settings.ResponsibilityTypeID[i] = e;
         this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
         this.stepChange.emit(this.step)
