@@ -86,6 +86,14 @@ BEGIN
 			WHERE	ID = @id
 	end
 
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type'
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
 	if @type = 'Lookup'
 	begin
 		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)

@@ -368,7 +368,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     getResponsibilityTypes(): Promise<any> {
         //console.log('getResTypes', this.responsibleObject, this.responsibleObjectId);
-        if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0) {
+        if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType == 'IssueType') {
             this.responsibilities = [];
             return this.responsibilityService.getResponsibilityTypes()
                 .then(r => this.responsibilities = r);

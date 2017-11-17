@@ -504,8 +504,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         this.objectDetailService.getObject(this.model.Event.ObjectID, this.model.Event.Object)
             .then(r => {
-              //  console.log(r);
-                this.objectTypeName = r.TypeName + ' :: ' + r.Name;
+                if (r != null)
+                    this.objectTypeName = r.TypeName + ' :: ' + r.Name;
+                else
+                    this.objectTypeName = '';
             });
     }
 
