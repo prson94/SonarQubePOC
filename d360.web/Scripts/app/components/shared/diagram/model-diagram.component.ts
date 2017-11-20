@@ -59,10 +59,6 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('diagram') diagramRef;
 
 
-
-    private g = go.GraphObject.make;
-    private myDiagram: go.Diagram;
-
     private items: HierarchyDiagramModel[] = [];
     private selectedNode: any = null;
 
@@ -94,17 +90,17 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     public ngOnDestroy() {
         //garbage collection
-        this.myDiagram.div = null;
+        this.diagram.div = null;
     }
 
     private initializeDiagram() {
-        this.myDiagram = this.createDiagram();
+        this.diagram = this.createDiagram();
 
-        this.myDiagram.nodeTemplate = this.createNodeTemplate();
-        this.myDiagram.linkTemplate = this.createLinkTemplate();
+        this.diagram.nodeTemplate = this.createNodeTemplate();
+        this.diagram.linkTemplate = this.createLinkTemplate();
 
-        this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
-        this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
+        this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.diagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
 
         this.populateDiagram();
 
@@ -117,7 +113,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                 this.items = data;
                 delete this.items[0].parent;
 
-                this.myDiagram.model = new go.TreeModel(this.items);
+                this.diagram.model = new go.TreeModel(this.items);
                 this.isLoading = false;
             });
 
@@ -154,12 +150,12 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     }
 
     private ViewPortBoundsChanged() {
-        var s = this.myDiagram.scale;
+        var s = this.diagram.scale;
         var h = 500;
         if (s > 1) {
             h = h * s;
         }
-        this.zoomLevel = _.clamp(_.round(this.myDiagram.scale * 75), 0, 100);
+        this.zoomLevel = _.clamp(_.round(this.diagram.scale * 75), 0, 100);
     }
 
     private ChangedSelection(e: any) {

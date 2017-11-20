@@ -2,6 +2,11 @@
 import * as go from 'gojs';
 
 export class DiagramBaseComponent extends BaseComponent {
+
+    protected diagram: go.Diagram;
+    protected palette: go.Palette;
+    protected g = go.GraphObject.make;
+
     constructor() {
         super();
         (go as any).licenseKey = this.getLicenseKey();

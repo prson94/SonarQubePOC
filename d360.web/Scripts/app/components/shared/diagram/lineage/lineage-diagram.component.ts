@@ -78,9 +78,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private hasHeader = false;
 
     //diagram properties
-    private g = go.GraphObject.make;
-    private myDiagram: go.Diagram;
-    private myPalette: go.Palette;
+    //private g = go.GraphObject.make;
+    //private palette: go.Palette;
 
     constructor(
         private myElement: ElementRef,
@@ -95,7 +94,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     public ngOnInit() {
         this.readonly = true;
         this.hasHeader = false;
-
+        
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
     }
@@ -103,10 +102,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     public ngOnChanges(changes: SimpleChanges) {
         if ((changes['objectId'] != null && changes['objectId'].currentValue != changes['objectId'].previousValue) ||
             (changes['objectType'] != null && changes['objectType'].currentValue != changes['objectType'].previousValue)) {
-            if (this.myDiagram != null && this.myDiagram.div != null)
-                this.myDiagram.div = null;
-            if (this.myPalette != null && this.myPalette.div != null)
-                this.myPalette.div = null;
+            if (this.diagram != null && this.diagram.div != null)
+                this.diagram.div = null;
+            if (this.palette != null && this.palette.div != null)
+                this.palette.div = null;
 
             this.selectedData = null;
             this.initializeDiagram();
@@ -121,10 +120,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     public ngOnDestroy() {
         //garbage collection
-        if (this.myDiagram != null)
-            this.myDiagram.div = null;
-        if (this.myPalette != null)
-            this.myPalette.div = null;
+        if (this.diagram != null)
+            this.diagram.div = null;
+        if (this.palette != null)
+            this.palette.div = null;
 
 
     }
@@ -132,41 +131,41 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     //#region helper methods
 
     private initializeDiagram(): Promise<any> {
-        if (this.myDiagram != null) {
+        if (this.diagram != null) {
             return Promise.resolve();
         }
 
-        this.myDiagram = this.createDiagram();
+        this.diagram = this.createDiagram();
 
-        this.myDiagram.nodeTemplateMap.add('object', this.createObjectNode());
-        this.myDiagram.nodeTemplateMap.add('focal', this.createFocalNode());
-        this.myDiagram.nodeTemplateMap.add('palette', this.createPaletteNode());
+        this.diagram.nodeTemplateMap.add('object', this.createObjectNode());
+        this.diagram.nodeTemplateMap.add('focal', this.createFocalNode());
+        this.diagram.nodeTemplateMap.add('palette', this.createPaletteNode());
 
-        this.myDiagram.linkTemplateMap.add('', this.createDefaultLink());
-        this.myDiagram.linkTemplateMap.add('adding', this.createPendingAddLink());
-        this.myDiagram.linkTemplateMap.add('deleting', this.createPendingDeleteLink());
+        this.diagram.linkTemplateMap.add('', this.createDefaultLink());
+        this.diagram.linkTemplateMap.add('adding', this.createPendingAddLink());
+        this.diagram.linkTemplateMap.add('deleting', this.createPendingDeleteLink());
 
-        this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
-        this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
+        this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
 
-        this.myDiagram.grid.visible = false;
-        this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
-        this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
-        this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
+        this.diagram.grid.visible = false;
+        this.diagram.grid.gridCellSize = new go.Size(8, 8);
+        this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
+        this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-        this.myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
-        this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
-        this.myDiagram.toolManager.linkingTool.isEnabled = !this.readonly;
-        this.myDiagram.toolManager.linkingTool.archetypeLinkData = new LinkModelV2();
+        this.diagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
+        this.diagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
+        this.diagram.toolManager.linkingTool.isEnabled = !this.readonly;
+        this.diagram.toolManager.linkingTool.archetypeLinkData = new LinkModelV2();
 
-        this.myDiagram.allowDrop = true;
+        this.diagram.allowDrop = true;
 
         return this.populateDiagram();
     }
 
     private initializePalette(): Promise<any> {
-        if (this.myPalette != null) {
-            this.myPalette.layout.invalidateLayout();
+        if (this.palette != null) {
+            this.palette.layout.invalidateLayout();
             this.reOrderLayout();
             return Promise.resolve();
         }
@@ -181,7 +180,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 })
             })
             .then(() => {
-                this.myPalette = this.createPalette();
+                this.palette = this.createPalette();
                 this.reOrderLayout();
             });
     }
@@ -205,8 +204,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private parseData(data: any) {
-        this.myDiagram.startTransaction("load_all_data");
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+        this.diagram.startTransaction("load_all_data");
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
         dm.nodeDataArray = [];
         dm.linkDataArray = [];
         this.initialNodes = [];
@@ -257,7 +256,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //console.log('parseData', modelList);
 
         for (var i = 0; i < modelList.length; i++) {
-            this.myDiagram.model.addNodeData(modelList[i]);
+            this.diagram.model.addNodeData(modelList[i]);
         }
 
         for (var i = 0; i < linkList.length; i++) {
@@ -270,7 +269,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.refreshControls(null);  //set buttons/expanders to defaults
 
-        this.myDiagram.commitTransaction("load_all_data");
+        this.diagram.commitTransaction("load_all_data");
         this.reOrderLayout();
     }
 
@@ -335,8 +334,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private reOrderLayout() {
-        this.myDiagram.layout.invalidateLayout();
-        this.myDiagram.requestUpdate();
+        this.diagram.layout.invalidateLayout();
+        this.diagram.requestUpdate();
     }
 
     private selectTab(val: string) {
@@ -366,8 +365,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
             } else if (data.diagramObjectType == DiagramObjectType.Link) {
 
-                var from = this.myDiagram.model.findNodeDataForKey(data.from);
-                var to = this.myDiagram.model.findNodeDataForKey(data.to);
+                var from = this.diagram.model.findNodeDataForKey(data.from);
+                var to = this.diagram.model.findNodeDataForKey(data.to);
 
                 if (from.obj && from.objid) {
                     this.source = from.obj;
@@ -386,22 +385,22 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private changeNode(e: NodeModelV2) {
         
-        let node: NodeModelV2 = this.myDiagram.model.findNodeDataForKey(e.key);
+        let node: NodeModelV2 = this.diagram.model.findNodeDataForKey(e.key);
         //console.log('changeNode', e, node, this.myDiagram);
         if (node == null)
             return;
 
-        this.myDiagram.startTransaction('changeNode');
+        this.diagram.startTransaction('changeNode');
 
         let objChanged = (node.object != e.object || node.objectId != e.objectId);
 
         node.object = e.object;
         node.objectId = e.objectId;
 
-        this.myDiagram.model.setDataProperty(node, 'name', e.name);
+        this.diagram.model.setDataProperty(node, 'name', e.name);
         this.validateNode(node);
 
-        this.myDiagram.commitTransaction('changeNode');
+        this.diagram.commitTransaction('changeNode');
     }
 
     @HostListener('window:resize', ['$event'])
@@ -422,13 +421,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private zoomDiagram(v: number) {
-        this.myDiagram.scale = v;
+        this.diagram.scale = v;
         //console.log('zoomDiagram', v, this.myDiagram);
     }
 
     private ChangedSelection(e: any) {
         if (e == null)
-            this.selection = this.myDiagram.selection;
+            this.selection = this.diagram.selection;
         else
             this.selection = e.diagram.selection;
 
@@ -481,7 +480,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private ungroupSelection() {
-        let selection = this.myDiagram.selection;
+        let selection = this.diagram.selection;
         let nodes = [];
         let maps = [];
 
@@ -495,17 +494,17 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         });
 
         maps.forEach(m => {
-            let mapNodes = this.myDiagram.model.nodeDataArray.filter(n => (<any>n).group == m.group);
+            let mapNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).group == m.group);
 
             mapNodes.forEach(n => {
-                this.myDiagram.model.setDataProperty(n, 'group', null);
+                this.diagram.model.setDataProperty(n, 'group', null);
             });
         });
         this.reOrderLayout();
     }
 
     private groupSelection() {
-        let selection = this.myDiagram.selection;
+        let selection = this.diagram.selection;
         let maps = [];
 
         //console.log('groupSelection',selection);
@@ -524,11 +523,11 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             let group = new NodeModelV2();
             group.category = 'transform';
            // group.isGroup = true;
-            this.myDiagram.model.addNodeData(group);
-            this.myDiagram.model.setDataProperty(group, 'name', '');
+            this.diagram.model.addNodeData(group);
+            this.diagram.model.setDataProperty(group, 'name', '');
 
             maps.forEach(m => {
-                this.myDiagram.model.setDataProperty(m, 'group', group.key);
+                this.diagram.model.setDataProperty(m, 'group', group.key);
             });
         }
 
@@ -608,8 +607,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         let pt: go.Palette = this.g(go.Palette, "LineagePalette",
             {
                 "animationManager.duration": 400,
-                nodeTemplateMap: this.myDiagram.nodeTemplateMap,
-                groupTemplateMap: this.myDiagram.groupTemplateMap,
+                nodeTemplateMap: this.diagram.nodeTemplateMap,
+                groupTemplateMap: this.diagram.groupTemplateMap,
                 model: new go.GraphLinksModel(paletteModel),
                 layout: this.g(go.GridLayout, {
                     sorting: go.GridLayout.Ascending

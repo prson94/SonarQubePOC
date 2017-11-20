@@ -38,9 +38,6 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     private selectedObject: string;
     private selectedObjectID: number;
 
-    private g = go.GraphObject.make;
-    private myDiagram: go.Diagram;
-
     private zoomLevel: number = 50;
     private tab: string = 'info';
     private headerText: string = 'Info';
@@ -63,7 +60,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     public ngOnInit() {
         this.originalObject = this.objectType;
         this.originalObjectID = this.objectID;
-
+        
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
         this.menuItems.push({
@@ -95,34 +92,34 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
     public ngOnDestroy() {
         //garbage collection
-        this.myDiagram.div = null;
+        this.diagram.div = null;
     }
 
     //#endregion
 
     private initializeDiagram() {
-        this.myDiagram = this.createDiagram();
+        this.diagram = this.createDiagram();
 
-        this.myDiagram.nodeTemplateMap.add("", this.createDefaultNode());
-        this.myDiagram.nodeTemplateMap.add("NonFocal", this.createNonFocalNode());
-        this.myDiagram.nodeTemplateMap.add("Category", this.createCategoryNode());
+        this.diagram.nodeTemplateMap.add("", this.createDefaultNode());
+        this.diagram.nodeTemplateMap.add("NonFocal", this.createNonFocalNode());
+        this.diagram.nodeTemplateMap.add("Category", this.createCategoryNode());
 
-        this.myDiagram.linkTemplateMap.add("", this.createLinkTemplate());
-        this.myDiagram.linkTemplateMap.add("Category", this.createCategoryLinkTemplate());
+        this.diagram.linkTemplateMap.add("", this.createLinkTemplate());
+        this.diagram.linkTemplateMap.add("Category", this.createCategoryLinkTemplate());
 
-        this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
-        this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
-        this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
-        this.myDiagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
+        this.diagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
+        this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
+        this.diagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
         //this.myDiagram.addDiagramListener('SelectionMoved', () => this.SelectionMoved());
 
-        this.myDiagram.grid.visible = false;
-        this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
-        this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
-        this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
+        this.diagram.grid.visible = false;
+        this.diagram.grid.gridCellSize = new go.Size(8, 8);
+        this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
+        this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
         //the readonly property disallows dragging, so we need to manually disable everything else here instead to prevent keyboard shortcuts
-        let dt = this.myDiagram.toolManager.diagram
+        let dt = this.diagram.toolManager.diagram
         dt.allowDelete = false;
         dt.allowClipboard = false;
         dt.allowCopy = false;
@@ -174,14 +171,14 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                 }
 
 
-                this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
+                this.diagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
 
                 if (this.model.nodes.length == 1) {
                     //there are no relationships, hide the expand/collapse
-                    this.myDiagram.nodes.first().findObject('TREEBUTTON').visible = false;
+                    this.diagram.nodes.first().findObject('TREEBUTTON').visible = false;
                 }
 
-                this.myDiagram.nodes.each(n => {
+                this.diagram.nodes.each(n => {
                     if (n.data.isLeaf)
                         n.findObject('TREEBUTTON').visible = false;
                 });
@@ -193,7 +190,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     }
 
     private refreshFilters() {
-        this.myDiagram.nodes.each(n => {
+        this.diagram.nodes.each(n => {
 
             if (n.data.category == 'Category')
                 return;
@@ -228,7 +225,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
             return;
         //console.log('addCategoryLayer', root, _.cloneDeep(links), _.cloneDeep(nodes));
         let categories: any[] = [];
-        let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+        let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
 
         if (links == null) links = [];
         if (nodes == null) nodes = [];
@@ -290,10 +287,10 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
             
             if (append) {
-                this.myDiagram.startTransaction("addCategoryLayer");
+                this.diagram.startTransaction("addCategoryLayer");
                 diagramModel.addNodeData(node);
                 diagramModel.addLinkData(link);
-                this.myDiagram.commitTransaction("addCategoryLayer");
+                this.diagram.commitTransaction("addCategoryLayer");
             }
 
 
@@ -305,12 +302,12 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
         //this.aggregatePredicates(this.model.nodes, this.model.links);
 
-        this.myDiagram.nodes.each(n => {
+        this.diagram.nodes.each(n => {
             if (n.data.isLeaf)
                 n.findObject('TREEBUTTON').visible = false;
         });
 
-        this.myDiagram.links.each(l => {
+        this.diagram.links.each(l => {
             let k = this.model.links.find(i => i.to == l.data.to && i.from == l.data.from);
             if (k) l.isTreeLink = k.isTreeLink;
         });
@@ -368,7 +365,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
                             //prevent duplicate links of the same predicate between the same nodes
                             if (addLink)
-                                this.myDiagram.links.each(k => {
+                                this.diagram.links.each(k => {
                                     if ((k.data.to == l.to && k.data.from == l.from) || (k.data.to == l.from && k.data.from == l.to)) {
                                         if (k.data.predicateid == l.predicateid) {
                                             addLink = false;
@@ -378,12 +375,12 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                                 });
                         
                             //if there's already a link to this node, add the link as a non-tree link to avoid breaking collapse/expand
-                            let to = this.myDiagram.findNodeForKey(l.to);
+                            let to = this.diagram.findNodeForKey(l.to);
                             if (to) {
                                 l.isTreeLink = false;
                             }
 
-                            let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+                            let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
                             if (addLink) {
                                 hasChildren = true;
                                 links.push(l);
@@ -405,14 +402,14 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
             if (node.isTreeExpanded) {
                 diagram.commandHandler.collapseTree(node);
                 //need to hide/show non-tree links manually here to workaround issue with child nodes having multiple parents
-                this.myDiagram.links.each(l => {
+                this.diagram.links.each(l => {
                     if (l.data.from == node.data.key && !l.isTreeLink) {
                         l.visible = false;
                     }
                 });
             } else {
                 diagram.commandHandler.expandTree(node);
-                this.myDiagram.links.each(l => {
+                this.diagram.links.each(l => {
                     if (l.data.from == node.data.key && !l.isTreeLink)
                         l.visible = true;
                 });
@@ -431,13 +428,13 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
             this.isWindowVisible = !this.isWindowVisible;
             this.isFilterVisible = false;
         } else if (e.icon == 'fa-search-plus') {
-            this.myDiagram.scale += .1;
-            if (this.myDiagram.scale > 2.5)
-                this.myDiagram.scale = 2.5;
+            this.diagram.scale += .1;
+            if (this.diagram.scale > 2.5)
+                this.diagram.scale = 2.5;
         } else if (e.icon == 'fa-search-minus') {
-            this.myDiagram.scale -= .1;
-            if (this.myDiagram.scale < .1)
-                this.myDiagram.scale = .1;
+            this.diagram.scale -= .1;
+            if (this.diagram.scale < .1)
+                this.diagram.scale = .1;
         } else if (e.icon == 'fa-filter') {
             this.isFilterVisible = !this.isFilterVisible;
             this.isWindowVisible = false;
@@ -469,9 +466,9 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
     private filterView() {
         this.canApplyFilter = false;
-        this.myDiagram.startTransaction("filterView");
+        this.diagram.startTransaction("filterView");
 
-        this.myDiagram.nodes.each(n => {
+        this.diagram.nodes.each(n => {
             let visible = true;
 
             if (n.category == '') //skip focal node
@@ -492,17 +489,17 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
             n.visible = visible;
             if (!n.visible && n.isTreeExpanded)
-                this.myDiagram.commandHandler.collapseTree(n);
+                this.diagram.commandHandler.collapseTree(n);
         });
 
-        this.myDiagram.links.each(l => {
+        this.diagram.links.each(l => {
             let visible = true;
 
             this.filters.forEach(f => {
                 switch (f.type) {
                     case FilterType.Category:
-                        let from = this.myDiagram.findNodeForKey(l.data.from);
-                        let to = this.myDiagram.findNodeForKey(l.data.to);
+                        let from = this.diagram.findNodeForKey(l.data.from);
+                        let to = this.diagram.findNodeForKey(l.data.to);
 
                         if (from == null || from.category == '' || to == null || to.category == '') return;
                        
@@ -522,14 +519,14 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         });
 
         this.calculateCategoryNumbers();
-        this.myDiagram.commitTransaction("filterView");
+        this.diagram.commitTransaction("filterView");
         this.zoomToFit();
     }
 
     private calculateCategoryNumbers() {
-        let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
-        this.myDiagram.startTransaction("calculateCategoryNumbers");
-        this.myDiagram.nodes.each(n => {
+        let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+        this.diagram.startTransaction("calculateCategoryNumbers");
+        this.diagram.nodes.each(n => {
             if (n.category != 'Category')
                 return;
 
@@ -537,9 +534,9 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
             let children = [];
             let name = '';
 
-            this.myDiagram.links.each(l => {
+            this.diagram.links.each(l => {
                 if (l.isTreeLink && l.data.from == n.data.key) {
-                    let node = this.myDiagram.findNodeForKey(l.data.to);
+                    let node = this.diagram.findNodeForKey(l.data.to);
                     if (node && node.visible) {
                         if (children.length == 0)
                             name = node.data.typeName;
@@ -560,7 +557,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                 n.visible = true;
             }
         });
-        this.myDiagram.commitTransaction("calculateCategoryNumbers");
+        this.diagram.commitTransaction("calculateCategoryNumbers");
     }
 
     private aggregatePredicates(nodes: NodeModel[], links: LinkModel[]) {
@@ -585,9 +582,9 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     }
 
     private zoomToFit() {
-        if (this.myDiagram.animationManager.isAnimating)
-            this.myDiagram.animationManager.stopAnimation();
-        this.myDiagram.zoomToFit();
+        if (this.diagram.animationManager.isAnimating)
+            this.diagram.animationManager.stopAnimation();
+        this.diagram.zoomToFit();
     }
 
 
@@ -618,12 +615,12 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     }
 
     private ViewPortBoundsChanged() {
-        var s = this.myDiagram.scale;
+        var s = this.diagram.scale;
         var h = 500;
         if (s > 1) {
             h = h * s;
         }
-        this.zoomLevel = _.clamp(_.round(this.myDiagram.scale * 75), 0, 100);
+        this.zoomLevel = _.clamp(_.round(this.diagram.scale * 75), 0, 100);
     }
 
     private ChangedSelection(e: any) {
@@ -646,7 +643,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         var obj = e.diagram.selection.first().data;
         if (obj != null) {
             if (obj.key != null) {
-                let node = this.myDiagram.findNodeForKey(obj.key);
+                let node = this.diagram.findNodeForKey(obj.key);
                 if (node && node.findObject('TREEBUTTON').visible)
                     this.expandNode(node);
             }

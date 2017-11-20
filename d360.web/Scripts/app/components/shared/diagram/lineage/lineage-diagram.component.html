@@ -81,10 +81,10 @@
         </ul>
         <div *ngIf="showNodeTabs" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
             <div *ngSwitchCase="'info'">
-                <d3s-lineage-info [node]="selectedData" [diagram]="myDiagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>
+                <d3s-lineage-info [node]="selectedData" [diagram]="diagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>
             </div>
             <div *ngSwitchCase="'edit'">
-                <d3s-lineage-editor [node]="selectedData" (nodeChange)="changeNode($event)" [diagram]="myDiagram"></d3s-lineage-editor>
+                <d3s-lineage-editor [node]="selectedData" (nodeChange)="changeNode($event)" [diagram]="diagram"></d3s-lineage-editor>
             </div>
         </div>
     </d3s-overlay-window>
