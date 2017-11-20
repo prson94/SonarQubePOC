@@ -1194,10 +1194,11 @@ where	R.SourceObject = 'FusionAttribute'
 						'PolicyType' AS Type
 				FROM	PolicyType
 				UNION
-				SELECT	CAST(ID as int) ID,
-						'Relationships :: ' + Name AS Name,
+                SELECT	CAST(IT.ID as int) ID,
+						'Relationships :: ' + ITypeName.Name AS Name,
 						'IntersectType' AS Type
-				FROM	IntersectType                
+				FROM	IntersectType IT    
+				        cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
 				UNION
 				SELECT	1 as ID,
 						'Resource' as Name,
