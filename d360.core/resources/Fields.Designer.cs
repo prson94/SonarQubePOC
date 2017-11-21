@@ -2869,6 +2869,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Additional source notes for the reference list..
+        /// </summary>
+        public static string SourceNotes_Description {
+            get {
+                return ResourceManager.GetString("SourceNotes_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source Notes.
+        /// </summary>
+        public static string SourceNotes_Name {
+            get {
+                return ResourceManager.GetString("SourceNotes_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Items of this type can inherit sourcing information and optionally override sourcing..
         /// </summary>
         public static string SourcingApplies_Description {
