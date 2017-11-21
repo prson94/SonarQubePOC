@@ -9,7 +9,7 @@ import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
-import { JsonResult } from '../models/jsonresult.model';
+import { JsonResult } from '../../../models/jsonresult.model';
 
 import * as _ from 'lodash';
 
@@ -54,9 +54,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     editedMenuItem: SiteNav = null;
     oldFolderItems: SiteNav[] = [];
     oldFolderName;
-    infoMsgFirstItem: JsonResult = { message: "First item can not be moved up.", success: false };
-    infoMsgLastItem: JsonResult = { message: "Last item can not be moved down.", success: false };
-
+   
     permissionMode: FormMode = FormMode.Default;
 
     constructor(
@@ -199,10 +197,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     this.edit(this.editedMenuItem)
                 })
         } else {
-            this.showMessageForResult(this.messagesService, this.infoMsgFirstItem);
-            return false;
-        }
-        
+            this.messagesService.showError("Error", "First item can not be moved up.")            
+        }        
         
     }
 
@@ -218,10 +214,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     this.edit(this.editedMenuItem)
                 })
         } else {
-            this.showMessageForResult(this.messagesService, this.infoMsgLastItem);
-            return false;
-        }
-        
+            this.messagesService.showError("Error", "Last item can not be moved down.")                       
+        }        
     }
 
     save() {
