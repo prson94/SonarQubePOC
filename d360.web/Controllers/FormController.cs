@@ -14145,12 +14145,17 @@ order by DN.DisplayValue");
             {                
                 if (!form.HasKeys()) throw new NoFormDataException("Rule");
 
+                var threshold = decimal.Parse(form["Threshold"]);
+
+                if (threshold < 0 || threshold > 1)
+                    throw new InvalidDataException("Threshold value must be between 0 and 1");
+
                 var model = new Rule
                 {
                     RuleDimensionID = parseNullableIntField(form, "RuleDimensionID"),
                     RuleTypeID = parseIntField(form, "RuleTypeID"),
                     Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]),
-                    Threshold = decimal.Parse(form["Threshold"])
+                    Threshold = threshold
                 };
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
@@ -14231,8 +14236,12 @@ order by DN.DisplayValue");
                 else
                     model.RuleDimensionID = null;
 
+                var threshold = decimal.Parse(form["Threshold"]);
+                if (threshold < 0 || threshold > 1)
+                    throw new InvalidDataException("Threshold value must be between 0 and 1");
+
                 model.Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]);
-                model.Threshold = decimal.Parse(form["Threshold"]);
+                model.Threshold = threshold;
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
                 Company.SaveOrUpdate<Rule>(model, fields);

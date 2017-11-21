@@ -72,7 +72,7 @@ declare var CompanySettings;
                         </div>
                         <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" type="number">   
                         <input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="any">   
-                        <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00">   
+                        <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">   
                         <div *ngSwitchCase = "'Color'">
                             <p-colorPicker [(ngModel)]="colorValue" [formControlName]="field.FieldName"></p-colorPicker>                            
                             <input type="text" [(ngModel)]="colorValue" [formControlName]="field.FieldName" style="padding:2px;" />
@@ -102,7 +102,7 @@ declare var CompanySettings;
                   </div>                   
                 </div>
                 `,
-    changeDetection: ChangeDetectionStrategy.OnPush, 
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DynamicFieldComponent implements OnInit {
     @Input() field: EditorField;
@@ -118,7 +118,7 @@ export class DynamicFieldComponent implements OnInit {
 
     constructor() { }
 
-    ngOnInit() {        
+    ngOnInit() {
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
@@ -140,8 +140,8 @@ export class DynamicFieldComponent implements OnInit {
 
         }
     }
-    
-    get isValid() {        
+
+    get isValid() {
         if (this.field.FieldType == "Link") {
             if (this.form.controls[this.field.FieldName + '_Name'] == undefined) return true;
             if (this.form.controls[this.field.FieldName + '_Name'].disabled) return true;
@@ -151,15 +151,15 @@ export class DynamicFieldComponent implements OnInit {
 
             return this.form.controls[this.field.FieldName + '_Url'].valid
         }
-        
+
         if (this.form.controls[this.field.FieldName] == undefined) return true;
         if (this.form.controls[this.field.FieldName].disabled) return true;
 
-        return this.form.controls[this.field.FieldName].valid;        
+        return this.form.controls[this.field.FieldName].valid;
     }
 
-    get errorMessage() {        
-        if (this.field.FieldType == "Link") {            
+    get errorMessage() {
+        if (this.field.FieldType == "Link") {
             return this.fieldMessage(this.field.FieldName + '_Url');
         }
         else
@@ -175,7 +175,7 @@ export class DynamicFieldComponent implements OnInit {
         return this.field ? this.field.Name : '';
     }
 
-    private fieldMessage(field: string) {        
+    private fieldMessage(field: string) {
         if (this.form.controls[field] == undefined) return '';
         var errors = this.form.controls[field].errors;
 
@@ -203,6 +203,31 @@ export class DynamicFieldComponent implements OnInit {
     setColorPickerValue(e: any) {
         this.form.controls[this.field.FieldName].setValue(e);
         this.field.Value = e;
+    }
+
+    private clamp(e: any, min: number, max: number, precision: number) {
+        if (e == null || e.target == null || min == null || max == null)
+            return;
+
+        let val = e.target.value;
+
+        if (val == '' || val == null || isNaN(+val))
+            return;
+
+        let newVal = +val;
+
+        if (+val < min) newVal = min;
+        if (+val > max) newVal = max;
+
+        if (precision > 0 && newVal != null && newVal != 0) {
+            let mod = Math.pow(10, precision);
+            newVal = Math.round(newVal * mod) / mod;
+        }
+
+        if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
+            this.form.controls[this.field.FieldName].setValue(newVal);
+            this.field.Value = newVal;
+        }
     }
 
     getLocaleDateString(): string{
