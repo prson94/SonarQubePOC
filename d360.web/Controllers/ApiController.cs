@@ -2323,56 +2323,62 @@ from    [Intersect] I
         public HttpResponseMessage GetLineageObjectTypes()
         {
             var sql = @"
-                 select distinct
-	                i.[object], 
-	                i.objectId,
-	                t.name,
-					null as template,
-					null as objectTypeName,
-	                coalesce(s.IconForeColor, '#fff') as foreColor,
-	                coalesce(s.IconBackColor, '#000') as backColor,
-					coalesce(o.[Order], 99999) as [order],
-					null as templateId
-                from 
-	                intersectType i
-                inner join AssetType t on t.object = i.object and t.objectid = i.objectid
-				left join ObjectStyle s on s.ObjectType = i.object and s.ObjectID = i.objectId
-				left join MapTypeOrder o on o.IntersectTypeID = i.ID
-                where 
-                    i.[subject] = 'MapType' and i.[object] != 'MapType'
-				union all
-				select distinct
-					'MapType' as [object],
-					t.maptypeid as objectId,
-					t.[name],
-					(
-						select 
-							i.ID as id,
-							i.IsRequired as isRequired,
-							coalesce(o.[order], 99999) as [order],
-							it.[Object] as [object],
-							it.ObjectID as objectId,
-							it.id as intersectTypeId
-						from 
-							maptypetemplateitem i
-						inner join maptypetemplate t2 on t2.id = i.maptypetemplateid
-						left join maptypeorder o on o.intersecttypeid = i.intersecttypeid and o.maptypeid = t2.maptypeid
-						inner join intersecttype it on it.id = i.intersecttypeid
-						where i.maptypetemplateid = t.id 
-						for json path
-					) as template,
-                    m.[name] as objectTypeName,
-					null as foreColor,
-					null as backColor,
-					-1 as [order],
-					t.ID as templateId
-				from maptypetemplate t
-				inner join maptype m on m.id = t.maptypeid
-				where t.maptypeid = 1";
+                select 
+	                A.[Name] as label,
+	                A.ID as [value],
+	                R.[object], 
+	                R.objectId 
+                from
+                (
+	                select 
+		                [Subject] as [Object], 
+		                SubjectID as ObjectID
+	                from 
+		                IntersectType T
+		                inner join [Predicate] P on T.PredicateID = P.ID and P.[Type] = 1
+	                where 
+		                T.[State] = 1
+
+	                union
+
+	                select 
+		                [Object] as [Object], 
+		                ObjectID as ObjectID
+	                from 
+		                IntersectType T
+		                inner join [Predicate] P on T.PredicateID = P.ID and P.[Type] = 1
+	                where 
+		                T.[State] = 1
+                ) R
+                inner join AssetType A on A.[Object] = R.[Object] and A.ObjectID = R.ObjectID";
 
             var list = Company.Query<dynamic>(sql);
 
             return Request.CreateResponse(HttpStatusCode.OK, list);
+        }
+
+        [Route("lineage/objects/{assetTypeId:int}"), HttpGet]
+        public HttpResponseMessage GetListeadObjects(int assetTypeId)
+        {
+            var sql = @"select 
+                    a.ID as assetId,
+                    d.DisplayValue as [name],
+                    t.[Name] as typeName,
+					coalesce(s.IconBackColor, '#000') as backColor,
+					coalesce(s.IconForeColor, '#fff') as foreColor,
+                    a.[object],
+                    a.objectId 
+                from 
+                    asset a
+                inner join assettype t on t.id = a.assettypeid
+				left join objectstyle s on s.objecttype = t.[object] and s.objectid = t.objectid
+                cross apply dbo.GetAssetDisplayValueById(a.ID) d
+                where  
+                    t.id = @id";
+
+            var results = Company.Query<dynamic>(sql, new { id = assetTypeId }).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, results);
         }
         #endregion
 

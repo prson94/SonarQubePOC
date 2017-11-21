@@ -13,7 +13,7 @@ import {
     AutoCompleteModule,
     ButtonModule,
     InputTextareaModule,
-
+    ListboxModule,
 } from 'primeng/primeng';
 
 import { ImpactComponent } from './impact.component';
@@ -65,6 +65,7 @@ import { SharedFormMessageModule } from '../form-message.part'
         AutoCompleteModule,
         ButtonModule,
         InputTextareaModule,
+        ListboxModule,
 
     ],
     declarations: [

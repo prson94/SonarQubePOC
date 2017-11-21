@@ -36,7 +36,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     @Input() objectType: string;
     @Input() readonly: boolean = true;
     @ViewChild('diagram') diagramRef;
-    @ViewChild('palette') paletteRef;
 
     DiagramObjectType = DiagramObjectType;
 
@@ -58,6 +57,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private targetId: string;
 
     private objectTypes = [];
+    private selectedAssetTypeId;
+    private objects = [];
+    private selectedObjects;
 
     private diagramMode: DiagramMode = DiagramMode.Diagram;
     DiagramMode = DiagramMode;
@@ -75,11 +77,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private diagramOffset = 291;
     private overlayOffset = 391;
     private overlayMaxHeight = 500;
-    private hasHeader = false;
-
-    //diagram properties
-    //private g = go.GraphObject.make;
-    //private palette: go.Palette;
 
     constructor(
         private myElement: ElementRef,
@@ -93,7 +90,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     public ngOnInit() {
         this.readonly = true;
-        this.hasHeader = false;
         
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
@@ -139,7 +135,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.diagram.nodeTemplateMap.add('object', this.createObjectNode());
         this.diagram.nodeTemplateMap.add('focal', this.createFocalNode());
-        this.diagram.nodeTemplateMap.add('palette', this.createPaletteNode());
 
         this.diagram.linkTemplateMap.add('', this.createDefaultLink());
         this.diagram.linkTemplateMap.add('adding', this.createPendingAddLink());
@@ -161,28 +156,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.diagram.allowDrop = true;
 
         return this.populateDiagram();
-    }
-
-    private initializePalette(): Promise<any> {
-        if (this.palette != null) {
-            this.palette.layout.invalidateLayout();
-            this.reOrderLayout();
-            return Promise.resolve();
-        }
-
-        return this.lineageService.getLineageObjectTypes()
-            .then(r => {
-                this.objectTypes = r;
-                this.objectTypes.forEach(o => {
-                    if (o.template != null) {
-                        o.template = JSON.parse(o.template);
-                    }
-                })
-            })
-            .then(() => {
-                this.palette = this.createPalette();
-                this.reOrderLayout();
-            });
     }
 
     private populateDiagram(): Promise<any> {
@@ -284,10 +257,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (data) {
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
             this.showLinkTabs = false; // there's nothing to show currently
-            this.showEditTab = (data != null && (<any>data).key != null && (<any>data).key.toString().indexOf('-') > -1);
             this.showInfoTab = (this.showLinkTabs || ((<any>data).object != null && (<any>data).objectId != null) || (data.category == 'map' && (<any>data).template != null));
 
-            if (this.tab != 'info' && this.tab != 'edit')
+            if (this.tab != 'info' && this.tab != 'add')
                 this.tab = 'info';
 
             if (!this.showNodeTabs) {
@@ -295,7 +267,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 return;
             }
 
-            if (this.tab == 'edit' && !this.showEditTab) {
+            if (this.tab == 'add' && this.readonly) {
                 if (this.showInfoTab) {
                     this.tab = 'info';
                 } else {
@@ -303,34 +275,108 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     this.isWindowVisible = false;
                 }
             } else if (this.tab == 'info' && !this.showInfoTab) {
-                if (this.showEditTab) {
-                    this.tab = 'edit';
+                if (!this.readonly) {
+                    this.tab = 'add';
                 } else {
                     this.tab = '';
                     this.isWindowVisible = false;
                 }
             }
 
-            if (this.showEditTab || this.showInfoTab)
+            if (!this.readonly || this.showInfoTab)
                 this.isWindowVisible = true;
 
         } else {
-            this.showNodeTabs = false;
-            this.showLinkTabs = false;
-            this.showEditTab = false;
-            this.showInfoTab = false;
-            this.isWindowVisible = false;
-            this.tab = '';
+            if (!this.readonly) {
+                this.tab = 'add';
+                this.showNodeTabs = false;
+                this.showLinkTabs = false;
+                this.showInfoTab = false;
+                this.isWindowVisible = true;
+            } else {
+                this.showNodeTabs = false;
+                this.showLinkTabs = false;
+                this.showInfoTab = false;
+                this.isWindowVisible = false;
+                this.tab = '';
+            }
         }
     }
 
     private loadMenuItems() {
         this.menuItems = []; 
 
+        if (this.readonly)
+            this.menuItems.push({
+                icon: 'fa-pencil',
+                items: null
+            });
+        if (!this.readonly)
+            this.menuItems.push({
+                icon: 'fa-floppy-o',
+                items: null
+            });
+
         this.menuItems.push({
             icon: 'fa-info-circle',
             items: null
         });
+
+
+    }
+
+    private loadObjectTypes(): Promise<any> {
+        if (this.objectTypes != null && this.objectTypes.length > 0)
+            return Promise.resolve();
+        return this.lineageService.getLineageObjectTypes()
+            .then(r => {
+                this.objectTypes = r;
+            })
+    }
+
+    private selectObjectType(e: any) {
+        this.selectedAssetTypeId = e;
+        this.loadObjects();
+
+    }
+
+    private loadObjects(): Promise<any> {
+        if (_.isNaN(+this.selectedAssetTypeId)) {
+            this.objects = [];
+            this.selectedObjects = null;
+            return;
+        }
+
+        return this.lineageService.getLineageObjects(+this.selectedAssetTypeId)
+            .then(r => {
+                this.selectedObjects = null;
+                this.objects = r;
+                console.log('loadObjects', this.objects);
+            });
+    }
+
+    private add() {
+        if (this.selectedObjects == null || this.selectedObjects.length < 1)
+            return;
+
+        this.diagram.startTransaction('Add Objects');
+        console.log('add', this.selectedObjects, this.objects);
+        this.selectedObjects.forEach(s => {
+            let m = new NodeModelV2();
+            m.assetId = s.assetId;
+            m.backColor = s.backColor;
+            m.foreColor = s.foreColor;
+            m.name = s.name;
+            m.object = s.object;
+            m.objectId = s.objectId;
+            m.category = 'object';
+            m.objectTypeName = s.typeName;
+            m.valid = false;
+            this.diagram.model.addNodeData(m);
+
+        });
+
+        this.diagram.commitTransaction('Add Objects');
     }
 
     private reOrderLayout() {
@@ -410,12 +456,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private resizeDiagram() {
         this.diagramRef.nativeElement.style.height = (window.innerHeight - 142) + 'px';
-        this.paletteRef.nativeElement.style.height = (window.innerHeight - 142) + 'px';
 
-        let dOffset = (this.hasHeader ? this.diagramOffset : this.diagramOffset - 125);
-        let oOffset = (this.hasHeader ? this.overlayOffset : this.overlayOffset - 125);
+        let dOffset = this.diagramOffset - 125;
+        let oOffset = this.overlayOffset - 125;
         this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
-        this.paletteRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
         this.overlayMaxHeight = window.innerHeight - oOffset;
 
     }
@@ -470,7 +514,34 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private menuClick(e: MenuItem) {
         if (e.icon == 'fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
+        } else if (e.icon == 'fa-pencil') {
+            this.toggleReadOnly(false);
+            this.toggleTabs(this.selectedData);
+            this.loadObjectTypes();
+        } else if (e.icon == 'fa-floppy-o') {
+            //save
+            this.toggleReadOnly(true);
+            this.toggleTabs(this.selectedData);
         }
+    }
+
+    private toggleReadOnly(readonly?: boolean) {
+        if (readonly != null) this.readonly = readonly;
+        console.log('toggelReadOnle', this.readonly);
+        let dt = this.diagram.toolManager.diagram
+        dt.allowDelete = !this.readonly;
+        dt.allowClipboard = !this.readonly;
+        dt.allowCopy = !this.readonly;
+        dt.allowInsert = !this.readonly;
+        dt.allowLink = !this.readonly;
+        dt.allowRelink = !this.readonly;
+        dt.allowGroup = !this.readonly;
+        dt.allowTextEdit = !this.readonly;
+
+        this.diagram.toolManager.linkingTool.isEnabled = !this.readonly;
+
+        this.loadMenuItems();
+
     }
 
     private closeEditor() {
@@ -581,43 +652,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         return dg;
     }
 
-    private createPalette(): go.Palette {
-        let paletteModel = [];
-
-        this.objectTypes.forEach(o => {
-            let isMap = (o.object == 'MapType');
-
-            paletteModel.push({
-                category: isMap ? 'map' : 'object',
-                name: o.name,
-                objectTypeName: o.objectTypeName,
-                objectType: o.object,
-                objectTypeId: o.objectId,
-                foreColor: o.foreColor,
-                backColor: o.backColor,
-                isGroup: isMap,
-                diagramObjectType: DiagramObjectType.Node,
-                visible: true,
-                order: o.order,
-                template: o.template,
-                templateId: o.templateId
-            });
-        });
-
-        let pt: go.Palette = this.g(go.Palette, "LineagePalette",
-            {
-                "animationManager.duration": 400,
-                nodeTemplateMap: this.diagram.nodeTemplateMap,
-                groupTemplateMap: this.diagram.groupTemplateMap,
-                model: new go.GraphLinksModel(paletteModel),
-                layout: this.g(go.GridLayout, {
-                    sorting: go.GridLayout.Ascending
-                })
-            });
-
-        return pt;
-    }
-
     private createObjectNode(): go.Node {
         let nodeWidth = 150;
         let nodeHeight = 75;
@@ -668,7 +702,10 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                         new go.Binding("stroke", "foreColor")
                     )
                 )
-            ));
+            ),
+            this.makePort('L', go.Spot.Left, false, true),
+            this.makePort('R', go.Spot.Right, true, false)
+        );
     }
 
     private createFocalNode(): go.Node {
@@ -836,41 +873,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         );
     }
 
-    private createPaletteNode(): go.Node {
-        let nodeWidth = 150;
-        let nodeHeight = 35;
-        let nodeBorderColor = 'transparent';
-        let nodeFontSize = 10;
-
-        return this.g(go.Node, "Spot",
-            this.g(go.Panel, "Auto", {
-                width: nodeWidth,
-                height: nodeHeight
-            },
-                this.g(go.Shape, "RoundedRectangle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 2,
-                    spot1: go.Spot.TopLeft,
-                    spot2: go.Spot.BottomRight,
-                    name: "NodeShape"
-                },
-                    new go.Binding("fill", "backColor").makeTwoWay()
-                ),
-                this.g(go.Panel, "Table",
-                    this.g(go.TextBlock, {
-                        row: 0,
-                        margin: 3,
-                        alignment: go.Spot.Top,
-                        editable: false,
-                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
-                        font: "bold " + nodeFontSize + "pt sans-serif"
-                    },
-                        new go.Binding("text", "name").makeTwoWay(),
-                        new go.Binding("stroke", "foreColor").makeTwoWay()
-                    ))
-            ));
-    }
-
     private makePort(name, spot, output, input) {
         return this.g(go.Shape, "Circle",
             {
@@ -887,7 +889,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private showPorts(node, show) {
         let diagram = node.diagram;
-        if (!diagram || diagram.isReadOnly || !diagram.allowLink) return;
+        if (!diagram || this.readonly || !diagram.allowLink) return;
         node.ports.each((port) => {
             port.stroke = (show ? "#000" : null);
         });

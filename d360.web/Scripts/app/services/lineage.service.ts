@@ -43,6 +43,13 @@ export class LineageService extends BaseService {
             .map(response => <any[]>response.json());
     }
 
+    public getLineageObjects(typeId: number): Promise<any> {
+        return this.http.get(`api/lineage/objects/${typeId}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     public getLineageObjectDetail(type: string, id: number): Promise<any> {
         return this.http.get(`resources/${type}/${id}/templates/tooltip/preview`)
             .toPromise()
