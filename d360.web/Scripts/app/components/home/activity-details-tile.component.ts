@@ -37,13 +37,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <p-column [style]="{width:'40px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
-                                        <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [class]="certificateColor(item)"></d3s-tooltip>                                            
-                                    </div>
-                                </ng-template>
-                            </p-column>
-                            <p-column [style]="{width:'40px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">
                                         <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" (click)="selectArtifact(item)" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>                                            
                                     </div>
                                 </ng-template>
