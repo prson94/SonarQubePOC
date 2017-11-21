@@ -94,6 +94,20 @@ export class SiteMenuService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    moveSiteNavFolderUp(id: number, prevID: number) {
+        return this.http.put(`navigation/SiteNavFolderMove?targetFolderId=${id}&adjacentFolderId=${prevID}`, null)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    moveSiteNavFolderDown(id: number,  nextID: number) {
+        return this.http.put(`navigation/SiteNavFolderMove?targetFolderId=${id}&adjacentFolderId=${nextID}`, null)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getSiteNavPermissions(id: number): Promise<SiteNavPermission[]> {
         return this.http.get(`navigation/permissions/get/${id}`)
             .toPromise()

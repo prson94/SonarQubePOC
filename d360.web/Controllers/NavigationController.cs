@@ -344,7 +344,7 @@ namespace d360.web.Controllers
             try
             {
                 var siteNav = Company.GetById<SiteNav>(targetFolderId);
-                var siteNavBelow = Company.GetById<SiteNav>(adjacentFolderId); ;
+                var siteNavBelow = Company.GetById<SiteNav>(adjacentFolderId);
 
                 if (siteNav == null)
                     throw new Exception($"Folder Id ${targetFolderId} not found.");

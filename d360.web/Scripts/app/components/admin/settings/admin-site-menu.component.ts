@@ -9,6 +9,7 @@ import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 import * as _ from 'lodash';
 
@@ -37,16 +38,24 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
     formMode = FormMode.Default;
     FormMode = FormMode;
+    index: number = 0;
     selection: SiteNav = null;
     folderName: string = '';
     newFolder: SiteNav = new SiteNav();
     newFolderItems: SiteNav[] = [];
 
+    prevFolderSortOrder: number = 0;
+    prevFolderID: number = 0;
+    nextFolderSortOrder: number = 0;
+    nextFolderID: number = 0;
     folderItems: SiteNav[] = [];
     availableItems: SiteNav[] = [];
 
+    editedMenuItem: SiteNav = null;
     oldFolderItems: SiteNav[] = [];
     oldFolderName;
+    infoMsgFirstItem: JsonResult = { message: "First item can not be moved up.", success: false };
+    infoMsgLastItem: JsonResult = { message: "Last item can not be moved down.", success: false };
 
     permissionMode: FormMode = FormMode.Default;
 
@@ -143,6 +152,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
     edit(item: SiteNav) {
         this.selection = item;
+        this.editedMenuItem = item;
         this.formMode = FormMode.Editing;
         this.folderName = this.selection.Name;
         this.loadFolderItems()
@@ -152,7 +162,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             })
             .then(() => this.loadSiteNavPermissions(this.selection));
     }
-
+    
     delete(item: SiteNav) {
         this.selection = item;
         this.formMode = FormMode.Deleting;
@@ -176,6 +186,42 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             .then(s => { this.companySettings.SiteNav = s; this.companySettingsChange.emit(this.companySettings); })
             .then(() => this.stateService.reloadLeftNavMenu())
             .then(() => this.isLoading = false);
+    }
+
+    moveFolderUp(item: SiteNav, i: number) {
+        if (i != 0) {
+            this.selection = item;
+            this.index = i;
+            this.prevFolderID = this.folderItems[i - 1].ID;
+            this.isLoading = true;
+            this.siteMenuService.moveSiteNavFolderUp(this.selection.ID, this.prevFolderID)
+                .then(() => {
+                    this.edit(this.editedMenuItem)
+                })
+        } else {
+            this.showMessageForResult(this.messagesService, this.infoMsgFirstItem);
+            return false;
+        }
+        
+        
+    }
+
+    moveFolderDown(item: SiteNav, i: number) {
+        if (i < this.folderItems.length-1) {
+            this.selection = item;
+            this.index = i;
+            this.nextFolderSortOrder = this.folderItems[i - 1].SortOrder;
+            this.nextFolderID = this.folderItems[i + 1].ID;
+            this.isLoading = true;
+            this.siteMenuService.moveSiteNavFolderDown(this.selection.ID, this.nextFolderID)
+                .then(() => {
+                    this.edit(this.editedMenuItem)
+                })
+        } else {
+            this.showMessageForResult(this.messagesService, this.infoMsgLastItem);
+            return false;
+        }
+        
     }
 
     save() {

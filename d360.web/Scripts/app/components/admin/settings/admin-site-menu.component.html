@@ -57,8 +57,10 @@
                     <p-dataTable [value]="folderItems" [rows]="10" [paginator]="true" selectionMode="single" [immutable]="false">
                         <p-column field="Name" header="Existing Folder Items"></p-column>
                         <p-column>
-                            <ng-template let-item="rowData" pTemplate type="body">
+                            <ng-template let-item="rowData" let-i="rowIndex" pTemplate type="body">
                                 <div class="RowTools" style="height: initial;">
+                                    <a (click)="moveFolderUp(item,i)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
+                                    <a (click)="moveFolderDown(item,i)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
                                     <a (click)="deleteFolderItem(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                                 </div>
                             </ng-template>
