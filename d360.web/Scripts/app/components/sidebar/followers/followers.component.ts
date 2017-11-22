@@ -26,9 +26,9 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
                                     <p-column field="FollowerFirstName" header="First Name" sortable="true"></p-column>
                                     <p-column [style]="{'width':'28px'}" >
                                         <ng-template let-item="rowData" pTemplate type="body">
-                                            <d3s-tooltip objectType="Resource" [objectId]="item.ResourceID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>
-                                        </ng-template> 
-                                    </p-column>     
+                                            <d3s-preview-tooltip  objectType="Resource" [objectId]="item.ResourceID" icon="info"></d3s-preview-tooltip>
+                                        </ng-template>
+                                    </p-column>
                                 </p-dataTable>
                             </span>
                         </div>

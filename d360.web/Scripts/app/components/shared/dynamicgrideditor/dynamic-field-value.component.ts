@@ -16,9 +16,9 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                     <i *ngIf="fieldValue == 'FALSE'" class="fa fa-times disabled" title="False"></i>
                 </span>
                 <span *ngSwitchCase="'lookup'">
-                    <d3s-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]" [tooltipType]="item[column.contextfield]">
+                    <d3s-lookup-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
                         <a (click)="navigate(item[column.urlfield])" [innerHtml]="fieldValue"></a>
-                    </d3s-tooltip>
+                    </d3s-lookup-tooltip>                    
                 </span>
                 <span *ngSwitchCase="'string'">{{fieldValue}}</span>                                                        
                 <ng-template ngSwitchDefault>

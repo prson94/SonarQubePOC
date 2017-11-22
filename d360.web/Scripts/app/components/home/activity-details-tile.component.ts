@@ -36,8 +36,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </p-column>                            
                             <p-column [style]="{width:'40px'}">
                                 <ng-template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">
-                                        <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" (click)="selectArtifact(item)" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>                                            
+                                    <div class="RowTools">                                        
+                                        <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
                                     </div>
                                 </ng-template>
                             </p-column>
@@ -83,16 +83,6 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
                 this.items = res;
                 this.isLoading = false;
             });
-    }
-
-    protected certificateColor(item) {
-        switch (item.Status) {
-            case 'Certified':
-                return 'artifact-certification-certified';
-            case 'Under Review':
-                return 'artifact-certification-underreview';
-        }
-        return 'artifact-certification';
     }
 }
 

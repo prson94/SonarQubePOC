@@ -36,12 +36,12 @@
                     <tbody *ngFor="let i of lineage; let x=index;" [style.background-color]="x%2==0 ? '#fff' : '#DEF1FD'">
                         <tr *ngIf="!i.isNew" [style.color]="i.isDeleting ? '#aaa' : '#000'">
                             <td style="width: 10px"></td>
-                            <td>
-                                <d3s-tooltip tooltipType="preview" objectType="FusionAttribute" [objectId]="i.SourceFusionAttributeID">{{i.SourceFusionAttributeName}}</d3s-tooltip>
+                            <td>                                
+                                <d3s-preview-tooltip objectType="FusionAttribute" [objectId]="i.SourceFusionAttributeID">{{i.SourceFusionAttributeName}}</d3s-preview-tooltip>
                             </td>
                             <td style="width:30px"></td>
-                            <td>
-                                <d3s-tooltip tooltipType="preview" objectType="FusionAttribute" [objectId]="i.TargetFusionAttributeID">{{i.TargetFusionAttributeName}}</d3s-tooltip>
+                            <td>                                
+                                <d3s-preview-tooltip objectType="FusionAttribute" [objectId]="i.TargetFusionAttributeID">{{i.TargetFusionAttributeName}}</d3s-preview-tooltip>
                             </td>
                             <td>
                                 <span *ngIf="i.selectedMapItem != null">

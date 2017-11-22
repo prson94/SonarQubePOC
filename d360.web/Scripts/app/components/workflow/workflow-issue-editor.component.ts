@@ -21,7 +21,7 @@ import { Resource } from '../../models/resource.model';
                         <div class="FieldName">Criticality</div>
                         <div>{{issue?.CriticalityName}}</div>                        
                         <div class="FieldName">Item Name</div>
-                        <div><d3s-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID" tooltipType="preview">{{issue.ObjectName}}</d3s-tooltip></div>
+                        <div><d3s-preview-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID">{{issue.ObjectName}}</d3s-preview-tooltip></div>
                         <div class="FieldName">Requestor</div>
                         <div>{{issue?.ResourceName}}</div>                        
                         <div class="FieldName">Date</div>

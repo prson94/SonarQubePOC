@@ -32,10 +32,10 @@ import { BaseComponent } from '../base.component';
                                                 <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
                                             </span>
                                             <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
-                                            <span *ngSwitchCase="'lookup'">
-                                                <d3s-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]" [tooltipType]="item[column.contextfield]">
+                                            <span *ngSwitchCase="'lookup'">                                                
+                                                <d3s-preview-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
                                                     <a (click)="navigate(item[column.urlfield])" [innerHtml]="item[column.datafield]"></a>
-                                                </d3s-tooltip>
+                                                </d3s-preview-tooltip>
                                             </span>
                                             <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
                                         </div>

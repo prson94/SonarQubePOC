@@ -2,7 +2,6 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
-import { FusionService } from '../../../services/fusion.service';
 
 @Component({
     selector: 'd3s-ownership',
@@ -15,7 +14,7 @@ import { FusionService } from '../../../services/fusion.service';
                     </div>
                 </div>
         `,
-    providers: [ObjectDetailService, FusionService]
+    providers: [ObjectDetailService]
 })
 
 export class OwnershipComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -24,32 +23,21 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private objectDetailService: ObjectDetailService,
-        private fusionService: FusionService
+        private objectDetailService: ObjectDetailService
     ) {
         super();
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
-            //this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            //this.objectType = params['objectType'];
-            this.assetID = +params['assetID'];
-            //if (this.objectType && this.objectType.toUpperCase() == 'FUSION') {
-            //    this.fusionService.getFusionConfiguration(this.objectID).then(res => {
-            //        this.objectName = res.Name;
-            //    });
-            //}
-            //else {
+        this.sub = this.route.params.subscribe(params => {            
+            this.assetID = +params['assetID'];            
                 this.objectDetailService.getAsset(this.assetID).then(res => {
                     this.objectName = res.DisplayValue;
-                });
-            //}
+            });            
         });
     }
 
     ngOnDestroy() {
         this.sub.unsubscribe();
     }
-
 }

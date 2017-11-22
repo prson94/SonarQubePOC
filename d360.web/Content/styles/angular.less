@@ -882,3 +882,47 @@ div.home-image-title-text {
     letter-spacing: 3px;
     padding: 40px;
 }
+
+/* tooltips */
+
+.d3s-tooltip {
+    position: relative;
+}
+
+.d3s-tooltip .tooltip-child {
+    display: none;
+    padding: 5px 9px;
+    position: absolute;
+    margin: 0;
+    outline: 0;
+    line-height: 1.3;
+    text-decoration: none;
+    font-size: 100%;
+    list-style: none;
+    text-align: left;
+    word-wrap: break-word;
+    border: 1px solid #e2e2e2;
+    box-shadow: 1px 1px 3px 1px rgba(0,0,0,.15);
+    font-weight: normal;
+}
+
+.d3s-tooltip .tooltip-child a {
+    color: @d3s-blue-2 !important;
+    text-decoration: underline;
+}
+
+.d3s-tooltip-active > .tooltip-panel {
+    display: block !important;
+    width: auto;
+}
+
+.tooltip-panel {
+    border-radius: 0 0 3px 3px;
+    color: black;
+    background-color: white;
+    max-height: 500px;
+    min-width: 400px;
+    max-width: 800px;
+    overflow-y: auto;
+}
+/* end tooltip*/

@@ -17,8 +17,8 @@ import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
                     <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;openFusionItem();">                                                                                                  
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}">
-                             <ng-template let-item="rowData" pTemplate type="body">
-                                <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview"><a (click)="openFusionItem()">{{item.Name}}</a></d3s-tooltip>
+                             <ng-template let-item="rowData" pTemplate type="body">                                
+                                <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="openFusionItem()">{{item.Name}}</d3s-preview-tooltip>
                             </ng-template> 
                         </p-column>                         
                         <p-column field="TypeName" header="Type" sortable="true" [style]="{'width':'250px'}"></p-column>            

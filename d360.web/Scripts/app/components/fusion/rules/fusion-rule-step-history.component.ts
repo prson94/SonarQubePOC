@@ -17,9 +17,7 @@ import { Column } from 'primeng/primeng';
                 <p-column header="Attribute" sortable="true" field="AttributeName" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
                 <p-column header="Object" sortable="true" field="ObjectName" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                     <ng-template pTemplate type="body" let-row="rowData">
-                        <d3s-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" tooltipType="preview">
-                            <a (click)="navigate(row.ObjectUrl)">{{row.ObjectName}}</a>
-                        </d3s-tooltip>
+                        <d3s-preview-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" (click)="navigate(row.ObjectUrl)">{{row.ObjectName}}</d3s-preview-tooltip>                        
                     </ng-template>
                 </p-column>
 

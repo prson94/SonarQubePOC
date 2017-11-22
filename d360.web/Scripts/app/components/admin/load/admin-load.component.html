@@ -8,8 +8,8 @@
                 <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                 <p-column field="Action" header="Action" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>                
                 <p-column field="ObjectName" header="Target" sortable="true" [style]="{ 'width': '40%' }" [filter]="!showSimpleFilter">
-                    <ng-template let-item="rowData" pTemplate type="body">
-                        <d3s-tooltip *ngIf="item.ObjectID > 0" [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="Preview">{{item.ObjectName}}</d3s-tooltip>                        
+                    <ng-template let-item="rowData" pTemplate type="body">                        
+                        <d3s-preview-tooltip *ngIf="item.ObjectID > 0" [objectType]="item.Object" [objectId]="item.ObjectID">{{item.ObjectName}}</d3s-preview-tooltip>
                         <span *ngIf="item.ObjectID <= 0">{{item.ObjectName}}</span>
                     </ng-template>
                 </p-column>

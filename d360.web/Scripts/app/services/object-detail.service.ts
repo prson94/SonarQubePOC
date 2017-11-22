@@ -126,7 +126,6 @@ export class ObjectDetailService extends BaseService {
         });
     }
     
-    //TODO: make explicit call here instead of passing uri
     getLookupGrid(uri: string): Promise<LookupGrid> {
         return this.http.get(uri)
             .toPromise()
@@ -181,5 +180,5 @@ export class ObjectDetailService extends BaseService {
             return this.postDynamic(this.http, objectType, classification);
         }
         return this.putDynamic(this.http, objectType, classification);
-    }
+    }    
 }

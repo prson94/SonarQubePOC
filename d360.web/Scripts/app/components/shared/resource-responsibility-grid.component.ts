@@ -14,8 +14,8 @@ import { Router } from '@angular/router';
     <p-dataTable #dt [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single">
         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
         <p-column header="Name" field="ObjectName" [filter]="!simpleFilter" sortable="true">
-            <ng-template let-row="rowData" pTemplate type="body">
-                <d3s-tooltip [objectType]="row.Object" [objectId]="row.ObjectID" tooltipType="preview">{{row.ObjectName}}</d3s-tooltip>
+            <ng-template let-row="rowData" pTemplate type="body">                
+                <d3s-preview-tooltip [objectType]="row.Object" [objectId]="row.ObjectID">{{row.ObjectName}}</d3s-preview-tooltip>
             </ng-template>
         </p-column>
         <p-column field="ResponsibilityTypeName" header="Role" [filter]="!simpleFilter" sortable="true"></p-column>

@@ -15,7 +15,9 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                     <div class="col s11">
                         <div class="row" *ngIf="!showEdit">
                             <div class="col s12 toolbox">                                
-                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span> <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
+                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span> <span class="user">                                    
+                                    <d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatingResourceID">{{comment.ResourceName}}</d3s-preview-tooltip>
+                                </span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
                                 <div *ngIf="showTools" class="comment-tools">
                                     <a *ngIf="canReply()" class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
                                     <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
@@ -26,7 +28,7 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                             </div>
                             <div class="col s12" [innerHtml]="comment.Body"></div>                            
                             <div class="col s12">
-                                <i class="fa fa-tag" aria-hidden="true"></i> Tags: <d3s-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [tooltipType]="'preview'" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-tooltip>
+                                <i class="fa fa-tag" aria-hidden="true"></i> Tags: <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-preview-tooltip>
                             </div>
                         </div>                        
                         <div class="row" *ngIf="showEdit">
@@ -52,7 +54,7 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                 <div class="row reply" *ngFor="let response of comment?.Comments">
                     <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatingResourceID + '?size=35'" width="35"></div>
                     <div class="col s10">
-                        <div><span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{response.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{response.DateCreated | date:'medium'}}</span>                        
+                        <div><span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID">{{response.ResourceName}}</d3s-preview-tooltip></span> <span class="postDate">{{response.DateCreated | date:'medium'}}</span>                        
                         <div [innerHtml]="response.Body"></div>                            
                     </div>                                
                 </div>                 

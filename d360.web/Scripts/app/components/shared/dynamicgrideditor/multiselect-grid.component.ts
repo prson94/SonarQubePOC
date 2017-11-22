@@ -20,8 +20,8 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                     <p-dataTable #dt [globalFilter]="gb" [value]="items" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                         <p-column [style]="{'width':'38px'}" [selectionMode]="multiple ?'multiple' : 'single'"></p-column>
                         <p-column field="Text" header="Name">
-                            <ng-template let-item="rowData" pTemplate type="body">
-                                <d3s-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]" tooltipType="preview">{{item.Text}}</d3s-tooltip>
+                            <ng-template let-item="rowData" pTemplate type="body">                                
+                                <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]">{{item.Text}}</d3s-preview-tooltip>
                             </ng-template>
                         </p-column>                    
                         <p-footer>

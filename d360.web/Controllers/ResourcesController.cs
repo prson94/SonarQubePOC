@@ -29,7 +29,14 @@ namespace d360.web.Models
         public int SurveyTypeID { get; set; }
         public int QuestionTypeID { get; set; }
     }
+
+    public class FieldTooltipValueModel
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
 }
+
 
 namespace d360.web.Controllers
 {
@@ -616,6 +623,60 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             catch (Exception ex)
             {
                 return Json(new { title = "Error Occurred!", message = ex.Message, type = "error" });
+            }
+        }
+
+        [HttpGet, Route("TooltipData/{objectType}/{objectID:int}")]
+        public JsonResult GetTooltipData(int objectID, string objectType)
+        {
+            try
+            {
+                var det = Company.GetObjectDetail(objectType, objectID);
+
+                var sql = @"select 
+                                f.FormattedValue as [Value],
+	                            ft.FriendlyName as Name
+                            from
+                                fieldtype ft
+
+                                inner
+                            join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')";
+
+                var res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID });
+
+                var descSql = @"select 
+                                f.FormattedValue as [Value]	                            
+                            from
+                                fieldtype ft
+
+                                inner
+                            join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name = 'Description')";
+
+                var desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
+
+
+
+                return Json(new { DisplayName = (det != null ? det.Name : ""), TypeName = (det != null ? det.TypeName : ""), Url = (det != null ? $"/{det.Url}" : ""), FieldValues = res, Description = desc }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { title = "Error Occurred!", message = ex.Message, type = "error" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet, Route("LookupTooltipData/{objectType}/{objectID:int}")]
+        public JsonResult GetLookupTooltipData(int objectID, SystemObjects objectType)
+        {
+            try
+            {
+                var html = Company.RenderTooltip("LookupPreview", objectType, objectID);
+
+
+                return Json(new { html = html }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { title = "Error Occurred!", message = ex.Message, type = "error" }, JsonRequestBehavior.AllowGet);
             }
         }
 

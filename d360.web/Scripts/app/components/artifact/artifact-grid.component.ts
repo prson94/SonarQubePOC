@@ -70,7 +70,7 @@ import { StringConstants } from '../../static/string-constants';
                             <p-column [style]="{width:'30px'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
-                                            <d3s-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" tooltipType="Preview" icon="info"></d3s-tooltip>                                            
+                                            <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
                                         </div>
                                     </ng-template>
                             </p-column>

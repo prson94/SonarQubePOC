@@ -27,8 +27,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </ng-template>
                         </p-column>             
                         <p-column field="Name" header="Item Name">
-                            <ng-template let-col let-issue="rowData" pTemplate type="body">
-                                <d3s-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID" tooltipType="preview">{{issue.Name}}</d3s-tooltip>
+                            <ng-template let-col let-issue="rowData" pTemplate type="body">                                
+                                <d3s-preview-tooltip [objectType]="issue.Object" [objectId]="issue.ObjectID">{{issue.Name}}</d3s-preview-tooltip>
                             </ng-template>
                         </p-column>           
                         <p-column field="RaisedBy" header="Reported By" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
@@ -47,8 +47,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         </p-column>    
                         <p-column [style]="{width:'28px'}">
                                 <ng-template let-data="rowData" pTemplate type="body">
-                                    <div class="RowTools">
-                                        <d3s-tooltip objectType="Issue" [objectId]="data.IssueID" tooltipType="preview"><i class="fa fa-info" aria-hidden="true"></i></d3s-tooltip>
+                                    <div class="RowTools">                                        
+                                        <d3s-preview-tooltip objectType="Issue" [objectId]="data.IssueID" icon="info"></d3s-preview-tooltip>
                                     </div>
                                 </ng-template>
                             </p-column>                        

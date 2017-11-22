@@ -13,7 +13,7 @@ import { RouterModule } from '@angular/router';
     <div *ngIf="items.length > 0">
         <div style="color: #FFB230">The following items with similar names already exist:</div>
         <span *ngFor="let s of items; let i = index;">
-            <d3s-tooltip objectType="Artifact" [objectId]="s.objectid" tooltipType="preview"><a [routerLink]="s.Url">{{s.Name}}</a></d3s-tooltip>
+            <d3s-preview-tooltip objectType="Artifact" [objectId]="s.objectid"><a [routerLink]="s.Url">{{s.Name}}</a></d3s-preview-tooltip>            
             <span *ngIf="i < (items.length - 1)">,</span>&nbsp; 
         </span>
     </div>                  

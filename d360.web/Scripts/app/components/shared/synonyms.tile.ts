@@ -30,18 +30,18 @@ declare var CompanySettings: any;
                     <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                     <p-column header="Name" field="Name" sortable="true">
                         <ng-template pTemplate type="body" let-item="rowData">                        
-                            <d3s-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">
+                            <d3s-preview-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ObjectID">
                                 <a (click)="navigate(item.Url)">{{item.Name}}</a>
-                            </d3s-tooltip>
+                            </d3s-preview-tooltip>                            
                             <span *ngIf="!item.Object">{{item.Name}}</span>
                         </ng-template>
                     </p-column>
                     <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>                    
                     <p-column header="Parent" field="ParentName" sortable="true">
-                        <ng-template pTemplate type="body" let-item="rowData">                        
-                            <d3s-tooltip [objectType]="item.Object" [objectId]="item.ParentID" [tooltipType]="'Preview'">
+                        <ng-template pTemplate type="body" let-item="rowData">   
+                            <d3s-preview-tooltip *ngIf="item.Object" [objectType]="item.Object" [objectId]="item.ParentID">
                                 <a (click)="navigate(item.ParentUrl)">{{item.ParentName}}</a>
-                            </d3s-tooltip>
+                            </d3s-preview-tooltip>             
                         </ng-template>
                     </p-column>
                     <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '48px' }">

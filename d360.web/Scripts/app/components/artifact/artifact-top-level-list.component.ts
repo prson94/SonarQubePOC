@@ -30,10 +30,10 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 </ng-template>
                             </p-column>
                             <p-column field="Total" header="Total" [style]="{width:'100px'}"></p-column>
-                            <p-column  [style]="{width:'40px'}">
+                            <p-column  [style]="{width:'40px',overflow:'visible'}">
                                     <ng-template let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">                                
-                                            <d3s-tooltip objectType="ArtifactType" [objectId]="item.data.ID" tooltipType="preview"><a style="cursor:pointer;" (click)="showItem(item)"><i class="fa fa-info"></i></a></d3s-tooltip>                                    
+                                        <div class="RowTools">                                                                            
+                                            <d3s-preview-tooltip objectType="ArtifactType" [objectId]="item.data.ID" (click)="showItem(item)" icon="info"></d3s-preview-tooltip>
                                         </div>
                                     </ng-template>
                             </p-column>       

@@ -16,8 +16,8 @@ import { StringConstants } from '../../static/string-constants';
                     <p-dataTable #dt [globalFilter]="gb" sortField="OwnedItemCount" sortOrder="-1" [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                         <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                         <p-column field="FirstName" header="Name" [sortable]="true" >
-                            <ng-template let-col let-item="rowData" pTemplate type="body">                            
-                                <d3s-tooltip objectType="Resource" [objectId]="item.ResourceID" tooltipType="preview"><a (click)="selectResource(item)">{{item.FirstName}} {{item.LastName}}</a></d3s-tooltip>
+                            <ng-template let-col let-item="rowData" pTemplate type="body">                                                            
+                                <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID" (click)="selectResource(item)">{{item.FirstName}} {{item.LastName}}</d3s-preview-tooltip>
                             </ng-template>
                         </p-column>           
                         <p-column field="OwnedItemCount" header="Owned Items" sortable="true"></p-column>                                                                

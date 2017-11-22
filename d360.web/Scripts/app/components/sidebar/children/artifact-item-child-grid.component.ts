@@ -19,8 +19,10 @@ import { StringConstants } from '../../../static/string-constants';
                         <p-dataTable #dt lazy="true" [totalRecords]="artifacts?.total" [value]="artifacts?.results" selectionMode="single" [rows]="numberOfRows" paginator="true" pageLinks="3" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
                             <p-footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></p-footer>
                             <p-column field="DisplayValue" header="Name" sortable="true"  [style]="{'width':'250px'}">
-                                <ng-template let-item="rowData" pTemplate type="body">
-                                    <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="preview"><a (click)="selectArtifact(item)">{{item.DisplayValue}}</a></d3s-tooltip>
+                                <ng-template let-item="rowData" pTemplate type="body">                                    
+                                    <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ID">
+                                        <a (click)="selectArtifact(item)">{{item.DisplayValue}}</a>
+                                    </d3s-preview-tooltip>
                                 </ng-template>
                             </p-column>
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">
