@@ -10328,7 +10328,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 Company.Add<Policy>(model);
 
-                if (!string.IsNullOrEmpty(form["ParentID"]))
+                if (!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
                 {
                     var intersectType = Company.Filter<IntersectTypeDetail>(i =>
                         i.Object == "PolicyType" &&
@@ -10656,6 +10656,16 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
+        [Route("PolicyType/{policyTypeId:int}/levels/{policyTypeLevelId:int}")]
+        public ActionResult DeleteTaxonomyTypeLevelById(int policyTypeId, int policyTypeLevelId)
+        {
+            var form = new FormCollection();
+            form.Add("Level", policyTypeLevelId.ToString());
+            form.Add("ID", policyTypeId.ToString());
+            return DeletePolicyTypeLevel(form);
+        }
+
 
         [HttpDelete, Route("DeletePolicyTypeLevel")]
         public JsonResult DeletePolicyTypeLevel(FormCollection form)
@@ -16751,6 +16761,15 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [Route("TaxonomyType/{taxonomyTypeId:int}/levels/{taxonomyTypeLevelId:int}")]
+        public ActionResult DeletePolicyTypeLevelById(int taxonomyTypeId, int taxonomyTypeLevelId)
+        {
+            var form = new FormCollection();
+            form.Add("Level", taxonomyTypeLevelId.ToString());
+            form.Add("ID", taxonomyTypeId.ToString());
+            return DeleteTaxonomyTypeLevel(form);
         }
 
         [HttpDelete, Route("DeleteTaxonomyTypeLevel")]
