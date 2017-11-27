@@ -40,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col l4 s6 s12">
+            <div class="col l4 m6 s12">
                 <simple-accordion header="Settings" active="true" *ngIf="assetTypeClass == 'G'">
                     <div class="FieldName">Auto Display Description?</div>
                     <div class="row">
@@ -90,22 +90,22 @@
                 <simple-accordion header="Styles" active="true">
                     <div class="FieldName">Background Color</div>
                     <div class="row">
-                        <div class="col l6 m12 s12">
+                        <div class="col s12">
                             <p-colorPicker [(ngModel)]="model.IconBackColor" name="iconbackcolor"></p-colorPicker>
-                            <input type="text" [(ngModel)]="model.IconBackColor" name="iconbackcolortext" style="padding:2px;" />
+                            <input type="text" [(ngModel)]="model.IconBackColor" name="iconbackcolortext" style="padding:2px;width:65px" />
                         </div>
-                        <div class="col l6 m12 s12">
+                        <div class="col s12">
                             <div class="FieldInstructions">Sets the background color of icons representing items of this type within diagrams.</div>
                         </div>
                     </div>
 
                     <div class="FieldName">Text Color</div>
                     <div class="row">
-                        <div class="col l6 m12 s12">
+                        <div class="col s12">
                             <p-colorPicker [(ngModel)]="model.IconForeColor" name="iconforecolor"></p-colorPicker>
-                            <input type="text" [(ngModel)]="model.IconForeColor" name="iconforecolortext" style="padding:2px;" />
+                            <input type="text" [(ngModel)]="model.IconForeColor" name="iconforecolortext" style="padding:2px;width:65px" />
                         </div>
-                        <div class="col l6 m12 s12">
+                        <div class="col s12">
                             <div class="FieldInstructions">Sets the text color of icons representing items of this type within diagrams.</div>
                         </div>
                     </div>

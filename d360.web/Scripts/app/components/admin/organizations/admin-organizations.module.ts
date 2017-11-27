@@ -15,7 +15,7 @@ import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/sh
 
 import { AdminModule } from '../admin.module';
 
-import { AdminOrganizationTypesComponent } from './admin-organizationtypes.component';
+import { AdminOrganizationTypesComponent } from './admin-organization-types.component';
 import { AdminOrganizationsComponent } from './admin-organizations.component';
 import { AdminOrganizationContractsComponent } from './admin-organization-contracts.component';
 import { AdminOrganizationDomainsComponent } from './admin-organization-domains.component';

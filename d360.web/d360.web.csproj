@@ -1057,12 +1057,14 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-contracts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contracts.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-resources.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-invitations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organizations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organizations.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organizations.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-domains.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-types.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\predicates\admin-predicates.routes.ts" />

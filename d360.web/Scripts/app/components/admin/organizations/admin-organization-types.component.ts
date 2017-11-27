@@ -34,12 +34,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                             </ng-template>
                         </p-column>
                     </p-dataTable>
-                </span>
-                <div *ngIf="showEditor" class="col s12 m7 l8">
-                    <div class="tile tile-detail">
-                        <d3s-asset-type-editor-form [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="'Edit Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor-form>
-                    </div>
-                </div>   
+                </span>                
+                <d3s-asset-type-editor-form *ngIf="showEditor" [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="'Edit Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor-form>                
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="type?.AssetTypeID"
