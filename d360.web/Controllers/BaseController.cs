@@ -1146,7 +1146,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     var columnName = useFriendlyName ? field.FriendlyName.Replace("[", "").Replace("]", "") : $"Field{field.ID}";
                     if (field.Type == "Number")
-                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS int)";
+                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS bigint)";
                     else
                         sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
                 }
@@ -1293,6 +1293,30 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
 
                     }
+                }
+                else if (f.Type == DataType.Decimal.ToString())
+                {
+                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    columns += $@"case     
+    when {name}_T.Value is not null then cast({name}_T.FormattedValue as decimal(38,6))
+    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
+    else null 
+end as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
+                }
+                else if (f.Type == DataType.Number.ToString())
+                {
+                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    columns += $@"case     
+    when {name}_T.Value is not null then cast({name}_T.FormattedValue as bigint)
+    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as bigint)
+    else null 
+end as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
                 else
                 {
@@ -1873,7 +1897,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
 
             if (isNumericString)
-                sql += " ORDER BY CAST(+ [" + sortDataField + "] AS int)" + sortOrder;
+                sql += " ORDER BY CAST(+ [" + sortDataField + "] AS bigint)" + sortOrder;
             else
                 sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
 

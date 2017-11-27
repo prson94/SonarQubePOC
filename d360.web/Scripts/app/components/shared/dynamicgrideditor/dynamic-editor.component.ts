@@ -190,7 +190,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     field.Value =  new Date(field.Value);                
                 group[field.FieldName] = new FormControl({ value: (field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
                                 
-            }
+            }            
             else {
                 if (field.FieldType == "Lookup" && !field.Value && this.selection) {
                     let selected = field.Items.filter(x => x.Selected);                    
@@ -236,6 +236,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                        
         if (field.Required)
             validators.push(Validators.required);
+
+        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+            validators.push(Validators.max(9223372036854776));
+            validators.push(Validators.min(-9223372036854776));            
+        }
 
         return validators.length > 0 ? validators : null;
     }

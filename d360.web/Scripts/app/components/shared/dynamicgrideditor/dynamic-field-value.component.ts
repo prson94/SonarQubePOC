@@ -61,8 +61,8 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         }        
     }
 
-    private formatAsNumber(): string {
-        return this.fieldValue != '' && this.fieldValue != null ? Number(this.fieldValue).toLocaleString() : "";
+    private formatAsNumber(): string {        
+        return this.fieldValue !== '' && this.fieldValue != null ? Number(this.fieldValue).toLocaleString() : "";
     }
 
     private columnDataType(column: GridColumn): string {      
