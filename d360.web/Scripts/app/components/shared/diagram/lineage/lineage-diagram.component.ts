@@ -56,6 +56,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private target: string;
     private targetId: string;
 
+    private intersectTypes = [];
     private objectTypes = [];
     private selectedAssetTypeId;
     private objects = [];
@@ -90,7 +91,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     public ngOnInit() {
         this.readonly = true;
-        
+
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
     }
@@ -142,6 +143,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
+
+        this.diagram.toolManager.linkingTool.linkValidation = (a, b, c, d) => this.canLink(a, b, c, d);
 
         this.diagram.grid.visible = false;
         this.diagram.grid.gridCellSize = new go.Size(8, 8);
@@ -193,13 +197,16 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 var model = new NodeModelV2();
                 model.key = d.id;
                 model.assetId = d.assetId;
+                model.assetTypeId = d.assetTypeId;
                 model.object = d.object;
                 model.objectId = d.objectId;
+                model.objectType = d.objectType;
+                model.objectTypeId = d.objectTypeId;
 
-                model.objectTypeName = d.type;
+                model.objectTypeName = d.objectTypeName;
                 model.name = d.name;
-                model.foreColor = d.fore;
-                model.backColor = d.back;
+                model.foreColor = d.foreColor;
+                model.backColor = d.backColor;
                 model.category = 'object';
 
                 modelList.push(model);
@@ -220,13 +227,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                     link.category = 'deleting';
                 else
                     link.category = '';
-                
+
                 linkList.push(link);
 
             }
         }
 
-        //console.log('parseData', modelList);
+        console.log('parseData', modelList);
 
         for (var i = 0; i < modelList.length; i++) {
             this.diagram.model.addNodeData(modelList[i]);
@@ -304,7 +311,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private loadMenuItems() {
-        this.menuItems = []; 
+        this.menuItems = [];
 
         if (this.readonly)
             this.menuItems.push({
@@ -331,6 +338,15 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         return this.lineageService.getLineageObjectTypes()
             .then(r => {
                 this.objectTypes = r;
+            })
+    }
+
+    private loadIntersectTypes(): Promise<any> {
+        if (this.intersectTypes != null && this.intersectTypes.length > 0)
+            return Promise.resolve();
+        return this.lineageService.getLineageIntersectTypes()
+            .then(r => {
+                this.intersectTypes = r;
             })
     }
 
@@ -371,12 +387,51 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             m.objectId = s.objectId;
             m.category = 'object';
             m.objectTypeName = s.typeName;
+            m.assetTypeId = s.assetTypeId;
             m.valid = false;
             this.diagram.model.addNodeData(m);
 
         });
 
         this.diagram.commitTransaction('Add Objects');
+    }
+
+    private save() {
+        let model = new LineageEditorModelV2();
+
+        model.object = this.objectType;
+        model.objectId = this.objectID;
+
+        (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach(l => {
+            let la = <any>l;
+            let ln = new LinkModelV2();
+            ln.intersectId = la.intersectId;
+            ln.intersectTypeId = la.intersectTypeId;
+            ln.from = la.from;
+            ln.to = la.to;
+            model.links.push(ln);
+        });
+
+        this.diagram.model.nodeDataArray.forEach(n => {
+            let na = <any>n;
+            let nn = new NodeModelV2();
+            nn.key = na.key;
+            nn.assetId = na.assetId;
+            nn.assetTypeId = na.assetTypeId;
+            nn.object = na.object;
+            nn.objectId = na.objectId;
+            nn.objectType = na.objectType;
+            nn.objectTypeId = na.objectTypeId;
+
+            model.nodes.push(nn);
+        });
+
+        // this.diagram.model.nodeDataArray;
+        this.isLoading = true;
+        this.lineageService.postLineageDiagram(model)
+            .then(r => {
+                this.isLoading = false;
+            });
     }
 
     private reOrderLayout() {
@@ -390,7 +445,28 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private validateNode(n: NodeModelV2) {
-        return true;
+        let valid = true;
+
+        let inCount = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).to == n.key).length;
+        let outCount = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).from == n.key).length;
+
+        if (inCount < 1 && outCount < 1) {
+            valid = false;
+        }
+
+        this.diagram.model.setDataProperty(n, 'valid', valid);
+        return valid;
+
+    }
+
+    private validateLink(l: LinkModelV2) {
+        let valid = true;
+
+        if ((l.intersectId <= 0 || l.intersectId == null) && (l.intersectTypeId <= 0 || l.intersectTypeId == null))
+            valid = false;
+
+        this.diagram.model.setDataProperty(l, 'valid', valid);
+        return valid;
     }
 
     private setSourceValues(data: any) {
@@ -425,6 +501,31 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             }
         }
     }
+
+    private canLink(fromNode: any, fromPort: any, toNode: any, toPort: any) {
+
+        //can't link to self
+        if (fromNode.data.key == toNode.data.key)
+            return false;
+
+        let intersects = this.intersectTypes.filter(i => fromNode.data.assetTypeId == i.subjectAssetTypeId && fromNode.data.assetTypeId == i.objectAssetTypeId);
+
+        if (intersects == null || (intersects.length != null && intersects.length < 1)) {
+            return false;
+        }
+
+        if (intersects.length > 0) {
+            return true;
+        }
+        //find source obj
+        //find target obnj
+        //find intersects which match
+        //if >1 invalidate link
+        //else just set the predicate
+
+        return false;
+    }
+
     //#endregion
 
     //#region events
@@ -511,15 +612,37 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //console.log(e, this.myDiagram.selection);
     }
 
+    private LinkDrawn(e: any) {
+        let data = e.subject.data;
+        let fromNode = this.diagram.model.findNodeDataForKey(data.from);
+        let toNode = this.diagram.model.findNodeDataForKey(data.to);
+
+        this.validateNode(fromNode);
+        this.validateNode(toNode);
+
+        let intersects = this.intersectTypes.filter(i => fromNode.assetTypeId == i.subjectAssetTypeId && fromNode.assetTypeId == i.objectAssetTypeId);
+
+        //TODO: if length > 1, set to null and make usser choose
+        if (intersects.length > 0)
+            e.subject.data.intersectTypeId = intersects[0].intersectTypeId;
+
+        this.validateLink(e.subject.data);
+        console.log('LinkDrawn', e.subject.data, intersects);
+        //auto-select predicate here if applicable
+    }
+
     private menuClick(e: MenuItem) {
         if (e.icon == 'fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
         } else if (e.icon == 'fa-pencil') {
             this.toggleReadOnly(false);
             this.toggleTabs(this.selectedData);
-            this.loadObjectTypes();
+            this.loadIntersectTypes()
+                .then(() => this.loadObjectTypes());
         } else if (e.icon == 'fa-floppy-o') {
             //save
+            if (!this.isLoading)
+                this.save();
             this.toggleReadOnly(true);
             this.toggleTabs(this.selectedData);
         }
@@ -527,7 +650,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private toggleReadOnly(readonly?: boolean) {
         if (readonly != null) this.readonly = readonly;
-        console.log('toggelReadOnle', this.readonly);
+        //console.log('toggelReadOnly', this.readonly);
         let dt = this.diagram.toolManager.diagram
         dt.allowDelete = !this.readonly;
         dt.allowClipboard = !this.readonly;
@@ -659,6 +782,12 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         let nodeFontSize = 8;
 
         return this.g(go.Node, "Spot",
+            new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(go.Point.stringify),
+            {
+                locationSpot: go.Spot.Center,
+                mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
+                mouseLeave: (e, obj) => { this.showPorts(obj.part, false); }
+            },
             this.g(go.Panel, "Auto", {
                 width: nodeWidth,
                 height: nodeHeight
@@ -878,7 +1007,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             {
                 fill: "transparent",
                 stroke: null,
-                desiredSize: new go.Size(9, 9),
+                desiredSize: new go.Size(7, 7),
                 alignment: spot, alignmentFocus: spot,
                 portId: name,
                 fromSpot: spot, toSpot: spot,
@@ -890,8 +1019,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private showPorts(node, show) {
         let diagram = node.diagram;
         if (!diagram || this.readonly || !diagram.allowLink) return;
+
         node.ports.each((port) => {
-            port.stroke = (show ? "#000" : null);
+            port.stroke = (show ? (node.data.foreColor || '#fff') : null);
         });
     }
 

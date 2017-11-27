@@ -2357,8 +2357,36 @@ from    [Intersect] I
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }
 
+        [HttpGet, Route("lineage/intersectTypes")]
+        public HttpResponseMessage GetLineageIntersectTypes()
+        {
+            var sql = @"
+                   select
+						T.ID as intersectTypeId,
+						T.[subject],
+						T.[subjectId],
+						ATS.ID as subjectAssetTypeId,
+						T.[object],
+						T.[objectId],
+						ATO.ID as objectAssetTypeId,
+						P.ID as predicateId,
+						P.[Name] as predicateName,
+						P.Inverse as predicateInverse
+					from 
+						IntersectType T
+					inner join [Predicate] P on P.ID = T.PredicateID
+					inner join AssetType ATS on ATS.[Object] = T.[Subject] and ATS.ObjectID = T.SubjectID
+					inner join AssetType ATO on ATO.[Object] = T.[Object] and ATO.ObjectID = T.ObjectID
+					where 
+						P.[Type] = 1 and T.[State] = 1";
+
+            var results = Company.Query<dynamic>(sql).ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+        }
+
         [Route("lineage/objects/{assetTypeId:int}"), HttpGet]
-        public HttpResponseMessage GetListeadObjects(int assetTypeId)
+        public HttpResponseMessage GetLineageObjects(int assetTypeId)
         {
             var sql = @"select 
                     a.ID as assetId,
@@ -2367,7 +2395,8 @@ from    [Intersect] I
 					coalesce(s.IconBackColor, '#000') as backColor,
 					coalesce(s.IconForeColor, '#fff') as foreColor,
                     a.[object],
-                    a.objectId 
+                    a.objectId,
+                    t.id as assetTypeId
                 from 
                     asset a
                 inner join assettype t on t.id = a.assettypeid

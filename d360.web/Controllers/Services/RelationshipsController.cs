@@ -194,6 +194,9 @@ namespace d360.web.Controllers.Services
             public string SubjectBackColor { get; set; }
             public string SubjectForeColor { get; set; }
             public string SubjectTypeName { get; set; }
+            public string SubjectType { get; set; }
+            public int SubjectTypeID { get; set; }
+            public int SubjectAssetTypeID { get; set; }
 
             public long ObjectAssetID { get; set; }
             public string Object { get; set; }
@@ -202,6 +205,9 @@ namespace d360.web.Controllers.Services
             public string ObjectBackColor { get; set; }
             public string ObjectForeColor { get; set; }
             public string ObjectTypeName { get; set; }
+            public string ObjectType { get; set; }
+            public int ObjectTypeID { get; set; }
+            public int ObjectAssetTypeID { get; set; }
 
             public State State { get; set; }
 
@@ -214,6 +220,7 @@ namespace d360.web.Controllers.Services
 
         public class Node
         {
+            public string key { get; set; }
             public long assetId { get; set; }
             public string @object { get; set; }
             public int objectId { get; set; }
@@ -222,9 +229,12 @@ namespace d360.web.Controllers.Services
             public int? intersectGroupId { get; set; }
             public string id { get; set; }
             public string name { get; set; }
-            public string back { get; set; }
-            public string fore { get; set; }
-            public string type { get; set; }
+            public string backColor { get; set; }
+            public string foreColor { get; set; }
+            public string objectTypeName { get; set; }
+            public string objectType { get; set; }
+            public int objectTypeId { get; set; }
+            public int assetTypeId { get; set; }
 
         }
 
@@ -233,7 +243,16 @@ namespace d360.web.Controllers.Services
             public string from { get; set; }
             public string to { get; set; }
             public int intersectId { get; set; }
+            public int intersectTypeId { get; set; }
             public int state { get; set; }
+        }
+
+        public class LineageDiagramModel
+        {
+            public string @object { get; set; }
+            public int objectId { get; set; }
+            public List<Node> nodes { get; set; }
+            public List<Link> links { get; set; }
         }
 
         private static Random random = new Random();
@@ -265,9 +284,12 @@ namespace d360.web.Controllers.Services
                         state = (int)current.State,
                         intersectGroupId = current.IntersectGroupID,
                         name = current.ObjectName,
-                        back = current.ObjectBackColor,
-                        fore = current.ObjectForeColor,
-                        type = current.ObjectTypeName
+                        backColor = current.ObjectBackColor,
+                        foreColor = current.ObjectForeColor,
+                        objectTypeName = current.ObjectTypeName,
+                        objectType = current.ObjectType,
+                        objectTypeId = current.ObjectTypeID,
+                        assetTypeId = current.ObjectAssetTypeID
                     });
                 }
 
@@ -297,9 +319,12 @@ namespace d360.web.Controllers.Services
                         state = (int)current.State,
                         intersectGroupId = current.IntersectGroupID,
                         name = current.SubjectName,
-                        back = current.SubjectBackColor,
-                        fore = current.SubjectForeColor,
-                        type = current.SubjectTypeName
+                        backColor = current.SubjectBackColor,
+                        foreColor = current.SubjectForeColor,
+                        objectTypeName = current.SubjectTypeName,
+                        objectType = current.SubjectType,
+                        objectTypeId = current.SubjectTypeID,
+                        assetTypeId = current.SubjectAssetTypeID
                     });
                 }
 
@@ -343,6 +368,43 @@ namespace d360.web.Controllers.Services
                 nodes,
                 links
             });
+        }
+
+        [Route("save/lineage"), HttpPost]
+        public HttpResponseMessage SaveLineage(LineageDiagramModel model)
+        {
+            if (model == null || model.@object == null || model.objectId <= 0)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Model is missing focal object data.");
+            if (model.links == null)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Model is missing link data.");
+
+            model.links.ForEach(l =>
+            {
+                if (l.intersectId <= 0)
+                {
+                    if (l.intersectTypeId > 0)
+                    {
+                        var from = model.nodes.FirstOrDefault(n => n.key == l.from);
+                        var to = model.nodes.FirstOrDefault(n => n.key == l.to);
+
+                        if (from == null || to == null)
+                            return;
+
+                        var intersect = new Intersect();
+                        intersect.IntersectTypeID = l.intersectTypeId;
+                        intersect.Subject = from.@object;
+                        intersect.SubjectID = from.objectId;
+                        intersect.Object = to.@object;
+                        intersect.ObjectID = to.objectId;
+
+                        Company.Add(intersect);
+                        Company.SaveChanges();
+
+                    }
+                }
+            });
+
+            return Request.CreateResponse(HttpStatusCode.OK, (int?)null);
         }
     }
 }

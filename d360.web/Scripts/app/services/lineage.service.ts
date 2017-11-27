@@ -31,8 +31,22 @@ export class LineageService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    public postLineageDiagram(model: LineageEditorModelV2): Promise<any> {
+        return this.http.post(`services/relationships/save/lineage`, model)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     public getLineageObjectTypes(): Promise<any> {
         return this.http.get('api/lineage/objectTypes')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public getLineageIntersectTypes(): Promise<any> {
+        return this.http.get('api/lineage/intersectTypes')
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
