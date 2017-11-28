@@ -51,7 +51,6 @@ export class NodeModel {
 
 
 export class NodeModelV2 {
-    id: any;
     key: any;
     assetId: any;
     assetTypeId: any;
@@ -81,6 +80,7 @@ export class LinkModelV2 {
     intersectId: number = -1;
     intersectTypeId: number;
     state: number;
+    predicate: string;
 
     valid: boolean = true;
     errors = [];
@@ -91,10 +91,12 @@ export class LinkModelV2 {
 
 
 export class LineageEditorModelV2 {
-    object: string;
-    objectId: number;
-    nodes: NodeModelV2[] = [];
-    links: LinkModelV2[] = [];
+    Object: string;
+    ObjectID: number;
+    Nodes: NodeModelV2[] = [];
+    Links: LinkModelV2[] = [];
+    OriginalNodes: NodeModelV2[] = [];
+    OriginalLinks: LinkModelV2[] = [];
 }
 
 export class LineageNodeModel {

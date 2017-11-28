@@ -57,6 +57,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private targetId: string;
 
     private intersectTypes = [];
+    private filteredIntersectTypes = [];
     private objectTypes = [];
     private selectedAssetTypeId;
     private objects = [];
@@ -195,7 +196,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
                 var d = data.nodes[i];
                 var model = new NodeModelV2();
-                model.key = d.id;
+                model.key = d.key;
                 model.assetId = d.assetId;
                 model.assetTypeId = d.assetTypeId;
                 model.object = d.object;
@@ -221,6 +222,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                 link.from = d.from;
                 link.to = d.to;
                 link.state = d.state;
+                link.predicate = d.predicate;
+
                 if (link.state == 0)
                     link.category = 'adding';
                 else if (link.state == 2)
@@ -260,31 +263,31 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private toggleTabs(data: NodeModelV2 | LinkModelV2) {
-        //console.log(this.tab, data);
+        console.log(this.tab, data);
+
+
         if (data) {
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
-            this.showLinkTabs = false; // there's nothing to show currently
-            this.showInfoTab = (this.showLinkTabs || ((<any>data).object != null && (<any>data).objectId != null) || (data.category == 'map' && (<any>data).template != null));
+            this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
+            this.showInfoTab = this.showLinkTabs || this.showNodeTabs;
 
             if (this.tab != 'info' && this.tab != 'add')
                 this.tab = 'info';
 
-            if (!this.showNodeTabs) {
+            if (!this.showNodeTabs && !this.showLinkTabs) {
                 this.isWindowVisible = false;
                 return;
             }
 
             if (this.tab == 'add' && this.readonly) {
-                if (this.showInfoTab) {
+                if (this.showInfoTab)
                     this.tab = 'info';
-                } else {
+                else
                     this.tab = '';
-                    this.isWindowVisible = false;
-                }
             } else if (this.tab == 'info' && !this.showInfoTab) {
-                if (!this.readonly) {
+                if (!this.readonly)
                     this.tab = 'add';
-                } else {
+                else {
                     this.tab = '';
                     this.isWindowVisible = false;
                 }
@@ -399,8 +402,18 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private save() {
         let model = new LineageEditorModelV2();
 
-        model.object = this.objectType;
-        model.objectId = this.objectID;
+        model.Object = this.objectType;
+        model.ObjectID = this.objectID;
+
+        this.initialLinks.forEach(l => {
+            let la = <any>l;
+            let ln = new LinkModelV2();
+            ln.intersectId = la.intersectId;
+            ln.intersectTypeId = la.intersectTypeId;
+            ln.from = la.from;
+            ln.to = la.to;
+            model.OriginalLinks.push(ln);
+        });
 
         (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach(l => {
             let la = <any>l;
@@ -409,7 +422,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             ln.intersectTypeId = la.intersectTypeId;
             ln.from = la.from;
             ln.to = la.to;
-            model.links.push(ln);
+            model.Links.push(ln);
         });
 
         this.diagram.model.nodeDataArray.forEach(n => {
@@ -423,7 +436,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             nn.objectType = na.objectType;
             nn.objectTypeId = na.objectTypeId;
 
-            model.nodes.push(nn);
+            model.Nodes.push(nn);
         });
 
         // this.diagram.model.nodeDataArray;
@@ -431,6 +444,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.lineageService.postLineageDiagram(model)
             .then(r => {
                 this.isLoading = false;
+                this.showMessageForResult(this.messagesService, r);
             });
     }
 
@@ -476,27 +490,20 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.target = null;
             this.targetId = null;
         } else {
-            if (data.diagramObjectType == DiagramObjectType.Node) {
-                this.source = this.objectType;
-                this.sourceId = this.objectID;
-
-                if (data.obj && data.objid) {
-                    this.target = data.obj;
-                    this.targetId = data.objid;
-                }
-
-            } else if (data.diagramObjectType == DiagramObjectType.Link) {
+            if (data.diagramObjectType == DiagramObjectType.Link) {
 
                 var from = this.diagram.model.findNodeDataForKey(data.from);
                 var to = this.diagram.model.findNodeDataForKey(data.to);
 
-                if (from.obj && from.objid) {
-                    this.source = from.obj;
-                    this.sourceId = from.objid;
+                //console.log('setSourceValues', from, to);
+                if (from != null && to != null) {
+                    this.filteredIntersectTypes = this.intersectTypes.filter(i => (i.subjectAssetTypeId == from.assetTypeId && i.objectAssetTypeId == to.assetTypeId) || (i.objectAssetTypeId == from.assetTypeId && i.subjectAssetTypeId == to.assetTypeId));
+                } else {
+                    this.filteredIntersectTypes = [];
                 }
-                if (to.obj && to.objid) {
-                    this.target = to.obj;
-                    this.targetId = to.objid;
+
+                if (data.intersectTypeId == 0 && this.filteredIntersectTypes.length == 1) {
+                    this.changeIntersectType(this.filteredIntersectTypes[0].intersectTypeId);
                 }
             }
         }
@@ -508,7 +515,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (fromNode.data.key == toNode.data.key)
             return false;
 
-        let intersects = this.intersectTypes.filter(i => fromNode.data.assetTypeId == i.subjectAssetTypeId && fromNode.data.assetTypeId == i.objectAssetTypeId);
+        let intersects = this.intersectTypes.filter(i => (fromNode.data.assetTypeId == i.subjectAssetTypeId && toNode.data.assetTypeId == i.objectAssetTypeId) || (fromNode.data.assetTypeId == i.objectAssetTypeId && toNode.data.assetTypeId == i.subjectAssetTypeId));
 
         if (intersects == null || (intersects.length != null && intersects.length < 1)) {
             return false;
@@ -517,11 +524,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         if (intersects.length > 0) {
             return true;
         }
-        //find source obj
-        //find target obnj
-        //find intersects which match
-        //if >1 invalidate link
-        //else just set the predicate
 
         return false;
     }
@@ -530,8 +532,22 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     //#region events
 
+    private changeIntersectType(e: any) {
+        this.selectedData.intersectTypeId = +e;
+        let link = (<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).from == this.selectedData.from && (<any>l).to == this.selectedData.to);
+        let intersectType = this.intersectTypes.find(i => i.intersectTypeId == +e);
+        if (link != null) {
+            //console.log('changeIntersectType', intersectType, link, e);
+            this.diagram.model.setDataProperty(link, 'intersectTypeId', +e);
+            if (intersectType != null) {
+                this.diagram.model.setDataProperty(link, 'predicate', intersectType.predicateName);
+            }
+            this.validateLink(<LinkModelV2>link);
+        }
+    }
+
     private changeNode(e: NodeModelV2) {
-        
+
         let node: NodeModelV2 = this.diagram.model.findNodeDataForKey(e.key);
         //console.log('changeNode', e, node, this.myDiagram);
         if (node == null)
@@ -614,21 +630,39 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private LinkDrawn(e: any) {
         let data = e.subject.data;
+
         let fromNode = this.diagram.model.findNodeDataForKey(data.from);
         let toNode = this.diagram.model.findNodeDataForKey(data.to);
+        let link = (<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).to == data.to && (<any>l).from == data.from);
+
+        if (link == null || fromNode == null || toNode == null) {
+            return;
+        }
+
+        this.diagram.startTransaction('Link Drawn');
+
+        this.selectedData = link;
+        this.refreshControls(this.selectedData);
 
         this.validateNode(fromNode);
         this.validateNode(toNode);
 
-        let intersects = this.intersectTypes.filter(i => fromNode.assetTypeId == i.subjectAssetTypeId && fromNode.assetTypeId == i.objectAssetTypeId);
+        let intersects = this.intersectTypes.filter(i => (fromNode.assetTypeId == i.subjectAssetTypeId && toNode.assetTypeId == i.objectAssetTypeId) || (fromNode.assetTypeId == i.objectAssetTypeId && toNode.assetTypeId == i.subjectAssetTypeId));
 
-        //TODO: if length > 1, set to null and make usser choose
-        if (intersects.length > 0)
-            e.subject.data.intersectTypeId = intersects[0].intersectTypeId;
+        if (intersects.length == 1) {
+            this.diagram.model.setDataProperty(link, 'intersectTypeId', intersects[0].intersectTypeId);
+            this.diagram.model.setDataProperty(link, 'predicate', intersects[0].predicateName);
+        }
+        else {
+            this.diagram.model.setDataProperty(link, 'intersectTypeId', 0);
+            this.diagram.model.setDataProperty(link, 'predicate', null);
+        }
 
         this.validateLink(e.subject.data);
-        console.log('LinkDrawn', e.subject.data, intersects);
-        //auto-select predicate here if applicable
+
+        this.diagram.commitTransaction('Link Drawn');
+        //console.log('LinkDrawn', e.subject.data, intersects, (<go.GraphLinksModel>this.diagram.model).linkDataArray);
+
     }
 
     private menuClick(e: MenuItem) {

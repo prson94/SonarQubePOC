@@ -9,19 +9,49 @@
                 <i class="fa fa-plus fa-2x"></i>
             </li>
         </ul>
-        <div *ngIf="showNodeTabs || !readonly" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
+        <div *ngIf="showNodeTabs || showLinkTabs || !readonly" [ngSwitch]="tab" style="background-color: #fff; padding: 10px;">
             <ng-container *ngSwitchCase="'info'" >
                 <div *ngIf="showNodeTabs">
                     <d3s-lineage-info [node]="selectedData" [diagram]="diagram" (selectionChange)="ChangedSelection()"></d3s-lineage-info>
+                </div>
+                <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length > 1">
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName">Predicate</div>
+                            <div>
+                                <select [ngModel]="selectedData.intersectTypeId" (ngModelChange)="changeIntersectType($event)">
+                                    <option value="0"></option>
+                                    <option *ngFor="let i of filteredIntersectTypes" [value]="i.intersectTypeId">{{i.predicateName}} / {{i.predicateInverse}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="showLinkTabs && !readonly && filteredIntersectTypes.length == 1">
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName">Predicate</div>
+                            <div>
+                                {{selectedData.predicate || '[unknown]'}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="showLinkTabs && readonly && selectedData.predicate != ''">
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName">Predicate</div>
+                            <div>
+                                {{selectedData.predicate || '[unknown]'}}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </ng-container>
             <ng-container *ngSwitchCase="'add'" >
                 <div *ngIf="!readonly">
                     <div class="row">
                         <div class="col s12">
-                            <header>
-                                Add Objects
-                            </header>
                             <div class="FieldName">
                                 Object Type
                             </div>

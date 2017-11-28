@@ -227,7 +227,6 @@ namespace d360.web.Controllers.Services
             public int intersectId { get; set; }
             public int state { get; set; }
             public int? intersectGroupId { get; set; }
-            public string id { get; set; }
             public string name { get; set; }
             public string backColor { get; set; }
             public string foreColor { get; set; }
@@ -245,14 +244,18 @@ namespace d360.web.Controllers.Services
             public int intersectId { get; set; }
             public int intersectTypeId { get; set; }
             public int state { get; set; }
+            public string predicate { get; set; }
         }
 
         public class LineageDiagramModel
         {
-            public string @object { get; set; }
-            public int objectId { get; set; }
-            public List<Node> nodes { get; set; }
-            public List<Link> links { get; set; }
+            public string Object { get; set; }
+            public int ObjectID { get; set; }
+            public List<Node> Nodes { get; set; }
+            public List<Link> Links { get; set; }
+
+            public List<Node> OriginalNodes { get; set; }
+            public List<Link> OriginalLinks { get; set; }
         }
 
         private static Random random = new Random();
@@ -273,10 +276,10 @@ namespace d360.web.Controllers.Services
                 }
                 
                 //Add to node collection.
-                if (!nodes.Any(i => i.id == $"{current.ObjectPrefix}.{current.ObjectAssetID}"))
+                if (!nodes.Any(i => i.key == $"{current.ObjectPrefix}.{current.ObjectAssetID}"))
                 {
                     nodes.Add(new Node {
-                        id = $"{current.ObjectPrefix}.{current.ObjectAssetID}",
+                        key = $"{current.ObjectPrefix}.{current.ObjectAssetID}",
                         assetId = current.ObjectAssetID,
                         @object = current.Object,
                         objectId = current.ObjectID,
@@ -308,10 +311,10 @@ namespace d360.web.Controllers.Services
                 }
 
                 //Add to node collection.
-                if (!nodes.Any(i => i.id == $"{current.SubjectPrefix}.{current.SubjectAssetID}"))
+                if (!nodes.Any(i => i.key == $"{current.SubjectPrefix}.{current.SubjectAssetID}"))
                 {
                     nodes.Add(new Node {
-                        id = $"{current.SubjectPrefix}.{current.SubjectAssetID}",
+                        key = $"{current.SubjectPrefix}.{current.SubjectAssetID}",
                         assetId = current.SubjectAssetID,
                         @object = current.Subject,
                         objectId = current.SubjectID,
@@ -361,7 +364,7 @@ namespace d360.web.Controllers.Services
                 }
             });
 
-            links = list.Select(i => new Link { from = $"{i.SubjectPrefix}.{i.SubjectAssetID}", to = $"{i.ObjectPrefix}.{i.ObjectAssetID}", intersectId = i.IntersectID, state = (int)i.State }).ToList();
+            links = list.Select(i => new Link { from = $"{i.SubjectPrefix}.{i.SubjectAssetID}", to = $"{i.ObjectPrefix}.{i.ObjectAssetID}", intersectId = i.IntersectID, state = (int)i.State, predicate = i.Predicate }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
@@ -373,36 +376,72 @@ namespace d360.web.Controllers.Services
         [Route("save/lineage"), HttpPost]
         public HttpResponseMessage SaveLineage(LineageDiagramModel model)
         {
-            if (model == null || model.@object == null || model.objectId <= 0)
+            if (model == null || model.Object == null || model.ObjectID <= 0)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Model is missing focal object data.");
-            if (model.links == null)
+            if (model.Links == null)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Model is missing link data.");
 
-            model.links.ForEach(l =>
+            try
             {
-                if (l.intersectId <= 0)
+                model.OriginalLinks.ForEach(l =>
                 {
-                    if (l.intersectTypeId > 0)
+                    if (l.intersectId <= 0)
+                        return;
+
+                    var link = model.Links.FirstOrDefault(k => k.intersectId == l.intersectId);
+
+                    if (link == null)
                     {
-                        var from = model.nodes.FirstOrDefault(n => n.key == l.from);
-                        var to = model.nodes.FirstOrDefault(n => n.key == l.to);
-
-                        if (from == null || to == null)
-                            return;
-
-                        var intersect = new Intersect();
-                        intersect.IntersectTypeID = l.intersectTypeId;
-                        intersect.Subject = from.@object;
-                        intersect.SubjectID = from.objectId;
-                        intersect.Object = to.@object;
-                        intersect.ObjectID = to.objectId;
-
-                        Company.Add(intersect);
-                        Company.SaveChanges();
+                        var intersect = Company.GetById<Intersect>(l.intersectId);
+                        if (intersect != null)
+                        {
+                            Company.Delete(intersect);
+                        }
 
                     }
-                }
-            });
+                });
+
+                model.Links.ForEach(l =>
+                {
+                    if (l.intersectId <= 0)
+                    {
+                        if (l.intersectTypeId > 0)
+                        {
+                            var from = model.Nodes.FirstOrDefault(n => n.key == l.from);
+                            var to = model.Nodes.FirstOrDefault(n => n.key == l.to);
+
+                            if (from == null || to == null)
+                                return;
+
+                            var intersect = new Intersect
+                            {
+                                IntersectTypeID = l.intersectTypeId,
+                                Subject = from.@object,
+                                SubjectID = from.objectId,
+                                Object = to.@object,
+                                ObjectID = to.objectId,
+                            };
+
+                            Company.Add(intersect);
+                            Company.SaveChanges();
+
+                        }
+                    }
+                    else
+                    {
+                        var intersect = Company.GetById<Intersect>(l.intersectId);
+                        if (intersect != null && intersect.IntersectTypeID != l.intersectTypeId && l.intersectTypeId > 0)
+                        {
+                            intersect.IntersectTypeID = l.intersectTypeId;
+                            Company.SaveOrUpdate(intersect);
+                        }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, (int?)null);
         }
